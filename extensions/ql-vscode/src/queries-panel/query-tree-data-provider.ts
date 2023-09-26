@@ -7,9 +7,12 @@ import {
 import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 import { App } from "../common/app";
+import { QueryLanguage } from "../common/query-language";
 
 export interface QueryDiscoverer {
-  readonly buildQueryTree: () => Array<FileTreeNode<string>> | undefined;
+  readonly buildQueryTree: (
+    languageFilter: QueryLanguage | "All",
+  ) => Array<FileTreeNode<string>> | undefined;
   readonly onDidChangeQueries: Event<void>;
 }
 
@@ -30,19 +33,21 @@ export class QueryTreeDataProvider
     super();
 
     queryDiscoverer.onDidChangeQueries(() => {
-      this.queryTreeItems = this.createTree();
+      this.queryTreeItems = this.createTree(QueryLanguage.Swift);
       this.onDidChangeTreeDataEmitter.fire();
     });
 
-    this.queryTreeItems = this.createTree();
+    this.queryTreeItems = this.createTree(QueryLanguage.Swift);
   }
 
   public get onDidChangeTreeData(): Event<void> {
     return this.onDidChangeTreeDataEmitter.event;
   }
 
-  private createTree(): QueryTreeViewItem[] {
-    const queryTree = this.queryDiscoverer.buildQueryTree();
+  private createTree(
+    languageFilter: QueryLanguage | "All",
+  ): QueryTreeViewItem[] {
+    const queryTree = this.queryDiscoverer.buildQueryTree(languageFilter);
     if (queryTree === undefined) {
       return [];
     } else if (queryTree.length === 0) {

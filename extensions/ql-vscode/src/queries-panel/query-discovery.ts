@@ -56,7 +56,9 @@ export class QueryDiscovery
    *
    * Trivial directories where there is only one child will be collapsed into a single node.
    */
-  public buildQueryTree(): Array<FileTreeNode<string>> | undefined {
+  public buildQueryTree(
+    languageFilter: QueryLanguage | "All",
+  ): Array<FileTreeNode<string>> | undefined {
     const pathData = this.getPathData();
     if (pathData === undefined) {
       return undefined;
@@ -64,8 +66,10 @@ export class QueryDiscovery
 
     const roots = [];
     for (const workspaceFolder of getOnDiskWorkspaceFoldersObjects()) {
-      const queriesInRoot = pathData.filter((query) =>
-        containsPath(workspaceFolder.uri.fsPath, query.path),
+      const queriesInRoot = pathData.filter(
+        (query) =>
+          containsPath(workspaceFolder.uri.fsPath, query.path) &&
+          (languageFilter === "All" || query.language === languageFilter),
       );
       if (queriesInRoot.length === 0) {
         continue;
