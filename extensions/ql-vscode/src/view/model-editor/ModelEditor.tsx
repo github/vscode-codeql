@@ -123,32 +123,11 @@ export function ModelEditor({
           case "setMethods":
             setMethods(msg.methods);
             break;
-          case "loadModeledMethods":
-            setModeledMethods((oldModeledMethods) => {
-              return {
-                ...msg.modeledMethods,
-                ...oldModeledMethods,
-              };
-            });
+          case "setModeledMethods":
+            setModeledMethods(msg.methods);
             break;
-          case "addModeledMethods":
-            setModeledMethods((oldModeledMethods) => {
-              return {
-                ...msg.modeledMethods,
-                ...Object.fromEntries(
-                  Object.entries(oldModeledMethods).filter(
-                    ([, value]) => value.type !== "none",
-                  ),
-                ),
-              };
-            });
-            setModifiedSignatures(
-              (oldModifiedSignatures) =>
-                new Set([
-                  ...oldModifiedSignatures,
-                  ...Object.keys(msg.modeledMethods),
-                ]),
-            );
+          case "setModifiedMethods":
+            setModifiedSignatures(new Set(msg.methodSignatures));
             break;
           case "setInProgressMethods":
             setInProgressMethods((oldInProgressMethods) =>
@@ -180,14 +159,10 @@ export function ModelEditor({
   );
 
   const onChange = useCallback((model: ModeledMethod) => {
-    setModeledMethods((oldModeledMethods) => ({
-      ...oldModeledMethods,
-      [model.signature]: model,
-    }));
-    setModifiedSignatures(
-      (oldModifiedSignatures) =>
-        new Set([...oldModifiedSignatures, model.signature]),
-    );
+    vscode.postMessage({
+      t: "setModeledMethod",
+      method: model,
+    });
   }, []);
 
   const onRefreshClick = useCallback(() => {
@@ -202,7 +177,6 @@ export function ModelEditor({
       methods,
       modeledMethods,
     });
-    setModifiedSignatures(new Set());
   }, [methods, modeledMethods]);
 
   const onSaveModelClick = useCallback(
@@ -211,13 +185,6 @@ export function ModelEditor({
         t: "saveModeledMethods",
         methods,
         modeledMethods,
-      });
-      setModifiedSignatures((oldModifiedSignatures) => {
-        const newModifiedSignatures = new Set([...oldModifiedSignatures]);
-        for (const method of methods) {
-          newModifiedSignatures.delete(method.signature);
-        }
-        return newModifiedSignatures;
       });
     },
     [],

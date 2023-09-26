@@ -85,7 +85,7 @@ export class ModelEditorView extends AbstractWebview<
         });
       },
       async (modeledMethods) => {
-        await this.postMessage({ t: "addModeledMethods", modeledMethods });
+        this.addModeledMethods(modeledMethods);
       },
     );
   }
@@ -257,6 +257,12 @@ export class ModelEditorView extends AbstractWebview<
             cancellable: false,
           },
         );
+
+        this.modelingStore.removeModifiedMethods(
+          this.databaseItem,
+          Object.keys(msg.modeledMethods),
+        );
+
         void telemetryListener?.sendUIInteraction(
           "model-editor-save-modeled-methods",
         );
@@ -316,6 +322,10 @@ export class ModelEditorView extends AbstractWebview<
           "model-editor-hide-modeled-methods",
         );
         break;
+      case "setModeledMethod": {
+        this.setModeledMethod(msg.method);
+        break;
+      }
       default:
         assertNever(msg);
     }
@@ -360,10 +370,7 @@ export class ModelEditorView extends AbstractWebview<
         this.cliServer,
         this.app.logger,
       );
-      await this.postMessage({
-        t: "loadModeledMethods",
-        modeledMethods,
-      });
+      this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         this.app.logger,
@@ -441,10 +448,7 @@ export class ModelEditorView extends AbstractWebview<
                 modeledMethodsByName[modeledMethod.signature] = modeledMethod;
               }
 
-              await this.postMessage({
-                t: "addModeledMethods",
-                modeledMethods: modeledMethodsByName,
-              });
+              this.addModeledMethods(modeledMethodsByName);
             },
             progress,
             token: tokenSource.token,
@@ -597,5 +601,46 @@ export class ModelEditorView extends AbstractWebview<
         }
       }),
     );
+
+    this.push(
+      this.modelingStore.onModeledMethodsChanged(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.postMessage({
+            t: "setModeledMethods",
+            methods: event.modeledMethods,
+          });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onModifiedMethodsChanged(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.postMessage({
+            t: "setModifiedMethods",
+            methodSignatures: [...event.modifiedMethods],
+          });
+        }
+      }),
+    );
+  }
+
+  private addModeledMethods(modeledMethods: Record<string, ModeledMethod>) {
+    this.modelingStore.addModeledMethods(this.databaseItem, modeledMethods);
+
+    this.modelingStore.addModifiedMethods(
+      this.databaseItem,
+      new Set(Object.keys(modeledMethods)),
+    );
+  }
+
+  private setModeledMethod(method: ModeledMethod) {
+    const state = this.modelingStore.getStateForActiveDb();
+    if (!state) {
+      throw new Error("Attempting to set modeled method without active db");
+    }
+
+    this.modelingStore.updateModeledMethod(state.databaseItem, method);
+    this.modelingStore.addModifiedMethod(state.databaseItem, method.signature);
   }
 }

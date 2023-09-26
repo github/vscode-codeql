@@ -500,14 +500,14 @@ interface SetMethodsMessage {
   methods: Method[];
 }
 
-interface LoadModeledMethodsMessage {
-  t: "loadModeledMethods";
-  modeledMethods: Record<string, ModeledMethod>;
+interface SetModeledMethodsMessage {
+  t: "setModeledMethods";
+  methods: Record<string, ModeledMethod>;
 }
 
-interface AddModeledMethodsMessage {
-  t: "addModeledMethods";
-  modeledMethods: Record<string, ModeledMethod>;
+interface SetModifiedMethodsMessage {
+  t: "setModifiedMethods";
+  methodSignatures: string[];
 }
 
 interface SetInProgressMethodsMessage {
@@ -570,11 +570,16 @@ interface HideModeledMethodsMessage {
   hideModeledMethods: boolean;
 }
 
+interface SetModeledMethodMessage {
+  t: "setModeledMethod";
+  method: ModeledMethod;
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
-  | LoadModeledMethodsMessage
-  | AddModeledMethodsMessage
+  | SetModeledMethodsMessage
+  | SetModifiedMethodsMessage
   | SetInProgressMethodsMessage;
 
 export type FromModelEditorMessage =
@@ -589,7 +594,8 @@ export type FromModelEditorMessage =
   | GenerateMethodsFromLlmMessage
   | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
-  | HideModeledMethodsMessage;
+  | HideModeledMethodsMessage
+  | SetModeledMethodMessage;
 
 export type FromMethodModelingMessage =
   | TelemetryMessage
