@@ -8,6 +8,8 @@ import {
   createMethod,
   createUsage,
 } from "../../../../factories/model-editor/method-factories";
+import { ModelingStore } from "../../../../../src/model-editor/modeling-store";
+import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -25,7 +27,9 @@ describe("MethodsUsagePanel", () => {
       } as TreeView<unknown>;
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
-      const panel = new MethodsUsagePanel(mockCliServer);
+      const modelingStore = createMockModelingStore();
+
+      const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
       await panel.setState(methods, dbItem, hideModeledMethods);
 
       expect(mockTreeView.badge?.value).toBe(1);
@@ -34,6 +38,7 @@ describe("MethodsUsagePanel", () => {
 
   describe("revealItem", () => {
     let mockTreeView: TreeView<unknown>;
+    let modelingStore: ModelingStore;
 
     const hideModeledMethods: boolean = false;
     const usage = createUsage();
@@ -43,6 +48,8 @@ describe("MethodsUsagePanel", () => {
         reveal: jest.fn(),
       });
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
+
+      modelingStore = createMockModelingStore();
     });
 
     it("should reveal the correct item in the tree view", async () => {
@@ -52,7 +59,7 @@ describe("MethodsUsagePanel", () => {
         }),
       ];
 
-      const panel = new MethodsUsagePanel(mockCliServer);
+      const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
       await panel.setState(methods, dbItem, hideModeledMethods);
 
       await panel.revealItem(usage);
@@ -62,7 +69,7 @@ describe("MethodsUsagePanel", () => {
 
     it("should do nothing if usage cannot be found", async () => {
       const methods = [createMethod({})];
-      const panel = new MethodsUsagePanel(mockCliServer);
+      const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
       await panel.setState(methods, dbItem, hideModeledMethods);
 
       await panel.revealItem(usage);

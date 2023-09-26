@@ -19,15 +19,15 @@ import { showResolvableLocation } from "../databases/local-databases/locations";
 import { Method, Usage } from "./method";
 import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
+import { ModelingStore } from "./modeling-store";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
+  private readonly modelingStore: ModelingStore;
   private readonly methodsUsagePanel: MethodsUsagePanel;
   private readonly methodModelingPanel: MethodModelingPanel;
-
-  private mostRecentlyActiveView: ModelEditorView | undefined = undefined;
 
   private constructor(
     private readonly app: App,
@@ -38,22 +38,11 @@ export class ModelEditorModule extends DisposableObject {
   ) {
     super();
     this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
-    this.methodsUsagePanel = this.push(new MethodsUsagePanel(cliServer));
+    this.modelingStore = new ModelingStore(app);
+    this.methodsUsagePanel = this.push(
+      new MethodsUsagePanel(this.modelingStore, cliServer),
+    );
     this.methodModelingPanel = this.push(new MethodModelingPanel(app));
-  }
-
-  private handleViewBecameActive(view: ModelEditorView): void {
-    this.mostRecentlyActiveView = view;
-  }
-
-  private handleViewWasDisposed(view: ModelEditorView): void {
-    if (this.mostRecentlyActiveView === view) {
-      this.mostRecentlyActiveView = undefined;
-    }
-  }
-
-  private isMostRecentlyActiveView(view: ModelEditorView): boolean {
-    return this.mostRecentlyActiveView === view;
   }
 
   public static async initialize(
@@ -153,6 +142,7 @@ export class ModelEditorModule extends DisposableObject {
 
             const view = new ModelEditorView(
               this.app,
+              this.modelingStore,
               this.databaseManager,
               this.cliServer,
               this.queryRunner,
@@ -161,15 +151,14 @@ export class ModelEditorModule extends DisposableObject {
               db,
               modelFile,
               Mode.Application,
-              this.methodsUsagePanel.setState.bind(this.methodsUsagePanel),
               this.showMethod.bind(this),
-              this.handleViewBecameActive.bind(this),
-              (view) => {
-                this.handleViewWasDisposed(view);
-                void cleanupQueryDir();
-              },
-              this.isMostRecentlyActiveView.bind(this),
             );
+
+            this.modelingStore.onDbClosed(async (dbUri) => {
+              if (dbUri === db.databaseUri.toString()) {
+                await cleanupQueryDir();
+              }
+            });
 
             this.push(view);
             this.push({

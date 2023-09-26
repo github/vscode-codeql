@@ -8,9 +8,11 @@ import { createMockApp } from "../../../__mocks__/appMock";
 import { mockEmptyDatabaseManager } from "../query-testing/test-runner-helpers";
 import { QueryRunner } from "../../../../src/query-server";
 import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
+import { createMockModelingStore } from "../../../__mocks__/model-editor/modelingStoreMock";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
+  const modelingStore = createMockModelingStore();
   const databaseManager = mockEmptyDatabaseManager();
   const cliServer = mockedObject<CodeQLCliServer>({});
   const queryRunner = mockedObject<QueryRunner>({});
@@ -29,17 +31,14 @@ describe("ModelEditorView", () => {
     dataExtensions: ["models/**/*.yml"],
   };
   const mode = Mode.Application;
-  const updateMethodsUsagePanelState = jest.fn();
   const showMethod = jest.fn();
-  const handleViewBecameActive = jest.fn();
-  const handleViewWasDisposed = jest.fn();
-  const isMostRecentlyActiveView = jest.fn();
 
   let view: ModelEditorView;
 
   beforeEach(() => {
     view = new ModelEditorView(
       app,
+      modelingStore,
       databaseManager,
       cliServer,
       queryRunner,
@@ -48,11 +47,7 @@ describe("ModelEditorView", () => {
       databaseItem,
       extensionPack,
       mode,
-      updateMethodsUsagePanelState,
       showMethod,
-      handleViewBecameActive,
-      handleViewWasDisposed,
-      isMostRecentlyActiveView,
     );
   });
 

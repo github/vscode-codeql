@@ -7,12 +7,16 @@ import {
 import { Method, Usage } from "../method";
 import { DatabaseItem } from "../../databases/local-databases";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
+import { ModelingStore } from "../modeling-store";
 
 export class MethodsUsagePanel extends DisposableObject {
   private readonly dataProvider: MethodsUsageDataProvider;
   private readonly treeView: TreeView<MethodsUsageTreeViewItem>;
 
-  public constructor(cliServer: CodeQLCliServer) {
+  public constructor(
+    private readonly modelingStore: ModelingStore,
+    cliServer: CodeQLCliServer,
+  ) {
     super();
 
     this.dataProvider = new MethodsUsageDataProvider(cliServer);
@@ -21,6 +25,8 @@ export class MethodsUsagePanel extends DisposableObject {
       treeDataProvider: this.dataProvider,
     });
     this.push(this.treeView);
+
+    this.registerToModelingStoreEvents();
   }
 
   public async setState(
@@ -42,6 +48,41 @@ export class MethodsUsagePanel extends DisposableObject {
     const canonicalUsage = this.dataProvider.resolveCanonicalUsage(usage);
     if (canonicalUsage !== undefined) {
       await this.treeView.reveal(canonicalUsage);
+    }
+  }
+
+  private registerToModelingStoreEvents(): void {
+    this.push(
+      this.modelingStore.onActiveDbChanged(async () => {
+        await this.handleStateChangeEvent();
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onMethodsChanged(async (event) => {
+        if (event.isActiveDb) {
+          await this.handleStateChangeEvent();
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onHideModeledMethodsChanged(async (event) => {
+        if (event.isActiveDb) {
+          await this.handleStateChangeEvent();
+        }
+      }),
+    );
+  }
+
+  private async handleStateChangeEvent(): Promise<void> {
+    const activeState = this.modelingStore.getStateForActiveDb();
+    if (activeState !== undefined) {
+      await this.setState(
+        activeState.methods,
+        activeState.databaseItem,
+        activeState.hideModeledMethods,
+      );
     }
   }
 }
