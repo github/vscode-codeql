@@ -6,6 +6,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
 import { QueryPackDiscovery } from "./query-pack-discovery";
+import { DatabaseUI } from "../databases/local-databases-ui";
 
 export class QueriesModule extends DisposableObject {
   private queriesPanel: QueriesPanel | undefined;
@@ -17,15 +18,20 @@ export class QueriesModule extends DisposableObject {
   public static initialize(
     app: App,
     cliServer: CodeQLCliServer,
+    databaseUI: DatabaseUI,
   ): QueriesModule {
     const queriesModule = new QueriesModule(app);
     app.subscriptions.push(queriesModule);
 
-    queriesModule.initialize(app, cliServer);
+    queriesModule.initialize(app, cliServer, databaseUI);
     return queriesModule;
   }
 
-  private initialize(app: App, cliServer: CodeQLCliServer): void {
+  private initialize(
+    app: App,
+    cliServer: CodeQLCliServer,
+    databaseUI: DatabaseUI,
+  ): void {
     // Currently, we only want to expose the new panel when we are in canary mode
     // and the user has enabled the "Show queries panel" flag.
     if (!isCanary() || !showQueriesPanel()) {
@@ -44,7 +50,7 @@ export class QueriesModule extends DisposableObject {
     this.push(queryDiscovery);
     void queryDiscovery.initialRefresh();
 
-    this.queriesPanel = new QueriesPanel(queryDiscovery, app);
+    this.queriesPanel = new QueriesPanel(queryDiscovery, app, databaseUI);
     this.push(this.queriesPanel);
   }
 }

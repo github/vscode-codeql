@@ -218,7 +218,7 @@ async function chooseDatabaseDir(byFolder: boolean): Promise<Uri | undefined> {
 }
 
 export class DatabaseUI extends DisposableObject {
-  private treeDataProvider: DatabaseTreeDataProvider;
+  public treeDataProvider: DatabaseTreeDataProvider;
 
   public constructor(
     private app: App,

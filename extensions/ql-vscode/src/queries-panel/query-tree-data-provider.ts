@@ -8,6 +8,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 import { App } from "../common/app";
 import { QueryLanguage } from "../common/query-language";
+import { DatabaseUI } from "../databases/local-databases-ui";
 
 export interface QueryDiscoverer {
   readonly buildQueryTree: (
@@ -29,15 +30,27 @@ export class QueryTreeDataProvider
   public constructor(
     private readonly queryDiscoverer: QueryDiscoverer,
     private readonly app: App,
+    private readonly databaseUI: DatabaseUI,
   ) {
     super();
 
     queryDiscoverer.onDidChangeQueries(() => {
-      this.queryTreeItems = this.createTree(QueryLanguage.Swift);
+      this.queryTreeItems = this.createTree(
+        this.databaseUI.treeDataProvider.languageFilter,
+      );
       this.onDidChangeTreeDataEmitter.fire();
     });
 
-    this.queryTreeItems = this.createTree(QueryLanguage.Swift);
+    databaseUI.treeDataProvider.onDidChangeTreeData(() => {
+      this.queryTreeItems = this.createTree(
+        this.databaseUI.treeDataProvider.languageFilter,
+      );
+      this.onDidChangeTreeDataEmitter.fire();
+    });
+
+    this.queryTreeItems = this.createTree(
+      this.databaseUI.treeDataProvider.languageFilter,
+    );
   }
 
   public get onDidChangeTreeData(): Event<void> {
