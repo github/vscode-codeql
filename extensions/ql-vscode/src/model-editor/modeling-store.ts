@@ -220,13 +220,13 @@ export class ModelingStore extends DisposableObject {
 
   public addModifiedMethods(
     dbItem: DatabaseItem,
-    methodSignatures: Set<string>,
+    methodSignatures: Iterable<string>,
   ) {
     const state = this.getState(dbItem);
 
-    methodSignatures.forEach((signature) => {
+    for (const signature of methodSignatures) {
       state.modifiedMethodSignatures.add(signature);
-    });
+    }
 
     this.onModifiedMethodsChangedEventEmitter.fire({
       modifiedMethods: state.modifiedMethodSignatures,
@@ -236,7 +236,7 @@ export class ModelingStore extends DisposableObject {
   }
 
   public addModifiedMethod(dbItem: DatabaseItem, methodSignature: string) {
-    this.addModifiedMethods(dbItem, new Set<string>([methodSignature]));
+    this.addModifiedMethods(dbItem, [methodSignature]);
   }
 
   public removeModifiedMethods(
