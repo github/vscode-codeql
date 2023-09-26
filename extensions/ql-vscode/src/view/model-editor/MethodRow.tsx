@@ -14,10 +14,8 @@ import { ModeledMethod } from "../../model-editor/modeled-method";
 import { ModelKindDropdown } from "./ModelKindDropdown";
 import { Mode } from "../../model-editor/shared/mode";
 import { MethodClassifications } from "./MethodClassifications";
-import {
-  ModelingStatus,
-  ModelingStatusIndicator,
-} from "./ModelingStatusIndicator";
+import { getModelingStatus } from "../../model-editor/shared/modeling-status";
+import { ModelingStatusIndicator } from "./ModelingStatusIndicator";
 import { InProgressDropdown } from "./InProgressDropdown";
 import { MethodName } from "./MethodName";
 import { ModelTypeDropdown } from "./ModelTypeDropdown";
@@ -180,18 +178,4 @@ function sendJumpToUsageMessage(method: Method) {
     // In framework mode, the first and only usage is the definition of the method
     usage: method.usages[0],
   });
-}
-
-function getModelingStatus(
-  modeledMethod: ModeledMethod | undefined,
-  methodIsUnsaved: boolean,
-): ModelingStatus {
-  if (modeledMethod) {
-    if (methodIsUnsaved) {
-      return "unsaved";
-    } else if (modeledMethod.type !== "none") {
-      return "saved";
-    }
-  }
-  return "unmodeled";
 }

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { MethodModeling } from "./MethodModeling";
-import { ModelingStatus } from "../model-editor/ModelingStatusIndicator";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { Method } from "../../model-editor/method";
 import { ToMethodModelingMessage } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
