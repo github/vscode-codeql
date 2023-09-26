@@ -317,7 +317,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   if (extensionPacks !== undefined && extensionPacks.length > 0) {
     void showAndLogWarningMessage(
       extLogger,
-      "Legacy query server does not support extension packs.",
+      "Legacy query server does not support model packs.",
     );
   }
 

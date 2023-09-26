@@ -255,7 +255,7 @@ describe("Variant Analysis Manager", () => {
           );
           return;
         }
-        await cli.setUseExtensionPacks(true);
+        await cli.setUseModelPacks(true);
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
           expectedPackName: "github/remote-query-pack",

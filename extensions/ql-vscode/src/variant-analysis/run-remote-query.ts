@@ -128,7 +128,7 @@ async function generateQueryPack(
     precompilationOpts = ["--no-precompile"];
   }
 
-  if (await cliServer.useExtensionPacks()) {
+  if (await cliServer.useModelPacks()) {
     await injectExtensionPacks(cliServer, queryPackDir, workspaceFolders);
   }
 
@@ -425,9 +425,7 @@ async function injectExtensionPacks(
     // ambiguity in which path to use. This is an error.
     if (paths.length > 1) {
       throw new Error(
-        `Multiple versions of extension pack '${name}' found: ${paths.join(
-          ", ",
-        )}`,
+        `Multiple versions of model pack '${name}' found: ${paths.join(", ")}`,
       );
     }
     // Add this extension pack as a dependency. It doesn't matter which

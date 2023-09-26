@@ -158,7 +158,7 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
-      await cli.setUseExtensionPacks(false);
+      await cli.setUseModelPacks(false);
       const parsedResults = await runQueryWithExtensions();
       expect(parsedResults).toEqual([1]);
     });
@@ -169,8 +169,8 @@ describeWithCodeQL()("Queries", () => {
       }
 
       console.log(`Starting 'extensions' ${mode}`);
-      console.log("Setting useExtensionPacks to true");
-      await cli.setUseExtensionPacks(true);
+      console.log("Setting useModelPacks to true");
+      await cli.setUseModelPacks(true);
       const parsedResults = await runQueryWithExtensions();
       console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1, 2, 3, 4]);

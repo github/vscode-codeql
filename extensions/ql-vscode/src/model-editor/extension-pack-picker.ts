@@ -26,7 +26,7 @@ export async function pickExtensionPack(
   maxStep: number,
 ): Promise<ExtensionPack | undefined> {
   progress({
-    message: "Resolving extension packs...",
+    message: "Resolving model packs...",
     step: 1,
     maxStep,
   });
@@ -43,7 +43,7 @@ export async function pickExtensionPack(
   );
 
   progress({
-    message: "Creating extension pack...",
+    message: "Creating model pack...",
     step: 2,
     maxStep,
   });
@@ -68,7 +68,7 @@ export async function pickExtensionPack(
   if (!packName) {
     void showAndLogErrorMessage(
       logger,
-      `Could not automatically name extension pack for database ${databaseItem.name}`,
+      `Could not automatically name model pack for database ${databaseItem.name}`,
     );
 
     return undefined;
@@ -89,9 +89,9 @@ export async function pickExtensionPack(
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         logger,
-        `Could not read extension pack ${formatPackName(packName)}`,
+        `Could not read model pack ${formatPackName(packName)}`,
         {
-          fullMessage: `Could not read extension pack ${formatPackName(
+          fullMessage: `Could not read model pack ${formatPackName(
             packName,
           )} at ${existingExtensionPackPaths[0]}: ${getErrorMessage(e)}`,
         },
@@ -108,9 +108,9 @@ export async function pickExtensionPack(
   if (existingExtensionPackPaths?.length > 1) {
     void showAndLogErrorMessage(
       logger,
-      `Extension pack ${formatPackName(packName)} resolves to multiple paths`,
+      `Model pack ${formatPackName(packName)} resolves to multiple paths`,
       {
-        fullMessage: `Extension pack ${formatPackName(
+        fullMessage: `Model pack ${formatPackName(
           packName,
         )} resolves to multiple paths: ${existingExtensionPackPaths.join(
           ", ",
@@ -126,7 +126,7 @@ export async function pickExtensionPack(
   if (await pathExists(packPath)) {
     void showAndLogErrorMessage(
       logger,
-      `Directory ${packPath} already exists for extension pack ${formatPackName(
+      `Directory ${packPath} already exists for model pack ${formatPackName(
         packName,
       )}`,
     );

@@ -310,7 +310,7 @@ export function ModelEditor({
             </LinkIconButton>
             <LinkIconButton onClick={onOpenExtensionPackClick}>
               <span slot="start" className="codicon codicon-package"></span>
-              Open extension pack
+              Open model pack
             </LinkIconButton>
             <LinkIconButton onClick={onSwitchModeClick}>
               <span slot="start" className="codicon codicon-library"></span>

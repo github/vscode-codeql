@@ -187,7 +187,7 @@ export async function autoPickExtensionsDirectory(): Promise<Uri | undefined> {
       workspace.workspaceFolders?.length ?? 0,
       0,
       {
-        name: "CodeQL Extension Packs",
+        name: "CodeQL Model Packs",
         uri: extensionsUri,
       },
     )

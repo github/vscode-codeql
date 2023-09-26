@@ -1254,7 +1254,7 @@ export class CodeQLCliServer implements Disposable {
     if (extensionPacksOnly) {
       if (!(await this.cliConstraints.supportsQlpacksKind())) {
         void this.logger.log(
-          "Warning: Running with extension packs is only supported by CodeQL CLI v2.12.3 or later.",
+          "Warning: Running with model packs is only supported by CodeQL CLI v2.12.3 or later.",
         );
         return {};
       }
@@ -1265,7 +1265,7 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "qlpacks"],
       args,
       `Resolving qlpack information${
-        extensionPacksOnly ? " (extension packs only)" : ""
+        extensionPacksOnly ? " (model packs only)" : ""
       }`,
     );
   }
@@ -1528,15 +1528,15 @@ export class CodeQLCliServer implements Disposable {
     return paths.length ? ["--additional-packs", paths.join(delimiter)] : [];
   }
 
-  public async useExtensionPacks(): Promise<boolean> {
+  public async useModelPacks(): Promise<boolean> {
     return (
-      this.cliConfig.useExtensionPacks &&
+      this.cliConfig.useModelPacks &&
       (await this.cliConstraints.supportsQlpacksKind())
     );
   }
 
-  public async setUseExtensionPacks(useExtensionPacks: boolean) {
-    await this.cliConfig.setUseExtensionPacks(useExtensionPacks);
+  public async setUseModelPacks(useModelPacks: boolean) {
+    await this.cliConfig.setUseModelPacks(useModelPacks);
   }
 }
 

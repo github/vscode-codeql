@@ -331,7 +331,7 @@ describe("pickExtensionPack", () => {
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
-      "Could not read extension pack github/vscode-codeql-java",
+      "Could not read model pack github/vscode-codeql-java",
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
   });
@@ -358,7 +358,7 @@ describe("pickExtensionPack", () => {
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
-      "Could not read extension pack github/vscode-codeql-java",
+      "Could not read model pack github/vscode-codeql-java",
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
   });
@@ -395,7 +395,7 @@ describe("pickExtensionPack", () => {
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
-      "Could not read extension pack github/vscode-codeql-java",
+      "Could not read model pack github/vscode-codeql-java",
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
   });
@@ -435,7 +435,7 @@ describe("pickExtensionPack", () => {
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
-      "Could not read extension pack github/vscode-codeql-java",
+      "Could not read model pack github/vscode-codeql-java",
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
   });

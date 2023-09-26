@@ -576,7 +576,7 @@ export class LocalQueries extends DisposableObject {
   public async getDefaultExtensionPacks(
     additionalPacks: string[],
   ): Promise<string[]> {
-    return (await this.cliServer.useExtensionPacks())
+    return (await this.cliServer.useModelPacks())
       ? Object.keys(await this.cliServer.resolveQlpacks(additionalPacks, true))
       : [];
   }

@@ -67,7 +67,7 @@ describe("autoPickExtensionsDirectory", () => {
       },
       {
         uri: extensionsDirectory,
-        name: "CodeQL Extension Packs",
+        name: "CodeQL Model Packs",
         index: 2,
       },
     ]);
@@ -96,7 +96,7 @@ describe("autoPickExtensionsDirectory", () => {
 
     expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(2, 0, {
-      name: "CodeQL Extension Packs",
+      name: "CodeQL Model Packs",
       uri: extensionsDirectory,
     });
   });
@@ -140,7 +140,7 @@ describe("autoPickExtensionsDirectory", () => {
 
     expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(2, 0, {
-      name: "CodeQL Extension Packs",
+      name: "CodeQL Model Packs",
       uri: extensionsDirectory,
     });
   });
@@ -166,7 +166,7 @@ describe("autoPickExtensionsDirectory", () => {
 
     expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(3, 0, {
-      name: "CodeQL Extension Packs",
+      name: "CodeQL Model Packs",
       uri: extensionsDirectory,
     });
   });
@@ -207,7 +207,7 @@ describe("autoPickExtensionsDirectory", () => {
 
     expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(2, 0, {
-      name: "CodeQL Extension Packs",
+      name: "CodeQL Model Packs",
       uri: extensionsDirectory,
     });
   });
