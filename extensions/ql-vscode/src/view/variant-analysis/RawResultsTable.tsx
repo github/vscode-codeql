@@ -1,16 +1,14 @@
 import * as React from "react";
 import { useState } from "react";
 import { styled } from "styled-components";
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import {
   CellValue,
   RawResultSet,
   ResultSetSchema,
 } from "../../common/bqrs-cli-types";
-import { tryGetRemoteLocation } from "../../common/bqrs-utils";
 import TextButton from "../common/TextButton";
-import { convertNonPrintableChars } from "../../common/text-utils";
-import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
+import { useTelemetryOnChange } from "../common/telemetry";
+import { RawResultCell } from "./RawResultCell";
 
 const numOfResultsInContractedMode = 5;
 
@@ -40,40 +38,6 @@ const TableContainer = styled.div<TableContainerProps>`
   padding: 0.4rem;
 `;
 
-type CellProps = {
-  value: CellValue;
-  fileLinkPrefix: string;
-  sourceLocationPrefix: string;
-};
-
-const sendRawResultsLinkTelemetry = () => sendTelemetry("raw-results-link");
-
-const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
-  switch (typeof value) {
-    case "string":
-    case "number":
-    case "boolean":
-      return <span>{convertNonPrintableChars(value.toString())}</span>;
-    case "object": {
-      const url = tryGetRemoteLocation(
-        value.url,
-        fileLinkPrefix,
-        sourceLocationPrefix,
-      );
-      const safeLabel = convertNonPrintableChars(value.label);
-      if (url) {
-        return (
-          <VSCodeLink onClick={sendRawResultsLinkTelemetry} href={url}>
-            {safeLabel}
-          </VSCodeLink>
-        );
-      } else {
-        return <span>{safeLabel}</span>;
-      }
-    }
-  }
-};
-
 type RowProps = {
   row: CellValue[];
   fileLinkPrefix: string;
@@ -84,7 +48,7 @@ const Row = ({ row, fileLinkPrefix, sourceLocationPrefix }: RowProps) => (
   <>
     {row.map((cell, cellIndex) => (
       <StyledRow key={cellIndex}>
-        <Cell
+        <RawResultCell
           value={cell}
           fileLinkPrefix={fileLinkPrefix}
           sourceLocationPrefix={sourceLocationPrefix}
