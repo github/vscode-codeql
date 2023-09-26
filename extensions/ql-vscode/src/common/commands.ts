@@ -219,6 +219,15 @@ export type LocalDatabasesCommands = {
   "codeQLDatabases.chooseDatabaseGithub": () => Promise<void>;
   "codeQLDatabases.sortByName": () => Promise<void>;
   "codeQLDatabases.sortByDateAdded": () => Promise<void>;
+  "codeQLDatabases.displayAllLanguages": () => Promise<void>;
+  "codeQLDatabases.displayCpp": () => Promise<void>;
+  "codeQLDatabases.displayCsharp": () => Promise<void>;
+  "codeQLDatabases.displayGo": () => Promise<void>;
+  "codeQLDatabases.displayJava": () => Promise<void>;
+  "codeQLDatabases.displayJavascript": () => Promise<void>;
+  "codeQLDatabases.displayPython": () => Promise<void>;
+  "codeQLDatabases.displayRuby": () => Promise<void>;
+  "codeQLDatabases.displaySwift": () => Promise<void>;
 
   // Database panel context menu
   "codeQLDatabases.setCurrentDatabase": (

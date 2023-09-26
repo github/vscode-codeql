@@ -51,6 +51,7 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
+import { QueryLanguage } from "../common/query-language";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -58,6 +59,8 @@ enum SortOrder {
   DateAddedAsc = "DateAddedAsc",
   DateAddedDesc = "DateAddedDesc",
 }
+
+type LanguageFilter = QueryLanguage | "All";
 
 /**
  * Tree data provider for the databases view.
@@ -67,6 +70,7 @@ class DatabaseTreeDataProvider
   implements TreeDataProvider<DatabaseItem>
 {
   private _sortOrder = SortOrder.NameAsc;
+  private _languageFilter = "All" as LanguageFilter;
 
   private readonly _onDidChangeTreeData = this.push(
     new EventEmitter<DatabaseItem | undefined>(),
@@ -131,7 +135,17 @@ class DatabaseTreeDataProvider
 
   public getChildren(element?: DatabaseItem): ProviderResult<DatabaseItem[]> {
     if (element === undefined) {
-      return this.databaseManager.databaseItems.slice(0).sort((db1, db2) => {
+      // Filter items by language
+      const displayItems = this.databaseManager.databaseItems.filter((item) => {
+        if (this.languageFilter === "All") {
+          return true;
+        } else {
+          return item.language === this.languageFilter;
+        }
+      });
+
+      // Sort items
+      return displayItems.slice(0).sort((db1, db2) => {
         switch (this.sortOrder) {
           case SortOrder.NameAsc:
             return db1.name.localeCompare(db2.name, env.language);
@@ -162,6 +176,15 @@ class DatabaseTreeDataProvider
 
   public set sortOrder(newSortOrder: SortOrder) {
     this._sortOrder = newSortOrder;
+    this._onDidChangeTreeData.fire(undefined);
+  }
+
+  public get languageFilter() {
+    return this._languageFilter;
+  }
+
+  public set languageFilter(newLanguageFilter: LanguageFilter) {
+    this._languageFilter = newLanguageFilter;
     this._onDidChangeTreeData.fire(undefined);
   }
 }
@@ -245,6 +268,40 @@ export class DatabaseUI extends DisposableObject {
         this.handleMakeCurrentDatabase.bind(this),
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
+      "codeQLDatabases.displayAllLanguages":
+        this.handleChangeLanguageFilter.bind(this, "All"),
+      "codeQLDatabases.displayCpp": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Cpp,
+      ),
+      "codeQLDatabases.displayCsharp": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.CSharp,
+      ),
+      "codeQLDatabases.displayGo": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Go,
+      ),
+      "codeQLDatabases.displayJava": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Java,
+      ),
+      "codeQLDatabases.displayJavascript": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Javascript,
+      ),
+      "codeQLDatabases.displayPython": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Python,
+      ),
+      "codeQLDatabases.displayRuby": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Ruby,
+      ),
+      "codeQLDatabases.displaySwift": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Swift,
+      ),
       "codeQLDatabases.removeDatabase": createMultiSelectionCommand(
         this.handleRemoveDatabase.bind(this),
       ),
@@ -533,6 +590,10 @@ export class DatabaseUI extends DisposableObject {
     } else {
       this.treeDataProvider.sortOrder = SortOrder.DateAddedAsc;
     }
+  }
+
+  private async handleChangeLanguageFilter(languageFilter: LanguageFilter) {
+    this.treeDataProvider.languageFilter = languageFilter;
   }
 
   private async handleUpgradeCurrentDatabase(): Promise<void> {
