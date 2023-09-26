@@ -166,21 +166,16 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     methods: Record<string, ModeledMethod>,
   ) {
-    const state = this.getState(dbItem);
-
-    const newModeledMethods = {
-      ...methods,
-      ...Object.fromEntries(
-        Object.entries(state.modeledMethods).filter(
-          ([_, value]) => value.type !== "none",
+    this.changeModeledMethods(dbItem, (state) => {
+      const newModeledMethods = {
+        ...methods,
+        ...Object.fromEntries(
+          Object.entries(state.modeledMethods).filter(
+            ([_, value]) => value.type !== "none",
+          ),
         ),
-      ),
-    };
-
-    this.onModeledMethodsChangedEventEmitter.fire({
-      modeledMethods: newModeledMethods,
-      dbUri: dbItem.databaseUri.toString(),
-      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+      };
+      state.modeledMethods = newModeledMethods;
     });
   }
 
@@ -188,33 +183,23 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     methods: Record<string, ModeledMethod>,
   ) {
-    const state = this.getState(dbItem);
-    state.modeledMethods = methods;
-
-    this.onModeledMethodsChangedEventEmitter.fire({
-      modeledMethods: methods,
-      dbUri: dbItem.databaseUri.toString(),
-      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    this.changeModeledMethods(dbItem, (state) => {
+      state.modeledMethods = methods;
     });
   }
 
   public updateModeledMethod(dbItem: DatabaseItem, method: ModeledMethod) {
-    const state = this.getState(dbItem);
-    const methods = { ...state.modeledMethods, [method.signature]: method };
-    this.setModeledMethods(dbItem, methods);
+    this.changeModeledMethods(dbItem, (state) => {
+      state.modeledMethods[method.signature] = method;
+    });
   }
 
   public setModifiedMethods(
     dbItem: DatabaseItem,
     methodSignatures: Set<string>,
   ) {
-    const state = this.getState(dbItem);
-    state.modifiedMethodSignatures = methodSignatures;
-
-    this.onModifiedMethodsChangedEventEmitter.fire({
-      modifiedMethods: state.modifiedMethodSignatures,
-      dbUri: dbItem.databaseUri.toString(),
-      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    this.changeModifiedMethods(dbItem, (state) => {
+      state.modifiedMethodSignatures = methodSignatures;
     });
   }
 
@@ -222,16 +207,10 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     methodSignatures: Iterable<string>,
   ) {
-    const state = this.getState(dbItem);
-
-    for (const signature of methodSignatures) {
-      state.modifiedMethodSignatures.add(signature);
-    }
-
-    this.onModifiedMethodsChangedEventEmitter.fire({
-      modifiedMethods: state.modifiedMethodSignatures,
-      dbUri: dbItem.databaseUri.toString(),
-      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    this.changeModifiedMethods(dbItem, (state) => {
+      for (const signature of methodSignatures) {
+        state.modifiedMethodSignatures.add(signature);
+      }
     });
   }
 
@@ -243,16 +222,10 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     methodSignatures: string[],
   ) {
-    const state = this.getState(dbItem);
-
-    methodSignatures.forEach((signature) => {
-      state.modifiedMethodSignatures.delete(signature);
-    });
-
-    this.onModifiedMethodsChangedEventEmitter.fire({
-      modifiedMethods: state.modifiedMethodSignatures,
-      dbUri: dbItem.databaseUri.toString(),
-      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    this.changeModifiedMethods(dbItem, (state) => {
+      methodSignatures.forEach((signature) => {
+        state.modifiedMethodSignatures.delete(signature);
+      });
     });
   }
 
@@ -264,5 +237,35 @@ export class ModelingStore extends DisposableObject {
     }
 
     return this.state.get(databaseItem.databaseUri.toString())!;
+  }
+
+  private changeModifiedMethods(
+    dbItem: DatabaseItem,
+    updateState: (state: DbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.onModifiedMethodsChangedEventEmitter.fire({
+      modifiedMethods: state.modifiedMethodSignatures,
+      dbUri: dbItem.databaseUri.toString(),
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    });
+  }
+
+  private changeModeledMethods(
+    dbItem: DatabaseItem,
+    updateState: (state: DbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.onModeledMethodsChangedEventEmitter.fire({
+      modeledMethods: state.modeledMethods,
+      dbUri: dbItem.databaseUri.toString(),
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    });
   }
 }
