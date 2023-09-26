@@ -5,6 +5,7 @@ import { CellValue } from "../../common/bqrs-cli-types";
 import { sendTelemetry } from "../common/telemetry";
 import { convertNonPrintableChars } from "../../common/text-utils";
 import { tryGetRemoteLocation } from "../../common/bqrs-utils";
+import { RawNumberValue } from "../common/RawNumberValue";
 
 type CellProps = {
   value: CellValue;
@@ -20,9 +21,11 @@ export const RawResultCell = ({
   sourceLocationPrefix,
 }: CellProps) => {
   switch (typeof value) {
-    case "string":
-    case "number":
     case "boolean":
+      return <span>{value.toString()}</span>;
+    case "number":
+      return <RawNumberValue value={value} />;
+    case "string":
       return <span>{convertNonPrintableChars(value.toString())}</span>;
     case "object": {
       const url = tryGetRemoteLocation(
