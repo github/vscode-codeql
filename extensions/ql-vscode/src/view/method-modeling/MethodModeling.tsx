@@ -1,9 +1,7 @@
 import * as React from "react";
 import { styled } from "styled-components";
-import {
-  ModelingStatus,
-  ModelingStatusIndicator,
-} from "../model-editor/ModelingStatusIndicator";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator";
 import { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
 import { ModeledMethod } from "../../model-editor/modeled-method";
