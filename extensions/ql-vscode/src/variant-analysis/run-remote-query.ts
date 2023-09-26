@@ -37,15 +37,7 @@ import {
 import { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
-
-interface QlPack {
-  name: string;
-  version: string;
-  library?: boolean;
-  dependencies: { [key: string]: string };
-  defaultSuite?: Array<Record<string, unknown>>;
-  defaultSuiteFile?: string;
-}
+import { QlPackFile } from "../packaging/qlpack-file";
 
 /**
  * Well-known names for the query pack used by the server.
@@ -395,7 +387,7 @@ async function fixPackFile(
       )} file in '${queryPackDir}'`,
     );
   }
-  const qlpack = load(await readFile(packPath, "utf8")) as QlPack;
+  const qlpack = load(await readFile(packPath, "utf8")) as QlPackFile;
 
   updateDefaultSuite(qlpack, packRelativePath);
   removeWorkspaceRefs(qlpack);
@@ -416,7 +408,11 @@ async function injectExtensionPacks(
       )} file in '${queryPackDir}'`,
     );
   }
-  const syntheticQueryPack = load(await readFile(qlpackFile, "utf8")) as QlPack;
+  const syntheticQueryPack = load(
+    await readFile(qlpackFile, "utf8"),
+  ) as QlPackFile;
+
+  const dependencies = syntheticQueryPack.dependencies ?? {};
 
   const extensionPacks = await cliServer.resolveQlpacks(workspaceFolders, true);
   Object.entries(extensionPacks).forEach(([name, paths]) => {
@@ -433,13 +429,16 @@ async function injectExtensionPacks(
     // Add this extension pack as a dependency. It doesn't matter which
     // version we specify, since we are guaranteed that the extension pack
     // is resolved from source at the given path.
-    syntheticQueryPack.dependencies[name] = "*";
+    dependencies[name] = "*";
   });
+
+  syntheticQueryPack.dependencies = dependencies;
+
   await writeFile(qlpackFile, dump(syntheticQueryPack));
   await cliServer.clearCache();
 }
 
-function updateDefaultSuite(qlpack: QlPack, packRelativePath: string) {
+function updateDefaultSuite(qlpack: QlPackFile, packRelativePath: string) {
   delete qlpack.defaultSuiteFile;
   qlpack.defaultSuite = generateDefaultSuite(packRelativePath);
 }
@@ -541,10 +540,12 @@ async function getControllerRepoFromApi(
   }
 }
 
-export function removeWorkspaceRefs(qlpack: {
-  dependencies: Record<string, string>;
-}) {
-  for (const [key, value] of Object.entries(qlpack.dependencies || {})) {
+export function removeWorkspaceRefs(qlpack: QlPackFile) {
+  if (!qlpack.dependencies) {
+    return;
+  }
+
+  for (const [key, value] of Object.entries(qlpack.dependencies)) {
     if (value === "${workspace}") {
       qlpack.dependencies[key] = "*";
     }
