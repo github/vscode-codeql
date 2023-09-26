@@ -2,7 +2,7 @@ import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { DatabaseItem } from "../databases/local-databases";
-import { Method } from "./method";
+import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 
@@ -12,6 +12,8 @@ interface DbModelingState {
   hideModeledMethods: boolean;
   modeledMethods: Record<string, ModeledMethod>;
   modifiedMethodSignatures: Set<string>;
+  selectedMethod: Method | undefined;
+  selectedUsage: Usage | undefined;
 }
 
 interface MethodsChangedEvent {
@@ -37,6 +39,14 @@ interface ModifiedMethodsChangedEvent {
   isActiveDb: boolean;
 }
 
+interface SelectedMethodChangedEvent {
+  databaseItem: DatabaseItem;
+  method: Method;
+  usage: Usage;
+  modeledMethod: ModeledMethod | undefined;
+  isModified: boolean;
+}
+
 export class ModelingStore extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
   public readonly onDbClosed: AppEvent<string>;
@@ -44,6 +54,7 @@ export class ModelingStore extends DisposableObject {
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
   public readonly onModeledMethodsChanged: AppEvent<ModeledMethodsChangedEvent>;
   public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
+  public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
 
   private readonly state: Map<string, DbModelingState>;
   private activeDb: string | undefined;
@@ -54,6 +65,7 @@ export class ModelingStore extends DisposableObject {
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
   private readonly onModeledMethodsChangedEventEmitter: AppEventEmitter<ModeledMethodsChangedEvent>;
   private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
+  private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
 
   constructor(app: App) {
     super();
@@ -92,6 +104,12 @@ export class ModelingStore extends DisposableObject {
     );
     this.onModifiedMethodsChanged =
       this.onModifiedMethodsChangedEventEmitter.event;
+
+    this.onSelectedMethodChangedEventEmitter = this.push(
+      app.createEventEmitter<SelectedMethodChangedEvent>(),
+    );
+    this.onSelectedMethodChanged =
+      this.onSelectedMethodChangedEventEmitter.event;
   }
 
   public initializeStateForDb(databaseItem: DatabaseItem) {
@@ -102,6 +120,8 @@ export class ModelingStore extends DisposableObject {
       hideModeledMethods: INITIAL_HIDE_MODELED_METHODS_VALUE,
       modeledMethods: {},
       modifiedMethodSignatures: new Set(),
+      selectedMethod: undefined,
+      selectedUsage: undefined,
     });
   }
 
@@ -226,6 +246,21 @@ export class ModelingStore extends DisposableObject {
       methodSignatures.forEach((signature) => {
         state.modifiedMethodSignatures.delete(signature);
       });
+    });
+  }
+
+  public setSelectedMethod(dbItem: DatabaseItem, method: Method, usage: Usage) {
+    const dbState = this.getState(dbItem);
+
+    dbState.selectedMethod = method;
+    dbState.selectedUsage = usage;
+
+    this.onSelectedMethodChangedEventEmitter.fire({
+      databaseItem: dbItem,
+      method,
+      usage,
+      modeledMethod: dbState.modeledMethods[method.signature],
+      isModified: dbState.modifiedMethodSignatures.has(method.signature),
     });
   }
 

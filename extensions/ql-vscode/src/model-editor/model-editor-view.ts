@@ -26,7 +26,6 @@ import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import { runFlowModelQueries } from "./flow-model-queries";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
-import { showResolvableLocation } from "../databases/local-databases/locations";
 import { redactableError } from "../common/errors";
 import {
   externalApiQueriesProgressMaxStep,
@@ -61,10 +60,6 @@ export class ModelEditorView extends AbstractWebview<
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
     private mode: Mode,
-    private readonly showMethod: (
-      method: Method,
-      usage: Usage,
-    ) => Promise<void>,
   ) {
     super(app);
 
@@ -359,8 +354,7 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   protected async handleJumpToUsage(method: Method, usage: Usage) {
-    await this.showMethod(method, usage);
-    await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
+    this.modelingStore.setSelectedMethod(this.databaseItem, method, usage);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
@@ -511,7 +505,6 @@ export class ModelEditorView extends AbstractWebview<
         addedDatabase,
         modelFile,
         Mode.Framework,
-        this.showMethod,
       );
       await view.openView();
     });

@@ -31,7 +31,6 @@ describe("ModelEditorView", () => {
     dataExtensions: ["models/**/*.yml"],
   };
   const mode = Mode.Application;
-  const showMethod = jest.fn();
 
   let view: ModelEditorView;
 
@@ -47,7 +46,6 @@ describe("ModelEditorView", () => {
       databaseItem,
       extensionPack,
       mode,
-      showMethod,
     );
   });
 

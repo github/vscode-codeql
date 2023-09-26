@@ -15,11 +15,11 @@ import { isQueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Mode } from "./shared/mode";
-import { showResolvableLocation } from "../databases/local-databases/locations";
 import { Method, Usage } from "./method";
 import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 import { ModelingStore } from "./modeling-store";
+import { showResolvableLocation } from "../databases/local-databases/locations";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -43,6 +43,8 @@ export class ModelEditorModule extends DisposableObject {
       new MethodsUsagePanel(this.modelingStore, cliServer),
     );
     this.methodModelingPanel = this.push(new MethodModelingPanel(app));
+
+    this.registerToModelingStoreEvents();
   }
 
   public static async initialize(
@@ -151,7 +153,6 @@ export class ModelEditorModule extends DisposableObject {
               db,
               modelFile,
               Mode.Application,
-              this.showMethod.bind(this),
             );
 
             this.modelingStore.onDbClosed(async (dbUri) => {
@@ -179,8 +180,7 @@ export class ModelEditorModule extends DisposableObject {
         usage: Usage,
         databaseItem: DatabaseItem,
       ) => {
-        await this.methodModelingPanel.setMethod(method);
-        await showResolvableLocation(usage.url, databaseItem, this.app.logger);
+        this.modelingStore.setSelectedMethod(databaseItem, method, usage);
       },
     };
   }
@@ -189,8 +189,21 @@ export class ModelEditorModule extends DisposableObject {
     await ensureDir(this.queryStorageDir);
   }
 
-  private async showMethod(method: Method, usage: Usage): Promise<void> {
+  private registerToModelingStoreEvents(): void {
+    this.push(
+      this.modelingStore.onSelectedMethodChanged(async (event) => {
+        await this.showMethod(event.databaseItem, event.method, event.usage);
+      }),
+    );
+  }
+
+  private async showMethod(
+    databaseItem: DatabaseItem,
+    method: Method,
+    usage: Usage,
+  ): Promise<void> {
     await this.methodsUsagePanel.revealItem(usage);
     await this.methodModelingPanel.setMethod(method);
+    await showResolvableLocation(usage.url, databaseItem, this.app.logger);
   }
 }
