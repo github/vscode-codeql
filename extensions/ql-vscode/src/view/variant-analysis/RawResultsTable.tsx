@@ -1,25 +1,12 @@
 import * as React from "react";
 import { useState } from "react";
 import { styled } from "styled-components";
-import {
-  CellValue,
-  RawResultSet,
-  ResultSetSchema,
-} from "../../common/bqrs-cli-types";
+import { RawResultSet, ResultSetSchema } from "../../common/bqrs-cli-types";
 import TextButton from "../common/TextButton";
 import { useTelemetryOnChange } from "../common/telemetry";
-import { RawResultCell } from "./RawResultCell";
+import { RawResultRow } from "./RawResultRow";
 
 const numOfResultsInContractedMode = 5;
-
-const StyledRow = styled.div`
-  border-color: var(--vscode-editor-snippetFinalTabstopHighlightBorder);
-  border-style: solid;
-  justify-content: center;
-  align-items: center;
-  padding: 0.4rem;
-  word-break: break-word;
-`;
 
 type TableContainerProps = {
   columnCount: number;
@@ -37,26 +24,6 @@ const TableContainer = styled.div<TableContainerProps>`
   max-width: 45rem;
   padding: 0.4rem;
 `;
-
-type RowProps = {
-  row: CellValue[];
-  fileLinkPrefix: string;
-  sourceLocationPrefix: string;
-};
-
-const Row = ({ row, fileLinkPrefix, sourceLocationPrefix }: RowProps) => (
-  <>
-    {row.map((cell, cellIndex) => (
-      <StyledRow key={cellIndex}>
-        <RawResultCell
-          value={cell}
-          fileLinkPrefix={fileLinkPrefix}
-          sourceLocationPrefix={sourceLocationPrefix}
-        />
-      </StyledRow>
-    ))}
-  </>
-);
 
 type RawResultsTableProps = {
   schema: ResultSetSchema;
@@ -86,7 +53,7 @@ const RawResultsTable = ({
     <>
       <TableContainer columnCount={schema.columns.length}>
         {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
-          <Row
+          <RawResultRow
             key={rowIndex}
             row={row}
             fileLinkPrefix={fileLinkPrefix}
