@@ -8,13 +8,19 @@ import { extLogger } from "../../common/logging/vscode/loggers";
 import { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { Method } from "../method";
+import { DisposableObject } from "../../common/disposable-object";
 
-export class MethodModelingViewProvider implements WebviewViewProvider {
+export class MethodModelingViewProvider
+  extends DisposableObject
+  implements WebviewViewProvider
+{
   public static readonly viewType = "codeQLMethodModeling";
 
   private webviewView: vscode.WebviewView | undefined = undefined;
 
-  constructor(private readonly app: App) {}
+  constructor(private readonly app: App) {
+    super();
+  }
 
   /**
    * This is called when a view first becomes visible. This may happen when the view is

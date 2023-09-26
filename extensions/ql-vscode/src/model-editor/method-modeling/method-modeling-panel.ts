@@ -11,6 +11,7 @@ export class MethodModelingPanel extends DisposableObject {
     super();
 
     this.provider = new MethodModelingViewProvider(app);
+    this.push(this.provider);
     this.push(
       window.registerWebviewViewProvider(
         MethodModelingViewProvider.viewType,
