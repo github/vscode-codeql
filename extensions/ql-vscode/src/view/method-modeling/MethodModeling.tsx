@@ -6,6 +6,7 @@ import { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { MethodModelingInputs } from "./MethodModelingInputs";
+import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
 const Container = styled.div`
   padding: 0.3rem;
@@ -17,6 +18,8 @@ const Title = styled.div`
   padding-bottom: 0.3rem;
   font-size: 0.7rem;
   text-transform: uppercase;
+  display: flex;
+  justify-content: space-between;
 `;
 
 const DependencyContainer = styled.div`
@@ -48,6 +51,7 @@ export const MethodModeling = ({
       <Title>
         {method.packageName}
         {method.libraryVersion && <>@{method.libraryVersion}</>}
+        {modelingStatus === "unsaved" ? <VSCodeTag>Unsaved</VSCodeTag> : null}
       </Title>
       <DependencyContainer>
         <ModelingStatusIndicator status={modelingStatus} />
