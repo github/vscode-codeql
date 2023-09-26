@@ -4,11 +4,12 @@ import { StringDecoder } from "string_decoder";
 /**
  * Buffer to hold state used when splitting a text stream into lines.
  */
-class SplitBuffer {
+export class SplitBuffer {
   private readonly decoder = new StringDecoder("utf8");
   private readonly maxSeparatorLength: number;
   private buffer = "";
   private searchIndex = 0;
+  private ended = false;
 
   constructor(private readonly separators: readonly string[]) {
     this.maxSeparatorLength = separators
@@ -29,7 +30,7 @@ class SplitBuffer {
    */
   public end(): void {
     this.buffer += this.decoder.end();
-    this.buffer += this.separators[0]; // Append a separator to the end to ensure the last line is returned.
+    this.ended = true;
   }
 
   /**
@@ -56,7 +57,14 @@ class SplitBuffer {
    * line is available.
    */
   public getNextLine(): string | undefined {
-    while (this.searchIndex <= this.buffer.length - this.maxSeparatorLength) {
+    // If we haven't received all of the input yet, don't search too close to the end of the buffer,
+    // or we could match a separator that's split across two chunks. For example, we could see "\r"
+    // at the end of the buffer and match that, even though we were about to receive a "\n" right
+    // after it.
+    const maxSearchIndex = this.ended
+      ? this.buffer.length - 1
+      : this.buffer.length - this.maxSeparatorLength;
+    while (this.searchIndex <= maxSearchIndex) {
       for (const separator of this.separators) {
         if (SplitBuffer.startsWith(this.buffer, separator, this.searchIndex)) {
           const line = this.buffer.slice(0, this.searchIndex);
@@ -68,7 +76,15 @@ class SplitBuffer {
       this.searchIndex++;
     }
 
-    return undefined;
+    if (this.ended && this.buffer.length > 0) {
+      // If we still have some text left in the buffer, return it as the last line.
+      const line = this.buffer;
+      this.buffer = "";
+      this.searchIndex = 0;
+      return line;
+    } else {
+      return undefined;
+    }
   }
 }
 
