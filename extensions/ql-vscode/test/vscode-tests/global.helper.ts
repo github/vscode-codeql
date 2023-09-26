@@ -11,6 +11,7 @@ import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query
 import { CodeQLExtensionInterface } from "../../src/extension";
 import { importArchiveDatabase } from "../../src/databases/database-fetcher";
 import { createMockCommandManager } from "../__mocks__/commandsMock";
+import { QlPackFile } from "../../src/packaging/qlpack-file";
 
 // This file contains helpers shared between tests that work with an activated extension.
 
@@ -89,7 +90,9 @@ export async function fixWorkspaceReferences(
 ): Promise<Record<string, string> | undefined> {
   if (!(await cli.cliConstraints.supportsWorkspaceReferences())) {
     // remove the workspace references from the qlpack
-    const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8"));
+    const qlpack = load(
+      readFileSync(qlpackFileWithWorkspaceRefs, "utf8"),
+    ) as QlPackFile;
     const originalDeps = { ...qlpack.dependencies };
     removeWorkspaceRefs(qlpack);
     writeFileSync(qlpackFileWithWorkspaceRefs, dump(qlpack));
@@ -113,7 +116,9 @@ export async function restoreWorkspaceReferences(
   if (!originalDeps) {
     return;
   }
-  const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8"));
+  const qlpack = load(
+    readFileSync(qlpackFileWithWorkspaceRefs, "utf8"),
+  ) as QlPackFile;
   qlpack.dependencies = originalDeps;
   writeFileSync(qlpackFileWithWorkspaceRefs, dump(qlpack));
 }

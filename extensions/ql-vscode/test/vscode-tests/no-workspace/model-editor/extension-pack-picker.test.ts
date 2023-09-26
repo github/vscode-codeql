@@ -363,6 +363,43 @@ describe("pickExtensionPack", () => {
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
   });
 
+  it("shows an error when the pack YAML does not contain name", async () => {
+    const tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+
+    const cliServer = mockCliServer({
+      "github/vscode-codeql-java": [tmpDir.path],
+    });
+
+    await outputFile(
+      join(tmpDir.path, "codeql-pack.yml"),
+      dumpYaml({
+        version: "0.0.0",
+        library: true,
+        extensionTargets: {
+          "codeql/java-all": "*",
+        },
+        dataExtensions: ["models/**/*.yml"],
+      }),
+    );
+
+    expect(
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
+    ).toEqual(undefined);
+    expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
+      "Could not read extension pack github/vscode-codeql-java",
+    );
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+  });
+
   it("shows an error when the pack YAML does not contain dataExtensions", async () => {
     const tmpDir = await dir({
       unsafeCleanup: true,

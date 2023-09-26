@@ -13,6 +13,7 @@ import { redactableError } from "../common/errors";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { SuiteInstruction } from "../packaging/suite-instruction";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,
@@ -50,12 +51,12 @@ async function resolveQueriesFromPacks(
       postfix: ".qls",
     })
   ).path;
-  const suiteYaml = [];
+  const suiteYaml: SuiteInstruction[] = [];
   for (const qlpack of qlpacks) {
     suiteYaml.push({
       from: qlpack,
       queries: ".",
-      include: constraints,
+      include: constraints as Record<string, string[]>,
     });
   }
   await writeFile(
