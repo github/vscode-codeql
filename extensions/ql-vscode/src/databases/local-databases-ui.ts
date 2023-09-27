@@ -302,6 +302,26 @@ export class DatabaseUI extends DisposableObject {
         this,
         QueryLanguage.Swift,
       ),
+      "codeQLDatabases.displayAllLanguagesSelected":
+        this.handleChangeLanguageFilter.bind(this, "All"),
+      "codeQLDatabases.displayCppSelected":
+        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Cpp),
+      "codeQLDatabases.displayCsharpSelected":
+        this.handleChangeLanguageFilter.bind(this, QueryLanguage.CSharp),
+      "codeQLDatabases.displayGoSelected": this.handleChangeLanguageFilter.bind(
+        this,
+        QueryLanguage.Go,
+      ),
+      "codeQLDatabases.displayJavaSelected":
+        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Java),
+      "codeQLDatabases.displayJavascriptSelected":
+        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Javascript),
+      "codeQLDatabases.displayPythonSelected":
+        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Python),
+      "codeQLDatabases.displayRubySelected":
+        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Ruby),
+      "codeQLDatabases.displaySwiftSelected":
+        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Swift),
       "codeQLDatabases.removeDatabase": createMultiSelectionCommand(
         this.handleRemoveDatabase.bind(this),
       ),
@@ -594,6 +614,11 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChangeLanguageFilter(languageFilter: LanguageFilter) {
     this.treeDataProvider.languageFilter = languageFilter;
+    await this.app.commands.execute(
+      "setContext",
+      "codeQLDatabases.languageFilter",
+      languageFilter,
+    );
   }
 
   private async handleUpgradeCurrentDatabase(): Promise<void> {
