@@ -46,7 +46,7 @@ select endpoint, endpoint.getNamespace(), endpoint.getTypeName(), endpoint.getNa
 `,
   dependencies: {
     "ApplicationModeEndpointsQuery.qll": `private import csharp
-private import semmle.code.csharp.dataflow.ExternalFlow
+private import semmle.code.csharp.dataflow.ExternalFlow as ExternalFlow
 private import semmle.code.csharp.dataflow.internal.DataFlowDispatch as DataFlowDispatch
 private import semmle.code.csharp.dataflow.internal.DataFlowPrivate
 private import semmle.code.csharp.dataflow.internal.TaintTrackingPrivate
@@ -85,14 +85,13 @@ class ExternalEndpoint extends Endpoint {
   }
 
   override predicate isSource() {
-    this.getAnOutput() instanceof RemoteFlowSource or sourceNode(this.getAnOutput(), _)
+    this.getAnOutput() instanceof RemoteFlowSource or ExternalFlow::sourceNode(this.getAnOutput(), _)
   }
 
-  override predicate isSink() { sinkNode(this.getAnInput(), _) }
+  override predicate isSink() { ExternalFlow::sinkNode(this.getAnInput(), _) }
 }
 `,
     "FrameworkModeEndpointsQuery.qll": `private import csharp
-private import semmle.code.csharp.dataflow.ExternalFlow
 private import semmle.code.csharp.frameworks.Test
 private import ModelEditor
 
