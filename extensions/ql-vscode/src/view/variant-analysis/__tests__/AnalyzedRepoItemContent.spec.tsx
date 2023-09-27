@@ -71,6 +71,12 @@ describe(AnalyzedRepoItemContent.name, () => {
             {
               kind: "i",
             },
+            {
+              kind: "s",
+            },
+            {
+              kind: "b",
+            },
           ],
         },
         resultSet: {
@@ -81,9 +87,18 @@ describe(AnalyzedRepoItemContent.name, () => {
               {
                 kind: "i",
               },
+              {
+                kind: "s",
+              },
+              {
+                kind: "b",
+              },
             ],
           },
-          rows: [[60688]],
+          rows: [
+            [60688, "foo", true],
+            [5, "bar", false],
+          ],
         },
         fileLinkPrefix:
           "https://github.com/octodemo/hello-world-1/blob/59a2a6c7d9dde7a6ecb77c2f7e8197d6925c143b",
@@ -92,7 +107,12 @@ describe(AnalyzedRepoItemContent.name, () => {
       },
     });
 
-    expect(screen.getByText("60688")).toBeInTheDocument();
+    expect(screen.getByText("60,688")).toBeInTheDocument();
+    expect(screen.getByText("foo")).toBeInTheDocument();
+    expect(screen.getByText("true")).toBeInTheDocument();
+    expect(screen.getByText("5")).toBeInTheDocument();
+    expect(screen.getByText("bar")).toBeInTheDocument();
+    expect(screen.getByText("false")).toBeInTheDocument();
   });
 
   it("renders the failed state", () => {
