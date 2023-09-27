@@ -9,6 +9,7 @@ import { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { Method } from "../method";
 import { DisposableObject } from "../../common/disposable-object";
+import { ModelingStore } from "../modeling-store";
 
 export class MethodModelingViewProvider
   extends DisposableObject
@@ -18,7 +19,12 @@ export class MethodModelingViewProvider
 
   private webviewView: vscode.WebviewView | undefined = undefined;
 
-  constructor(private readonly app: App) {
+  private method: Method | undefined = undefined;
+
+  constructor(
+    private readonly app: App,
+    private readonly modelingStore: ModelingStore,
+  ) {
     super();
   }
 
@@ -51,9 +57,13 @@ export class MethodModelingViewProvider
     webviewView.webview.onDidReceiveMessage(async (msg) => this.onMessage(msg));
 
     this.webviewView = webviewView;
+
+    this.registerToModelingStoreEvents();
   }
 
   public async setMethod(method: Method): Promise<void> {
+    this.method = method;
+
     if (this.webviewView) {
       await this.webviewView.webview.postMessage({
         t: "setMethod",
@@ -64,6 +74,18 @@ export class MethodModelingViewProvider
 
   private async onMessage(msg: FromMethodModelingMessage): Promise<void> {
     switch (msg.t) {
+      case "setModeledMethod": {
+        const activeState = this.modelingStore.getStateForActiveDb();
+        if (!activeState) {
+          throw new Error("No active state found in modeling store");
+        }
+        this.modelingStore.updateModeledMethod(
+          activeState.databaseItem,
+          msg.method,
+        );
+        break;
+      }
+
       case "telemetry": {
         telemetryListener?.sendUIInteraction(msg.action);
         break;
@@ -78,5 +100,46 @@ export class MethodModelingViewProvider
         );
         break;
     }
+  }
+
+  private registerToModelingStoreEvents(): void {
+    this.modelingStore.onModeledMethodsChanged(async (e) => {
+      if (this.webviewView && e.isActiveDb) {
+        const modeledMethod = e.modeledMethods[this.method?.signature ?? ""];
+        if (modeledMethod) {
+          await this.webviewView.webview.postMessage({
+            t: "setModeledMethod",
+            method: modeledMethod,
+          });
+        }
+      }
+    });
+
+    this.modelingStore.onModifiedMethodsChanged(async (e) => {
+      if (
+        this.webviewView &&
+        e.isActiveDb &&
+        this.method &&
+        this.method.signature
+      ) {
+        const isModified = e.modifiedMethods.has(this.method.signature);
+        await this.webviewView.webview.postMessage({
+          t: "setMethodModified",
+          isModified,
+        });
+      }
+    });
+
+    this.modelingStore.onSelectedMethodChanged(async (e) => {
+      if (this.webviewView) {
+        this.method = e.method;
+        await this.webviewView.webview.postMessage({
+          t: "setSelectedMethod",
+          method: e.method,
+          modeledMethod: e.modeledMethod,
+          isModified: e.isModified,
+        });
+      }
+    });
   }
 }

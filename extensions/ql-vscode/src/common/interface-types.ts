@@ -599,11 +599,28 @@ export type FromModelEditorMessage =
 
 export type FromMethodModelingMessage =
   | TelemetryMessage
-  | UnhandledErrorMessage;
+  | UnhandledErrorMessage
+  | SetModeledMethodMessage;
 
 interface SetMethodMessage {
   t: "setMethod";
   method: Method;
 }
 
-export type ToMethodModelingMessage = SetMethodMessage;
+interface SetMethodModifiedMessage {
+  t: "setMethodModified";
+  isModified: boolean;
+}
+
+interface SetSelectedMethodMessage {
+  t: "setSelectedMethod";
+  method: Method;
+  modeledMethod: ModeledMethod;
+  isModified: boolean;
+}
+
+export type ToMethodModelingMessage =
+  | SetMethodMessage
+  | SetModeledMethodMessage
+  | SetMethodModifiedMessage
+  | SetSelectedMethodMessage;
