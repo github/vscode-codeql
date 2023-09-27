@@ -52,6 +52,7 @@ import {
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
 import { QueryLanguage } from "../common/query-language";
+import { LanguageContextStore } from "../language-context-store";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -59,8 +60,6 @@ enum SortOrder {
   DateAddedAsc = "DateAddedAsc",
   DateAddedDesc = "DateAddedDesc",
 }
-
-type LanguageFilter = QueryLanguage | "All";
 
 /**
  * Tree data provider for the databases view.
@@ -70,14 +69,16 @@ class DatabaseTreeDataProvider
   implements TreeDataProvider<DatabaseItem>
 {
   private _sortOrder = SortOrder.NameAsc;
-  private _languageFilter = "All" as LanguageFilter;
 
   private readonly _onDidChangeTreeData = this.push(
     new EventEmitter<DatabaseItem | undefined>(),
   );
   private currentDatabaseItem: DatabaseItem | undefined;
 
-  constructor(private databaseManager: DatabaseManager) {
+  constructor(
+    private databaseManager: DatabaseManager,
+    private languageContext: LanguageContextStore,
+  ) {
     super();
 
     this.currentDatabaseItem = databaseManager.currentDatabaseItem;
@@ -91,6 +92,11 @@ class DatabaseTreeDataProvider
       this.databaseManager.onDidChangeCurrentDatabaseItem(
         this.handleDidChangeCurrentDatabaseItem.bind(this),
       ),
+    );
+    this.push(
+      this.languageContext.onLanguageContextChanged(async () => {
+        this._onDidChangeTreeData.fire(undefined);
+      }),
     );
   }
 
@@ -137,11 +143,7 @@ class DatabaseTreeDataProvider
     if (element === undefined) {
       // Filter items by language
       const displayItems = this.databaseManager.databaseItems.filter((item) => {
-        if (this.languageFilter === "All") {
-          return true;
-        } else {
-          return item.language === this.languageFilter;
-        }
+        return this.languageContext.shouldInclude(item.language);
       });
 
       // Sort items
@@ -176,15 +178,6 @@ class DatabaseTreeDataProvider
 
   public set sortOrder(newSortOrder: SortOrder) {
     this._sortOrder = newSortOrder;
-    this._onDidChangeTreeData.fire(undefined);
-  }
-
-  public get languageFilter() {
-    return this._languageFilter;
-  }
-
-  public set languageFilter(newLanguageFilter: LanguageFilter) {
-    this._languageFilter = newLanguageFilter;
     this._onDidChangeTreeData.fire(undefined);
   }
 }
@@ -223,6 +216,7 @@ export class DatabaseUI extends DisposableObject {
   public constructor(
     private app: App,
     private databaseManager: DatabaseManager,
+    private languageContext: LanguageContextStore,
     private readonly queryServer: QueryRunner | undefined,
     private readonly storagePath: string,
     readonly extensionPath: string,
@@ -230,7 +224,7 @@ export class DatabaseUI extends DisposableObject {
     super();
 
     this.treeDataProvider = this.push(
-      new DatabaseTreeDataProvider(databaseManager),
+      new DatabaseTreeDataProvider(databaseManager, languageContext),
     );
     this.push(
       window.createTreeView("codeQLDatabases", {
@@ -269,7 +263,7 @@ export class DatabaseUI extends DisposableObject {
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
       "codeQLDatabases.displayAllLanguages":
-        this.handleChangeLanguageFilter.bind(this, "All"),
+        this.handleClearLanguageFilter.bind(this),
       "codeQLDatabases.displayCpp": this.handleChangeLanguageFilter.bind(
         this,
         QueryLanguage.Cpp,
@@ -592,8 +586,12 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private async handleChangeLanguageFilter(languageFilter: LanguageFilter) {
-    this.treeDataProvider.languageFilter = languageFilter;
+  private async handleClearLanguageFilter() {
+    this.languageContext.clearLanguageContext();
+  }
+
+  private async handleChangeLanguageFilter(languageFilter: QueryLanguage) {
+    this.languageContext.setLanguageContext(languageFilter);
   }
 
   private async handleUpgradeCurrentDatabase(): Promise<void> {
