@@ -58,6 +58,7 @@ export class MethodModelingViewProvider
 
     this.webviewView = webviewView;
 
+    this.setInitialState();
     this.registerToModelingStoreEvents();
   }
 
@@ -68,6 +69,18 @@ export class MethodModelingViewProvider
       await this.webviewView.webview.postMessage({
         t: "setMethod",
         method,
+      });
+    }
+  }
+
+  private setInitialState(): void {
+    const selectedMethod = this.modelingStore.getSelectedMethodDetails();
+    if (selectedMethod) {
+      void this.webviewView?.webview.postMessage({
+        t: "setSelectedMethod",
+        method: selectedMethod.method,
+        modeledMethod: selectedMethod.modeledMethod,
+        isModified: selectedMethod.isModified,
       });
     }
   }

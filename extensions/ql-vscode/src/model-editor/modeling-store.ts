@@ -264,6 +264,27 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
+  public getSelectedMethodDetails() {
+    const dbState = this.getStateForActiveDb();
+    if (!dbState) {
+      throw new Error("No active state found in modeling store");
+    }
+
+    const selectedMethod = dbState.selectedMethod;
+    if (!selectedMethod) {
+      return undefined;
+    }
+
+    return {
+      method: selectedMethod,
+      usage: dbState.selectedUsage,
+      modeledMethod: dbState.modeledMethods[selectedMethod.signature ?? ""],
+      isModified: dbState.modifiedMethodSignatures.has(
+        selectedMethod.signature ?? "",
+      ),
+    };
+  }
+
   private getState(databaseItem: DatabaseItem): DbModelingState {
     if (!this.state.has(databaseItem.databaseUri.toString())) {
       throw Error(
