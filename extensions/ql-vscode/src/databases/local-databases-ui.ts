@@ -60,7 +60,7 @@ enum SortOrder {
   DateAddedDesc = "DateAddedDesc",
 }
 
-type LanguageFilter = QueryLanguage | "All";
+type LanguageFilter = QueryLanguage | "all";
 
 /**
  * Tree data provider for the databases view.
@@ -70,7 +70,7 @@ class DatabaseTreeDataProvider
   implements TreeDataProvider<DatabaseItem>
 {
   private _sortOrder = SortOrder.NameAsc;
-  private _languageFilter = "All" as LanguageFilter;
+  private _languageFilter = "all" as LanguageFilter;
 
   private readonly _onDidChangeTreeData = this.push(
     new EventEmitter<DatabaseItem | undefined>(),
@@ -137,7 +137,7 @@ class DatabaseTreeDataProvider
     if (element === undefined) {
       // Filter items by language
       const displayItems = this.databaseManager.databaseItems.filter((item) => {
-        if (this.languageFilter === "All") {
+        if (this.languageFilter === "all") {
           return true;
         } else {
           return item.language === this.languageFilter;
@@ -269,7 +269,7 @@ export class DatabaseUI extends DisposableObject {
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
       "codeQLDatabases.displayAllLanguages":
-        this.handleChangeLanguageFilter.bind(this, "All"),
+        this.handleChangeLanguageFilter.bind(this, "all"),
       "codeQLDatabases.displayCpp": this.handleChangeLanguageFilter.bind(
         this,
         QueryLanguage.Cpp,
@@ -303,7 +303,7 @@ export class DatabaseUI extends DisposableObject {
         QueryLanguage.Swift,
       ),
       "codeQLDatabases.displayAllLanguagesSelected":
-        this.handleChangeLanguageFilter.bind(this, "All"),
+        this.handleChangeLanguageFilter.bind(this, "all"),
       "codeQLDatabases.displayCppSelected":
         this.handleChangeLanguageFilter.bind(this, QueryLanguage.Cpp),
       "codeQLDatabases.displayCsharpSelected":
