@@ -58,7 +58,7 @@ export class MethodModelingViewProvider
 
     this.webviewView = webviewView;
 
-    this.setInitialState();
+    this.setInitialState(webviewView);
     this.registerToModelingStoreEvents();
   }
 
@@ -73,10 +73,10 @@ export class MethodModelingViewProvider
     }
   }
 
-  private setInitialState(): void {
+  private setInitialState(webviewView: vscode.WebviewView): void {
     const selectedMethod = this.modelingStore.getSelectedMethodDetails();
     if (selectedMethod) {
-      void this.webviewView?.webview.postMessage({
+      void webviewView.webview.postMessage({
         t: "setSelectedMethod",
         method: selectedMethod.method,
         modeledMethod: selectedMethod.modeledMethod,
