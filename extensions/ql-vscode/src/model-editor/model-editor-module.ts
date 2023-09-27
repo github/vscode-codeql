@@ -132,6 +132,7 @@ export class ModelEditorModule extends DisposableObject {
             const { path: queryDir, cleanup: cleanupQueryDir } = await dir({
               unsafeCleanup: true,
             });
+
             const success = await setUpPack(this.cliServer, queryDir, language);
             if (!success) {
               await cleanupQueryDir();

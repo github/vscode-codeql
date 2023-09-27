@@ -16,6 +16,10 @@ import { fetchExternalApiQueries } from "./queries";
 import { Method } from "./method";
 import { runQuery } from "../local-queries/run-query";
 import { decodeBqrsToMethods } from "./bqrs";
+import {
+  resolveEndpointsQuery,
+  syntheticQueryPackName,
+} from "./model-editor-queries";
 
 type RunQueryOptions = {
   cliServer: CodeQLCliServer;
@@ -88,7 +92,24 @@ export async function runExternalApiQueries(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
 
-  const queryPath = join(queryDir, queryNameFromMode(mode));
+  progress({
+    message: "Resolving query",
+    step: 2,
+    maxStep: externalApiQueriesProgressMaxStep,
+  });
+
+  // Resolve the queries from either codeql/java-queries or from the temporary queryDir
+  const queryPath = await resolveEndpointsQuery(
+    cliServer,
+    databaseItem.language,
+    mode,
+    [syntheticQueryPackName],
+    [queryDir],
+    false,
+  );
+  if (!queryPath) {
+    return;
+  }
 
   // Run the actual query
   const completedQuery = await runQuery({

@@ -7,7 +7,6 @@ import { Mode } from "./shared/mode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { interpretResultsSarif } from "../query-results";
 import { join } from "path";
-import { assertNever } from "../common/helpers-pure";
 import { dir } from "tmp-promise";
 import { writeFile, outputFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
@@ -16,17 +15,7 @@ import { runQuery } from "../local-queries/run-query";
 import { QueryMetadata } from "../common/interface-types";
 import { CancellationTokenSource } from "vscode";
 import { resolveQueries } from "../local-queries";
-
-function modeTag(mode: Mode): string {
-  switch (mode) {
-    case Mode.Application:
-      return "application-mode";
-    case Mode.Framework:
-      return "framework-mode";
-    default:
-      assertNever(mode);
-  }
-}
+import { modeTag } from "./mode-tag";
 
 type AutoModelQueriesOptions = {
   mode: Mode;
