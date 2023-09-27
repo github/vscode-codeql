@@ -116,12 +116,7 @@ export class MethodModelingViewProvider
     });
 
     this.modelingStore.onModifiedMethodsChanged(async (e) => {
-      if (
-        this.webviewView &&
-        e.isActiveDb &&
-        this.method &&
-        this.method.signature
-      ) {
+      if (this.webviewView && e.isActiveDb && this.method) {
         const isModified = e.modifiedMethods.has(this.method.signature);
         await this.webviewView.webview.postMessage({
           t: "setMethodModified",
