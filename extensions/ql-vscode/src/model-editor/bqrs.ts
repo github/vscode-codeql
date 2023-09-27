@@ -2,41 +2,72 @@ import { DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import { Call, CallClassification, Method } from "./method";
 import { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
+import { Mode } from "./shared/mode";
+import { ApplicationModeTuple, FrameworkModeTuple } from "./queries/query";
 
-export function decodeBqrsToMethods(chunk: DecodedBqrsChunk): Method[] {
+export function decodeBqrsToMethods(
+  chunk: DecodedBqrsChunk,
+  mode: Mode,
+): Method[] {
   const methodsByApiName = new Map<string, Method>();
 
   chunk?.tuples.forEach((tuple) => {
-    const usage = tuple[0] as Call;
-    const signature = tuple[1] as string;
-    const supported = (tuple[2] as string) === "true";
-    let library = tuple[4] as string;
-    let libraryVersion: string | undefined = tuple[5] as string;
-    const type = tuple[6] as ModeledMethodType;
-    const classification = tuple[8] as CallClassification;
+    let usage: Call;
+    let packageName: string;
+    let typeName: string;
+    let methodName: string;
+    let methodParameters: string;
+    let supported: boolean;
+    let library: string;
+    let libraryVersion: string | undefined;
+    let type: ModeledMethodType;
+    let classification: CallClassification;
 
-    const [packageWithType, methodDeclaration] = signature.split("#");
+    if (mode === Mode.Application) {
+      [
+        usage,
+        packageName,
+        typeName,
+        methodName,
+        methodParameters,
+        supported,
+        library,
+        libraryVersion,
+        type,
+        classification,
+      ] = tuple as ApplicationModeTuple;
+    } else {
+      [
+        usage,
+        packageName,
+        typeName,
+        methodName,
+        methodParameters,
+        supported,
+        library,
+        type,
+      ] = tuple as FrameworkModeTuple;
 
-    const packageName = packageWithType.substring(
-      0,
-      packageWithType.lastIndexOf("."),
-    );
-    const typeName = packageWithType.substring(
-      packageWithType.lastIndexOf(".") + 1,
-    );
+      classification = CallClassification.Unknown;
+    }
 
-    const methodName = methodDeclaration.substring(
-      0,
-      methodDeclaration.indexOf("("),
-    );
-    const methodParameters = methodDeclaration.substring(
-      methodDeclaration.indexOf("("),
-    );
+    if (!methodParameters.startsWith("(")) {
+      // There's a difference in how the Java and C# queries return method parameters. In the C# query, the method
+      // parameters are returned without parentheses. In the Java query, the method parameters are returned with
+      // parentheses. Therefore, we'll just add them if we don't see them.
+      methodParameters = `(${methodParameters})`;
+    }
+
+    const signature = `${packageName}.${typeName}#${methodName}${methodParameters}`;
 
     // For Java, we'll always get back a .jar file, and the library version may be bad because not all library authors
     // properly specify the version. Therefore, we'll always try to parse the name and version from the library filename
     // for Java.
-    if (library.endsWith(".jar") || libraryVersion === "") {
+    if (
+      library.endsWith(".jar") ||
+      libraryVersion === "" ||
+      libraryVersion === undefined
+    ) {
       const { name, version } = parseLibraryFilename(library);
       library = name;
       if (version) {

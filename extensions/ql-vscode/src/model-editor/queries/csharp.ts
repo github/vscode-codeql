@@ -2,130 +2,151 @@ import { Query } from "./query";
 
 export const fetchExternalApisQuery: Query = {
   applicationModeQuery: `/**
- * @name Usage of APIs coming from external libraries
- * @description A list of 3rd party APIs used in the codebase.
- * @tags telemetry
- * @kind problem
- * @id cs/telemetry/fetch-external-apis
+ * @name Fetch endpoints for use in the model editor (application mode)
+ * @description A list of 3rd party endpoints (methods and attributes) used in the codebase. Excludes test and generated code.
+ * @kind table
+ * @id csharp/utils/modeleditor/application-mode-endpoints
+ * @tags modeleditor endpoints application-mode
  */
 
-private import csharp
-private import AutomodelVsCode
+import csharp
+import ApplicationModeEndpointsQuery
+import ModelEditor
 
-class ExternalApi extends CallableMethod {
-  ExternalApi() {
-    this.isUnboundDeclaration() and
-    this.fromLibrary() and
-    this.(Modifiable).isEffectivelyPublic()
-  }
-}
+private Call aUsage(ExternalEndpoint api) { result.getTarget().getUnboundDeclaration() = api }
 
-private Call aUsage(ExternalApi api) { result.getTarget().getUnboundDeclaration() = api }
-
-from
-  ExternalApi api, string apiName, boolean supported, Call usage, string type, string classification
+from ExternalEndpoint endpoint, boolean supported, Call usage, string type, string classification
 where
-  apiName = api.getApiName() and
-  supported = isSupported(api) and
-  usage = aUsage(api) and
-  type = supportedType(api) and
+  supported = isSupported(endpoint) and
+  usage = aUsage(endpoint) and
+  type = supportedType(endpoint) and
   classification = methodClassification(usage)
-select usage, apiName, supported.toString(), "supported", api.dllName(), api.dllVersion(), type,
-  "type", classification, "classification"
+select usage, endpoint.getNamespace(), endpoint.getTypeName(), endpoint.getName(),
+  endpoint.getParameterTypes(), supported, endpoint.dllName(), endpoint.dllVersion(), type,
+  classification
 `,
   frameworkModeQuery: `/**
- * @name Public methods
- * @description A list of APIs callable by consumers. Excludes test and generated code.
- * @tags telemetry
- * @kind problem
- * @id cs/telemetry/fetch-public-methods
+ * @name Fetch endpoints for use in the model editor (framework mode)
+ * @description A list of endpoints accessible (methods and attributes) for consumers of the library. Excludes test and generated code.
+ * @kind table
+ * @id csharp/utils/modeleditor/framework-mode-endpoints
+ * @tags modeleditor endpoints framework-mode
  */
 
-private import csharp
-private import dotnet
-private import semmle.code.csharp.frameworks.Test
-private import AutomodelVsCode
+import csharp
+import FrameworkModeEndpointsQuery
+import ModelEditor
 
-class PublicMethod extends CallableMethod {
-  PublicMethod() { this.fromSource() and not this.getFile() instanceof TestFile }
-}
-
-from PublicMethod publicMethod, string apiName, boolean supported, string type
+from PublicEndpointFromSource endpoint, boolean supported, string type
 where
-  apiName = publicMethod.getApiName() and
-  supported = isSupported(publicMethod) and
-  type = supportedType(publicMethod)
-select publicMethod, apiName, supported.toString(), "supported",
-  publicMethod.getFile().getBaseName(), "library", type, "type", "unknown", "classification"
+  supported = isSupported(endpoint) and
+  type = supportedType(endpoint)
+select endpoint, endpoint.getNamespace(), endpoint.getTypeName(), endpoint.getName(),
+  endpoint.getParameterTypes(), supported, endpoint.getFile().getBaseName(), type
 `,
   dependencies: {
-    "AutomodelVsCode.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
-
-private import csharp
-private import dotnet
-private import semmle.code.csharp.dispatch.Dispatch
-private import semmle.code.csharp.dataflow.ExternalFlow
-private import semmle.code.csharp.dataflow.FlowSummary
-private import semmle.code.csharp.dataflow.internal.DataFlowImplCommon as DataFlowImplCommon
-private import semmle.code.csharp.dataflow.internal.DataFlowPrivate
+    "ApplicationModeEndpointsQuery.qll": `private import csharp
+private import semmle.code.csharp.dataflow.ExternalFlow as ExternalFlow
 private import semmle.code.csharp.dataflow.internal.DataFlowDispatch as DataFlowDispatch
-private import semmle.code.csharp.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
+private import semmle.code.csharp.dataflow.internal.DataFlowPrivate
 private import semmle.code.csharp.dataflow.internal.TaintTrackingPrivate
-private import semmle.code.csharp.frameworks.Test
 private import semmle.code.csharp.security.dataflow.flowsources.Remote
-
-pragma[nomagic]
-private predicate isTestNamespace(Namespace ns) {
-  ns.getFullName()
-      .matches([
-          "NUnit.Framework%", "Xunit%", "Microsoft.VisualStudio.TestTools.UnitTesting%", "Moq%"
-        ])
-}
+private import ModelEditor
 
 /**
- * A test library.
+ * A class of effectively public callables in library code.
  */
-class TestLibrary extends RefType {
-  TestLibrary() { isTestNamespace(this.getNamespace()) }
+class ExternalEndpoint extends Endpoint {
+  ExternalEndpoint() { this.fromLibrary() }
+
+  /** Gets a node that is an input to a call to this API. */
+  private ArgumentNode getAnInput() {
+    result
+        .getCall()
+        .(DataFlowDispatch::NonDelegateDataFlowCall)
+        .getATarget(_)
+        .getUnboundDeclaration() = this
+  }
+
+  /** Gets a node that is an output from a call to this API. */
+  private DataFlow::Node getAnOutput() {
+    exists(Call c, DataFlowDispatch::NonDelegateDataFlowCall dc |
+      dc.getDispatchCall().getCall() = c and
+      c.getTarget().getUnboundDeclaration() = this
+    |
+      result = DataFlowDispatch::getAnOutNode(dc, _)
+    )
+  }
+
+  override predicate hasSummary() {
+    Endpoint.super.hasSummary()
+    or
+    defaultAdditionalTaintStep(this.getAnInput(), _)
+  }
+
+  override predicate isSource() {
+    this.getAnOutput() instanceof RemoteFlowSource or ExternalFlow::sourceNode(this.getAnOutput(), _)
+  }
+
+  override predicate isSink() { ExternalFlow::sinkNode(this.getAnInput(), _) }
 }
+`,
+    "FrameworkModeEndpointsQuery.qll": `private import csharp
+private import semmle.code.csharp.frameworks.Test
+private import ModelEditor
+
+/**
+ * A class of effectively public callables from source code.
+ */
+class PublicEndpointFromSource extends Endpoint {
+  PublicEndpointFromSource() { this.fromSource() and not this.getFile() instanceof TestFile }
+
+  override predicate isSource() { this instanceof SourceCallable }
+
+  override predicate isSink() { this instanceof SinkCallable }
+}`,
+    "ModelEditor.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
+
+private import csharp
+private import semmle.code.csharp.dataflow.FlowSummary
+private import semmle.code.csharp.dataflow.internal.DataFlowPrivate
+private import semmle.code.csharp.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
+private import semmle.code.csharp.frameworks.Test
 
 /** Holds if the given callable is not worth supporting. */
-private predicate isUninteresting(DotNet::Declaration c) {
+private predicate isUninteresting(Callable c) {
   c.getDeclaringType() instanceof TestLibrary or
   c.(Constructor).isParameterless() or
   c.getDeclaringType() instanceof AnonymousClass
 }
 
 /**
- * An callable method from either the C# Standard Library, a 3rd party library, or from the source.
+ * A callable method or accessor from either the C# Standard Library, a 3rd party library, or from the source.
  */
-class CallableMethod extends DotNet::Declaration {
-  CallableMethod() {
-    this.(Modifiable).isEffectivelyPublic() and
-    not isUninteresting(this)
+class Endpoint extends Callable {
+  Endpoint() {
+    [this.(Modifiable), this.(Accessor).getDeclaration()].isEffectivelyPublic() and
+    not isUninteresting(this) and
+    this.isUnboundDeclaration()
   }
 
   /**
-   * Gets the unbound type, name and parameter types of this API.
-   */
-  bindingset[this]
-  private string getSignature() {
-    result =
-      nestedName(this.getDeclaringType().getUnboundDeclaration()) + "#" + this.getName() + "(" +
-        parameterQualifiedTypeNamesToString(this) + ")"
-  }
-
-  /**
-   * Gets the namespace of this API.
+   * Gets the namespace of this endpoint.
    */
   bindingset[this]
   string getNamespace() { this.getDeclaringType().hasQualifiedName(result, _) }
 
   /**
-   * Gets the namespace and signature of this API.
+   * Gets the unbound type name of this endpoint.
    */
   bindingset[this]
-  string getApiName() { result = this.getNamespace() + "." + this.getSignature() }
+  string getTypeName() { result = nestedName(this.getDeclaringType().getUnboundDeclaration()) }
+
+  /**
+   * Gets the parameter types of this endpoint.
+   */
+  bindingset[this]
+  string getParameterTypes() { result = parameterQualifiedTypeNamesToString(this) }
 
   private string getDllName() { result = this.getLocation().(Assembly).getName() }
 
@@ -143,44 +164,17 @@ class CallableMethod extends DotNet::Declaration {
     not exists(this.getDllVersion()) and result = ""
   }
 
-  /** Gets a node that is an input to a call to this API. */
-  private ArgumentNode getAnInput() {
-    result
-        .getCall()
-        .(DataFlowDispatch::NonDelegateDataFlowCall)
-        .getATarget(_)
-        .getUnboundDeclaration() = this
-  }
-
-  /** Gets a node that is an output from a call to this API. */
-  private DataFlow::Node getAnOutput() {
-    exists(
-      Call c, DataFlowDispatch::NonDelegateDataFlowCall dc, DataFlowImplCommon::ReturnKindExt ret
-    |
-      dc.getDispatchCall().getCall() = c and
-      c.getTarget().getUnboundDeclaration() = this
-    |
-      result = ret.getAnOutNode(dc)
-    )
-  }
-
   /** Holds if this API has a supported summary. */
   pragma[nomagic]
-  predicate hasSummary() {
-    this instanceof SummarizedCallable
-    or
-    defaultAdditionalTaintStep(this.getAnInput(), _)
-  }
+  predicate hasSummary() { this instanceof SummarizedCallable }
 
   /** Holds if this API is a known source. */
   pragma[nomagic]
-  predicate isSource() {
-    this.getAnOutput() instanceof RemoteFlowSource or sourceNode(this.getAnOutput(), _)
-  }
+  abstract predicate isSource();
 
   /** Holds if this API is a known sink. */
   pragma[nomagic]
-  predicate isSink() { sinkNode(this.getAnInput(), _) }
+  abstract predicate isSink();
 
   /** Holds if this API is a known neutral. */
   pragma[nomagic]
@@ -195,23 +189,20 @@ class CallableMethod extends DotNet::Declaration {
   }
 }
 
-boolean isSupported(CallableMethod callableMethod) {
-  callableMethod.isSupported() and result = true
-  or
-  not callableMethod.isSupported() and
-  result = false
+boolean isSupported(Endpoint endpoint) {
+  if endpoint.isSupported() then result = true else result = false
 }
 
-string supportedType(CallableMethod method) {
-  method.isSink() and result = "sink"
+string supportedType(Endpoint endpoint) {
+  endpoint.isSink() and result = "sink"
   or
-  method.isSource() and result = "source"
+  endpoint.isSource() and result = "source"
   or
-  method.hasSummary() and result = "summary"
+  endpoint.hasSummary() and result = "summary"
   or
-  method.isNeutral() and result = "neutral"
+  endpoint.isNeutral() and result = "neutral"
   or
-  not method.isSupported() and result = ""
+  not endpoint.isSupported() and result = ""
 }
 
 string methodClassification(Call method) {
@@ -222,18 +213,51 @@ string methodClassification(Call method) {
 }
 
 /**
- * Gets the nested name of the declaration.
+ * Gets the nested name of the type \`t\`.
  *
- * If the declaration is not a nested type, the result is the same as \`getName()\`.
+ * If the type is not a nested type, the result is the same as \`getName()\`.
  * Otherwise the name of the nested type is prefixed with a \`+\` and appended to
  * the name of the enclosing type, which might be a nested type as well.
  */
-private string nestedName(Declaration declaration) {
-  not exists(declaration.getDeclaringType().getUnboundDeclaration()) and
-  result = declaration.getName()
+private string nestedName(Type t) {
+  not exists(t.getDeclaringType().getUnboundDeclaration()) and
+  result = t.getName()
   or
-  nestedName(declaration.getDeclaringType().getUnboundDeclaration()) + "+" + declaration.getName() =
-    result
+  nestedName(t.getDeclaringType().getUnboundDeclaration()) + "+" + t.getName() = result
+}
+
+// Temporary copy of csharp/ql/src/Telemetry/TestLibrary.qll
+
+pragma[nomagic]
+private predicate isTestNamespace(Namespace ns) {
+  ns.getFullName()
+      .matches([
+          "NUnit.Framework%", "Xunit%", "Microsoft.VisualStudio.TestTools.UnitTesting%", "Moq%"
+        ])
+}
+
+/**
+ * A test library.
+ */
+class TestLibrary extends RefType {
+  TestLibrary() { isTestNamespace(this.getNamespace()) }
+}
+
+// Temporary copy of csharp/ql/lib/semmle/code/csharp/dataflow/ExternalFlow.qll
+private import semmle.code.csharp.dataflow.internal.FlowSummaryImplSpecific
+
+/**
+ * A callable where there exists a MaD sink model that applies to it.
+ */
+class SinkCallable extends Callable {
+  SinkCallable() { sinkElement(this, _, _, _) }
+}
+
+/**
+ * A callable where there exists a MaD source model that applies to it.
+ */
+class SourceCallable extends Callable {
+  SourceCallable() { sourceElement(this, _, _, _) }
 }
 `,
   },
