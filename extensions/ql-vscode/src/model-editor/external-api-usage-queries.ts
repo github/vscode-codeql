@@ -132,7 +132,7 @@ export async function runExternalApiQueries(
     maxStep: externalApiQueriesProgressMaxStep,
   });
 
-  return decodeBqrsToMethods(bqrsChunk);
+  return decodeBqrsToMethods(bqrsChunk, mode);
 }
 
 type GetResultsOptions = {
@@ -160,7 +160,5 @@ export async function readQueryResults({
 }
 
 function queryNameFromMode(mode: Mode): string {
-  return `FetchExternalApis${
-    mode.charAt(0).toUpperCase() + mode.slice(1)
-  }Mode.ql`;
+  return `${mode.charAt(0).toUpperCase() + mode.slice(1)}ModeEndpoints.ql`;
 }

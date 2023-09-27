@@ -152,7 +152,7 @@ describe("external api usage query", () => {
       expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
         "/a/b/c/src.zip",
         {
-          queryPath: expect.stringMatching(/FetchExternalApis\S*\.ql/),
+          queryPath: expect.stringMatching(/\S*ModeEndpoints\.ql/),
           quickEvalPosition: undefined,
           quickEvalCountOnly: false,
         },

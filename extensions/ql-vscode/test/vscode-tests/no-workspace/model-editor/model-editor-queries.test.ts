@@ -34,9 +34,11 @@ describe("setUpPack", () => {
       expect(queryFiles.sort()).toEqual(
         [
           "codeql-pack.yml",
-          "FetchExternalApisApplicationMode.ql",
-          "FetchExternalApisFrameworkMode.ql",
-          "AutomodelVsCode.qll",
+          "ApplicationModeEndpoints.ql",
+          "ApplicationModeEndpointsQuery.qll",
+          "FrameworkModeEndpoints.ql",
+          "FrameworkModeEndpointsQuery.qll",
+          "ModelEditor.qll",
         ].sort(),
       );
 
@@ -58,9 +60,7 @@ describe("setUpPack", () => {
           readFileSync(
             join(
               queryDir,
-              `FetchExternalApis${
-                mode.charAt(0).toUpperCase() + mode.slice(1)
-              }Mode.ql`,
+              `${mode.charAt(0).toUpperCase() + mode.slice(1)}ModeEndpoints.ql`,
             ),
             "utf8",
           ),
