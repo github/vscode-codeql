@@ -21,7 +21,13 @@ import { AllCommands } from "../../../../src/common/commands";
 jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
+  // This test has some serious problems:
+  // - all tests use the same dbConfig file, hence the tests depend on ORDER and have to use the same list name!
+  // - we depend on highlighted list items when adding a repo to a list. If there's not enough time in between, a test might think a list is highlighted that doesn't exist anymore
+
   let storagePath: string;
+  let dbConfigFilePath: string;
+
   const commandManager = createVSCodeCommandManager<AllCommands>();
 
   beforeEach(async () => {
@@ -29,6 +35,11 @@ describe("Db panel UI commands", () => {
 
     storagePath =
       extension.ctx.storageUri?.fsPath || extension.ctx.globalStorageUri.fsPath;
+
+    dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
   });
 
   it("should add new remote db list", async () => {
@@ -39,10 +50,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
@@ -61,10 +68,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.local.lists).toHaveLength(1);
     expect(dbConfig.databases.local.lists[0].name).toBe("my-list-1");
@@ -82,10 +85,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositories).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositories[0]).toBe(
@@ -105,10 +104,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.owners).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.owners[0]).toBe("owner1");
@@ -128,10 +123,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.selected).toBeDefined();
     expect(dbConfig.selected).toEqual({
