@@ -46,6 +46,9 @@ describe("external api usage query", () => {
           resolveQlpacks: jest.fn().mockResolvedValue({
             "my/extensions": "/a/b/c/",
           }),
+          resolveQueriesInSuite: jest
+            .fn()
+            .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
           packPacklist: jest
             .fn()
             .mockResolvedValue([
@@ -104,6 +107,9 @@ describe("external api usage query", () => {
           resolveQlpacks: jest.fn().mockResolvedValue({
             "my/extensions": "/a/b/c/",
           }),
+          resolveQueriesInSuite: jest
+            .fn()
+            .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
           packPacklist: jest
             .fn()
             .mockResolvedValue([
