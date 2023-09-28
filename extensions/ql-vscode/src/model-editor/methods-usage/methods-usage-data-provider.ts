@@ -165,7 +165,9 @@ export class MethodsUsageDataProvider
 
 export type MethodsUsageTreeViewItem = Method | Usage;
 
-function isExternalApiUsage(item: MethodsUsageTreeViewItem): item is Method {
+export function isExternalApiUsage(
+  item: MethodsUsageTreeViewItem,
+): item is Method {
   return (item as any).usages !== undefined;
 }
 

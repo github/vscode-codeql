@@ -1,8 +1,9 @@
-import { TreeView, window } from "vscode";
+import { TreeView, TreeViewExpansionEvent, window } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
 import {
   MethodsUsageDataProvider,
   MethodsUsageTreeViewItem,
+  isExternalApiUsage,
 } from "./methods-usage-data-provider";
 import { Method, Usage } from "../method";
 import { DatabaseItem } from "../../databases/local-databases";
@@ -28,6 +29,12 @@ export class MethodsUsagePanel extends DisposableObject {
     this.push(this.treeView);
 
     this.registerToModelingStoreEvents();
+
+    this.push(
+      this.treeView.onDidExpandElement(async (e) => {
+        await this.onDidExpandElement(e);
+      }),
+    );
   }
 
   public async setState(
@@ -102,6 +109,24 @@ export class MethodsUsagePanel extends DisposableObject {
         activeState.modeledMethods,
         activeState.modifiedMethodSignatures,
       );
+    }
+  }
+
+  private async onDidExpandElement(
+    event: TreeViewExpansionEvent<MethodsUsageTreeViewItem>,
+  ): Promise<void> {
+    const method = event.element;
+    if (!isExternalApiUsage(method)) {
+      throw Error("Expected an external API method.");
+    } else {
+      const activeState = this.modelingStore.getStateForActiveDb();
+      if (activeState !== undefined) {
+        this.modelingStore.setSelectedMethod(
+          activeState?.databaseItem,
+          method,
+          method.usages[0],
+        );
+      }
     }
   }
 }
