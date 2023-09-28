@@ -14,6 +14,9 @@ import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../shared/hide-modeled-methods";
+import { getModelingStatus } from "../shared/modeling-status";
+import { assertNever } from "../../common/helpers-pure";
+import { ModeledMethod } from "../modeled-method";
 
 export class MethodsUsageDataProvider
   extends DisposableObject
@@ -23,6 +26,8 @@ export class MethodsUsageDataProvider
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
   private hideModeledMethods: boolean = INITIAL_HIDE_MODELED_METHODS_VALUE;
+  private modeledMethods: Record<string, ModeledMethod> = {};
+  private modifiedMethodSignatures: Set<string> = new Set();
 
   private readonly onDidChangeTreeDataEmitter = this.push(
     new EventEmitter<void>(),
@@ -47,17 +52,23 @@ export class MethodsUsageDataProvider
     methods: Method[],
     databaseItem: DatabaseItem,
     hideModeledMethods: boolean,
+    modeledMethods: Record<string, ModeledMethod>,
+    modifiedMethodSignatures: Set<string>,
   ): Promise<void> {
     if (
       this.methods !== methods ||
       this.databaseItem !== databaseItem ||
-      this.hideModeledMethods !== hideModeledMethods
+      this.hideModeledMethods !== hideModeledMethods ||
+      this.modeledMethods !== modeledMethods ||
+      this.modifiedMethodSignatures !== modifiedMethodSignatures
     ) {
       this.methods = methods;
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
       this.hideModeledMethods = hideModeledMethods;
+      this.modeledMethods = modeledMethods;
+      this.modifiedMethodSignatures = modifiedMethodSignatures;
 
       this.onDidChangeTreeDataEmitter.fire();
     }
@@ -68,7 +79,7 @@ export class MethodsUsageDataProvider
       return {
         label: `${item.packageName}.${item.typeName}.${item.methodName}${item.methodParameters}`,
         collapsibleState: TreeItemCollapsibleState.Collapsed,
-        iconPath: new ThemeIcon("symbol-method"),
+        iconPath: this.getModelingStatusIcon(item),
       };
     } else {
       const method = this.getParent(item);
@@ -83,8 +94,27 @@ export class MethodsUsageDataProvider
           command: "codeQLModelEditor.jumpToUsageLocation",
           arguments: [method, item, this.databaseItem],
         },
-        iconPath: new ThemeIcon("error", new ThemeColor("errorForeground")),
       };
+    }
+  }
+
+  private getModelingStatusIcon(method: Method): ThemeIcon {
+    const modeledMethod = this.modeledMethods[method.signature];
+    const modifiedMethod = this.modifiedMethodSignatures.has(method.signature);
+
+    const status = getModelingStatus(modeledMethod, modifiedMethod);
+    switch (status) {
+      case "unmodeled":
+        return new ThemeIcon("error", new ThemeColor("errorForeground"));
+      case "unsaved":
+        return new ThemeIcon("pass", new ThemeColor("testing.iconPassed"));
+      case "saved":
+        return new ThemeIcon(
+          "pass-filled",
+          new ThemeColor("testing.iconPassed"),
+        );
+      default:
+        assertNever(status);
     }
   }
 

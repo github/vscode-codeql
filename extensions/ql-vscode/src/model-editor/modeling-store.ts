@@ -158,7 +158,7 @@ export class ModelingStore extends DisposableObject {
     const dbState = this.getState(dbItem);
     const dbUri = dbItem.databaseUri.toString();
 
-    dbState.methods = methods;
+    dbState.methods = [...methods];
 
     this.onMethodsChangedEventEmitter.fire({
       methods,
@@ -204,13 +204,15 @@ export class ModelingStore extends DisposableObject {
     methods: Record<string, ModeledMethod>,
   ) {
     this.changeModeledMethods(dbItem, (state) => {
-      state.modeledMethods = methods;
+      state.modeledMethods = { ...methods };
     });
   }
 
   public updateModeledMethod(dbItem: DatabaseItem, method: ModeledMethod) {
     this.changeModeledMethods(dbItem, (state) => {
-      state.modeledMethods[method.signature] = method;
+      const newModeledMethods = { ...state.modeledMethods };
+      newModeledMethods[method.signature] = method;
+      state.modeledMethods = newModeledMethods;
     });
   }
 
@@ -219,7 +221,7 @@ export class ModelingStore extends DisposableObject {
     methodSignatures: Set<string>,
   ) {
     this.changeModifiedMethods(dbItem, (state) => {
-      state.modifiedMethodSignatures = methodSignatures;
+      state.modifiedMethodSignatures = new Set(methodSignatures);
     });
   }
 
@@ -228,9 +230,11 @@ export class ModelingStore extends DisposableObject {
     methodSignatures: Iterable<string>,
   ) {
     this.changeModifiedMethods(dbItem, (state) => {
-      for (const signature of methodSignatures) {
-        state.modifiedMethodSignatures.add(signature);
-      }
+      const newModifiedMethods = new Set([
+        ...state.modifiedMethodSignatures,
+        ...methodSignatures,
+      ]);
+      state.modifiedMethodSignatures = newModifiedMethods;
     });
   }
 
@@ -243,9 +247,11 @@ export class ModelingStore extends DisposableObject {
     methodSignatures: string[],
   ) {
     this.changeModifiedMethods(dbItem, (state) => {
-      methodSignatures.forEach((signature) => {
-        state.modifiedMethodSignatures.delete(signature);
-      });
+      const newModifiedMethods = Array.from(
+        state.modifiedMethodSignatures,
+      ).filter((s) => !methodSignatures.includes(s));
+
+      state.modifiedMethodSignatures = new Set(newModifiedMethods);
     });
   }
 
