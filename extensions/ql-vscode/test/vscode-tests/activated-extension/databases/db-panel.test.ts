@@ -22,10 +22,8 @@ jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
   // This test has some serious problems:
-  // a) it runs twice: we couldn't find out why
-  // b) all tests use the same dbConfig file, hence the tests depend on ORDER and have to use the same list name!
-  // c) since we use a file watcher to update the config we sometimes need to wait (sleep) before accessing the config again
-  // d) we depend on highlighted list items when adding a repo to a list. If there's not enough time in between, a test might think a list is highlighted that doesn't exist anymore
+  // - all tests use the same dbConfig file, hence the tests depend on ORDER and have to use the same list name!
+  // - we depend on highlighted list items when adding a repo to a list. If there's not enough time in between, a test might think a list is highlighted that doesn't exist anymore
 
   let storagePath: string;
   let dbConfigFilePath: string;
