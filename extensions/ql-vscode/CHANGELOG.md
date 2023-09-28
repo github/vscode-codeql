@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where the query server was restarted twice after configuration changes. [#2884](https://github.com/github/vscode-codeql/pull/2884).
+
 ## 1.9.0 - 19 September 2023
 
 - Release the [CodeQL model editor](https://codeql.github.com/docs/codeql/codeql-for-visual-studio-code/using-the-codeql-model-editor) to create CodeQL model packs for Java frameworks. Open the editor using the "CodeQL: Open CodeQL Model Editor (Beta)" command. [#2823](https://github.com/github/vscode-codeql/pull/2823)
