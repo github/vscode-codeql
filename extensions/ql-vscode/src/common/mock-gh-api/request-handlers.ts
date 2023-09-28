@@ -14,6 +14,20 @@ import {
 
 const baseUrl = "https://api.github.com";
 
+const jsonResponse = <T>(
+  body: T,
+  init?: ResponseInit,
+  contentType = "application/json",
+): Response => {
+  return new Response(JSON.stringify(body), {
+    ...init,
+    headers: {
+      "Content-Type": contentType,
+      ...init?.headers,
+    },
+  });
+};
+
 export async function createRequestHandlers(
   scenarioDirPath: string,
 ): Promise<RequestHandler[]> {
@@ -81,7 +95,7 @@ function createGetRepoRequestHandler(
   const getRepoRequest = getRepoRequests[0];
 
   return rest.get(`${baseUrl}/repos/:owner/:name`, () => {
-    return new Response(JSON.stringify(getRepoRequest.response.body), {
+    return jsonResponse(getRepoRequest.response.body, {
       status: getRepoRequest.response.status,
     });
   });
@@ -103,7 +117,7 @@ function createSubmitVariantAnalysisRequestHandler(
   return rest.post(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses`,
     () => {
-      return new Response(JSON.stringify(getRepoRequest.response.body), {
+      return jsonResponse(getRepoRequest.response.body, {
         status: getRepoRequest.response.status,
       });
     },
@@ -131,7 +145,7 @@ function createGetVariantAnalysisRequestHandler(
         requestIndex++;
       }
 
-      return new Response(JSON.stringify(request.response.body), {
+      return jsonResponse(request.response.body, {
         status: request.response.status,
       });
     },
@@ -155,7 +169,7 @@ function createGetVariantAnalysisRepoRequestHandler(
         throw Error(`No scenario request found for ${request.url}`);
       }
 
-      return new Response(JSON.stringify(scenarioRequest.response.body), {
+      return jsonResponse(scenarioRequest.response.body, {
         status: scenarioRequest.response.status,
       });
     },
@@ -210,7 +224,7 @@ function createCodeSearchRequestHandler(
       requestIndex++;
     }
 
-    return new Response(JSON.stringify(request.response.body), {
+    return jsonResponse(request.response.body, {
       status: request.response.status,
     });
   });
@@ -235,7 +249,7 @@ function createAutoModelRequestHandler(
         requestIndex++;
       }
 
-      return new Response(JSON.stringify(request.response.body), {
+      return jsonResponse(request.response.body, {
         status: request.response.status,
       });
     },
