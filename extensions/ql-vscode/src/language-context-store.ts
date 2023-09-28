@@ -9,12 +9,12 @@ export class LanguageContextStore extends DisposableObject {
   public readonly onLanguageContextChanged: AppEvent<void>;
   private readonly onLanguageContextChangedEmitter: AppEventEmitter<void>;
 
-  private state: LanguageFilter;
+  private languageFilter: LanguageFilter;
 
   constructor(private readonly app: App) {
     super();
     // State initialization
-    this.state = "All";
+    this.languageFilter = "All";
 
     // Set up event emitters
     this.onLanguageContextChangedEmitter = this.push(
@@ -24,7 +24,7 @@ export class LanguageContextStore extends DisposableObject {
   }
 
   public async clearLanguageContext() {
-    this.state = "All";
+    this.languageFilter = "All";
     this.onLanguageContextChangedEmitter.fire();
     await this.app.commands.execute(
       "setContext",
@@ -34,7 +34,7 @@ export class LanguageContextStore extends DisposableObject {
   }
 
   public async setLanguageContext(language: QueryLanguage) {
-    this.state = language;
+    this.languageFilter = language;
     this.onLanguageContextChangedEmitter.fire();
     await this.app.commands.execute(
       "setContext",
@@ -48,6 +48,6 @@ export class LanguageContextStore extends DisposableObject {
   // The semantics of such an unknown langauge is that it is
   // only included if the current language context is "All".
   public shouldInclude(language: string): boolean {
-    return this.state === "All" || this.state === language;
+    return this.languageFilter === "All" || this.languageFilter === language;
   }
 }
