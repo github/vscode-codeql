@@ -62,3 +62,9 @@ export const dbSchemeToLanguage: Record<string, QueryLanguage> = {
 export function isQueryLanguage(language: string): language is QueryLanguage {
   return Object.values(QueryLanguage).includes(language as QueryLanguage);
 }
+
+export function tryGetQueryLanguage(
+  language: string,
+): QueryLanguage | undefined {
+  return isQueryLanguage(language) ? language : undefined;
+}

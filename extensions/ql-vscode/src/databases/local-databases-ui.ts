@@ -51,7 +51,7 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
-import { QueryLanguage } from "../common/query-language";
+import { QueryLanguage, tryGetQueryLanguage } from "../common/query-language";
 import { LanguageContextStore } from "../language-context-store";
 
 enum SortOrder {
@@ -143,7 +143,9 @@ class DatabaseTreeDataProvider
     if (element === undefined) {
       // Filter items by language
       const displayItems = this.databaseManager.databaseItems.filter((item) => {
-        return this.languageContext.shouldInclude(item.language);
+        return this.languageContext.shouldInclude(
+          tryGetQueryLanguage(item.language),
+        );
       });
 
       // Sort items

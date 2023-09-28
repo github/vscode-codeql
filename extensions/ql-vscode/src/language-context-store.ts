@@ -43,11 +43,7 @@ export class LanguageContextStore extends DisposableObject {
     );
   }
 
-  // This method takes a string to allow it to be used in cases
-  // where the language is not always a known one.
-  // The semantics of such an unknown langauge is that it is
-  // only included if the current language context is "All".
-  public shouldInclude(language: string): boolean {
+  public shouldInclude(language: QueryLanguage | undefined): boolean {
     return this.languageFilter === "All" || this.languageFilter === language;
   }
 }
