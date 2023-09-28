@@ -2071,7 +2071,7 @@
   },
   "dependencies": {
     "@octokit/plugin-retry": "^4.1.6",
-    "@octokit/rest": "^19.0.4",
+    "@octokit/rest": "^20.0.2",
     "@vscode/codicons": "^0.0.31",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.59.0",
