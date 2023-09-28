@@ -11,7 +11,7 @@ export class LanguageContextStore extends DisposableObject {
 
   private state: LanguageFilter;
 
-  constructor(app: App) {
+  constructor(private readonly app: App) {
     super();
     // State initialization
     this.state = "All";
@@ -23,14 +23,24 @@ export class LanguageContextStore extends DisposableObject {
     this.onLanguageContextChanged = this.onLanguageContextChangedEmitter.event;
   }
 
-  public clearLanguageContext() {
+  public async clearLanguageContext() {
     this.state = "All";
     this.onLanguageContextChangedEmitter.fire();
+    await this.app.commands.execute(
+      "setContext",
+      "codeQLDatabases.languageFilter",
+      "",
+    );
   }
 
-  public setLanguageContext(language: QueryLanguage) {
+  public async setLanguageContext(language: QueryLanguage) {
     this.state = language;
     this.onLanguageContextChangedEmitter.fire();
+    await this.app.commands.execute(
+      "setContext",
+      "codeQLDatabases.languageFilter",
+      language,
+    );
   }
 
   // This method takes a string to allow it to be used in cases

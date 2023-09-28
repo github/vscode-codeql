@@ -607,21 +607,11 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async handleClearLanguageFilter() {
-    this.languageContext.clearLanguageContext();
-    await this.app.commands.execute(
-      "setContext",
-      "codeQLDatabases.languageFilter",
-      "All",
-    );
+    await this.languageContext.clearLanguageContext();
   }
 
   private async handleChangeLanguageFilter(languageFilter: QueryLanguage) {
-    this.languageContext.setLanguageContext(languageFilter);
-    await this.app.commands.execute(
-      "setContext",
-      "codeQLDatabases.languageFilter",
-      languageFilter,
-    );
+    await this.languageContext.setLanguageContext(languageFilter);
   }
 
   private async handleUpgradeCurrentDatabase(): Promise<void> {
