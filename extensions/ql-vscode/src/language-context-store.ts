@@ -33,7 +33,10 @@ export class LanguageContextStore extends DisposableObject {
     this.onLanguageContextChangedEmitter.fire();
   }
 
-  // TODO: comment on why string is used here
+  // This method takes a string to allow it to be used in cases
+  // where the language is not always a known one.
+  // The semantics of such an unknown langauge is that it is
+  // only included if the current language context is "All".
   public shouldInclude(language: string): boolean {
     return this.state === "All" || this.state === language;
   }
