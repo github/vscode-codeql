@@ -51,13 +51,6 @@ export function decodeBqrsToMethods(
       classification = CallClassification.Unknown;
     }
 
-    if (!methodParameters.startsWith("(")) {
-      // There's a difference in how the Java and C# queries return method parameters. In the C# query, the method
-      // parameters are returned without parentheses. In the Java query, the method parameters are returned with
-      // parentheses. Therefore, we'll just add them if we don't see them.
-      methodParameters = `(${methodParameters})`;
-    }
-
     const signature = `${packageName}.${typeName}#${methodName}${methodParameters}`;
 
     // For Java, we'll always get back a .jar file, and the library version may be bad because not all library authors
