@@ -26,6 +26,7 @@ export class ServerProcess implements Disposable {
     this.connection.end();
     this.child.stdin!.end();
     this.child.stderr!.destroy();
+    this.child.removeAllListeners();
     // TODO kill the process if it doesn't terminate after a certain time limit.
 
     // On Windows, we usually have to terminate the process before closing its stdout.
