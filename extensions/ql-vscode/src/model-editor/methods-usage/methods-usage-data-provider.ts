@@ -75,7 +75,7 @@ export class MethodsUsageDataProvider
   }
 
   getTreeItem(item: MethodsUsageTreeViewItem): TreeItem {
-    if (isExternalApiUsage(item)) {
+    if (isExternalApiMethod(item)) {
       return {
         label: `${item.packageName}.${item.typeName}.${item.methodName}${item.methodParameters}`,
         collapsibleState: TreeItemCollapsibleState.Collapsed,
@@ -134,7 +134,7 @@ export class MethodsUsageDataProvider
       } else {
         return this.methods;
       }
-    } else if (isExternalApiUsage(item)) {
+    } else if (isExternalApiMethod(item)) {
       return item.usages;
     } else {
       return [];
@@ -144,7 +144,7 @@ export class MethodsUsageDataProvider
   getParent(
     item: MethodsUsageTreeViewItem,
   ): MethodsUsageTreeViewItem | undefined {
-    if (isExternalApiUsage(item)) {
+    if (isExternalApiMethod(item)) {
       return undefined;
     } else {
       return this.methods.find((e) => e.usages.includes(item));
@@ -165,7 +165,7 @@ export class MethodsUsageDataProvider
 
 export type MethodsUsageTreeViewItem = Method | Usage;
 
-export function isExternalApiUsage(
+export function isExternalApiMethod(
   item: MethodsUsageTreeViewItem,
 ): item is Method {
   return (item as any).usages !== undefined;

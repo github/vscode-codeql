@@ -3,7 +3,7 @@ import { DisposableObject } from "../../common/disposable-object";
 import {
   MethodsUsageDataProvider,
   MethodsUsageTreeViewItem,
-  isExternalApiUsage,
+  isExternalApiMethod,
 } from "./methods-usage-data-provider";
 import { Method, Usage } from "../method";
 import { DatabaseItem } from "../../databases/local-databases";
@@ -116,7 +116,7 @@ export class MethodsUsagePanel extends DisposableObject {
     event: TreeViewExpansionEvent<MethodsUsageTreeViewItem>,
   ): Promise<void> {
     const method = event.element;
-    if (!isExternalApiUsage(method)) {
+    if (!isExternalApiMethod(method)) {
       throw Error("Expected an external API method.");
     } else {
       const activeState = this.modelingStore.getStateForActiveDb();
