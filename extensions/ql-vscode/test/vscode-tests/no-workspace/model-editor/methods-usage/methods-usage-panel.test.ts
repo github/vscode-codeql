@@ -27,6 +27,16 @@ describe("MethodsUsagePanel", () => {
     it("should update the tree view with the correct batch number", async () => {
       const mockTreeView = {
         badge: undefined,
+        onDidExpandElement: jest.fn(),
+        onDidCollapseElement: jest.fn(),
+        selection: [],
+        onDidChangeSelection: jest.fn(),
+        visible: false,
+        onDidChangeVisibility: jest.fn(),
+        message: undefined,
+        title: undefined,
+        reveal: jest.fn(),
+        dispose: jest.fn(),
       } as TreeView<unknown>;
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
@@ -57,6 +67,7 @@ describe("MethodsUsagePanel", () => {
     beforeEach(() => {
       mockTreeView = mockedObject<TreeView<unknown>>({
         reveal: jest.fn(),
+        onDidExpandElement: jest.fn(),
       });
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
