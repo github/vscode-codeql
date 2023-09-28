@@ -6,9 +6,8 @@ import { prepareExternalApiQuery } from "./external-api-usage-queries";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { showLlmGeneration } from "../config";
 import { Mode } from "./shared/mode";
-import { resolveQueries } from "../local-queries";
+import { resolveQueriesFromPacks } from "../local-queries";
 import { modeTag } from "./mode-tag";
-import { extLogger } from "../common/logging/vscode";
 
 export const syntheticQueryPackName = "codeql/external-api-usage";
 
@@ -39,18 +38,17 @@ export async function setUpPack(
   // Download the required query packs
   await cliServer.packDownload([`codeql/${language}-queries`]);
 
+  // We'll only check if the application mode query exists in the pack and assume that if it does,
+  // the framework mode query will also exist.
   const applicationModeQuery = await resolveEndpointsQuery(
     cliServer,
     language,
     Mode.Application,
     [],
     [],
-    true,
   );
 
   if (applicationModeQuery) {
-    void extLogger.log("Using application mode queries");
-
     // Set up a synthetic pack so CodeQL doesn't crash later when we try
     // to resolve a query within this directory
     const syntheticQueryPack = {
@@ -62,8 +60,6 @@ export async function setUpPack(
     const qlpackFile = join(queryDir, "codeql-pack.yml");
     await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
   } else {
-    void extLogger.log("Writing external API usage queries to disk");
-
     // If we can't resolve the query, we need to write them to desk ourselves.
     const externalApiQuerySuccess = await prepareExternalApiQuery(
       queryDir,
@@ -105,7 +101,6 @@ export async function setUpPack(
  * @param mode The mode to resolve the query for.
  * @param additionalPackNames Additional pack names to search.
  * @param additionalPackPaths Additional pack paths to search.
- * @param allowNoQueriesFound If true, will not throw an error if no queries are found.
  */
 export async function resolveEndpointsQuery(
   cliServer: CodeQLCliServer,
@@ -113,7 +108,6 @@ export async function resolveEndpointsQuery(
   mode: Mode,
   additionalPackNames: string[] = [],
   additionalPackPaths: string[] = [],
-  allowNoQueriesFound = false,
 ): Promise<string | undefined> {
   const packsToSearch = [`codeql/${language}-queries`, ...additionalPackNames];
 
@@ -121,15 +115,13 @@ export async function resolveEndpointsQuery(
   // All queries are tagged like this:
   // internal extract automodel <mode> <queryTag>
   // Example: internal extract automodel framework-mode candidates
-  const queries = await resolveQueries(
+  const queries = await resolveQueriesFromPacks(
     cliServer,
     packsToSearch,
-    `Fetch endpoints query for ${mode}`,
     {
       kind: "table",
       "tags contain all": ["modeleditor", "endpoints", modeTag(mode)],
     },
-    allowNoQueriesFound,
     additionalPackPaths,
   );
   if (queries.length > 1) {

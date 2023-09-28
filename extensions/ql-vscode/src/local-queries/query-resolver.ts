@@ -42,7 +42,7 @@ export interface QueryConstraints {
  * @param additionalPacks Additional pack paths to search.
  * @returns The found queries from the first pack in which any matching queries were found.
  */
-async function resolveQueriesFromPacks(
+export async function resolveQueriesFromPacks(
   cli: CodeQLCliServer,
   qlpacks: string[],
   constraints: QueryConstraints,
@@ -99,7 +99,6 @@ export async function resolveQueriesByLanguagePack(
  * @param packsToSearch The list of packs to search.
  * @param name The name of the query to use in error messages.
  * @param constraints Constraints on the queries to search for.
- * @param allowNoQueriesFound If true, will not throw an error if no queries are found.
  * @param additionalPacks Additional pack paths to search.
  * @returns The found queries from the first pack in which any matching queries were found.
  */
@@ -108,7 +107,6 @@ export async function resolveQueries(
   packsToSearch: string[],
   name: string,
   constraints: QueryConstraints,
-  allowNoQueriesFound = false,
   additionalPacks: string[] = [],
 ): Promise<string[]> {
   const queries = await resolveQueriesFromPacks(
@@ -133,10 +131,6 @@ export async function resolveQueries(
     humanConstraints.push(
       `tagged all of "${constraints["tags contain all"].join(" ")}"`,
     );
-  }
-
-  if (allowNoQueriesFound) {
-    return [];
   }
 
   const joinedPacksToSearch = packsToSearch.join(", ");

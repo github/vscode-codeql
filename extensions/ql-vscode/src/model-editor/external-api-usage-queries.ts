@@ -105,9 +105,13 @@ export async function runExternalApiQueries(
     mode,
     [syntheticQueryPackName],
     [queryDir],
-    false,
   );
   if (!queryPath) {
+    void showAndLogExceptionWithTelemetry(
+      extLogger,
+      telemetryListener,
+      redactableError`The ${mode} model editor query could not be found. Try re-opening the model editor. If that doesn't work, try upgrading the CodeQL libraries.`,
+    );
     return;
   }
 
