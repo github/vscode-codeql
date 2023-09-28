@@ -216,7 +216,7 @@ function createCodeSearchRequestHandler(
   // During a code search, there are multiple request to get pages of results. We
   // need to return different responses for each request, so keep an index of the
   // request and return the appropriate response.
-  return rest.get(`${baseUrl}/search/code?q=*`, () => {
+  return rest.get(`${baseUrl}/search/code`, () => {
     const request = codeSearchRequests[requestIndex];
 
     if (requestIndex < codeSearchRequests.length - 1) {
