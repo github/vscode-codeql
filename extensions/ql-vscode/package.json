@@ -1870,11 +1870,11 @@
       "codeQLDatabases.languages": [
         {
           "command": "codeQLDatabases.displayAllLanguages",
-          "when": "codeQLDatabases.languageFilter != All"
+          "when": "codeQLDatabases.languageFilter"
         },
         {
           "command": "codeQLDatabases.displayAllLanguagesSelected",
-          "when": "codeQLDatabases.languageFilter == All"
+          "when": "!codeQLDatabases.languageFilter"
         },
         {
           "command": "codeQLDatabases.displayCpp",
