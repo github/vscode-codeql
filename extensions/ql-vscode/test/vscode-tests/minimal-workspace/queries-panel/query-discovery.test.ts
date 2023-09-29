@@ -3,8 +3,8 @@ import {
   QueryDiscovery,
   QueryPackDiscoverer,
 } from "../../../../src/queries-panel/query-discovery";
-import { createMockEnvironmentContext } from "../../../__mocks__/appMock";
-import { dirname, join } from "path";
+import { createMockApp } from "../../../__mocks__/appMock";
+import { basename, dirname, join } from "path";
 import * as tmp from "tmp";
 import {
   FileTreeDirectory,
@@ -13,6 +13,7 @@ import {
 import { mkdirSync, writeFileSync } from "fs";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import { sleep } from "../../../../src/common/time";
+import { LanguageContextStore } from "../../../../src/language-context-store";
 
 describe("Query pack discovery", () => {
   let tmpDir: string;
@@ -20,7 +21,10 @@ describe("Query pack discovery", () => {
 
   let workspacePath: string;
 
-  const env = createMockEnvironmentContext();
+  const app = createMockApp({});
+  const env = app.environment;
+
+  const languageContext = new LanguageContextStore(app);
 
   const onDidChangeQueryPacks = new EventEmitter<void>();
   let queryPackDiscoverer: QueryPackDiscoverer;
@@ -45,7 +49,7 @@ describe("Query pack discovery", () => {
       getLanguageForQueryFile: () => QueryLanguage.Java,
       onDidChangeQueryPacks: onDidChangeQueryPacks.event,
     };
-    discovery = new QueryDiscovery(env, queryPackDiscoverer);
+    discovery = new QueryDiscovery(app, queryPackDiscoverer, languageContext);
   });
 
   afterEach(() => {
@@ -156,6 +160,52 @@ describe("Query pack discovery", () => {
             join(workspacePath, "query1.ql"),
             "query1.ql",
             "java",
+          ),
+        ]),
+      ]);
+    });
+
+    it("should respect the language context filter", async () => {
+      makeTestFile(join(workspacePath, "query1.ql"));
+      makeTestFile(join(workspacePath, "query2.ql"));
+
+      queryPackDiscoverer.getLanguageForQueryFile = (path) => {
+        if (basename(path) === "query1.ql") {
+          return QueryLanguage.Java;
+        } else {
+          return QueryLanguage.Python;
+        }
+      };
+
+      await discovery.initialRefresh();
+
+      // Set the language to python-only
+      await languageContext.setLanguageContext(QueryLanguage.Python);
+
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeLeaf(
+            join(workspacePath, "query2.ql"),
+            "query2.ql",
+            "python",
+          ),
+        ]),
+      ]);
+
+      // Clear the language context filter
+      await languageContext.clearLanguageContext();
+
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeLeaf(
+            join(workspacePath, "query1.ql"),
+            "query1.ql",
+            "java",
+          ),
+          new FileTreeLeaf(
+            join(workspacePath, "query2.ql"),
+            "query2.ql",
+            "python",
           ),
         ]),
       ]);
