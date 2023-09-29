@@ -74,6 +74,13 @@ export interface GetVariantAnalysisRepoResultRequest {
   };
 }
 
+interface CodeSearchResponse {
+  total_count: number;
+  items: Array<{
+    repository: Repository;
+  }>;
+}
+
 interface CodeSearchRequest {
   request: {
     kind: RequestKind.CodeSearch;
@@ -81,14 +88,12 @@ interface CodeSearchRequest {
   };
   response: {
     status: number;
-    body?: {
-      total_count?: number;
-      items?: Array<{
-        repository: Repository;
-      }>;
-    };
-    message?: string;
+    body?: CodeSearchResponse | BasicErorResponse;
   };
+}
+
+interface AutoModelResponse {
+  models: string;
 }
 
 interface AutoModelRequest {
@@ -100,10 +105,7 @@ interface AutoModelRequest {
   };
   response: {
     status: number;
-    body?: {
-      models: string;
-    };
-    message?: string;
+    body?: AutoModelResponse | BasicErorResponse;
   };
 }
 

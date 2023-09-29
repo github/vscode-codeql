@@ -12,18 +12,31 @@ import { getDirectoryNamesInsidePath } from "../files";
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
  */
 export class MockGitHubApiServer extends DisposableObject {
+  private _isListening: boolean;
+
   private readonly server: SetupServer;
   private readonly recorder: Recorder;
 
   constructor() {
     super();
+    this._isListening = false;
 
     this.server = setupServer();
     this.recorder = this.push(new Recorder(this.server));
   }
 
+  public startServer(): void {
+    if (this._isListening) {
+      return;
+    }
+
+    this.server.listen({ onUnhandledRequest: "bypass" });
+    this._isListening = true;
+  }
+
   public stopServer(): void {
     this.server.close();
+    this._isListening = false;
   }
 
   public async loadScenario(
@@ -42,7 +55,6 @@ export class MockGitHubApiServer extends DisposableObject {
     const handlers = await createRequestHandlers(scenarioPath);
     this.server.resetHandlers();
     this.server.use(...handlers);
-    this.server.listen({ onUnhandledRequest: "bypass" });
   }
 
   public async saveScenario(
@@ -97,6 +109,10 @@ export class MockGitHubApiServer extends DisposableObject {
     }
 
     return await getDirectoryNamesInsidePath(scenariosPath);
+  }
+
+  public get isListening(): boolean {
+    return this._isListening;
   }
 
   public get isRecording(): boolean {

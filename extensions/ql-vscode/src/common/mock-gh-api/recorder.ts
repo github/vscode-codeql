@@ -3,8 +3,6 @@ import { join } from "path";
 
 import { SetupServer } from "msw/node";
 
-import fetch from "node-fetch";
-
 import { DisposableObject } from "../disposable-object";
 
 import {
@@ -14,14 +12,12 @@ import {
 } from "./gh-api-request";
 
 export class Recorder extends DisposableObject {
-  private readonly allRequests = new Map<string, Request>();
   private currentRecordedScenario: GitHubApiRequest[] = [];
 
   private _isRecording = false;
 
   constructor(private readonly server: SetupServer) {
     super();
-    this.onRequestStart = this.onRequestStart.bind(this);
     this.onResponseBypass = this.onResponseBypass.bind(this);
   }
 
@@ -42,7 +38,6 @@ export class Recorder extends DisposableObject {
 
     this.clear();
 
-    this.server.events.on("request:start", this.onRequestStart);
     this.server.events.on("response:bypass", this.onResponseBypass);
   }
 
@@ -53,13 +48,11 @@ export class Recorder extends DisposableObject {
 
     this._isRecording = false;
 
-    this.server.events.removeListener("request:start", this.onRequestStart);
     this.server.events.removeListener("response:bypass", this.onResponseBypass);
   }
 
   public clear() {
     this.currentRecordedScenario = [];
-    this.allRequests.clear();
   }
 
   public async save(scenariosPath: string, name: string): Promise<string> {
@@ -109,34 +102,14 @@ export class Recorder extends DisposableObject {
     return scenarioDirectory;
   }
 
-  private onRequestStart(request: Request, requestId: string): void {
-    if (request.headers.has("x-vscode-codeql-msw-bypass")) {
-      return;
-    }
-
-    this.allRequests.set(requestId, request);
-  }
-
   private async onResponseBypass(
     response: Response,
-    _: Request,
-    requestId: string,
+    request: Request,
+    _requestId: string,
   ): Promise<void> {
-    const request = this.allRequests.get(requestId);
-    this.allRequests.delete(requestId);
-    if (!request) {
-      return;
-    }
-
-    if (response.body === undefined) {
-      return;
-    }
-
     const gitHubApiRequest = await createGitHubApiRequest(
-      request.url.toString(),
-      response.status,
-      response.body?.toString() || "",
-      response.headers,
+      request.url,
+      response,
     );
     if (!gitHubApiRequest) {
       return;
@@ -148,13 +121,14 @@ export class Recorder extends DisposableObject {
 
 async function createGitHubApiRequest(
   url: string,
-  status: number,
-  body: string,
-  headers: globalThis.Headers,
+  response: Response,
 ): Promise<GitHubApiRequest | undefined> {
   if (!url) {
     return undefined;
   }
+
+  const status = response.status;
+  const headers = response.headers;
 
   if (url.match(/\/repos\/[a-zA-Z0-9-_.]+\/[a-zA-Z0-9-_.]+$/)) {
     return {
@@ -163,7 +137,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await response.json(),
       },
     };
   }
@@ -177,7 +151,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await response.json(),
       },
     };
   }
@@ -193,7 +167,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await response.json(),
       },
     };
   }
@@ -209,7 +183,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await response.json(),
       },
     };
   }
@@ -219,17 +193,6 @@ async function createGitHubApiRequest(
     /objects-origin\.githubusercontent\.com\/codeql-query-console\/codeql-variant-analysis-repo-tasks\/\d+\/(?<repositoryId>\d+)/,
   );
   if (repoDownloadMatch?.groups?.repositoryId) {
-    // msw currently doesn't support binary response bodies, so we need to download this separately
-    // see https://github.com/mswjs/interceptors/blob/15eafa6215a328219999403e3ff110e71699b016/src/interceptors/ClientRequest/utils/getIncomingMessageBody.ts#L24-L33
-    // Essentially, mws is trying to decode a ZIP file as UTF-8 which changes the bytes and corrupts the file.
-    const response = await fetch(url, {
-      headers: {
-        // We need to ensure we don't end up in an infinite loop, since this request will also be intercepted
-        "x-vscode-codeql-msw-bypass": "true",
-      },
-    });
-    const responseBuffer = await response.buffer();
-
     return {
       request: {
         kind: RequestKind.GetVariantAnalysisRepoResult,
@@ -237,7 +200,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: responseBuffer,
+        body: Buffer.from(await response.arrayBuffer()),
         contentType: headers.get("content-type") ?? "application/octet-stream",
       },
     };
@@ -252,7 +215,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await response.json(),
       },
     };
   }
@@ -267,7 +230,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await response.json(),
       },
     };
   }
