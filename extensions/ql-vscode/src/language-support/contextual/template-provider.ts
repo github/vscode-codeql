@@ -36,7 +36,7 @@ import {
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { AstBuilder } from "../ast-viewer/ast-builder";
 import { qlpackOfDatabase } from "../../local-queries";
-import { MultiCancellationToken } from "../../common/multi-cancellation-token";
+import { MultiCancellationToken } from "../../common/vscode/multi-cancellation-token";
 
 /**
  * Runs templated CodeQL queries to find definitions in
