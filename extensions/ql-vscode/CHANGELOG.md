@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.9.1 - 29 September 2023
 
 - Add warning when using a VS Code version older than 1.82.0. [#2854](https://github.com/github/vscode-codeql/pull/2854)
