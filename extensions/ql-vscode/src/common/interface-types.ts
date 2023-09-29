@@ -21,6 +21,7 @@ import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import { ModelEditorViewState } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
+import { QueryLanguage } from "./query-language";
 
 /**
  * This module contains types and code that are shared between
@@ -624,3 +625,18 @@ export type ToMethodModelingMessage =
   | SetModeledMethodMessage
   | SetMethodModifiedMessage
   | SetSelectedMethodMessage;
+
+export type FromLanguageFilterMessage =
+  | TelemetryMessage
+  | UnhandledErrorMessage
+  | ClearLanguageFilterMessage
+  | SetLanguageFilterMessage;
+
+interface ClearLanguageFilterMessage {
+  t: "clearLanguageFilter";
+}
+
+interface SetLanguageFilterMessage {
+  t: "setLanguageFilter";
+  language: QueryLanguage;
+}

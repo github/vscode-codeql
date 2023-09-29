@@ -1967,6 +1967,12 @@
     "views": {
       "ql-container": [
         {
+          "type": "webview",
+          "id": "codeQLLanguageFilter",
+          "name": "Language",
+          "when": "config.codeQL.canary"
+        },
+        {
           "id": "codeQLDatabases",
           "name": "Databases"
         },

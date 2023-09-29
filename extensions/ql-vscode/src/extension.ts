@@ -136,6 +136,7 @@ import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
 import { LanguageContextStore } from "./language-context-store";
+import { LanguageFilterPanel } from "./language-filter/language-filter-panel";
 
 /**
  * extension.ts
@@ -778,6 +779,9 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing language context.");
   const languageContext = new LanguageContextStore(app);
+
+  void extLogger.log("Initializing language filtering view.");
+  ctx.subscriptions.push(new LanguageFilterPanel(app, languageContext));
 
   void extLogger.log("Initializing database panel.");
   const databaseUI = new DatabaseUI(
