@@ -1,6 +1,8 @@
 // Contains models and consts for the data we want to store in the query history store.
 // Changes to these models should be done carefully and account for backwards compatibility of data.
 
+import { QueryLanguageDto } from "./query-history-dto";
+
 export interface QueryHistoryVariantAnalysisDto {
   readonly t: "variant-analysis";
   failureReason?: string;
@@ -95,17 +97,6 @@ export enum VariantAnalysisStatusDto {
   Succeeded = "succeeded",
   Failed = "failed",
   Canceled = "canceled",
-}
-
-export enum QueryLanguageDto {
-  CSharp = "csharp",
-  Cpp = "cpp",
-  Go = "go",
-  Java = "java",
-  Javascript = "javascript",
-  Python = "python",
-  Ruby = "ruby",
-  Swift = "swift",
 }
 
 export enum QueryStatusDto {
