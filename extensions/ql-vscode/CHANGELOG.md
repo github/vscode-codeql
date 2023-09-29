@@ -1,6 +1,11 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.9.1 - 29 September 2023
+
+- Add warning when using a VS Code version older than 1.82.0. [#2854](https://github.com/github/vscode-codeql/pull/2854)
+- Fix a bug when parsing large evaluation log summaries. [#2858](https://github.com/github/vscode-codeql/pull/2858)
+- Right-align and format numbers in raw result tables. [#2864](https://github.com/github/vscode-codeql/pull/2864)
+- Remove rate limit warning notifications when using Code Search to add repositories to a variant analysis list. [#2812](https://github.com/github/vscode-codeql/pull/2812)
 
 ## 1.9.0 - 19 September 2023
 
