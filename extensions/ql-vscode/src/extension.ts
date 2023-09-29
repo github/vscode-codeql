@@ -135,6 +135,7 @@ import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
+import { LanguageContextStore } from "./language-context-store";
 
 /**
  * extension.ts
@@ -774,10 +775,15 @@ async function activateWithInstalledDistribution(
   void dbm.loadPersistedState();
 
   ctx.subscriptions.push(dbm);
+
+  void extLogger.log("Initializing language context.");
+  const languageContext = new LanguageContextStore(app);
+
   void extLogger.log("Initializing database panel.");
   const databaseUI = new DatabaseUI(
     app,
     dbm,
+    languageContext,
     qs,
     getContextStoragePath(ctx),
     ctx.extensionPath,

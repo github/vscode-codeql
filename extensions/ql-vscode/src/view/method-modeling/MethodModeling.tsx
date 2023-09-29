@@ -27,10 +27,12 @@ const DependencyContainer = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 0.5em;
-  background-color: var(--vscode-textBlockQuote-background);
+  background-color: var(--vscode-editor-background);
+  border: 0.05rem solid var(--vscode-panelSection-border);
   border-radius: 0.3rem;
-  border-color: var(--vscode-textBlockQuote-border);
   padding: 0.5rem;
+  word-wrap: break-word;
+  word-break: break-all;
 `;
 
 export type MethodModelingProps = {
