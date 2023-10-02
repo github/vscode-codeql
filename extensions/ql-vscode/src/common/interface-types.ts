@@ -597,9 +597,15 @@ export type FromModelEditorMessage =
   | HideModeledMethodsMessage
   | SetModeledMethodMessage;
 
+interface RevealInEditorMessage {
+  t: "revealInModelEditor";
+  method: Method;
+}
+
 export type FromMethodModelingMessage =
   | CommonFromViewMessages
-  | SetModeledMethodMessage;
+  | SetModeledMethodMessage
+  | RevealInEditorMessage;
 
 interface SetMethodMessage {
   t: "setMethod";

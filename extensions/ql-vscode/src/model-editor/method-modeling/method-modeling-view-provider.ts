@@ -10,6 +10,7 @@ import { redactableError } from "../../common/errors";
 import { Method } from "../method";
 import { ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
+import { assertNever } from "../../common/helpers-pure";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -87,6 +88,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         );
         break;
       }
+      case "revealInModelEditor":
+        break;
+      default:
+        assertNever(msg);
     }
   }
 
