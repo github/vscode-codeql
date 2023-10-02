@@ -58,6 +58,24 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     msg: FromMethodModelingMessage,
   ): Promise<void> {
     switch (msg.t) {
+      case "viewLoaded":
+        this.onWebViewLoaded();
+        break;
+
+      case "telemetry":
+        telemetryListener?.sendUIInteraction(msg.action);
+        break;
+
+      case "unhandledError":
+        void showAndLogExceptionWithTelemetry(
+          extLogger,
+          telemetryListener,
+          redactableError(
+            msg.error,
+          )`Unhandled error in method modeling view: ${msg.error.message}`,
+        );
+        break;
+
       case "setModeledMethod": {
         const activeState = this.modelingStore.getStateForActiveDb();
         if (!activeState) {
@@ -69,20 +87,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         );
         break;
       }
-
-      case "telemetry": {
-        telemetryListener?.sendUIInteraction(msg.action);
-        break;
-      }
-      case "unhandledError":
-        void showAndLogExceptionWithTelemetry(
-          extLogger,
-          telemetryListener,
-          redactableError(
-            msg.error,
-          )`Unhandled error in method modeling view: ${msg.error.message}`,
-        );
-        break;
     }
   }
 

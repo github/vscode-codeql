@@ -47,8 +47,6 @@ export abstract class AbstractWebviewViewProvider<
 
     webviewView.webview.onDidReceiveMessage(async (msg) => this.onMessage(msg));
     webviewView.onDidDispose(() => this.dispose());
-
-    this.onWebViewLoaded();
   }
 
   protected get isShowingView() {
