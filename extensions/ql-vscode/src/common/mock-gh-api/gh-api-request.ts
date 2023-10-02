@@ -17,7 +17,7 @@ export enum RequestKind {
   AutoModel = "autoModel",
 }
 
-interface BasicErorResponse {
+export interface BasicErorResponse {
   message: string;
 }
 
@@ -74,7 +74,7 @@ export interface GetVariantAnalysisRepoResultRequest {
   };
 }
 
-interface CodeSearchResponse {
+export interface CodeSearchResponse {
   total_count: number;
   items: Array<{
     repository: Repository;
@@ -92,7 +92,7 @@ interface CodeSearchRequest {
   };
 }
 
-interface AutoModelResponse {
+export interface AutoModelResponse {
   models: string;
 }
 

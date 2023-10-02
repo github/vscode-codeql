@@ -4,12 +4,21 @@ import { join } from "path";
 import { SetupServer } from "msw/node";
 
 import { DisposableObject } from "../disposable-object";
+import { gzipDecode } from "../zlib";
 
 import {
+  AutoModelResponse,
+  BasicErorResponse,
+  CodeSearchResponse,
   GetVariantAnalysisRepoResultRequest,
   GitHubApiRequest,
   RequestKind,
 } from "./gh-api-request";
+import {
+  VariantAnalysis,
+  VariantAnalysisRepoTask,
+} from "../../variant-analysis/gh-api/variant-analysis";
+import { Repository } from "../../variant-analysis/gh-api/repository";
 
 export class Recorder extends DisposableObject {
   private currentRecordedScenario: GitHubApiRequest[] = [];
@@ -81,7 +90,7 @@ export class Recorder extends DisposableObject {
 
         let bodyFileLink = undefined;
         if (writtenRequest.response.body) {
-          await writeFile(bodyFilePath, writtenRequest.response.body || "");
+          await writeFile(bodyFilePath, writtenRequest.response.body);
           bodyFileLink = `file:${bodyFileName}`;
         }
 
@@ -137,7 +146,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: await response.json(),
+        body: await jsonResponseBody<
+          Repository | BasicErorResponse | undefined
+        >(response),
       },
     };
   }
@@ -151,7 +162,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: await response.json(),
+        body: await jsonResponseBody<
+          VariantAnalysis | BasicErorResponse | undefined
+        >(response),
       },
     };
   }
@@ -167,7 +180,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: await response.json(),
+        body: await jsonResponseBody<
+          VariantAnalysis | BasicErorResponse | undefined
+        >(response),
       },
     };
   }
@@ -183,7 +198,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: await response.json(),
+        body: await jsonResponseBody<
+          VariantAnalysisRepoTask | BasicErorResponse | undefined
+        >(response),
       },
     };
   }
@@ -200,7 +217,7 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: Buffer.from(await response.arrayBuffer()),
+        body: Buffer.from(await responseBody(response)),
         contentType: headers.get("content-type") ?? "application/octet-stream",
       },
     };
@@ -215,7 +232,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: await response.json(),
+        body: await jsonResponseBody<
+          CodeSearchResponse | BasicErorResponse | undefined
+        >(response),
       },
     };
   }
@@ -230,12 +249,34 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: await response.json(),
+        body: await jsonResponseBody<
+          BasicErorResponse | AutoModelResponse | undefined
+        >(response),
       },
     };
   }
 
   return undefined;
+}
+
+async function responseBody(response: Response): Promise<Uint8Array> {
+  const body = await response.arrayBuffer();
+  const view = new Uint8Array(body);
+
+  if (view[0] === 0x1f && view[1] === 0x8b) {
+    // Response body is gzipped, so we need to un-gzip it.
+
+    return await gzipDecode(view);
+  } else {
+    return view;
+  }
+}
+
+async function jsonResponseBody<T>(response: Response): Promise<T> {
+  const body = await responseBody(response);
+  const text = new TextDecoder("utf-8").decode(body);
+
+  return JSON.parse(text);
 }
 
 function shouldWriteBodyToFile(
