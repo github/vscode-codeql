@@ -46,7 +46,7 @@ export class ModelEditorModule extends DisposableObject {
       new MethodsUsagePanel(this.modelingStore, cliServer),
     );
     this.methodModelingPanel = this.push(
-      new MethodModelingPanel(app, this.modelingStore),
+      new MethodModelingPanel(app, this.modelingStore, this.editorViewTracker),
     );
 
     this.registerToModelingStoreEvents();

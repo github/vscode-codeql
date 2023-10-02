@@ -1,5 +1,9 @@
+import { Method } from "./method";
+
 interface ModelEditorViewInterface {
   databaseUri: string;
+
+  revealMethod(method: Method): Promise<void>;
 }
 
 export class ModelEditorViewTracker<

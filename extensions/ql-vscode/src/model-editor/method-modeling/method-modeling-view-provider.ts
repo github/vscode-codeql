@@ -8,9 +8,10 @@ import { extLogger } from "../../common/logging/vscode/loggers";
 import { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { Method } from "../method";
-import { ModelingStore } from "../modeling-store";
+import { DbModelingState, ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
+import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -23,6 +24,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   constructor(
     app: App,
     private readonly modelingStore: ModelingStore,
+    private readonly editorViewTracker: ModelEditorViewTracker,
   ) {
     super(app, "method-modeling");
   }
@@ -78,10 +80,8 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         break;
 
       case "setModeledMethod": {
-        const activeState = this.modelingStore.getStateForActiveDb();
-        if (!activeState) {
-          throw new Error("No active state found in modeling store");
-        }
+        const activeState = this.ensureActiveState();
+
         this.modelingStore.updateModeledMethod(
           activeState.databaseItem,
           msg.method,
@@ -89,10 +89,34 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         break;
       }
       case "revealInModelEditor":
+        await this.revealInModelEditor(msg.method);
+
         break;
       default:
         assertNever(msg);
     }
+  }
+
+  private async revealInModelEditor(method: Method): Promise<void> {
+    const activeState = this.ensureActiveState();
+
+    const views = this.editorViewTracker.getViews(
+      activeState.databaseItem.databaseUri.toString(),
+    );
+    if (views.length === 0) {
+      return;
+    }
+
+    await Promise.all(views.map((view) => view.revealMethod(method)));
+  }
+
+  private ensureActiveState(): DbModelingState {
+    const activeState = this.modelingStore.getStateForActiveDb();
+    if (!activeState) {
+      throw new Error("No active state found in modeling store");
+    }
+
+    return activeState;
   }
 
   private registerToModelingStoreEvents(): void {

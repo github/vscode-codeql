@@ -346,6 +346,10 @@ export class ModelEditorView extends AbstractWebview<
     return this.databaseItem.databaseUri.toString();
   }
 
+  public async revealMethod(method: Method): Promise<void> {
+    void this.app.logger.log(`Revealing method ${JSON.stringify(method)}`);
+  }
+
   private async setViewState(): Promise<void> {
     const showLlmButton =
       this.databaseItem.language === "java" && showLlmGeneration();
