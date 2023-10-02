@@ -8,7 +8,7 @@ import { gzipDecode } from "../zlib";
 
 import {
   AutoModelResponse,
-  BasicErorResponse,
+  BasicErrorResponse,
   CodeSearchResponse,
   GetVariantAnalysisRepoResultRequest,
   GitHubApiRequest,
@@ -147,7 +147,7 @@ async function createGitHubApiRequest(
       response: {
         status,
         body: await jsonResponseBody<
-          Repository | BasicErorResponse | undefined
+          Repository | BasicErrorResponse | undefined
         >(response),
       },
     };
@@ -163,7 +163,7 @@ async function createGitHubApiRequest(
       response: {
         status,
         body: await jsonResponseBody<
-          VariantAnalysis | BasicErorResponse | undefined
+          VariantAnalysis | BasicErrorResponse | undefined
         >(response),
       },
     };
@@ -181,7 +181,7 @@ async function createGitHubApiRequest(
       response: {
         status,
         body: await jsonResponseBody<
-          VariantAnalysis | BasicErorResponse | undefined
+          VariantAnalysis | BasicErrorResponse | undefined
         >(response),
       },
     };
@@ -199,7 +199,7 @@ async function createGitHubApiRequest(
       response: {
         status,
         body: await jsonResponseBody<
-          VariantAnalysisRepoTask | BasicErorResponse | undefined
+          VariantAnalysisRepoTask | BasicErrorResponse | undefined
         >(response),
       },
     };
@@ -233,7 +233,7 @@ async function createGitHubApiRequest(
       response: {
         status,
         body: await jsonResponseBody<
-          CodeSearchResponse | BasicErorResponse | undefined
+          CodeSearchResponse | BasicErrorResponse | undefined
         >(response),
       },
     };
@@ -250,7 +250,7 @@ async function createGitHubApiRequest(
       response: {
         status,
         body: await jsonResponseBody<
-          BasicErorResponse | AutoModelResponse | undefined
+          BasicErrorResponse | AutoModelResponse | undefined
         >(response),
       },
     };

@@ -17,7 +17,7 @@ export enum RequestKind {
   AutoModel = "autoModel",
 }
 
-export interface BasicErorResponse {
+export interface BasicErrorResponse {
   message: string;
 }
 
@@ -27,7 +27,7 @@ interface GetRepoRequest {
   };
   response: {
     status: number;
-    body: Repository | BasicErorResponse | undefined;
+    body: Repository | BasicErrorResponse | undefined;
   };
 }
 
@@ -37,7 +37,7 @@ interface SubmitVariantAnalysisRequest {
   };
   response: {
     status: number;
-    body?: VariantAnalysis | BasicErorResponse;
+    body?: VariantAnalysis | BasicErrorResponse;
   };
 }
 
@@ -47,7 +47,7 @@ interface GetVariantAnalysisRequest {
   };
   response: {
     status: number;
-    body?: VariantAnalysis | BasicErorResponse;
+    body?: VariantAnalysis | BasicErrorResponse;
   };
 }
 
@@ -58,7 +58,7 @@ interface GetVariantAnalysisRepoRequest {
   };
   response: {
     status: number;
-    body?: VariantAnalysisRepoTask | BasicErorResponse;
+    body?: VariantAnalysisRepoTask | BasicErrorResponse;
   };
 }
 
@@ -88,7 +88,7 @@ interface CodeSearchRequest {
   };
   response: {
     status: number;
-    body?: CodeSearchResponse | BasicErorResponse;
+    body?: CodeSearchResponse | BasicErrorResponse;
   };
 }
 
@@ -105,7 +105,7 @@ interface AutoModelRequest {
   };
   response: {
     status: number;
-    body?: AutoModelResponse | BasicErorResponse;
+    body?: AutoModelResponse | BasicErrorResponse;
   };
 }
 
