@@ -347,7 +347,12 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   public async revealMethod(method: Method): Promise<void> {
-    void this.app.logger.log(`Revealing method ${JSON.stringify(method)}`);
+    this.panel?.reveal();
+
+    await this.postMessage({
+      t: "revealMethod",
+      method,
+    });
   }
 
   private async setViewState(): Promise<void> {

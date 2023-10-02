@@ -575,12 +575,18 @@ interface SetModeledMethodMessage {
   method: ModeledMethod;
 }
 
+interface RevealMethodMessage {
+  t: "revealMethod";
+  method: Method;
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
   | SetModeledMethodsMessage
   | SetModifiedMethodsMessage
-  | SetInProgressMethodsMessage;
+  | SetInProgressMethodsMessage
+  | RevealMethodMessage;
 
 export type FromModelEditorMessage =
   | ViewLoadedMsg

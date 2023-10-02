@@ -43,6 +43,7 @@ describe(LibraryRow.name, () => {
         inProgressMethods={new InProgressMethods()}
         viewState={viewState}
         hideModeledMethods={false}
+        revealedMethodSignature={null}
         onChange={onChange}
         onSaveModelClick={onSaveModelClick}
         onGenerateFromLlmClick={onGenerateFromLlmClick}

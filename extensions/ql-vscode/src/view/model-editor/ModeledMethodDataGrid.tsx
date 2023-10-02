@@ -23,6 +23,7 @@ export type ModeledMethodDataGridProps = {
   inProgressMethods: InProgressMethods;
   mode: Mode;
   hideModeledMethods: boolean;
+  revealedMethodSignature: string | null;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
@@ -34,6 +35,7 @@ export const ModeledMethodDataGrid = ({
   inProgressMethods,
   mode,
   hideModeledMethods,
+  revealedMethodSignature,
   onChange,
 }: ModeledMethodDataGridProps) => {
   const [methodsWithModelability, numHiddenMethods]: [
@@ -94,6 +96,7 @@ export const ModeledMethodDataGrid = ({
                 method.signature,
               )}
               mode={mode}
+              revealedMethodSignature={revealedMethodSignature}
               onChange={onChange}
             />
           ))}
