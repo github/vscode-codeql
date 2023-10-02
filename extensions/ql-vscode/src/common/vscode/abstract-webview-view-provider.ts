@@ -64,6 +64,8 @@ export abstract class AbstractWebviewViewProvider<
       const disposable = this.disposables.pop()!;
       disposable.dispose();
     }
+
+    this.webviewView = undefined;
   }
 
   protected push<T extends Disposable>(obj: T): T {
@@ -75,6 +77,10 @@ export abstract class AbstractWebviewViewProvider<
 
   protected abstract onMessage(msg: FromMessage): Promise<void>;
 
+  /**
+   * This is called when a view first becomes visible. This may happen when the view is
+   * first loaded or when the user hides and then shows a view again.
+   */
   protected onWebViewLoaded(): void {
     // Do nothing by default.
   }
