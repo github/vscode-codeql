@@ -7,6 +7,7 @@ import {
 import { CancellationTokenSource } from "vscode";
 import { QueryResultType } from "../../../src/query-server/legacy-messages";
 import { QueryMetadata } from "../../../src/common/interface-types";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 export function createMockLocalQueryInfo({
   startTime = new Date(),
@@ -16,6 +17,7 @@ export function createMockLocalQueryInfo({
   dbName = "db-name",
   hasMetadata = false,
   queryWithResults = undefined,
+  language = undefined,
 }: {
   startTime?: Date;
   resultCount?: number;
@@ -24,6 +26,7 @@ export function createMockLocalQueryInfo({
   dbName?: string;
   hasMetadata?: boolean;
   queryWithResults?: QueryWithResults | undefined;
+  language?: QueryLanguage;
 }): LocalQueryInfo {
   const cancellationToken = {
     dispose: () => {
@@ -40,6 +43,7 @@ export function createMockLocalQueryInfo({
     databaseInfo: {
       databaseUri: "databaseUri",
       name: dbName,
+      language,
     },
     start: startTime,
     id: faker.number.int().toString(),

@@ -28,6 +28,7 @@ import { createMockQueryHistoryDirs } from "../../../factories/query-history/que
 import { createMockApp } from "../../../__mocks__/appMock";
 import { App } from "../../../../src/common/app";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
+import { LanguageContextStore } from "../../../../src/language-context-store";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -937,6 +938,7 @@ describe("QueryHistoryManager", () => {
         ttlInMillis: 0,
         onDidChangeConfiguration: jest.fn(),
       }),
+      new LanguageContextStore(mockApp),
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];
