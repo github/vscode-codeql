@@ -20,12 +20,14 @@ import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 import { ModelingStore } from "./modeling-store";
 import { showResolvableLocation } from "../databases/local-databases/locations";
+import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
   private readonly modelingStore: ModelingStore;
+  private readonly editorViewTracker: ModelEditorViewTracker<ModelEditorView>;
   private readonly methodsUsagePanel: MethodsUsagePanel;
   private readonly methodModelingPanel: MethodModelingPanel;
 
@@ -39,6 +41,7 @@ export class ModelEditorModule extends DisposableObject {
     super();
     this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
     this.modelingStore = new ModelingStore(app);
+    this.editorViewTracker = new ModelEditorViewTracker();
     this.methodsUsagePanel = this.push(
       new MethodsUsagePanel(this.modelingStore, cliServer),
     );
@@ -148,6 +151,7 @@ export class ModelEditorModule extends DisposableObject {
             const view = new ModelEditorView(
               this.app,
               this.modelingStore,
+              this.editorViewTracker,
               this.databaseManager,
               this.cliServer,
               this.queryRunner,
