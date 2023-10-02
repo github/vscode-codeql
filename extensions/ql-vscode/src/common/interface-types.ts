@@ -598,8 +598,7 @@ export type FromModelEditorMessage =
   | SetModeledMethodMessage;
 
 export type FromMethodModelingMessage =
-  | TelemetryMessage
-  | UnhandledErrorMessage
+  | CommonFromViewMessages
   | SetModeledMethodMessage;
 
 interface SetMethodMessage {
