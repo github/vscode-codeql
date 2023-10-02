@@ -116,38 +116,44 @@ export class MethodModelingViewProvider
   }
 
   private registerToModelingStoreEvents(): void {
-    this.modelingStore.onModeledMethodsChanged(async (e) => {
-      if (this.webviewView && e.isActiveDb) {
-        const modeledMethod = e.modeledMethods[this.method?.signature ?? ""];
-        if (modeledMethod) {
+    this.push(
+      this.modelingStore.onModeledMethodsChanged(async (e) => {
+        if (this.webviewView && e.isActiveDb) {
+          const modeledMethod = e.modeledMethods[this.method?.signature ?? ""];
+          if (modeledMethod) {
+            await this.webviewView.webview.postMessage({
+              t: "setModeledMethod",
+              method: modeledMethod,
+            });
+          }
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onModifiedMethodsChanged(async (e) => {
+        if (this.webviewView && e.isActiveDb && this.method) {
+          const isModified = e.modifiedMethods.has(this.method.signature);
           await this.webviewView.webview.postMessage({
-            t: "setModeledMethod",
-            method: modeledMethod,
+            t: "setMethodModified",
+            isModified,
           });
         }
-      }
-    });
+      }),
+    );
 
-    this.modelingStore.onModifiedMethodsChanged(async (e) => {
-      if (this.webviewView && e.isActiveDb && this.method) {
-        const isModified = e.modifiedMethods.has(this.method.signature);
-        await this.webviewView.webview.postMessage({
-          t: "setMethodModified",
-          isModified,
-        });
-      }
-    });
-
-    this.modelingStore.onSelectedMethodChanged(async (e) => {
-      if (this.webviewView) {
-        this.method = e.method;
-        await this.webviewView.webview.postMessage({
-          t: "setSelectedMethod",
-          method: e.method,
-          modeledMethod: e.modeledMethod,
-          isModified: e.isModified,
-        });
-      }
-    });
+    this.push(
+      this.modelingStore.onSelectedMethodChanged(async (e) => {
+        if (this.webviewView) {
+          this.method = e.method;
+          await this.webviewView.webview.postMessage({
+            t: "setSelectedMethod",
+            method: e.method,
+            modeledMethod: e.modeledMethod,
+            isModified: e.isModified,
+          });
+        }
+      }),
+    );
   }
 }
