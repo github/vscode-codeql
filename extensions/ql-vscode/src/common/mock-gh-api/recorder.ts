@@ -1,6 +1,7 @@
 import { ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 
+import fetch from "node-fetch";
 import { SetupServer } from "msw/node";
 
 import { DisposableObject } from "../disposable-object";
@@ -116,6 +117,10 @@ export class Recorder extends DisposableObject {
     request: Request,
     _requestId: string,
   ): Promise<void> {
+    if (request.headers.has("x-vscode-codeql-msw-bypass")) {
+      return;
+    }
+
     const gitHubApiRequest = await createGitHubApiRequest(
       request.url,
       response,
@@ -137,7 +142,6 @@ async function createGitHubApiRequest(
   }
 
   const status = response.status;
-  const headers = response.headers;
 
   if (url.match(/\/repos\/[a-zA-Z0-9-_.]+\/[a-zA-Z0-9-_.]+$/)) {
     return {
@@ -210,15 +214,27 @@ async function createGitHubApiRequest(
     /objects-origin\.githubusercontent\.com\/codeql-query-console\/codeql-variant-analysis-repo-tasks\/\d+\/(?<repositoryId>\d+)/,
   );
   if (repoDownloadMatch?.groups?.repositoryId) {
+    // msw currently doesn't support binary response bodies, so we need to download this separately
+    // see https://github.com/mswjs/interceptors/blob/15eafa6215a328219999403e3ff110e71699b016/src/interceptors/ClientRequest/utils/getIncomingMessageBody.ts#L24-L33
+    // Essentially, mws is trying to decode a ZIP file as UTF-8 which changes the bytes and corrupts the file.
+    const response = await fetch(url, {
+      headers: {
+        // We need to ensure we don't end up in an infinite loop, since this request will also be intercepted
+        "x-vscode-codeql-msw-bypass": "true",
+      },
+    });
+    const responseBuffer = await response.buffer();
+
     return {
       request: {
         kind: RequestKind.GetVariantAnalysisRepoResult,
         repositoryId: parseInt(repoDownloadMatch.groups.repositoryId, 10),
       },
       response: {
-        status,
-        body: Buffer.from(await responseBody(response)),
-        contentType: headers.get("content-type") ?? "application/octet-stream",
+        status: response.status,
+        body: responseBuffer,
+        contentType:
+          response.headers.get("content-type") ?? "application/octet-stream",
       },
     };
   }
