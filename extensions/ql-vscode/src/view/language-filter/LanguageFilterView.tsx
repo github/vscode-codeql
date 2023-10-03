@@ -21,7 +21,10 @@ export function LanguageFilterView(): JSX.Element {
     };
   }, []);
 
+  const [language, setLanguage] = React.useState<QueryLanguage | "all">("all");
+
   const onChange = (language: QueryLanguage) => {
+    setLanguage(language);
     vscode.postMessage({
       t: "setLanguageFilter",
       language,
@@ -29,10 +32,13 @@ export function LanguageFilterView(): JSX.Element {
   };
 
   const onClear = () => {
+    setLanguage("all");
     vscode.postMessage({
       t: "clearLanguageFilter",
     });
   };
 
-  return <LanguageFilter onChange={onChange} onClear={onClear} />;
+  return (
+    <LanguageFilter onChange={onChange} onClear={onClear} language={language} />
+  );
 }

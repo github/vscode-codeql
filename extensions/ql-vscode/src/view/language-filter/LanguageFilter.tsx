@@ -14,11 +14,13 @@ const Dropdown = styled(VSCodeDropdown)`
 `;
 
 export type LanguageFilterProps = {
+  language: QueryLanguage | "all";
   onChange: (value: QueryLanguage) => void;
   onClear: () => void;
 };
 
 export const LanguageFilter = ({
+  language,
   onChange,
   onClear,
 }: LanguageFilterProps): JSX.Element => {
@@ -36,7 +38,7 @@ export const LanguageFilter = ({
   );
 
   return (
-    <Dropdown onInput={handleInput}>
+    <Dropdown onInput={handleInput} value={language}>
       <>
         <VSCodeOption key="0" value="all">
           All languages
