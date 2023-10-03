@@ -637,9 +637,13 @@ export type ToMethodModelingMessage =
   | SetMethodModifiedMessage
   | SetSelectedMethodMessage;
 
+// Placeholder type, since we don't have any real "to" messages yet.
+export interface ToLanguageFilterMessage {
+  t: "toLanguageFilter";
+}
+
 export type FromLanguageFilterMessage =
-  | TelemetryMessage
-  | UnhandledErrorMessage
+  | CommonFromViewMessages
   | ClearLanguageFilterMessage
   | SetLanguageFilterMessage;
 

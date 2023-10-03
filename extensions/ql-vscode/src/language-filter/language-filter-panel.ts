@@ -11,7 +11,6 @@ export class LanguageFilterPanel extends DisposableObject {
     super();
 
     this.provider = new LanguageFilterViewProvider(app, languageContext);
-    this.push(this.provider);
     this.push(
       window.registerWebviewViewProvider(
         LanguageFilterViewProvider.viewType,
