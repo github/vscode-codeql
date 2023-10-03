@@ -10,7 +10,7 @@ export class MethodModelingPanel extends DisposableObject {
   private readonly provider: MethodModelingViewProvider;
 
   constructor(
-    app: App,
+    private readonly app: App,
     modelingStore: ModelingStore,
     editorViewTracker: ModelEditorViewTracker,
   ) {
@@ -25,11 +25,20 @@ export class MethodModelingPanel extends DisposableObject {
       window.registerWebviewViewProvider(
         MethodModelingViewProvider.viewType,
         this.provider,
+        { webviewOptions: { retainContextWhenHidden: true } },
       ),
     );
   }
 
   public async setMethod(method: Method): Promise<void> {
     await this.provider.setMethod(method);
+  }
+
+  public async show(): Promise<void> {
+    if (this.provider.isWebviewViewResolved) {
+      await this.provider.show();
+    } else {
+      await this.app.commands.execute("codeQLMethodModeling.focus");
+    }
   }
 }

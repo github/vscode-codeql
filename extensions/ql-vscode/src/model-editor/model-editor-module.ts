@@ -188,6 +188,7 @@ export class ModelEditorModule extends DisposableObject {
         databaseItem: DatabaseItem,
       ) => {
         this.modelingStore.setSelectedMethod(databaseItem, method, usage);
+        await this.methodModelingPanel.show();
       },
     };
   }
