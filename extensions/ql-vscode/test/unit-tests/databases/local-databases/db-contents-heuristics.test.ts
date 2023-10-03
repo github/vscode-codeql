@@ -9,7 +9,9 @@ import {
 describe("isLikelyDatabaseRoot", () => {
   let dir: tmp.DirResult;
   beforeEach(() => {
-    dir = tmp.dirSync();
+    dir = tmp.dirSync({
+      unsafeCleanup: true,
+    });
   });
 
   afterEach(() => {
@@ -54,7 +56,9 @@ describe("isLikelyDatabaseRoot", () => {
 describe("isLikelyDbLanguageFolder", () => {
   let dir: tmp.DirResult;
   beforeEach(() => {
-    dir = tmp.dirSync();
+    dir = tmp.dirSync({
+      unsafeCleanup: true,
+    });
   });
 
   afterEach(() => {

@@ -51,7 +51,9 @@ describe("local databases", () => {
   let extensionContextStoragePath: string;
 
   beforeEach(() => {
-    dir = tmp.dirSync();
+    dir = tmp.dirSync({
+      unsafeCleanup: true,
+    });
 
     updateSpy = jest.fn(() => Promise.resolve(undefined));
     registerSpy = jest.fn(() => Promise.resolve(undefined));

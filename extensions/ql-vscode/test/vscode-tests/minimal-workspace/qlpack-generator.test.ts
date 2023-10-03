@@ -19,7 +19,9 @@ describe("QlPackGenerator", () => {
   let dir: tmp.DirResult;
 
   beforeEach(async () => {
-    dir = tmp.dirSync();
+    dir = tmp.dirSync({
+      unsafeCleanup: true,
+    });
 
     language = "ruby";
     packFolderName = `test-ql-pack-${language}`;

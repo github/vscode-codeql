@@ -74,6 +74,7 @@ describe("modeled-method-fs", () => {
         process.platform === "win32"
           ? join(homedir(), "AppData", "Local", "Temp")
           : undefined,
+      unsafeCleanup: true,
     });
     tmpDir = t.name;
     tmpDirRemoveCallback = t.removeCallback;
