@@ -35,10 +35,6 @@ export class MethodModelingPanel extends DisposableObject {
   }
 
   public async show(): Promise<void> {
-    if (this.provider.isWebviewViewResolved) {
-      await this.provider.show();
-    } else {
-      await this.app.commands.execute("codeQLMethodModeling.focus");
-    }
+    await this.app.commands.execute("codeQLMethodModeling.focus");
   }
 }

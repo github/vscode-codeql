@@ -53,14 +53,6 @@ export abstract class AbstractWebviewViewProvider<
     return this.webviewView?.visible ?? false;
   }
 
-  public get isWebviewViewResolved() {
-    return this.webviewView !== undefined;
-  }
-
-  public async show(): Promise<void> {
-    this.webviewView?.show(true);
-  }
-
   protected async postMessage(msg: ToMessage): Promise<void> {
     await this.webviewView?.webview.postMessage(msg);
   }
