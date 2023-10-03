@@ -21,6 +21,7 @@ import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import { ModelEditorViewState } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
+import { QueryLanguage } from "./query-language";
 
 /**
  * This module contains types and code that are shared between
@@ -51,6 +52,7 @@ export const RAW_RESULTS_LIMIT = 10000;
 export interface DatabaseInfo {
   name: string;
   databaseUri: string;
+  language?: QueryLanguage;
 }
 
 /** Arbitrary query metadata */
