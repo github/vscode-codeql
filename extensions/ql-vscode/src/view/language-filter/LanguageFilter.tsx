@@ -13,7 +13,7 @@ const Dropdown = styled(VSCodeDropdown)`
   z-index: 9999;
 `;
 
-export type LanguageFilterProps = {
+type LanguageFilterProps = {
   language: QueryLanguage | "all";
   onChange: (value: QueryLanguage) => void;
   onClear: () => void;
