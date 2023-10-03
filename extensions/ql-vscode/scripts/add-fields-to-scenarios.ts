@@ -14,7 +14,8 @@
 import { pathExists, readJson, writeJson } from "fs-extra";
 import { resolve, relative } from "path";
 
-import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
+import { Octokit } from "@octokit/core";
+import { type RestEndpointMethodTypes } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
 
 import { getFiles } from "./util/files";
@@ -22,6 +23,7 @@ import type { GitHubApiRequest } from "../src/common/mock-gh-api/gh-api-request"
 import { isGetVariantAnalysisRequest } from "../src/common/mock-gh-api/gh-api-request";
 import { VariantAnalysis } from "../src/variant-analysis/gh-api/variant-analysis";
 import { RepositoryWithMetadata } from "../src/variant-analysis/gh-api/repository";
+import { AppOctokit } from "../src/common/octokit";
 
 const extensionDirectory = resolve(__dirname, "..");
 const scenariosDirectory = resolve(
@@ -31,7 +33,7 @@ const scenariosDirectory = resolve(
 
 // Make sure we don't run into rate limits by automatically waiting until we can
 // make another request.
-const MyOctokit = Octokit.plugin(throttling);
+const MyOctokit = AppOctokit.plugin(throttling);
 
 const auth = process.env.GITHUB_TOKEN;
 

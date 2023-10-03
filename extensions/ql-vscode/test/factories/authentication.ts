@@ -1,8 +1,8 @@
-import { retry } from "@octokit/plugin-retry";
 import * as Octokit from "@octokit/rest";
 import { RequestInterface } from "@octokit/types/dist-types/RequestInterface";
 
 import { Credentials } from "../../src/common/authentication";
+import { AppOctokit } from "../../src/common/octokit";
 
 function makeTestOctokit(octokit: Octokit.Octokit): Credentials {
   return {
@@ -38,5 +38,5 @@ export function testCredentialsWithStub(
  * optionally authenticated with a given token.
  */
 export function testCredentialsWithRealOctokit(token?: string): Credentials {
-  return makeTestOctokit(new Octokit.Octokit({ auth: token, retry }));
+  return makeTestOctokit(new AppOctokit({ auth: token }));
 }

@@ -1,9 +1,9 @@
-import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
 import { Octokit } from "@octokit/rest";
 import { Progress, CancellationToken } from "vscode";
 import { Credentials } from "../common/authentication";
 import { BaseLogger } from "../common/logging";
+import { AppOctokit } from "../common/octokit";
 
 export async function getCodeSearchRepositories(
   query: string,
@@ -46,12 +46,11 @@ async function provideOctokitWithThrottling(
   credentials: Credentials,
   logger: BaseLogger,
 ): Promise<Octokit> {
-  const MyOctokit = Octokit.plugin(throttling);
+  const MyOctokit = AppOctokit.plugin(throttling);
   const auth = await credentials.getAccessToken();
 
   const octokit = new MyOctokit({
     auth,
-    retry,
     throttle: {
       onRateLimit: (retryAfter: number, options: any): boolean => {
         void logger.log(
