@@ -1,4 +1,5 @@
-import { CancellationToken, Event, EventEmitter } from "vscode";
+import { CancellationToken, Disposable } from "vscode";
+import { BasicDisposableObject } from "../disposable-object";
 
 /**
  * A cancellation token that cancels when any of its constituent
@@ -6,20 +7,19 @@ import { CancellationToken, Event, EventEmitter } from "vscode";
  */
 export class MultiCancellationToken implements CancellationToken {
   private readonly tokens: CancellationToken[];
-  private readonly onCancellationRequestedEvent = new EventEmitter<void>();
 
   constructor(...tokens: CancellationToken[]) {
     this.tokens = tokens;
-    tokens.forEach((t) =>
-      t.onCancellationRequested(() => this.onCancellationRequestedEvent.fire()),
-    );
   }
 
   get isCancellationRequested(): boolean {
     return this.tokens.some((t) => t.isCancellationRequested);
   }
 
-  get onCancellationRequested(): Event<any> {
-    return this.onCancellationRequestedEvent.event;
+  onCancellationRequested<T>(listener: (e: T) => any): Disposable {
+    const disposables = this.tokens.map((t) =>
+      t.onCancellationRequested(listener),
+    );
+    return new BasicDisposableObject(...disposables);
   }
 }

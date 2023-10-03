@@ -82,3 +82,12 @@ export abstract class DisposableObject implements Disposable {
     }
   }
 }
+
+export class BasicDisposableObject extends DisposableObject {
+  constructor(...dispoables: Disposable[]) {
+    super();
+    for (const d of dispoables) {
+      this.push(d);
+    }
+  }
+}
