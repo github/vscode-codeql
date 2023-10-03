@@ -1,5 +1,6 @@
 import {
   FromCompareViewMessage,
+  FromLanguageFilterMessage,
   FromMethodModelingMessage,
   FromModelEditorMessage,
   FromResultsViewMsg,
@@ -17,7 +18,8 @@ export interface VsCodeApi {
       | FromCompareViewMessage
       | FromVariantAnalysisMessage
       | FromModelEditorMessage
-      | FromMethodModelingMessage,
+      | FromMethodModelingMessage
+      | FromLanguageFilterMessage,
   ): void;
 
   /**

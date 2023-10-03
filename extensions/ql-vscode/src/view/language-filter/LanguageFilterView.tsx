@@ -1,9 +1,10 @@
 import * as React from "react";
-import { useEffect } from "react";
 import { LanguageFilter } from "./LanguageFilter";
+import { vscode } from "../vscode-api";
+import { QueryLanguage } from "../../common/query-language";
 
 export function LanguageFilterView(): JSX.Element {
-  useEffect(() => {
+  React.useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
         // Nothing to do yet.
@@ -20,5 +21,12 @@ export function LanguageFilterView(): JSX.Element {
     };
   }, []);
 
-  return <LanguageFilter />;
+  const onChange = (language: QueryLanguage) => {
+    vscode.postMessage({
+      t: "setLanguageFilter",
+      language,
+    });
+  };
+
+  return <LanguageFilter onChange={onChange} />;
 }
