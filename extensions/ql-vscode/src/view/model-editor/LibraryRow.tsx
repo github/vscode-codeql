@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { styled } from "styled-components";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
@@ -76,6 +76,7 @@ export type LibraryRowProps = {
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
+  revealedMethodSignature: string | null;
   onChange: (modeledMethod: ModeledMethod) => void;
   onSaveModelClick: (
     methods: Method[],
@@ -100,6 +101,7 @@ export const LibraryRow = ({
   inProgressMethods,
   viewState,
   hideModeledMethods,
+  revealedMethodSignature,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -116,6 +118,14 @@ export const LibraryRow = ({
   const toggleExpanded = useCallback(async () => {
     setExpanded((oldIsExpanded) => !oldIsExpanded);
   }, []);
+
+  useEffect(() => {
+    // If any of the methods in this group is the one that should be revealed, we should expand
+    // this group so the method can highlight itself.
+    if (methods.some((m) => m.signature === revealedMethodSignature)) {
+      setExpanded(true);
+    }
+  }, [methods, revealedMethodSignature]);
 
   const handleModelWithAI = useCallback(
     async (e: React.MouseEvent) => {
@@ -227,6 +237,7 @@ export const LibraryRow = ({
             inProgressMethods={inProgressMethods}
             mode={viewState.mode}
             hideModeledMethods={hideModeledMethods}
+            revealedMethodSignature={revealedMethodSignature}
             onChange={onChange}
           />
           <SectionDivider />

@@ -6,7 +6,7 @@ import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 
-interface DbModelingState {
+export interface DbModelingState {
   databaseItem: DatabaseItem;
   methods: Method[];
   hideModeledMethods: boolean;

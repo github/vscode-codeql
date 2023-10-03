@@ -4,6 +4,7 @@ import { QueryHistoryConfig } from "../config";
 import { LocalQueryInfo } from "../query-results";
 import {
   buildRepoLabel,
+  getLanguage,
   getRawQueryName,
   QueryHistoryInfo,
 } from "./query-history-info";
@@ -19,6 +20,7 @@ interface InterpolateReplacements {
   r: string; // Result count/Empty
   s: string; // Status
   f: string; // Query file name
+  l: string; // Query language
   "%": "%"; // Percent sign
 }
 
@@ -84,6 +86,7 @@ export class HistoryItemLabelProvider {
       r: `(${resultCount} results)`,
       s: statusString,
       f: item.getQueryFileName(),
+      l: this.getLanguageLabel(item),
       "%": "%",
     };
   }
@@ -103,7 +106,13 @@ export class HistoryItemLabelProvider {
       r: resultCount,
       s: humanizeQueryStatus(item.status),
       f: basename(item.variantAnalysis.query.filePath),
+      l: this.getLanguageLabel(item),
       "%": "%",
     };
+  }
+
+  private getLanguageLabel(item: QueryHistoryInfo): string {
+    const language = getLanguage(item);
+    return language === undefined ? "unknown" : `${language}`;
   }
 }

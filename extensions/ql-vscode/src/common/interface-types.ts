@@ -21,6 +21,7 @@ import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import { ModelEditorViewState } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
+import { QueryLanguage } from "./query-language";
 
 /**
  * This module contains types and code that are shared between
@@ -51,6 +52,7 @@ export const RAW_RESULTS_LIMIT = 10000;
 export interface DatabaseInfo {
   name: string;
   databaseUri: string;
+  language?: QueryLanguage;
 }
 
 /** Arbitrary query metadata */
@@ -575,12 +577,18 @@ interface SetModeledMethodMessage {
   method: ModeledMethod;
 }
 
+interface RevealMethodMessage {
+  t: "revealMethod";
+  method: Method;
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
   | SetModeledMethodsMessage
   | SetModifiedMethodsMessage
-  | SetInProgressMethodsMessage;
+  | SetInProgressMethodsMessage
+  | RevealMethodMessage;
 
 export type FromModelEditorMessage =
   | ViewLoadedMsg
@@ -597,9 +605,15 @@ export type FromModelEditorMessage =
   | HideModeledMethodsMessage
   | SetModeledMethodMessage;
 
+interface RevealInEditorMessage {
+  t: "revealInModelEditor";
+  method: Method;
+}
+
 export type FromMethodModelingMessage =
   | CommonFromViewMessages
-  | SetModeledMethodMessage;
+  | SetModeledMethodMessage
+  | RevealInEditorMessage;
 
 interface SetMethodMessage {
   t: "setMethod";

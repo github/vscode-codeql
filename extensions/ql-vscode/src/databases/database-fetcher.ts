@@ -14,7 +14,6 @@ import {
 } from "fs-extra";
 import { basename, join } from "path";
 import * as Octokit from "@octokit/rest";
-import { retry } from "@octokit/plugin-retry";
 
 import { DatabaseManager, DatabaseItem } from "./local-databases";
 import { tmpDir } from "../tmp-dir";
@@ -32,6 +31,7 @@ import { Credentials } from "../common/authentication";
 import { AppCommandManager } from "../common/commands";
 import { allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
+import { AppOctokit } from "../common/octokit";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -186,7 +186,7 @@ export async function downloadGitHubDatabase(
 
   const octokit = credentials
     ? await credentials.getOctokit()
-    : new Octokit.Octokit({ retry });
+    : new AppOctokit();
 
   const result = await convertGithubNwoToDatabaseUrl(
     nwo,

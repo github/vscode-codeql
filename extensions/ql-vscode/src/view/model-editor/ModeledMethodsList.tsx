@@ -16,6 +16,7 @@ export type ModeledMethodsListProps = {
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
+  revealedMethodSignature: string | null;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
@@ -44,6 +45,7 @@ export const ModeledMethodsList = ({
   inProgressMethods,
   viewState,
   hideModeledMethods,
+  revealedMethodSignature,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -89,6 +91,7 @@ export const ModeledMethodsList = ({
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
+          revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}

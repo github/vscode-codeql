@@ -60,6 +60,7 @@ describe(ModeledMethodDataGrid.name, () => {
         inProgressMethods={new InProgressMethods()}
         mode={Mode.Application}
         hideModeledMethods={false}
+        revealedMethodSignature={null}
         onChange={onChange}
         {...props}
       />,

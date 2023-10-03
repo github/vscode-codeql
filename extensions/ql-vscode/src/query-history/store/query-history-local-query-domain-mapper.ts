@@ -17,6 +17,7 @@ import {
   SortDirection,
   SortedResultSetInfo,
 } from "../../common/interface-types";
+import { mapQueryLanguageToDto } from "./query-history-domain-mapper";
 
 export function mapLocalQueryInfoToDto(
   query: LocalQueryInfo,
@@ -101,6 +102,10 @@ function mapInitialQueryInfoToDto(
     databaseInfo: {
       databaseUri: localQueryInitialInfo.databaseInfo.databaseUri,
       name: localQueryInitialInfo.databaseInfo.name,
+      language:
+        localQueryInitialInfo.databaseInfo.language === undefined
+          ? undefined
+          : mapQueryLanguageToDto(localQueryInitialInfo.databaseInfo.language),
     },
     start: localQueryInitialInfo.start,
     id: localQueryInitialInfo.id,

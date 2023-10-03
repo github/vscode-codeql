@@ -12,3 +12,14 @@ export interface QueryHistoryDto {
 export type QueryHistoryItemDto =
   | QueryHistoryLocalQueryDto
   | QueryHistoryVariantAnalysisDto;
+
+export enum QueryLanguageDto {
+  CSharp = "csharp",
+  Cpp = "cpp",
+  Go = "go",
+  Java = "java",
+  Javascript = "javascript",
+  Python = "python",
+  Ruby = "ruby",
+  Swift = "swift",
+}

@@ -20,6 +20,7 @@ import {
   SortDirection,
   SortedResultSetInfo,
 } from "../../common/interface-types";
+import { mapQueryLanguageToDomainModel } from "./query-history-dto-mapper";
 
 export function mapLocalQueryItemToDomainModel(
   localQuery: QueryHistoryLocalQueryDto,
@@ -82,6 +83,10 @@ function mapInitialQueryInfoToDomainModel(
     databaseInfo: {
       databaseUri: initialInfo.databaseInfo.databaseUri,
       name: initialInfo.databaseInfo.name,
+      language:
+        initialInfo.databaseInfo.language === undefined
+          ? undefined
+          : mapQueryLanguageToDomainModel(initialInfo.databaseInfo.language),
     },
     start: new Date(initialInfo.start),
     id: initialInfo.id,
