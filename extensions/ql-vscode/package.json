@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.9.1",
+  "version": "1.9.2",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -1077,7 +1077,7 @@
         },
         {
           "submenu": "codeQLDatabases.languages",
-          "when": "view == codeQLDatabases && config.codeQL.canary",
+          "when": "view == codeQLDatabases && config.codeQL.canary && config.codeQL.showLanguageFilter",
           "group": "2_databases@0"
         },
         {
@@ -1870,11 +1870,11 @@
       "codeQLDatabases.languages": [
         {
           "command": "codeQLDatabases.displayAllLanguages",
-          "when": "codeQLDatabases.languageFilter != All"
+          "when": "codeQLDatabases.languageFilter"
         },
         {
           "command": "codeQLDatabases.displayAllLanguagesSelected",
-          "when": "codeQLDatabases.languageFilter == All"
+          "when": "!codeQLDatabases.languageFilter"
         },
         {
           "command": "codeQLDatabases.displayCpp",

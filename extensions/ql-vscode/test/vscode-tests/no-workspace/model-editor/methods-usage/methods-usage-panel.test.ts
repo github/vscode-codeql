@@ -10,6 +10,7 @@ import {
 } from "../../../../factories/model-editor/method-factories";
 import { ModelingStore } from "../../../../../src/model-editor/modeling-store";
 import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
+import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -20,6 +21,8 @@ describe("MethodsUsagePanel", () => {
   describe("setState", () => {
     const hideModeledMethods = false;
     const methods: Method[] = [createMethod()];
+    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modifiedMethodSignatures: Set<string> = new Set();
 
     it("should update the tree view with the correct batch number", async () => {
       const mockTreeView = {
@@ -30,7 +33,13 @@ describe("MethodsUsagePanel", () => {
       const modelingStore = createMockModelingStore();
 
       const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledMethods);
+      await panel.setState(
+        methods,
+        dbItem,
+        hideModeledMethods,
+        modeledMethods,
+        modifiedMethodSignatures,
+      );
 
       expect(mockTreeView.badge?.value).toBe(1);
     });
@@ -41,6 +50,8 @@ describe("MethodsUsagePanel", () => {
     let modelingStore: ModelingStore;
 
     const hideModeledMethods: boolean = false;
+    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modifiedMethodSignatures: Set<string> = new Set();
     const usage = createUsage();
 
     beforeEach(() => {
@@ -60,7 +71,13 @@ describe("MethodsUsagePanel", () => {
       ];
 
       const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledMethods);
+      await panel.setState(
+        methods,
+        dbItem,
+        hideModeledMethods,
+        modeledMethods,
+        modifiedMethodSignatures,
+      );
 
       await panel.revealItem(usage);
 
@@ -70,7 +87,13 @@ describe("MethodsUsagePanel", () => {
     it("should do nothing if usage cannot be found", async () => {
       const methods = [createMethod({})];
       const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledMethods);
+      await panel.setState(
+        methods,
+        dbItem,
+        hideModeledMethods,
+        modeledMethods,
+        modifiedMethodSignatures,
+      );
 
       await panel.revealItem(usage);
 

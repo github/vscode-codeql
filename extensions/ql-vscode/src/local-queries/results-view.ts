@@ -75,6 +75,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { ResultsViewCommands } from "../common/commands";
 import { App } from "../common/app";
+import { Disposable } from "../common/disposable-object";
 
 /**
  * results-view.ts
@@ -157,6 +158,12 @@ function numInterpretedPages(
   return Math.ceil(n / pageSize);
 }
 
+/**
+ * The results view is used for displaying the results of a local query. It is a singleton; only 1 results view exists
+ * in the extension. It is created when the extension is activated and disposed of when the extension is deactivated.
+ * There can be multiple panels linked to this view over the lifetime of the extension, but there is only ever 1 panel
+ * active at a time.
+ */
 export class ResultsView extends AbstractWebview<
   IntoResultsViewMsg,
   FromResultsViewMsg
@@ -168,6 +175,9 @@ export class ResultsView extends AbstractWebview<
     "codeql-query-results",
   );
 
+  // Event listeners that should be disposed of when the view is disposed.
+  private disposableEventListeners: Disposable[] = [];
+
   constructor(
     app: App,
     private databaseManager: DatabaseManager,
@@ -176,14 +186,16 @@ export class ResultsView extends AbstractWebview<
     private labelProvider: HistoryItemLabelProvider,
   ) {
     super(app);
-    this.push(this._diagnosticCollection);
-    this.push(
+
+    // We can't use this.push for these two event listeners because they need to be disposed of when the view is
+    // disposed, not when the panel is disposed. The results view is a singleton, so we shouldn't be calling this.push.
+    this.disposableEventListeners.push(
       vscode.window.onDidChangeTextEditorSelection(
         this.handleSelectionChange.bind(this),
       ),
     );
 
-    this.push(
+    this.disposableEventListeners.push(
       this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {
         if (kind === DatabaseEventKind.Remove) {
           this._diagnosticCollection.clear();
@@ -980,5 +992,13 @@ export class ResultsView extends AbstractWebview<
       editor.setDecorations(shownLocationDecoration, []);
       editor.setDecorations(shownLocationLineDecoration, []);
     }
+  }
+
+  dispose() {
+    super.dispose();
+
+    this._diagnosticCollection.dispose();
+    this.disposableEventListeners.forEach((d) => d.dispose());
+    this.disposableEventListeners = [];
   }
 }
