@@ -1,6 +1,6 @@
 import { dirname, basename, normalize, relative } from "path";
 import { Event } from "vscode";
-import { EnvironmentContext } from "../common/app";
+import { App } from "../common/app";
 import {
   FileTreeDirectory,
   FileTreeLeaf,
@@ -11,6 +11,8 @@ import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { containsPath } from "../common/files";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { QueryLanguage } from "../common/query-language";
+import { LanguageContextStore } from "../language-context-store";
+import { AppEvent, AppEventEmitter } from "../common/events";
 
 const QUERY_FILE_EXTENSION = ".ql";
 
@@ -31,24 +33,36 @@ export class QueryDiscovery
   extends FilePathDiscovery<Query>
   implements QueryDiscoverer
 {
+  public readonly onDidChangeQueries: AppEvent<void>;
+  private readonly onDidChangeQueriesEmitter: AppEventEmitter<void>;
+
   constructor(
-    private readonly env: EnvironmentContext,
+    private readonly app: App,
     private readonly queryPackDiscovery: QueryPackDiscoverer,
+    private readonly languageContext: LanguageContextStore,
   ) {
     super("Query Discovery", `**/*${QUERY_FILE_EXTENSION}`);
 
+    // Set up event emitters
+    this.onDidChangeQueriesEmitter = this.push(app.createEventEmitter<void>());
+    this.onDidChangeQueries = this.onDidChangeQueriesEmitter.event;
+
+    // Handlers
     this.push(
       this.queryPackDiscovery.onDidChangeQueryPacks(
         this.recomputeAllData.bind(this),
       ),
     );
-  }
-
-  /**
-   * Event that fires when the set of queries in the workspace changes.
-   */
-  public get onDidChangeQueries(): Event<void> {
-    return this.onDidChangePathData;
+    this.push(
+      this.onDidChangePathData(() => {
+        this.onDidChangeQueriesEmitter.fire();
+      }),
+    );
+    this.push(
+      this.languageContext.onLanguageContextChanged(() => {
+        this.onDidChangeQueriesEmitter.fire();
+      }),
+    );
   }
 
   /**
@@ -64,8 +78,10 @@ export class QueryDiscovery
 
     const roots = [];
     for (const workspaceFolder of getOnDiskWorkspaceFoldersObjects()) {
-      const queriesInRoot = pathData.filter((query) =>
-        containsPath(workspaceFolder.uri.fsPath, query.path),
+      const queriesInRoot = pathData.filter(
+        (query) =>
+          containsPath(workspaceFolder.uri.fsPath, query.path) &&
+          this.languageContext.shouldInclude(query.language),
       );
       if (queriesInRoot.length === 0) {
         continue;
@@ -73,7 +89,7 @@ export class QueryDiscovery
       const root = new FileTreeDirectory<string>(
         workspaceFolder.uri.fsPath,
         workspaceFolder.name,
-        this.env,
+        this.app.environment,
       );
       for (const query of queriesInRoot) {
         const dirName = dirname(normalize(relative(root.path, query.path)));

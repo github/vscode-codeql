@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Fix a bug where the query to Find Definitions in database source files would not be cancelled appropriately. [#2885](https://github.com/github/vscode-codeql/pull/2885)
+- Fix a bug where the query server was restarted twice after configuration changes. [#2884](https://github.com/github/vscode-codeql/pull/2884).
 
 ## 1.9.1 - 29 September 2023
 
