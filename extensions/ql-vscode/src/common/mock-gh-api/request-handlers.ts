@@ -1,6 +1,6 @@
 import { join } from "path";
 import { readdir, readJson, readFile } from "fs-extra";
-import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
+import { RequestHandler, rest } from "msw";
 import {
   GitHubApiRequest,
   isAutoModelRequest,
@@ -14,7 +14,19 @@ import {
 
 const baseUrl = "https://api.github.com";
 
-type RequestHandler = RestHandler<MockedRequest<DefaultBodyType>>;
+const jsonResponse = <T>(
+  body: T,
+  init?: ResponseInit,
+  contentType = "application/json",
+): Response => {
+  return new Response(JSON.stringify(body), {
+    ...init,
+    headers: {
+      "Content-Type": contentType,
+      ...init?.headers,
+    },
+  });
+};
 
 export async function createRequestHandlers(
   scenarioDirPath: string,
@@ -82,11 +94,10 @@ function createGetRepoRequestHandler(
 
   const getRepoRequest = getRepoRequests[0];
 
-  return rest.get(`${baseUrl}/repos/:owner/:name`, (_req, res, ctx) => {
-    return res(
-      ctx.status(getRepoRequest.response.status),
-      ctx.json(getRepoRequest.response.body),
-    );
+  return rest.get(`${baseUrl}/repos/:owner/:name`, () => {
+    return jsonResponse(getRepoRequest.response.body, {
+      status: getRepoRequest.response.status,
+    });
   });
 }
 
@@ -105,11 +116,10 @@ function createSubmitVariantAnalysisRequestHandler(
 
   return rest.post(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses`,
-    (_req, res, ctx) => {
-      return res(
-        ctx.status(getRepoRequest.response.status),
-        ctx.json(getRepoRequest.response.body),
-      );
+    () => {
+      return jsonResponse(getRepoRequest.response.body, {
+        status: getRepoRequest.response.status,
+      });
     },
   );
 }
@@ -127,7 +137,7 @@ function createGetVariantAnalysisRequestHandler(
   // request, so keep an index of the request and return the appropriate response.
   return rest.get(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId`,
-    (_req, res, ctx) => {
+    () => {
       const request = getVariantAnalysisRequests[requestIndex];
 
       if (requestIndex < getVariantAnalysisRequests.length - 1) {
@@ -135,10 +145,9 @@ function createGetVariantAnalysisRequestHandler(
         requestIndex++;
       }
 
-      return res(
-        ctx.status(request.response.status),
-        ctx.json(request.response.body),
-      );
+      return jsonResponse(request.response.body, {
+        status: request.response.status,
+      });
     },
   );
 }
@@ -152,18 +161,17 @@ function createGetVariantAnalysisRepoRequestHandler(
 
   return rest.get(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId`,
-    (req, res, ctx) => {
+    ({ request, params }) => {
       const scenarioRequest = getVariantAnalysisRepoRequests.find(
-        (r) => r.request.repositoryId.toString() === req.params.repoId,
+        (r) => r.request.repositoryId.toString() === params.repoId,
       );
       if (!scenarioRequest) {
-        throw Error(`No scenario request found for ${req.url}`);
+        throw Error(`No scenario request found for ${request.url}`);
       }
 
-      return res(
-        ctx.status(scenarioRequest.response.status),
-        ctx.json(scenarioRequest.response.body),
-      );
+      return jsonResponse(scenarioRequest.response.body, {
+        status: scenarioRequest.response.status,
+      });
     },
   );
 }
@@ -177,22 +185,23 @@ function createGetVariantAnalysisRepoResultRequestHandler(
 
   return rest.get(
     "https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/:repoId/*",
-    (req, res, ctx) => {
+    ({ request, params }) => {
       const scenarioRequest = getVariantAnalysisRepoResultRequests.find(
-        (r) => r.request.repositoryId.toString() === req.params.repoId,
+        (r) => r.request.repositoryId.toString() === params.repoId,
       );
       if (!scenarioRequest) {
-        throw Error(`No scenario request found for ${req.url}`);
+        throw Error(`No scenario request found for ${request.url}`);
       }
 
       if (scenarioRequest.response.body) {
-        return res(
-          ctx.status(scenarioRequest.response.status),
-          ctx.set("Content-Type", scenarioRequest.response.contentType),
-          ctx.body(scenarioRequest.response.body),
-        );
+        return new Response(scenarioRequest.response.body, {
+          status: scenarioRequest.response.status,
+          headers: {
+            "Content-Type": scenarioRequest.response.contentType,
+          },
+        });
       } else {
-        return res(ctx.status(scenarioRequest.response.status));
+        return new Response(null, { status: scenarioRequest.response.status });
       }
     },
   );
@@ -207,7 +216,7 @@ function createCodeSearchRequestHandler(
   // During a code search, there are multiple request to get pages of results. We
   // need to return different responses for each request, so keep an index of the
   // request and return the appropriate response.
-  return rest.get(`${baseUrl}/search/code?q=*`, (_req, res, ctx) => {
+  return rest.get(`${baseUrl}/search/code`, () => {
     const request = codeSearchRequests[requestIndex];
 
     if (requestIndex < codeSearchRequests.length - 1) {
@@ -215,10 +224,9 @@ function createCodeSearchRequestHandler(
       requestIndex++;
     }
 
-    return res(
-      ctx.status(request.response.status),
-      ctx.json(request.response.body),
-    );
+    return jsonResponse(request.response.body, {
+      status: request.response.status,
+    });
   });
 }
 
@@ -233,7 +241,7 @@ function createAutoModelRequestHandler(
   // so keep an index of the request and return the appropriate response.
   return rest.post(
     `${baseUrl}/repos/github/codeql/code-scanning/codeql/auto-model`,
-    (_req, res, ctx) => {
+    () => {
       const request = autoModelRequests[requestIndex];
 
       if (requestIndex < autoModelRequests.length - 1) {
@@ -241,10 +249,9 @@ function createAutoModelRequestHandler(
         requestIndex++;
       }
 
-      return res(
-        ctx.status(request.response.status),
-        ctx.json(request.response.body),
-      );
+      return jsonResponse(request.response.body, {
+        status: request.response.status,
+      });
     },
   );
 }

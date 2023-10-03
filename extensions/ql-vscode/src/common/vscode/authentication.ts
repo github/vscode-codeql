@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as Octokit from "@octokit/rest";
-import { retry } from "@octokit/plugin-retry";
 import { Credentials } from "../authentication";
+import { AppOctokit } from "../octokit";
 
 export const GITHUB_AUTH_PROVIDER_ID = "github";
 
@@ -32,9 +32,8 @@ export class VSCodeCredentials implements Credentials {
 
     const accessToken = await this.getAccessToken();
 
-    return new Octokit.Octokit({
+    return new AppOctokit({
       auth: accessToken,
-      retry,
     });
   }
 

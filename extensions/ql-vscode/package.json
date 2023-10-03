@@ -13,8 +13,8 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.67.0",
-    "node": "^16.17.1",
+    "vscode": "^1.82.0",
+    "node": "^18.15.0",
     "npm": ">=7.20.6"
   },
   "categories": [
@@ -2076,8 +2076,8 @@
     "prepare": "cd ../.. && husky install"
   },
   "dependencies": {
-    "@octokit/plugin-retry": "^4.1.6",
-    "@octokit/rest": "^19.0.4",
+    "@octokit/plugin-retry": "^6.0.1",
+    "@octokit/rest": "^20.0.2",
     "@vscode/codicons": "^0.0.31",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.59.0",
@@ -2091,8 +2091,8 @@
     "fs-extra": "^11.1.1",
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
-    "msw": "^1.2.0",
-    "nanoid": "^3.2.0",
+    "msw": "^0.0.0-fetch.rc-20",
+    "nanoid": "^5.0.1",
     "node-fetch": "^2.6.7",
     "p-queue": "^6.0.0",
     "react": "^18.2.0",
@@ -2121,7 +2121,7 @@
     "@babel/preset-typescript": "^7.21.4",
     "@faker-js/faker": "^8.0.2",
     "@github/markdownlint-github": "^0.3.0",
-    "@octokit/plugin-throttling": "^5.0.1",
+    "@octokit/plugin-throttling": "^8.0.0",
     "@storybook/addon-actions": "^7.1.0",
     "@storybook/addon-essentials": "^7.1.0",
     "@storybook/addon-interactions": "^7.1.0",
@@ -2147,7 +2147,7 @@
     "@types/jest": "^29.0.2",
     "@types/js-yaml": "^4.0.6",
     "@types/nanoid": "^3.0.0",
-    "@types/node": "^16.11.25",
+    "@types/node": "18.15.0",
     "@types/node-fetch": "^2.5.2",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
@@ -2159,7 +2159,7 @@
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
     "@types/unzipper": "^0.10.1",
-    "@types/vscode": "^1.67.0",
+    "@types/vscode": "^1.82.0",
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
     "@typescript-eslint/eslint-plugin": "^6.2.1",

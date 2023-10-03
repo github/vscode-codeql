@@ -42,6 +42,7 @@ import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
+import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -52,6 +53,7 @@ export class ModelEditorView extends AbstractWebview<
   public constructor(
     protected readonly app: App,
     private readonly modelingStore: ModelingStore,
+    private readonly viewTracker: ModelEditorViewTracker<ModelEditorView>,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -65,6 +67,8 @@ export class ModelEditorView extends AbstractWebview<
 
     this.modelingStore.initializeStateForDb(databaseItem);
     this.registerToModelingStoreEvents();
+
+    this.viewTracker.registerView(this);
 
     this.autoModeler = new AutoModeler(
       app,
@@ -181,7 +185,7 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   protected onPanelDispose(): void {
-    // Nothing to do here
+    this.viewTracker.unregisterView(this);
   }
 
   protected async onMessage(msg: FromModelEditorMessage): Promise<void> {
@@ -336,6 +340,19 @@ export class ModelEditorView extends AbstractWebview<
       }),
       this.loadExistingModeledMethods(),
     ]);
+  }
+
+  public get databaseUri(): string {
+    return this.databaseItem.databaseUri.toString();
+  }
+
+  public async revealMethod(method: Method): Promise<void> {
+    this.panel?.reveal();
+
+    await this.postMessage({
+      t: "revealMethod",
+      method,
+    });
   }
 
   private async setViewState(): Promise<void> {
@@ -497,6 +514,7 @@ export class ModelEditorView extends AbstractWebview<
       const view = new ModelEditorView(
         this.app,
         this.modelingStore,
+        this.viewTracker,
         this.databaseManager,
         this.cliServer,
         this.queryRunner,

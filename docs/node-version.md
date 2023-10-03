@@ -21,6 +21,7 @@ The following files will need to be updated:
 - `extensions/ql-vscode/.nvmrc` - this will enable nvm to automatically switch to the correct node version when you're in the project folder
 - `extensions/ql-vscode/package-lock.json` - the "engines.node: '[VERSION]'" setting
 - `extensions/ql-vscode/package.json` - the "engines.node: '[VERSION]'" setting
+- `extensions/ql-vscode/package.json` - the "@types/node: '[VERSION]'" dependency
 
 ## Node.js version used in tests
 
