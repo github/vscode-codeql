@@ -39,6 +39,7 @@ describe(MethodRow.name, () => {
         modeledMethod={modeledMethod}
         methodIsUnsaved={false}
         modelingInProgress={false}
+        revealedMethodSignature={null}
         mode={Mode.Application}
         onChange={onChange}
         {...props}

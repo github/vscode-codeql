@@ -7,6 +7,7 @@ import { MethodName } from "../model-editor/MethodName";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { MethodModelingInputs } from "./MethodModelingInputs";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { ReviewInEditorButton } from "./ReviewInEditorButton";
 
 const Container = styled.div`
   padding: 0.3rem;
@@ -64,6 +65,7 @@ export const MethodModeling = ({
         modeledMethod={modeledMethod}
         onChange={onChange}
       />
+      <ReviewInEditorButton method={method} />
     </Container>
   );
 };

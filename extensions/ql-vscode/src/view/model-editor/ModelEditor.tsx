@@ -101,6 +101,10 @@ export function ModelEditor({
     initialHideModeledMethods,
   );
 
+  const [revealedMethodSignature, setRevealedMethodSignature] = useState<
+    string | null
+  >(null);
+
   useEffect(() => {
     vscode.postMessage({
       t: "hideModeledMethods",
@@ -137,6 +141,10 @@ export function ModelEditor({
               ),
             );
             break;
+          case "revealMethod":
+            setRevealedMethodSignature(msg.method.signature);
+
+            break;
           default:
             assertNever(msg);
         }
@@ -150,6 +158,20 @@ export function ModelEditor({
 
     return () => {
       window.removeEventListener("message", listener);
+    };
+  }, []);
+
+  useEffect(() => {
+    // If there is a revealed method signature, hide it when the user clicks anywhere. In this case, we do need to
+    // show the user where the method is anymore and they should have seen it.
+    const listener = () => {
+      setRevealedMethodSignature(null);
+    };
+
+    window.addEventListener("click", listener);
+
+    return () => {
+      window.removeEventListener("click", listener);
     };
   }, []);
 
@@ -323,6 +345,7 @@ export function ModelEditor({
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
+          revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
