@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- It is now possible to show the language of query history items using the `%l` specifier in the `codeQL.queryHistory.format` setting. Note that this only works queries run after this upgrade, and older items will show `unknown` as a language. [#2892](https://github.com/github/vscode-codeql/pull/2892)
+- It is now possible to show the language of query history items using the `%l` specifier in the `codeQL.queryHistory.format` setting. Note that this only works for queries run after this upgrade, and older items will show `unknown` as a language. [#2892](https://github.com/github/vscode-codeql/pull/2892)
 - Increase the required version of VS Code to 1.82.0. [#2877](https://github.com/github/vscode-codeql/pull/2877)
 - Fix a bug where the query server was restarted twice after configuration changes. [#2884](https://github.com/github/vscode-codeql/pull/2884).
 
