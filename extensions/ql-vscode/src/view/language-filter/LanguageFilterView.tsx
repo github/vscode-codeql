@@ -28,5 +28,11 @@ export function LanguageFilterView(): JSX.Element {
     });
   };
 
-  return <LanguageFilter onChange={onChange} />;
+  const onClear = () => {
+    vscode.postMessage({
+      t: "clearLanguageFilter",
+    });
+  };
+
+  return <LanguageFilter onChange={onChange} onClear={onClear} />;
 }

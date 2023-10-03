@@ -15,24 +15,30 @@ const Dropdown = styled(VSCodeDropdown)`
 
 export type LanguageFilterProps = {
   onChange: (value: QueryLanguage) => void;
+  onClear: () => void;
 };
 
 export const LanguageFilter = ({
   onChange,
+  onClear,
 }: LanguageFilterProps): JSX.Element => {
   const handleInput = React.useCallback(
     (e: InputEvent) => {
       const target = e.target as HTMLSelectElement;
 
-      onChange(target.value as QueryLanguage);
+      if (target.value === "all") {
+        onClear();
+      } else {
+        onChange(target.value as QueryLanguage);
+      }
     },
-    [onChange],
+    [onChange, onClear],
   );
 
   return (
     <Dropdown onInput={handleInput}>
       <>
-        <VSCodeOption key="0" value="0">
+        <VSCodeOption key="0" value="all">
           All languages
         </VSCodeOption>
         {languages.map((language, index) => (
