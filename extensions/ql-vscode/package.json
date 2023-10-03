@@ -2088,7 +2088,7 @@
     "msw": "^0.0.0-fetch.rc-20",
     "nanoid": "^5.0.1",
     "node-fetch": "^2.6.7",
-    "p-queue": "^6.0.0",
+    "p-queue": "^7.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "semver": "^7.5.2",
