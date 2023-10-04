@@ -5,6 +5,7 @@ import {
   VariantAnalysisStatus,
 } from "../../../src/variant-analysis/shared/variant-analysis";
 import { createMockVariantAnalysis } from "../variant-analysis/shared/variant-analysis";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 export function createMockVariantAnalysisHistoryItem({
   historyItemStatus = QueryStatus.InProgress,
@@ -14,6 +15,7 @@ export function createMockVariantAnalysisHistoryItem({
   userSpecifiedLabel = undefined,
   executionStartTime = undefined,
   variantAnalysis = undefined,
+  language = QueryLanguage.Javascript,
 }: {
   historyItemStatus?: QueryStatus;
   variantAnalysisStatus?: VariantAnalysisStatus;
@@ -22,6 +24,7 @@ export function createMockVariantAnalysisHistoryItem({
   userSpecifiedLabel?: string;
   executionStartTime?: number;
   variantAnalysis?: VariantAnalysis;
+  language?: QueryLanguage;
 }): VariantAnalysisHistoryItem {
   return {
     t: "variant-analysis",
@@ -34,6 +37,7 @@ export function createMockVariantAnalysisHistoryItem({
       createMockVariantAnalysis({
         status: variantAnalysisStatus,
         executionStartTime,
+        language,
       }),
     userSpecifiedLabel,
   };

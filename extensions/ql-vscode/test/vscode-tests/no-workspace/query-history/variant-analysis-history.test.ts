@@ -23,6 +23,7 @@ import { QueryHistoryManager } from "../../../../src/query-history/query-history
 import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 import { createMockApp } from "../../../__mocks__/appMock";
+import { LanguageContextStore } from "../../../../src/language-context-store";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -74,8 +75,10 @@ describe("Variant Analyses and QueryHistoryManager", () => {
       join(STORAGE_DIR, "workspace-query-history.json"),
     ).queries;
 
+    const app = createMockApp({});
+
     qhm = new QueryHistoryManager(
-      createMockApp({}),
+      app,
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
@@ -97,6 +100,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
         ttlInMillis: 0,
         onDidChangeConfiguration: jest.fn(),
       }),
+      new LanguageContextStore(app),
       asyncNoop,
     );
     disposables.push(qhm);

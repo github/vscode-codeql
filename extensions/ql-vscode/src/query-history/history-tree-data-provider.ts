@@ -10,9 +10,10 @@ import {
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { assertNever } from "../common/helpers-pure";
-import { QueryHistoryInfo } from "./query-history-info";
+import { getLanguage, QueryHistoryInfo } from "./query-history-info";
 import { QueryStatus } from "./query-status";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
+import { LanguageContextStore } from "../language-context-store";
 
 export enum SortOrder {
   NameAsc = "NameAsc",
@@ -50,7 +51,10 @@ export class HistoryTreeDataProvider
 
   private current: QueryHistoryInfo | undefined;
 
-  constructor(private readonly labelProvider: HistoryItemLabelProvider) {
+  constructor(
+    private readonly labelProvider: HistoryItemLabelProvider,
+    private readonly languageContext: LanguageContextStore,
+  ) {
     super();
   }
 
@@ -127,51 +131,55 @@ export class HistoryTreeDataProvider
   getChildren(element?: QueryHistoryInfo): ProviderResult<QueryHistoryInfo[]> {
     return element
       ? []
-      : this.history.sort((h1, h2) => {
-          const h1Label = this.labelProvider.getLabel(h1).toLowerCase();
-          const h2Label = this.labelProvider.getLabel(h2).toLowerCase();
+      : this.history
+          .filter((h) => {
+            return this.languageContext.shouldInclude(getLanguage(h));
+          })
+          .sort((h1, h2) => {
+            const h1Label = this.labelProvider.getLabel(h1).toLowerCase();
+            const h2Label = this.labelProvider.getLabel(h2).toLowerCase();
 
-          const h1Date = this.getItemDate(h1);
+            const h1Date = this.getItemDate(h1);
 
-          const h2Date = this.getItemDate(h2);
+            const h2Date = this.getItemDate(h2);
 
-          const resultCount1 =
-            h1.t === "local"
-              ? h1.completedQuery?.resultCount ?? -1
-              : h1.resultCount ?? -1;
-          const resultCount2 =
-            h2.t === "local"
-              ? h2.completedQuery?.resultCount ?? -1
-              : h2.resultCount ?? -1;
+            const resultCount1 =
+              h1.t === "local"
+                ? h1.completedQuery?.resultCount ?? -1
+                : h1.resultCount ?? -1;
+            const resultCount2 =
+              h2.t === "local"
+                ? h2.completedQuery?.resultCount ?? -1
+                : h2.resultCount ?? -1;
 
-          switch (this.sortOrder) {
-            case SortOrder.NameAsc:
-              return h1Label.localeCompare(h2Label, env.language);
+            switch (this.sortOrder) {
+              case SortOrder.NameAsc:
+                return h1Label.localeCompare(h2Label, env.language);
 
-            case SortOrder.NameDesc:
-              return h2Label.localeCompare(h1Label, env.language);
+              case SortOrder.NameDesc:
+                return h2Label.localeCompare(h1Label, env.language);
 
-            case SortOrder.DateAsc:
-              return h1Date - h2Date;
+              case SortOrder.DateAsc:
+                return h1Date - h2Date;
 
-            case SortOrder.DateDesc:
-              return h2Date - h1Date;
+              case SortOrder.DateDesc:
+                return h2Date - h1Date;
 
-            case SortOrder.CountAsc:
-              // If the result counts are equal, sort by name.
-              return resultCount1 - resultCount2 === 0
-                ? h1Label.localeCompare(h2Label, env.language)
-                : resultCount1 - resultCount2;
+              case SortOrder.CountAsc:
+                // If the result counts are equal, sort by name.
+                return resultCount1 - resultCount2 === 0
+                  ? h1Label.localeCompare(h2Label, env.language)
+                  : resultCount1 - resultCount2;
 
-            case SortOrder.CountDesc:
-              // If the result counts are equal, sort by name.
-              return resultCount2 - resultCount1 === 0
-                ? h2Label.localeCompare(h1Label, env.language)
-                : resultCount2 - resultCount1;
-            default:
-              assertNever(this.sortOrder);
-          }
-        });
+              case SortOrder.CountDesc:
+                // If the result counts are equal, sort by name.
+                return resultCount2 - resultCount1 === 0
+                  ? h2Label.localeCompare(h1Label, env.language)
+                  : resultCount2 - resultCount1;
+              default:
+                assertNever(this.sortOrder);
+            }
+          });
   }
 
   getParent(_element: QueryHistoryInfo): ProviderResult<QueryHistoryInfo> {
