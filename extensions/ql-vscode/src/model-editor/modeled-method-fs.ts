@@ -10,6 +10,11 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { load as loadYaml } from "js-yaml";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
+import {
+  convertFromLegacyModeledMethods,
+  convertFromLegacyModeledMethodsFiles,
+  convertToLegacyModeledMethods,
+} from "./modeled-methods-legacy";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
@@ -29,8 +34,8 @@ export async function saveModeledMethods(
   const yamls = createDataExtensionYamls(
     language,
     methods,
-    modeledMethods,
-    existingModeledMethods,
+    convertFromLegacyModeledMethods(modeledMethods),
+    convertFromLegacyModeledMethodsFiles(existingModeledMethods),
     mode,
   );
 
@@ -68,7 +73,8 @@ async function loadModeledMethodFiles(
       );
       continue;
     }
-    modeledMethodsByFile[modelFile] = modeledMethods;
+    modeledMethodsByFile[modelFile] =
+      convertToLegacyModeledMethods(modeledMethods);
   }
 
   return modeledMethodsByFile;
