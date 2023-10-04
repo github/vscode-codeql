@@ -43,6 +43,10 @@ import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
+import {
+  convertFromLegacyModeledMethods,
+  convertToLegacyModeledMethods,
+} from "./modeled-methods-legacy";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -235,7 +239,7 @@ export class ModelEditorView extends AbstractWebview<
               this.extensionPack,
               this.databaseItem.language,
               msg.methods,
-              msg.modeledMethods,
+              convertFromLegacyModeledMethods(msg.modeledMethods),
               this.mode,
               this.cliServer,
               this.app.logger,
@@ -381,7 +385,10 @@ export class ModelEditorView extends AbstractWebview<
         this.cliServer,
         this.app.logger,
       );
-      this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
+      this.modelingStore.setModeledMethods(
+        this.databaseItem,
+        convertToLegacyModeledMethods(modeledMethods),
+      );
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         this.app.logger,

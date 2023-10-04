@@ -10,17 +10,12 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { load as loadYaml } from "js-yaml";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
-import {
-  convertFromLegacyModeledMethods,
-  convertFromLegacyModeledMethodsFiles,
-  convertToLegacyModeledMethods,
-} from "./modeled-methods-legacy";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
   language: string,
   methods: Method[],
-  modeledMethods: Record<string, ModeledMethod>,
+  modeledMethods: Record<string, ModeledMethod[]>,
   mode: Mode,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
@@ -34,8 +29,8 @@ export async function saveModeledMethods(
   const yamls = createDataExtensionYamls(
     language,
     methods,
-    convertFromLegacyModeledMethods(modeledMethods),
-    convertFromLegacyModeledMethodsFiles(existingModeledMethods),
+    modeledMethods,
+    existingModeledMethods,
     mode,
   );
 
@@ -50,12 +45,12 @@ async function loadModeledMethodFiles(
   extensionPack: ExtensionPack,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
-): Promise<Record<string, Record<string, ModeledMethod>>> {
+): Promise<Record<string, Record<string, ModeledMethod[]>>> {
   const modelFiles = await listModelFiles(extensionPack.path, cliServer);
 
   const modeledMethodsByFile: Record<
     string,
-    Record<string, ModeledMethod>
+    Record<string, ModeledMethod[]>
   > = {};
 
   for (const modelFile of modelFiles) {
@@ -73,8 +68,7 @@ async function loadModeledMethodFiles(
       );
       continue;
     }
-    modeledMethodsByFile[modelFile] =
-      convertToLegacyModeledMethods(modeledMethods);
+    modeledMethodsByFile[modelFile] = modeledMethods;
   }
 
   return modeledMethodsByFile;
@@ -84,8 +78,8 @@ export async function loadModeledMethods(
   extensionPack: ExtensionPack,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
-): Promise<Record<string, ModeledMethod>> {
-  const existingModeledMethods: Record<string, ModeledMethod> = {};
+): Promise<Record<string, ModeledMethod[]>> {
+  const existingModeledMethods: Record<string, ModeledMethod[]> = {};
 
   const modeledMethodsByFile = await loadModeledMethodFiles(
     extensionPack,
@@ -94,7 +88,11 @@ export async function loadModeledMethods(
   );
   for (const modeledMethods of Object.values(modeledMethodsByFile)) {
     for (const [key, value] of Object.entries(modeledMethods)) {
-      existingModeledMethods[key] = value;
+      if (!(key in existingModeledMethods)) {
+        existingModeledMethods[key] = value;
+      }
+
+      existingModeledMethods[key].push(...value);
     }
   }
 
