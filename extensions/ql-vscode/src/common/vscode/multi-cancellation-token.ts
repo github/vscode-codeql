@@ -1,5 +1,5 @@
 import { CancellationToken, Disposable } from "vscode";
-import { BasicDisposableObject } from "../disposable-object";
+import { DisposableObject } from "../disposable-object";
 
 /**
  * A cancellation token that cancels when any of its constituent
@@ -17,9 +17,8 @@ export class MultiCancellationToken implements CancellationToken {
   }
 
   onCancellationRequested<T>(listener: (e: T) => any): Disposable {
-    const disposables = this.tokens.map((t) =>
-      t.onCancellationRequested(listener),
+    return new DisposableObject(
+      ...this.tokens.map((t) => t.onCancellationRequested(listener)),
     );
-    return new BasicDisposableObject(...disposables);
   }
 }
