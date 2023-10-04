@@ -5,5 +5,6 @@ export interface ModelEditorViewState {
   extensionPack: ExtensionPack;
   showFlowGeneration: boolean;
   showLlmButton: boolean;
+  showMultipleModels: boolean;
   mode: Mode;
 }
