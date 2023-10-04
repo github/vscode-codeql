@@ -21,7 +21,7 @@ describe("MethodsUsagePanel", () => {
   describe("setState", () => {
     const hideModeledMethods = false;
     const methods: Method[] = [createMethod()];
-    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
 
     it("should update the tree view with the correct batch number", async () => {
@@ -50,7 +50,7 @@ describe("MethodsUsagePanel", () => {
     let modelingStore: ModelingStore;
 
     const hideModeledMethods: boolean = false;
-    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
     const usage = createUsage();
 

@@ -14,7 +14,7 @@ import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../shared/hide-modeled-methods";
-import { getModelingStatus } from "../shared/modeling-status";
+import { getModelingStatusForModeledMethods } from "../shared/modeling-status";
 import { assertNever } from "../../common/helpers-pure";
 import { ModeledMethod } from "../modeled-method";
 
@@ -26,7 +26,7 @@ export class MethodsUsageDataProvider
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
   private hideModeledMethods: boolean = INITIAL_HIDE_MODELED_METHODS_VALUE;
-  private modeledMethods: Record<string, ModeledMethod> = {};
+  private modeledMethods: Record<string, ModeledMethod[]> = {};
   private modifiedMethodSignatures: Set<string> = new Set();
 
   private readonly onDidChangeTreeDataEmitter = this.push(
@@ -52,7 +52,7 @@ export class MethodsUsageDataProvider
     methods: Method[],
     databaseItem: DatabaseItem,
     hideModeledMethods: boolean,
-    modeledMethods: Record<string, ModeledMethod>,
+    modeledMethods: Record<string, ModeledMethod[]>,
     modifiedMethodSignatures: Set<string>,
   ): Promise<void> {
     if (
@@ -99,10 +99,13 @@ export class MethodsUsageDataProvider
   }
 
   private getModelingStatusIcon(method: Method): ThemeIcon {
-    const modeledMethod = this.modeledMethods[method.signature];
+    const modeledMethods = this.modeledMethods[method.signature];
     const modifiedMethod = this.modifiedMethodSignatures.has(method.signature);
 
-    const status = getModelingStatus(modeledMethod, modifiedMethod);
+    const status = getModelingStatusForModeledMethods(
+      modeledMethods,
+      modifiedMethod,
+    );
     switch (status) {
       case "unmodeled":
         return new ThemeIcon("error", new ThemeColor("errorForeground"));

@@ -34,7 +34,7 @@ export class MethodsUsagePanel extends DisposableObject {
     methods: Method[],
     databaseItem: DatabaseItem,
     hideModeledMethods: boolean,
-    modeledMethods: Record<string, ModeledMethod>,
+    modeledMethods: Record<string, ModeledMethod[]>,
     modifiedMethodSignatures: Set<string>,
   ): Promise<void> {
     await this.dataProvider.setState(

@@ -15,3 +15,24 @@ export function getModelingStatus(
   }
   return "unmodeled";
 }
+
+export function getModelingStatusForModeledMethods(
+  modeledMethods: ModeledMethod[],
+  methodIsUnsaved: boolean,
+): ModelingStatus {
+  if (modeledMethods.length === 0) {
+    return "unmodeled";
+  }
+
+  if (methodIsUnsaved) {
+    return "unsaved";
+  }
+
+  for (const modeledMethod of modeledMethods) {
+    if (modeledMethod.type !== "none") {
+      return "saved";
+    }
+  }
+
+  return "unmodeled";
+}

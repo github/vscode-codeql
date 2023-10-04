@@ -48,6 +48,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import {
+  convertFromLegacyModeledMethod,
   convertFromLegacyModeledMethods,
   convertToLegacyModeledMethods,
 } from "./modeled-methods-legacy";
@@ -259,7 +260,7 @@ export class ModelEditorView extends AbstractWebview<
         await this.generateModeledMethodsFromLlm(
           msg.packageName,
           msg.methods,
-          msg.modeledMethods,
+          convertFromLegacyModeledMethods(msg.modeledMethods),
         );
         void telemetryListener?.sendUIInteraction(
           "model-editor-generate-methods-from-llm",
@@ -303,7 +304,10 @@ export class ModelEditorView extends AbstractWebview<
         );
         break;
       case "setModeledMethod": {
-        this.setModeledMethod(msg.method);
+        this.setModeledMethods(
+          msg.method.signature,
+          convertFromLegacyModeledMethod(msg.method),
+        );
         break;
       }
       default:
@@ -363,10 +367,7 @@ export class ModelEditorView extends AbstractWebview<
         this.cliServer,
         this.app.logger,
       );
-      this.modelingStore.setModeledMethods(
-        this.databaseItem,
-        convertToLegacyModeledMethods(modeledMethods),
-      );
+      this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         this.app.logger,
@@ -438,10 +439,16 @@ export class ModelEditorView extends AbstractWebview<
             queryStorageDir: this.queryStorageDir,
             databaseItem: addedDatabase ?? this.databaseItem,
             onResults: async (modeledMethods) => {
-              const modeledMethodsByName: Record<string, ModeledMethod> = {};
+              const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
 
               for (const modeledMethod of modeledMethods) {
-                modeledMethodsByName[modeledMethod.signature] = modeledMethod;
+                if (!(modeledMethod.signature in modeledMethodsByName)) {
+                  modeledMethodsByName[modeledMethod.signature] = [];
+                }
+
+                modeledMethodsByName[modeledMethod.signature].push(
+                  modeledMethod,
+                );
               }
 
               this.addModeledMethods(modeledMethodsByName);
@@ -466,7 +473,7 @@ export class ModelEditorView extends AbstractWebview<
   private async generateModeledMethodsFromLlm(
     packageName: string,
     methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    modeledMethods: Record<string, ModeledMethod[]>,
   ): Promise<void> {
     await this.autoModeler.startModeling(
       packageName,
@@ -603,7 +610,7 @@ export class ModelEditorView extends AbstractWebview<
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setModeledMethods",
-            methods: event.modeledMethods,
+            methods: convertToLegacyModeledMethods(event.modeledMethods),
           });
         }
       }),
@@ -621,7 +628,7 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
-  private addModeledMethods(modeledMethods: Record<string, ModeledMethod>) {
+  private addModeledMethods(modeledMethods: Record<string, ModeledMethod[]>) {
     this.modelingStore.addModeledMethods(this.databaseItem, modeledMethods);
 
     this.modelingStore.addModifiedMethods(
@@ -630,13 +637,17 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
-  private setModeledMethod(method: ModeledMethod) {
+  private setModeledMethods(signature: string, methods: ModeledMethod[]) {
     const state = this.modelingStore.getStateForActiveDb();
     if (!state) {
       throw new Error("Attempting to set modeled method without active db");
     }
 
-    this.modelingStore.updateModeledMethod(state.databaseItem, method);
-    this.modelingStore.addModifiedMethod(state.databaseItem, method.signature);
+    this.modelingStore.updateModeledMethods(
+      state.databaseItem,
+      signature,
+      methods,
+    );
+    this.modelingStore.addModifiedMethod(state.databaseItem, signature);
   }
 }

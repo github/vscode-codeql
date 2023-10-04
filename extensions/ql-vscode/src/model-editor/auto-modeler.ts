@@ -16,7 +16,6 @@ import { QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { Mode } from "./shared/mode";
 import { CancellationTokenSource } from "vscode";
-import { convertToLegacyModeledMethods } from "./modeled-methods-legacy";
 
 // Limit the number of candidates we send to the model in each request
 // to avoid long requests.
@@ -43,7 +42,7 @@ export class AutoModeler {
       inProgressMethods: string[],
     ) => Promise<void>,
     private readonly addModeledMethods: (
-      modeledMethods: Record<string, ModeledMethod>,
+      modeledMethods: Record<string, ModeledMethod[]>,
     ) => Promise<void>,
   ) {
     this.jobs = new Map<string, CancellationTokenSource>();
@@ -60,7 +59,7 @@ export class AutoModeler {
   public async startModeling(
     packageName: string,
     methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    modeledMethods: Record<string, ModeledMethod[]>,
     mode: Mode,
   ): Promise<void> {
     if (this.jobs.has(packageName)) {
@@ -107,7 +106,7 @@ export class AutoModeler {
   private async modelPackage(
     packageName: string,
     methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    modeledMethods: Record<string, ModeledMethod[]>,
     mode: Mode,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
@@ -193,12 +192,10 @@ export class AutoModeler {
       filename: "auto-model.yml",
     });
 
-    const rawLoadedMethods = loadDataExtensionYaml(models);
-    if (!rawLoadedMethods) {
+    const loadedMethods = loadDataExtensionYaml(models);
+    if (!loadedMethods) {
       return;
     }
-
-    const loadedMethods = convertToLegacyModeledMethods(rawLoadedMethods);
 
     // Any candidate that was part of the response is a negative result
     // meaning that the canidate is not a sink for the kinds that the LLM is checking for.
@@ -206,18 +203,20 @@ export class AutoModeler {
     // to discussion.
     for (const candidate of candidateMethods) {
       if (!(candidate.signature in loadedMethods)) {
-        loadedMethods[candidate.signature] = {
-          type: "neutral",
-          kind: "sink",
-          input: "",
-          output: "",
-          provenance: "ai-generated",
-          signature: candidate.signature,
-          packageName: candidate.packageName,
-          typeName: candidate.typeName,
-          methodName: candidate.methodName,
-          methodParameters: candidate.methodParameters,
-        };
+        loadedMethods[candidate.signature] = [
+          {
+            type: "neutral",
+            kind: "sink",
+            input: "",
+            output: "",
+            provenance: "ai-generated",
+            signature: candidate.signature,
+            packageName: candidate.packageName,
+            typeName: candidate.typeName,
+            methodName: candidate.methodName,
+            methodParameters: candidate.methodParameters,
+          },
+        ];
       }
     }
 
