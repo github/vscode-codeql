@@ -81,6 +81,8 @@ jobs:
 
       - name: Lint
         working-directory: extensions/ql-vscode
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
         run: |
           npm run lint
 
