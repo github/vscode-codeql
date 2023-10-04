@@ -23,7 +23,8 @@ import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
-const ApiOrMethodCell = styled(VSCodeDataGridCell)`
+const ApiOrMethodRow = styled.div`
+  min-height: calc(var(--input-height) * 1px);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -112,18 +113,20 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         ref={ref}
         focused={revealedMethodSignature === method.signature}
       >
-        <ApiOrMethodCell gridColumn={1}>
-          <ModelingStatusIndicator status={modelingStatus} />
-          <MethodClassifications method={method} />
-          <MethodName {...props.method} />
-          {viewState.mode === Mode.Application && (
-            <UsagesButton onClick={jumpToUsage}>
-              {method.usages.length}
-            </UsagesButton>
-          )}
-          <ViewLink onClick={jumpToUsage}>View</ViewLink>
-          {props.modelingInProgress && <ProgressRing />}
-        </ApiOrMethodCell>
+        <VSCodeDataGridCell gridColumn={1}>
+          <ApiOrMethodRow>
+            <ModelingStatusIndicator status={modelingStatus} />
+            <MethodClassifications method={method} />
+            <MethodName {...props.method} />
+            {viewState.mode === Mode.Application && (
+              <UsagesButton onClick={jumpToUsage}>
+                {method.usages.length}
+              </UsagesButton>
+            )}
+            <ViewLink onClick={jumpToUsage}>View</ViewLink>
+            {props.modelingInProgress && <ProgressRing />}
+          </ApiOrMethodRow>
+        </VSCodeDataGridCell>
         {props.modelingInProgress && (
           <>
             <VSCodeDataGridCell gridColumn={2}>
@@ -195,17 +198,19 @@ const UnmodelableMethodRow = forwardRef<
       ref={ref}
       focused={revealedMethodSignature === method.signature}
     >
-      <ApiOrMethodCell gridColumn={1}>
-        <ModelingStatusIndicator status="saved" />
-        <MethodName {...props.method} />
-        {viewState.mode === Mode.Application && (
-          <UsagesButton onClick={jumpToUsage}>
-            {method.usages.length}
-          </UsagesButton>
-        )}
-        <ViewLink onClick={jumpToUsage}>View</ViewLink>
-        <MethodClassifications method={method} />
-      </ApiOrMethodCell>
+      <VSCodeDataGridCell gridColumn={1}>
+        <ApiOrMethodRow>
+          <ModelingStatusIndicator status="saved" />
+          <MethodName {...props.method} />
+          {viewState.mode === Mode.Application && (
+            <UsagesButton onClick={jumpToUsage}>
+              {method.usages.length}
+            </UsagesButton>
+          )}
+          <ViewLink onClick={jumpToUsage}>View</ViewLink>
+          <MethodClassifications method={method} />
+        </ApiOrMethodRow>
+      </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn="span 4">
         Method already modeled
       </VSCodeDataGridCell>
