@@ -134,6 +134,44 @@ describe(MethodRow.name, () => {
     expect(screen.getByLabelText("Loading")).toBeInTheDocument();
   });
 
+  it("can render multiple models", () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
+    expect(kindInputs).toHaveLength(3);
+    expect(kindInputs[0]).toHaveValue("source");
+    expect(kindInputs[1]).toHaveValue("sink");
+    expect(kindInputs[2]).toHaveValue("summary");
+  });
+
+  it("renders only first model when showMultipleModels feature flag is disabled", () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: false,
+      },
+    });
+
+    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
+    expect(kindInputs.length).toBe(1);
+    expect(kindInputs[0]).toHaveValue("source");
+  });
+
   it("renders an unmodelable method", () => {
     render({
       methodCanBeModeled: false,
