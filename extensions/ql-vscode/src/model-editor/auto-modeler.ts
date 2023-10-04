@@ -16,6 +16,7 @@ import { QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { Mode } from "./shared/mode";
 import { CancellationTokenSource } from "vscode";
+import { convertToLegacyModeledMethods } from "./modeled-methods-legacy";
 
 // Limit the number of candidates we send to the model in each request
 // to avoid long requests.
@@ -192,10 +193,12 @@ export class AutoModeler {
       filename: "auto-model.yml",
     });
 
-    const loadedMethods = loadDataExtensionYaml(models);
-    if (!loadedMethods) {
+    const rawLoadedMethods = loadDataExtensionYaml(models);
+    if (!rawLoadedMethods) {
       return;
     }
+
+    const loadedMethods = convertToLegacyModeledMethods(rawLoadedMethods);
 
     // Any candidate that was part of the response is a negative result
     // meaning that the canidate is not a sink for the kinds that the LLM is checking for.
