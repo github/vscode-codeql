@@ -9,6 +9,8 @@ import { Mode } from "../../../model-editor/shared/mode";
 import { MethodRow, MethodRowProps } from "../MethodRow";
 import { ModeledMethod } from "../../../model-editor/modeled-method";
 import userEvent from "@testing-library/user-event";
+import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
+import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
 
 describe(MethodRow.name, () => {
   const method = createMethod({
@@ -31,6 +33,14 @@ describe(MethodRow.name, () => {
   };
   const onChange = jest.fn();
 
+  const viewState: ModelEditorViewState = {
+    mode: Mode.Application,
+    showFlowGeneration: false,
+    showLlmButton: false,
+    showMultipleModels: false,
+    extensionPack: createMockExtensionPack(),
+  };
+
   const render = (props: Partial<MethodRowProps> = {}) =>
     reactRender(
       <MethodRow
@@ -40,7 +50,7 @@ describe(MethodRow.name, () => {
         methodIsUnsaved={false}
         modelingInProgress={false}
         revealedMethodSignature={null}
-        mode={Mode.Application}
+        viewState={viewState}
         onChange={onChange}
         {...props}
       />,

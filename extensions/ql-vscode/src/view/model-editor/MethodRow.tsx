@@ -21,6 +21,7 @@ import { MethodName } from "./MethodName";
 import { ModelTypeDropdown } from "./ModelTypeDropdown";
 import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
+import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -58,7 +59,7 @@ export type MethodRowProps = {
   modeledMethod: ModeledMethod | undefined;
   methodIsUnsaved: boolean;
   modelingInProgress: boolean;
-  mode: Mode;
+  viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
@@ -90,7 +91,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       method,
       modeledMethod,
       methodIsUnsaved,
-      mode,
+      viewState,
       revealedMethodSignature,
       onChange,
     } = props;
@@ -112,7 +113,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
           <ModelingStatusIndicator status={modelingStatus} />
           <MethodClassifications method={method} />
           <MethodName {...props.method} />
-          {mode === Mode.Application && (
+          {viewState.mode === Mode.Application && (
             <UsagesButton onClick={jumpToUsage}>
               {method.usages.length}
             </UsagesButton>
@@ -178,7 +179,7 @@ const UnmodelableMethodRow = forwardRef<
   HTMLElement | undefined,
   MethodRowProps
 >((props, ref) => {
-  const { method, mode, revealedMethodSignature } = props;
+  const { method, viewState, revealedMethodSignature } = props;
 
   const jumpToUsage = useCallback(
     () => sendJumpToUsageMessage(method),
@@ -194,7 +195,7 @@ const UnmodelableMethodRow = forwardRef<
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status="saved" />
         <MethodName {...props.method} />
-        {mode === Mode.Application && (
+        {viewState.mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {method.usages.length}
           </UsagesButton>
