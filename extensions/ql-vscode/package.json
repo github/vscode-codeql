@@ -1991,6 +1991,12 @@
           "id": "codeQLEvalLogViewer",
           "name": "Evaluator Log Viewer",
           "when": "config.codeQL.canary"
+        },
+        {
+          "id": "codeQLMethodModeling",
+          "type": "webview",
+          "name": "CodeQL Method Modeling",
+          "when": "config.codeQL.canary && config.codeQL.model.methodModelingView && codeql.modelEditorOpen && !codeql.modelEditorActive"
         }
       ],
       "codeql-methods-usage": [
@@ -1998,14 +2004,6 @@
           "id": "codeQLMethodsUsage",
           "name": "CodeQL Methods Usage",
           "when": "config.codeQL.canary && codeql.modelEditorOpen"
-        }
-      ],
-      "explorer": [
-        {
-          "type": "webview",
-          "id": "codeQLMethodModeling",
-          "name": "CodeQL Method Modeling",
-          "when": "config.codeQL.canary && config.codeQL.model.methodModelingView && codeql.modelEditorOpen && !codeql.modelEditorActive"
         }
       ]
     },
