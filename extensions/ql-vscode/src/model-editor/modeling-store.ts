@@ -154,6 +154,23 @@ export class ModelingStore extends DisposableObject {
     return this.state.get(this.activeDb);
   }
 
+  /**
+   * Returns the methods for the given database item and method signatures.
+   * If no method signatures are provided, returns all methods.
+   */
+  public getMethods(
+    dbItem: DatabaseItem,
+    methodSignatures?: string[],
+  ): Method[] {
+    const methods = this.getState(dbItem).methods;
+    if (!methodSignatures) {
+      return methods;
+    }
+    return methods.filter((method) =>
+      methodSignatures.includes(method.signature),
+    );
+  }
+
   public setMethods(dbItem: DatabaseItem, methods: Method[]) {
     const dbState = this.getState(dbItem);
     const dbUri = dbItem.databaseUri.toString();
@@ -180,6 +197,25 @@ export class ModelingStore extends DisposableObject {
       hideModeledMethods,
       isActiveDb: dbUri === this.activeDb,
     });
+  }
+
+  /**
+   * Returns the modeled methods for the given database item and method signatures.
+   * If no method signatures are provided, returns all modeled methods.
+   */
+  public getModeledMethods(
+    dbItem: DatabaseItem,
+    methodSignatures?: string[],
+  ): Record<string, ModeledMethod> {
+    const modeledMethods = this.getState(dbItem).modeledMethods;
+    if (!methodSignatures) {
+      return modeledMethods;
+    }
+    return Object.fromEntries(
+      Object.entries(modeledMethods).filter(([key]) =>
+        methodSignatures.includes(key),
+      ),
+    );
   }
 
   public addModeledMethods(
