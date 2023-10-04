@@ -46,7 +46,7 @@ describe(MethodRow.name, () => {
       <MethodRow
         method={method}
         methodCanBeModeled={true}
-        modeledMethod={modeledMethod}
+        modeledMethods={[modeledMethod]}
         methodIsUnsaved={false}
         modelingInProgress={false}
         revealedMethodSignature={null}
@@ -120,7 +120,7 @@ describe(MethodRow.name, () => {
 
   it("shows the modeling status indicator when unmodeled", () => {
     render({
-      modeledMethod: undefined,
+      modeledMethods: [],
     });
 
     expect(screen.getByLabelText("Method not modeled")).toBeInTheDocument();
@@ -137,7 +137,7 @@ describe(MethodRow.name, () => {
   it("renders an unmodelable method", () => {
     render({
       methodCanBeModeled: false,
-      modeledMethod: undefined,
+      modeledMethods: [],
     });
 
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();

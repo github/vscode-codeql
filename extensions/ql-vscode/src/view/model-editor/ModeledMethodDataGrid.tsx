@@ -84,22 +84,25 @@ export const ModeledMethodDataGrid = ({
               Kind
             </VSCodeDataGridCell>
           </VSCodeDataGridRow>
-          {methodsWithModelability.map(({ method, methodCanBeModeled }) => (
-            <MethodRow
-              key={method.signature}
-              method={method}
-              methodCanBeModeled={methodCanBeModeled}
-              modeledMethod={modeledMethods[method.signature]}
-              methodIsUnsaved={modifiedSignatures.has(method.signature)}
-              modelingInProgress={inProgressMethods.hasMethod(
-                packageName,
-                method.signature,
-              )}
-              viewState={viewState}
-              revealedMethodSignature={revealedMethodSignature}
-              onChange={onChange}
-            />
-          ))}
+          {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
+            const modeledMethod = modeledMethods[method.signature];
+            return (
+              <MethodRow
+                key={method.signature}
+                method={method}
+                methodCanBeModeled={methodCanBeModeled}
+                modeledMethods={modeledMethod ? [modeledMethod] : []}
+                methodIsUnsaved={modifiedSignatures.has(method.signature)}
+                modelingInProgress={inProgressMethods.hasMethod(
+                  packageName,
+                  method.signature,
+                )}
+                viewState={viewState}
+                revealedMethodSignature={revealedMethodSignature}
+                onChange={onChange}
+              />
+            );
+          })}
         </>
       )}
       <HiddenMethodsRow

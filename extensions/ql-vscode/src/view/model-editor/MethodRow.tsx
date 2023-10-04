@@ -23,6 +23,12 @@ import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
+const MultiModelColumn = styled(VSCodeDataGridCell)`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+`;
+
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
   display: flex;
@@ -57,7 +63,7 @@ const DataGridRow = styled(VSCodeDataGridRow)<{ focused?: boolean }>`
 export type MethodRowProps = {
   method: Method;
   methodCanBeModeled: boolean;
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethods: ModeledMethod[];
   methodIsUnsaved: boolean;
   modelingInProgress: boolean;
   viewState: ModelEditorViewState;
@@ -90,22 +96,23 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
   (props, ref) => {
     const {
       method,
-      modeledMethod,
+      modeledMethods: modeledMethodsArg,
       methodIsUnsaved,
       viewState,
       revealedMethodSignature,
       onChange,
     } = props;
 
+    const modeledMethods = viewState.showMultipleModels
+      ? modeledMethodsArg
+      : modeledMethodsArg.slice(0, 1);
+
     const jumpToUsage = useCallback(
       () => sendJumpToUsageMessage(method),
       [method],
     );
 
-    const modelingStatus = getModelingStatus(
-      modeledMethod ? [modeledMethod] : [],
-      methodIsUnsaved,
-    );
+    const modelingStatus = getModelingStatus(modeledMethods, methodIsUnsaved);
 
     return (
       <DataGridRow
@@ -145,34 +152,46 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         )}
         {!props.modelingInProgress && (
           <>
-            <VSCodeDataGridCell gridColumn={2}>
-              <ModelTypeDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={3}>
-              <ModelInputDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={4}>
-              <ModelOutputDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={5}>
-              <ModelKindDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
+            <MultiModelColumn gridColumn={2}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+                <ModelTypeDropdown
+                  key={JSON.stringify(modeledMethod)}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridColumn={3}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+                <ModelInputDropdown
+                  key={JSON.stringify(modeledMethod)}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridColumn={4}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+                <ModelOutputDropdown
+                  key={JSON.stringify(modeledMethod)}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridColumn={5}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+                <ModelKindDropdown
+                  key={JSON.stringify(modeledMethod)}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
           </>
         )}
       </DataGridRow>
@@ -226,4 +245,15 @@ function sendJumpToUsageMessage(method: Method) {
     // In framework mode, the first and only usage is the definition of the method
     usage: method.usages[0],
   });
+}
+
+function forEachModeledMethod(
+  modeledMethods: ModeledMethod[],
+  renderer: (modeledMethod: ModeledMethod | undefined) => JSX.Element,
+): JSX.Element | JSX.Element[] {
+  if (modeledMethods.length === 0) {
+    return renderer(undefined);
+  } else {
+    return modeledMethods.map(renderer);
+  }
 }
