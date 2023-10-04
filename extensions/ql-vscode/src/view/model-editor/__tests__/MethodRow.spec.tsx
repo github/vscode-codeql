@@ -64,6 +64,14 @@ describe(MethodRow.name, () => {
     expect(screen.queryByLabelText("Loading")).not.toBeInTheDocument();
   });
 
+  it("renders when there is no modeled method", () => {
+    render({ modeledMethods: [] });
+
+    expect(screen.queryAllByRole("combobox")).toHaveLength(4);
+    expect(screen.getByLabelText("Method not modeled")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Loading")).not.toBeInTheDocument();
+  });
+
   it("can change the kind", async () => {
     render();
 
