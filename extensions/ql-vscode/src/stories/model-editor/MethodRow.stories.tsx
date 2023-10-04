@@ -132,3 +132,15 @@ ModelingInProgress.args = {
   methodCanBeModeled: true,
   viewState,
 };
+
+export const MultipleModelings = Template.bind({});
+MultipleModelings.args = {
+  method,
+  modeledMethods: [
+    { ...modeledMethod, type: "source" },
+    { ...modeledMethod, type: "sink" },
+    { ...modeledMethod },
+  ],
+  methodCanBeModeled: true,
+  viewState,
+};
