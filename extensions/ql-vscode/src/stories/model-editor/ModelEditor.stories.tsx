@@ -30,6 +30,7 @@ ModelEditor.args = {
     },
     showFlowGeneration: true,
     showLlmButton: true,
+    showMultipleModels: true,
     mode: Mode.Application,
   },
   initialMethods: [

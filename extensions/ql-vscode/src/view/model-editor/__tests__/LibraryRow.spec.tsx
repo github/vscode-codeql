@@ -20,6 +20,7 @@ describe(LibraryRow.name, () => {
     mode: Mode.Application,
     showFlowGeneration: false,
     showLlmButton: false,
+    showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
   };
 

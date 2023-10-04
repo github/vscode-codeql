@@ -34,7 +34,11 @@ import {
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import { showFlowGeneration, showLlmGeneration } from "../config";
+import {
+  showFlowGeneration,
+  showLlmGeneration,
+  showMultipleModels,
+} from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
@@ -365,6 +369,7 @@ export class ModelEditorView extends AbstractWebview<
         extensionPack: this.extensionPack,
         showFlowGeneration: showFlowGeneration(),
         showLlmButton,
+        showMultipleModels: showMultipleModels(),
         mode: this.mode,
       },
     });

@@ -28,9 +28,13 @@ import {
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 import { createMockApp } from "../../../__mocks__/appMock";
+import { LanguageContextStore } from "../../../../src/language-context-store";
+import { App } from "../../../../src/common/app";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("HistoryTreeDataProvider", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
+  let app: App;
   let configListener: QueryHistoryConfigListener;
   const doCompareCallback = jest.fn();
 
@@ -45,10 +49,12 @@ describe("HistoryTreeDataProvider", () => {
 
   let historyTreeDataProvider: HistoryTreeDataProvider;
   let labelProvider: HistoryItemLabelProvider;
+  let languageContext: LanguageContextStore;
 
   beforeEach(() => {
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
+    app = createMockApp({});
     configListener = new QueryHistoryConfigListener();
     localQueriesResultsViewStub = {
       showResults: jest.fn(),
@@ -124,7 +130,11 @@ describe("HistoryTreeDataProvider", () => {
       ttlInMillis: 0,
       onDidChangeConfiguration: jest.fn(),
     });
-    historyTreeDataProvider = new HistoryTreeDataProvider(labelProvider);
+    languageContext = new LanguageContextStore(app);
+    historyTreeDataProvider = new HistoryTreeDataProvider(
+      labelProvider,
+      languageContext,
+    );
   });
 
   afterEach(async () => {
@@ -418,11 +428,68 @@ describe("HistoryTreeDataProvider", () => {
         expect(children).toEqual(expected);
       });
     });
+
+    describe("filtering", () => {
+      const history = [
+        createMockLocalQueryInfo({
+          userSpecifiedLabel: "a",
+          // No language at all => unknown
+        }),
+        createMockVariantAnalysisHistoryItem({
+          userSpecifiedLabel: "b",
+          // No specified language => javascript
+        }),
+        createMockLocalQueryInfo({
+          userSpecifiedLabel: "c",
+          language: QueryLanguage.Python,
+        }),
+        createMockVariantAnalysisHistoryItem({
+          userSpecifiedLabel: "d",
+          language: QueryLanguage.Java,
+        }),
+      ];
+
+      let treeDataProvider: HistoryTreeDataProvider;
+
+      beforeEach(async () => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        (queryHistoryManager.treeDataProvider as any).history = [...history];
+        treeDataProvider = queryHistoryManager.treeDataProvider;
+      });
+
+      it("should get all if no filter is provided", async () => {
+        const expected = [history[0], history[1], history[2], history[3]];
+        treeDataProvider.sortOrder = SortOrder.NameAsc;
+
+        const children = await treeDataProvider.getChildren();
+        expect(children).toEqual(expected);
+      });
+
+      it("should filter local runs by language", async () => {
+        const expected = [history[3]];
+        treeDataProvider.sortOrder = SortOrder.NameAsc;
+
+        await languageContext.setLanguageContext(QueryLanguage.Java);
+
+        const children = await treeDataProvider.getChildren();
+        expect(children).toEqual(expected);
+      });
+
+      it("should filter variant analysis runs by language", async () => {
+        const expected = [history[2]];
+        treeDataProvider.sortOrder = SortOrder.NameAsc;
+
+        await languageContext.setLanguageContext(QueryLanguage.Python);
+
+        const children = await treeDataProvider.getChildren();
+        expect(children).toEqual(expected);
+      });
+    });
   });
 
   async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
-      createMockApp({}),
+      app,
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
@@ -439,6 +506,7 @@ describe("HistoryTreeDataProvider", () => {
         ttlInMillis: 0,
         onDidChangeConfiguration: jest.fn(),
       }),
+      languageContext,
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];

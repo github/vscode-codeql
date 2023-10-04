@@ -871,6 +871,7 @@ async function activateWithInstalledDistribution(
     ctx,
     queryHistoryConfigurationListener,
     labelProvider,
+    languageContext,
     async (
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo,

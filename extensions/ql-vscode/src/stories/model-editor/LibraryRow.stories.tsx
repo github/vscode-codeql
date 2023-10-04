@@ -214,6 +214,7 @@ LibraryRow.args = {
     extensionPack: createMockExtensionPack(),
     showFlowGeneration: true,
     showLlmButton: true,
+    showMultipleModels: true,
     mode: Mode.Application,
   },
   hideModeledMethods: false,
