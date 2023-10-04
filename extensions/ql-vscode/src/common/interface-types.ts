@@ -628,7 +628,7 @@ interface SetMethodModifiedMessage {
 interface SetSelectedMethodMessage {
   t: "setSelectedMethod";
   method: Method;
-  modeledMethod: ModeledMethod;
+  modeledMethod?: ModeledMethod;
   isModified: boolean;
 }
 

@@ -125,7 +125,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         if (this.webviewView && e.isActiveDb) {
           const modeledMethod = e.modeledMethods[this.method?.signature ?? ""];
           if (modeledMethod) {
-            await this.webviewView.webview.postMessage({
+            await this.postMessage({
               t: "setModeledMethod",
               method: modeledMethod,
             });
@@ -138,7 +138,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       this.modelingStore.onModifiedMethodsChanged(async (e) => {
         if (this.webviewView && e.isActiveDb && this.method) {
           const isModified = e.modifiedMethods.has(this.method.signature);
-          await this.webviewView.webview.postMessage({
+          await this.postMessage({
             t: "setMethodModified",
             isModified,
           });
@@ -150,7 +150,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       this.modelingStore.onSelectedMethodChanged(async (e) => {
         if (this.webviewView) {
           this.method = e.method;
-          await this.webviewView.webview.postMessage({
+          await this.postMessage({
             t: "setSelectedMethod",
             method: e.method,
             modeledMethod: e.modeledMethod,
