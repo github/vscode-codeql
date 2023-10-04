@@ -101,7 +101,10 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       [method],
     );
 
-    const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
+    const modelingStatus = getModelingStatus(
+      modeledMethod ? [modeledMethod] : [],
+      methodIsUnsaved,
+    );
 
     return (
       <DataGridRow

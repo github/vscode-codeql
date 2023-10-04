@@ -18,7 +18,8 @@ export function MethodModelingView(): JSX.Element {
   const [isMethodModified, setIsMethodModified] = useState<boolean>(false);
 
   const modelingStatus = useMemo(
-    () => getModelingStatus(modeledMethod, isMethodModified),
+    () =>
+      getModelingStatus(modeledMethod ? [modeledMethod] : [], isMethodModified),
     [modeledMethod, isMethodModified],
   );
 
