@@ -610,10 +610,15 @@ interface RevealInEditorMessage {
   method: Method;
 }
 
+interface StartModelingMessage {
+  t: "startModeling";
+}
+
 export type FromMethodModelingMessage =
   | CommonFromViewMessages
   | SetModeledMethodMessage
-  | RevealInEditorMessage;
+  | RevealInEditorMessage
+  | StartModelingMessage;
 
 interface SetMethodMessage {
   t: "setMethod";
