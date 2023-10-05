@@ -10,33 +10,40 @@ import { mockedObject } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 
 describe("setUpPack", () => {
-  const cliServer = mockedObject<CodeQLCliServer>({
-    packDownload: jest.fn(),
-    packInstall: jest.fn(),
+  let queryDir: string;
+
+  beforeEach(async () => {
+    queryDir = dirSync({ unsafeCleanup: true }).name;
   });
 
   const languages = Object.keys(fetchExternalApiQueries).flatMap((lang) => {
-    const queryDir = dirSync({ unsafeCleanup: true }).name;
     const query = fetchExternalApiQueries[lang as QueryLanguage];
     if (!query) {
       return [];
     }
 
-    return { language: lang as QueryLanguage, queryDir, query };
+    return { language: lang as QueryLanguage, query };
   });
 
-  test.each(languages)(
-    "should create files for $language",
-    async ({ language, queryDir, query }) => {
+  describe.each(languages)("for language $language", ({ language, query }) => {
+    test("should create the files when not found", async () => {
+      const cliServer = mockedObject<CodeQLCliServer>({
+        packDownload: jest.fn(),
+        packInstall: jest.fn(),
+        resolveQueriesInSuite: jest.fn().mockResolvedValue([]),
+      });
+
       await setUpPack(cliServer, queryDir, language);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles.sort()).toEqual(
         [
           "codeql-pack.yml",
-          "FetchExternalApisApplicationMode.ql",
-          "FetchExternalApisFrameworkMode.ql",
-          "AutomodelVsCode.qll",
+          "ApplicationModeEndpoints.ql",
+          "ApplicationModeEndpointsQuery.qll",
+          "FrameworkModeEndpoints.ql",
+          "FrameworkModeEndpointsQuery.qll",
+          "ModelEditor.qll",
         ].sort(),
       );
 
@@ -58,9 +65,7 @@ describe("setUpPack", () => {
           readFileSync(
             join(
               queryDir,
-              `FetchExternalApis${
-                mode.charAt(0).toUpperCase() + mode.slice(1)
-              }Mode.ql`,
+              `${mode.charAt(0).toUpperCase() + mode.slice(1)}ModeEndpoints.ql`,
             ),
             "utf8",
           ),
@@ -74,6 +79,32 @@ describe("setUpPack", () => {
           contents,
         );
       }
-    },
-  );
+    });
+
+    test("should not create the files when found", async () => {
+      const cliServer = mockedObject<CodeQLCliServer>({
+        packDownload: jest.fn(),
+        packInstall: jest.fn(),
+        resolveQueriesInSuite: jest
+          .fn()
+          .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
+      });
+
+      await setUpPack(cliServer, queryDir, language);
+
+      const queryFiles = await readdir(queryDir);
+      expect(queryFiles.sort()).toEqual(["codeql-pack.yml"].sort());
+
+      const suiteFileContents = await readFile(
+        join(queryDir, "codeql-pack.yml"),
+        "utf8",
+      );
+      const suiteYaml = load(suiteFileContents);
+      expect(suiteYaml).toEqual({
+        name: "codeql/external-api-usage",
+        version: "0.0.0",
+        dependencies: {},
+      });
+    });
+  });
 });

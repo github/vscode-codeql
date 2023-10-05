@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/ExtensionPackMetadata",
+  "definitions": {
+    "ExtensionPackMetadata": {
+      "type": "object",
+      "properties": {
+        "extensionTargets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "dataExtensions": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "dbscheme": {
+          "type": "string"
+        },
+        "library": {
+          "type": "boolean"
+        },
+        "defaultSuite": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SuiteInstruction"
+          }
+        },
+        "defaultSuiteFile": {
+          "type": "string"
+        }
+      },
+      "required": ["dataExtensions", "extensionTargets", "name", "version"]
+    },
+    "SuiteInstruction": {
+      "type": "object",
+      "properties": {
+        "qlpack": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "queries": {
+          "type": "string"
+        },
+        "include": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "exclude": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        }
+      },
+      "description": "A single entry in a .qls file."
+    }
+  }
+}

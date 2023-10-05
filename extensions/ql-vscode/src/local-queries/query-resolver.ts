@@ -13,6 +13,7 @@ import { redactableError } from "../common/errors";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { SuiteInstruction } from "../packaging/suite-instruction";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,
@@ -38,24 +39,26 @@ export interface QueryConstraints {
  * @param cli The CLI instance to use.
  * @param qlpacks The list of packs to search.
  * @param constraints Constraints on the queries to search for.
+ * @param additionalPacks Additional pack paths to search.
  * @returns The found queries from the first pack in which any matching queries were found.
  */
-async function resolveQueriesFromPacks(
+export async function resolveQueriesFromPacks(
   cli: CodeQLCliServer,
   qlpacks: string[],
   constraints: QueryConstraints,
+  additionalPacks: string[] = [],
 ): Promise<string[]> {
   const suiteFile = (
     await file({
       postfix: ".qls",
     })
   ).path;
-  const suiteYaml = [];
+  const suiteYaml: SuiteInstruction[] = [];
   for (const qlpack of qlpacks) {
     suiteYaml.push({
       from: qlpack,
       queries: ".",
-      include: constraints,
+      include: constraints as Record<string, string[]>,
     });
   }
   await writeFile(
@@ -66,10 +69,10 @@ async function resolveQueriesFromPacks(
     "utf8",
   );
 
-  return await cli.resolveQueriesInSuite(
-    suiteFile,
-    getOnDiskWorkspaceFolders(),
-  );
+  return await cli.resolveQueriesInSuite(suiteFile, [
+    ...getOnDiskWorkspaceFolders(),
+    ...additionalPacks,
+  ]);
 }
 
 export async function resolveQueriesByLanguagePack(
@@ -96,6 +99,7 @@ export async function resolveQueriesByLanguagePack(
  * @param packsToSearch The list of packs to search.
  * @param name The name of the query to use in error messages.
  * @param constraints Constraints on the queries to search for.
+ * @param additionalPacks Additional pack paths to search.
  * @returns The found queries from the first pack in which any matching queries were found.
  */
 export async function resolveQueries(
@@ -103,11 +107,13 @@ export async function resolveQueries(
   packsToSearch: string[],
   name: string,
   constraints: QueryConstraints,
+  additionalPacks: string[] = [],
 ): Promise<string[]> {
   const queries = await resolveQueriesFromPacks(
     cli,
     packsToSearch,
     constraints,
+    additionalPacks,
   );
   if (queries.length > 0) {
     return queries;

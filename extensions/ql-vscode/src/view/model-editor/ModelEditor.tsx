@@ -101,6 +101,10 @@ export function ModelEditor({
     initialHideModeledMethods,
   );
 
+  const [revealedMethodSignature, setRevealedMethodSignature] = useState<
+    string | null
+  >(null);
+
   useEffect(() => {
     vscode.postMessage({
       t: "hideModeledMethods",
@@ -123,32 +127,11 @@ export function ModelEditor({
           case "setMethods":
             setMethods(msg.methods);
             break;
-          case "loadModeledMethods":
-            setModeledMethods((oldModeledMethods) => {
-              return {
-                ...msg.modeledMethods,
-                ...oldModeledMethods,
-              };
-            });
+          case "setModeledMethods":
+            setModeledMethods(msg.methods);
             break;
-          case "addModeledMethods":
-            setModeledMethods((oldModeledMethods) => {
-              return {
-                ...msg.modeledMethods,
-                ...Object.fromEntries(
-                  Object.entries(oldModeledMethods).filter(
-                    ([, value]) => value.type !== "none",
-                  ),
-                ),
-              };
-            });
-            setModifiedSignatures(
-              (oldModifiedSignatures) =>
-                new Set([
-                  ...oldModifiedSignatures,
-                  ...Object.keys(msg.modeledMethods),
-                ]),
-            );
+          case "setModifiedMethods":
+            setModifiedSignatures(new Set(msg.methodSignatures));
             break;
           case "setInProgressMethods":
             setInProgressMethods((oldInProgressMethods) =>
@@ -157,6 +140,10 @@ export function ModelEditor({
                 new Set(msg.inProgressMethods),
               ),
             );
+            break;
+          case "revealMethod":
+            setRevealedMethodSignature(msg.method.signature);
+
             break;
           default:
             assertNever(msg);
@@ -174,24 +161,31 @@ export function ModelEditor({
     };
   }, []);
 
+  useEffect(() => {
+    // If there is a revealed method signature, hide it when the user clicks anywhere. In this case, we do need to
+    // show the user where the method is anymore and they should have seen it.
+    const listener = () => {
+      setRevealedMethodSignature(null);
+    };
+
+    window.addEventListener("click", listener);
+
+    return () => {
+      window.removeEventListener("click", listener);
+    };
+  }, []);
+
   const modeledPercentage = useMemo(
     () => calculateModeledPercentage(methods),
     [methods],
   );
 
-  const onChange = useCallback(
-    (modelName: string, method: Method, model: ModeledMethod) => {
-      setModeledMethods((oldModeledMethods) => ({
-        ...oldModeledMethods,
-        [method.signature]: model,
-      }));
-      setModifiedSignatures(
-        (oldModifiedSignatures) =>
-          new Set([...oldModifiedSignatures, method.signature]),
-      );
-    },
-    [],
-  );
+  const onChange = useCallback((model: ModeledMethod) => {
+    vscode.postMessage({
+      t: "setModeledMethod",
+      method: model,
+    });
+  }, []);
 
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
@@ -205,7 +199,6 @@ export function ModelEditor({
       methods,
       modeledMethods,
     });
-    setModifiedSignatures(new Set());
   }, [methods, modeledMethods]);
 
   const onSaveModelClick = useCallback(
@@ -214,13 +207,6 @@ export function ModelEditor({
         t: "saveModeledMethods",
         methods,
         modeledMethods,
-      });
-      setModifiedSignatures((oldModifiedSignatures) => {
-        const newModifiedSignatures = new Set([...oldModifiedSignatures]);
-        for (const method of methods) {
-          newModifiedSignatures.delete(method.signature);
-        }
-        return newModifiedSignatures;
       });
     },
     [],
@@ -359,6 +345,7 @@ export function ModelEditor({
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
+          revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}

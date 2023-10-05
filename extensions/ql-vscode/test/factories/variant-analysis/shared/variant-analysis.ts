@@ -15,11 +15,13 @@ export function createMockVariantAnalysis({
   scannedRepos = createMockScannedRepos(),
   skippedRepos = createMockSkippedRepos(),
   executionStartTime = faker.number.int(),
+  language = QueryLanguage.Javascript,
 }: {
   status?: VariantAnalysisStatus;
   scannedRepos?: VariantAnalysisScannedRepository[];
   skippedRepos?: VariantAnalysisSkippedRepositories;
   executionStartTime?: number | undefined;
+  language?: QueryLanguage;
 }): VariantAnalysis {
   return {
     id: faker.number.int(),
@@ -32,7 +34,7 @@ export function createMockVariantAnalysis({
     query: {
       name: "a-query-name",
       filePath: "a-query-file-path",
-      language: QueryLanguage.Javascript,
+      language,
       text: "a-query-text",
     },
     databases: {

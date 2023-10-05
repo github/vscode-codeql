@@ -1,6 +1,5 @@
 import {
   QueryHistoryVariantAnalysisDto,
-  QueryLanguageDto,
   QueryStatusDto,
   VariantAnalysisDto,
   VariantAnalysisFailureReasonDto,
@@ -22,9 +21,9 @@ import {
   VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
 import { assertNever } from "../../common/helpers-pure";
-import { QueryLanguage } from "../../common/query-language";
 import { QueryStatus } from "../query-status";
 import { VariantAnalysisHistoryItem } from "../variant-analysis-history-item";
+import { mapQueryLanguageToDomainModel } from "./query-history-dto-mapper";
 
 export function mapQueryHistoryVariantAnalysisToDomainModel(
   item: QueryHistoryVariantAnalysisDto,
@@ -212,31 +211,6 @@ function mapVariantAnalysisStatusToDomainModel(
       return VariantAnalysisStatus.Canceled;
     default:
       assertNever(status);
-  }
-}
-
-function mapQueryLanguageToDomainModel(
-  language: QueryLanguageDto,
-): QueryLanguage {
-  switch (language) {
-    case QueryLanguageDto.CSharp:
-      return QueryLanguage.CSharp;
-    case QueryLanguageDto.Cpp:
-      return QueryLanguage.Cpp;
-    case QueryLanguageDto.Go:
-      return QueryLanguage.Go;
-    case QueryLanguageDto.Java:
-      return QueryLanguage.Java;
-    case QueryLanguageDto.Javascript:
-      return QueryLanguage.Javascript;
-    case QueryLanguageDto.Python:
-      return QueryLanguage.Python;
-    case QueryLanguageDto.Ruby:
-      return QueryLanguage.Ruby;
-    case QueryLanguageDto.Swift:
-      return QueryLanguage.Swift;
-    default:
-      assertNever(language);
   }
 }
 

@@ -1,5 +1,5 @@
 import { calculateModeledPercentage } from "../../../../src/model-editor/shared/modeled-percentage";
-import { createMethod } from "../../../factories/data-extension/method-factories";
+import { createMethod } from "../../../factories/model-editor/method-factories";
 
 describe("calculateModeledPercentage", () => {
   it("when there are no external API usages", () => {

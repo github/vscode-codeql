@@ -1,27 +1,12 @@
 import * as React from "react";
 import { useState } from "react";
 import { styled } from "styled-components";
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
-import {
-  CellValue,
-  RawResultSet,
-  ResultSetSchema,
-} from "../../common/bqrs-cli-types";
-import { tryGetRemoteLocation } from "../../common/bqrs-utils";
+import { RawResultSet, ResultSetSchema } from "../../common/bqrs-cli-types";
 import TextButton from "../common/TextButton";
-import { convertNonPrintableChars } from "../../common/text-utils";
-import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
+import { useTelemetryOnChange } from "../common/telemetry";
+import { RawResultRow } from "./RawResultRow";
 
 const numOfResultsInContractedMode = 5;
-
-const StyledRow = styled.div`
-  border-color: var(--vscode-editor-snippetFinalTabstopHighlightBorder);
-  border-style: solid;
-  justify-content: center;
-  align-items: center;
-  padding: 0.4rem;
-  word-break: break-word;
-`;
 
 type TableContainerProps = {
   columnCount: number;
@@ -39,60 +24,6 @@ const TableContainer = styled.div<TableContainerProps>`
   max-width: 45rem;
   padding: 0.4rem;
 `;
-
-type CellProps = {
-  value: CellValue;
-  fileLinkPrefix: string;
-  sourceLocationPrefix: string;
-};
-
-const sendRawResultsLinkTelemetry = () => sendTelemetry("raw-results-link");
-
-const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
-  switch (typeof value) {
-    case "string":
-    case "number":
-    case "boolean":
-      return <span>{convertNonPrintableChars(value.toString())}</span>;
-    case "object": {
-      const url = tryGetRemoteLocation(
-        value.url,
-        fileLinkPrefix,
-        sourceLocationPrefix,
-      );
-      const safeLabel = convertNonPrintableChars(value.label);
-      if (url) {
-        return (
-          <VSCodeLink onClick={sendRawResultsLinkTelemetry} href={url}>
-            {safeLabel}
-          </VSCodeLink>
-        );
-      } else {
-        return <span>{safeLabel}</span>;
-      }
-    }
-  }
-};
-
-type RowProps = {
-  row: CellValue[];
-  fileLinkPrefix: string;
-  sourceLocationPrefix: string;
-};
-
-const Row = ({ row, fileLinkPrefix, sourceLocationPrefix }: RowProps) => (
-  <>
-    {row.map((cell, cellIndex) => (
-      <StyledRow key={cellIndex}>
-        <Cell
-          value={cell}
-          fileLinkPrefix={fileLinkPrefix}
-          sourceLocationPrefix={sourceLocationPrefix}
-        />
-      </StyledRow>
-    ))}
-  </>
-);
 
 type RawResultsTableProps = {
   schema: ResultSetSchema;
@@ -122,7 +53,7 @@ const RawResultsTable = ({
     <>
       <TableContainer columnCount={schema.columns.length}>
         {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
-          <Row
+          <RawResultRow
             key={rowIndex}
             row={row}
             fileLinkPrefix={fileLinkPrefix}

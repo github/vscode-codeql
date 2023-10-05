@@ -1,6 +1,6 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
-import { createMethod } from "../../../../test/factories/data-extension/method-factories";
+import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { LibraryRow, LibraryRowProps } from "../LibraryRow";
 import { InProgressMethods } from "../../../model-editor/shared/in-progress-methods";
 import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
@@ -20,6 +20,7 @@ describe(LibraryRow.name, () => {
     mode: Mode.Application,
     showFlowGeneration: false,
     showLlmButton: false,
+    showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
   };
 
@@ -43,6 +44,7 @@ describe(LibraryRow.name, () => {
         inProgressMethods={new InProgressMethods()}
         viewState={viewState}
         hideModeledMethods={false}
+        revealedMethodSignature={null}
         onChange={onChange}
         onSaveModelClick={onSaveModelClick}
         onGenerateFromLlmClick={onGenerateFromLlmClick}

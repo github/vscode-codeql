@@ -9,7 +9,7 @@ import {
 import { join } from "path";
 
 import { App } from "../app";
-import { DisposableObject, DisposeHandler } from "../disposable-object";
+import { Disposable } from "../disposable-object";
 import { tmpDir } from "../../tmp-dir";
 import { getHtmlForWebview, WebviewMessage, WebviewKind } from "./webview-html";
 
@@ -27,16 +27,16 @@ export type WebviewPanelConfig = {
 export abstract class AbstractWebview<
   ToMessage extends WebviewMessage,
   FromMessage extends WebviewMessage,
-> extends DisposableObject {
+> {
   protected panel: WebviewPanel | undefined;
   protected panelLoaded = false;
   protected panelLoadedCallBacks: Array<() => void> = [];
 
   private panelResolves?: Array<(panel: WebviewPanel) => void>;
 
-  constructor(protected readonly app: App) {
-    super();
-  }
+  private disposables: Disposable[] = [];
+
+  constructor(protected readonly app: App) {}
 
   public async restoreView(panel: WebviewPanel): Promise<void> {
     this.panel = panel;
@@ -101,6 +101,7 @@ export abstract class AbstractWebview<
         this.panel = undefined;
         this.panelLoaded = false;
         this.onPanelDispose();
+        this.disposeAll();
       }, null),
     );
 
@@ -150,8 +151,27 @@ export abstract class AbstractWebview<
     return panel.webview.postMessage(msg);
   }
 
-  public dispose(disposeHandler?: DisposeHandler) {
+  public dispose() {
     this.panel?.dispose();
-    super.dispose(disposeHandler);
+    this.disposeAll();
+  }
+
+  private disposeAll() {
+    while (this.disposables.length > 0) {
+      const disposable = this.disposables.pop()!;
+      disposable.dispose();
+    }
+  }
+
+  /**
+   * Adds `obj` to a list of objects to dispose when the panel is disposed. Objects added by `push` are
+   * disposed in reverse order of being added.
+   * @param obj The object to take ownership of.
+   */
+  protected push<T extends Disposable>(obj: T): T {
+    if (obj !== undefined) {
+      this.disposables.push(obj);
+    }
+    return obj;
   }
 }

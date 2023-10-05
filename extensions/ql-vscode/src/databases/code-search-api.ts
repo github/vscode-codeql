@@ -1,12 +1,9 @@
-import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
 import { Octokit } from "@octokit/rest";
 import { Progress, CancellationToken } from "vscode";
 import { Credentials } from "../common/authentication";
-import {
-  NotificationLogger,
-  showAndLogWarningMessage,
-} from "../common/logging";
+import { BaseLogger } from "../common/logging";
+import { AppOctokit } from "../common/octokit";
 
 export async function getCodeSearchRepositories(
   query: string,
@@ -16,7 +13,7 @@ export async function getCodeSearchRepositories(
   }>,
   token: CancellationToken,
   credentials: Credentials,
-  logger: NotificationLogger,
+  logger: BaseLogger,
 ): Promise<string[]> {
   let nwos: string[] = [];
   const octokit = await provideOctokitWithThrottling(credentials, logger);
@@ -47,26 +44,23 @@ export async function getCodeSearchRepositories(
 
 async function provideOctokitWithThrottling(
   credentials: Credentials,
-  logger: NotificationLogger,
+  logger: BaseLogger,
 ): Promise<Octokit> {
-  const MyOctokit = Octokit.plugin(throttling);
+  const MyOctokit = AppOctokit.plugin(throttling);
   const auth = await credentials.getAccessToken();
 
   const octokit = new MyOctokit({
     auth,
-    retry,
     throttle: {
       onRateLimit: (retryAfter: number, options: any): boolean => {
-        void showAndLogWarningMessage(
-          logger,
+        void logger.log(
           `Rate Limit detected for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
         );
 
         return true;
       },
       onSecondaryRateLimit: (_retryAfter: number, options: any): void => {
-        void showAndLogWarningMessage(
-          logger,
+        void logger.log(
           `Secondary Rate Limit detected for request ${options.method} ${options.url}`,
         );
       },

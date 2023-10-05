@@ -1,6 +1,8 @@
 // Contains models and consts for the data we want to store in the query history store.
 // Changes to these models should be done carefully and account for backwards compatibility of data.
 
+import { QueryLanguageDto } from "./query-history-dto";
+
 export interface QueryHistoryLocalQueryDto {
   initialInfo: InitialQueryInfoDto;
   t: "local";
@@ -27,6 +29,7 @@ export interface InitialQueryInfoDto {
 interface DatabaseInfoDto {
   name: string;
   databaseUri: string;
+  language?: QueryLanguageDto;
 }
 
 interface PositionDto {

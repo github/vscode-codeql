@@ -16,6 +16,10 @@ import { fetchExternalApiQueries } from "./queries";
 import { Method } from "./method";
 import { runQuery } from "../local-queries/run-query";
 import { decodeBqrsToMethods } from "./bqrs";
+import {
+  resolveEndpointsQuery,
+  syntheticQueryPackName,
+} from "./model-editor-queries";
 
 type RunQueryOptions = {
   cliServer: CodeQLCliServer;
@@ -88,7 +92,28 @@ export async function runExternalApiQueries(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
 
-  const queryPath = join(queryDir, queryNameFromMode(mode));
+  progress({
+    message: "Resolving query",
+    step: 2,
+    maxStep: externalApiQueriesProgressMaxStep,
+  });
+
+  // Resolve the queries from either codeql/java-queries or from the temporary queryDir
+  const queryPath = await resolveEndpointsQuery(
+    cliServer,
+    databaseItem.language,
+    mode,
+    [syntheticQueryPackName],
+    [queryDir],
+  );
+  if (!queryPath) {
+    void showAndLogExceptionWithTelemetry(
+      extLogger,
+      telemetryListener,
+      redactableError`The ${mode} model editor query could not be found. Try re-opening the model editor. If that doesn't work, try upgrading the CodeQL libraries.`,
+    );
+    return;
+  }
 
   // Run the actual query
   const completedQuery = await runQuery({
@@ -132,7 +157,7 @@ export async function runExternalApiQueries(
     maxStep: externalApiQueriesProgressMaxStep,
   });
 
-  return decodeBqrsToMethods(bqrsChunk);
+  return decodeBqrsToMethods(bqrsChunk, mode);
 }
 
 type GetResultsOptions = {
@@ -160,7 +185,5 @@ export async function readQueryResults({
 }
 
 function queryNameFromMode(mode: Mode): string {
-  return `FetchExternalApis${
-    mode.charAt(0).toUpperCase() + mode.slice(1)
-  }Mode.ql`;
+  return `${mode.charAt(0).toUpperCase() + mode.slice(1)}ModeEndpoints.ql`;
 }

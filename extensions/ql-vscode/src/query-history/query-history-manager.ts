@@ -62,6 +62,7 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
+import { LanguageContextStore } from "../language-context-store";
 
 /**
  * query-history-manager.ts
@@ -141,6 +142,7 @@ export class QueryHistoryManager extends DisposableObject {
     ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
     private readonly labelProvider: HistoryItemLabelProvider,
+    private readonly languageContext: LanguageContextStore,
     private readonly doCompareCallback: (
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo,
@@ -158,7 +160,7 @@ export class QueryHistoryManager extends DisposableObject {
     );
 
     this.treeDataProvider = this.push(
-      new HistoryTreeDataProvider(this.labelProvider),
+      new HistoryTreeDataProvider(this.labelProvider, this.languageContext),
     );
     this.treeView = this.push(
       window.createTreeView("codeQLQueryHistory", {
@@ -230,6 +232,12 @@ export class QueryHistoryManager extends DisposableObject {
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
     this.registerToVariantAnalysisEvents();
+
+    this.push(
+      this.languageContext.onLanguageContextChanged(async () => {
+        this.treeDataProvider.refresh();
+      }),
+    );
   }
 
   public getCommands(): QueryHistoryCommands {

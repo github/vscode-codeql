@@ -56,7 +56,7 @@ class MockAppEventEmitter<T> implements AppEventEmitter<T> {
 
   constructor() {
     this.event = () => {
-      return {} as Disposable;
+      return new MockAppEvent();
     };
   }
 
@@ -69,7 +69,17 @@ class MockAppEventEmitter<T> implements AppEventEmitter<T> {
   }
 }
 
-export function createMockEnvironmentContext(): EnvironmentContext {
+class MockAppEvent implements Disposable {
+  public fire(): void {
+    // no-op
+  }
+
+  public dispose() {
+    // no-op
+  }
+}
+
+function createMockEnvironmentContext(): EnvironmentContext {
   return {
     language: "en-US",
   };

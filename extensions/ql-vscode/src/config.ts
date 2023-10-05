@@ -703,6 +703,7 @@ const MODEL_SETTING = new Setting("model", ROOT_SETTING);
 const FLOW_GENERATION = new Setting("flowGeneration", MODEL_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
+const SHOW_MULTIPLE_MODELS = new Setting("showMultipleModels", MODEL_SETTING);
 
 export function showFlowGeneration(): boolean {
   return !!FLOW_GENERATION.getValue<boolean>();
@@ -716,4 +717,8 @@ export function getExtensionsDirectory(languageId: string): string | undefined {
   return EXTENSIONS_DIRECTORY.getValue<string>({
     languageId,
   });
+}
+
+export function showMultipleModels(): boolean {
+  return !!SHOW_MULTIPLE_MODELS.getValue<boolean>();
 }

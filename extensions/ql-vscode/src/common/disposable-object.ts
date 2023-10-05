@@ -9,9 +9,15 @@ export type DisposeHandler = (disposable: Disposable) => void;
 /**
  * Base class to make it easier to implement a `Disposable` that owns other disposable object.
  */
-export abstract class DisposableObject implements Disposable {
+export class DisposableObject implements Disposable {
   private disposables: Disposable[] = [];
   private tracked?: Set<Disposable> = undefined;
+
+  constructor(...dispoables: Disposable[]) {
+    for (const d of dispoables) {
+      this.push(d);
+    }
+  }
 
   /**
    * Adds `obj` to a list of objects to dispose when `this` is disposed. Objects added by `push` are

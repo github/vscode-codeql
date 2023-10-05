@@ -7,7 +7,10 @@ import { mockedObject } from "../../../utils/mocking.helpers";
 import {
   createMethod,
   createUsage,
-} from "../../../../factories/data-extension/method-factories";
+} from "../../../../factories/model-editor/method-factories";
+import { ModelingStore } from "../../../../../src/model-editor/modeling-store";
+import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
+import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -18,6 +21,8 @@ describe("MethodsUsagePanel", () => {
   describe("setState", () => {
     const hideModeledMethods = false;
     const methods: Method[] = [createMethod()];
+    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modifiedMethodSignatures: Set<string> = new Set();
 
     it("should update the tree view with the correct batch number", async () => {
       const mockTreeView = {
@@ -25,8 +30,16 @@ describe("MethodsUsagePanel", () => {
       } as TreeView<unknown>;
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
-      const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledMethods);
+      const modelingStore = createMockModelingStore();
+
+      const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
+      await panel.setState(
+        methods,
+        dbItem,
+        hideModeledMethods,
+        modeledMethods,
+        modifiedMethodSignatures,
+      );
 
       expect(mockTreeView.badge?.value).toBe(1);
     });
@@ -34,8 +47,11 @@ describe("MethodsUsagePanel", () => {
 
   describe("revealItem", () => {
     let mockTreeView: TreeView<unknown>;
+    let modelingStore: ModelingStore;
 
     const hideModeledMethods: boolean = false;
+    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modifiedMethodSignatures: Set<string> = new Set();
     const usage = createUsage();
 
     beforeEach(() => {
@@ -43,6 +59,8 @@ describe("MethodsUsagePanel", () => {
         reveal: jest.fn(),
       });
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
+
+      modelingStore = createMockModelingStore();
     });
 
     it("should reveal the correct item in the tree view", async () => {
@@ -52,8 +70,14 @@ describe("MethodsUsagePanel", () => {
         }),
       ];
 
-      const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledMethods);
+      const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
+      await panel.setState(
+        methods,
+        dbItem,
+        hideModeledMethods,
+        modeledMethods,
+        modifiedMethodSignatures,
+      );
 
       await panel.revealItem(usage);
 
@@ -62,8 +86,14 @@ describe("MethodsUsagePanel", () => {
 
     it("should do nothing if usage cannot be found", async () => {
       const methods = [createMethod({})];
-      const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledMethods);
+      const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
+      await panel.setState(
+        methods,
+        dbItem,
+        hideModeledMethods,
+        modeledMethods,
+        modifiedMethodSignatures,
+      );
 
       await panel.revealItem(usage);
 

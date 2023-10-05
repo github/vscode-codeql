@@ -99,6 +99,11 @@ describe("local-databases-ui", () => {
           /**/
         },
       } as any,
+      {
+        onLanguageContextChanged: () => {
+          /**/
+        },
+      } as any,
       {} as any,
       storageDir,
       storageDir,

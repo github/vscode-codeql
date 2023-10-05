@@ -1,4 +1,11 @@
-import { CancellationTokenSource, Uri, ViewColumn, window } from "vscode";
+import {
+  CancellationTokenSource,
+  Tab,
+  TabInputWebview,
+  Uri,
+  ViewColumn,
+  window,
+} from "vscode";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -19,7 +26,6 @@ import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import { runFlowModelQueries } from "./flow-model-queries";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
-import { showResolvableLocation } from "../databases/local-databases/locations";
 import { redactableError } from "../common/errors";
 import {
   externalApiQueriesProgressMaxStep,
@@ -28,14 +34,19 @@ import {
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import { showFlowGeneration, showLlmGeneration } from "../config";
+import {
+  showFlowGeneration,
+  showLlmGeneration,
+  showMultipleModels,
+} from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
-import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { ModelingStore } from "./modeling-store";
+import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -43,11 +54,10 @@ export class ModelEditorView extends AbstractWebview<
 > {
   private readonly autoModeler: AutoModeler;
 
-  private methods: Method[];
-  private hideModeledMethods: boolean;
-
   public constructor(
     protected readonly app: App,
+    private readonly modelingStore: ModelingStore,
+    private readonly viewTracker: ModelEditorViewTracker<ModelEditorView>,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -56,22 +66,13 @@ export class ModelEditorView extends AbstractWebview<
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
     private mode: Mode,
-    private readonly updateMethodsUsagePanelState: (
-      methods: Method[],
-      databaseItem: DatabaseItem,
-      hideModeledMethods: boolean,
-    ) => Promise<void>,
-    private readonly showMethod: (
-      method: Method,
-      usage: Usage,
-    ) => Promise<void>,
-    private readonly handleViewBecameActive: (view: ModelEditorView) => void,
-    private readonly handleViewWasDisposed: (view: ModelEditorView) => void,
-    private readonly isMostRecentlyActiveView: (
-      view: ModelEditorView,
-    ) => boolean,
   ) {
     super(app);
+
+    this.modelingStore.initializeStateForDb(databaseItem);
+    this.registerToModelingStoreEvents();
+
+    this.viewTracker.registerView(this);
 
     this.autoModeler = new AutoModeler(
       app,
@@ -87,11 +88,9 @@ export class ModelEditorView extends AbstractWebview<
         });
       },
       async (modeledMethods) => {
-        await this.postMessage({ t: "addModeledMethods", modeledMethods });
+        this.addModeledMethods(modeledMethods);
       },
     );
-    this.methods = [];
-    this.hideModeledMethods = INITIAL_HIDE_MODELED_METHODS_VALUE;
   }
 
   public async openView() {
@@ -100,17 +99,15 @@ export class ModelEditorView extends AbstractWebview<
 
     panel.onDidChangeViewState(async () => {
       if (panel.active) {
-        this.handleViewBecameActive(this);
-        await this.updateMethodsUsagePanelState(
-          this.methods,
-          this.databaseItem,
-          this.hideModeledMethods,
-        );
+        this.modelingStore.setActiveDb(this.databaseItem);
+        await this.markModelEditorAsActive();
+      } else {
+        await this.updateModelEditorActiveContext();
       }
     });
 
     panel.onDidDispose(() => {
-      this.handleViewWasDisposed(this);
+      this.modelingStore.removeDb(this.databaseItem);
       // onDidDispose is called after the tab has been closed,
       // so we want to check if there are any others still open.
       void this.app.commands.execute(
@@ -129,15 +126,44 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
+  private async markModelEditorAsActive(): Promise<void> {
+    void this.app.commands.execute(
+      "setContext",
+      "codeql.modelEditorActive",
+      true,
+    );
+  }
+
+  private async updateModelEditorActiveContext(): Promise<void> {
+    await this.app.commands.execute(
+      "setContext",
+      "codeql.modelEditorActive",
+      this.isAModelEditorActive(),
+    );
+  }
+
   private isAModelEditorOpen(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
-      tabGroup.tabs.some((tab) => {
-        const viewType: string | undefined = (tab.input as any)?.viewType;
-        // The viewType has a prefix, such as "mainThreadWebview-", but if the
-        // suffix matches that should be enough to identify the view.
-        return viewType && viewType.endsWith("model-editor");
-      }),
+      tabGroup.tabs.some((tab) => this.isTabModelEditorView(tab)),
     );
+  }
+
+  private isAModelEditorActive(): boolean {
+    return window.tabGroups.all.some((tabGroup) =>
+      tabGroup.tabs.some(
+        (tab) => this.isTabModelEditorView(tab) && tab.isActive,
+      ),
+    );
+  }
+
+  private isTabModelEditorView(tab: Tab): boolean {
+    if (!(tab.input instanceof TabInputWebview)) {
+      return false;
+    }
+
+    // The viewType has a prefix, such as "mainThreadWebview-", but if the
+    // suffix matches that should be enough to identify the view.
+    return tab.input.viewType.endsWith("model-editor");
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -163,7 +189,7 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   protected onPanelDispose(): void {
-    // Nothing to do here
+    this.viewTracker.unregisterView(this);
   }
 
   protected async onMessage(msg: FromModelEditorMessage): Promise<void> {
@@ -234,6 +260,12 @@ export class ModelEditorView extends AbstractWebview<
             cancellable: false,
           },
         );
+
+        this.modelingStore.removeModifiedMethods(
+          this.databaseItem,
+          Object.keys(msg.modeledMethods),
+        );
+
         void telemetryListener?.sendUIInteraction(
           "model-editor-save-modeled-methods",
         );
@@ -270,11 +302,11 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "switchMode":
         this.mode = msg.mode;
-        this.methods = [];
+        this.modelingStore.setMethods(this.databaseItem, []);
         await Promise.all([
           this.postMessage({
             t: "setMethods",
-            methods: this.methods,
+            methods: [],
           }),
           this.setViewState(),
           withProgress((progress) => this.loadMethods(progress), {
@@ -285,16 +317,18 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "hideModeledMethods":
-        this.hideModeledMethods = msg.hideModeledMethods;
-        await this.updateMethodsUsagePanelState(
-          this.methods,
+        this.modelingStore.setHideModeledMethods(
           this.databaseItem,
-          this.hideModeledMethods,
+          msg.hideModeledMethods,
         );
         void telemetryListener?.sendUIInteraction(
           "model-editor-hide-modeled-methods",
         );
         break;
+      case "setModeledMethod": {
+        this.setModeledMethod(msg.method);
+        break;
+      }
       default:
         assertNever(msg);
     }
@@ -312,6 +346,19 @@ export class ModelEditorView extends AbstractWebview<
     ]);
   }
 
+  public get databaseUri(): string {
+    return this.databaseItem.databaseUri.toString();
+  }
+
+  public async revealMethod(method: Method): Promise<void> {
+    this.panel?.reveal();
+
+    await this.postMessage({
+      t: "revealMethod",
+      method,
+    });
+  }
+
   private async setViewState(): Promise<void> {
     const showLlmButton =
       this.databaseItem.language === "java" && showLlmGeneration();
@@ -322,14 +369,14 @@ export class ModelEditorView extends AbstractWebview<
         extensionPack: this.extensionPack,
         showFlowGeneration: showFlowGeneration(),
         showLlmButton,
+        showMultipleModels: showMultipleModels(),
         mode: this.mode,
       },
     });
   }
 
   protected async handleJumpToUsage(method: Method, usage: Usage) {
-    await this.showMethod(method, usage);
-    await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
+    this.modelingStore.setSelectedMethod(this.databaseItem, method, usage);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
@@ -339,10 +386,7 @@ export class ModelEditorView extends AbstractWebview<
         this.cliServer,
         this.app.logger,
       );
-      await this.postMessage({
-        t: "loadModeledMethods",
-        modeledMethods,
-      });
+      this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         this.app.logger,
@@ -370,19 +414,8 @@ export class ModelEditorView extends AbstractWebview<
       if (!queryResult) {
         return;
       }
-      this.methods = queryResult;
 
-      await this.postMessage({
-        t: "setMethods",
-        methods: this.methods,
-      });
-      if (this.isMostRecentlyActiveView(this)) {
-        await this.updateMethodsUsagePanelState(
-          this.methods,
-          this.databaseItem,
-          this.hideModeledMethods,
-        );
-      }
+      this.modelingStore.setMethods(this.databaseItem, queryResult);
     } catch (err) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
@@ -431,10 +464,7 @@ export class ModelEditorView extends AbstractWebview<
                 modeledMethodsByName[modeledMethod.signature] = modeledMethod;
               }
 
-              await this.postMessage({
-                t: "addModeledMethods",
-                modeledMethods: modeledMethodsByName,
-              });
+              this.addModeledMethods(modeledMethodsByName);
             },
             progress,
             token: tokenSource.token,
@@ -488,6 +518,8 @@ export class ModelEditorView extends AbstractWebview<
 
       const view = new ModelEditorView(
         this.app,
+        this.modelingStore,
+        this.viewTracker,
         this.databaseManager,
         this.cliServer,
         this.queryRunner,
@@ -496,11 +528,6 @@ export class ModelEditorView extends AbstractWebview<
         addedDatabase,
         modelFile,
         Mode.Framework,
-        this.updateMethodsUsagePanelState,
-        this.showMethod,
-        this.handleViewBecameActive,
-        this.handleViewWasDisposed,
-        this.isMostRecentlyActiveView,
       );
       await view.openView();
     });
@@ -577,5 +604,59 @@ export class ModelEditorView extends AbstractWebview<
     }
 
     return addedDatabase;
+  }
+
+  private registerToModelingStoreEvents() {
+    this.push(
+      this.modelingStore.onMethodsChanged(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.postMessage({
+            t: "setMethods",
+            methods: event.methods,
+          });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onModeledMethodsChanged(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.postMessage({
+            t: "setModeledMethods",
+            methods: event.modeledMethods,
+          });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onModifiedMethodsChanged(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.postMessage({
+            t: "setModifiedMethods",
+            methodSignatures: [...event.modifiedMethods],
+          });
+        }
+      }),
+    );
+  }
+
+  private addModeledMethods(modeledMethods: Record<string, ModeledMethod>) {
+    this.modelingStore.addModeledMethods(this.databaseItem, modeledMethods);
+
+    this.modelingStore.addModifiedMethods(
+      this.databaseItem,
+      new Set(Object.keys(modeledMethods)),
+    );
+  }
+
+  private setModeledMethod(method: ModeledMethod) {
+    const state = this.modelingStore.getStateForActiveDb();
+    if (!state) {
+      throw new Error("Attempting to set modeled method without active db");
+    }
+
+    this.modelingStore.updateModeledMethod(state.databaseItem, method);
+    this.modelingStore.addModifiedMethod(state.databaseItem, method.signature);
   }
 }

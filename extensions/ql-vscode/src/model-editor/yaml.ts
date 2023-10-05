@@ -7,12 +7,13 @@ import {
   extensiblePredicateDefinitions,
 } from "./predicates";
 
-import * as dataSchemaJson from "./data-schema.json";
+import * as modelExtensionFileSchema from "./model-extension-file.schema.json";
 import { Mode } from "./shared/mode";
 import { assertNever } from "../common/helpers-pure";
+import { ModelExtensionFile } from "./model-extension-file";
 
-const ajv = new Ajv({ allErrors: true });
-const dataSchemaValidate = ajv.compile(dataSchemaJson);
+const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
+const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
 
 function createDataProperty(
   methods: ModeledMethod[],
@@ -70,8 +71,8 @@ ${extensions.join("\n")}`;
 export function createDataExtensionYamls(
   language: string,
   methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
+  newModeledMethods: Record<string, ModeledMethod[]>,
+  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
   mode: Mode,
 ) {
   switch (mode) {
@@ -97,11 +98,11 @@ export function createDataExtensionYamls(
 function createDataExtensionYamlsByGrouping(
   language: string,
   methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
+  newModeledMethods: Record<string, ModeledMethod[]>,
+  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
   createFilename: (method: Method) => string,
 ): Record<string, string> {
-  const methodsByFilename: Record<string, Record<string, ModeledMethod>> = {};
+  const methodsByFilename: Record<string, Record<string, ModeledMethod[]>> = {};
 
   // We only want to generate a yaml file when it's a known external API usage
   // and there are new modeled methods for it. This avoids us overwriting other
@@ -113,10 +114,12 @@ function createDataExtensionYamlsByGrouping(
   }
 
   // First populate methodsByFilename with any existing modeled methods.
-  for (const [filename, methods] of Object.entries(existingModeledMethods)) {
+  for (const [filename, methodsBySignature] of Object.entries(
+    existingModeledMethods,
+  )) {
     if (filename in methodsByFilename) {
-      for (const [signature, method] of Object.entries(methods)) {
-        methodsByFilename[filename][signature] = method;
+      for (const [signature, methods] of Object.entries(methodsBySignature)) {
+        methodsByFilename[filename][signature] = methods;
       }
     }
   }
@@ -124,10 +127,12 @@ function createDataExtensionYamlsByGrouping(
   // Add the new modeled methods, potentially overwriting existing modeled methods
   // but not removing existing modeled methods that are not in the new set.
   for (const method of methods) {
-    const newMethod = newModeledMethods[method.signature];
-    if (newMethod) {
+    const newMethods = newModeledMethods[method.signature];
+    if (newMethods) {
       const filename = createFilename(method);
-      methodsByFilename[filename][newMethod.signature] = newMethod;
+
+      // Override any existing modeled methods with the new ones.
+      methodsByFilename[filename][method.signature] = newMethods;
     }
   }
 
@@ -136,7 +141,7 @@ function createDataExtensionYamlsByGrouping(
   for (const [filename, methods] of Object.entries(methodsByFilename)) {
     result[filename] = createDataExtensionYaml(
       language,
-      Object.values(methods),
+      Object.values(methods).flatMap((methods) => methods),
     );
   }
 
@@ -146,8 +151,8 @@ function createDataExtensionYamlsByGrouping(
 export function createDataExtensionYamlsForApplicationMode(
   language: string,
   methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
+  newModeledMethods: Record<string, ModeledMethod[]>,
+  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
 ): Record<string, string> {
   return createDataExtensionYamlsByGrouping(
     language,
@@ -161,8 +166,8 @@ export function createDataExtensionYamlsForApplicationMode(
 export function createDataExtensionYamlsForFrameworkMode(
   language: string,
   methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
+  newModeledMethods: Record<string, ModeledMethod[]>,
+  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
 ): Record<string, string> {
   return createDataExtensionYamlsByGrouping(
     language,
@@ -211,25 +216,30 @@ export function createFilenameForPackage(
   return `${prefix}${packageName}${suffix}.yml`;
 }
 
-export function loadDataExtensionYaml(
-  data: any,
-): Record<string, ModeledMethod> | undefined {
-  dataSchemaValidate(data);
+function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
+  modelExtensionFileSchemaValidate(data);
 
-  if (dataSchemaValidate.errors) {
+  if (modelExtensionFileSchemaValidate.errors) {
     throw new Error(
-      `Invalid data extension YAML: ${dataSchemaValidate.errors
+      `Invalid data extension YAML: ${modelExtensionFileSchemaValidate.errors
         .map((error) => `${error.instancePath} ${error.message}`)
         .join(", ")}`,
     );
   }
 
-  const extensions = data.extensions;
-  if (!Array.isArray(extensions)) {
+  return true;
+}
+
+export function loadDataExtensionYaml(
+  data: unknown,
+): Record<string, ModeledMethod[]> | undefined {
+  if (!validateModelExtensionFile(data)) {
     return undefined;
   }
 
-  const modeledMethods: Record<string, ModeledMethod> = {};
+  const extensions = data.extensions;
+
+  const modeledMethods: Record<string, ModeledMethod[]> = {};
 
   for (const extension of extensions) {
     const addsTo = extension.addsTo;
@@ -244,11 +254,16 @@ export function loadDataExtensionYaml(
     }
 
     for (const row of data) {
-      const modeledMethod = definition.readModeledMethod(row);
+      const modeledMethod: ModeledMethod = definition.readModeledMethod(row);
       if (!modeledMethod) {
         continue;
       }
-      modeledMethods[modeledMethod.signature] = modeledMethod;
+
+      if (!(modeledMethod.signature in modeledMethods)) {
+        modeledMethods[modeledMethod.signature] = [];
+      }
+
+      modeledMethods[modeledMethod.signature].push(modeledMethod);
     }
   }
 

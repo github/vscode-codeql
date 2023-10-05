@@ -4,7 +4,7 @@ import {
   render as reactRender,
   screen,
 } from "@testing-library/react";
-import { createMethod } from "../../../../test/factories/data-extension/method-factories";
+import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { Mode } from "../../../model-editor/shared/mode";
 import { MethodRow, MethodRowProps } from "../MethodRow";
 import { ModeledMethod } from "../../../model-editor/modeled-method";
@@ -39,6 +39,7 @@ describe(MethodRow.name, () => {
         modeledMethod={modeledMethod}
         methodIsUnsaved={false}
         modelingInProgress={false}
+        revealedMethodSignature={null}
         mode={Mode.Application}
         onChange={onChange}
         {...props}
@@ -66,7 +67,7 @@ describe(MethodRow.name, () => {
     );
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith(method, {
+    expect(onChange).toHaveBeenCalledWith({
       ...modeledMethod,
       kind: "value",
     });

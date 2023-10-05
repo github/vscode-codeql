@@ -173,6 +173,8 @@ Note that this test requires the feature flag: `codeQL.model.llmGeneration`
 
 #### Test Case 4: Model as dependency
 
+Note that this test requires the feature flag: `codeQL.model.flowGeneration`
+
 1. Click "Model as dependency"
    - Check that grouping are now per package (e.g. `com.alipay.sofa.rraft.option` or `com.google.protobuf`)
 2. Click "Generate".

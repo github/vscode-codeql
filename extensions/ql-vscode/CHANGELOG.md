@@ -2,6 +2,18 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where the query to Find Definitions in database source files would not be cancelled appropriately. [#2885](https://github.com/github/vscode-codeql/pull/2885)
+- It is now possible to show the language of query history items using the `%l` specifier in the `codeQL.queryHistory.format` setting. Note that this only works for queries run after this upgrade, and older items will show `unknown` as a language. [#2892](https://github.com/github/vscode-codeql/pull/2892)
+- Increase the required version of VS Code to 1.82.0. [#2877](https://github.com/github/vscode-codeql/pull/2877)
+- Fix a bug where the query server was restarted twice after configuration changes. [#2884](https://github.com/github/vscode-codeql/pull/2884).
+
+## 1.9.1 - 29 September 2023
+
+- Add warning when using a VS Code version older than 1.82.0. [#2854](https://github.com/github/vscode-codeql/pull/2854)
+- Fix a bug when parsing large evaluation log summaries. [#2858](https://github.com/github/vscode-codeql/pull/2858)
+- Right-align and format numbers in raw result tables. [#2864](https://github.com/github/vscode-codeql/pull/2864)
+- Remove rate limit warning notifications when using Code Search to add repositories to a variant analysis list. [#2812](https://github.com/github/vscode-codeql/pull/2812)
+
 ## 1.9.0 - 19 September 2023
 
 - Release the [CodeQL model editor](https://codeql.github.com/docs/codeql/codeql-for-visual-studio-code/using-the-codeql-model-editor) to create CodeQL model packs for Java frameworks. Open the editor using the "CodeQL: Open CodeQL Model Editor (Beta)" command. [#2823](https://github.com/github/vscode-codeql/pull/2823)

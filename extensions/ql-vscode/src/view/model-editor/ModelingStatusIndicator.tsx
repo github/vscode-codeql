@@ -1,8 +1,7 @@
 import * as React from "react";
 import { assertNever } from "../../common/helpers-pure";
 import { Codicon } from "../common/icon/Codicon";
-
-export type ModelingStatus = "unmodeled" | "unsaved" | "saved";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 interface Props {
   status: ModelingStatus;

@@ -21,6 +21,7 @@ import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import { ModelEditorViewState } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
+import { QueryLanguage } from "./query-language";
 
 /**
  * This module contains types and code that are shared between
@@ -51,6 +52,7 @@ export const RAW_RESULTS_LIMIT = 10000;
 export interface DatabaseInfo {
   name: string;
   databaseUri: string;
+  language?: QueryLanguage;
 }
 
 /** Arbitrary query metadata */
@@ -500,14 +502,14 @@ interface SetMethodsMessage {
   methods: Method[];
 }
 
-interface LoadModeledMethodsMessage {
-  t: "loadModeledMethods";
-  modeledMethods: Record<string, ModeledMethod>;
+interface SetModeledMethodsMessage {
+  t: "setModeledMethods";
+  methods: Record<string, ModeledMethod>;
 }
 
-interface AddModeledMethodsMessage {
-  t: "addModeledMethods";
-  modeledMethods: Record<string, ModeledMethod>;
+interface SetModifiedMethodsMessage {
+  t: "setModifiedMethods";
+  methodSignatures: string[];
 }
 
 interface SetInProgressMethodsMessage {
@@ -570,12 +572,23 @@ interface HideModeledMethodsMessage {
   hideModeledMethods: boolean;
 }
 
+interface SetModeledMethodMessage {
+  t: "setModeledMethod";
+  method: ModeledMethod;
+}
+
+interface RevealMethodMessage {
+  t: "revealMethod";
+  method: Method;
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
-  | LoadModeledMethodsMessage
-  | AddModeledMethodsMessage
-  | SetInProgressMethodsMessage;
+  | SetModeledMethodsMessage
+  | SetModifiedMethodsMessage
+  | SetInProgressMethodsMessage
+  | RevealMethodMessage;
 
 export type FromModelEditorMessage =
   | ViewLoadedMsg
@@ -589,15 +602,38 @@ export type FromModelEditorMessage =
   | GenerateMethodsFromLlmMessage
   | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
-  | HideModeledMethodsMessage;
+  | HideModeledMethodsMessage
+  | SetModeledMethodMessage;
+
+interface RevealInEditorMessage {
+  t: "revealInModelEditor";
+  method: Method;
+}
 
 export type FromMethodModelingMessage =
-  | TelemetryMessage
-  | UnhandledErrorMessage;
+  | CommonFromViewMessages
+  | SetModeledMethodMessage
+  | RevealInEditorMessage;
 
 interface SetMethodMessage {
   t: "setMethod";
   method: Method;
 }
 
-export type ToMethodModelingMessage = SetMethodMessage;
+interface SetMethodModifiedMessage {
+  t: "setMethodModified";
+  isModified: boolean;
+}
+
+interface SetSelectedMethodMessage {
+  t: "setSelectedMethod";
+  method: Method;
+  modeledMethod?: ModeledMethod;
+  isModified: boolean;
+}
+
+export type ToMethodModelingMessage =
+  | SetMethodMessage
+  | SetModeledMethodMessage
+  | SetMethodModifiedMessage
+  | SetSelectedMethodMessage;

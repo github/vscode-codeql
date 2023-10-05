@@ -20,6 +20,7 @@ import { pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
+import { ModelExtensionFile } from "../../../../src/model-editor/model-extension-file";
 
 describe("runAutoModelQueries", () => {
   let resolveQueriesSpy: jest.SpiedFunction<
@@ -186,7 +187,9 @@ describe("generateCandidateFilterPack", () => {
     const filterFile = join(packDir, "filter.yml");
     expect(await pathExists(filterFile)).toBe(true);
     // Read the contents of filterFile and parse as yaml
-    const yaml = await loadYaml(await readFile(filterFile, "utf8"));
+    const yaml = (await loadYaml(
+      await readFile(filterFile, "utf8"),
+    )) as ModelExtensionFile;
     const extensions = yaml.extensions;
     expect(extensions).toBeInstanceOf(Array);
     expect(extensions).toHaveLength(1);

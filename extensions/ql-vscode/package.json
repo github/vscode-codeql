@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.9.1",
+  "version": "1.9.2",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -13,7 +13,7 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.67.0",
+    "vscode": "^1.82.0",
     "node": "^18.15.0",
     "npm": ">=7.20.6"
   },
@@ -761,6 +761,78 @@
         "title": "Add Database Source to Workspace"
       },
       {
+        "command": "codeQLDatabases.displayAllLanguages",
+        "title": "All languages"
+      },
+      {
+        "command": "codeQLDatabases.displayAllLanguagesSelected",
+        "title": "All languages (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displayCpp",
+        "title": "C/C++"
+      },
+      {
+        "command": "codeQLDatabases.displayCppSelected",
+        "title": "C/C++ (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displayCsharp",
+        "title": "C#"
+      },
+      {
+        "command": "codeQLDatabases.displayCsharpSelected",
+        "title": "C# (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displayGo",
+        "title": "Go"
+      },
+      {
+        "command": "codeQLDatabases.displayGoSelected",
+        "title": "Go (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displayJava",
+        "title": "Java/Kotlin"
+      },
+      {
+        "command": "codeQLDatabases.displayJavaSelected",
+        "title": "Java/Kotlin (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displayJavascript",
+        "title": "JavaScript/TypeScript"
+      },
+      {
+        "command": "codeQLDatabases.displayJavascriptSelected",
+        "title": "JavaScript/TypeScript (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displayPython",
+        "title": "Python"
+      },
+      {
+        "command": "codeQLDatabases.displayPythonSelected",
+        "title": "Python (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displayRuby",
+        "title": "Ruby"
+      },
+      {
+        "command": "codeQLDatabases.displayRubySelected",
+        "title": "Ruby (selected)"
+      },
+      {
+        "command": "codeQLDatabases.displaySwift",
+        "title": "Swift"
+      },
+      {
+        "command": "codeQLDatabases.displaySwiftSelected",
+        "title": "Swift (selected)"
+      },
+      {
         "command": "codeQL.chooseDatabaseFolder",
         "title": "CodeQL: Choose Database from Folder"
       },
@@ -778,19 +850,11 @@
       },
       {
         "command": "codeQLDatabases.sortByName",
-        "title": "Sort by Name",
-        "icon": {
-          "light": "media/light/sort-alpha.svg",
-          "dark": "media/dark/sort-alpha.svg"
-        }
+        "title": "Sort by Name"
       },
       {
         "command": "codeQLDatabases.sortByDateAdded",
-        "title": "Sort by Date Added",
-        "icon": {
-          "light": "media/light/sort-date.svg",
-          "dark": "media/dark/sort-date.svg"
-        }
+        "title": "Sort by Date Added"
       },
       {
         "command": "codeQL.checkForUpdatesToCLI",
@@ -989,16 +1053,6 @@
       ],
       "view/title": [
         {
-          "command": "codeQLDatabases.sortByName",
-          "when": "view == codeQLDatabases",
-          "group": "navigation"
-        },
-        {
-          "command": "codeQLDatabases.sortByDateAdded",
-          "when": "view == codeQLDatabases",
-          "group": "navigation"
-        },
-        {
           "command": "codeQLDatabases.chooseDatabaseFolder",
           "when": "view == codeQLDatabases",
           "group": "navigation"
@@ -1017,6 +1071,21 @@
           "command": "codeQLDatabases.chooseDatabaseGithub",
           "when": "view == codeQLDatabases",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabases.sortByName",
+          "when": "view == codeQLDatabases",
+          "group": "1_databases@0"
+        },
+        {
+          "command": "codeQLDatabases.sortByDateAdded",
+          "when": "view == codeQLDatabases",
+          "group": "1_databases@1"
+        },
+        {
+          "submenu": "codeQLDatabases.languages",
+          "when": "view == codeQLDatabases && config.codeQL.canary && config.codeQL.showLanguageFilter",
+          "group": "2_databases@0"
         },
         {
           "command": "codeQLQueries.createQuery",
@@ -1539,6 +1608,78 @@
           "when": "false"
         },
         {
+          "command": "codeQLDatabases.displayAllLanguages",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayAllLanguagesSelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayCpp",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayCppSelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayCsharp",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayCsharpSelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayGo",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayGoSelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayJava",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayJavaSelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayJavascript",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayJavascriptSelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayPython",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayPythonSelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayRuby",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayRubySelected",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displaySwift",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displaySwiftSelected",
+          "when": "false"
+        },
+        {
           "command": "codeQLQueryHistory.openQueryContextMenu",
           "when": "false"
         },
@@ -1732,8 +1873,88 @@
           "command": "codeQL.gotoQLContextEditor",
           "when": "editorLangId == ql-summary && config.codeQL.canary"
         }
+      ],
+      "codeQLDatabases.languages": [
+        {
+          "command": "codeQLDatabases.displayAllLanguages",
+          "when": "codeQLDatabases.languageFilter"
+        },
+        {
+          "command": "codeQLDatabases.displayAllLanguagesSelected",
+          "when": "!codeQLDatabases.languageFilter"
+        },
+        {
+          "command": "codeQLDatabases.displayCpp",
+          "when": "codeQLDatabases.languageFilter != cpp"
+        },
+        {
+          "command": "codeQLDatabases.displayCppSelected",
+          "when": "codeQLDatabases.languageFilter == cpp"
+        },
+        {
+          "command": "codeQLDatabases.displayCsharp",
+          "when": "codeQLDatabases.languageFilter != csharp"
+        },
+        {
+          "command": "codeQLDatabases.displayCsharpSelected",
+          "when": "codeQLDatabases.languageFilter == csharp"
+        },
+        {
+          "command": "codeQLDatabases.displayGo",
+          "when": "codeQLDatabases.languageFilter != go"
+        },
+        {
+          "command": "codeQLDatabases.displayGoSelected",
+          "when": "codeQLDatabases.languageFilter == go"
+        },
+        {
+          "command": "codeQLDatabases.displayJava",
+          "when": "codeQLDatabases.languageFilter != java"
+        },
+        {
+          "command": "codeQLDatabases.displayJavaSelected",
+          "when": "codeQLDatabases.languageFilter == java"
+        },
+        {
+          "command": "codeQLDatabases.displayJavascript",
+          "when": "codeQLDatabases.languageFilter != javascript"
+        },
+        {
+          "command": "codeQLDatabases.displayJavascriptSelected",
+          "when": "codeQLDatabases.languageFilter == javascript"
+        },
+        {
+          "command": "codeQLDatabases.displayPython",
+          "when": "codeQLDatabases.languageFilter != python"
+        },
+        {
+          "command": "codeQLDatabases.displayPythonSelected",
+          "when": "codeQLDatabases.languageFilter == python"
+        },
+        {
+          "command": "codeQLDatabases.displayRuby",
+          "when": "codeQLDatabases.languageFilter != ruby"
+        },
+        {
+          "command": "codeQLDatabases.displayRubySelected",
+          "when": "codeQLDatabases.languageFilter == ruby"
+        },
+        {
+          "command": "codeQLDatabases.displaySwift",
+          "when": "codeQLDatabases.languageFilter != swift"
+        },
+        {
+          "command": "codeQLDatabases.displaySwiftSelected",
+          "when": "codeQLDatabases.languageFilter == swift"
+        }
       ]
     },
+    "submenus": [
+      {
+        "id": "codeQLDatabases.languages",
+        "label": "Languages"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -1777,6 +1998,12 @@
           "id": "codeQLEvalLogViewer",
           "name": "Evaluator Log Viewer",
           "when": "config.codeQL.canary"
+        },
+        {
+          "id": "codeQLMethodModeling",
+          "type": "webview",
+          "name": "CodeQL Method Modeling",
+          "when": "config.codeQL.canary && config.codeQL.model.methodModelingView && codeql.modelEditorOpen && !codeql.modelEditorActive"
         }
       ],
       "codeql-methods-usage": [
@@ -1784,14 +2011,6 @@
           "id": "codeQLMethodsUsage",
           "name": "CodeQL Methods Usage",
           "when": "config.codeQL.canary && codeql.modelEditorOpen"
-        }
-      ],
-      "explorer": [
-        {
-          "type": "webview",
-          "id": "codeQLMethodModeling",
-          "name": "CodeQL Method Modeling",
-          "when": "config.codeQL.canary && config.codeQL.model.methodModelingView && codeql.modelEditorOpen"
         }
       ]
     },
@@ -1849,13 +2068,15 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
+    "generate": "npm-run-all -p generate:*",
+    "generate:schemas": "ts-node scripts/generate-schemas.ts",
     "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
     "postinstall": "patch-package",
     "prepare": "cd ../.. && husky install"
   },
   "dependencies": {
-    "@octokit/plugin-retry": "^4.1.6",
-    "@octokit/rest": "^19.0.4",
+    "@octokit/plugin-retry": "^6.0.1",
+    "@octokit/rest": "^20.0.2",
     "@vscode/codicons": "^0.0.31",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.59.0",
@@ -1869,10 +2090,10 @@
     "fs-extra": "^11.1.1",
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
-    "msw": "^1.2.0",
-    "nanoid": "^3.2.0",
+    "msw": "^0.0.0-fetch.rc-20",
+    "nanoid": "^5.0.1",
     "node-fetch": "^2.6.7",
-    "p-queue": "^6.0.0",
+    "p-queue": "^7.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "semver": "^7.5.2",
@@ -1889,7 +2110,7 @@
     "vscode-languageclient": "^8.0.2",
     "vscode-test-adapter-api": "^1.7.0",
     "vscode-test-adapter-util": "^0.7.0",
-    "zip-a-folder": "^2.0.0"
+    "zip-a-folder": "^3.1.3"
   },
   "devDependencies": {
     "@babel/core": "^7.18.13",
@@ -1899,7 +2120,7 @@
     "@babel/preset-typescript": "^7.21.4",
     "@faker-js/faker": "^8.0.2",
     "@github/markdownlint-github": "^0.3.0",
-    "@octokit/plugin-throttling": "^5.0.1",
+    "@octokit/plugin-throttling": "^8.0.0",
     "@storybook/addon-actions": "^7.1.0",
     "@storybook/addon-essentials": "^7.1.0",
     "@storybook/addon-interactions": "^7.1.0",
@@ -1923,9 +2144,9 @@
     "@types/gulp": "^4.0.9",
     "@types/gulp-replace": "^1.1.0",
     "@types/jest": "^29.0.2",
-    "@types/js-yaml": "^3.12.5",
+    "@types/js-yaml": "^4.0.6",
     "@types/nanoid": "^3.0.0",
-    "@types/node": "^16.11.25",
+    "@types/node": "18.15.0",
     "@types/node-fetch": "^2.5.2",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
@@ -1937,7 +2158,7 @@
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
     "@types/unzipper": "^0.10.1",
-    "@types/vscode": "^1.67.0",
+    "@types/vscode": "^1.82.0",
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
     "@typescript-eslint/eslint-plugin": "^6.2.1",

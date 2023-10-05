@@ -49,6 +49,7 @@ import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import { tryGetQueryLanguage } from "../common/query-language";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -364,6 +365,7 @@ export class LocalQueries extends DisposableObject {
     const initialInfo = await createInitialQueryInfo(selectedQuery, {
       databaseUri: dbItem.databaseUri.toString(),
       name: dbItem.name,
+      language: tryGetQueryLanguage(dbItem.language),
     });
 
     // When cancellation is requested from the query history view, we just stop the debug session.
