@@ -579,7 +579,7 @@ interface SetModeledMethodMessage {
 
 interface RevealMethodMessage {
   t: "revealMethod";
-  method: Method;
+  methodSignature: string;
 }
 
 export type ToModelEditorMessage =

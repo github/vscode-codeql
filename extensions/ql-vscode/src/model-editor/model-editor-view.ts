@@ -355,7 +355,7 @@ export class ModelEditorView extends AbstractWebview<
 
     await this.postMessage({
       t: "revealMethod",
-      method,
+      methodSignature: method.signature,
     });
   }
 
