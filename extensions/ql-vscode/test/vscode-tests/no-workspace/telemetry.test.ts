@@ -424,11 +424,11 @@ describe("telemetry reporting", () => {
     // If the user ever turns global telemetry back on, then we can
     // show the dialog.
 
+    isTelemetryEnabledSpy.mockReturnValue(false);
     await enableTelemetry("telemetry", false);
     await ctx.globalState.update("telemetry-request-viewed", false);
 
     await telemetryListener.initialize();
-    isTelemetryEnabledSpy.mockReturnValue(false);
 
     // popup should not be shown even though we have initialized telemetry
     expect(showInformationMessageSpy).not.toBeCalled();
