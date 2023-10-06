@@ -92,6 +92,12 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         await this.revealInModelEditor(msg.method);
 
         break;
+
+      case "startModeling":
+        await this.app.commands.execute(
+          "codeQL.openModelEditorFromModelingPanel",
+        );
+        break;
       default:
         assertNever(msg);
     }
