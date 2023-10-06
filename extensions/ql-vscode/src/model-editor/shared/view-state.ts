@@ -8,3 +8,7 @@ export interface ModelEditorViewState {
   showMultipleModels: boolean;
   mode: Mode;
 }
+
+export interface MethodModelingPanelViewState {
+  showMultipleModels: boolean;
+}

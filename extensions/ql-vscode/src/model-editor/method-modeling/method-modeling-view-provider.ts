@@ -12,6 +12,7 @@ import { DbModelingState, ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
+import { showMultipleModels } from "../../config";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -29,9 +30,18 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     super(app, "method-modeling");
   }
 
-  protected override onWebViewLoaded(): void {
-    this.setInitialState();
+  protected override async onWebViewLoaded(): Promise<void> {
+    await Promise.all([this.setViewState(), this.setInitialState()]);
     this.registerToModelingStoreEvents();
+  }
+
+  private async setViewState(): Promise<void> {
+    await this.postMessage({
+      t: "setMethodModelingPanelViewState",
+      viewState: {
+        showMultipleModels: showMultipleModels(),
+      },
+    });
   }
 
   public async setMethod(method: Method): Promise<void> {
@@ -45,11 +55,11 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     }
   }
 
-  private setInitialState(): void {
+  private async setInitialState(): Promise<void> {
     if (this.modelingStore.hasStateForActiveDb()) {
       const selectedMethod = this.modelingStore.getSelectedMethodDetails();
       if (selectedMethod) {
-        void this.postMessage({
+        await this.postMessage({
           t: "setSelectedMethod",
           method: selectedMethod.method,
           modeledMethod: selectedMethod.modeledMethod,
@@ -64,7 +74,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ): Promise<void> {
     switch (msg.t) {
       case "viewLoaded":
-        this.onWebViewLoaded();
+        await this.onWebViewLoaded();
         break;
 
       case "telemetry":

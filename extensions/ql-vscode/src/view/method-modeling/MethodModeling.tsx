@@ -56,6 +56,7 @@ export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
+  showMultipleModels?: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 

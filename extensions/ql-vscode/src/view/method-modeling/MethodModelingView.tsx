@@ -9,8 +9,16 @@ import { ModeledMethod } from "../../model-editor/modeled-method";
 import { vscode } from "../vscode-api";
 import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
+import { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
 
-export function MethodModelingView(): JSX.Element {
+type Props = {
+  initialViewState?: MethodModelingPanelViewState;
+};
+
+export function MethodModelingView({ initialViewState }: Props): JSX.Element {
+  const [viewState, setViewState] = useState<
+    MethodModelingPanelViewState | undefined
+  >(initialViewState);
   const [inModelingMode, setInModelingMode] = useState<boolean>(false);
 
   const [method, setMethod] = useState<Method | undefined>(undefined);
@@ -31,6 +39,9 @@ export function MethodModelingView(): JSX.Element {
       if (evt.origin === window.origin) {
         const msg: ToMethodModelingMessage = evt.data;
         switch (msg.t) {
+          case "setMethodModelingPanelViewState":
+            setViewState(msg.viewState);
+            break;
           case "setInModelingMode":
             setInModelingMode(msg.inModelingMode);
             break;
@@ -84,6 +95,7 @@ export function MethodModelingView(): JSX.Element {
       modelingStatus={modelingStatus}
       method={method}
       modeledMethod={modeledMethod}
+      showMultipleModels={viewState?.showMultipleModels}
       onChange={onChange}
     />
   );
