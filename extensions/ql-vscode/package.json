@@ -1996,7 +1996,7 @@
           "id": "codeQLMethodModeling",
           "type": "webview",
           "name": "CodeQL Method Modeling",
-          "when": "config.codeQL.canary && config.codeQL.model.methodModelingView"
+          "when": "config.codeQL.canary"
         }
       ],
       "codeql-methods-usage": [
