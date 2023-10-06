@@ -1016,6 +1016,10 @@
         "title": "CodeQL: Open CodeQL Model Editor (Beta)"
       },
       {
+        "command": "codeQL.openModelEditorFromModelingPanel",
+        "title": "CodeQL: Open CodeQL Model Editor (Beta)"
+      },
+      {
         "command": "codeQL.mockGitHubApiServer.startRecording",
         "title": "CodeQL: Mock GitHub API Server: Start Scenario Recording"
       },
@@ -1499,6 +1503,10 @@
         },
         {
           "command": "codeQL.openModelEditor"
+        },
+        {
+          "command": "codeQL.openModelEditorFromModelingPanel",
+          "when": "false"
         },
         {
           "command": "codeQLQueries.runLocalQueryContextMenu",
