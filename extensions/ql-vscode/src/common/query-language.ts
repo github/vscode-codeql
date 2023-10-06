@@ -40,10 +40,7 @@ export const PACKS_BY_QUERY_LANGUAGE = {
   ],
   [QueryLanguage.Go]: ["codeql/go-queries"],
   [QueryLanguage.Java]: ["codeql/java-queries"],
-  [QueryLanguage.Javascript]: [
-    "codeql/javascript-queries",
-    "codeql/javascript-experimental-atm-queries",
-  ],
+  [QueryLanguage.Javascript]: ["codeql/javascript-queries"],
   [QueryLanguage.Python]: ["codeql/python-queries"],
   [QueryLanguage.Ruby]: ["codeql/ruby-queries"],
 };
