@@ -89,7 +89,7 @@ export async function loadModeledMethods(
   for (const modeledMethods of Object.values(modeledMethodsByFile)) {
     for (const [key, value] of Object.entries(modeledMethods)) {
       if (!(key in existingModeledMethods)) {
-        existingModeledMethods[key] = value;
+        existingModeledMethods[key] = [];
       }
 
       existingModeledMethods[key].push(...value);
