@@ -39,11 +39,11 @@ export const CodiconButton = ({
     onClick={onClick}
     className={className}
     disabled={disabled}
+    aria-label={label}
+    title={label}
   >
     <span
       role="img"
-      aria-label={label}
-      title={label}
       className={classNames("codicon", `codicon-${name}`, className)}
     />
   </StyledButton>

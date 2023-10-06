@@ -5,7 +5,7 @@ import { Method } from "../../model-editor/method";
 import { styled } from "styled-components";
 import { MultipleModeledMethodsPanel } from "./MultipleModeledMethodsPanel";
 
-type Props = {
+export type ModeledMethodsPanelProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
   showMultipleModels: boolean;
@@ -21,7 +21,7 @@ export const ModeledMethodsPanel = ({
   modeledMethods,
   showMultipleModels,
   onChange,
-}: Props) => {
+}: ModeledMethodsPanelProps) => {
   if (!showMultipleModels) {
     return (
       <SingleMethodModelingInputs

@@ -6,7 +6,7 @@ import { styled } from "styled-components";
 import { MethodModelingInputs } from "./MethodModelingInputs";
 import { CodiconButton } from "../common";
 
-type Props = {
+export type MultipleModeledMethodsPanelProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
   onChange: (modeledMethod: ModeledMethod) => void;
@@ -36,7 +36,7 @@ export const MultipleModeledMethodsPanel = ({
   method,
   modeledMethods,
   onChange,
-}: Props) => {
+}: MultipleModeledMethodsPanelProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   const handlePreviousClick = useCallback(() => {
