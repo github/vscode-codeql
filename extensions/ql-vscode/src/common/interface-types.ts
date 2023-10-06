@@ -19,7 +19,10 @@ import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
-import { ModelEditorViewState } from "../model-editor/shared/view-state";
+import {
+  MethodModelingPanelViewState,
+  ModelEditorViewState,
+} from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 import { QueryLanguage } from "./query-language";
 
@@ -625,6 +628,11 @@ export type FromMethodModelingMessage =
   | RevealInEditorMessage
   | StartModelingMessage;
 
+interface SetMethodModelingPanelViewStateMessage {
+  t: "setMethodModelingPanelViewState";
+  viewState: MethodModelingPanelViewState;
+}
+
 interface SetMethodMessage {
   t: "setMethod";
   method: Method;
@@ -643,6 +651,7 @@ interface SetSelectedMethodMessage {
 }
 
 export type ToMethodModelingMessage =
+  | SetMethodModelingPanelViewStateMessage
   | SetMethodMessage
   | SetModeledMethodMessage
   | SetMethodModifiedMessage
