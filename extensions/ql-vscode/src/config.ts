@@ -711,6 +711,35 @@ const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 const SHOW_MULTIPLE_MODELS = new Setting("showMultipleModels", MODEL_SETTING);
 
+export interface ModelConfig {
+  flowGeneration: boolean;
+  llmGeneration: boolean;
+  extensionsDirectory: string | undefined;
+  showMultipleModels: boolean;
+}
+
+export class ModelConfigListener extends ConfigListener implements ModelConfig {
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings([MODEL_SETTING], e);
+  }
+
+  public get flowGeneration(): boolean {
+    return !!FLOW_GENERATION.getValue<boolean>();
+  }
+
+  public get llmGeneration(): boolean {
+    return !!LLM_GENERATION.getValue<boolean>();
+  }
+
+  public get extensionsDirectory(): string | undefined {
+    return EXTENSIONS_DIRECTORY.getValue<string>();
+  }
+
+  public get showMultipleModels(): boolean {
+    return !!SHOW_MULTIPLE_MODELS.getValue<boolean>();
+  }
+}
+
 export function showFlowGeneration(): boolean {
   return !!FLOW_GENERATION.getValue<boolean>();
 }
