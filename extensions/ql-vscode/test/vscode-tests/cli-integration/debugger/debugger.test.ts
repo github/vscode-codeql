@@ -177,4 +177,27 @@ describeWithCodeQL()("Debugger", () => {
       expect(editor.document.isDirty).toBe(false);
     });
   });
+
+  it("should pass additionalArgs through to query server", async () => {
+    await withDebugController(appCommands, async (controller) => {
+      await controller.startDebugging(
+        {
+          query: quickEvalQueryPath,
+          additionalArgs: {
+            // Overrides the value passed to the query server
+            queryPath: simpleQueryPath,
+          },
+        },
+        true,
+      );
+      await controller.expectLaunched();
+      const result = await controller.expectSucceeded();
+      await controller.expectExited();
+      await controller.expectTerminated();
+      await controller.expectSessionClosed();
+
+      // Expect the number of results to be the same as if we had run the simple query, not the quick eval query.
+      expect(await getResultCount(result.results.outputDir, cli)).toBe(2);
+    });
+  });
 });
