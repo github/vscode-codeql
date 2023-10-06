@@ -6,7 +6,7 @@ import TextButton from "../common/TextButton";
 import { Method } from "../../model-editor/method";
 
 const Button = styled(TextButton)`
-  margin-top: 0.5rem;
+  margin-top: 0.7rem;
 `;
 
 type Props = {

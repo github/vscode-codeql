@@ -11,11 +11,14 @@ const Container = styled.div`
   padding-top: 0.5rem;
 `;
 
-const Input = styled.label``;
+const Input = styled.label`
+  display: block;
+  padding-bottom: 0.3rem;
+`;
 
 const Name = styled.span`
   display: block;
-  padding-bottom: 0.3rem;
+  padding-bottom: 0.5rem;
 `;
 
 export type MethodModelingInputsProps = {

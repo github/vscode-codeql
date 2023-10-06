@@ -10,14 +10,14 @@ import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { ReviewInEditorButton } from "./ReviewInEditorButton";
 
 const Container = styled.div`
-  padding: 0.3rem;
+  padding-top: 0.5rem;
   margin-bottom: 1rem;
   width: 100%;
 `;
 
 const Title = styled.div`
-  padding-bottom: 0.3rem;
-  font-size: 0.7rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   display: flex;
   justify-content: space-between;
@@ -35,6 +35,11 @@ const DependencyContainer = styled.div`
   padding: 0.5rem;
   word-wrap: break-word;
   word-break: break-all;
+  margin-bottom: 0.8rem;
+`;
+
+const StyledMethodModelingInputs = styled(MethodModelingInputs)`
+  padding-bottom: 0.5rem;
 `;
 
 const StyledVSCodeTag = styled(VSCodeTag)<{ visible: boolean }>`
@@ -71,7 +76,7 @@ export const MethodModeling = ({
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodName {...method} />
       </DependencyContainer>
-      <MethodModelingInputs
+      <StyledMethodModelingInputs
         method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
