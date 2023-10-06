@@ -714,7 +714,7 @@ const SHOW_MULTIPLE_MODELS = new Setting("showMultipleModels", MODEL_SETTING);
 export interface ModelConfig {
   flowGeneration: boolean;
   llmGeneration: boolean;
-  extensionsDirectory: string | undefined;
+  getExtensionsDirectory(languageId: string): string | undefined;
   showMultipleModels: boolean;
 }
 
@@ -731,29 +731,13 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
     return !!LLM_GENERATION.getValue<boolean>();
   }
 
-  public get extensionsDirectory(): string | undefined {
-    return EXTENSIONS_DIRECTORY.getValue<string>();
+  public getExtensionsDirectory(languageId: string): string | undefined {
+    return EXTENSIONS_DIRECTORY.getValue<string>({
+      languageId,
+    });
   }
 
   public get showMultipleModels(): boolean {
     return !!SHOW_MULTIPLE_MODELS.getValue<boolean>();
   }
-}
-
-export function showFlowGeneration(): boolean {
-  return !!FLOW_GENERATION.getValue<boolean>();
-}
-
-export function showLlmGeneration(): boolean {
-  return !!LLM_GENERATION.getValue<boolean>();
-}
-
-export function getExtensionsDirectory(languageId: string): string | undefined {
-  return EXTENSIONS_DIRECTORY.getValue<string>({
-    languageId,
-  });
-}
-
-export function showMultipleModels(): boolean {
-  return !!SHOW_MULTIPLE_MODELS.getValue<boolean>();
 }

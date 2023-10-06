@@ -17,8 +17,8 @@ import {
 import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
-  showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
 } from "../common/logging";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -34,11 +34,7 @@ import {
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import {
-  showFlowGeneration,
-  showLlmGeneration,
-  showMultipleModels,
-} from "../config";
+import { ModelConfigListener } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
@@ -58,6 +54,7 @@ export class ModelEditorView extends AbstractWebview<
     protected readonly app: App,
     private readonly modelingStore: ModelingStore,
     private readonly viewTracker: ModelEditorViewTracker<ModelEditorView>,
+    private readonly modelConfig: ModelConfigListener,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -71,6 +68,7 @@ export class ModelEditorView extends AbstractWebview<
 
     this.modelingStore.initializeStateForDb(databaseItem);
     this.registerToModelingStoreEvents();
+    this.registerToModelConfigEvents();
 
     this.viewTracker.registerView(this);
 
@@ -334,15 +332,15 @@ export class ModelEditorView extends AbstractWebview<
 
   private async setViewState(): Promise<void> {
     const showLlmButton =
-      this.databaseItem.language === "java" && showLlmGeneration();
+      this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
 
     await this.postMessage({
       t: "setModelEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
-        showFlowGeneration: showFlowGeneration(),
+        showFlowGeneration: this.modelConfig.flowGeneration,
         showLlmButton,
-        showMultipleModels: showMultipleModels(),
+        showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.mode,
       },
     });
@@ -481,6 +479,7 @@ export class ModelEditorView extends AbstractWebview<
       const modelFile = await pickExtensionPack(
         this.cliServer,
         addedDatabase,
+        this.modelConfig,
         this.app.logger,
         progress,
         3,
@@ -493,6 +492,7 @@ export class ModelEditorView extends AbstractWebview<
         this.app,
         this.modelingStore,
         this.viewTracker,
+        this.modelConfig,
         this.databaseManager,
         this.cliServer,
         this.queryRunner,
@@ -610,6 +610,14 @@ export class ModelEditorView extends AbstractWebview<
             methodSignatures: [...event.modifiedMethods],
           });
         }
+      }),
+    );
+  }
+
+  private registerToModelConfigEvents() {
+    this.push(
+      this.modelConfig.onDidChangeConfiguration(() => {
+        void this.setViewState();
       }),
     );
   }

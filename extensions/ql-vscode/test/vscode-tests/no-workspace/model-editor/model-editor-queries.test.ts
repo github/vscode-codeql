@@ -8,6 +8,7 @@ import { QueryLanguage } from "../../../../src/common/query-language";
 import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import { ModelConfig } from "../../../../src/config";
 
 describe("setUpPack", () => {
   let queryDir: string;
@@ -32,8 +33,11 @@ describe("setUpPack", () => {
         packInstall: jest.fn(),
         resolveQueriesInSuite: jest.fn().mockResolvedValue([]),
       });
+      const modelConfig = mockedObject<ModelConfig>({
+        llmGeneration: false,
+      });
 
-      await setUpPack(cliServer, queryDir, language);
+      await setUpPack(cliServer, queryDir, language, modelConfig);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles.sort()).toEqual(
@@ -89,8 +93,11 @@ describe("setUpPack", () => {
           .fn()
           .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
       });
+      const modelConfig = mockedObject<ModelConfig>({
+        llmGeneration: false,
+      });
 
-      await setUpPack(cliServer, queryDir, language);
+      await setUpPack(cliServer, queryDir, language, modelConfig);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles.sort()).toEqual(["codeql-pack.yml"].sort());

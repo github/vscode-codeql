@@ -4,7 +4,7 @@ import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { prepareExternalApiQuery } from "./external-api-usage-queries";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { showLlmGeneration } from "../config";
+import { ModelConfig } from "../config";
 import { Mode } from "./shared/mode";
 import { resolveQueriesFromPacks } from "../local-queries";
 import { modeTag } from "./mode-tag";
@@ -28,12 +28,14 @@ export const syntheticQueryPackName = "codeql/external-api-usage";
  * @param cliServer The CodeQL CLI server to use.
  * @param queryDir The directory to set up.
  * @param language The language to use for the queries.
+ * @param modelConfig The model config to use.
  * @returns true if the setup was successful, false otherwise.
  */
 export async function setUpPack(
   cliServer: CodeQLCliServer,
   queryDir: string,
   language: QueryLanguage,
+  modelConfig: ModelConfig,
 ): Promise<boolean> {
   // Download the required query packs
   await cliServer.packDownload([`codeql/${language}-queries`]);
@@ -84,7 +86,7 @@ export async function setUpPack(
   }
 
   // Download any other required packs
-  if (language === "java" && showLlmGeneration()) {
+  if (language === "java" && modelConfig.llmGeneration) {
     await cliServer.packDownload([`codeql/${language}-automodel-queries`]);
   }
 
