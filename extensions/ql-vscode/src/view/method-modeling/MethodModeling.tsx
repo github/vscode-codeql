@@ -5,9 +5,9 @@ import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator
 import { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
 import { ModeledMethod } from "../../model-editor/modeled-method";
-import { MethodModelingInputs } from "./MethodModelingInputs";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { ReviewInEditorButton } from "./ReviewInEditorButton";
+import { ModeledMethodsPanel } from "./ModeledMethodsPanel";
 
 const Container = styled.div`
   padding-top: 0.5rem;
@@ -38,10 +38,6 @@ const DependencyContainer = styled.div`
   margin-bottom: 0.8rem;
 `;
 
-const StyledMethodModelingInputs = styled(MethodModelingInputs)`
-  padding-bottom: 0.5rem;
-`;
-
 const StyledVSCodeTag = styled(VSCodeTag)<{ visible: boolean }>`
   visibility: ${(props) => (props.visible ? "visible" : "hidden")};
 `;
@@ -64,6 +60,7 @@ export const MethodModeling = ({
   modelingStatus,
   modeledMethods,
   method,
+  showMultipleModels = false,
   onChange,
 }: MethodModelingProps): JSX.Element => {
   return (
@@ -77,11 +74,10 @@ export const MethodModeling = ({
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodName {...method} />
       </DependencyContainer>
-      <StyledMethodModelingInputs
+      <ModeledMethodsPanel
         method={method}
-        modeledMethod={
-          modeledMethods.length > 0 ? modeledMethods[0] : undefined
-        }
+        modeledMethods={modeledMethods}
+        showMultipleModels={showMultipleModels}
         onChange={onChange}
       />
       <ReviewInEditorButton method={method} />

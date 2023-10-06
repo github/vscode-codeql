@@ -37,8 +37,24 @@ MethodSaved.args = {
   modelingStatus: "saved",
 };
 
-export const MultipleModelings = Template.bind({});
-MultipleModelings.args = {
+export const MultipleModelingsUnmodeled = Template.bind({});
+MultipleModelingsUnmodeled.args = {
+  method,
+  modeledMethods: [],
+  showMultipleModels: true,
+  modelingStatus: "saved",
+};
+
+export const MultipleModelingsModeledSingle = Template.bind({});
+MultipleModelingsModeledSingle.args = {
+  method,
+  modeledMethods: [createModeledMethod(method)],
+  showMultipleModels: true,
+  modelingStatus: "saved",
+};
+
+export const MultipleModelingsModeledMultiple = Template.bind({});
+MultipleModelingsModeledMultiple.args = {
   method,
   modeledMethods: [
     createModeledMethod(method),
