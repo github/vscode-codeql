@@ -46,14 +46,17 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   }
 
   private setInitialState(): void {
-    const selectedMethod = this.modelingStore.getSelectedMethodDetails();
-    if (selectedMethod) {
-      void this.postMessage({
-        t: "setSelectedMethod",
-        method: selectedMethod.method,
-        modeledMethod: selectedMethod.modeledMethod,
-        isModified: selectedMethod.isModified,
-      });
+    const activeState = this.modelingStore.getStateForActiveDb();
+    if (activeState) {
+      const selectedMethod = this.modelingStore.getSelectedMethodDetails();
+      if (selectedMethod) {
+        void this.postMessage({
+          t: "setSelectedMethod",
+          method: selectedMethod.method,
+          modeledMethod: selectedMethod.modeledMethod,
+          isModified: selectedMethod.isModified,
+        });
+      }
     }
   }
 
@@ -161,6 +164,28 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             method: e.method,
             modeledMethod: e.modeledMethod,
             isModified: e.isModified,
+          });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onDbOpened(async () => {
+        if (this.webviewView) {
+          await this.postMessage({
+            t: "setInModelingMode",
+            inModelingMode: true,
+          });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onDbClosed(async () => {
+        if (this.webviewView && !this.modelingStore.anyDbsBeingModeled()) {
+          await this.postMessage({
+            t: "setInModelingMode",
+            inModelingMode: false,
           });
         }
       }),

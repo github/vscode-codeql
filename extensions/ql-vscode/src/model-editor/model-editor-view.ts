@@ -100,9 +100,6 @@ export class ModelEditorView extends AbstractWebview<
     panel.onDidChangeViewState(async () => {
       if (panel.active) {
         this.modelingStore.setActiveDb(this.databaseItem);
-        await this.markModelEditorAsActive();
-      } else {
-        await this.updateModelEditorActiveContext();
       }
     });
 
@@ -126,33 +123,9 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
-  private async markModelEditorAsActive(): Promise<void> {
-    void this.app.commands.execute(
-      "setContext",
-      "codeql.modelEditorActive",
-      true,
-    );
-  }
-
-  private async updateModelEditorActiveContext(): Promise<void> {
-    await this.app.commands.execute(
-      "setContext",
-      "codeql.modelEditorActive",
-      this.isAModelEditorActive(),
-    );
-  }
-
   private isAModelEditorOpen(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
       tabGroup.tabs.some((tab) => this.isTabModelEditorView(tab)),
-    );
-  }
-
-  private isAModelEditorActive(): boolean {
-    return window.tabGroups.all.some((tabGroup) =>
-      tabGroup.tabs.some(
-        (tab) => this.isTabModelEditorView(tab) && tab.isActive,
-      ),
     );
   }
 

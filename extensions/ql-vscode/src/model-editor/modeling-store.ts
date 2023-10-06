@@ -49,6 +49,7 @@ interface SelectedMethodChangedEvent {
 
 export class ModelingStore extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
+  public readonly onDbOpened: AppEvent<string>;
   public readonly onDbClosed: AppEvent<string>;
   public readonly onMethodsChanged: AppEvent<MethodsChangedEvent>;
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
@@ -60,6 +61,7 @@ export class ModelingStore extends DisposableObject {
   private activeDb: string | undefined;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
+  private readonly onDbOpenedEventEmitter: AppEventEmitter<string>;
   private readonly onDbClosedEventEmitter: AppEventEmitter<string>;
   private readonly onMethodsChangedEventEmitter: AppEventEmitter<MethodsChangedEvent>;
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
@@ -78,6 +80,9 @@ export class ModelingStore extends DisposableObject {
       app.createEventEmitter<void>(),
     );
     this.onActiveDbChanged = this.onActiveDbChangedEventEmitter.event;
+
+    this.onDbOpenedEventEmitter = this.push(app.createEventEmitter<string>());
+    this.onDbOpened = this.onDbOpenedEventEmitter.event;
 
     this.onDbClosedEventEmitter = this.push(app.createEventEmitter<string>());
     this.onDbClosed = this.onDbClosedEventEmitter.event;
@@ -123,6 +128,8 @@ export class ModelingStore extends DisposableObject {
       selectedMethod: undefined,
       selectedUsage: undefined,
     });
+
+    this.onDbOpenedEventEmitter.fire(dbUri);
   }
 
   public setActiveDb(databaseItem: DatabaseItem) {
@@ -152,6 +159,10 @@ export class ModelingStore extends DisposableObject {
     }
 
     return this.state.get(this.activeDb);
+  }
+
+  public anyDbsBeingModeled(): boolean {
+    return this.state.size > 0;
   }
 
   public setMethods(dbItem: DatabaseItem, methods: Method[]) {

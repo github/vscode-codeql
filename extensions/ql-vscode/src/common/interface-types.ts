@@ -577,6 +577,11 @@ interface SetModeledMethodMessage {
   method: ModeledMethod;
 }
 
+interface SetInModelingModeMessage {
+  t: "setInModelingMode";
+  inModelingMode: boolean;
+}
+
 interface RevealMethodMessage {
   t: "revealMethod";
   method: Method;
@@ -641,4 +646,5 @@ export type ToMethodModelingMessage =
   | SetMethodMessage
   | SetModeledMethodMessage
   | SetMethodModifiedMessage
-  | SetSelectedMethodMessage;
+  | SetSelectedMethodMessage
+  | SetInModelingModeMessage;
