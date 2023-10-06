@@ -48,10 +48,16 @@ export const MultipleModeledMethodsPanel = ({
 
   return (
     <Container>
-      {modeledMethods.length > 0 && (
+      {modeledMethods.length > 0 ? (
         <MethodModelingInputs
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
+          onChange={onChange}
+        />
+      ) : (
+        <MethodModelingInputs
+          method={method}
+          modeledMethod={undefined}
           onChange={onChange}
         />
       )}
