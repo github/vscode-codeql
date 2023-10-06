@@ -161,6 +161,10 @@ export class ModelingStore extends DisposableObject {
     return this.state.get(this.activeDb);
   }
 
+  public hasStateForActiveDb(): boolean {
+    return !!this.getStateForActiveDb();
+  }
+
   public anyDbsBeingModeled(): boolean {
     return this.state.size > 0;
   }

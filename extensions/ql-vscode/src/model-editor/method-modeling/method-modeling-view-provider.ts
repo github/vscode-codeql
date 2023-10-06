@@ -46,8 +46,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   }
 
   private setInitialState(): void {
-    const activeState = this.modelingStore.getStateForActiveDb();
-    if (activeState) {
+    if (this.modelingStore.hasStateForActiveDb()) {
       const selectedMethod = this.modelingStore.getSelectedMethodDetails();
       if (selectedMethod) {
         void this.postMessage({
@@ -171,18 +170,16 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
     this.push(
       this.modelingStore.onDbOpened(async () => {
-        if (this.webviewView) {
-          await this.postMessage({
-            t: "setInModelingMode",
-            inModelingMode: true,
-          });
-        }
+        await this.postMessage({
+          t: "setInModelingMode",
+          inModelingMode: true,
+        });
       }),
     );
 
     this.push(
       this.modelingStore.onDbClosed(async () => {
-        if (this.webviewView && !this.modelingStore.anyDbsBeingModeled()) {
+        if (!this.modelingStore.anyDbsBeingModeled()) {
           await this.postMessage({
             t: "setInModelingMode",
             inModelingMode: false,
