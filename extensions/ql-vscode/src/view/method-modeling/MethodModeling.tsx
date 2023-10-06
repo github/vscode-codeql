@@ -21,6 +21,7 @@ const Title = styled.div`
   text-transform: uppercase;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 `;
 
 const DependencyContainer = styled.div`
@@ -35,6 +36,16 @@ const DependencyContainer = styled.div`
   word-wrap: break-word;
   word-break: break-all;
 `;
+
+const StyledVSCodeTag = styled(VSCodeTag)<{ visible: boolean }>`
+  visibility: ${(props) => (props.visible ? "visible" : "hidden")};
+`;
+
+const UnsavedTag = ({ modelingStatus }: { modelingStatus: ModelingStatus }) => (
+  <StyledVSCodeTag visible={modelingStatus === "unsaved"}>
+    Unsaved
+  </StyledVSCodeTag>
+);
 
 export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
@@ -54,7 +65,7 @@ export const MethodModeling = ({
       <Title>
         {method.packageName}
         {method.libraryVersion && <>@{method.libraryVersion}</>}
-        {modelingStatus === "unsaved" ? <VSCodeTag>Unsaved</VSCodeTag> : null}
+        <UnsavedTag modelingStatus={modelingStatus} />
       </Title>
       <DependencyContainer>
         <ModelingStatusIndicator status={modelingStatus} />
