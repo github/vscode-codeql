@@ -55,14 +55,14 @@ const UnsavedTag = ({ modelingStatus }: { modelingStatus: ModelingStatus }) => (
 export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
   method: Method;
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethods: ModeledMethod[];
   showMultipleModels?: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodModeling = ({
   modelingStatus,
-  modeledMethod,
+  modeledMethods,
   method,
   onChange,
 }: MethodModelingProps): JSX.Element => {
@@ -79,7 +79,9 @@ export const MethodModeling = ({
       </DependencyContainer>
       <StyledMethodModelingInputs
         method={method}
-        modeledMethod={modeledMethod}
+        modeledMethod={
+          modeledMethods.length > 0 ? modeledMethods[0] : undefined
+        }
         onChange={onChange}
       />
       <ReviewInEditorButton method={method} />

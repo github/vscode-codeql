@@ -16,7 +16,7 @@ describe(MethodModeling.name, () => {
     render({
       modelingStatus: "saved",
       method,
-      modeledMethod,
+      modeledMethods: [modeledMethod],
       onChange,
     });
 

@@ -18,18 +18,20 @@ const method = createMethod();
 export const MethodUnmodeled = Template.bind({});
 MethodUnmodeled.args = {
   method,
+  modeledMethods: [],
   modelingStatus: "unmodeled",
 };
 
 export const MethodModeled = Template.bind({});
 MethodModeled.args = {
   method,
-
+  modeledMethods: [],
   modelingStatus: "unsaved",
 };
 
 export const MethodSaved = Template.bind({});
 MethodSaved.args = {
   method,
+  modeledMethods: [],
   modelingStatus: "saved",
 };
