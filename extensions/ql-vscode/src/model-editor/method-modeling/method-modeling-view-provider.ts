@@ -100,6 +100,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           activeState.databaseItem,
           msg.method,
         );
+        this.modelingStore.addModifiedMethod(
+          activeState.databaseItem,
+          msg.method.signature,
+        );
         break;
       }
       case "revealInModelEditor":
