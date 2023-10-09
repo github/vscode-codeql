@@ -4,7 +4,8 @@ import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { styled } from "styled-components";
 import { MethodModelingInputs } from "./MethodModelingInputs";
-import { CodiconButton } from "../common";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+import { Codicon } from "../common";
 
 export type MultipleModeledMethodsPanelProps = {
   method: Method;
@@ -63,26 +64,30 @@ export const MultipleModeledMethodsPanel = ({
       )}
       <Footer>
         <PaginationActions>
-          <CodiconButton
-            name="chevron-left"
-            label="Previous modeling"
+          <VSCodeButton
+            appearance="icon"
+            aria-label="Previous modeling"
             onClick={handlePreviousClick}
             disabled={modeledMethods.length < 2 || selectedIndex === 0}
-          />
+          >
+            <Codicon name="chevron-left" />
+          </VSCodeButton>
           {modeledMethods.length > 1 && (
             <div>
               {selectedIndex + 1}/{modeledMethods.length}
             </div>
           )}
-          <CodiconButton
-            name="chevron-right"
-            label="Next modeling"
+          <VSCodeButton
+            appearance="icon"
+            aria-label="Next modeling"
             onClick={handleNextClick}
             disabled={
               modeledMethods.length < 2 ||
               selectedIndex === modeledMethods.length - 1
             }
-          />
+          >
+            <Codicon name="chevron-right" />
+          </VSCodeButton>
         </PaginationActions>
       </Footer>
     </Container>
