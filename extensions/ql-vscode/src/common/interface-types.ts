@@ -19,7 +19,10 @@ import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
-import { ModelEditorViewState } from "../model-editor/shared/view-state";
+import {
+  MethodModelingPanelViewState,
+  ModelEditorViewState,
+} from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 import { QueryLanguage } from "./query-language";
 
@@ -543,8 +546,7 @@ interface RefreshMethods {
 
 interface SaveModeledMethods {
   t: "saveModeledMethods";
-  methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  methodSignatures?: string[];
 }
 
 interface GenerateMethodMessage {
@@ -577,9 +579,14 @@ interface SetModeledMethodMessage {
   method: ModeledMethod;
 }
 
+interface SetInModelingModeMessage {
+  t: "setInModelingMode";
+  inModelingMode: boolean;
+}
+
 interface RevealMethodMessage {
   t: "revealMethod";
-  method: Method;
+  methodSignature: string;
 }
 
 export type ToModelEditorMessage =
@@ -610,10 +617,20 @@ interface RevealInEditorMessage {
   method: Method;
 }
 
+interface StartModelingMessage {
+  t: "startModeling";
+}
+
 export type FromMethodModelingMessage =
   | CommonFromViewMessages
   | SetModeledMethodMessage
-  | RevealInEditorMessage;
+  | RevealInEditorMessage
+  | StartModelingMessage;
+
+interface SetMethodModelingPanelViewStateMessage {
+  t: "setMethodModelingPanelViewState";
+  viewState: MethodModelingPanelViewState;
+}
 
 interface SetMethodMessage {
   t: "setMethod";
@@ -633,7 +650,9 @@ interface SetSelectedMethodMessage {
 }
 
 export type ToMethodModelingMessage =
+  | SetMethodModelingPanelViewStateMessage
   | SetMethodMessage
   | SetModeledMethodMessage
   | SetMethodModifiedMessage
-  | SetSelectedMethodMessage;
+  | SetSelectedMethodMessage
+  | SetInModelingModeMessage;

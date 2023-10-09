@@ -13,7 +13,7 @@ export function createModeledMethod(
     type: "sink",
     input: "Argument[0]",
     output: "",
-    kind: "jndi-injection",
+    kind: "path-injection",
     provenance: "manual",
     ...data,
   };

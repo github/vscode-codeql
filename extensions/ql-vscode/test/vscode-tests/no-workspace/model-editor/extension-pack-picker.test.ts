@@ -1,10 +1,4 @@
-import {
-  ConfigurationScope,
-  Uri,
-  workspace,
-  WorkspaceConfiguration as VSCodeWorkspaceConfiguration,
-  WorkspaceFolder,
-} from "vscode";
+import { Uri, workspace, WorkspaceFolder } from "vscode";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { outputFile, readFile } from "fs-extra";
 import { join } from "path";
@@ -14,7 +8,8 @@ import { QlpacksInfo } from "../../../../src/codeql-cli/cli";
 import { pickExtensionPack } from "../../../../src/model-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import { vscodeGetConfigurationMock } from "../../test-config";
+import { ModelConfig } from "../../../../src/config";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("pickExtensionPack", () => {
   let tmpDir: string;
@@ -32,6 +27,7 @@ describe("pickExtensionPack", () => {
   let workspaceFoldersSpy: jest.SpyInstance;
   let additionalPacks: string[];
   let workspaceFolder: WorkspaceFolder;
+  let modelConfig: ModelConfig;
 
   const logger = createMockLogger();
   const maxStep = 4;
@@ -67,41 +63,20 @@ describe("pickExtensionPack", () => {
     workspaceFoldersSpy = jest
       .spyOn(workspace, "workspaceFolders", "get")
       .mockReturnValue([workspaceFolder]);
+
+    modelConfig = mockedObject<ModelConfig>({
+      getExtensionsDirectory: jest.fn().mockReturnValue(undefined),
+    });
   });
 
   it("selects an existing extension pack", async () => {
-    vscodeGetConfigurationMock.mockImplementation(
-      (
-        section?: string,
-        scope?: ConfigurationScope | null,
-      ): VSCodeWorkspaceConfiguration => {
-        expect(section).toEqual("codeQL.model");
-        expect((scope as any)?.languageId).toEqual("java");
-
-        return {
-          get: (key: string) => {
-            expect(key).toEqual("extensionsDirectory");
-            return undefined;
-          },
-          has: (key: string) => {
-            return key === "extensionsDirectory";
-          },
-          inspect: () => {
-            throw new Error("inspect not implemented");
-          },
-          update: () => {
-            throw new Error("update not implemented");
-          },
-        };
-      },
-    );
-
     const cliServer = mockCliServer(qlPacks);
 
     expect(
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -112,35 +87,10 @@ describe("pickExtensionPack", () => {
       additionalPacks,
       true,
     );
+    expect(modelConfig.getExtensionsDirectory).toHaveBeenCalledWith("java");
   });
 
   it("creates a new extension pack using default extensions directory", async () => {
-    vscodeGetConfigurationMock.mockImplementation(
-      (
-        section?: string,
-        scope?: ConfigurationScope | null,
-      ): VSCodeWorkspaceConfiguration => {
-        expect(section).toEqual("codeQL.model");
-        expect((scope as any)?.languageId).toEqual("java");
-
-        return {
-          get: (key: string) => {
-            expect(key).toEqual("extensionsDirectory");
-            return undefined;
-          },
-          has: (key: string) => {
-            return key === "extensionsDirectory";
-          },
-          inspect: () => {
-            throw new Error("inspect not implemented");
-          },
-          update: () => {
-            throw new Error("update not implemented");
-          },
-        };
-      },
-    );
-
     const tmpDir = await dir({
       unsafeCleanup: true,
     });
@@ -183,6 +133,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -199,6 +150,7 @@ describe("pickExtensionPack", () => {
       dataExtensions: ["models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(modelConfig.getExtensionsDirectory).toHaveBeenCalledWith("java");
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
@@ -223,31 +175,9 @@ describe("pickExtensionPack", () => {
       "my-custom-extensions-directory",
     );
 
-    vscodeGetConfigurationMock.mockImplementation(
-      (
-        section?: string,
-        scope?: ConfigurationScope | null,
-      ): VSCodeWorkspaceConfiguration => {
-        expect(section).toEqual("codeQL.model");
-        expect((scope as any)?.languageId).toEqual("java");
-
-        return {
-          get: (key: string) => {
-            expect(key).toEqual("extensionsDirectory");
-            return configExtensionsDir;
-          },
-          has: (key: string) => {
-            return key === "extensionsDirectory";
-          },
-          inspect: () => {
-            throw new Error("inspect not implemented");
-          },
-          update: () => {
-            throw new Error("update not implemented");
-          },
-        };
-      },
-    );
+    const modelConfig = mockedObject<ModelConfig>({
+      getExtensionsDirectory: jest.fn().mockReturnValue(configExtensionsDir),
+    });
 
     const newPackDir = join(configExtensionsDir, "vscode-codeql-java");
 
@@ -257,6 +187,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -273,6 +204,7 @@ describe("pickExtensionPack", () => {
       dataExtensions: ["models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(modelConfig.getExtensionsDirectory).toHaveBeenCalledWith("java");
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
@@ -299,6 +231,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -324,6 +257,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -351,6 +285,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -388,6 +323,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -425,6 +361,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -465,6 +402,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,
@@ -522,6 +460,7 @@ describe("pickExtensionPack", () => {
       await pickExtensionPack(
         cliServer,
         databaseItem,
+        modelConfig,
         logger,
         progress,
         maxStep,

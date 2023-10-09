@@ -21,13 +21,3 @@ export function convertToLegacyModeledMethods(
     }),
   );
 }
-
-export function convertFromLegacyModeledMethodsFiles(
-  modeledMethods: Record<string, Record<string, ModeledMethod>>,
-): Record<string, Record<string, ModeledMethod[]>> {
-  return Object.fromEntries(
-    Object.entries(modeledMethods).map(([filename, modeledMethods]) => {
-      return [filename, convertFromLegacyModeledMethods(modeledMethods)];
-    }),
-  );
-}

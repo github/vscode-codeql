@@ -11,7 +11,7 @@ import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
 import { getErrorMessage } from "../common/helpers-pure";
 import { ExtensionPack } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
-import { getExtensionsDirectory } from "../config";
+import { ModelConfig } from "../config";
 import {
   autoNameExtensionPack,
   ExtensionPackName,
@@ -28,6 +28,7 @@ const extensionPackValidate = ajv.compile(extensionPackMetadataSchemaJson);
 export async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
+  modelConfig: ModelConfig,
   logger: NotificationLogger,
   progress: ProgressCallback,
   maxStep: number,
@@ -56,7 +57,9 @@ export async function pickExtensionPack(
   });
 
   // Get the `codeQL.model.extensionsDirectory` setting for the language
-  const userExtensionsDirectory = getExtensionsDirectory(databaseItem.language);
+  const userExtensionsDirectory = modelConfig.getExtensionsDirectory(
+    databaseItem.language,
+  );
 
   // If the setting is not set, automatically pick a suitable directory
   const extensionsDirectory = userExtensionsDirectory

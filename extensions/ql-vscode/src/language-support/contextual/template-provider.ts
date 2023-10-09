@@ -36,6 +36,7 @@ import {
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { AstBuilder } from "../ast-viewer/ast-builder";
 import { qlpackOfDatabase } from "../../local-queries";
+import { MultiCancellationToken } from "../../common/vscode/multi-cancellation-token";
 
 /**
  * Runs templated CodeQL queries to find definitions in
@@ -43,6 +44,7 @@ import { qlpackOfDatabase } from "../../local-queries";
  * generalize this to other custom queries, e.g. showing dataflow to
  * or from a selected identifier.
  */
+
 export class TemplateQueryDefinitionProvider implements DefinitionProvider {
   private cache: CachedOperation<LocationLink[]>;
 
@@ -60,11 +62,11 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
   async provideDefinition(
     document: TextDocument,
     position: Position,
-    _token: CancellationToken,
+    token: CancellationToken,
   ): Promise<LocationLink[]> {
     const fileLinks = this.shouldUseCache()
-      ? await this.cache.get(document.uri.toString())
-      : await this.getDefinitions(document.uri.toString());
+      ? await this.cache.get(document.uri.toString(), token)
+      : await this.getDefinitions(document.uri.toString(), token);
 
     const locLinks: LocationLink[] = [];
     for (const link of fileLinks) {
@@ -79,9 +81,13 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
     return !(isCanary() && NO_CACHE_CONTEXTUAL_QUERIES.getValue<boolean>());
   }
 
-  private async getDefinitions(uriString: string): Promise<LocationLink[]> {
+  private async getDefinitions(
+    uriString: string,
+    token: CancellationToken,
+  ): Promise<LocationLink[]> {
     return withProgress(
-      async (progress, token) => {
+      async (progress, tokenInner) => {
+        const multiToken = new MultiCancellationToken(token, tokenInner);
         return getLocationsForUriString(
           this.cli,
           this.qs,
@@ -90,7 +96,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
           KeyType.DefinitionQuery,
           this.queryStorageDir,
           progress,
-          token,
+          multiToken,
           (src, _dest) => src === uriString,
         );
       },
@@ -126,11 +132,11 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     document: TextDocument,
     position: Position,
     _context: ReferenceContext,
-    _token: CancellationToken,
+    token: CancellationToken,
   ): Promise<Location[]> {
     const fileLinks = this.shouldUseCache()
-      ? await this.cache.get(document.uri.toString())
-      : await this.getReferences(document.uri.toString());
+      ? await this.cache.get(document.uri.toString(), token)
+      : await this.getReferences(document.uri.toString(), token);
 
     const locLinks: Location[] = [];
     for (const link of fileLinks) {
@@ -148,9 +154,14 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     return !(isCanary() && NO_CACHE_CONTEXTUAL_QUERIES.getValue<boolean>());
   }
 
-  private async getReferences(uriString: string): Promise<FullLocationLink[]> {
+  private async getReferences(
+    uriString: string,
+    token: CancellationToken,
+  ): Promise<FullLocationLink[]> {
     return withProgress(
-      async (progress, token) => {
+      async (progress, tokenInner) => {
+        const multiToken = new MultiCancellationToken(token, tokenInner);
+
         return getLocationsForUriString(
           this.cli,
           this.qs,
@@ -159,7 +170,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
           KeyType.DefinitionQuery,
           this.queryStorageDir,
           progress,
-          token,
+          multiToken,
           (src, _dest) => src === uriString,
         );
       },

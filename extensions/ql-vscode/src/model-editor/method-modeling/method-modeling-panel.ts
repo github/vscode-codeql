@@ -5,6 +5,7 @@ import { MethodModelingViewProvider } from "./method-modeling-view-provider";
 import { Method } from "../method";
 import { ModelingStore } from "../modeling-store";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
+import { ModelConfigListener } from "../../config";
 
 export class MethodModelingPanel extends DisposableObject {
   private readonly provider: MethodModelingViewProvider;
@@ -16,10 +17,16 @@ export class MethodModelingPanel extends DisposableObject {
   ) {
     super();
 
+    // This is here instead of in MethodModelingViewProvider because we need to
+    // dispose this when the extension gets disposed, not when the webview gets
+    // disposed.
+    const modelConfig = this.push(new ModelConfigListener());
+
     this.provider = new MethodModelingViewProvider(
       app,
       modelingStore,
       editorViewTracker,
+      modelConfig,
     );
     this.push(
       window.registerWebviewViewProvider(
