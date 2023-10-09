@@ -161,7 +161,7 @@ class RunningQuery extends DisposableObject {
       true,
       config.additionalPacks,
       config.extensionPacks,
-      config.additionalArgs,
+      config.additionalRunQueryArgs,
       queryStorageDir,
       undefined,
       undefined,

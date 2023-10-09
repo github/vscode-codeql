@@ -187,7 +187,7 @@ describeWithCodeQL()("Debugger", () => {
       await controller.startDebugging(
         {
           query: quickEvalQueryPath,
-          additionalArgs: {
+          additionalRunQueryArgs: {
             // Overrides the value passed to the query server
             queryPath: simpleQueryPath,
           },

@@ -22,7 +22,7 @@ export interface QLDebugArgs {
   extensionPacks?: string[] | string;
   quickEval?: boolean;
   noDebug?: boolean;
-  additionalArgs?: Record<string, any>;
+  additionalRunQueryArgs?: Record<string, any>;
 }
 
 /**
@@ -121,7 +121,7 @@ export class QLDebugConfigurationProvider
         extensionPacks,
         quickEvalContext,
         noDebug: qlConfiguration.noDebug ?? false,
-        additionalArgs: qlConfiguration.additionalArgs ?? {},
+        additionalRunQueryArgs: qlConfiguration.additionalRunQueryArgs ?? {},
       };
 
       return resultConfiguration;
