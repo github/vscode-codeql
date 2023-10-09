@@ -20,10 +20,7 @@ export type ModeledMethodsListProps = {
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
-  onSaveModelClick: (
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
-  ) => void;
+  onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     packageName: string,
     methods: Method[],

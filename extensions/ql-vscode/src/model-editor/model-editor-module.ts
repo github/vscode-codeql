@@ -21,6 +21,7 @@ import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 import { ModelingStore } from "./modeling-store";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
+import { ModelConfigListener } from "../config";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -150,9 +151,12 @@ export class ModelEditorModule extends DisposableObject {
             return;
           }
 
+          const modelConfig = this.push(new ModelConfigListener());
+
           const modelFile = await pickExtensionPack(
             this.cliServer,
             db,
+            modelConfig,
             this.app.logger,
             progress,
             maxStep,
@@ -172,7 +176,12 @@ export class ModelEditorModule extends DisposableObject {
             unsafeCleanup: true,
           });
 
-          const success = await setUpPack(this.cliServer, queryDir, language);
+          const success = await setUpPack(
+            this.cliServer,
+            queryDir,
+            language,
+            modelConfig,
+          );
           if (!success) {
             await cleanupQueryDir();
             return;
@@ -188,6 +197,7 @@ export class ModelEditorModule extends DisposableObject {
             this.app,
             this.modelingStore,
             this.editorViewTracker,
+            modelConfig,
             this.databaseManager,
             this.cliServer,
             this.queryRunner,

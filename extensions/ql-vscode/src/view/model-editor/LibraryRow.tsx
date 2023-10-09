@@ -78,10 +78,7 @@ export type LibraryRowProps = {
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
   onChange: (modeledMethod: ModeledMethod) => void;
-  onSaveModelClick: (
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
-  ) => void;
+  onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     dependencyName: string,
     methods: Method[],
@@ -165,11 +162,11 @@ export const LibraryRow = ({
 
   const handleSave = useCallback(
     async (e: React.MouseEvent) => {
-      onSaveModelClick(methods, modeledMethods);
+      onSaveModelClick(methods.map((m) => m.signature));
       e.stopPropagation();
       e.preventDefault();
     },
-    [methods, modeledMethods, onSaveModelClick],
+    [methods, onSaveModelClick],
   );
 
   const hasUnsavedChanges = useMemo(() => {
@@ -235,7 +232,7 @@ export const LibraryRow = ({
             modeledMethods={modeledMethods}
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}
-            mode={viewState.mode}
+            viewState={viewState}
             hideModeledMethods={hideModeledMethods}
             revealedMethodSignature={revealedMethodSignature}
             onChange={onChange}

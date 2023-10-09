@@ -142,7 +142,7 @@ export function ModelEditor({
             );
             break;
           case "revealMethod":
-            setRevealedMethodSignature(msg.method.signature);
+            setRevealedMethodSignature(msg.methodSignature);
 
             break;
           default:
@@ -196,21 +196,15 @@ export function ModelEditor({
   const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
-      methods,
-      modeledMethods,
     });
-  }, [methods, modeledMethods]);
+  }, []);
 
-  const onSaveModelClick = useCallback(
-    (methods: Method[], modeledMethods: Record<string, ModeledMethod>) => {
-      vscode.postMessage({
-        t: "saveModeledMethods",
-        methods,
-        modeledMethods,
-      });
-    },
-    [],
-  );
+  const onSaveModelClick = useCallback((methodSignatures: string[]) => {
+    vscode.postMessage({
+      t: "saveModeledMethods",
+      methodSignatures,
+    });
+  }, []);
 
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({

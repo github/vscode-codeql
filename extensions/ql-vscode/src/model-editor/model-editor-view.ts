@@ -17,8 +17,8 @@ import {
 import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
-  showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
 } from "../common/logging";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -34,11 +34,7 @@ import {
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import {
-  showFlowGeneration,
-  showLlmGeneration,
-  showMultipleModels,
-} from "../config";
+import { ModelConfigListener } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
@@ -47,6 +43,10 @@ import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
+import {
+  convertFromLegacyModeledMethods,
+  convertToLegacyModeledMethods,
+} from "./modeled-methods-legacy";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -58,6 +58,7 @@ export class ModelEditorView extends AbstractWebview<
     protected readonly app: App,
     private readonly modelingStore: ModelingStore,
     private readonly viewTracker: ModelEditorViewTracker<ModelEditorView>,
+    private readonly modelConfig: ModelConfigListener,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -71,6 +72,7 @@ export class ModelEditorView extends AbstractWebview<
 
     this.modelingStore.initializeStateForDb(databaseItem);
     this.registerToModelingStoreEvents();
+    this.registerToModelConfigEvents();
 
     this.viewTracker.registerView(this);
 
@@ -201,47 +203,58 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "saveModeledMethods":
-        await withProgress(
-          async (progress) => {
-            progress({
-              step: 1,
-              maxStep: 500 + externalApiQueriesProgressMaxStep,
-              message: "Writing model files",
-            });
-            await saveModeledMethods(
-              this.extensionPack,
-              this.databaseItem.language,
-              msg.methods,
-              msg.modeledMethods,
-              this.mode,
-              this.cliServer,
-              this.app.logger,
-            );
+        {
+          const methods = this.modelingStore.getMethods(
+            this.databaseItem,
+            msg.methodSignatures,
+          );
+          const modeledMethods = this.modelingStore.getModeledMethods(
+            this.databaseItem,
+            msg.methodSignatures,
+          );
 
-            await Promise.all([
-              this.setViewState(),
-              this.loadMethods((update) =>
-                progress({
-                  ...update,
-                  step: update.step + 500,
-                  maxStep: 500 + externalApiQueriesProgressMaxStep,
-                }),
-              ),
-            ]);
-          },
-          {
-            cancellable: false,
-          },
-        );
+          await withProgress(
+            async (progress) => {
+              progress({
+                step: 1,
+                maxStep: 500 + externalApiQueriesProgressMaxStep,
+                message: "Writing model files",
+              });
+              await saveModeledMethods(
+                this.extensionPack,
+                this.databaseItem.language,
+                methods,
+                convertFromLegacyModeledMethods(modeledMethods),
+                this.mode,
+                this.cliServer,
+                this.app.logger,
+              );
 
-        this.modelingStore.removeModifiedMethods(
-          this.databaseItem,
-          Object.keys(msg.modeledMethods),
-        );
+              await Promise.all([
+                this.setViewState(),
+                this.loadMethods((update) =>
+                  progress({
+                    ...update,
+                    step: update.step + 500,
+                    maxStep: 500 + externalApiQueriesProgressMaxStep,
+                  }),
+                ),
+              ]);
+            },
+            {
+              cancellable: false,
+            },
+          );
 
-        void telemetryListener?.sendUIInteraction(
-          "model-editor-save-modeled-methods",
-        );
+          this.modelingStore.removeModifiedMethods(
+            this.databaseItem,
+            Object.keys(modeledMethods),
+          );
+
+          void telemetryListener?.sendUIInteraction(
+            "model-editor-save-modeled-methods",
+          );
+        }
 
         break;
       case "generateMethod":
@@ -328,21 +341,21 @@ export class ModelEditorView extends AbstractWebview<
 
     await this.postMessage({
       t: "revealMethod",
-      method,
+      methodSignature: method.signature,
     });
   }
 
   private async setViewState(): Promise<void> {
     const showLlmButton =
-      this.databaseItem.language === "java" && showLlmGeneration();
+      this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
 
     await this.postMessage({
       t: "setModelEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
-        showFlowGeneration: showFlowGeneration(),
+        showFlowGeneration: this.modelConfig.flowGeneration,
         showLlmButton,
-        showMultipleModels: showMultipleModels(),
+        showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.mode,
       },
     });
@@ -359,7 +372,10 @@ export class ModelEditorView extends AbstractWebview<
         this.cliServer,
         this.app.logger,
       );
-      this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
+      this.modelingStore.setModeledMethods(
+        this.databaseItem,
+        convertToLegacyModeledMethods(modeledMethods),
+      );
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         this.app.logger,
@@ -481,6 +497,7 @@ export class ModelEditorView extends AbstractWebview<
       const modelFile = await pickExtensionPack(
         this.cliServer,
         addedDatabase,
+        this.modelConfig,
         this.app.logger,
         progress,
         3,
@@ -493,6 +510,7 @@ export class ModelEditorView extends AbstractWebview<
         this.app,
         this.modelingStore,
         this.viewTracker,
+        this.modelConfig,
         this.databaseManager,
         this.cliServer,
         this.queryRunner,
@@ -610,6 +628,14 @@ export class ModelEditorView extends AbstractWebview<
             methodSignatures: [...event.modifiedMethods],
           });
         }
+      }),
+    );
+  }
+
+  private registerToModelConfigEvents() {
+    this.push(
+      this.modelConfig.onDidChangeConfiguration(() => {
+        void this.setViewState();
       }),
     );
   }

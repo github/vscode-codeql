@@ -546,8 +546,7 @@ interface RefreshMethods {
 
 interface SaveModeledMethods {
   t: "saveModeledMethods";
-  methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  methodSignatures?: string[];
 }
 
 interface GenerateMethodMessage {
@@ -587,7 +586,7 @@ interface SetInModelingModeMessage {
 
 interface RevealMethodMessage {
   t: "revealMethod";
-  method: Method;
+  methodSignature: string;
 }
 
 export type ToModelEditorMessage =

@@ -10,11 +10,15 @@ import { QueryRunner } from "../../../../src/query-server";
 import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { createMockModelingStore } from "../../../__mocks__/model-editor/modelingStoreMock";
 import { createMockModelEditorViewTracker } from "../../../__mocks__/model-editor/modelEditorViewTrackerMock";
+import { ModelConfigListener } from "../../../../src/config";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
   const modelingStore = createMockModelingStore();
   const viewTracker = createMockModelEditorViewTracker();
+  const modelConfig = mockedObject<ModelConfigListener>({
+    onDidChangeConfiguration: jest.fn(),
+  });
   const databaseManager = mockEmptyDatabaseManager();
   const cliServer = mockedObject<CodeQLCliServer>({});
   const queryRunner = mockedObject<QueryRunner>({});
@@ -41,6 +45,7 @@ describe("ModelEditorView", () => {
       app,
       modelingStore,
       viewTracker,
+      modelConfig,
       databaseManager,
       cliServer,
       queryRunner,

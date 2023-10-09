@@ -102,7 +102,10 @@ export class MethodsUsageDataProvider
     const modeledMethod = this.modeledMethods[method.signature];
     const modifiedMethod = this.modifiedMethodSignatures.has(method.signature);
 
-    const status = getModelingStatus(modeledMethod, modifiedMethod);
+    const status = getModelingStatus(
+      modeledMethod ? [modeledMethod] : [],
+      modifiedMethod,
+    );
     switch (status) {
       case "unmodeled":
         return new ThemeIcon("error", new ThemeColor("errorForeground"));

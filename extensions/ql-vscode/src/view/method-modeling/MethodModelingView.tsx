@@ -30,7 +30,8 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
   const [isMethodModified, setIsMethodModified] = useState<boolean>(false);
 
   const modelingStatus = useMemo(
-    () => getModelingStatus(modeledMethod, isMethodModified),
+    () =>
+      getModelingStatus(modeledMethod ? [modeledMethod] : [], isMethodModified),
     [modeledMethod, isMethodModified],
   );
 
@@ -94,7 +95,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     <MethodModeling
       modelingStatus={modelingStatus}
       method={method}
-      modeledMethod={modeledMethod}
+      modeledMethods={modeledMethod ? [modeledMethod] : []}
       showMultipleModels={viewState?.showMultipleModels}
       onChange={onChange}
     />
