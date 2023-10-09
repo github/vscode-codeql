@@ -705,20 +705,33 @@ const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 const SHOW_MULTIPLE_MODELS = new Setting("showMultipleModels", MODEL_SETTING);
 
-export function showFlowGeneration(): boolean {
-  return !!FLOW_GENERATION.getValue<boolean>();
+export interface ModelConfig {
+  flowGeneration: boolean;
+  llmGeneration: boolean;
+  getExtensionsDirectory(languageId: string): string | undefined;
+  showMultipleModels: boolean;
 }
 
-export function showLlmGeneration(): boolean {
-  return !!LLM_GENERATION.getValue<boolean>();
-}
+export class ModelConfigListener extends ConfigListener implements ModelConfig {
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings([MODEL_SETTING], e);
+  }
 
-export function getExtensionsDirectory(languageId: string): string | undefined {
-  return EXTENSIONS_DIRECTORY.getValue<string>({
-    languageId,
-  });
-}
+  public get flowGeneration(): boolean {
+    return !!FLOW_GENERATION.getValue<boolean>();
+  }
 
-export function showMultipleModels(): boolean {
-  return !!SHOW_MULTIPLE_MODELS.getValue<boolean>();
+  public get llmGeneration(): boolean {
+    return !!LLM_GENERATION.getValue<boolean>();
+  }
+
+  public getExtensionsDirectory(languageId: string): string | undefined {
+    return EXTENSIONS_DIRECTORY.getValue<string>({
+      languageId,
+    });
+  }
+
+  public get showMultipleModels(): boolean {
+    return !!SHOW_MULTIPLE_MODELS.getValue<boolean>();
+  }
 }
