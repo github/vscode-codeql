@@ -12,7 +12,6 @@ import type {
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
-import type { Method, Usage } from "../model-editor/method";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -325,8 +324,7 @@ export type ModelEditorCommands = {
   "codeQL.openModelEditor": () => Promise<void>;
   "codeQL.openModelEditorFromModelingPanel": () => Promise<void>;
   "codeQLModelEditor.jumpToUsageLocation": (
-    method: Method,
-    usage: Usage,
+    methodSignature: string,
     databaseItem: DatabaseItem,
   ) => Promise<void>;
 };

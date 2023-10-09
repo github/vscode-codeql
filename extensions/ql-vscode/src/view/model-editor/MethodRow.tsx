@@ -213,8 +213,6 @@ UnmodelableMethodRow.displayName = "UnmodelableMethodRow";
 function sendJumpToUsageMessage(method: Method) {
   vscode.postMessage({
     t: "jumpToUsage",
-    method,
-    // In framework mode, the first and only usage is the definition of the method
-    usage: method.usages[0],
+    methodSignature: method.signature,
   });
 }

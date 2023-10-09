@@ -306,8 +306,17 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
-  public setSelectedMethod(dbItem: DatabaseItem, method: Method, usage: Usage) {
+  public setSelectedMethod(dbItem: DatabaseItem, methodSignature: string) {
     const dbState = this.getState(dbItem);
+
+    const method = dbState.methods.find((m) => m.signature === methodSignature);
+    if (method === undefined) {
+      throw new Error(
+        `No method with signature "${methodSignature}" found in modeling store`,
+      );
+    }
+
+    const usage = method.usages[0];
 
     dbState.selectedMethod = method;
     dbState.selectedUsage = usage;
