@@ -165,6 +165,7 @@ describe("external api usage query", () => {
         false,
         [],
         ["my/extensions"],
+        {},
         "/tmp/queries",
         undefined,
         undefined,

@@ -27,6 +27,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   generateEvalLog: boolean,
   additionalPacks: string[],
   extensionPacks: string[] | undefined,
+  additionalRunQueryArgs: Record<string, any>,
   outputDir: QueryOutputDir,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -55,6 +56,8 @@ export async function compileAndRunQueryAgainstDatabaseCore(
     logPath: evalLogPath,
     target,
     extensionPacks,
+    // Add any additional arguments without interpretation.
+    ...additionalRunQueryArgs,
   };
 
   // Update the active query logger every time there is a new request to compile.
