@@ -1,5 +1,6 @@
 **/* @github/codeql-vscode-reviewers
 **/variant-analysis/ @github/code-scanning-secexp-reviewers
 **/databases/ @github/code-scanning-secexp-reviewers
+**/method-modeling/ @github/code-scanning-secexp-reviewers
 **/model-editor/ @github/code-scanning-secexp-reviewers
 **/queries-panel/ @github/code-scanning-secexp-reviewers
