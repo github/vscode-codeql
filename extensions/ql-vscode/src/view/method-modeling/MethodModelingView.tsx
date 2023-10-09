@@ -94,7 +94,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     <MethodModeling
       modelingStatus={modelingStatus}
       method={method}
-      modeledMethod={modeledMethod}
+      modeledMethods={modeledMethod ? [modeledMethod] : []}
       showMultipleModels={viewState?.showMultipleModels}
       onChange={onChange}
     />
