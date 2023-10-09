@@ -205,47 +205,58 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "saveModeledMethods":
-        await withProgress(
-          async (progress) => {
-            progress({
-              step: 1,
-              maxStep: 500 + externalApiQueriesProgressMaxStep,
-              message: "Writing model files",
-            });
-            await saveModeledMethods(
-              this.extensionPack,
-              this.databaseItem.language,
-              msg.methods,
-              convertFromLegacyModeledMethods(msg.modeledMethods),
-              this.mode,
-              this.cliServer,
-              this.app.logger,
-            );
+        {
+          const methods = this.modelingStore.getMethods(
+            this.databaseItem,
+            msg.methodSignatures,
+          );
+          const modeledMethods = this.modelingStore.getModeledMethods(
+            this.databaseItem,
+            msg.methodSignatures,
+          );
 
-            await Promise.all([
-              this.setViewState(),
-              this.loadMethods((update) =>
-                progress({
-                  ...update,
-                  step: update.step + 500,
-                  maxStep: 500 + externalApiQueriesProgressMaxStep,
-                }),
-              ),
-            ]);
-          },
-          {
-            cancellable: false,
-          },
-        );
+          await withProgress(
+            async (progress) => {
+              progress({
+                step: 1,
+                maxStep: 500 + externalApiQueriesProgressMaxStep,
+                message: "Writing model files",
+              });
+              await saveModeledMethods(
+                this.extensionPack,
+                this.databaseItem.language,
+                methods,
+                convertFromLegacyModeledMethods(modeledMethods),
+                this.mode,
+                this.cliServer,
+                this.app.logger,
+              );
 
-        this.modelingStore.removeModifiedMethods(
-          this.databaseItem,
-          Object.keys(msg.modeledMethods),
-        );
+              await Promise.all([
+                this.setViewState(),
+                this.loadMethods((update) =>
+                  progress({
+                    ...update,
+                    step: update.step + 500,
+                    maxStep: 500 + externalApiQueriesProgressMaxStep,
+                  }),
+                ),
+              ]);
+            },
+            {
+              cancellable: false,
+            },
+          );
 
-        void telemetryListener?.sendUIInteraction(
-          "model-editor-save-modeled-methods",
-        );
+          this.modelingStore.removeModifiedMethods(
+            this.databaseItem,
+            Object.keys(modeledMethods),
+          );
+
+          void telemetryListener?.sendUIInteraction(
+            "model-editor-save-modeled-methods",
+          );
+        }
 
         break;
       case "generateMethod":
