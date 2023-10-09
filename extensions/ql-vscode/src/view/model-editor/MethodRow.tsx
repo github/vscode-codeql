@@ -153,9 +153,9 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         {!props.modelingInProgress && (
           <>
             <MultiModelColumn gridColumn={2}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
                 <ModelTypeDropdown
-                  key={JSON.stringify(modeledMethod)}
+                  key={index}
                   method={method}
                   modeledMethod={modeledMethod}
                   onChange={onChange}
@@ -163,9 +163,9 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={3}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
                 <ModelInputDropdown
-                  key={JSON.stringify(modeledMethod)}
+                  key={index}
                   method={method}
                   modeledMethod={modeledMethod}
                   onChange={onChange}
@@ -173,9 +173,9 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={4}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
                 <ModelOutputDropdown
-                  key={JSON.stringify(modeledMethod)}
+                  key={index}
                   method={method}
                   modeledMethod={modeledMethod}
                   onChange={onChange}
@@ -183,9 +183,9 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={5}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod) => (
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
                 <ModelKindDropdown
-                  key={JSON.stringify(modeledMethod)}
+                  key={index}
                   method={method}
                   modeledMethod={modeledMethod}
                   onChange={onChange}
@@ -249,10 +249,13 @@ function sendJumpToUsageMessage(method: Method) {
 
 function forEachModeledMethod(
   modeledMethods: ModeledMethod[],
-  renderer: (modeledMethod: ModeledMethod | undefined) => JSX.Element,
+  renderer: (
+    modeledMethod: ModeledMethod | undefined,
+    index: number,
+  ) => JSX.Element,
 ): JSX.Element | JSX.Element[] {
   if (modeledMethods.length === 0) {
-    return renderer(undefined);
+    return renderer(undefined, 0);
   } else {
     return modeledMethods.map(renderer);
   }
