@@ -96,7 +96,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
   (props, ref) => {
     const {
       method,
-      modeledMethods: modeledMethodsArg,
+      modeledMethods: modeledMethodsProp,
       methodIsUnsaved,
       viewState,
       revealedMethodSignature,
@@ -104,8 +104,8 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
     } = props;
 
     const modeledMethods = viewState.showMultipleModels
-      ? modeledMethodsArg
-      : modeledMethodsArg.slice(0, 1);
+      ? modeledMethodsProp
+      : modeledMethodsProp.slice(0, 1);
 
     const jumpToUsage = useCallback(
       () => sendJumpToUsageMessage(method),
