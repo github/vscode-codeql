@@ -12,7 +12,7 @@ import { DbModelingState, ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
-import { showMultipleModels } from "../../config";
+import { ModelConfigListener } from "../../config";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -26,6 +26,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     app: App,
     private readonly modelingStore: ModelingStore,
     private readonly editorViewTracker: ModelEditorViewTracker,
+    private readonly modelConfig: ModelConfigListener,
   ) {
     super(app, "method-modeling");
   }
@@ -33,13 +34,14 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   protected override async onWebViewLoaded(): Promise<void> {
     await Promise.all([this.setViewState(), this.setInitialState()]);
     this.registerToModelingStoreEvents();
+    this.registerToModelConfigEvents();
   }
 
   private async setViewState(): Promise<void> {
     await this.postMessage({
       t: "setMethodModelingPanelViewState",
       viewState: {
-        showMultipleModels: showMultipleModels(),
+        showMultipleModels: this.modelConfig.showMultipleModels,
       },
     });
   }
@@ -195,6 +197,14 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             inModelingMode: false,
           });
         }
+      }),
+    );
+  }
+
+  private registerToModelConfigEvents(): void {
+    this.push(
+      this.modelConfig.onDidChangeConfiguration(() => {
+        void this.setViewState();
       }),
     );
   }
