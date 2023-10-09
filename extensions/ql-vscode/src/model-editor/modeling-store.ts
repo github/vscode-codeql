@@ -171,7 +171,7 @@ export class ModelingStore extends DisposableObject {
 
   /**
    * Returns the methods for the given database item and method signatures.
-   * If the `methodSignatures` argument not provided or is undefined, returns all methods.
+   * If the `methodSignatures` argument is not provided or is undefined, returns all methods.
    */
   public getMethods(
     dbItem: DatabaseItem,
@@ -216,7 +216,7 @@ export class ModelingStore extends DisposableObject {
 
   /**
    * Returns the modeled methods for the given database item and method signatures.
-   * If the `methodSignatures` argument not provided or is undefined, returns all modeled methods.
+   * If the `methodSignatures` argument is not provided or is undefined, returns all modeled methods.
    */
   public getModeledMethods(
     dbItem: DatabaseItem,
