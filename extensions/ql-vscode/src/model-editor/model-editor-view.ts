@@ -47,6 +47,10 @@ import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
+import {
+  convertFromLegacyModeledMethods,
+  convertToLegacyModeledMethods,
+} from "./modeled-methods-legacy";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -100,9 +104,6 @@ export class ModelEditorView extends AbstractWebview<
     panel.onDidChangeViewState(async () => {
       if (panel.active) {
         this.modelingStore.setActiveDb(this.databaseItem);
-        await this.markModelEditorAsActive();
-      } else {
-        await this.updateModelEditorActiveContext();
       }
     });
 
@@ -126,33 +127,9 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
-  private async markModelEditorAsActive(): Promise<void> {
-    void this.app.commands.execute(
-      "setContext",
-      "codeql.modelEditorActive",
-      true,
-    );
-  }
-
-  private async updateModelEditorActiveContext(): Promise<void> {
-    await this.app.commands.execute(
-      "setContext",
-      "codeql.modelEditorActive",
-      this.isAModelEditorActive(),
-    );
-  }
-
   private isAModelEditorOpen(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
       tabGroup.tabs.some((tab) => this.isTabModelEditorView(tab)),
-    );
-  }
-
-  private isAModelEditorActive(): boolean {
-    return window.tabGroups.all.some((tabGroup) =>
-      tabGroup.tabs.some(
-        (tab) => this.isTabModelEditorView(tab) && tab.isActive,
-      ),
     );
   }
 
@@ -249,7 +226,7 @@ export class ModelEditorView extends AbstractWebview<
                 this.extensionPack,
                 this.databaseItem.language,
                 methods,
-                modeledMethods,
+                convertFromLegacyModeledMethods(modeledMethods),
                 this.mode,
                 this.cliServer,
                 this.app.logger,
@@ -366,7 +343,7 @@ export class ModelEditorView extends AbstractWebview<
 
     await this.postMessage({
       t: "revealMethod",
-      method,
+      methodSignature: method.signature,
     });
   }
 
@@ -397,7 +374,10 @@ export class ModelEditorView extends AbstractWebview<
         this.cliServer,
         this.app.logger,
       );
-      this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
+      this.modelingStore.setModeledMethods(
+        this.databaseItem,
+        convertToLegacyModeledMethods(modeledMethods),
+      );
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         this.app.logger,

@@ -73,115 +73,9 @@ export class ModelEditorModule extends DisposableObject {
 
   public getCommands(): ModelEditorCommands {
     return {
-      "codeQL.openModelEditor": async () => {
-        const db = this.databaseManager.currentDatabaseItem;
-        if (!db) {
-          void showAndLogErrorMessage(this.app.logger, "No database selected");
-          return;
-        }
-
-        const language = db.language;
-        if (
-          !SUPPORTED_LANGUAGES.includes(language) ||
-          !isQueryLanguage(language)
-        ) {
-          void showAndLogErrorMessage(
-            this.app.logger,
-            `The CodeQL Model Editor is not supported for ${language} databases.`,
-          );
-          return;
-        }
-
-        return withProgress(
-          async (progress) => {
-            const maxStep = 4;
-
-            if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
-              void showAndLogErrorMessage(
-                this.app.logger,
-                `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
-              );
-              return;
-            }
-
-            if (
-              !(await this.cliServer.cliConstraints.supportsResolveExtensions())
-            ) {
-              void showAndLogErrorMessage(
-                this.app.logger,
-                `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS.format()} or later.`,
-              );
-              return;
-            }
-
-            const modelFile = await pickExtensionPack(
-              this.cliServer,
-              db,
-              this.app.logger,
-              progress,
-              maxStep,
-            );
-            if (!modelFile) {
-              return;
-            }
-
-            progress({
-              message: "Installing dependencies...",
-              step: 3,
-              maxStep,
-            });
-
-            // Create new temporary directory for query files and pack dependencies
-            const { path: queryDir, cleanup: cleanupQueryDir } = await dir({
-              unsafeCleanup: true,
-            });
-
-            const success = await setUpPack(this.cliServer, queryDir, language);
-            if (!success) {
-              await cleanupQueryDir();
-              return;
-            }
-
-            progress({
-              message: "Opening editor...",
-              step: 4,
-              maxStep,
-            });
-
-            const view = new ModelEditorView(
-              this.app,
-              this.modelingStore,
-              this.editorViewTracker,
-              this.databaseManager,
-              this.cliServer,
-              this.queryRunner,
-              this.queryStorageDir,
-              queryDir,
-              db,
-              modelFile,
-              Mode.Application,
-            );
-
-            this.modelingStore.onDbClosed(async (dbUri) => {
-              if (dbUri === db.databaseUri.toString()) {
-                await cleanupQueryDir();
-              }
-            });
-
-            this.push(view);
-            this.push({
-              dispose(): void {
-                void cleanupQueryDir();
-              },
-            });
-
-            await view.openView();
-          },
-          {
-            title: "Opening CodeQL Model Editor",
-          },
-        );
-      },
+      "codeQL.openModelEditor": this.openModelEditor.bind(this),
+      "codeQL.openModelEditorFromModelingPanel":
+        this.openModelEditor.bind(this),
       "codeQLModelEditor.jumpToUsageLocation": async (
         method: Method,
         usage: Usage,
@@ -212,5 +106,117 @@ export class ModelEditorModule extends DisposableObject {
     await this.methodsUsagePanel.revealItem(usage);
     await this.methodModelingPanel.setMethod(method);
     await showResolvableLocation(usage.url, databaseItem, this.app.logger);
+  }
+
+  private async openModelEditor(): Promise<void> {
+    {
+      const db = this.databaseManager.currentDatabaseItem;
+      if (!db) {
+        void showAndLogErrorMessage(this.app.logger, "No database selected");
+        return;
+      }
+
+      const language = db.language;
+      if (
+        !SUPPORTED_LANGUAGES.includes(language) ||
+        !isQueryLanguage(language)
+      ) {
+        void showAndLogErrorMessage(
+          this.app.logger,
+          `The CodeQL Model Editor is not supported for ${language} databases.`,
+        );
+        return;
+      }
+
+      return withProgress(
+        async (progress) => {
+          const maxStep = 4;
+
+          if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
+            void showAndLogErrorMessage(
+              this.app.logger,
+              `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
+            );
+            return;
+          }
+
+          if (
+            !(await this.cliServer.cliConstraints.supportsResolveExtensions())
+          ) {
+            void showAndLogErrorMessage(
+              this.app.logger,
+              `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS.format()} or later.`,
+            );
+            return;
+          }
+
+          const modelFile = await pickExtensionPack(
+            this.cliServer,
+            db,
+            this.app.logger,
+            progress,
+            maxStep,
+          );
+          if (!modelFile) {
+            return;
+          }
+
+          progress({
+            message: "Installing dependencies...",
+            step: 3,
+            maxStep,
+          });
+
+          // Create new temporary directory for query files and pack dependencies
+          const { path: queryDir, cleanup: cleanupQueryDir } = await dir({
+            unsafeCleanup: true,
+          });
+
+          const success = await setUpPack(this.cliServer, queryDir, language);
+          if (!success) {
+            await cleanupQueryDir();
+            return;
+          }
+
+          progress({
+            message: "Opening editor...",
+            step: 4,
+            maxStep,
+          });
+
+          const view = new ModelEditorView(
+            this.app,
+            this.modelingStore,
+            this.editorViewTracker,
+            this.databaseManager,
+            this.cliServer,
+            this.queryRunner,
+            this.queryStorageDir,
+            queryDir,
+            db,
+            modelFile,
+            Mode.Application,
+          );
+
+          this.modelingStore.onDbClosed(async (dbUri) => {
+            if (dbUri === db.databaseUri.toString()) {
+              await cleanupQueryDir();
+            }
+          });
+
+          this.push(view);
+          this.push({
+            dispose(): void {
+              void cleanupQueryDir();
+            },
+          });
+
+          await view.openView();
+        },
+        {
+          title: "Opening CodeQL Model Editor",
+        },
+      );
+    }
   }
 }

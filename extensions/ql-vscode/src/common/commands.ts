@@ -323,6 +323,7 @@ export type PackagingCommands = {
 
 export type ModelEditorCommands = {
   "codeQL.openModelEditor": () => Promise<void>;
+  "codeQL.openModelEditorFromModelingPanel": () => Promise<void>;
   "codeQLModelEditor.jumpToUsageLocation": (
     method: Method,
     usage: Usage,

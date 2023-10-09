@@ -12,6 +12,7 @@ import { DbModelingState, ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
+import { showMultipleModels } from "../../config";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -29,9 +30,18 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     super(app, "method-modeling");
   }
 
-  protected override onWebViewLoaded(): void {
-    this.setInitialState();
+  protected override async onWebViewLoaded(): Promise<void> {
+    await Promise.all([this.setViewState(), this.setInitialState()]);
     this.registerToModelingStoreEvents();
+  }
+
+  private async setViewState(): Promise<void> {
+    await this.postMessage({
+      t: "setMethodModelingPanelViewState",
+      viewState: {
+        showMultipleModels: showMultipleModels(),
+      },
+    });
   }
 
   public async setMethod(method: Method): Promise<void> {
@@ -45,15 +55,17 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     }
   }
 
-  private setInitialState(): void {
-    const selectedMethod = this.modelingStore.getSelectedMethodDetails();
-    if (selectedMethod) {
-      void this.postMessage({
-        t: "setSelectedMethod",
-        method: selectedMethod.method,
-        modeledMethod: selectedMethod.modeledMethod,
-        isModified: selectedMethod.isModified,
-      });
+  private async setInitialState(): Promise<void> {
+    if (this.modelingStore.hasStateForActiveDb()) {
+      const selectedMethod = this.modelingStore.getSelectedMethodDetails();
+      if (selectedMethod) {
+        await this.postMessage({
+          t: "setSelectedMethod",
+          method: selectedMethod.method,
+          modeledMethod: selectedMethod.modeledMethod,
+          isModified: selectedMethod.isModified,
+        });
+      }
     }
   }
 
@@ -62,7 +74,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ): Promise<void> {
     switch (msg.t) {
       case "viewLoaded":
-        this.onWebViewLoaded();
+        await this.onWebViewLoaded();
         break;
 
       case "telemetry":
@@ -91,6 +103,12 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       case "revealInModelEditor":
         await this.revealInModelEditor(msg.method);
 
+        break;
+
+      case "startModeling":
+        await this.app.commands.execute(
+          "codeQL.openModelEditorFromModelingPanel",
+        );
         break;
       default:
         assertNever(msg);
@@ -155,6 +173,26 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             method: e.method,
             modeledMethod: e.modeledMethod,
             isModified: e.isModified,
+          });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onDbOpened(async () => {
+        await this.postMessage({
+          t: "setInModelingMode",
+          inModelingMode: true,
+        });
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onDbClosed(async () => {
+        if (!this.modelingStore.anyDbsBeingModeled()) {
+          await this.postMessage({
+            t: "setInModelingMode",
+            inModelingMode: false,
           });
         }
       }),

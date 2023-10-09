@@ -72,25 +72,13 @@ export const VSCODE_SAVE_BEFORE_START_SETTING = new Setting(
 
 const ROOT_SETTING = new Setting("codeQL");
 
-// Global configuration
+// Telemetry configuration
 const TELEMETRY_SETTING = new Setting("telemetry", ROOT_SETTING);
-const AST_VIEWER_SETTING = new Setting("astViewer", ROOT_SETTING);
-const CONTEXTUAL_QUERIES_SETTINGS = new Setting(
-  "contextualQueries",
-  ROOT_SETTING,
-);
-const GLOBAL_TELEMETRY_SETTING = new Setting("telemetry");
-const LOG_INSIGHTS_SETTING = new Setting("logInsights", ROOT_SETTING);
 
 export const LOG_TELEMETRY = new Setting("logTelemetry", TELEMETRY_SETTING);
 export const ENABLE_TELEMETRY = new Setting(
   "enableTelemetry",
   TELEMETRY_SETTING,
-);
-
-export const GLOBAL_ENABLE_TELEMETRY = new Setting(
-  "enableTelemetry",
-  GLOBAL_TELEMETRY_SETTING,
 );
 
 // Distribution configuration
@@ -475,6 +463,7 @@ export function allowCanaryQueryServer() {
   return value === undefined ? true : !!value;
 }
 
+const LOG_INSIGHTS_SETTING = new Setting("logInsights", ROOT_SETTING);
 export const JOIN_ORDER_WARNING_THRESHOLD = new Setting(
   "joinOrderWarningThreshold",
   LOG_INSIGHTS_SETTING,
@@ -484,6 +473,7 @@ export function joinOrderWarningThreshold(): number {
   return JOIN_ORDER_WARNING_THRESHOLD.getValue<number>();
 }
 
+const AST_VIEWER_SETTING = new Setting("astViewer", ROOT_SETTING);
 /**
  * Hidden setting: Avoids caching in the AST viewer if the user is also a canary user.
  */
@@ -492,6 +482,10 @@ export const NO_CACHE_AST_VIEWER = new Setting(
   AST_VIEWER_SETTING,
 );
 
+const CONTEXTUAL_QUERIES_SETTINGS = new Setting(
+  "contextualQueries",
+  ROOT_SETTING,
+);
 /**
  * Hidden setting: Avoids caching in jump to def and find refs contextual queries if the user is also a canary user.
  */
