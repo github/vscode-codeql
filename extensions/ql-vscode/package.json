@@ -729,6 +729,10 @@
         "title": "CodeQL: Clear Cache"
       },
       {
+        "command": "codeQL.trimCache",
+        "title": "CodeQL: Trim Cache"
+      },
+      {
         "command": "codeQL.installPackDependencies",
         "title": "CodeQL: Install Pack Dependencies"
       },

@@ -7,6 +7,7 @@ import { DatabaseItem } from "../databases/local-databases";
 import {
   clearCache,
   ClearCacheParams,
+  CacheTrimmingMode,
   clearPackCache,
   deregisterDatabases,
   registerDatabases,
@@ -57,15 +58,20 @@ export class NewQueryRunner extends QueryRunner {
   async clearCacheInDatabase(
     dbItem: DatabaseItem,
     token: CancellationToken,
+    mode: "trim" | "clear",
   ): Promise<void> {
     if (dbItem.contents === undefined) {
-      throw new Error("Can't clear the cache in an invalid database.");
+      throw new Error(`Can't ${mode} the cache in an invalid database.`);
     }
 
     const db = dbItem.databaseUri.fsPath;
     const params: ClearCacheParams = {
       dryRun: false,
       db,
+      mode: {
+        trim: CacheTrimmingMode.NORMAL,
+        clear: CacheTrimmingMode.BRUTAL,
+      }[mode],
     };
     await this.qs.sendRequest(clearCache, params, token);
   }

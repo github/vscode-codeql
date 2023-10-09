@@ -65,6 +65,7 @@ export abstract class QueryRunner {
   abstract clearCacheInDatabase(
     dbItem: DatabaseItem,
     token: CancellationToken,
+    mode: "trim" | "clear",
   ): Promise<void>;
 
   /**

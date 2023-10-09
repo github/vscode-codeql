@@ -29,6 +29,35 @@ export interface ClearCacheParams {
    * Whether the cache should actually be cleared.
    */
   dryRun: boolean;
+  /**
+   * The mode to use when trimming the disk cache.
+   */
+  mode?: CacheTrimmingMode;
+}
+
+export type CacheTrimmingMode = number;
+/**
+ * The mode to use when trimming the disk cache. This namespace is intentionally not an enum, see
+ * "for the sake of extensibility" comment above.
+ */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace CacheTrimmingMode {
+  /** The entire cache is deleted unconditionally. */
+  export const BRUTAL = 0;
+  /** Only `cached` predicates are kept. */
+  export const NORMAL = 1;
+  /**
+   * Trim the cache down to the configured size, but *within* this limit keep anything that
+   * appears to be even possibly potentially useful in the future.
+   */
+  export const LIGHT = 2;
+  /**
+   * As {@link LIGHT}, but only if the *currently active* backend has written anything to
+   * the cache in its lifetime. (Thus it doesn't make much sense to specify this in a stand-alone
+   * CLI invocation, but we do it as a separate operation before shutting down a query server,
+   * because it can then have its own timeout).
+   */
+  export const GENTLE = 3;
 }
 
 /**
