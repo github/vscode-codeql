@@ -587,7 +587,7 @@ interface SetInModelingModeMessage {
 
 interface RevealMethodMessage {
   t: "revealMethod";
-  method: Method;
+  methodSignature: string;
 }
 
 export type ToModelEditorMessage =

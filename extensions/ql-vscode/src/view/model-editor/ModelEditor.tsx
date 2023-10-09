@@ -142,7 +142,7 @@ export function ModelEditor({
             );
             break;
           case "revealMethod":
-            setRevealedMethodSignature(msg.method.signature);
+            setRevealedMethodSignature(msg.methodSignature);
 
             break;
           default:
