@@ -46,7 +46,7 @@ import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import {
   convertFromLegacyModeledMethod,
   convertToLegacyModeledMethods,
-} from "./modeled-methods-legacy";
+} from "./shared/modeled-methods-legacy";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,

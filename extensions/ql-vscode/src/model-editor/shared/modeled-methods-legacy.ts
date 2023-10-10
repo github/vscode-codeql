@@ -1,4 +1,4 @@
-import { ModeledMethod } from "./modeled-method";
+import { ModeledMethod } from "../modeled-method";
 
 /**
  * Converts a record of a single ModeledMethod indexed by signature to a record of ModeledMethod[] indexed by signature
@@ -37,8 +37,10 @@ export function convertToLegacyModeledMethods(
  *
  * @param modeledMethod The single ModeledMethod
  */
-export function convertFromLegacyModeledMethod(modeledMethod: ModeledMethod) {
-  return [modeledMethod];
+export function convertFromLegacyModeledMethod(
+  modeledMethod: ModeledMethod | undefined,
+): ModeledMethod[] {
+  return modeledMethod ? [modeledMethod] : [];
 }
 
 /**
