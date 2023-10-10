@@ -37,8 +37,10 @@ export function convertToLegacyModeledMethods(
  *
  * @param modeledMethod The single ModeledMethod
  */
-export function convertFromLegacyModeledMethod(modeledMethod: ModeledMethod) {
-  return [modeledMethod];
+export function convertFromLegacyModeledMethod(
+  modeledMethod: ModeledMethod | undefined,
+): ModeledMethod[] {
+  return modeledMethod ? [modeledMethod] : [];
 }
 
 /**
