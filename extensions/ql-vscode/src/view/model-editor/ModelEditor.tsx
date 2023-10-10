@@ -219,16 +219,11 @@ export function ModelEditor({
   }, []);
 
   const onGenerateFromLlmClick = useCallback(
-    (
-      packageName: string,
-      methods: Method[],
-      modeledMethods: Record<string, ModeledMethod>,
-    ) => {
+    (packageName: string, methodSignatures: string[]) => {
       vscode.postMessage({
         t: "generateMethodsFromLlm",
         packageName,
-        methods,
-        modeledMethods,
+        methodSignatures,
       });
     },
     [],

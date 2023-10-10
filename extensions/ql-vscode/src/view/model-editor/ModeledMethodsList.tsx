@@ -23,8 +23,7 @@ export type ModeledMethodsListProps = {
   onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     packageName: string,
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    methodSignatures: string[],
   ) => void;
   onStopGenerateFromLlmClick: (packageName: string) => void;
   onGenerateFromSourceClick: () => void;

@@ -45,7 +45,6 @@ import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import {
   convertFromLegacyModeledMethod,
-  convertFromLegacyModeledMethods,
   convertToLegacyModeledMethods,
 } from "./modeled-methods-legacy";
 
@@ -268,8 +267,7 @@ export class ModelEditorView extends AbstractWebview<
       case "generateMethodsFromLlm":
         await this.generateModeledMethodsFromLlm(
           msg.packageName,
-          msg.methods,
-          convertFromLegacyModeledMethods(msg.modeledMethods),
+          msg.methodSignatures,
         );
         void telemetryListener?.sendUIInteraction(
           "model-editor-generate-methods-from-llm",
@@ -481,9 +479,16 @@ export class ModelEditorView extends AbstractWebview<
 
   private async generateModeledMethodsFromLlm(
     packageName: string,
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod[]>,
+    methodSignatures: string[],
   ): Promise<void> {
+    const methods = this.modelingStore.getMethods(
+      this.databaseItem,
+      methodSignatures,
+    );
+    const modeledMethods = this.modelingStore.getModeledMethods(
+      this.databaseItem,
+      methodSignatures,
+    );
     await this.autoModeler.startModeling(
       packageName,
       methods,

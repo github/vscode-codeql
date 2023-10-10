@@ -556,8 +556,7 @@ interface GenerateMethodMessage {
 interface GenerateMethodsFromLlmMessage {
   t: "generateMethodsFromLlm";
   packageName: string;
-  methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  methodSignatures: string[];
 }
 
 interface StopGeneratingMethodsFromLlmMessage {
@@ -634,7 +633,7 @@ interface SetMethodModelingPanelViewStateMessage {
 
 interface SetMethodMessage {
   t: "setMethod";
-  method: Method;
+  method: Method | undefined;
 }
 
 interface SetMethodModifiedMessage {
