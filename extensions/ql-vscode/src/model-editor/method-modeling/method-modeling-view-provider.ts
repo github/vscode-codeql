@@ -74,6 +74,11 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           isModified: selectedMethod.isModified,
         });
       }
+
+      await this.postMessage({
+        t: "setInModelingMode",
+        inModelingMode: true,
+      });
     }
   }
 
