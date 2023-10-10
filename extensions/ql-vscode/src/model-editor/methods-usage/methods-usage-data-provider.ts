@@ -83,6 +83,9 @@ export class MethodsUsageDataProvider
       };
     } else {
       const method = this.getParent(item);
+      if (!method || !isExternalApiUsage(method)) {
+        throw new Error("Parent not found for tree item");
+      }
       return {
         label: item.label,
         description: `${this.relativePathWithinDatabase(item.url.uri)} [${
@@ -91,8 +94,8 @@ export class MethodsUsageDataProvider
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
-          command: "codeQLModelEditor.jumpToUsageLocation",
-          arguments: [method, item, this.databaseItem],
+          command: "codeQLModelEditor.jumpToMethod",
+          arguments: [method.signature, this.databaseItem],
         },
       };
     }

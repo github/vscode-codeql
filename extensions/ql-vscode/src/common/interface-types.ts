@@ -17,7 +17,7 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { Method, Usage } from "../model-editor/method";
+import { Method } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import {
   MethodModelingPanelViewState,
@@ -526,10 +526,9 @@ interface SwitchModeMessage {
   mode: Mode;
 }
 
-interface JumpToUsageMessage {
-  t: "jumpToUsage";
-  method: Method;
-  usage: Usage;
+interface JumpToMethodMessage {
+  t: "jumpToMethod";
+  methodSignature: string;
 }
 
 interface OpenDatabaseMessage {
@@ -602,7 +601,7 @@ export type FromModelEditorMessage =
   | RefreshMethods
   | OpenDatabaseMessage
   | OpenExtensionPackMessage
-  | JumpToUsageMessage
+  | JumpToMethodMessage
   | SaveModeledMethods
   | GenerateMethodMessage
   | GenerateMethodsFromLlmMessage

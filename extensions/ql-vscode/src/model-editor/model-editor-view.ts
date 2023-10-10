@@ -31,7 +31,7 @@ import {
   externalApiQueriesProgressMaxStep,
   runExternalApiQueries,
 } from "./external-api-usage-queries";
-import { Method, Usage } from "./method";
+import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { ModelConfigListener } from "../config";
@@ -197,9 +197,11 @@ export class ModelEditorView extends AbstractWebview<
         );
 
         break;
-      case "jumpToUsage":
-        await this.handleJumpToUsage(msg.method, msg.usage);
-        void telemetryListener?.sendUIInteraction("model-editor-jump-to-usage");
+      case "jumpToMethod":
+        await this.handleJumpToMethod(msg.methodSignature);
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-jump-to-method",
+        );
 
         break;
       case "saveModeledMethods":
@@ -363,8 +365,8 @@ export class ModelEditorView extends AbstractWebview<
     });
   }
 
-  protected async handleJumpToUsage(method: Method, usage: Usage) {
-    this.modelingStore.setSelectedMethod(this.databaseItem, method, usage);
+  protected async handleJumpToMethod(methodSignature: string) {
+    this.modelingStore.setSelectedMethod(this.databaseItem, methodSignature);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
