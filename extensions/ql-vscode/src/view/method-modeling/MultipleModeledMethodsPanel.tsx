@@ -1,11 +1,13 @@
 import * as React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { styled } from "styled-components";
 import { MethodModelingInputs } from "./MethodModelingInputs";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { Codicon } from "../common";
+import { validateModeledMethods } from "../../model-editor/shared/validation";
+import { ModeledMethodAlert } from "./ModeledMethodAlert";
 
 export type MultipleModeledMethodsPanelProps = {
   method: Method;
@@ -19,7 +21,12 @@ const Container = styled.div`
   gap: 0.25rem;
 
   padding-bottom: 0.5rem;
+  border-top: 0.05rem solid var(--vscode-panelSection-border);
   border-bottom: 0.05rem solid var(--vscode-panelSection-border);
+`;
+
+const AlertContainer = styled.div`
+  margin-top: 0.5rem;
 `;
 
 const Footer = styled.div`
@@ -47,8 +54,24 @@ export const MultipleModeledMethodsPanel = ({
     setSelectedIndex((previousIndex) => previousIndex + 1);
   }, []);
 
+  const validationErrors = useMemo(
+    () => validateModeledMethods(modeledMethods),
+    [modeledMethods],
+  );
+
   return (
     <Container>
+      {validationErrors.length > 0 && (
+        <AlertContainer>
+          {validationErrors.map((error, index) => (
+            <ModeledMethodAlert
+              key={index}
+              error={error}
+              setSelectedIndex={setSelectedIndex}
+            />
+          ))}
+        </AlertContainer>
+      )}
       {modeledMethods.length > 0 ? (
         <MethodModelingInputs
           method={method}

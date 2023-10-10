@@ -194,6 +194,16 @@ describe(MultipleModeledMethodsPanel.name, () => {
         }),
       ).toHaveValue("source");
     });
+
+    it("does not show errors", () => {
+      render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
   });
 
   describe("with three modeled methods", () => {
@@ -307,6 +317,58 @@ describe(MultipleModeledMethodsPanel.name, () => {
           name: "Kind",
         }),
       ).toHaveValue("remote");
+    });
+  });
+
+  describe("with duplicate modeled methods", () => {
+    const modeledMethods = [
+      createModeledMethod({
+        ...method,
+      }),
+      createModeledMethod({
+        ...method,
+      }),
+    ];
+
+    it("shows errors", () => {
+      render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+
+    it("shows the correct error message", async () => {
+      render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      expect(
+        screen.getByText("Error: Duplicated classification"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "This method has two identical or conflicting classifications.",
+        ),
+      ).toBeInTheDocument();
+
+      expect(screen.getByText("1/2")).toBeInTheDocument();
+
+      const button = screen.getByText(
+        "Modify or remove the duplicated classification.",
+      );
+
+      await userEvent.click(button);
+
+      expect(screen.getByText("2/2")).toBeInTheDocument();
+
+      expect(
+        screen.getByText("Modify or remove the duplicated classification."),
+      ).toBeInTheDocument();
     });
   });
 });
