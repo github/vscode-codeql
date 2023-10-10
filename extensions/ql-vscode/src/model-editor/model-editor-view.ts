@@ -325,7 +325,7 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
-          extLogger,
+          this.app.logger,
           telemetryListener,
           redactableError(
             msg.error,
