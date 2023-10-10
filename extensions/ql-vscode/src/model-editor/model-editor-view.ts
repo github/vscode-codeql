@@ -329,7 +329,7 @@ export class ModelEditorView extends AbstractWebview<
           telemetryListener,
           redactableError(
             msg.error,
-          )`Unhandled error in result comparison view: ${msg.error.message}`,
+          )`Unhandled error in model editor view: ${msg.error.message}`,
         );
         break;
       default:
