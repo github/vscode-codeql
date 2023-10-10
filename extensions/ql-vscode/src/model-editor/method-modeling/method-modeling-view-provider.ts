@@ -71,6 +71,9 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     if (this.modelingStore.hasStateForActiveDb()) {
       const selectedMethod = this.modelingStore.getSelectedMethodDetails();
       if (selectedMethod) {
+        this.databaseItem = selectedMethod.databaseItem;
+        this.method = selectedMethod.method;
+
         await this.postMessage({
           t: "setSelectedMethod",
           method: selectedMethod.method,
