@@ -89,7 +89,13 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     return <NoMethodSelected />;
   }
 
-  if (!canMethodBeModeled(method, modeledMethod, isMethodModified)) {
+  if (
+    !canMethodBeModeled(
+      method,
+      convertFromLegacyModeledMethod(modeledMethod),
+      isMethodModified,
+    )
+  ) {
     return <MethodAlreadyModeled />;
   }
 

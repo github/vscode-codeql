@@ -71,7 +71,7 @@ export type LibraryRowProps = {
   title: string;
   libraryVersion?: string;
   methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
@@ -92,7 +92,7 @@ export const LibraryRow = ({
   title,
   libraryVersion,
   methods,
-  modeledMethods,
+  modeledMethodsMap: modeledMethods,
   modifiedSignatures,
   inProgressMethods,
   viewState,
@@ -231,7 +231,7 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             packageName={title}
             methods={methods}
-            modeledMethods={modeledMethods}
+            modeledMethodsMap={modeledMethods}
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}
             viewState={viewState}

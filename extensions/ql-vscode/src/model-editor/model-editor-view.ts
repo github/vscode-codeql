@@ -43,10 +43,7 @@ import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
-import {
-  convertFromLegacyModeledMethod,
-  convertToLegacyModeledMethods,
-} from "./shared/modeled-methods-legacy";
+import { convertFromLegacyModeledMethod } from "./shared/modeled-methods-legacy";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -640,7 +637,7 @@ export class ModelEditorView extends AbstractWebview<
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setModeledMethods",
-            methods: convertToLegacyModeledMethods(event.modeledMethods),
+            methods: event.modeledMethods,
           });
         }
       }),

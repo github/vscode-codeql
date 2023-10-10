@@ -74,7 +74,7 @@ const ButtonsContainer = styled.div`
 type Props = {
   initialViewState?: ModelEditorViewState;
   initialMethods?: Method[];
-  initialModeledMethods?: Record<string, ModeledMethod>;
+  initialModeledMethods?: Record<string, ModeledMethod[]>;
   initialHideModeledMethods?: boolean;
 };
 
@@ -113,7 +113,7 @@ export function ModelEditor({
   }, [hideModeledMethods]);
 
   const [modeledMethods, setModeledMethods] = useState<
-    Record<string, ModeledMethod>
+    Record<string, ModeledMethod[]>
   >(initialModeledMethods);
 
   useEffect(() => {
@@ -329,7 +329,7 @@ export function ModelEditor({
         </ButtonsContainer>
         <ModeledMethodsList
           methods={methods}
-          modeledMethods={modeledMethods}
+          modeledMethodsMap={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
