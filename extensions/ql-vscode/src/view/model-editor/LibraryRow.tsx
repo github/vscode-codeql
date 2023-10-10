@@ -81,8 +81,7 @@ export type LibraryRowProps = {
   onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     dependencyName: string,
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    methodSignatures: string[],
   ) => void;
   onStopGenerateFromLlmClick: (dependencyName: string) => void;
   onGenerateFromSourceClick: () => void;
@@ -126,11 +125,14 @@ export const LibraryRow = ({
 
   const handleModelWithAI = useCallback(
     async (e: React.MouseEvent) => {
-      onGenerateFromLlmClick(title, methods, modeledMethods);
+      onGenerateFromLlmClick(
+        title,
+        methods.map((m) => m.signature),
+      );
       e.stopPropagation();
       e.preventDefault();
     },
-    [title, methods, modeledMethods, onGenerateFromLlmClick],
+    [title, methods, onGenerateFromLlmClick],
   );
 
   const handleStopModelWithAI = useCallback(
@@ -232,7 +234,7 @@ export const LibraryRow = ({
             modeledMethods={modeledMethods}
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}
-            mode={viewState.mode}
+            viewState={viewState}
             hideModeledMethods={hideModeledMethods}
             revealedMethodSignature={revealedMethodSignature}
             onChange={onChange}

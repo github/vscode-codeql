@@ -65,6 +65,7 @@ export class LegacyQueryRunner extends QueryRunner {
     query: CoreQueryTarget,
     additionalPacks: string[],
     extensionPacks: string[] | undefined,
+    _additionalRunQueryArgs: Record<string, any>, // Ignored in legacy query server
     generateEvalLog: boolean,
     outputDir: QueryOutputDir,
     progress: ProgressCallback,

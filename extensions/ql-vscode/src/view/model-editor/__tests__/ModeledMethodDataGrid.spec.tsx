@@ -7,6 +7,8 @@ import {
   ModeledMethodDataGrid,
   ModeledMethodDataGridProps,
 } from "../ModeledMethodDataGrid";
+import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
+import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
 
 describe(ModeledMethodDataGrid.name, () => {
   const method1 = createMethod({
@@ -41,6 +43,14 @@ describe(ModeledMethodDataGrid.name, () => {
   });
   const onChange = jest.fn();
 
+  const viewState: ModelEditorViewState = {
+    mode: Mode.Application,
+    showFlowGeneration: false,
+    showLlmButton: false,
+    showMultipleModels: false,
+    extensionPack: createMockExtensionPack(),
+  };
+
   const render = (props: Partial<ModeledMethodDataGridProps> = {}) =>
     reactRender(
       <ModeledMethodDataGrid
@@ -58,7 +68,7 @@ describe(ModeledMethodDataGrid.name, () => {
         }}
         modifiedSignatures={new Set([method1.signature])}
         inProgressMethods={new InProgressMethods()}
-        mode={Mode.Application}
+        viewState={viewState}
         hideModeledMethods={false}
         revealedMethodSignature={null}
         onChange={onChange}

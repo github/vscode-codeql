@@ -10,7 +10,7 @@ export interface DbModelingState {
   databaseItem: DatabaseItem;
   methods: Method[];
   hideModeledMethods: boolean;
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
@@ -28,7 +28,7 @@ interface HideModeledMethodsChangedEvent {
 }
 
 interface ModeledMethodsChangedEvent {
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethods: Record<string, ModeledMethod[]>;
   dbUri: string;
   isActiveDb: boolean;
 }
@@ -43,7 +43,7 @@ interface SelectedMethodChangedEvent {
   databaseItem: DatabaseItem;
   method: Method;
   usage: Usage;
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethods: ModeledMethod[];
   isModified: boolean;
 }
 
@@ -221,7 +221,7 @@ export class ModelingStore extends DisposableObject {
   public getModeledMethods(
     dbItem: DatabaseItem,
     methodSignatures?: string[],
-  ): Record<string, ModeledMethod> {
+  ): Record<string, ModeledMethod[]> {
     const modeledMethods = this.getState(dbItem).modeledMethods;
     if (!methodSignatures) {
       return modeledMethods;
@@ -235,14 +235,15 @@ export class ModelingStore extends DisposableObject {
 
   public addModeledMethods(
     dbItem: DatabaseItem,
-    methods: Record<string, ModeledMethod>,
+    methods: Record<string, ModeledMethod[]>,
   ) {
     this.changeModeledMethods(dbItem, (state) => {
       const newModeledMethods = {
         ...methods,
+        // Keep all methods that are already modeled in some form in the state
         ...Object.fromEntries(
-          Object.entries(state.modeledMethods).filter(
-            ([_, value]) => value.type !== "none",
+          Object.entries(state.modeledMethods).filter(([_, value]) =>
+            value.some((m) => m.type !== "none"),
           ),
         ),
       };
@@ -252,17 +253,21 @@ export class ModelingStore extends DisposableObject {
 
   public setModeledMethods(
     dbItem: DatabaseItem,
-    methods: Record<string, ModeledMethod>,
+    methods: Record<string, ModeledMethod[]>,
   ) {
     this.changeModeledMethods(dbItem, (state) => {
       state.modeledMethods = { ...methods };
     });
   }
 
-  public updateModeledMethod(dbItem: DatabaseItem, method: ModeledMethod) {
+  public updateModeledMethods(
+    dbItem: DatabaseItem,
+    signature: string,
+    modeledMethods: ModeledMethod[],
+  ) {
     this.changeModeledMethods(dbItem, (state) => {
       const newModeledMethods = { ...state.modeledMethods };
-      newModeledMethods[method.signature] = method;
+      newModeledMethods[signature] = modeledMethods;
       state.modeledMethods = newModeledMethods;
     });
   }
@@ -325,7 +330,7 @@ export class ModelingStore extends DisposableObject {
       databaseItem: dbItem,
       method,
       usage,
-      modeledMethod: dbState.modeledMethods[method.signature],
+      modeledMethods: dbState.modeledMethods[method.signature],
       isModified: dbState.modifiedMethodSignatures.has(method.signature),
     });
   }
@@ -344,7 +349,7 @@ export class ModelingStore extends DisposableObject {
     return {
       method: selectedMethod,
       usage: dbState.selectedUsage,
-      modeledMethod: dbState.modeledMethods[selectedMethod.signature],
+      modeledMethods: dbState.modeledMethods[selectedMethod.signature],
       isModified: dbState.modifiedMethodSignatures.has(
         selectedMethod.signature,
       ),

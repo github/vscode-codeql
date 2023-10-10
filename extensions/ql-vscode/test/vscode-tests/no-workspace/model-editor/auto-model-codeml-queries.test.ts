@@ -159,6 +159,7 @@ describe("runAutoModelQueries", () => {
       false,
       expect.arrayContaining([expect.stringContaining("tmp")]),
       ["/a/b/c/my-extension-pack"],
+      {},
       "/tmp/queries",
       undefined,
       undefined,

@@ -110,6 +110,10 @@
                   "string"
                 ],
                 "description": "Names of extension packs to include in the evaluation. These are resolved from the locations specified in `additionalPacks`."
+              },
+              "additionalRunQueryArgs": {
+                "type": "object",
+                "description": "**Internal use only**. Additional arguments to pass to the `runQuery` command of the query server, without validation."
               }
             }
           }

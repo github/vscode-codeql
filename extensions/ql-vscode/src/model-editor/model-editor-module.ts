@@ -104,7 +104,7 @@ export class ModelEditorModule extends DisposableObject {
     usage: Usage,
   ): Promise<void> {
     await this.methodsUsagePanel.revealItem(usage);
-    await this.methodModelingPanel.setMethod(method);
+    await this.methodModelingPanel.setMethod(databaseItem, method);
     await showResolvableLocation(usage.url, databaseItem, this.app.logger);
   }
 
