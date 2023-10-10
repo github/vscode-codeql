@@ -47,6 +47,7 @@ import {
   convertFromLegacyModeledMethod,
   convertToLegacyModeledMethods,
 } from "./shared/modeled-methods-legacy";
+import { extLogger } from "../common/logging/vscode";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -319,6 +320,18 @@ export class ModelEditorView extends AbstractWebview<
         );
         break;
       }
+      case "telemetry":
+        telemetryListener?.sendUIInteraction(msg.action);
+        break;
+      case "unhandledError":
+        void showAndLogExceptionWithTelemetry(
+          extLogger,
+          telemetryListener,
+          redactableError(
+            msg.error,
+          )`Unhandled error in result comparison view: ${msg.error.message}`,
+        );
+        break;
       default:
         assertNever(msg);
     }
