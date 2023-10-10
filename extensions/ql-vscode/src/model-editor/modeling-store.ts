@@ -330,7 +330,7 @@ export class ModelingStore extends DisposableObject {
       databaseItem: dbItem,
       method,
       usage,
-      modeledMethods: dbState.modeledMethods[method.signature],
+      modeledMethods: dbState.modeledMethods[method.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(method.signature),
     });
   }
@@ -349,7 +349,7 @@ export class ModelingStore extends DisposableObject {
     return {
       method: selectedMethod,
       usage: dbState.selectedUsage,
-      modeledMethods: dbState.modeledMethods[selectedMethod.signature],
+      modeledMethods: dbState.modeledMethods[selectedMethod.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(
         selectedMethod.signature,
       ),
