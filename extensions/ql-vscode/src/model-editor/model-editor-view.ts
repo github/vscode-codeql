@@ -319,6 +319,18 @@ export class ModelEditorView extends AbstractWebview<
         );
         break;
       }
+      case "telemetry":
+        telemetryListener?.sendUIInteraction(msg.action);
+        break;
+      case "unhandledError":
+        void showAndLogExceptionWithTelemetry(
+          this.app.logger,
+          telemetryListener,
+          redactableError(
+            msg.error,
+          )`Unhandled error in model editor view: ${msg.error.message}`,
+        );
+        break;
       default:
         assertNever(msg);
     }

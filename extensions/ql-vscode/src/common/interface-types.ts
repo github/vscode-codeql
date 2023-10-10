@@ -596,7 +596,7 @@ export type ToModelEditorMessage =
   | RevealMethodMessage;
 
 export type FromModelEditorMessage =
-  | ViewLoadedMsg
+  | CommonFromViewMessages
   | SwitchModeMessage
   | RefreshMethods
   | OpenDatabaseMessage
