@@ -47,7 +47,6 @@ import {
   convertFromLegacyModeledMethod,
   convertToLegacyModeledMethods,
 } from "./shared/modeled-methods-legacy";
-import { extLogger } from "../common/logging/vscode";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
