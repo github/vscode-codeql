@@ -634,7 +634,7 @@ interface SetMethodModelingPanelViewStateMessage {
 
 interface SetMethodMessage {
   t: "setMethod";
-  method: Method;
+  method: Method | undefined;
 }
 
 interface SetMethodModifiedMessage {
