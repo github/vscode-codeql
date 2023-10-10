@@ -44,6 +44,7 @@ export async function runContextualQuery(
     false,
     getOnDiskWorkspaceFolders(),
     undefined,
+    {},
     queryStorageDir,
     undefined,
     templates,

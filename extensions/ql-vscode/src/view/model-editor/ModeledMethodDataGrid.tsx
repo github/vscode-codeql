@@ -8,10 +8,10 @@ import { MethodRow } from "./MethodRow";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
-import { Mode } from "../../model-editor/shared/mode";
 import { sortMethods } from "../../model-editor/shared/sorting";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
+import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
 export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
 
@@ -21,7 +21,7 @@ export type ModeledMethodDataGridProps = {
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
-  mode: Mode;
+  viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
   onChange: (modeledMethod: ModeledMethod) => void;
@@ -33,7 +33,7 @@ export const ModeledMethodDataGrid = ({
   modeledMethods,
   modifiedSignatures,
   inProgressMethods,
-  mode,
+  viewState,
   hideModeledMethods,
   revealedMethodSignature,
   onChange,
@@ -84,22 +84,25 @@ export const ModeledMethodDataGrid = ({
               Kind
             </VSCodeDataGridCell>
           </VSCodeDataGridRow>
-          {methodsWithModelability.map(({ method, methodCanBeModeled }) => (
-            <MethodRow
-              key={method.signature}
-              method={method}
-              methodCanBeModeled={methodCanBeModeled}
-              modeledMethod={modeledMethods[method.signature]}
-              methodIsUnsaved={modifiedSignatures.has(method.signature)}
-              modelingInProgress={inProgressMethods.hasMethod(
-                packageName,
-                method.signature,
-              )}
-              mode={mode}
-              revealedMethodSignature={revealedMethodSignature}
-              onChange={onChange}
-            />
-          ))}
+          {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
+            const modeledMethod = modeledMethods[method.signature];
+            return (
+              <MethodRow
+                key={method.signature}
+                method={method}
+                methodCanBeModeled={methodCanBeModeled}
+                modeledMethods={modeledMethod ? [modeledMethod] : []}
+                methodIsUnsaved={modifiedSignatures.has(method.signature)}
+                modelingInProgress={inProgressMethods.hasMethod(
+                  packageName,
+                  method.signature,
+                )}
+                viewState={viewState}
+                revealedMethodSignature={revealedMethodSignature}
+                onChange={onChange}
+              />
+            );
+          })}
         </>
       )}
       <HiddenMethodsRow

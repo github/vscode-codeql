@@ -14,7 +14,7 @@ import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../shared/hide-modeled-methods";
-import { getModelingStatusForModeledMethods } from "../shared/modeling-status";
+import { getModelingStatus } from "../shared/modeling-status";
 import { assertNever } from "../../common/helpers-pure";
 import { ModeledMethod } from "../modeled-method";
 
@@ -102,10 +102,7 @@ export class MethodsUsageDataProvider
     const modeledMethods = this.modeledMethods[method.signature];
     const modifiedMethod = this.modifiedMethodSignatures.has(method.signature);
 
-    const status = getModelingStatusForModeledMethods(
-      modeledMethods,
-      modifiedMethod,
-    );
+    const status = getModelingStatus(modeledMethods, modifiedMethod);
     switch (status) {
       case "unmodeled":
         return new ThemeIcon("error", new ThemeColor("errorForeground"));

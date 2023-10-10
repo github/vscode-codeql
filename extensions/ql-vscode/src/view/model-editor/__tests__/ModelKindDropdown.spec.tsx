@@ -57,6 +57,7 @@ describe(ModelKindDropdown.name, () => {
     // Changing the type to sink should update the supported kinds
     const updatedModeledMethod = createModeledMethod({
       type: "sink",
+      kind: "local",
     });
 
     rerender(
