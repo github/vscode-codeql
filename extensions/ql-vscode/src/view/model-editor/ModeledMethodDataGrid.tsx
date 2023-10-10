@@ -5,7 +5,7 @@ import {
   VSCodeDataGridRow,
 } from "@vscode/webview-ui-toolkit/react";
 import { MethodRow } from "./MethodRow";
-import { Method } from "../../model-editor/method";
+import { Method, canMethodBeModeled } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
 import { sortMethods } from "../../model-editor/shared/sorting";
@@ -47,10 +47,11 @@ export const ModeledMethodDataGrid = ({
     for (const method of sortMethods(methods)) {
       const modeledMethod = modeledMethods[method.signature];
       const methodIsUnsaved = modifiedSignatures.has(method.signature);
-      const methodCanBeModeled =
-        !method.supported ||
-        (modeledMethod && modeledMethod?.type !== "none") ||
-        methodIsUnsaved;
+      const methodCanBeModeled = canMethodBeModeled(
+        method,
+        modeledMethod,
+        methodIsUnsaved,
+      );
 
       if (methodCanBeModeled || !hideModeledMethods) {
         methodsWithModelability.push({ method, methodCanBeModeled });

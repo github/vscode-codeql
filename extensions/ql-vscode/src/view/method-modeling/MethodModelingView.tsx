@@ -2,7 +2,7 @@ import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { MethodModeling } from "./MethodModeling";
 import { getModelingStatus } from "../../model-editor/shared/modeling-status";
-import { Method } from "../../model-editor/method";
+import { Method, canMethodBeModeled } from "../../model-editor/method";
 import { ToMethodModelingMessage } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { ModeledMethod } from "../../model-editor/modeled-method";
@@ -10,6 +10,7 @@ import { vscode } from "../vscode-api";
 import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
 import { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
+import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
 
 type Props = {
   initialViewState?: MethodModelingPanelViewState;
@@ -82,6 +83,10 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
 
   if (!method) {
     return <NoMethodSelected />;
+  }
+
+  if (!canMethodBeModeled(method, modeledMethod, isMethodModified)) {
+    return <MethodAlreadyModeled />;
   }
 
   const onChange = (modeledMethod: ModeledMethod) => {
