@@ -95,8 +95,8 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       onChange,
     } = props;
 
-    const jumpToUsage = useCallback(
-      () => sendJumpToUsageMessage(method),
+    const jumpToMethod = useCallback(
+      () => sendJumpToMethodMessage(method),
       [method],
     );
 
@@ -113,11 +113,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
           <MethodClassifications method={method} />
           <MethodName {...props.method} />
           {mode === Mode.Application && (
-            <UsagesButton onClick={jumpToUsage}>
+            <UsagesButton onClick={jumpToMethod}>
               {method.usages.length}
             </UsagesButton>
           )}
-          <ViewLink onClick={jumpToUsage}>View</ViewLink>
+          <ViewLink onClick={jumpToMethod}>View</ViewLink>
           {props.modelingInProgress && <ProgressRing />}
         </ApiOrMethodCell>
         {props.modelingInProgress && (
@@ -180,8 +180,8 @@ const UnmodelableMethodRow = forwardRef<
 >((props, ref) => {
   const { method, mode, revealedMethodSignature } = props;
 
-  const jumpToUsage = useCallback(
-    () => sendJumpToUsageMessage(method),
+  const jumpToMethod = useCallback(
+    () => sendJumpToMethodMessage(method),
     [method],
   );
 
@@ -195,11 +195,11 @@ const UnmodelableMethodRow = forwardRef<
         <ModelingStatusIndicator status="saved" />
         <MethodName {...props.method} />
         {mode === Mode.Application && (
-          <UsagesButton onClick={jumpToUsage}>
+          <UsagesButton onClick={jumpToMethod}>
             {method.usages.length}
           </UsagesButton>
         )}
-        <ViewLink onClick={jumpToUsage}>View</ViewLink>
+        <ViewLink onClick={jumpToMethod}>View</ViewLink>
         <MethodClassifications method={method} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn="span 4">
@@ -210,9 +210,9 @@ const UnmodelableMethodRow = forwardRef<
 });
 UnmodelableMethodRow.displayName = "UnmodelableMethodRow";
 
-function sendJumpToUsageMessage(method: Method) {
+function sendJumpToMethodMessage(method: Method) {
   vscode.postMessage({
-    t: "jumpToUsage",
+    t: "jumpToMethod",
     methodSignature: method.signature,
   });
 }

@@ -197,9 +197,11 @@ export class ModelEditorView extends AbstractWebview<
         );
 
         break;
-      case "jumpToUsage":
-        await this.handleJumpToUsage(msg.methodSignature);
-        void telemetryListener?.sendUIInteraction("model-editor-jump-to-usage");
+      case "jumpToMethod":
+        await this.handleJumpToMethod(msg.methodSignature);
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-jump-to-method",
+        );
 
         break;
       case "saveModeledMethods":
@@ -361,7 +363,7 @@ export class ModelEditorView extends AbstractWebview<
     });
   }
 
-  protected async handleJumpToUsage(methodSignature: string) {
+  protected async handleJumpToMethod(methodSignature: string) {
     this.modelingStore.setSelectedMethod(this.databaseItem, methodSignature);
   }
 

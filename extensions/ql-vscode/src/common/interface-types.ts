@@ -526,8 +526,8 @@ interface SwitchModeMessage {
   mode: Mode;
 }
 
-interface JumpToUsageMessage {
-  t: "jumpToUsage";
+interface JumpToMethodMessage {
+  t: "jumpToMethod";
   methodSignature: string;
 }
 
@@ -602,7 +602,7 @@ export type FromModelEditorMessage =
   | RefreshMethods
   | OpenDatabaseMessage
   | OpenExtensionPackMessage
-  | JumpToUsageMessage
+  | JumpToMethodMessage
   | SaveModeledMethods
   | GenerateMethodMessage
   | GenerateMethodsFromLlmMessage

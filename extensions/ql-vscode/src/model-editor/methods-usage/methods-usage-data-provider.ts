@@ -94,7 +94,7 @@ export class MethodsUsageDataProvider
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
-          command: "codeQLModelEditor.jumpToUsageLocation",
+          command: "codeQLModelEditor.jumpToMethod",
           arguments: [method.signature, this.databaseItem],
         },
       };
