@@ -226,6 +226,7 @@ LibraryRow.args = {
     showLlmButton: true,
     showMultipleModels: true,
     mode: Mode.Application,
+    sourceArchiveAvailable: true,
   },
   hideModeledMethods: false,
 };

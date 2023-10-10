@@ -32,6 +32,7 @@ ModelEditor.args = {
     showLlmButton: true,
     showMultipleModels: true,
     mode: Mode.Application,
+    sourceArchiveAvailable: true,
   },
   initialMethods: [
     {

@@ -75,6 +75,7 @@ const viewState: ModelEditorViewState = {
   showLlmButton: true,
   showMultipleModels: true,
   mode: Mode.Application,
+  sourceArchiveAvailable: true,
 };
 
 export const Unmodeled = Template.bind({});
