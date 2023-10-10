@@ -49,6 +49,7 @@ describe(ModeledMethodDataGrid.name, () => {
     showLlmButton: false,
     showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
   };
 
   const render = (props: Partial<ModeledMethodDataGridProps> = {}) =>

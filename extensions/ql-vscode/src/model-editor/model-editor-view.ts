@@ -5,6 +5,7 @@ import {
   Uri,
   ViewColumn,
   window,
+  workspace,
 } from "vscode";
 import {
   AbstractWebview,
@@ -362,6 +363,11 @@ export class ModelEditorView extends AbstractWebview<
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
 
+    const sourceArchiveAvailable = workspace.workspaceFolders?.some(
+      (f) =>
+        f.uri.fsPath === this.databaseItem.getSourceArchiveExplorerUri().fsPath,
+    );
+
     await this.postMessage({
       t: "setModelEditorViewState",
       viewState: {
@@ -370,6 +376,7 @@ export class ModelEditorView extends AbstractWebview<
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.mode,
+        sourceArchiveAvailable: !!sourceArchiveAvailable,
       },
     });
   }
