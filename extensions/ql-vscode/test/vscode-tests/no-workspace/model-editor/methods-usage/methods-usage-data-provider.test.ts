@@ -20,7 +20,7 @@ describe("MethodsUsageDataProvider", () => {
   describe("setState", () => {
     const hideModeledMethods = false;
     const methods: Method[] = [];
-    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
@@ -125,7 +125,7 @@ describe("MethodsUsageDataProvider", () => {
     });
 
     it("should emit onDidChangeTreeData event when modeled methods has changed", async () => {
-      const modeledMethods2: Record<string, ModeledMethod> = {};
+      const modeledMethods2: Record<string, ModeledMethod[]> = {};
 
       await dataProvider.setState(
         methods,
@@ -213,7 +213,7 @@ describe("MethodsUsageDataProvider", () => {
     });
 
     const methods: Method[] = [supportedMethod, unsupportedMethod];
-    const modeledMethods: Record<string, ModeledMethod> = {};
+    const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
 
     const dbItem = mockedObject<DatabaseItem>({

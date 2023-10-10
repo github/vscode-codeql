@@ -14,6 +14,10 @@ import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
+import {
+  convertFromLegacyModeledMethod,
+  convertToLegacyModeledMethod,
+} from "../modeled-methods-legacy";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -70,7 +74,9 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         await this.postMessage({
           t: "setSelectedMethod",
           method: selectedMethod.method,
-          modeledMethod: selectedMethod.modeledMethod,
+          modeledMethod: convertToLegacyModeledMethod(
+            selectedMethod.modeledMethods,
+          ),
           isModified: selectedMethod.isModified,
         });
       }
@@ -107,9 +113,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       case "setModeledMethod": {
         const activeState = this.ensureActiveState();
 
-        this.modelingStore.updateModeledMethod(
+        this.modelingStore.updateModeledMethods(
           activeState.databaseItem,
-          msg.method,
+          msg.method.signature,
+          convertFromLegacyModeledMethod(msg.method),
         );
         this.modelingStore.addModifiedMethod(
           activeState.databaseItem,
@@ -158,12 +165,15 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     this.push(
       this.modelingStore.onModeledMethodsChanged(async (e) => {
         if (this.webviewView && e.isActiveDb) {
-          const modeledMethod = e.modeledMethods[this.method?.signature ?? ""];
-          if (modeledMethod) {
-            await this.postMessage({
-              t: "setModeledMethod",
-              method: modeledMethod,
-            });
+          const modeledMethods = e.modeledMethods[this.method?.signature ?? ""];
+          if (modeledMethods) {
+            const modeledMethod = convertToLegacyModeledMethod(modeledMethods);
+            if (modeledMethod) {
+              await this.postMessage({
+                t: "setModeledMethod",
+                method: modeledMethod,
+              });
+            }
           }
         }
       }),
@@ -190,7 +200,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           await this.postMessage({
             t: "setSelectedMethod",
             method: e.method,
-            modeledMethod: e.modeledMethod,
+            modeledMethod: convertToLegacyModeledMethod(e.modeledMethods),
             isModified: e.isModified,
           });
         }
