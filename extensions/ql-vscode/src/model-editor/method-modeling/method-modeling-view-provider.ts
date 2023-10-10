@@ -150,10 +150,13 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         if (this.webviewView && e.isActiveDb) {
           const modeledMethods = e.modeledMethods[this.method?.signature ?? ""];
           if (modeledMethods) {
-            await this.postMessage({
-              t: "setModeledMethod",
-              method: convertToLegacyModeledMethod(modeledMethods),
-            });
+            const modeledMethod = convertToLegacyModeledMethod(modeledMethods);
+            if (modeledMethod) {
+              await this.postMessage({
+                t: "setModeledMethod",
+                method: modeledMethod,
+              });
+            }
           }
         }
       }),

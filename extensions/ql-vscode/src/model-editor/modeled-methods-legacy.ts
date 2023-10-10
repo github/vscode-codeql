@@ -37,9 +37,15 @@ export function convertToLegacyModeledMethods(
 ): Record<string, ModeledMethod> {
   // Always take the first modeled method in the array
   return Object.fromEntries(
-    Object.entries(modeledMethods).map(([signature, modeledMethods]) => {
-      return [signature, convertToLegacyModeledMethod(modeledMethods)];
-    }),
+    Object.entries(modeledMethods)
+      .map(([signature, modeledMethods]) => {
+        const modeledMethod = convertToLegacyModeledMethod(modeledMethods);
+        if (!modeledMethod) {
+          return null;
+        }
+        return [signature, modeledMethod];
+      })
+      .filter((entry): entry is [string, ModeledMethod] => entry !== null),
   );
 }
 
@@ -66,6 +72,8 @@ export function convertFromLegacyModeledMethod(modeledMethod: ModeledMethod) {
  *
  * @param modeledMethods The ModeledMethod[]
  */
-export function convertToLegacyModeledMethod(modeledMethods: ModeledMethod[]) {
+export function convertToLegacyModeledMethod(
+  modeledMethods: ModeledMethod[],
+): ModeledMethod | undefined {
   return modeledMethods[0];
 }
