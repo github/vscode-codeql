@@ -1,5 +1,5 @@
 import { ResolvableLocationValue } from "../common/bqrs-cli-types";
-import { ModeledMethodType } from "./modeled-method";
+import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 
 export type Call = {
   label: string;
@@ -64,4 +64,16 @@ export function getArgumentsList(methodParameters: string): string[] {
   }
 
   return methodParameters.substring(1, methodParameters.length - 1).split(",");
+}
+
+export function canMethodBeModeled(
+  method: Method,
+  modeledMethod: ModeledMethod | undefined,
+  methodIsUnsaved: boolean,
+): boolean {
+  return (
+    !method.supported ||
+    (modeledMethod && modeledMethod?.type !== "none") ||
+    methodIsUnsaved
+  );
 }
