@@ -46,4 +46,11 @@ export class LanguageContextStore extends DisposableObject {
   public shouldInclude(language: QueryLanguage | undefined): boolean {
     return this.languageFilter === "All" || this.languageFilter === language;
   }
+
+  public selectedLanguage(language: QueryLanguage | undefined): boolean {
+    return (
+      (this.languageFilter === "All" && language === undefined) ||
+      this.languageFilter === language
+    );
+  }
 }

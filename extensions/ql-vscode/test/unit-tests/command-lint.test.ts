@@ -38,6 +38,7 @@ describe("commands declared in package.json", () => {
       expect(title).toBeDefined();
       commandTitles[command] = title!;
     } else if (
+      command.match(/^codeQLLanguageSelection\./) ||
       command.match(/^codeQLDatabases\./) ||
       command.match(/^codeQLQueries\./) ||
       command.match(/^codeQLVariantAnalysisRepositories\./) ||
