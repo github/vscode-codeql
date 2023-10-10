@@ -10,6 +10,7 @@ import { vscode } from "../vscode-api";
 import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
 import { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
+import { convertFromLegacyModeledMethod } from "../../model-editor/shared/modeled-methods-legacy";
 
 type Props = {
   initialViewState?: MethodModelingPanelViewState;
@@ -31,7 +32,10 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
 
   const modelingStatus = useMemo(
     () =>
-      getModelingStatus(modeledMethod ? [modeledMethod] : [], isMethodModified),
+      getModelingStatus(
+        convertFromLegacyModeledMethod(modeledMethod),
+        isMethodModified,
+      ),
     [modeledMethod, isMethodModified],
   );
 
@@ -95,7 +99,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     <MethodModeling
       modelingStatus={modelingStatus}
       method={method}
-      modeledMethods={modeledMethod ? [modeledMethod] : []}
+      modeledMethods={convertFromLegacyModeledMethod(modeledMethod)}
       showMultipleModels={viewState?.showMultipleModels}
       onChange={onChange}
     />
