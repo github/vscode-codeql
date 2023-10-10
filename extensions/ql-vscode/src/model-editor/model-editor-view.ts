@@ -664,16 +664,11 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private setModeledMethods(signature: string, methods: ModeledMethod[]) {
-    const state = this.modelingStore.getStateForActiveDb();
-    if (!state) {
-      throw new Error("Attempting to set modeled method without active db");
-    }
-
     this.modelingStore.updateModeledMethods(
-      state.databaseItem,
+      this.databaseItem,
       signature,
       methods,
     );
-    this.modelingStore.addModifiedMethod(state.databaseItem, signature);
+    this.modelingStore.addModifiedMethod(this.databaseItem, signature);
   }
 }

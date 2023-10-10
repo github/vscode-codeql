@@ -347,6 +347,7 @@ export class ModelingStore extends DisposableObject {
     }
 
     return {
+      databaseItem: dbState.databaseItem,
       method: selectedMethod,
       usage: dbState.selectedUsage,
       modeledMethods: dbState.modeledMethods[selectedMethod.signature] ?? [],
