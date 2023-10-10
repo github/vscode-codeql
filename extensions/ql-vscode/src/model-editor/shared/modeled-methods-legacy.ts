@@ -1,4 +1,4 @@
-import { ModeledMethod } from "./modeled-method";
+import { ModeledMethod } from "../modeled-method";
 
 /**
  * Converts a record of a single ModeledMethod indexed by signature to a record of ModeledMethod[] indexed by signature

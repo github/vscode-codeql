@@ -17,7 +17,7 @@ import { DatabaseItem } from "../../databases/local-databases";
 import {
   convertFromLegacyModeledMethod,
   convertToLegacyModeledMethod,
-} from "../modeled-methods-legacy";
+} from "../shared/modeled-methods-legacy";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
