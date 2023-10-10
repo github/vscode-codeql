@@ -6,6 +6,7 @@ export const ResponsiveContainer = styled.div`
   align-items: flex-start;
   justify-content: flex-start;
   height: 100vh;
+  padding-top: 0.4rem;
 
   @media (min-height: 300px) {
     align-items: center;
