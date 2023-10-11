@@ -102,7 +102,7 @@ export class MethodsUsageDataProvider
   }
 
   private getModelingStatusIcon(method: Method): ThemeIcon {
-    const modeledMethods = this.modeledMethods[method.signature] || [];
+    const modeledMethods = this.modeledMethods[method.signature] ?? [];
     const modifiedMethod = this.modifiedMethodSignatures.has(method.signature);
 
     const status = getModelingStatus(modeledMethods, modifiedMethod);
