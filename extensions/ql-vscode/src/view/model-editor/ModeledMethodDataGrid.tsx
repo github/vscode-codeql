@@ -12,6 +12,7 @@ import { sortMethods } from "../../model-editor/shared/sorting";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import { convertFromLegacyModeledMethod } from "../../model-editor/shared/modeled-methods-legacy";
 
 export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
 
@@ -49,7 +50,7 @@ export const ModeledMethodDataGrid = ({
       const methodIsUnsaved = modifiedSignatures.has(method.signature);
       const methodCanBeModeled = canMethodBeModeled(
         method,
-        modeledMethod,
+        convertFromLegacyModeledMethod(modeledMethod),
         methodIsUnsaved,
       );
 

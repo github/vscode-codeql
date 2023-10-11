@@ -68,12 +68,12 @@ export function getArgumentsList(methodParameters: string): string[] {
 
 export function canMethodBeModeled(
   method: Method,
-  modeledMethod: ModeledMethod | undefined,
+  modeledMethods: ModeledMethod[],
   methodIsUnsaved: boolean,
 ): boolean {
   return (
     !method.supported ||
-    (modeledMethod && modeledMethod?.type !== "none") ||
+    modeledMethods.some((modeledMethod) => modeledMethod.type !== "none") ||
     methodIsUnsaved
   );
 }
