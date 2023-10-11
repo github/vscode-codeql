@@ -73,6 +73,7 @@ export const MultipleModeledMethodsPanel = ({
     onChange(newModeledMethods);
     setSelectedIndex(newModeledMethods.length - 1);
   }, [onChange, modeledMethods, method]);
+
   const handleRemoveClick = useCallback(() => {
     const newModeledMethods = modeledMethods.filter(
       (_, index) => index !== selectedIndex,
