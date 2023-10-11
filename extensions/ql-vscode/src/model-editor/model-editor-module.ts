@@ -128,6 +128,15 @@ export class ModelEditorModule extends DisposableObject {
         return;
       }
 
+      const existingViews = this.editorViewTracker.getViews(
+        db.databaseUri.toString(),
+      );
+      if (existingViews.length > 0) {
+        await Promise.all(existingViews.map((view) => view.focusView()));
+
+        return;
+      }
+
       return withProgress(
         async (progress) => {
           const maxStep = 4;
@@ -191,6 +200,17 @@ export class ModelEditorModule extends DisposableObject {
             step: 4,
             maxStep,
           });
+
+          // Check again just before opening the editor to ensure no model editor has been opened between
+          // our first check and now.
+          const existingViews = this.editorViewTracker.getViews(
+            db.databaseUri.toString(),
+          );
+          if (existingViews.length > 0) {
+            await Promise.all(existingViews.map((view) => view.focusView()));
+
+            return;
+          }
 
           const view = new ModelEditorView(
             this.app,
