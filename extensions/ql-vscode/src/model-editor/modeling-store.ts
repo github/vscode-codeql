@@ -6,7 +6,7 @@ import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 
-export interface DbModelingState {
+interface DbModelingState {
   databaseItem: DatabaseItem;
   methods: Method[];
   hideModeledMethods: boolean;
@@ -347,6 +347,7 @@ export class ModelingStore extends DisposableObject {
     }
 
     return {
+      databaseItem: dbState.databaseItem,
       method: selectedMethod,
       usage: dbState.selectedUsage,
       modeledMethods: dbState.modeledMethods[selectedMethod.signature] ?? [],
