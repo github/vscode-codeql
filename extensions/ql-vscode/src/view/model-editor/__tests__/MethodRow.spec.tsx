@@ -85,10 +85,12 @@ describe(MethodRow.name, () => {
     );
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({
-      ...modeledMethod,
-      kind: "value",
-    });
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      {
+        ...modeledMethod,
+        kind: "value",
+      },
+    ]);
   });
 
   it("has the correct input options", () => {
