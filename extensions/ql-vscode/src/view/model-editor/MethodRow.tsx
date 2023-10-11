@@ -5,7 +5,7 @@ import {
   VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
-import { forwardRef, useCallback, useEffect, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
@@ -103,9 +103,15 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       onChange,
     } = props;
 
-    const modeledMethods = viewState.showMultipleModels
-      ? modeledMethodsProp
-      : modeledMethodsProp.slice(0, 1);
+    const modeledMethods: Array<ModeledMethod | undefined> = useMemo(
+      () =>
+        modeledMethodsProp.length === 0
+          ? [undefined]
+          : viewState.showMultipleModels
+          ? modeledMethodsProp
+          : modeledMethodsProp.slice(0, 1),
+      [modeledMethodsProp, viewState],
+    );
 
     const jumpToMethod = useCallback(
       () => sendJumpToMethodMessage(method),
@@ -153,7 +159,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         {!props.modelingInProgress && (
           <>
             <MultiModelColumn gridColumn={2}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelTypeDropdown
                   key={index}
                   method={method}
@@ -163,7 +169,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={3}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelInputDropdown
                   key={index}
                   method={method}
@@ -173,7 +179,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={4}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelOutputDropdown
                   key={index}
                   method={method}
@@ -183,7 +189,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={5}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelKindDropdown
                   key={index}
                   method={method}
@@ -243,18 +249,4 @@ function sendJumpToMethodMessage(method: Method) {
     t: "jumpToMethod",
     methodSignature: method.signature,
   });
-}
-
-function forEachModeledMethod(
-  modeledMethods: ModeledMethod[],
-  renderer: (
-    modeledMethod: ModeledMethod | undefined,
-    index: number,
-  ) => JSX.Element,
-): JSX.Element | JSX.Element[] {
-  if (modeledMethods.length === 0) {
-    return renderer(undefined, 0);
-  } else {
-    return modeledMethods.map(renderer);
-  }
 }
