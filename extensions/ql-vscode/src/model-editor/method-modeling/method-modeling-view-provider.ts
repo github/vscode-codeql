@@ -157,11 +157,12 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   private registerToModelingStoreEvents(): void {
     this.push(
       this.modelingStore.onModeledMethodsChanged(async (e) => {
-        if (this.webviewView && e.isActiveDb) {
-          const modeledMethods = e.modeledMethods[this.method?.signature ?? ""];
+        if (this.webviewView && e.isActiveDb && this.method) {
+          const modeledMethods = e.modeledMethods[this.method.signature];
           if (modeledMethods) {
             await this.postMessage({
               t: "setMultipleModeledMethods",
+              methodSignature: this.method.signature,
               modeledMethods,
             });
           }

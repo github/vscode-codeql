@@ -579,6 +579,7 @@ interface SetModeledMethodMessage {
 
 interface SetMultipleModeledMethodsMessage {
   t: "setMultipleModeledMethods";
+  methodSignature: string;
   modeledMethods: ModeledMethod[];
 }
 
