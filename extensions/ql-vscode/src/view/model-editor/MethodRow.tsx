@@ -104,13 +104,8 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
     } = props;
 
     const modeledMethods: Array<ModeledMethod | undefined> = useMemo(
-      () =>
-        modeledMethodsProp.length === 0
-          ? [undefined]
-          : viewState.showMultipleModels
-          ? modeledMethodsProp
-          : modeledMethodsProp.slice(0, 1),
-      [modeledMethodsProp, viewState],
+      () => modeledMethodsToDisplay(modeledMethodsProp, method, viewState),
+      [modeledMethodsProp, method, viewState],
     );
 
     const modeledMethodChangedHandlers = useMemo(
@@ -264,4 +259,20 @@ function sendJumpToMethodMessage(method: Method) {
     t: "jumpToMethod",
     methodSignature: method.signature,
   });
+}
+
+function modeledMethodsToDisplay(
+  modeledMethods: ModeledMethod[],
+  method: Method,
+  viewState: ModelEditorViewState,
+): Array<ModeledMethod | undefined> {
+  if (modeledMethods.length === 0) {
+    return [undefined];
+  }
+
+  if (viewState.showMultipleModels) {
+    return modeledMethods;
+  } else {
+    return modeledMethods.slice(0, 1);
+  }
 }
