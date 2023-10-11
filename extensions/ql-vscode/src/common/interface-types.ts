@@ -577,6 +577,12 @@ interface SetModeledMethodMessage {
   method: ModeledMethod;
 }
 
+interface SetMultipleModeledMethodsMessage {
+  t: "setMultipleModeledMethods";
+  methodSignature: string;
+  modeledMethods: ModeledMethod[];
+}
+
 interface SetInModelingModeMessage {
   t: "setInModelingMode";
   inModelingMode: boolean;
@@ -643,14 +649,14 @@ interface SetMethodModifiedMessage {
 interface SetSelectedMethodMessage {
   t: "setSelectedMethod";
   method: Method;
-  modeledMethod?: ModeledMethod;
+  modeledMethods: ModeledMethod[];
   isModified: boolean;
 }
 
 export type ToMethodModelingMessage =
   | SetMethodModelingPanelViewStateMessage
   | SetMethodMessage
-  | SetModeledMethodMessage
+  | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
   | SetSelectedMethodMessage
   | SetInModelingModeMessage;
