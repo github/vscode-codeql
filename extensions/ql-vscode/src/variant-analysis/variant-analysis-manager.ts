@@ -42,7 +42,7 @@ import {
   processVariantAnalysisRepositoryTask,
 } from "./variant-analysis-processor";
 import PQueue from "p-queue";
-import { createTimestampFile } from "../run-queries-shared";
+import { createTimestampFile, saveBeforeStart } from "../run-queries-shared";
 import { readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
@@ -199,6 +199,8 @@ export class VariantAnalysisManager
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
+    await saveBeforeStart();
+
     progress({
       maxStep: 5,
       step: 0,
