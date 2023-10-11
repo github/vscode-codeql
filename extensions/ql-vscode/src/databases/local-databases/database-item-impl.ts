@@ -167,6 +167,15 @@ export class DatabaseItemImpl implements DatabaseItem {
     return encodeArchiveBasePath(sourceArchive.fsPath);
   }
 
+  /**
+   * Returns true if the database's source archive is in the workspace.
+   */
+  public hasSourceArchiveInExplorer(): boolean {
+    return (vscode.workspace.workspaceFolders || []).some((folder) =>
+      this.belongsToSourceArchiveExplorerUri(folder.uri),
+    );
+  }
+
   public verifyZippedSources(): string | undefined {
     const sourceArchive = this.sourceArchive;
     if (sourceArchive === undefined) {
