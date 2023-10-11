@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useCallback } from "react";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { MethodModelingInputs } from "./MethodModelingInputs";
 import { Method } from "../../model-editor/method";
@@ -23,6 +24,13 @@ export const ModeledMethodsPanel = ({
   showMultipleModels,
   onChange,
 }: ModeledMethodsPanelProps) => {
+  const handleMultipleChange = useCallback(
+    (modeledMethods: ModeledMethod[]) => {
+      onChange(modeledMethods[0]);
+    },
+    [onChange],
+  );
+
   if (!showMultipleModels) {
     return (
       <SingleMethodModelingInputs
@@ -37,7 +45,7 @@ export const ModeledMethodsPanel = ({
     <MultipleModeledMethodsPanel
       method={method}
       modeledMethods={modeledMethods}
-      onChange={onChange}
+      onChange={handleMultipleChange}
     />
   );
 };
