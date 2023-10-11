@@ -614,7 +614,7 @@ export type FromModelEditorMessage =
   | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
   | HideModeledMethodsMessage
-  | SetModeledMethodMessage;
+  | SetMultipleModeledMethodsMessage;
 
 interface RevealInEditorMessage {
   t: "revealInModelEditor";

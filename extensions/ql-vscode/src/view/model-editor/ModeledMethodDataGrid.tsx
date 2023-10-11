@@ -24,7 +24,7 @@ export type ModeledMethodDataGridProps = {
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
 export const ModeledMethodDataGrid = ({

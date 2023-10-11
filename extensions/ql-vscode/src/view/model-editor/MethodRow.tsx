@@ -68,7 +68,7 @@ export type MethodRowProps = {
   modelingInProgress: boolean;
   viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
 export const MethodRow = (props: MethodRowProps) => {
@@ -111,6 +111,21 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
           ? modeledMethodsProp
           : modeledMethodsProp.slice(0, 1),
       [modeledMethodsProp, viewState],
+    );
+
+    const modeledMethodChangedHandlers = useMemo(
+      () =>
+        modeledMethods.map((_, index) => (modeledMethod: ModeledMethod) => {
+          const newModeledMethods = [...modeledMethods];
+          newModeledMethods[index] = modeledMethod;
+          onChange(
+            method.signature,
+            newModeledMethods.filter(
+              (m): m is ModeledMethod => m !== undefined,
+            ),
+          );
+        }),
+      [method, modeledMethods, onChange],
     );
 
     const jumpToMethod = useCallback(
@@ -164,7 +179,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>
@@ -174,7 +189,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>
@@ -184,7 +199,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>
@@ -194,7 +209,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>

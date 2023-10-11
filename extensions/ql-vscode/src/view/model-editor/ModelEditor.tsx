@@ -180,12 +180,16 @@ export function ModelEditor({
     [methods],
   );
 
-  const onChange = useCallback((model: ModeledMethod) => {
-    vscode.postMessage({
-      t: "setModeledMethod",
-      method: model,
-    });
-  }, []);
+  const onChange = useCallback(
+    (methodSignature: string, modeledMethods: ModeledMethod[]) => {
+      vscode.postMessage({
+        t: "setMultipleModeledMethods",
+        methodSignature,
+        modeledMethods,
+      });
+    },
+    [],
+  );
 
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
