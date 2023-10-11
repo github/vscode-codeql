@@ -507,7 +507,7 @@ interface SetMethodsMessage {
 
 interface SetModeledMethodsMessage {
   t: "setModeledMethods";
-  methods: Record<string, ModeledMethod>;
+  methods: Record<string, ModeledMethod[]>;
 }
 
 interface SetModifiedMethodsMessage {
