@@ -524,11 +524,11 @@ export class ModelEditorView extends AbstractWebview<
         return;
       }
 
-      let existingViews = this.viewTracker.getViews(
+      let existingView = this.viewTracker.getView(
         addedDatabase.databaseUri.toString(),
       );
-      if (existingViews.length > 0) {
-        await Promise.all(existingViews.map((view) => view.focusView()));
+      if (existingView) {
+        await existingView.focusView();
 
         return;
       }
@@ -547,11 +547,11 @@ export class ModelEditorView extends AbstractWebview<
 
       // Check again just before opening the editor to ensure no model editor has been opened between
       // our first check and now.
-      existingViews = this.viewTracker.getViews(
+      existingView = this.viewTracker.getView(
         addedDatabase.databaseUri.toString(),
       );
-      if (existingViews.length > 0) {
-        await Promise.all(existingViews.map((view) => view.focusView()));
+      if (existingView) {
+        await existingView.focusView();
 
         return;
       }

@@ -128,11 +128,11 @@ export class ModelEditorModule extends DisposableObject {
         return;
       }
 
-      const existingViews = this.editorViewTracker.getViews(
+      const existingView = this.editorViewTracker.getView(
         db.databaseUri.toString(),
       );
-      if (existingViews.length > 0) {
-        await Promise.all(existingViews.map((view) => view.focusView()));
+      if (existingView) {
+        await existingView.focusView();
 
         return;
       }
@@ -203,11 +203,11 @@ export class ModelEditorModule extends DisposableObject {
 
           // Check again just before opening the editor to ensure no model editor has been opened between
           // our first check and now.
-          const existingViews = this.editorViewTracker.getViews(
+          const existingView = this.editorViewTracker.getView(
             db.databaseUri.toString(),
           );
-          if (existingViews.length > 0) {
-            await Promise.all(existingViews.map((view) => view.focusView()));
+          if (existingView) {
+            await existingView.focusView();
 
             return;
           }
