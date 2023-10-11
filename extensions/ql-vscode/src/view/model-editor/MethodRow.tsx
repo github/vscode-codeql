@@ -103,7 +103,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       onChange,
     } = props;
 
-    const modeledMethods: Array<ModeledMethod | undefined> = useMemo(
+    const modeledMethods = useMemo(
       () => modeledMethodsToDisplay(modeledMethodsProp, method, viewState),
       [modeledMethodsProp, method, viewState],
     );
@@ -113,12 +113,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         modeledMethods.map((_, index) => (modeledMethod: ModeledMethod) => {
           const newModeledMethods = [...modeledMethods];
           newModeledMethods[index] = modeledMethod;
-          onChange(
-            method.signature,
-            newModeledMethods.filter(
-              (m): m is ModeledMethod => m !== undefined,
-            ),
-          );
+          onChange(method.signature, newModeledMethods);
         }),
       [method, modeledMethods, onChange],
     );
@@ -265,9 +260,22 @@ function modeledMethodsToDisplay(
   modeledMethods: ModeledMethod[],
   method: Method,
   viewState: ModelEditorViewState,
-): Array<ModeledMethod | undefined> {
+): ModeledMethod[] {
   if (modeledMethods.length === 0) {
-    return [undefined];
+    return [
+      {
+        type: "none",
+        input: "",
+        output: "",
+        kind: "",
+        provenance: "manual",
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
+      },
+    ];
   }
 
   if (viewState.showMultipleModels) {
