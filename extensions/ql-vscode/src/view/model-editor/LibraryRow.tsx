@@ -92,7 +92,7 @@ export const LibraryRow = ({
   title,
   libraryVersion,
   methods,
-  modeledMethodsMap: modeledMethods,
+  modeledMethodsMap,
   modifiedSignatures,
   inProgressMethods,
   viewState,
@@ -231,7 +231,7 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             packageName={title}
             methods={methods}
-            modeledMethodsMap={modeledMethods}
+            modeledMethodsMap={modeledMethodsMap}
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}
             viewState={viewState}

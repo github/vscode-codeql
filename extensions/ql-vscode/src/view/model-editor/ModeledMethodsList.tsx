@@ -36,7 +36,7 @@ const libraryNameOverrides: Record<string, string> = {
 
 export const ModeledMethodsList = ({
   methods,
-  modeledMethodsMap: modeledMethods,
+  modeledMethodsMap,
   modifiedSignatures,
   inProgressMethods,
   viewState,
@@ -82,7 +82,7 @@ export const ModeledMethodsList = ({
           title={libraryNameOverrides[libraryName] ?? libraryName}
           libraryVersion={libraryVersions[libraryName]}
           methods={grouped[libraryName]}
-          modeledMethodsMap={modeledMethods}
+          modeledMethodsMap={modeledMethodsMap}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
