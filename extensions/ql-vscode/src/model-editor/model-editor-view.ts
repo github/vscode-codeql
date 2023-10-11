@@ -35,7 +35,7 @@ import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { ModelConfigListener } from "../config";
-import { Mode } from "./shared/mode";
+import { INITIAL_MODE, Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
@@ -66,11 +66,11 @@ export class ModelEditorView extends AbstractWebview<
     private readonly queryDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
-    private mode: Mode,
+    initialMode: Mode = INITIAL_MODE,
   ) {
     super(app);
 
-    this.modelingStore.initializeStateForDb(databaseItem);
+    this.modelingStore.initializeStateForDb(databaseItem, initialMode);
     this.registerToModelingStoreEvents();
     this.registerToModelConfigEvents();
 
@@ -214,6 +214,7 @@ export class ModelEditorView extends AbstractWebview<
             this.databaseItem,
             msg.methodSignatures,
           );
+          const mode = this.modelingStore.getMode(this.databaseItem);
 
           await withProgress(
             async (progress) => {
@@ -227,7 +228,7 @@ export class ModelEditorView extends AbstractWebview<
                 this.databaseItem.language,
                 methods,
                 modeledMethods,
-                this.mode,
+                mode,
                 this.cliServer,
                 this.app.logger,
               );
@@ -288,7 +289,7 @@ export class ModelEditorView extends AbstractWebview<
         );
         break;
       case "switchMode":
-        this.mode = msg.mode;
+        this.modelingStore.setMode(this.databaseItem, msg.mode);
         this.modelingStore.setMethods(this.databaseItem, []);
         await Promise.all([
           this.postMessage({
@@ -372,7 +373,7 @@ export class ModelEditorView extends AbstractWebview<
         showFlowGeneration: this.modelConfig.flowGeneration,
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
-        mode: this.mode,
+        mode: this.modelingStore.getMode(this.databaseItem),
       },
     });
   }
@@ -398,9 +399,11 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   protected async loadMethods(progress: ProgressCallback): Promise<void> {
+    const mode = this.modelingStore.getMode(this.databaseItem);
+
     try {
       const cancellationTokenSource = new CancellationTokenSource();
-      const queryResult = await runExternalApiQueries(this.mode, {
+      const queryResult = await runExternalApiQueries(mode, {
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         databaseItem: this.databaseItem,
@@ -434,11 +437,13 @@ export class ModelEditorView extends AbstractWebview<
       async (progress) => {
         const tokenSource = new CancellationTokenSource();
 
+        const mode = this.modelingStore.getMode(this.databaseItem);
+
         let addedDatabase: DatabaseItem | undefined;
 
         // In application mode, we need the database of a specific library to generate
         // the modeled methods. In framework mode, we'll use the current database.
-        if (this.mode === Mode.Application) {
+        if (mode === Mode.Application) {
           addedDatabase = await this.promptChooseNewOrExistingDatabase(
             progress,
           );
@@ -503,11 +508,12 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       methodSignatures,
     );
+    const mode = this.modelingStore.getMode(this.databaseItem);
     await this.autoModeler.startModeling(
       packageName,
       methods,
       modeledMethods,
-      this.mode,
+      mode,
     );
   }
 
