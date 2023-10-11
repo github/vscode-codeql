@@ -2,6 +2,10 @@ import * as React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
+import {
+  canAddNewModeledMethod,
+  canRemoveModeledMethod,
+} from "../../model-editor/shared/multiple-modeled-methods";
 import { styled } from "styled-components";
 import { MethodModelingInputs } from "./MethodModelingInputs";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
@@ -171,7 +175,7 @@ export const MultipleModeledMethodsPanel = ({
             appearance="icon"
             aria-label="Delete modeling"
             onClick={handleRemoveClick}
-            disabled={modeledMethods.length < 2}
+            disabled={!canRemoveModeledMethod(modeledMethods)}
           >
             <Codicon name="trash" />
           </VSCodeButton>
@@ -179,10 +183,7 @@ export const MultipleModeledMethodsPanel = ({
             appearance="icon"
             aria-label="Add modeling"
             onClick={handleAddClick}
-            disabled={
-              modeledMethods.length === 0 ||
-              (modeledMethods.length === 1 && modeledMethods[0].type === "none")
-            }
+            disabled={!canAddNewModeledMethod(modeledMethods)}
           >
             <Codicon name="add" />
           </VSCodeButton>
