@@ -98,7 +98,11 @@ export function validateModeledMethods(
   const seenModeledMethods = new Set<string>();
   for (const modeledMethod of consideredModeledMethods) {
     const canonicalModeledMethod = canonicalizeModeledMethod(modeledMethod);
-    const key = JSON.stringify(canonicalModeledMethod);
+    const key = JSON.stringify(
+      canonicalModeledMethod,
+      // This ensures the keys are always in the same order
+      Object.keys(canonicalModeledMethod).sort(),
+    );
 
     if (seenModeledMethods.has(key)) {
       result.push({
