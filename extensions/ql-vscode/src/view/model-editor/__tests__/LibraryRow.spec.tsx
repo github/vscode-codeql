@@ -20,7 +20,9 @@ describe(LibraryRow.name, () => {
     mode: Mode.Application,
     showFlowGeneration: false,
     showLlmButton: false,
+    showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
   };
 
   const render = (props: Partial<LibraryRowProps> = {}) =>
@@ -29,20 +31,23 @@ describe(LibraryRow.name, () => {
         title="sql2o"
         libraryVersion="1.6.0"
         methods={[method]}
-        modeledMethods={{
-          [method.signature]: {
-            ...method,
-            type: "sink",
-            input: "Argument[0]",
-            output: "",
-            kind: "jndi-injection",
-            provenance: "df-generated",
-          },
+        modeledMethodsMap={{
+          [method.signature]: [
+            {
+              ...method,
+              type: "sink",
+              input: "Argument[0]",
+              output: "",
+              kind: "jndi-injection",
+              provenance: "df-generated",
+            },
+          ],
         }}
         modifiedSignatures={new Set([method.signature])}
         inProgressMethods={new InProgressMethods()}
         viewState={viewState}
         hideModeledMethods={false}
+        revealedMethodSignature={null}
         onChange={onChange}
         onSaveModelClick={onSaveModelClick}
         onGenerateFromLlmClick={onGenerateFromLlmClick}

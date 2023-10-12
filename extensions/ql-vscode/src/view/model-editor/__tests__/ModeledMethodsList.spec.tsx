@@ -48,27 +48,32 @@ describe(ModeledMethodsList.name, () => {
     mode: Mode.Application,
     showFlowGeneration: false,
     showLlmButton: false,
+    showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
   };
 
   const render = (props: Partial<ModeledMethodsListProps> = {}) =>
     reactRender(
       <ModeledMethodsList
         methods={[method1, method2, method3]}
-        modeledMethods={{
-          [method1.signature]: {
-            ...method1,
-            type: "sink",
-            input: "Argument[0]",
-            output: "",
-            kind: "jndi-injection",
-            provenance: "df-generated",
-          },
+        modeledMethodsMap={{
+          [method1.signature]: [
+            {
+              ...method1,
+              type: "sink",
+              input: "Argument[0]",
+              output: "",
+              kind: "jndi-injection",
+              provenance: "df-generated",
+            },
+          ],
         }}
         modifiedSignatures={new Set([method1.signature])}
         inProgressMethods={new InProgressMethods()}
         viewState={viewState}
         hideModeledMethods={false}
+        revealedMethodSignature={null}
         onChange={onChange}
         onSaveModelClick={onSaveModelClick}
         onGenerateFromLlmClick={onGenerateFromLlmClick}

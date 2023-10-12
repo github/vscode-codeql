@@ -9,6 +9,8 @@ import { Mode } from "../../../model-editor/shared/mode";
 import { MethodRow, MethodRowProps } from "../MethodRow";
 import { ModeledMethod } from "../../../model-editor/modeled-method";
 import userEvent from "@testing-library/user-event";
+import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
+import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
 
 describe(MethodRow.name, () => {
   const method = createMethod({
@@ -31,15 +33,25 @@ describe(MethodRow.name, () => {
   };
   const onChange = jest.fn();
 
+  const viewState: ModelEditorViewState = {
+    mode: Mode.Application,
+    showFlowGeneration: false,
+    showLlmButton: false,
+    showMultipleModels: false,
+    extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
+  };
+
   const render = (props: Partial<MethodRowProps> = {}) =>
     reactRender(
       <MethodRow
         method={method}
         methodCanBeModeled={true}
-        modeledMethod={modeledMethod}
+        modeledMethods={[modeledMethod]}
         methodIsUnsaved={false}
         modelingInProgress={false}
-        mode={Mode.Application}
+        revealedMethodSignature={null}
+        viewState={viewState}
         onChange={onChange}
         {...props}
       />,
@@ -51,6 +63,41 @@ describe(MethodRow.name, () => {
     expect(screen.queryAllByRole("combobox")).toHaveLength(4);
     expect(screen.getByLabelText("Method modeled")).toBeInTheDocument();
     expect(screen.queryByLabelText("Loading")).not.toBeInTheDocument();
+  });
+
+  it("renders when there is no modeled method", () => {
+    render({ modeledMethods: [] });
+
+    expect(screen.queryAllByRole("combobox")).toHaveLength(4);
+    expect(screen.getByLabelText("Method not modeled")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Loading")).not.toBeInTheDocument();
+  });
+
+  it("can change the type when there is no modeled method", async () => {
+    render({ modeledMethods: [] });
+
+    onChange.mockReset();
+
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: "Model type" }),
+      "source",
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      {
+        type: "source",
+        input: "Argument[0]",
+        output: "ReturnValue",
+        kind: "value",
+        provenance: "manual",
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
+      },
+    ]);
   });
 
   it("can change the kind", async () => {
@@ -66,10 +113,12 @@ describe(MethodRow.name, () => {
     );
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({
-      ...modeledMethod,
-      kind: "value",
-    });
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      {
+        ...modeledMethod,
+        kind: "value",
+      },
+    ]);
   });
 
   it("has the correct input options", () => {
@@ -109,7 +158,7 @@ describe(MethodRow.name, () => {
 
   it("shows the modeling status indicator when unmodeled", () => {
     render({
-      modeledMethod: undefined,
+      modeledMethods: [],
     });
 
     expect(screen.getByLabelText("Method not modeled")).toBeInTheDocument();
@@ -123,10 +172,80 @@ describe(MethodRow.name, () => {
     expect(screen.getByLabelText("Loading")).toBeInTheDocument();
   });
 
+  it("can render multiple models", () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
+    expect(kindInputs).toHaveLength(3);
+    expect(kindInputs[0]).toHaveValue("source");
+    expect(kindInputs[1]).toHaveValue("sink");
+    expect(kindInputs[2]).toHaveValue("summary");
+  });
+
+  it("renders only first model when showMultipleModels feature flag is disabled", () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: false,
+      },
+    });
+
+    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
+    expect(kindInputs.length).toBe(1);
+    expect(kindInputs[0]).toHaveValue("source");
+  });
+
+  it("can update fields when there are multiple models", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink", kind: "code-injection" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    onChange.mockReset();
+
+    expect(screen.getAllByRole("combobox", { name: "Kind" })[1]).toHaveValue(
+      "code-injection",
+    );
+
+    await userEvent.selectOptions(
+      screen.getAllByRole("combobox", { name: "Kind" })[1],
+      "sql-injection",
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      { ...modeledMethod, type: "source" },
+      { ...modeledMethod, type: "sink", kind: "sql-injection" },
+      { ...modeledMethod, type: "summary" },
+    ]);
+  });
+
   it("renders an unmodelable method", () => {
     render({
       methodCanBeModeled: false,
-      modeledMethod: undefined,
+      modeledMethods: [],
     });
 
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();

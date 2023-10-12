@@ -17,16 +17,22 @@ import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../shared/hide-modeled-metho
 import { getModelingStatus } from "../shared/modeling-status";
 import { assertNever } from "../../common/helpers-pure";
 import { ModeledMethod } from "../modeled-method";
+import { groupMethods, sortGroupNames, sortMethods } from "../shared/sorting";
+import { INITIAL_MODE, Mode } from "../shared/mode";
 
 export class MethodsUsageDataProvider
   extends DisposableObject
   implements TreeDataProvider<MethodsUsageTreeViewItem>
 {
   private methods: Method[] = [];
+  // sortedMethods is a separate field so we can check if the methods have changed
+  // by reference, which is faster than checking if the methods have changed by value.
+  private sortedMethods: Method[] = [];
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
   private hideModeledMethods: boolean = INITIAL_HIDE_MODELED_METHODS_VALUE;
-  private modeledMethods: Record<string, ModeledMethod> = {};
+  private mode: Mode = INITIAL_MODE;
+  private modeledMethods: Record<string, ModeledMethod[]> = {};
   private modifiedMethodSignatures: Set<string> = new Set();
 
   private readonly onDidChangeTreeDataEmitter = this.push(
@@ -52,21 +58,25 @@ export class MethodsUsageDataProvider
     methods: Method[],
     databaseItem: DatabaseItem,
     hideModeledMethods: boolean,
-    modeledMethods: Record<string, ModeledMethod>,
+    mode: Mode,
+    modeledMethods: Record<string, ModeledMethod[]>,
     modifiedMethodSignatures: Set<string>,
   ): Promise<void> {
     if (
       this.methods !== methods ||
       this.databaseItem !== databaseItem ||
       this.hideModeledMethods !== hideModeledMethods ||
+      this.mode !== mode ||
       this.modeledMethods !== modeledMethods ||
       this.modifiedMethodSignatures !== modifiedMethodSignatures
     ) {
       this.methods = methods;
+      this.sortedMethods = sortMethodsInGroups(methods, mode);
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
       this.hideModeledMethods = hideModeledMethods;
+      this.mode = mode;
       this.modeledMethods = modeledMethods;
       this.modifiedMethodSignatures = modifiedMethodSignatures;
 
@@ -83,6 +93,9 @@ export class MethodsUsageDataProvider
       };
     } else {
       const method = this.getParent(item);
+      if (!method || !isExternalApiUsage(method)) {
+        throw new Error("Parent not found for tree item");
+      }
       return {
         label: item.label,
         description: `${this.relativePathWithinDatabase(item.url.uri)} [${
@@ -91,18 +104,18 @@ export class MethodsUsageDataProvider
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
-          command: "codeQLModelEditor.jumpToUsageLocation",
-          arguments: [method, item, this.databaseItem],
+          command: "codeQLModelEditor.jumpToMethod",
+          arguments: [method.signature, this.databaseItem],
         },
       };
     }
   }
 
   private getModelingStatusIcon(method: Method): ThemeIcon {
-    const modeledMethod = this.modeledMethods[method.signature];
+    const modeledMethods = this.modeledMethods[method.signature] ?? [];
     const modifiedMethod = this.modifiedMethodSignatures.has(method.signature);
 
-    const status = getModelingStatus(modeledMethod, modifiedMethod);
+    const status = getModelingStatus(modeledMethods, modifiedMethod);
     switch (status) {
       case "unmodeled":
         return new ThemeIcon("error", new ThemeColor("errorForeground"));
@@ -130,9 +143,9 @@ export class MethodsUsageDataProvider
   getChildren(item?: MethodsUsageTreeViewItem): MethodsUsageTreeViewItem[] {
     if (item === undefined) {
       if (this.hideModeledMethods) {
-        return this.methods.filter((api) => !api.supported);
+        return this.sortedMethods.filter((api) => !api.supported);
       } else {
-        return this.methods;
+        return this.sortedMethods;
       }
     } else if (isExternalApiUsage(item)) {
       return item.usages;
@@ -179,4 +192,16 @@ function usagesAreEqual(u1: Usage, u2: Usage): boolean {
     u1.url.endLine === u2.url.endLine &&
     u1.url.endColumn === u2.url.endColumn
   );
+}
+
+function sortMethodsInGroups(methods: Method[], mode: Mode): Method[] {
+  const grouped = groupMethods(methods, mode);
+
+  const sortedGroupNames = sortGroupNames(grouped);
+
+  return sortedGroupNames.flatMap((groupName) => {
+    const group = grouped[groupName];
+
+    return sortMethods(group);
+  });
 }

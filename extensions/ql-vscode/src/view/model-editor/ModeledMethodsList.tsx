@@ -13,20 +13,17 @@ import { InProgressMethods } from "../../model-editor/shared/in-progress-methods
 
 export type ModeledMethodsListProps = {
   methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
+  revealedMethodSignature: string | null;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
-  onChange: (modeledMethod: ModeledMethod) => void;
-  onSaveModelClick: (
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
-  ) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
+  onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     packageName: string,
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    methodSignatures: string[],
   ) => void;
   onStopGenerateFromLlmClick: (packageName: string) => void;
   onGenerateFromSourceClick: () => void;
@@ -39,11 +36,12 @@ const libraryNameOverrides: Record<string, string> = {
 
 export const ModeledMethodsList = ({
   methods,
-  modeledMethods,
+  modeledMethodsMap,
   modifiedSignatures,
   inProgressMethods,
   viewState,
   hideModeledMethods,
+  revealedMethodSignature,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -84,11 +82,12 @@ export const ModeledMethodsList = ({
           title={libraryNameOverrides[libraryName] ?? libraryName}
           libraryVersion={libraryVersions[libraryName]}
           methods={grouped[libraryName]}
-          modeledMethods={modeledMethods}
+          modeledMethodsMap={modeledMethodsMap}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
+          revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}

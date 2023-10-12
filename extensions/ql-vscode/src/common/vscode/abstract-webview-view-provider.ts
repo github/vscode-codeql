@@ -13,7 +13,7 @@ export abstract class AbstractWebviewViewProvider<
   private disposables: Disposable[] = [];
 
   constructor(
-    private readonly app: App,
+    protected readonly app: App,
     private readonly webviewKind: WebviewKind,
   ) {}
 

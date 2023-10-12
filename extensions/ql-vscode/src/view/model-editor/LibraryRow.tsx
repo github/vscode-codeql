@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { styled } from "styled-components";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
@@ -71,20 +71,17 @@ export type LibraryRowProps = {
   title: string;
   libraryVersion?: string;
   methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
-  onChange: (modeledMethod: ModeledMethod) => void;
-  onSaveModelClick: (
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
-  ) => void;
+  revealedMethodSignature: string | null;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
+  onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     dependencyName: string,
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    methodSignatures: string[],
   ) => void;
   onStopGenerateFromLlmClick: (dependencyName: string) => void;
   onGenerateFromSourceClick: () => void;
@@ -95,11 +92,12 @@ export const LibraryRow = ({
   title,
   libraryVersion,
   methods,
-  modeledMethods,
+  modeledMethodsMap,
   modifiedSignatures,
   inProgressMethods,
   viewState,
   hideModeledMethods,
+  revealedMethodSignature,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -117,13 +115,24 @@ export const LibraryRow = ({
     setExpanded((oldIsExpanded) => !oldIsExpanded);
   }, []);
 
+  useEffect(() => {
+    // If any of the methods in this group is the one that should be revealed, we should expand
+    // this group so the method can highlight itself.
+    if (methods.some((m) => m.signature === revealedMethodSignature)) {
+      setExpanded(true);
+    }
+  }, [methods, revealedMethodSignature]);
+
   const handleModelWithAI = useCallback(
     async (e: React.MouseEvent) => {
-      onGenerateFromLlmClick(title, methods, modeledMethods);
+      onGenerateFromLlmClick(
+        title,
+        methods.map((m) => m.signature),
+      );
       e.stopPropagation();
       e.preventDefault();
     },
-    [title, methods, modeledMethods, onGenerateFromLlmClick],
+    [title, methods, onGenerateFromLlmClick],
   );
 
   const handleStopModelWithAI = useCallback(
@@ -155,11 +164,11 @@ export const LibraryRow = ({
 
   const handleSave = useCallback(
     async (e: React.MouseEvent) => {
-      onSaveModelClick(methods, modeledMethods);
+      onSaveModelClick(methods.map((m) => m.signature));
       e.stopPropagation();
       e.preventDefault();
     },
-    [methods, modeledMethods, onSaveModelClick],
+    [methods, onSaveModelClick],
   );
 
   const hasUnsavedChanges = useMemo(() => {
@@ -222,11 +231,12 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             packageName={title}
             methods={methods}
-            modeledMethods={modeledMethods}
+            modeledMethodsMap={modeledMethodsMap}
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}
-            mode={viewState.mode}
+            viewState={viewState}
             hideModeledMethods={hideModeledMethods}
+            revealedMethodSignature={revealedMethodSignature}
             onChange={onChange}
           />
           <SectionDivider />

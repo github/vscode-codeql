@@ -8,6 +8,7 @@ export function createMockModelingStore({
   onDbClosed = jest.fn(),
   onMethodsChanged = jest.fn(),
   onHideModeledMethodsChanged = jest.fn(),
+  onModeChanged = jest.fn(),
   onModeledMethodsChanged = jest.fn(),
   onModifiedMethodsChanged = jest.fn(),
 }: {
@@ -17,6 +18,7 @@ export function createMockModelingStore({
   onDbClosed?: ModelingStore["onDbClosed"];
   onMethodsChanged?: ModelingStore["onMethodsChanged"];
   onHideModeledMethodsChanged?: ModelingStore["onHideModeledMethodsChanged"];
+  onModeChanged?: ModelingStore["onModeChanged"];
   onModeledMethodsChanged?: ModelingStore["onModeledMethodsChanged"];
   onModifiedMethodsChanged?: ModelingStore["onModifiedMethodsChanged"];
 } = {}): ModelingStore {
@@ -27,6 +29,7 @@ export function createMockModelingStore({
     onDbClosed,
     onMethodsChanged,
     onHideModeledMethodsChanged,
+    onModeChanged,
     onModeledMethodsChanged,
     onModifiedMethodsChanged,
   });

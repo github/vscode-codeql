@@ -9,6 +9,7 @@ import { DatabaseItem } from "../../databases/local-databases";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { ModelingStore } from "../modeling-store";
 import { ModeledMethod } from "../modeled-method";
+import { Mode } from "../shared/mode";
 
 export class MethodsUsagePanel extends DisposableObject {
   private readonly dataProvider: MethodsUsageDataProvider;
@@ -34,13 +35,15 @@ export class MethodsUsagePanel extends DisposableObject {
     methods: Method[],
     databaseItem: DatabaseItem,
     hideModeledMethods: boolean,
-    modeledMethods: Record<string, ModeledMethod>,
+    mode: Mode,
+    modeledMethods: Record<string, ModeledMethod[]>,
     modifiedMethodSignatures: Set<string>,
   ): Promise<void> {
     await this.dataProvider.setState(
       methods,
       databaseItem,
       hideModeledMethods,
+      mode,
       modeledMethods,
       modifiedMethodSignatures,
     );
@@ -84,6 +87,14 @@ export class MethodsUsagePanel extends DisposableObject {
     );
 
     this.push(
+      this.modelingStore.onModeChanged(async (event) => {
+        if (event.isActiveDb) {
+          await this.handleStateChangeEvent();
+        }
+      }),
+    );
+
+    this.push(
       this.modelingStore.onModifiedMethodsChanged(async (event) => {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
@@ -99,6 +110,7 @@ export class MethodsUsagePanel extends DisposableObject {
         activeState.methods,
         activeState.databaseItem,
         activeState.hideModeledMethods,
+        activeState.mode,
         activeState.modeledMethods,
         activeState.modifiedMethodSignatures,
       );

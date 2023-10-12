@@ -1,30 +1,33 @@
 import { ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 
-import { MockedRequest } from "msw";
-import { SetupServer } from "msw/node";
-import { IsomorphicResponse } from "@mswjs/interceptors";
-
-import { Headers } from "headers-polyfill";
 import fetch from "node-fetch";
+import { SetupServer } from "msw/node";
 
 import { DisposableObject } from "../disposable-object";
+import { gzipDecode } from "../zlib";
 
 import {
+  AutoModelResponse,
+  BasicErrorResponse,
+  CodeSearchResponse,
   GetVariantAnalysisRepoResultRequest,
   GitHubApiRequest,
   RequestKind,
 } from "./gh-api-request";
+import {
+  VariantAnalysis,
+  VariantAnalysisRepoTask,
+} from "../../variant-analysis/gh-api/variant-analysis";
+import { Repository } from "../../variant-analysis/gh-api/repository";
 
 export class Recorder extends DisposableObject {
-  private readonly allRequests = new Map<string, MockedRequest>();
   private currentRecordedScenario: GitHubApiRequest[] = [];
 
   private _isRecording = false;
 
   constructor(private readonly server: SetupServer) {
     super();
-    this.onRequestStart = this.onRequestStart.bind(this);
     this.onResponseBypass = this.onResponseBypass.bind(this);
   }
 
@@ -45,7 +48,6 @@ export class Recorder extends DisposableObject {
 
     this.clear();
 
-    this.server.events.on("request:start", this.onRequestStart);
     this.server.events.on("response:bypass", this.onResponseBypass);
   }
 
@@ -56,13 +58,11 @@ export class Recorder extends DisposableObject {
 
     this._isRecording = false;
 
-    this.server.events.removeListener("request:start", this.onRequestStart);
     this.server.events.removeListener("response:bypass", this.onResponseBypass);
   }
 
   public clear() {
     this.currentRecordedScenario = [];
-    this.allRequests.clear();
   }
 
   public async save(scenariosPath: string, name: string): Promise<string> {
@@ -91,7 +91,7 @@ export class Recorder extends DisposableObject {
 
         let bodyFileLink = undefined;
         if (writtenRequest.response.body) {
-          await writeFile(bodyFilePath, writtenRequest.response.body || "");
+          await writeFile(bodyFilePath, writtenRequest.response.body);
           bodyFileLink = `file:${bodyFileName}`;
         }
 
@@ -112,33 +112,18 @@ export class Recorder extends DisposableObject {
     return scenarioDirectory;
   }
 
-  private onRequestStart(request: MockedRequest): void {
+  private async onResponseBypass(
+    response: Response,
+    request: Request,
+    _requestId: string,
+  ): Promise<void> {
     if (request.headers.has("x-vscode-codeql-msw-bypass")) {
       return;
     }
 
-    this.allRequests.set(request.id, request);
-  }
-
-  private async onResponseBypass(
-    response: IsomorphicResponse,
-    requestId: string,
-  ): Promise<void> {
-    const request = this.allRequests.get(requestId);
-    this.allRequests.delete(requestId);
-    if (!request) {
-      return;
-    }
-
-    if (response.body === undefined) {
-      return;
-    }
-
     const gitHubApiRequest = await createGitHubApiRequest(
-      request.url.toString(),
-      response.status,
-      response.body,
-      response.headers,
+      request.url,
+      response,
     );
     if (!gitHubApiRequest) {
       return;
@@ -150,13 +135,13 @@ export class Recorder extends DisposableObject {
 
 async function createGitHubApiRequest(
   url: string,
-  status: number,
-  body: string,
-  headers: Headers,
+  response: Response,
 ): Promise<GitHubApiRequest | undefined> {
   if (!url) {
     return undefined;
   }
+
+  const status = response.status;
 
   if (url.match(/\/repos\/[a-zA-Z0-9-_.]+\/[a-zA-Z0-9-_.]+$/)) {
     return {
@@ -165,7 +150,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await jsonResponseBody<
+          Repository | BasicErrorResponse | undefined
+        >(response),
       },
     };
   }
@@ -179,7 +166,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await jsonResponseBody<
+          VariantAnalysis | BasicErrorResponse | undefined
+        >(response),
       },
     };
   }
@@ -195,7 +184,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await jsonResponseBody<
+          VariantAnalysis | BasicErrorResponse | undefined
+        >(response),
       },
     };
   }
@@ -211,7 +202,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await jsonResponseBody<
+          VariantAnalysisRepoTask | BasicErrorResponse | undefined
+        >(response),
       },
     };
   }
@@ -238,9 +231,10 @@ async function createGitHubApiRequest(
         repositoryId: parseInt(repoDownloadMatch.groups.repositoryId, 10),
       },
       response: {
-        status,
+        status: response.status,
         body: responseBuffer,
-        contentType: headers.get("content-type") ?? "application/octet-stream",
+        contentType:
+          response.headers.get("content-type") ?? "application/octet-stream",
       },
     };
   }
@@ -254,7 +248,9 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await jsonResponseBody<
+          CodeSearchResponse | BasicErrorResponse | undefined
+        >(response),
       },
     };
   }
@@ -269,12 +265,34 @@ async function createGitHubApiRequest(
       },
       response: {
         status,
-        body: JSON.parse(body),
+        body: await jsonResponseBody<
+          BasicErrorResponse | AutoModelResponse | undefined
+        >(response),
       },
     };
   }
 
   return undefined;
+}
+
+async function responseBody(response: Response): Promise<Uint8Array> {
+  const body = await response.arrayBuffer();
+  const view = new Uint8Array(body);
+
+  if (view[0] === 0x1f && view[1] === 0x8b) {
+    // Response body is gzipped, so we need to un-gzip it.
+
+    return await gzipDecode(view);
+  } else {
+    return view;
+  }
+}
+
+async function jsonResponseBody<T>(response: Response): Promise<T> {
+  const body = await responseBody(response);
+  const text = new TextDecoder("utf-8").decode(body);
+
+  return JSON.parse(text);
 }
 
 function shouldWriteBodyToFile(

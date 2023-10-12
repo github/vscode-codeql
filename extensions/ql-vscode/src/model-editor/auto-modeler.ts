@@ -42,7 +42,7 @@ export class AutoModeler {
       inProgressMethods: string[],
     ) => Promise<void>,
     private readonly addModeledMethods: (
-      modeledMethods: Record<string, ModeledMethod>,
+      modeledMethods: Record<string, ModeledMethod[]>,
     ) => Promise<void>,
   ) {
     this.jobs = new Map<string, CancellationTokenSource>();
@@ -59,7 +59,7 @@ export class AutoModeler {
   public async startModeling(
     packageName: string,
     methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    modeledMethods: Record<string, ModeledMethod[]>,
     mode: Mode,
   ): Promise<void> {
     if (this.jobs.has(packageName)) {
@@ -106,7 +106,7 @@ export class AutoModeler {
   private async modelPackage(
     packageName: string,
     methods: Method[],
-    modeledMethods: Record<string, ModeledMethod>,
+    modeledMethods: Record<string, ModeledMethod[]>,
     mode: Mode,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
@@ -203,18 +203,20 @@ export class AutoModeler {
     // to discussion.
     for (const candidate of candidateMethods) {
       if (!(candidate.signature in loadedMethods)) {
-        loadedMethods[candidate.signature] = {
-          type: "neutral",
-          kind: "sink",
-          input: "",
-          output: "",
-          provenance: "ai-generated",
-          signature: candidate.signature,
-          packageName: candidate.packageName,
-          typeName: candidate.typeName,
-          methodName: candidate.methodName,
-          methodParameters: candidate.methodParameters,
-        };
+        loadedMethods[candidate.signature] = [
+          {
+            type: "neutral",
+            kind: "sink",
+            input: "",
+            output: "",
+            provenance: "ai-generated",
+            signature: candidate.signature,
+            packageName: candidate.packageName,
+            typeName: candidate.typeName,
+            methodName: candidate.methodName,
+            methodParameters: candidate.methodParameters,
+          },
+        ];
       }
     }
 

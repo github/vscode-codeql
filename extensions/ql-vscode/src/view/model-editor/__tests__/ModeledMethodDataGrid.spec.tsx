@@ -7,6 +7,8 @@ import {
   ModeledMethodDataGrid,
   ModeledMethodDataGridProps,
 } from "../ModeledMethodDataGrid";
+import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
+import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
 
 describe(ModeledMethodDataGrid.name, () => {
   const method1 = createMethod({
@@ -41,25 +43,37 @@ describe(ModeledMethodDataGrid.name, () => {
   });
   const onChange = jest.fn();
 
+  const viewState: ModelEditorViewState = {
+    mode: Mode.Application,
+    showFlowGeneration: false,
+    showLlmButton: false,
+    showMultipleModels: false,
+    extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
+  };
+
   const render = (props: Partial<ModeledMethodDataGridProps> = {}) =>
     reactRender(
       <ModeledMethodDataGrid
         packageName="sql2o"
         methods={[method1, method2, method3]}
-        modeledMethods={{
-          [method1.signature]: {
-            ...method1,
-            type: "sink",
-            input: "Argument[0]",
-            output: "",
-            kind: "jndi-injection",
-            provenance: "df-generated",
-          },
+        modeledMethodsMap={{
+          [method1.signature]: [
+            {
+              ...method1,
+              type: "sink",
+              input: "Argument[0]",
+              output: "",
+              kind: "jndi-injection",
+              provenance: "df-generated",
+            },
+          ],
         }}
         modifiedSignatures={new Set([method1.signature])}
         inProgressMethods={new InProgressMethods()}
-        mode={Mode.Application}
+        viewState={viewState}
         hideModeledMethods={false}
+        revealedMethodSignature={null}
         onChange={onChange}
         {...props}
       />,

@@ -15,7 +15,7 @@ export async function saveModeledMethods(
   extensionPack: ExtensionPack,
   language: string,
   methods: Method[],
-  modeledMethods: Record<string, ModeledMethod>,
+  modeledMethods: Record<string, ModeledMethod[]>,
   mode: Mode,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
@@ -45,12 +45,12 @@ async function loadModeledMethodFiles(
   extensionPack: ExtensionPack,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
-): Promise<Record<string, Record<string, ModeledMethod>>> {
+): Promise<Record<string, Record<string, ModeledMethod[]>>> {
   const modelFiles = await listModelFiles(extensionPack.path, cliServer);
 
   const modeledMethodsByFile: Record<
     string,
-    Record<string, ModeledMethod>
+    Record<string, ModeledMethod[]>
   > = {};
 
   for (const modelFile of modelFiles) {
@@ -78,8 +78,8 @@ export async function loadModeledMethods(
   extensionPack: ExtensionPack,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
-): Promise<Record<string, ModeledMethod>> {
-  const existingModeledMethods: Record<string, ModeledMethod> = {};
+): Promise<Record<string, ModeledMethod[]>> {
+  const existingModeledMethods: Record<string, ModeledMethod[]> = {};
 
   const modeledMethodsByFile = await loadModeledMethodFiles(
     extensionPack,
@@ -88,7 +88,11 @@ export async function loadModeledMethods(
   );
   for (const modeledMethods of Object.values(modeledMethodsByFile)) {
     for (const [key, value] of Object.entries(modeledMethods)) {
-      existingModeledMethods[key] = value;
+      if (!(key in existingModeledMethods)) {
+        existingModeledMethods[key] = [];
+      }
+
+      existingModeledMethods[key].push(...value);
     }
   }
 

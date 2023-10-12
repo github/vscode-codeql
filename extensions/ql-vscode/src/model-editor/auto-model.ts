@@ -14,13 +14,13 @@ import { groupMethods, sortGroupNames, sortMethods } from "./shared/sorting";
  * the order in the UI.
  * @param mode Whether it is application or framework mode.
  * @param methods all methods.
- * @param modeledMethods the currently modeled methods.
+ * @param modeledMethodsBySignature the currently modeled methods.
  * @returns list of modeled methods that are candidates for modeling.
  */
 export function getCandidates(
   mode: Mode,
   methods: Method[],
-  modeledMethods: Record<string, ModeledMethod>,
+  modeledMethodsBySignature: Record<string, ModeledMethod[]>,
 ): MethodSignature[] {
   // Sort the same way as the UI so we send the first ones listed in the UI first
   const grouped = groupMethods(methods, mode);
@@ -32,12 +32,11 @@ export function getCandidates(
   const candidates: MethodSignature[] = [];
 
   for (const method of sortedMethods) {
-    const modeledMethod: ModeledMethod = modeledMethods[method.signature] ?? {
-      type: "none",
-    };
+    const modeledMethods: ModeledMethod[] =
+      modeledMethodsBySignature[method.signature] ?? [];
 
     // Anything that is modeled is not a candidate
-    if (modeledMethod.type !== "none") {
+    if (modeledMethods.some((m) => m.type !== "none")) {
       continue;
     }
 

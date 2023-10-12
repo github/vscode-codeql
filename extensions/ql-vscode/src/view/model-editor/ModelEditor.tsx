@@ -74,7 +74,7 @@ const ButtonsContainer = styled.div`
 type Props = {
   initialViewState?: ModelEditorViewState;
   initialMethods?: Method[];
-  initialModeledMethods?: Record<string, ModeledMethod>;
+  initialModeledMethods?: Record<string, ModeledMethod[]>;
   initialHideModeledMethods?: boolean;
 };
 
@@ -101,6 +101,10 @@ export function ModelEditor({
     initialHideModeledMethods,
   );
 
+  const [revealedMethodSignature, setRevealedMethodSignature] = useState<
+    string | null
+  >(null);
+
   useEffect(() => {
     vscode.postMessage({
       t: "hideModeledMethods",
@@ -109,7 +113,7 @@ export function ModelEditor({
   }, [hideModeledMethods]);
 
   const [modeledMethods, setModeledMethods] = useState<
-    Record<string, ModeledMethod>
+    Record<string, ModeledMethod[]>
   >(initialModeledMethods);
 
   useEffect(() => {
@@ -137,6 +141,10 @@ export function ModelEditor({
               ),
             );
             break;
+          case "revealMethod":
+            setRevealedMethodSignature(msg.methodSignature);
+
+            break;
           default:
             assertNever(msg);
         }
@@ -153,17 +161,35 @@ export function ModelEditor({
     };
   }, []);
 
+  useEffect(() => {
+    // If there is a revealed method signature, hide it when the user clicks anywhere. In this case, we do need to
+    // show the user where the method is anymore and they should have seen it.
+    const listener = () => {
+      setRevealedMethodSignature(null);
+    };
+
+    window.addEventListener("click", listener);
+
+    return () => {
+      window.removeEventListener("click", listener);
+    };
+  }, []);
+
   const modeledPercentage = useMemo(
     () => calculateModeledPercentage(methods),
     [methods],
   );
 
-  const onChange = useCallback((model: ModeledMethod) => {
-    vscode.postMessage({
-      t: "setModeledMethod",
-      method: model,
-    });
-  }, []);
+  const onChange = useCallback(
+    (methodSignature: string, modeledMethods: ModeledMethod[]) => {
+      vscode.postMessage({
+        t: "setMultipleModeledMethods",
+        methodSignature,
+        modeledMethods,
+      });
+    },
+    [],
+  );
 
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
@@ -174,21 +200,15 @@ export function ModelEditor({
   const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
-      methods,
-      modeledMethods,
     });
-  }, [methods, modeledMethods]);
+  }, []);
 
-  const onSaveModelClick = useCallback(
-    (methods: Method[], modeledMethods: Record<string, ModeledMethod>) => {
-      vscode.postMessage({
-        t: "saveModeledMethods",
-        methods,
-        modeledMethods,
-      });
-    },
-    [],
-  );
+  const onSaveModelClick = useCallback((methodSignatures: string[]) => {
+    vscode.postMessage({
+      t: "saveModeledMethods",
+      methodSignatures,
+    });
+  }, []);
 
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
@@ -203,16 +223,11 @@ export function ModelEditor({
   }, []);
 
   const onGenerateFromLlmClick = useCallback(
-    (
-      packageName: string,
-      methods: Method[],
-      modeledMethods: Record<string, ModeledMethod>,
-    ) => {
+    (packageName: string, methodSignatures: string[]) => {
       vscode.postMessage({
         t: "generateMethodsFromLlm",
         packageName,
-        methods,
-        modeledMethods,
+        methodSignatures,
       });
     },
     [],
@@ -271,10 +286,12 @@ export function ModelEditor({
             <>{viewState.extensionPack.name}</>
           </HeaderRow>
           <HeaderRow>
-            <LinkIconButton onClick={onOpenDatabaseClick}>
-              <span slot="start" className="codicon codicon-package"></span>
-              Open database
-            </LinkIconButton>
+            {viewState.sourceArchiveAvailable && (
+              <LinkIconButton onClick={onOpenDatabaseClick}>
+                <span slot="start" className="codicon codicon-package"></span>
+                Open source
+              </LinkIconButton>
+            )}
             <LinkIconButton onClick={onOpenExtensionPackClick}>
               <span slot="start" className="codicon codicon-package"></span>
               Open extension pack
@@ -318,11 +335,12 @@ export function ModelEditor({
         </ButtonsContainer>
         <ModeledMethodsList
           methods={methods}
-          modeledMethods={modeledMethods}
+          modeledMethodsMap={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
+          revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}

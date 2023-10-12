@@ -4,14 +4,31 @@ import { DisposableObject } from "../../common/disposable-object";
 import { MethodModelingViewProvider } from "./method-modeling-view-provider";
 import { Method } from "../method";
 import { ModelingStore } from "../modeling-store";
+import { ModelEditorViewTracker } from "../model-editor-view-tracker";
+import { ModelConfigListener } from "../../config";
+import { DatabaseItem } from "../../databases/local-databases";
 
 export class MethodModelingPanel extends DisposableObject {
   private readonly provider: MethodModelingViewProvider;
 
-  constructor(app: App, modelingStore: ModelingStore) {
+  constructor(
+    app: App,
+    modelingStore: ModelingStore,
+    editorViewTracker: ModelEditorViewTracker,
+  ) {
     super();
 
-    this.provider = new MethodModelingViewProvider(app, modelingStore);
+    // This is here instead of in MethodModelingViewProvider because we need to
+    // dispose this when the extension gets disposed, not when the webview gets
+    // disposed.
+    const modelConfig = this.push(new ModelConfigListener());
+
+    this.provider = new MethodModelingViewProvider(
+      app,
+      modelingStore,
+      editorViewTracker,
+      modelConfig,
+    );
     this.push(
       window.registerWebviewViewProvider(
         MethodModelingViewProvider.viewType,
@@ -20,7 +37,10 @@ export class MethodModelingPanel extends DisposableObject {
     );
   }
 
-  public async setMethod(method: Method): Promise<void> {
-    await this.provider.setMethod(method);
+  public async setMethod(
+    databaseItem: DatabaseItem,
+    method: Method,
+  ): Promise<void> {
+    await this.provider.setMethod(databaseItem, method);
   }
 }

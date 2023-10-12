@@ -15,12 +15,13 @@ You can find this info by seleting "About Visual Studio Code" from the top menu.
 
 The following files will need to be updated:
 
-- `.github/workflows/cli-test.yml` - the "node-version: '[VERSION]'" setting
-- `.github/workflows/main.yml` - all the "node-version: '[VERSION]'" settings
-- `.github/workflows/release.yml` - the "node-version: '[VERSION]'" setting
-- `extensions/ql-vscode/.nvmrc` - this will enable nvm to automatically switch to the correct node version when you're in the project folder
-- `extensions/ql-vscode/package-lock.json` - the "engines.node: '[VERSION]'" setting
+- `extensions/ql-vscode/.nvmrc` - this will enable nvm to automatically switch to the correct Node
+   version when you're in the project folder. It will also change the Node version the GitHub Actions
+   workflows use.
 - `extensions/ql-vscode/package.json` - the "engines.node: '[VERSION]'" setting
+- `extensions/ql-vscode/package.json` - the "@types/node: '[VERSION]'" dependency
+
+Then run `npm install` to update the `extensions/ql-vscode/package-lock.json` file.
 
 ## Node.js version used in tests
 

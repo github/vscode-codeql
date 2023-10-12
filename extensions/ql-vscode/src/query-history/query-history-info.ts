@@ -6,6 +6,7 @@ import {
   hasRepoScanCompleted,
   getActionsWorkflowRunUrl as getVariantAnalysisActionsWorkflowRunUrl,
 } from "../variant-analysis/shared/variant-analysis";
+import { QueryLanguage } from "../common/query-language";
 
 export type QueryHistoryInfo = LocalQueryInfo | VariantAnalysisHistoryItem;
 
@@ -44,6 +45,17 @@ export function getQueryText(item: QueryHistoryInfo): string {
       return item.initialInfo.queryText;
     case "variant-analysis":
       return item.variantAnalysis.query.text;
+    default:
+      assertNever(item);
+  }
+}
+
+export function getLanguage(item: QueryHistoryInfo): QueryLanguage | undefined {
+  switch (item.t) {
+    case "local":
+      return item.initialInfo.databaseInfo.language;
+    case "variant-analysis":
+      return item.variantAnalysis.query.language;
     default:
       assertNever(item);
   }

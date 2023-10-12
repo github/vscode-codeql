@@ -17,10 +17,14 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { Method, Usage } from "../model-editor/method";
+import { Method } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
-import { ModelEditorViewState } from "../model-editor/shared/view-state";
+import {
+  MethodModelingPanelViewState,
+  ModelEditorViewState,
+} from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
+import { QueryLanguage } from "./query-language";
 
 /**
  * This module contains types and code that are shared between
@@ -51,6 +55,7 @@ export const RAW_RESULTS_LIMIT = 10000;
 export interface DatabaseInfo {
   name: string;
   databaseUri: string;
+  language?: QueryLanguage;
 }
 
 /** Arbitrary query metadata */
@@ -502,7 +507,7 @@ interface SetMethodsMessage {
 
 interface SetModeledMethodsMessage {
   t: "setModeledMethods";
-  methods: Record<string, ModeledMethod>;
+  methods: Record<string, ModeledMethod[]>;
 }
 
 interface SetModifiedMethodsMessage {
@@ -521,10 +526,9 @@ interface SwitchModeMessage {
   mode: Mode;
 }
 
-interface JumpToUsageMessage {
-  t: "jumpToUsage";
-  method: Method;
-  usage: Usage;
+interface JumpToMethodMessage {
+  t: "jumpToMethod";
+  methodSignature: string;
 }
 
 interface OpenDatabaseMessage {
@@ -541,8 +545,7 @@ interface RefreshMethods {
 
 interface SaveModeledMethods {
   t: "saveModeledMethods";
-  methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  methodSignatures?: string[];
 }
 
 interface GenerateMethodMessage {
@@ -552,8 +555,7 @@ interface GenerateMethodMessage {
 interface GenerateMethodsFromLlmMessage {
   t: "generateMethodsFromLlm";
   packageName: string;
-  methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  methodSignatures: string[];
 }
 
 interface StopGeneratingMethodsFromLlmMessage {
@@ -575,35 +577,68 @@ interface SetModeledMethodMessage {
   method: ModeledMethod;
 }
 
+interface SetMultipleModeledMethodsMessage {
+  t: "setMultipleModeledMethods";
+  methodSignature: string;
+  modeledMethods: ModeledMethod[];
+}
+
+interface SetInModelingModeMessage {
+  t: "setInModelingMode";
+  inModelingMode: boolean;
+}
+
+interface RevealMethodMessage {
+  t: "revealMethod";
+  methodSignature: string;
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
   | SetModeledMethodsMessage
   | SetModifiedMethodsMessage
-  | SetInProgressMethodsMessage;
+  | SetInProgressMethodsMessage
+  | RevealMethodMessage;
 
 export type FromModelEditorMessage =
-  | ViewLoadedMsg
+  | CommonFromViewMessages
   | SwitchModeMessage
   | RefreshMethods
   | OpenDatabaseMessage
   | OpenExtensionPackMessage
-  | JumpToUsageMessage
+  | JumpToMethodMessage
   | SaveModeledMethods
   | GenerateMethodMessage
   | GenerateMethodsFromLlmMessage
   | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
   | HideModeledMethodsMessage
-  | SetModeledMethodMessage;
+  | SetMultipleModeledMethodsMessage;
+
+interface RevealInEditorMessage {
+  t: "revealInModelEditor";
+  method: Method;
+}
+
+interface StartModelingMessage {
+  t: "startModeling";
+}
 
 export type FromMethodModelingMessage =
   | CommonFromViewMessages
-  | SetModeledMethodMessage;
+  | SetModeledMethodMessage
+  | RevealInEditorMessage
+  | StartModelingMessage;
+
+interface SetMethodModelingPanelViewStateMessage {
+  t: "setMethodModelingPanelViewState";
+  viewState: MethodModelingPanelViewState;
+}
 
 interface SetMethodMessage {
   t: "setMethod";
-  method: Method;
+  method: Method | undefined;
 }
 
 interface SetMethodModifiedMessage {
@@ -614,12 +649,14 @@ interface SetMethodModifiedMessage {
 interface SetSelectedMethodMessage {
   t: "setSelectedMethod";
   method: Method;
-  modeledMethod: ModeledMethod;
+  modeledMethods: ModeledMethod[];
   isModified: boolean;
 }
 
 export type ToMethodModelingMessage =
+  | SetMethodModelingPanelViewStateMessage
   | SetMethodMessage
-  | SetModeledMethodMessage
+  | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
-  | SetSelectedMethodMessage;
+  | SetSelectedMethodMessage
+  | SetInModelingModeMessage;

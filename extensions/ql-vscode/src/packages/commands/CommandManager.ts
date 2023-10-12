@@ -23,8 +23,6 @@ export class CommandManager<
   CommandName extends keyof Commands & string = keyof Commands & string,
 > implements Disposable
 {
-  // TODO: should this be a map?
-  // TODO: handle multiple command names
   private commands: Disposable[] = [];
 
   constructor(

@@ -5,21 +5,23 @@ import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator
 import { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
 import { ModeledMethod } from "../../model-editor/modeled-method";
-import { MethodModelingInputs } from "./MethodModelingInputs";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { ReviewInEditorButton } from "./ReviewInEditorButton";
+import { ModeledMethodsPanel } from "./ModeledMethodsPanel";
 
 const Container = styled.div`
-  padding: 0.3rem;
+  padding-top: 0.5rem;
   margin-bottom: 1rem;
   width: 100%;
 `;
 
 const Title = styled.div`
-  padding-bottom: 0.3rem;
-  font-size: 0.7rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 `;
 
 const DependencyContainer = styled.div`
@@ -33,19 +35,32 @@ const DependencyContainer = styled.div`
   padding: 0.5rem;
   word-wrap: break-word;
   word-break: break-all;
+  margin-bottom: 0.8rem;
 `;
+
+const StyledVSCodeTag = styled(VSCodeTag)<{ visible: boolean }>`
+  visibility: ${(props) => (props.visible ? "visible" : "hidden")};
+`;
+
+const UnsavedTag = ({ modelingStatus }: { modelingStatus: ModelingStatus }) => (
+  <StyledVSCodeTag visible={modelingStatus === "unsaved"}>
+    Unsaved
+  </StyledVSCodeTag>
+);
 
 export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
   method: Method;
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethods: ModeledMethod[];
+  showMultipleModels?: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodModeling = ({
   modelingStatus,
-  modeledMethod,
+  modeledMethods,
   method,
+  showMultipleModels = false,
   onChange,
 }: MethodModelingProps): JSX.Element => {
   return (
@@ -53,17 +68,19 @@ export const MethodModeling = ({
       <Title>
         {method.packageName}
         {method.libraryVersion && <>@{method.libraryVersion}</>}
-        {modelingStatus === "unsaved" ? <VSCodeTag>Unsaved</VSCodeTag> : null}
+        <UnsavedTag modelingStatus={modelingStatus} />
       </Title>
       <DependencyContainer>
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodName {...method} />
       </DependencyContainer>
-      <MethodModelingInputs
+      <ModeledMethodsPanel
         method={method}
-        modeledMethod={modeledMethod}
+        modeledMethods={modeledMethods}
+        showMultipleModels={showMultipleModels}
         onChange={onChange}
       />
+      <ReviewInEditorButton method={method} />
     </Container>
   );
 };

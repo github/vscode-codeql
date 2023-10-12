@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.17.1'
+          node-version-file: extensions/ql-vscode/.nvmrc
 
       - name: Install dependencies
         run: |

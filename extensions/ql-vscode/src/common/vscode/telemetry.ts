@@ -3,13 +3,13 @@ import {
   Extension,
   ExtensionContext,
   ConfigurationChangeEvent,
+  env,
 } from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
 import {
   ConfigListener,
   CANARY_FEATURES,
   ENABLE_TELEMETRY,
-  GLOBAL_ENABLE_TELEMETRY,
   LOG_TELEMETRY,
   isIntegrationTestMode,
   isCanary,
@@ -59,8 +59,6 @@ export class ExtensionTelemetryListener
   extends ConfigListener
   implements AppTelemetry
 {
-  static relevantSettings = [ENABLE_TELEMETRY, CANARY_FEATURES];
-
   private reporter?: TelemetryReporter;
 
   private cliVersionStr = NOT_SET_CLI_VERSION;
@@ -72,6 +70,10 @@ export class ExtensionTelemetryListener
     private readonly ctx: ExtensionContext,
   ) {
     super();
+
+    env.onDidChangeTelemetryEnabled(async () => {
+      await this.initialize();
+    });
   }
 
   /**
@@ -91,10 +93,7 @@ export class ExtensionTelemetryListener
   async handleDidChangeConfiguration(
     e: ConfigurationChangeEvent,
   ): Promise<void> {
-    if (
-      e.affectsConfiguration("codeQL.telemetry.enableTelemetry") ||
-      e.affectsConfiguration("telemetry.enableTelemetry")
-    ) {
+    if (e.affectsConfiguration(ENABLE_TELEMETRY.qualifiedName)) {
       await this.initialize();
     }
 
@@ -102,7 +101,7 @@ export class ExtensionTelemetryListener
     // Re-request if codeQL.canary is being set to `true` and telemetry
     // is not currently enabled.
     if (
-      e.affectsConfiguration("codeQL.canary") &&
+      e.affectsConfiguration(CANARY_FEATURES.qualifiedName) &&
       CANARY_FEATURES.getValue() &&
       !ENABLE_TELEMETRY.getValue()
     ) {
@@ -212,7 +211,7 @@ export class ExtensionTelemetryListener
       properties.stack = error.stack;
     }
 
-    this.reporter.sendTelemetryEvent("error", properties, {});
+    this.reporter.sendTelemetryErrorEvent("error", properties, {});
   }
 
   /**
@@ -224,7 +223,7 @@ export class ExtensionTelemetryListener
       // if global telemetry is disabled, avoid showing the dialog or making any changes
       let result = undefined;
       if (
-        GLOBAL_ENABLE_TELEMETRY.getValue() &&
+        env.isTelemetryEnabled &&
         // Avoid showing the dialog if we are in integration test mode.
         !isIntegrationTestMode()
       ) {

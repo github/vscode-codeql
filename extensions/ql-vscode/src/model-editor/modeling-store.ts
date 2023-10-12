@@ -5,12 +5,14 @@ import { DatabaseItem } from "../databases/local-databases";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
+import { INITIAL_MODE, Mode } from "./shared/mode";
 
 interface DbModelingState {
   databaseItem: DatabaseItem;
   methods: Method[];
   hideModeledMethods: boolean;
-  modeledMethods: Record<string, ModeledMethod>;
+  mode: Mode;
+  modeledMethods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
@@ -27,8 +29,13 @@ interface HideModeledMethodsChangedEvent {
   isActiveDb: boolean;
 }
 
+interface ModeChangedEvent {
+  mode: Mode;
+  isActiveDb: boolean;
+}
+
 interface ModeledMethodsChangedEvent {
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethods: Record<string, ModeledMethod[]>;
   dbUri: string;
   isActiveDb: boolean;
 }
@@ -43,15 +50,17 @@ interface SelectedMethodChangedEvent {
   databaseItem: DatabaseItem;
   method: Method;
   usage: Usage;
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethods: ModeledMethod[];
   isModified: boolean;
 }
 
 export class ModelingStore extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
+  public readonly onDbOpened: AppEvent<string>;
   public readonly onDbClosed: AppEvent<string>;
   public readonly onMethodsChanged: AppEvent<MethodsChangedEvent>;
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
+  public readonly onModeChanged: AppEvent<ModeChangedEvent>;
   public readonly onModeledMethodsChanged: AppEvent<ModeledMethodsChangedEvent>;
   public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
@@ -60,9 +69,11 @@ export class ModelingStore extends DisposableObject {
   private activeDb: string | undefined;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
+  private readonly onDbOpenedEventEmitter: AppEventEmitter<string>;
   private readonly onDbClosedEventEmitter: AppEventEmitter<string>;
   private readonly onMethodsChangedEventEmitter: AppEventEmitter<MethodsChangedEvent>;
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
+  private readonly onModeChangedEventEmitter: AppEventEmitter<ModeChangedEvent>;
   private readonly onModeledMethodsChangedEventEmitter: AppEventEmitter<ModeledMethodsChangedEvent>;
   private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
@@ -79,6 +90,9 @@ export class ModelingStore extends DisposableObject {
     );
     this.onActiveDbChanged = this.onActiveDbChangedEventEmitter.event;
 
+    this.onDbOpenedEventEmitter = this.push(app.createEventEmitter<string>());
+    this.onDbOpened = this.onDbOpenedEventEmitter.event;
+
     this.onDbClosedEventEmitter = this.push(app.createEventEmitter<string>());
     this.onDbClosed = this.onDbClosedEventEmitter.event;
 
@@ -92,6 +106,11 @@ export class ModelingStore extends DisposableObject {
     );
     this.onHideModeledMethodsChanged =
       this.onHideModeledMethodsChangedEventEmitter.event;
+
+    this.onModeChangedEventEmitter = this.push(
+      app.createEventEmitter<ModeChangedEvent>(),
+    );
+    this.onModeChanged = this.onModeChangedEventEmitter.event;
 
     this.onModeledMethodsChangedEventEmitter = this.push(
       app.createEventEmitter<ModeledMethodsChangedEvent>(),
@@ -112,17 +131,23 @@ export class ModelingStore extends DisposableObject {
       this.onSelectedMethodChangedEventEmitter.event;
   }
 
-  public initializeStateForDb(databaseItem: DatabaseItem) {
+  public initializeStateForDb(
+    databaseItem: DatabaseItem,
+    mode: Mode = INITIAL_MODE,
+  ) {
     const dbUri = databaseItem.databaseUri.toString();
     this.state.set(dbUri, {
       databaseItem,
       methods: [],
       hideModeledMethods: INITIAL_HIDE_MODELED_METHODS_VALUE,
+      mode,
       modeledMethods: {},
       modifiedMethodSignatures: new Set(),
       selectedMethod: undefined,
       selectedUsage: undefined,
     });
+
+    this.onDbOpenedEventEmitter.fire(dbUri);
   }
 
   public setActiveDb(databaseItem: DatabaseItem) {
@@ -154,6 +179,31 @@ export class ModelingStore extends DisposableObject {
     return this.state.get(this.activeDb);
   }
 
+  public hasStateForActiveDb(): boolean {
+    return !!this.getStateForActiveDb();
+  }
+
+  public anyDbsBeingModeled(): boolean {
+    return this.state.size > 0;
+  }
+
+  /**
+   * Returns the methods for the given database item and method signatures.
+   * If the `methodSignatures` argument is not provided or is undefined, returns all methods.
+   */
+  public getMethods(
+    dbItem: DatabaseItem,
+    methodSignatures?: string[],
+  ): Method[] {
+    const methods = this.getState(dbItem).methods;
+    if (!methodSignatures) {
+      return methods;
+    }
+    return methods.filter((method) =>
+      methodSignatures.includes(method.signature),
+    );
+  }
+
   public setMethods(dbItem: DatabaseItem, methods: Method[]) {
     const dbState = this.getState(dbItem);
     const dbUri = dbItem.databaseUri.toString();
@@ -182,16 +232,52 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
+  public setMode(dbItem: DatabaseItem, mode: Mode) {
+    const dbState = this.getState(dbItem);
+    const dbUri = dbItem.databaseUri.toString();
+
+    dbState.mode = mode;
+
+    this.onModeChangedEventEmitter.fire({
+      mode,
+      isActiveDb: dbUri === this.activeDb,
+    });
+  }
+
+  public getMode(dbItem: DatabaseItem) {
+    return this.getState(dbItem).mode;
+  }
+
+  /**
+   * Returns the modeled methods for the given database item and method signatures.
+   * If the `methodSignatures` argument is not provided or is undefined, returns all modeled methods.
+   */
+  public getModeledMethods(
+    dbItem: DatabaseItem,
+    methodSignatures?: string[],
+  ): Record<string, ModeledMethod[]> {
+    const modeledMethods = this.getState(dbItem).modeledMethods;
+    if (!methodSignatures) {
+      return modeledMethods;
+    }
+    return Object.fromEntries(
+      Object.entries(modeledMethods).filter(([key]) =>
+        methodSignatures.includes(key),
+      ),
+    );
+  }
+
   public addModeledMethods(
     dbItem: DatabaseItem,
-    methods: Record<string, ModeledMethod>,
+    methods: Record<string, ModeledMethod[]>,
   ) {
     this.changeModeledMethods(dbItem, (state) => {
       const newModeledMethods = {
         ...methods,
+        // Keep all methods that are already modeled in some form in the state
         ...Object.fromEntries(
-          Object.entries(state.modeledMethods).filter(
-            ([_, value]) => value.type !== "none",
+          Object.entries(state.modeledMethods).filter(([_, value]) =>
+            value.some((m) => m.type !== "none"),
           ),
         ),
       };
@@ -201,17 +287,21 @@ export class ModelingStore extends DisposableObject {
 
   public setModeledMethods(
     dbItem: DatabaseItem,
-    methods: Record<string, ModeledMethod>,
+    methods: Record<string, ModeledMethod[]>,
   ) {
     this.changeModeledMethods(dbItem, (state) => {
       state.modeledMethods = { ...methods };
     });
   }
 
-  public updateModeledMethod(dbItem: DatabaseItem, method: ModeledMethod) {
+  public updateModeledMethods(
+    dbItem: DatabaseItem,
+    signature: string,
+    modeledMethods: ModeledMethod[],
+  ) {
     this.changeModeledMethods(dbItem, (state) => {
       const newModeledMethods = { ...state.modeledMethods };
-      newModeledMethods[method.signature] = method;
+      newModeledMethods[signature] = modeledMethods;
       state.modeledMethods = newModeledMethods;
     });
   }
@@ -255,8 +345,17 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
-  public setSelectedMethod(dbItem: DatabaseItem, method: Method, usage: Usage) {
+  public setSelectedMethod(dbItem: DatabaseItem, methodSignature: string) {
     const dbState = this.getState(dbItem);
+
+    const method = dbState.methods.find((m) => m.signature === methodSignature);
+    if (method === undefined) {
+      throw new Error(
+        `No method with signature "${methodSignature}" found in modeling store`,
+      );
+    }
+
+    const usage = method.usages[0];
 
     dbState.selectedMethod = method;
     dbState.selectedUsage = usage;
@@ -265,7 +364,7 @@ export class ModelingStore extends DisposableObject {
       databaseItem: dbItem,
       method,
       usage,
-      modeledMethod: dbState.modeledMethods[method.signature],
+      modeledMethods: dbState.modeledMethods[method.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(method.signature),
     });
   }
@@ -282,9 +381,10 @@ export class ModelingStore extends DisposableObject {
     }
 
     return {
+      databaseItem: dbState.databaseItem,
       method: selectedMethod,
       usage: dbState.selectedUsage,
-      modeledMethod: dbState.modeledMethods[selectedMethod.signature],
+      modeledMethods: dbState.modeledMethods[selectedMethod.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(
         selectedMethod.signature,
       ),

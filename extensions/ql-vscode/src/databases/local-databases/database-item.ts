@@ -57,6 +57,11 @@ export interface DatabaseItem {
   getSourceArchiveExplorerUri(): vscode.Uri;
 
   /**
+   * Returns true if the database's source archive is in the workspace.
+   */
+  hasSourceArchiveInExplorer(): boolean;
+
+  /**
    * Holds if `uri` belongs to this database's source archive.
    */
   belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean;

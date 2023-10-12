@@ -1,4 +1,5 @@
 import type { Config } from "jest";
+import { resolve } from "path";
 
 /*
  * For a detailed explanation regarding each configuration property and type check, visit:
@@ -163,31 +164,27 @@ const config: Config = {
   // testRunner: "jest-circus/runner",
 
   // A map from regular expressions to paths to transformers
-  // transform: {
-  //   '^.+\\.tsx?$': [
-  //     'ts-jest',
-  //     {
-  //       tsconfig: 'src/view/tsconfig.spec.json',
-  //     },
-  //   ],
-  //   'node_modules': [
-  //     'babel-jest',
-  //     {
-  //       presets: [
-  //         '@babel/preset-env'
-  //       ],
-  //       plugins: [
-  //         '@babel/plugin-transform-modules-commonjs',
-  //       ]
-  //     }
-  //   ]
-  // },
+  transform: {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        tsconfig: resolve(__dirname, "../tsconfig.json"),
+      },
+    ],
+    node_modules: [
+      "babel-jest",
+      {
+        presets: ["@babel/preset-env"],
+        plugins: ["@babel/plugin-transform-modules-commonjs"],
+      },
+    ],
+  },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  // 'transformIgnorePatterns': [
-  //   // These use ES modules, so need to be transformed
-  //   'node_modules/(?!(?:@vscode/webview-ui-toolkit|@microsoft/.+|exenv-es6)/.*)'
-  // ],
+  transformIgnorePatterns: [
+    // These use ES modules, so need to be transformed
+    "node_modules/(?!(?:@vscode/webview-ui-toolkit|@microsoft/.+|exenv-es6|nanoid|p-queue|p-timeout)/.*)",
+  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
