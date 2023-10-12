@@ -8,11 +8,13 @@ import { extLogger } from "../../common/logging/vscode/loggers";
 import { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { Method } from "../method";
-import { DbModelingState, ModelingStore } from "../modeling-store";
+import { ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
+import { DatabaseItem } from "../../databases/local-databases";
+import { convertFromLegacyModeledMethod } from "../shared/modeled-methods-legacy";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -21,6 +23,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   public static readonly viewType = "codeQLMethodModeling";
 
   private method: Method | undefined = undefined;
+  private databaseItem: DatabaseItem | undefined = undefined;
 
   constructor(
     app: App,
@@ -46,8 +49,12 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     });
   }
 
-  public async setMethod(method: Method): Promise<void> {
+  public async setMethod(
+    databaseItem: DatabaseItem | undefined,
+    method: Method | undefined,
+  ): Promise<void> {
     this.method = method;
+    this.databaseItem = databaseItem;
 
     if (this.isShowingView) {
       await this.postMessage({
@@ -61,13 +68,21 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     if (this.modelingStore.hasStateForActiveDb()) {
       const selectedMethod = this.modelingStore.getSelectedMethodDetails();
       if (selectedMethod) {
+        this.databaseItem = selectedMethod.databaseItem;
+        this.method = selectedMethod.method;
+
         await this.postMessage({
           t: "setSelectedMethod",
           method: selectedMethod.method,
-          modeledMethod: selectedMethod.modeledMethod,
+          modeledMethods: selectedMethod.modeledMethods,
           isModified: selectedMethod.isModified,
         });
       }
+
+      await this.postMessage({
+        t: "setInModelingMode",
+        inModelingMode: true,
+      });
     }
   }
 
@@ -94,11 +109,18 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         break;
 
       case "setModeledMethod": {
-        const activeState = this.ensureActiveState();
+        if (!this.databaseItem) {
+          return;
+        }
 
-        this.modelingStore.updateModeledMethod(
-          activeState.databaseItem,
-          msg.method,
+        this.modelingStore.updateModeledMethods(
+          this.databaseItem,
+          msg.method.signature,
+          convertFromLegacyModeledMethod(msg.method),
+        );
+        this.modelingStore.addModifiedMethod(
+          this.databaseItem,
+          msg.method.signature,
         );
         break;
       }
@@ -118,36 +140,26 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   }
 
   private async revealInModelEditor(method: Method): Promise<void> {
-    const activeState = this.ensureActiveState();
-
-    const views = this.editorViewTracker.getViews(
-      activeState.databaseItem.databaseUri.toString(),
-    );
-    if (views.length === 0) {
+    if (!this.databaseItem) {
       return;
     }
 
-    await Promise.all(views.map((view) => view.revealMethod(method)));
-  }
-
-  private ensureActiveState(): DbModelingState {
-    const activeState = this.modelingStore.getStateForActiveDb();
-    if (!activeState) {
-      throw new Error("No active state found in modeling store");
-    }
-
-    return activeState;
+    const view = this.editorViewTracker.getView(
+      this.databaseItem.databaseUri.toString(),
+    );
+    await view?.revealMethod(method);
   }
 
   private registerToModelingStoreEvents(): void {
     this.push(
       this.modelingStore.onModeledMethodsChanged(async (e) => {
-        if (this.webviewView && e.isActiveDb) {
-          const modeledMethod = e.modeledMethods[this.method?.signature ?? ""];
-          if (modeledMethod) {
+        if (this.webviewView && e.isActiveDb && this.method) {
+          const modeledMethods = e.modeledMethods[this.method.signature];
+          if (modeledMethods) {
             await this.postMessage({
-              t: "setModeledMethod",
-              method: modeledMethod,
+              t: "setMultipleModeledMethods",
+              methodSignature: this.method.signature,
+              modeledMethods,
             });
           }
         }
@@ -170,10 +182,12 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       this.modelingStore.onSelectedMethodChanged(async (e) => {
         if (this.webviewView) {
           this.method = e.method;
+          this.databaseItem = e.databaseItem;
+
           await this.postMessage({
             t: "setSelectedMethod",
             method: e.method,
-            modeledMethod: e.modeledMethod,
+            modeledMethods: e.modeledMethods,
             isModified: e.isModified,
           });
         }
@@ -190,12 +204,16 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingStore.onDbClosed(async () => {
+      this.modelingStore.onDbClosed(async (dbUri) => {
         if (!this.modelingStore.anyDbsBeingModeled()) {
           await this.postMessage({
             t: "setInModelingMode",
             inModelingMode: false,
           });
+        }
+
+        if (dbUri === this.databaseItem?.databaseUri.toString()) {
+          await this.setMethod(undefined, undefined);
         }
       }),
     );

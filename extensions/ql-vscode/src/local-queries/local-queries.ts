@@ -456,6 +456,7 @@ export class LocalQueries extends DisposableObject {
       true,
       additionalPacks,
       extensionPacks,
+      {},
       this.queryStorageDir,
       undefined,
       templates,

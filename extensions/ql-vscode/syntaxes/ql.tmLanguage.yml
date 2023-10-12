@@ -170,6 +170,14 @@ repository:
     match: '\]'
     name: punctuation.squarebracket.close.ql
 
+  open-angle:
+    match: '<'
+    name: punctuation.anglebracket.open.ql
+
+  close-angle:
+    match: '>'
+    name: punctuation.anglebracket.close.ql
+
   operator-or-punctuation:
     patterns:
     - include: '#relational-operator'
@@ -186,6 +194,8 @@ repository:
     - include: '#close-brace'
     - include: '#open-bracket'
     - include: '#close-bracket'
+    - include: '#open-angle'
+    - include: '#close-angle'
 
 # Keywords
   dont-care:
@@ -651,18 +661,36 @@ repository:
     - include: '#non-context-sensitive'
     - include: '#annotation'
 
+  # The argument list of an instantiation, enclosed in angle brackets.
+  instantiation-args:
+    beginPattern: '#open-angle'
+    endPattern: '#close-angle'
+    name: meta.type.parameters.ql
+    patterns:
+    # Include `#instantiation-args` first so that `#open-angle` and `#close-angle` take precedence
+    # over `#relational-operator`.
+    - include: '#instantiation-args'
+    - include: '#non-context-sensitive'
+    - match: '(?#simple-id)'
+      name: entity.name.type.namespace.ql
+
   # An `import` directive. Note that we parse the optional `as` clause as a separate top-level
   # directive, because otherwise it's too hard to figure out where the `import` directive ends.
   import-directive:
     beginPattern: '#import'
-    # Ends with a simple-id that is not followed by a `.` or a `::`. This does not handle comments or
-    # line breaks between the simple-id and the `.` or `::`. 
-    end: '(?#simple-id) (?!\s*(\.|\:\:))'
-    endCaptures:
-      '0':
-        name: entity.name.type.namespace.ql
+    # TextMate makes it tricky to tell whether an identifier that we encounter is part of the
+    # `import` directive or whether it's the first token of the next module-level declaration.
+    # To find the end of the import directive, we'll look for a zero-width match where the previous
+    # token is either an identifier (other than `import`) or a `>`, and the next token is not a `.`,
+    # `<`, `,`, or `::`. This works for nearly all real-world `import` directives, but it will end the
+    # `import` directive too early if there is a comment or line break between two components of the
+    # module expression.
+    end: '(?<!\bimport)(?<=(?:\>)|[A-Za-z0-9_]) (?!\s*(\.|\:\:|\,|(?#open-angle)))'
     name: meta.block.import-directive.ql
     patterns:
+    # Include `#instantiation-args` first so that `#open-angle` and `#close-angle` take precedence
+    # over `#relational-operator`.
+    - include: '#instantiation-args'
     - include: '#non-context-sensitive'
     - match: '(?#simple-id)'
       name: entity.name.type.namespace.ql
@@ -702,7 +730,6 @@ repository:
     - include: '#non-context-sensitive'
     - match: '(?#simple-id)|(?#at-lower-id)'
       name: entity.name.type.ql
-
 
   # A `module` declaration, whether a module definition or an alias declaration.
   module-declaration:

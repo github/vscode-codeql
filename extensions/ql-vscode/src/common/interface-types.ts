@@ -17,7 +17,7 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { Method, Usage } from "../model-editor/method";
+import { Method } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import {
   MethodModelingPanelViewState,
@@ -507,7 +507,7 @@ interface SetMethodsMessage {
 
 interface SetModeledMethodsMessage {
   t: "setModeledMethods";
-  methods: Record<string, ModeledMethod>;
+  methods: Record<string, ModeledMethod[]>;
 }
 
 interface SetModifiedMethodsMessage {
@@ -526,10 +526,9 @@ interface SwitchModeMessage {
   mode: Mode;
 }
 
-interface JumpToUsageMessage {
-  t: "jumpToUsage";
-  method: Method;
-  usage: Usage;
+interface JumpToMethodMessage {
+  t: "jumpToMethod";
+  methodSignature: string;
 }
 
 interface OpenDatabaseMessage {
@@ -556,8 +555,7 @@ interface GenerateMethodMessage {
 interface GenerateMethodsFromLlmMessage {
   t: "generateMethodsFromLlm";
   packageName: string;
-  methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  methodSignatures: string[];
 }
 
 interface StopGeneratingMethodsFromLlmMessage {
@@ -579,6 +577,12 @@ interface SetModeledMethodMessage {
   method: ModeledMethod;
 }
 
+interface SetMultipleModeledMethodsMessage {
+  t: "setMultipleModeledMethods";
+  methodSignature: string;
+  modeledMethods: ModeledMethod[];
+}
+
 interface SetInModelingModeMessage {
   t: "setInModelingMode";
   inModelingMode: boolean;
@@ -598,12 +602,12 @@ export type ToModelEditorMessage =
   | RevealMethodMessage;
 
 export type FromModelEditorMessage =
-  | ViewLoadedMsg
+  | CommonFromViewMessages
   | SwitchModeMessage
   | RefreshMethods
   | OpenDatabaseMessage
   | OpenExtensionPackMessage
-  | JumpToUsageMessage
+  | JumpToMethodMessage
   | SaveModeledMethods
   | GenerateMethodMessage
   | GenerateMethodsFromLlmMessage
@@ -634,7 +638,7 @@ interface SetMethodModelingPanelViewStateMessage {
 
 interface SetMethodMessage {
   t: "setMethod";
-  method: Method;
+  method: Method | undefined;
 }
 
 interface SetMethodModifiedMessage {
@@ -645,14 +649,14 @@ interface SetMethodModifiedMessage {
 interface SetSelectedMethodMessage {
   t: "setSelectedMethod";
   method: Method;
-  modeledMethod?: ModeledMethod;
+  modeledMethods: ModeledMethod[];
   isModified: boolean;
 }
 
 export type ToMethodModelingMessage =
   | SetMethodModelingPanelViewStateMessage
   | SetMethodMessage
-  | SetModeledMethodMessage
+  | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
   | SetSelectedMethodMessage
   | SetInModelingModeMessage;

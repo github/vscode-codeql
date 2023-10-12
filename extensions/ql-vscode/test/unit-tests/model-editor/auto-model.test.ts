@@ -99,19 +99,21 @@ describe("getCandidates", () => {
         usages: [],
       },
     ];
-    const modeledMethods: Record<string, ModeledMethod> = {
-      "org.my.A#x()": {
-        type: "neutral",
-        kind: "",
-        input: "",
-        output: "",
-        provenance: "manual",
-        signature: "org.my.A#x()",
-        packageName: "org.my",
-        typeName: "A",
-        methodName: "x",
-        methodParameters: "()",
-      },
+    const modeledMethods: Record<string, ModeledMethod[]> = {
+      "org.my.A#x()": [
+        {
+          type: "neutral",
+          kind: "",
+          input: "",
+          output: "",
+          provenance: "manual",
+          signature: "org.my.A#x()",
+          packageName: "org.my",
+          typeName: "A",
+          methodName: "x",
+          methodParameters: "()",
+        },
+      ],
     };
     const candidates = getCandidates(Mode.Application, methods, modeledMethods);
     expect(candidates.length).toEqual(0);

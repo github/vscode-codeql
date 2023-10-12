@@ -7,6 +7,9 @@ import { CallClassification, Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { VSCodeDataGrid } from "@vscode/webview-ui-toolkit/react";
 import { GRID_TEMPLATE_COLUMNS } from "../../view/model-editor/ModeledMethodDataGrid";
+import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import { createMockExtensionPack } from "../../../test/factories/model-editor/extension-pack";
+import { Mode } from "../../model-editor/shared/mode";
 
 export default {
   title: "CodeQL Model Editor/Method Row",
@@ -66,51 +69,79 @@ const modeledMethod: ModeledMethod = {
   methodParameters: "()",
 };
 
+const viewState: ModelEditorViewState = {
+  extensionPack: createMockExtensionPack(),
+  showFlowGeneration: true,
+  showLlmButton: true,
+  showMultipleModels: true,
+  mode: Mode.Application,
+  sourceArchiveAvailable: true,
+};
+
 export const Unmodeled = Template.bind({});
 Unmodeled.args = {
   method,
-  modeledMethod: undefined,
+  modeledMethods: [],
   methodCanBeModeled: true,
+  viewState,
 };
 
 export const Source = Template.bind({});
 Source.args = {
   method,
-  modeledMethod: { ...modeledMethod, type: "source" },
+  modeledMethods: [{ ...modeledMethod, type: "source" }],
   methodCanBeModeled: true,
+  viewState,
 };
 
 export const Sink = Template.bind({});
 Sink.args = {
   method,
-  modeledMethod: { ...modeledMethod, type: "sink" },
+  modeledMethods: [{ ...modeledMethod, type: "sink" }],
   methodCanBeModeled: true,
+  viewState,
 };
 
 export const Summary = Template.bind({});
 Summary.args = {
   method,
-  modeledMethod: { ...modeledMethod, type: "summary" },
+  modeledMethods: [{ ...modeledMethod, type: "summary" }],
   methodCanBeModeled: true,
+  viewState,
 };
 
 export const Neutral = Template.bind({});
 Neutral.args = {
   method,
-  modeledMethod: { ...modeledMethod, type: "neutral" },
+  modeledMethods: [{ ...modeledMethod, type: "neutral" }],
   methodCanBeModeled: true,
+  viewState,
 };
 
 export const AlreadyModeled = Template.bind({});
 AlreadyModeled.args = {
   method: { ...method, supported: true },
-  modeledMethod: undefined,
+  modeledMethods: [],
+  viewState,
 };
 
 export const ModelingInProgress = Template.bind({});
 ModelingInProgress.args = {
   method,
-  modeledMethod,
+  modeledMethods: [modeledMethod],
   modelingInProgress: true,
   methodCanBeModeled: true,
+  viewState,
+};
+
+export const MultipleModelings = Template.bind({});
+MultipleModelings.args = {
+  method,
+  modeledMethods: [
+    { ...modeledMethod, type: "source" },
+    { ...modeledMethod, type: "sink" },
+    { ...modeledMethod },
+  ],
+  methodCanBeModeled: true,
+  viewState,
 };

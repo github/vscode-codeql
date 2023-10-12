@@ -6,6 +6,7 @@ import { Method } from "../method";
 import { ModelingStore } from "../modeling-store";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
+import { DatabaseItem } from "../../databases/local-databases";
 
 export class MethodModelingPanel extends DisposableObject {
   private readonly provider: MethodModelingViewProvider;
@@ -36,7 +37,10 @@ export class MethodModelingPanel extends DisposableObject {
     );
   }
 
-  public async setMethod(method: Method): Promise<void> {
-    await this.provider.setMethod(method);
+  public async setMethod(
+    databaseItem: DatabaseItem,
+    method: Method,
+  ): Promise<void> {
+    await this.provider.setMethod(databaseItem, method);
   }
 }

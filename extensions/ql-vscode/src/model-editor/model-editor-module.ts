@@ -14,7 +14,6 @@ import { dir } from "tmp-promise";
 import { isQueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
-import { Mode } from "./shared/mode";
 import { Method, Usage } from "./method";
 import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
@@ -77,12 +76,11 @@ export class ModelEditorModule extends DisposableObject {
       "codeQL.openModelEditor": this.openModelEditor.bind(this),
       "codeQL.openModelEditorFromModelingPanel":
         this.openModelEditor.bind(this),
-      "codeQLModelEditor.jumpToUsageLocation": async (
-        method: Method,
-        usage: Usage,
+      "codeQLModelEditor.jumpToMethod": async (
+        methodSignature: string,
         databaseItem: DatabaseItem,
       ) => {
-        this.modelingStore.setSelectedMethod(databaseItem, method, usage);
+        this.modelingStore.setSelectedMethod(databaseItem, methodSignature);
       },
     };
   }
@@ -105,7 +103,7 @@ export class ModelEditorModule extends DisposableObject {
     usage: Usage,
   ): Promise<void> {
     await this.methodsUsagePanel.revealItem(usage);
-    await this.methodModelingPanel.setMethod(method);
+    await this.methodModelingPanel.setMethod(databaseItem, method);
     await showResolvableLocation(usage.url, databaseItem, this.app.logger);
   }
 
@@ -126,6 +124,15 @@ export class ModelEditorModule extends DisposableObject {
           this.app.logger,
           `The CodeQL Model Editor is not supported for ${language} databases.`,
         );
+        return;
+      }
+
+      const existingView = this.editorViewTracker.getView(
+        db.databaseUri.toString(),
+      );
+      if (existingView) {
+        await existingView.focusView();
+
         return;
       }
 
@@ -193,6 +200,17 @@ export class ModelEditorModule extends DisposableObject {
             maxStep,
           });
 
+          // Check again just before opening the editor to ensure no model editor has been opened between
+          // our first check and now.
+          const existingView = this.editorViewTracker.getView(
+            db.databaseUri.toString(),
+          );
+          if (existingView) {
+            await existingView.focusView();
+
+            return;
+          }
+
           const view = new ModelEditorView(
             this.app,
             this.modelingStore,
@@ -205,7 +223,6 @@ export class ModelEditorModule extends DisposableObject {
             queryDir,
             db,
             modelFile,
-            Mode.Application,
           );
 
           this.modelingStore.onDbClosed(async (dbUri) => {

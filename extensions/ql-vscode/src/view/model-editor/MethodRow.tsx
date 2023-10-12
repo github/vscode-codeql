@@ -21,8 +21,16 @@ import { MethodName } from "./MethodName";
 import { ModelTypeDropdown } from "./ModelTypeDropdown";
 import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
+import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
-const ApiOrMethodCell = styled(VSCodeDataGridCell)`
+const MultiModelColumn = styled(VSCodeDataGridCell)`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+`;
+
+const ApiOrMethodRow = styled.div`
+  min-height: calc(var(--input-height) * 1px);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -55,10 +63,10 @@ const DataGridRow = styled(VSCodeDataGridRow)<{ focused?: boolean }>`
 export type MethodRowProps = {
   method: Method;
   methodCanBeModeled: boolean;
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethods: ModeledMethod[];
   methodIsUnsaved: boolean;
   modelingInProgress: boolean;
-  mode: Mode;
+  viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
@@ -88,19 +96,23 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
   (props, ref) => {
     const {
       method,
-      modeledMethod,
+      modeledMethods: modeledMethodsProp,
       methodIsUnsaved,
-      mode,
+      viewState,
       revealedMethodSignature,
       onChange,
     } = props;
 
-    const jumpToUsage = useCallback(
-      () => sendJumpToUsageMessage(method),
+    const modeledMethods = viewState.showMultipleModels
+      ? modeledMethodsProp
+      : modeledMethodsProp.slice(0, 1);
+
+    const jumpToMethod = useCallback(
+      () => sendJumpToMethodMessage(method),
       [method],
     );
 
-    const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
+    const modelingStatus = getModelingStatus(modeledMethods, methodIsUnsaved);
 
     return (
       <DataGridRow
@@ -108,18 +120,20 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         ref={ref}
         focused={revealedMethodSignature === method.signature}
       >
-        <ApiOrMethodCell gridColumn={1}>
-          <ModelingStatusIndicator status={modelingStatus} />
-          <MethodClassifications method={method} />
-          <MethodName {...props.method} />
-          {mode === Mode.Application && (
-            <UsagesButton onClick={jumpToUsage}>
-              {method.usages.length}
-            </UsagesButton>
-          )}
-          <ViewLink onClick={jumpToUsage}>View</ViewLink>
-          {props.modelingInProgress && <ProgressRing />}
-        </ApiOrMethodCell>
+        <VSCodeDataGridCell gridColumn={1}>
+          <ApiOrMethodRow>
+            <ModelingStatusIndicator status={modelingStatus} />
+            <MethodClassifications method={method} />
+            <MethodName {...props.method} />
+            {viewState.mode === Mode.Application && (
+              <UsagesButton onClick={jumpToMethod}>
+                {method.usages.length}
+              </UsagesButton>
+            )}
+            <ViewLink onClick={jumpToMethod}>View</ViewLink>
+            {props.modelingInProgress && <ProgressRing />}
+          </ApiOrMethodRow>
+        </VSCodeDataGridCell>
         {props.modelingInProgress && (
           <>
             <VSCodeDataGridCell gridColumn={2}>
@@ -138,34 +152,46 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         )}
         {!props.modelingInProgress && (
           <>
-            <VSCodeDataGridCell gridColumn={2}>
-              <ModelTypeDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={3}>
-              <ModelInputDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={4}>
-              <ModelOutputDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={5}>
-              <ModelKindDropdown
-                method={method}
-                modeledMethod={modeledMethod}
-                onChange={onChange}
-              />
-            </VSCodeDataGridCell>
+            <MultiModelColumn gridColumn={2}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+                <ModelTypeDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridColumn={3}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+                <ModelInputDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridColumn={4}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+                <ModelOutputDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridColumn={5}>
+              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+                <ModelKindDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={onChange}
+                />
+              ))}
+            </MultiModelColumn>
           </>
         )}
       </DataGridRow>
@@ -178,10 +204,10 @@ const UnmodelableMethodRow = forwardRef<
   HTMLElement | undefined,
   MethodRowProps
 >((props, ref) => {
-  const { method, mode, revealedMethodSignature } = props;
+  const { method, viewState, revealedMethodSignature } = props;
 
-  const jumpToUsage = useCallback(
-    () => sendJumpToUsageMessage(method),
+  const jumpToMethod = useCallback(
+    () => sendJumpToMethodMessage(method),
     [method],
   );
 
@@ -191,17 +217,19 @@ const UnmodelableMethodRow = forwardRef<
       ref={ref}
       focused={revealedMethodSignature === method.signature}
     >
-      <ApiOrMethodCell gridColumn={1}>
-        <ModelingStatusIndicator status="saved" />
-        <MethodName {...props.method} />
-        {mode === Mode.Application && (
-          <UsagesButton onClick={jumpToUsage}>
-            {method.usages.length}
-          </UsagesButton>
-        )}
-        <ViewLink onClick={jumpToUsage}>View</ViewLink>
-        <MethodClassifications method={method} />
-      </ApiOrMethodCell>
+      <VSCodeDataGridCell gridColumn={1}>
+        <ApiOrMethodRow>
+          <ModelingStatusIndicator status="saved" />
+          <MethodName {...props.method} />
+          {viewState.mode === Mode.Application && (
+            <UsagesButton onClick={jumpToMethod}>
+              {method.usages.length}
+            </UsagesButton>
+          )}
+          <ViewLink onClick={jumpToMethod}>View</ViewLink>
+          <MethodClassifications method={method} />
+        </ApiOrMethodRow>
+      </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn="span 4">
         Method already modeled
       </VSCodeDataGridCell>
@@ -210,11 +238,23 @@ const UnmodelableMethodRow = forwardRef<
 });
 UnmodelableMethodRow.displayName = "UnmodelableMethodRow";
 
-function sendJumpToUsageMessage(method: Method) {
+function sendJumpToMethodMessage(method: Method) {
   vscode.postMessage({
-    t: "jumpToUsage",
-    method,
-    // In framework mode, the first and only usage is the definition of the method
-    usage: method.usages[0],
+    t: "jumpToMethod",
+    methodSignature: method.signature,
   });
+}
+
+function forEachModeledMethod(
+  modeledMethods: ModeledMethod[],
+  renderer: (
+    modeledMethod: ModeledMethod | undefined,
+    index: number,
+  ) => JSX.Element,
+): JSX.Element | JSX.Element[] {
+  if (modeledMethods.length === 0) {
+    return renderer(undefined, 0);
+  } else {
+    return modeledMethods.map(renderer);
+  }
 }

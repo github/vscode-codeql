@@ -41,6 +41,7 @@ export async function runQuery({
     false,
     additionalPacks,
     extensionPacks,
+    {},
     queryStorageDir,
     undefined,
     undefined,
