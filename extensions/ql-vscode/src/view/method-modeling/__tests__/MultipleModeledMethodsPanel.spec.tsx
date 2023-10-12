@@ -485,7 +485,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
       }),
     ];
 
-    it("cannot add modeling", () => {
+    it("can add modeling", () => {
       render({
         method,
         modeledMethods,
@@ -494,7 +494,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       expect(
         screen.getByLabelText("Add modeling").getElementsByTagName("input")[0],
-      ).toBeDisabled();
+      ).toBeEnabled();
     });
 
     it("can delete first modeling", async () => {

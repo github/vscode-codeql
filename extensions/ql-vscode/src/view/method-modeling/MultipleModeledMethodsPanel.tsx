@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { styled } from "styled-components";
@@ -88,13 +88,6 @@ export const MultipleModeledMethodsPanel = ({
     setSelectedIndex(newSelectedIndex);
   }, [onChange, modeledMethods, selectedIndex]);
 
-  const anyUnmodeled = useMemo(
-    () =>
-      modeledMethods.length === 0 ||
-      modeledMethods.some((m) => m.type === "none"),
-    [modeledMethods],
-  );
-
   const handleChange = useCallback(
     (modeledMethod: ModeledMethod) => {
       if (modeledMethods.length > 0) {
@@ -163,7 +156,10 @@ export const MultipleModeledMethodsPanel = ({
             appearance="icon"
             aria-label="Add modeling"
             onClick={handleAddClick}
-            disabled={anyUnmodeled}
+            disabled={
+              modeledMethods.length === 0 ||
+              (modeledMethods.length === 1 && modeledMethods[0].type === "none")
+            }
           >
             <Codicon name="add" />
           </VSCodeButton>
