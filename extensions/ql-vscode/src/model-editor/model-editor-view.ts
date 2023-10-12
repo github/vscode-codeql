@@ -43,10 +43,7 @@ import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
-import {
-  convertFromLegacyModeledMethod,
-  convertToLegacyModeledMethods,
-} from "./shared/modeled-methods-legacy";
+import { convertFromLegacyModeledMethod } from "./shared/modeled-methods-legacy";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -353,6 +350,10 @@ export class ModelEditorView extends AbstractWebview<
     return this.databaseItem.databaseUri.toString();
   }
 
+  public async focusView(): Promise<void> {
+    this.panel?.reveal();
+  }
+
   public async revealMethod(method: Method): Promise<void> {
     this.panel?.reveal();
 
@@ -366,6 +367,9 @@ export class ModelEditorView extends AbstractWebview<
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
 
+    const sourceArchiveAvailable =
+      this.databaseItem.hasSourceArchiveInExplorer();
+
     await this.postMessage({
       t: "setModelEditorViewState",
       viewState: {
@@ -374,6 +378,7 @@ export class ModelEditorView extends AbstractWebview<
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),
+        sourceArchiveAvailable,
       },
     });
   }
@@ -526,6 +531,15 @@ export class ModelEditorView extends AbstractWebview<
         return;
       }
 
+      let existingView = this.viewTracker.getView(
+        addedDatabase.databaseUri.toString(),
+      );
+      if (existingView) {
+        await existingView.focusView();
+
+        return;
+      }
+
       const modelFile = await pickExtensionPack(
         this.cliServer,
         addedDatabase,
@@ -535,6 +549,17 @@ export class ModelEditorView extends AbstractWebview<
         3,
       );
       if (!modelFile) {
+        return;
+      }
+
+      // Check again just before opening the editor to ensure no model editor has been opened between
+      // our first check and now.
+      existingView = this.viewTracker.getView(
+        addedDatabase.databaseUri.toString(),
+      );
+      if (existingView) {
+        await existingView.focusView();
+
         return;
       }
 
@@ -646,7 +671,7 @@ export class ModelEditorView extends AbstractWebview<
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setModeledMethods",
-            methods: convertToLegacyModeledMethods(event.modeledMethods),
+            methods: event.modeledMethods,
           });
         }
       }),

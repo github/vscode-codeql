@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { styled } from "styled-components";
@@ -10,7 +10,7 @@ import { Codicon } from "../common";
 export type MultipleModeledMethodsPanelProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethods: ModeledMethod[]) => void;
 };
 
 const Container = styled.div`
@@ -25,9 +25,16 @@ const Container = styled.div`
 const Footer = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
 `;
 
 const PaginationActions = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+`;
+
+const ModificationActions = styled.div`
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
@@ -47,19 +54,73 @@ export const MultipleModeledMethodsPanel = ({
     setSelectedIndex((previousIndex) => previousIndex + 1);
   }, []);
 
+  const handleAddClick = useCallback(() => {
+    const newModeledMethod: ModeledMethod = {
+      type: "none",
+      input: "",
+      output: "",
+      kind: "",
+      provenance: "manual",
+      signature: method.signature,
+      packageName: method.packageName,
+      typeName: method.typeName,
+      methodName: method.methodName,
+      methodParameters: method.methodParameters,
+    };
+
+    const newModeledMethods = [...modeledMethods, newModeledMethod];
+
+    onChange(newModeledMethods);
+    setSelectedIndex(newModeledMethods.length - 1);
+  }, [onChange, modeledMethods, method]);
+
+  const handleRemoveClick = useCallback(() => {
+    const newModeledMethods = modeledMethods.filter(
+      (_, index) => index !== selectedIndex,
+    );
+
+    const newSelectedIndex =
+      selectedIndex === newModeledMethods.length
+        ? selectedIndex - 1
+        : selectedIndex;
+
+    onChange(newModeledMethods);
+    setSelectedIndex(newSelectedIndex);
+  }, [onChange, modeledMethods, selectedIndex]);
+
+  const anyUnmodeled = useMemo(
+    () =>
+      modeledMethods.length === 0 ||
+      modeledMethods.some((m) => m.type === "none"),
+    [modeledMethods],
+  );
+
+  const handleChange = useCallback(
+    (modeledMethod: ModeledMethod) => {
+      if (modeledMethods.length > 0) {
+        const newModeledMethods = [...modeledMethods];
+        newModeledMethods[selectedIndex] = modeledMethod;
+        onChange(newModeledMethods);
+      } else {
+        onChange([modeledMethod]);
+      }
+    },
+    [modeledMethods, selectedIndex, onChange],
+  );
+
   return (
     <Container>
       {modeledMethods.length > 0 ? (
         <MethodModelingInputs
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
-          onChange={onChange}
+          onChange={handleChange}
         />
       ) : (
         <MethodModelingInputs
           method={method}
           modeledMethod={undefined}
-          onChange={onChange}
+          onChange={handleChange}
         />
       )}
       <Footer>
@@ -89,6 +150,24 @@ export const MultipleModeledMethodsPanel = ({
             <Codicon name="chevron-right" />
           </VSCodeButton>
         </PaginationActions>
+        <ModificationActions>
+          <VSCodeButton
+            appearance="icon"
+            aria-label="Delete modeling"
+            onClick={handleRemoveClick}
+            disabled={modeledMethods.length < 2}
+          >
+            <Codicon name="trash" />
+          </VSCodeButton>
+          <VSCodeButton
+            appearance="icon"
+            aria-label="Add modeling"
+            onClick={handleAddClick}
+            disabled={anyUnmodeled}
+          >
+            <Codicon name="add" />
+          </VSCodeButton>
+        </ModificationActions>
       </Footer>
     </Container>
   );

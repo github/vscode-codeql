@@ -10,7 +10,6 @@ import { vscode } from "../vscode-api";
 import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
 import { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
-import { convertFromLegacyModeledMethod } from "../../model-editor/shared/modeled-methods-legacy";
 import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
 
 type Props = {
@@ -25,19 +24,13 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
 
   const [method, setMethod] = useState<Method | undefined>(undefined);
 
-  const [modeledMethod, setModeledMethod] = React.useState<
-    ModeledMethod | undefined
-  >(undefined);
+  const [modeledMethods, setModeledMethods] = useState<ModeledMethod[]>([]);
 
   const [isMethodModified, setIsMethodModified] = useState<boolean>(false);
 
   const modelingStatus = useMemo(
-    () =>
-      getModelingStatus(
-        convertFromLegacyModeledMethod(modeledMethod),
-        isMethodModified,
-      ),
-    [modeledMethod, isMethodModified],
+    () => getModelingStatus(modeledMethods, isMethodModified),
+    [modeledMethods, isMethodModified],
   );
 
   useEffect(() => {
@@ -54,15 +47,15 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
           case "setMethod":
             setMethod(msg.method);
             break;
-          case "setModeledMethod":
-            setModeledMethod(msg.method);
+          case "setMultipleModeledMethods":
+            setModeledMethods(msg.modeledMethods);
             break;
           case "setMethodModified":
             setIsMethodModified(msg.isModified);
             break;
           case "setSelectedMethod":
             setMethod(msg.method);
-            setModeledMethod(msg.modeledMethod);
+            setModeledMethods(msg.modeledMethods);
             setIsMethodModified(msg.isModified);
             break;
           default:
@@ -89,7 +82,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     return <NoMethodSelected />;
   }
 
-  if (!canMethodBeModeled(method, modeledMethod, isMethodModified)) {
+  if (!canMethodBeModeled(method, modeledMethods, isMethodModified)) {
     return <MethodAlreadyModeled />;
   }
 
@@ -104,7 +97,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     <MethodModeling
       modelingStatus={modelingStatus}
       method={method}
-      modeledMethods={convertFromLegacyModeledMethod(modeledMethod)}
+      modeledMethods={modeledMethods}
       showMultipleModels={viewState?.showMultipleModels}
       onChange={onChange}
     />

@@ -5,15 +5,15 @@ import { ModelEditorView } from "../../../src/model-editor/model-editor-view";
 export function createMockModelEditorViewTracker({
   registerView = jest.fn(),
   unregisterView = jest.fn(),
-  getViews = jest.fn(),
+  getView = jest.fn(),
 }: {
   registerView?: ModelEditorViewTracker["registerView"];
   unregisterView?: ModelEditorViewTracker["unregisterView"];
-  getViews?: ModelEditorViewTracker["getViews"];
+  getView?: ModelEditorViewTracker["getView"];
 } = {}): ModelEditorViewTracker<ModelEditorView> {
   return mockedObject<ModelEditorViewTracker<ModelEditorView>>({
     registerView,
     unregisterView,
-    getViews,
+    getView,
   });
 }

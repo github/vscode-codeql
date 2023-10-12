@@ -18,7 +18,7 @@ export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
 export type ModeledMethodDataGridProps = {
   packageName: string;
   methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
@@ -30,7 +30,7 @@ export type ModeledMethodDataGridProps = {
 export const ModeledMethodDataGrid = ({
   packageName,
   methods,
-  modeledMethods,
+  modeledMethodsMap,
   modifiedSignatures,
   inProgressMethods,
   viewState,
@@ -45,11 +45,11 @@ export const ModeledMethodDataGrid = ({
     const methodsWithModelability = [];
     let numHiddenMethods = 0;
     for (const method of sortMethods(methods)) {
-      const modeledMethod = modeledMethods[method.signature];
+      const modeledMethods = modeledMethodsMap[method.signature] ?? [];
       const methodIsUnsaved = modifiedSignatures.has(method.signature);
       const methodCanBeModeled = canMethodBeModeled(
         method,
-        modeledMethod,
+        modeledMethods,
         methodIsUnsaved,
       );
 
@@ -60,7 +60,7 @@ export const ModeledMethodDataGrid = ({
       }
     }
     return [methodsWithModelability, numHiddenMethods];
-  }, [hideModeledMethods, methods, modeledMethods, modifiedSignatures]);
+  }, [hideModeledMethods, methods, modeledMethodsMap, modifiedSignatures]);
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
 
@@ -86,13 +86,13 @@ export const ModeledMethodDataGrid = ({
             </VSCodeDataGridCell>
           </VSCodeDataGridRow>
           {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
-            const modeledMethod = modeledMethods[method.signature];
+            const modeledMethods = modeledMethodsMap[method.signature] ?? [];
             return (
               <MethodRow
                 key={method.signature}
                 method={method}
                 methodCanBeModeled={methodCanBeModeled}
-                modeledMethods={modeledMethod ? [modeledMethod] : []}
+                modeledMethods={modeledMethods}
                 methodIsUnsaved={modifiedSignatures.has(method.signature)}
                 modelingInProgress={inProgressMethods.hasMethod(
                   packageName,

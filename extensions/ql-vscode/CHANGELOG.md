@@ -8,6 +8,8 @@
 - Fix a bug where the query server was restarted twice after configuration changes. [#2884](https://github.com/github/vscode-codeql/pull/2884).
 - Add support for the `telemetry.telemetryLevel` setting. For more information, see the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code). [#2824](https://github.com/github/vscode-codeql/pull/2824).
 - Fix syntax highlighting directly after import statements with instantiation arguments. [#2792](https://github.com/github/vscode-codeql/pull/2792)
+- The `debug.saveBeforeStart` setting is now respected when running variant analyses. [#2950](https://github.com/github/vscode-codeql/pull/2950)
+- The 'open database' button of the model editor was renamed to 'open source'. Also, it's now only available if the source archive is available as a workspace folder. [#2945](https://github.com/github/vscode-codeql/pull/2945)
 
 ## 1.9.1 - 29 September 2023
 
