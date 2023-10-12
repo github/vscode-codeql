@@ -251,4 +251,111 @@ describe(MethodRow.name, () => {
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
     expect(screen.getByText("Method already modeled")).toBeInTheDocument();
   });
+
+  it("Doesn't show add/remove buttons when multiple methods feature flag is disabled", async () => {
+    render({
+      modeledMethods: [modeledMethod],
+      viewState: {
+        ...viewState,
+        showMultipleModels: false,
+      },
+    });
+
+    expect(screen.queryByLabelText("Add new model")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
+  });
+
+  it("Button to add new model is disabled when there are no modeled methods", async () => {
+    render({
+      modeledMethods: [],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    const addButton = screen.queryByLabelText("Add new model");
+    expect(addButton).toBeInTheDocument();
+    expect(addButton).toBeDisabled();
+
+    expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
+  });
+
+  it("Button to add new model is disabled when there is one unmodeled method", async () => {
+    render({
+      modeledMethods: [{ ...modeledMethod, type: "none" }],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    const addButton = screen.queryByLabelText("Add new model");
+    expect(addButton).toBeInTheDocument();
+    expect(addButton).toBeDisabled();
+
+    expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
+  });
+
+  it("Add button is shown and enabed when there is one modeled methods", async () => {
+    render({
+      modeledMethods: [modeledMethod],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    const addButton = screen.queryByLabelText("Add new model");
+    expect(addButton).toBeInTheDocument();
+    expect(addButton).toBeEnabled();
+
+    expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
+  });
+
+  it("Add and remove buttons are shown and enabed when there are multiple modeled methods", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "none" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    const addButton = screen.queryByLabelText("Add new model");
+    expect(addButton).toBeInTheDocument();
+    expect(addButton).toBeEnabled();
+
+    const removeButton = screen.queryByLabelText("Remove model");
+    expect(removeButton).toBeInTheDocument();
+    expect(removeButton).toBeEnabled();
+  });
+
+  it("Shows add button on last row and remove button on all other rows", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "summary" },
+        { ...modeledMethod, type: "none" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    const addButtons = screen.queryAllByLabelText("Add new model");
+    expect(addButtons.length).toBe(1);
+    expect(addButtons[0]).toBeEnabled();
+
+    const removeButtons = screen.queryAllByLabelText("Remove model");
+    expect(removeButtons.length).toBe(3);
+    for (const removeButton of removeButtons) {
+      expect(removeButton).toBeEnabled();
+    }
+  });
 });
