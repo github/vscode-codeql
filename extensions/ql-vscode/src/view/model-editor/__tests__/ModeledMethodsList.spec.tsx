@@ -50,6 +50,7 @@ describe(ModeledMethodsList.name, () => {
     showLlmButton: false,
     showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
   };
 
   const render = (props: Partial<ModeledMethodsListProps> = {}) =>

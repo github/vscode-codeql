@@ -282,10 +282,12 @@ export function ModelEditor({
             <>{viewState.extensionPack.name}</>
           </HeaderRow>
           <HeaderRow>
-            <LinkIconButton onClick={onOpenDatabaseClick}>
-              <span slot="start" className="codicon codicon-package"></span>
-              Open database
-            </LinkIconButton>
+            {viewState.sourceArchiveAvailable && (
+              <LinkIconButton onClick={onOpenDatabaseClick}>
+                <span slot="start" className="codicon codicon-package"></span>
+                Open source
+              </LinkIconButton>
+            )}
             <LinkIconButton onClick={onOpenExtensionPackClick}>
               <span slot="start" className="codicon codicon-package"></span>
               Open extension pack

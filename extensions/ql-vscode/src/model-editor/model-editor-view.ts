@@ -362,6 +362,9 @@ export class ModelEditorView extends AbstractWebview<
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
 
+    const sourceArchiveAvailable =
+      this.databaseItem.hasSourceArchiveInExplorer();
+
     await this.postMessage({
       t: "setModelEditorViewState",
       viewState: {
@@ -370,6 +373,7 @@ export class ModelEditorView extends AbstractWebview<
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.mode,
+        sourceArchiveAvailable,
       },
     });
   }
