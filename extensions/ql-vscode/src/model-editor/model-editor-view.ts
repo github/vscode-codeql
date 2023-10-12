@@ -349,6 +349,10 @@ export class ModelEditorView extends AbstractWebview<
     return this.databaseItem.databaseUri.toString();
   }
 
+  public async focusView(): Promise<void> {
+    this.panel?.reveal();
+  }
+
   public async revealMethod(method: Method): Promise<void> {
     this.panel?.reveal();
 
@@ -521,6 +525,15 @@ export class ModelEditorView extends AbstractWebview<
         return;
       }
 
+      let existingView = this.viewTracker.getView(
+        addedDatabase.databaseUri.toString(),
+      );
+      if (existingView) {
+        await existingView.focusView();
+
+        return;
+      }
+
       const modelFile = await pickExtensionPack(
         this.cliServer,
         addedDatabase,
@@ -530,6 +543,17 @@ export class ModelEditorView extends AbstractWebview<
         3,
       );
       if (!modelFile) {
+        return;
+      }
+
+      // Check again just before opening the editor to ensure no model editor has been opened between
+      // our first check and now.
+      existingView = this.viewTracker.getView(
+        addedDatabase.databaseUri.toString(),
+      );
+      if (existingView) {
+        await existingView.focusView();
+
         return;
       }
 

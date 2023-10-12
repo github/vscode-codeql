@@ -144,14 +144,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       return;
     }
 
-    const views = this.editorViewTracker.getViews(
+    const view = this.editorViewTracker.getView(
       this.databaseItem.databaseUri.toString(),
     );
-    if (views.length === 0) {
-      return;
-    }
-
-    await Promise.all(views.map((view) => view.revealMethod(method)));
+    await view?.revealMethod(method);
   }
 
   private registerToModelingStoreEvents(): void {
