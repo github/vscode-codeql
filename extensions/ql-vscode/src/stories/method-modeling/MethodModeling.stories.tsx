@@ -69,3 +69,35 @@ MultipleModelingsModeledMultiple.args = {
   showMultipleModels: true,
   modelingStatus: "saved",
 };
+
+export const MultipleModelingsValidationFailedNeutral = Template.bind({});
+MultipleModelingsValidationFailedNeutral.args = {
+  method,
+  modeledMethods: [
+    createModeledMethod(method),
+    createModeledMethod({
+      ...method,
+      type: "neutral",
+    }),
+  ],
+  showMultipleModels: true,
+  modelingStatus: "unsaved",
+};
+
+export const MultipleModelingsValidationFailedDuplicate = Template.bind({});
+MultipleModelingsValidationFailedDuplicate.args = {
+  method,
+  modeledMethods: [
+    createModeledMethod(method),
+    createModeledMethod({
+      ...method,
+      type: "source",
+      input: "",
+      output: "ReturnValue",
+      kind: "remote",
+    }),
+    createModeledMethod(method),
+  ],
+  showMultipleModels: true,
+  modelingStatus: "unsaved",
+};

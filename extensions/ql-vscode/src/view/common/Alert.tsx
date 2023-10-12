@@ -85,11 +85,30 @@ type Props = {
 
   // Inverse the color scheme
   inverse?: boolean;
+
+  /**
+   * Role is used as the ARIA role. "alert" should only be set if the alert requires
+   * the user's immediate attention. "status" should be set if the alert is not
+   * important enough to require the user's immediate attention.
+   *
+   * Can be left out if the alert is not important enough to require the user's
+   * immediate attention. In this case, no ARIA role will be set and the alert
+   * will be read as normal text. The user will not be notified about any changes
+   * to the alert.
+   */
+  role?: "alert" | "status";
 };
 
-export const Alert = ({ type, title, message, actions, inverse }: Props) => {
+export const Alert = ({
+  type,
+  title,
+  message,
+  actions,
+  inverse,
+  role,
+}: Props) => {
   return (
-    <Container type={type} inverse={inverse}>
+    <Container type={type} inverse={inverse} role={role}>
       <Title>
         {getTypeText(type)}: {title}
       </Title>
