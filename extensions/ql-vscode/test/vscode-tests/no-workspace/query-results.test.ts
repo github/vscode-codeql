@@ -160,7 +160,7 @@ describe("query-results", () => {
       const expectedResultsPath = join(queryPath, "results.bqrs");
       const expectedSortedResultsPath = join(
         queryPath,
-        "sortedResults-a-result-set-name.bqrs",
+        "sortedResults-cc8589f226adc134f87f2438e10075e0667571c72342068e2281e0b3b65e1092.bqrs",
       );
       expect(spy).toBeCalledWith(
         expectedResultsPath,

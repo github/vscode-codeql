@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Sorted result set filenames now include a hash of the result set name instead of the full name. [#2955](https://github.com/github/vscode-codeql/pull/2955)
+
 ## 1.9.2 - 12 October 2023
 
 - Fix a bug where the query to Find Definitions in database source files would not be cancelled appropriately. [#2885](https://github.com/github/vscode-codeql/pull/2885)
