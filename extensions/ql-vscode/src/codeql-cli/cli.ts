@@ -13,8 +13,10 @@ import { CancellationToken, Disposable, Uri } from "vscode";
 import { BQRSInfo, DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import { allowCanaryQueryServer, CliConfig } from "../config";
 import {
+  CliFeatures,
   DistributionProvider,
   FindDistributionResultKind,
+  VersionAndFeatures,
 } from "./distribution";
 import {
   assertNever,
@@ -187,7 +189,9 @@ export type OnLineCallback = (
   line: string,
 ) => Promise<string | undefined> | string | undefined;
 
-type VersionChangedListener = (newVersion: SemVer | undefined) => void;
+type VersionChangedListener = (
+  newVersionAndFeatures: VersionAndFeatures | undefined,
+) => void;
 
 /**
  * This class manages a cli server started by `codeql execute cli-server` to
@@ -205,8 +209,8 @@ export class CodeQLCliServer implements Disposable {
   /**  A buffer with a single null byte. */
   nullBuffer: Buffer;
 
-  /** Version of current cli, lazily computed by the `getVersion()` method */
-  private _version: SemVer | undefined;
+  /** Version of current cli and its supported features, lazily computed by the `getVersion()` method */
+  private _versionAndFeatures: VersionAndFeatures | undefined;
 
   private _versionChangedListeners: VersionChangedListener[] = [];
 
@@ -237,14 +241,14 @@ export class CodeQLCliServer implements Disposable {
     if (this.distributionProvider.onDidChangeDistribution) {
       this.distributionProvider.onDidChangeDistribution(() => {
         this.restartCliServer();
-        this._version = undefined;
+        this._versionAndFeatures = undefined;
         this._supportedLanguages = undefined;
       });
     }
     if (this.cliConfig.onDidChangeConfiguration) {
       this.cliConfig.onDidChangeConfiguration(() => {
         this.restartCliServer();
-        this._version = undefined;
+        this._versionAndFeatures = undefined;
         this._supportedLanguages = undefined;
       });
     }
@@ -320,7 +324,7 @@ export class CodeQLCliServer implements Disposable {
     const args = [];
     if (shouldDebugCliServer()) {
       args.push(
-        "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9012,server=n,suspend=y,quiet=y",
+        "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9012,server=y,suspend=y,quiet=y",
       );
     }
 
@@ -1411,6 +1415,27 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
+  public async packCreate(
+    dir: string,
+    workspaceFolders: string[],
+    outputPath: string,
+    moreOptions: string[],
+  ): Promise<void> {
+    const args = [
+      "--output",
+      outputPath,
+      dir,
+      ...moreOptions,
+      ...this.getAdditionalPacksArg(workspaceFolders),
+    ];
+
+    return this.runJsonCodeQlCliCommandWithAuthentication(
+      ["pack", "create"],
+      args,
+      "Creating pack",
+    );
+  }
+
   async packBundle(
     dir: string,
     workspaceFolders: string[],
@@ -1475,20 +1500,28 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
-  public async getVersion() {
-    if (!this._version) {
+  public async getVersion(): Promise<SemVer> {
+    return (await this.getVersionAndFeatures()).version;
+  }
+
+  public async getFeatures(): Promise<CliFeatures> {
+    return (await this.getVersionAndFeatures()).features;
+  }
+
+  public async getVersionAndFeatures(): Promise<VersionAndFeatures> {
+    if (!this._versionAndFeatures) {
       try {
-        const newVersion = await this.refreshVersion();
-        this._version = newVersion;
+        const newVersionAndFeatures = await this.refreshVersion();
+        this._versionAndFeatures = newVersionAndFeatures;
         this._versionChangedListeners.forEach((listener) =>
-          listener(newVersion),
+          listener(newVersionAndFeatures),
         );
 
         // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
         await this.app.commands.execute(
           "setContext",
           "codeql.supportsQuickEvalCount",
-          newVersion.compare(
+          newVersionAndFeatures.version.compare(
             CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
           ) >= 0,
         );
@@ -1499,23 +1532,23 @@ export class CodeQLCliServer implements Disposable {
         throw e;
       }
     }
-    return this._version;
+    return this._versionAndFeatures;
   }
 
   public addVersionChangedListener(listener: VersionChangedListener) {
-    if (this._version) {
-      listener(this._version);
+    if (this._versionAndFeatures) {
+      listener(this._versionAndFeatures);
     }
     this._versionChangedListeners.push(listener);
   }
 
-  private async refreshVersion() {
+  private async refreshVersion(): Promise<VersionAndFeatures> {
     const distribution = await this.distributionProvider.getDistribution();
     switch (distribution.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
 
       case FindDistributionResultKind.IncompatibleDistribution:
-        return distribution.version;
+        return distribution.versionAndFeatures;
 
       default:
         // We should not get here because if no distributions are available, then
@@ -1620,17 +1653,18 @@ export function spawnServer(
  * @param progressReporter Used to output progress messages, e.g. to the status bar.
  * @returns The contents of the command's stdout, if the command succeeded.
  */
-export async function runCodeQlCliCommand(
+export async function runJsonCodeQlCliCommand<OutputType>(
   codeQlPath: string,
   command: string[],
   commandArgs: string[],
   description: string,
   logger: Logger,
   progressReporter?: ProgressReporter,
-): Promise<string> {
+): Promise<OutputType> {
   // Add logging arguments first, in case commandArgs contains positional parameters.
   const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
   const argsString = args.join(" ");
+  let stdout: string;
   try {
     if (progressReporter !== undefined) {
       progressReporter.report({ message: description });
@@ -1641,10 +1675,18 @@ export async function runCodeQlCliCommand(
     const result = await promisify(child_process.execFile)(codeQlPath, args);
     void logger.log(result.stderr);
     void logger.log("CLI command succeeded.");
-    return result.stdout;
+    stdout = result.stdout;
   } catch (err) {
     throw new Error(
       `${description} failed: ${getChildProcessErrorMessage(err)}`,
+    );
+  }
+
+  try {
+    return JSON.parse(stdout) as OutputType;
+  } catch (err) {
+    throw new Error(
+      `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
     );
   }
 }
@@ -1771,6 +1813,10 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS,
     );
+  }
+
+  async supportsMrvaPackCreate(): Promise<boolean> {
+    return (await this.cli.getFeatures()).mrvaPackCreate === true;
   }
 
   async supportsResolveExtensions() {

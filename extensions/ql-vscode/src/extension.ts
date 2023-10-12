@@ -423,7 +423,7 @@ export async function activate(
       codeQlExtension.variantAnalysisManager,
     );
     codeQlExtension.cliServer.addVersionChangedListener((ver) => {
-      telemetryListener.cliVersion = ver;
+      telemetryListener.cliVersion = ver?.version;
     });
 
     let unsupportedWarningShown = false;
@@ -436,7 +436,10 @@ export async function activate(
         return;
       }
 
-      if (CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(ver) < 0) {
+      if (
+        CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(ver.version) <
+        0
+      ) {
         return;
       }
 
@@ -597,7 +600,7 @@ async function getDistributionDisplayingDistributionWarnings(
   switch (result.kind) {
     case FindDistributionResultKind.CompatibleDistribution:
       void extLogger.log(
-        `Found compatible version of CodeQL CLI (version ${result.version.raw})`,
+        `Found compatible version of CodeQL CLI (version ${result.versionAndFeatures.version.raw})`,
       );
       break;
     case FindDistributionResultKind.IncompatibleDistribution: {
@@ -617,7 +620,7 @@ async function getDistributionDisplayingDistributionWarnings(
 
       void showAndLogWarningMessage(
         extLogger,
-        `The current version of the CodeQL CLI (${result.version.raw}) ` +
+        `The current version of the CodeQL CLI (${result.versionAndFeatures.version.raw}) ` +
           `is incompatible with this extension. ${fixGuidanceMessage}`,
       );
       break;

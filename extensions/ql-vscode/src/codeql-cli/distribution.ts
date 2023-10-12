@@ -95,11 +95,11 @@ export class DistributionManager implements DistributionProvider {
         kind: FindDistributionResultKind.NoDistribution,
       };
     }
-    const version = await getCodeQlCliVersion(
+    const versionAndFeatures = await getCodeQlCliVersion(
       distribution.codeQlPath,
       extLogger,
     );
-    if (version === undefined) {
+    if (versionAndFeatures === undefined) {
       return {
         distribution,
         kind: FindDistributionResultKind.UnknownCompatibilityDistribution,
@@ -126,17 +126,21 @@ export class DistributionManager implements DistributionProvider {
       distribution.kind !== DistributionKind.ExtensionManaged ||
       this.config.includePrerelease;
 
-    if (!semver.satisfies(version, this.versionRange, { includePrerelease })) {
+    if (
+      !semver.satisfies(versionAndFeatures.version, this.versionRange, {
+        includePrerelease,
+      })
+    ) {
       return {
         distribution,
         kind: FindDistributionResultKind.IncompatibleDistribution,
-        version,
+        versionAndFeatures,
       };
     }
     return {
       distribution,
       kind: FindDistributionResultKind.CompatibleDistribution,
-      version,
+      versionAndFeatures,
     };
   }
 
@@ -745,9 +749,19 @@ interface DistributionResult {
   kind: FindDistributionResultKind;
 }
 
+export interface CliFeatures {
+  featuresInVersionResult?: boolean;
+  mrvaPackCreate?: boolean;
+}
+
+export interface VersionAndFeatures {
+  version: semver.SemVer;
+  features: CliFeatures;
+}
+
 interface CompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.CompatibleDistribution;
-  version: semver.SemVer;
+  versionAndFeatures: VersionAndFeatures;
 }
 
 interface UnknownCompatibilityDistributionResult extends DistributionResult {
@@ -756,7 +770,7 @@ interface UnknownCompatibilityDistributionResult extends DistributionResult {
 
 interface IncompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.IncompatibleDistribution;
-  version: semver.SemVer;
+  versionAndFeatures: VersionAndFeatures;
 }
 
 interface NoDistributionResult {
