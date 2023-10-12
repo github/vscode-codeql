@@ -12,6 +12,7 @@ import { sortMethods } from "../../model-editor/shared/sorting";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
 
 export const SINGLE_MODEL_GRID_TEMPLATE_COLUMNS =
   "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
@@ -92,7 +93,9 @@ export const ModeledMethodDataGrid = ({
               Kind
             </VSCodeDataGridCell>
             {viewState.showMultipleModels && (
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={6} />
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
+                <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
+              </VSCodeDataGridCell>
             )}
           </VSCodeDataGridRow>
           {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
