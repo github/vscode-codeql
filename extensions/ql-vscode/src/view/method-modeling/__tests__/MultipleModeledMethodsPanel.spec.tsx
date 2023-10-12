@@ -14,7 +14,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     reactRender(<MultipleModeledMethodsPanel {...props} />);
 
   const method = createMethod();
-  const onChange = jest.fn<void, [ModeledMethod[]]>();
+  const onChange = jest.fn<void, [string, ModeledMethod[]]>();
 
   describe("with no modeled methods", () => {
     const modeledMethods: ModeledMethod[] = [];
@@ -138,7 +138,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       await userEvent.click(screen.getByLabelText("Add modeling"));
 
-      expect(onChange).toHaveBeenCalledWith([
+      expect(onChange).toHaveBeenCalledWith(method.signature, [
         ...modeledMethods,
         {
           signature: method.signature,
@@ -265,7 +265,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       await userEvent.selectOptions(modelTypeDropdown, "source");
 
-      expect(onChange).toHaveBeenCalledWith([
+      expect(onChange).toHaveBeenCalledWith(method.signature, [
         {
           signature: method.signature,
           packageName: method.packageName,
@@ -297,7 +297,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       await userEvent.selectOptions(modelTypeDropdown, "sink");
 
-      expect(onChange).toHaveBeenCalledWith([
+      expect(onChange).toHaveBeenCalledWith(method.signature, [
         ...modeledMethods.slice(0, 1),
         {
           signature: method.signature,
@@ -323,7 +323,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       await userEvent.click(screen.getByLabelText("Delete modeling"));
 
-      expect(onChange).toHaveBeenCalledWith(modeledMethods.slice(1));
+      expect(onChange).toHaveBeenCalledWith(
+        method.signature,
+        modeledMethods.slice(1),
+      );
     });
 
     it("can add modeling", async () => {
@@ -335,7 +338,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       await userEvent.click(screen.getByLabelText("Add modeling"));
 
-      expect(onChange).toHaveBeenCalledWith([
+      expect(onChange).toHaveBeenCalledWith(method.signature, [
         ...modeledMethods,
         {
           signature: method.signature,
@@ -506,7 +509,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       await userEvent.click(screen.getByLabelText("Delete modeling"));
 
-      expect(onChange).toHaveBeenCalledWith(modeledMethods.slice(1));
+      expect(onChange).toHaveBeenCalledWith(
+        method.signature,
+        modeledMethods.slice(1),
+      );
     });
 
     it("can delete second modeling", async () => {
@@ -519,7 +525,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
       await userEvent.click(screen.getByLabelText("Next modeling"));
       await userEvent.click(screen.getByLabelText("Delete modeling"));
 
-      expect(onChange).toHaveBeenCalledWith(modeledMethods.slice(0, 1));
+      expect(onChange).toHaveBeenCalledWith(
+        method.signature,
+        modeledMethods.slice(0, 1),
+      );
     });
 
     it("can add modeling after deleting second modeling", async () => {
@@ -532,7 +541,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
       await userEvent.click(screen.getByLabelText("Next modeling"));
       await userEvent.click(screen.getByLabelText("Delete modeling"));
 
-      expect(onChange).toHaveBeenCalledWith(modeledMethods.slice(0, 1));
+      expect(onChange).toHaveBeenCalledWith(
+        method.signature,
+        modeledMethods.slice(0, 1),
+      );
 
       rerender(
         <MultipleModeledMethodsPanel
@@ -545,7 +557,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
       onChange.mockReset();
       await userEvent.click(screen.getByLabelText("Add modeling"));
 
-      expect(onChange).toHaveBeenCalledWith([
+      expect(onChange).toHaveBeenCalledWith(method.signature, [
         ...modeledMethods.slice(0, 1),
         {
           signature: method.signature,

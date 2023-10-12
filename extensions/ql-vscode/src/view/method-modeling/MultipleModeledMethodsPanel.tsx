@@ -10,7 +10,7 @@ import { Codicon } from "../common";
 export type MultipleModeledMethodsPanelProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
-  onChange: (modeledMethods: ModeledMethod[]) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
 const Container = styled.div`
@@ -70,7 +70,7 @@ export const MultipleModeledMethodsPanel = ({
 
     const newModeledMethods = [...modeledMethods, newModeledMethod];
 
-    onChange(newModeledMethods);
+    onChange(method.signature, newModeledMethods);
     setSelectedIndex(newModeledMethods.length - 1);
   }, [onChange, modeledMethods, method]);
 
@@ -84,9 +84,9 @@ export const MultipleModeledMethodsPanel = ({
         ? selectedIndex - 1
         : selectedIndex;
 
-    onChange(newModeledMethods);
+    onChange(method.signature, newModeledMethods);
     setSelectedIndex(newSelectedIndex);
-  }, [onChange, modeledMethods, selectedIndex]);
+  }, [onChange, modeledMethods, selectedIndex, method]);
 
   const anyUnmodeled = useMemo(
     () =>
@@ -100,12 +100,12 @@ export const MultipleModeledMethodsPanel = ({
       if (modeledMethods.length > 0) {
         const newModeledMethods = [...modeledMethods];
         newModeledMethods[selectedIndex] = modeledMethod;
-        onChange(newModeledMethods);
+        onChange(method.signature, newModeledMethods);
       } else {
-        onChange([modeledMethod]);
+        onChange(method.signature, [modeledMethod]);
       }
     },
-    [modeledMethods, selectedIndex, onChange],
+    [modeledMethods, selectedIndex, onChange, method],
   );
 
   return (
