@@ -43,7 +43,6 @@ import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
-import { convertFromLegacyModeledMethod } from "./shared/modeled-methods-legacy";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -310,11 +309,8 @@ export class ModelEditorView extends AbstractWebview<
           "model-editor-hide-modeled-methods",
         );
         break;
-      case "setModeledMethod": {
-        this.setModeledMethods(
-          msg.method.signature,
-          convertFromLegacyModeledMethod(msg.method),
-        );
+      case "setMultipleModeledMethods": {
+        this.setModeledMethods(msg.methodSignature, msg.modeledMethods);
         break;
       }
       case "telemetry":
