@@ -1,5 +1,8 @@
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import { Method } from "../../../../../src/model-editor/method";
+import {
+  CallClassification,
+  Method,
+} from "../../../../../src/model-editor/method";
 import { MethodsUsageDataProvider } from "../../../../../src/model-editor/methods-usage/methods-usage-data-provider";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
@@ -8,6 +11,7 @@ import {
 } from "../../../../factories/model-editor/method-factories";
 import { mockedObject } from "../../../utils/mocking.helpers";
 import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
+import { Mode } from "../../../../../src/model-editor/shared/mode";
 
 describe("MethodsUsageDataProvider", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -19,6 +23,7 @@ describe("MethodsUsageDataProvider", () => {
 
   describe("setState", () => {
     const hideModeledMethods = false;
+    const mode = Mode.Application;
     const methods: Method[] = [];
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
@@ -31,6 +36,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -42,6 +48,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -56,6 +63,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -67,6 +75,7 @@ describe("MethodsUsageDataProvider", () => {
         methods2,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -83,6 +92,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -94,6 +104,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem2,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -106,6 +117,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -117,6 +129,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         !hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -131,6 +144,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -142,6 +156,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods2,
         modifiedMethodSignatures,
       );
@@ -156,6 +171,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -167,6 +183,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures2,
       );
@@ -184,6 +201,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -195,6 +213,7 @@ describe("MethodsUsageDataProvider", () => {
         methods2,
         dbItem2,
         !hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -212,6 +231,7 @@ describe("MethodsUsageDataProvider", () => {
       supported: false,
     });
 
+    const mode = Mode.Application;
     const methods: Method[] = [supportedMethod, unsupportedMethod];
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
@@ -237,6 +257,7 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -249,10 +270,114 @@ describe("MethodsUsageDataProvider", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
       expect(dataProvider.getChildren().length).toEqual(1);
+    });
+
+    describe("with multiple libraries", () => {
+      const hideModeledMethods = false;
+
+      describe("in application mode", () => {
+        const mode = Mode.Application;
+        const methods: Method[] = [
+          createMethod({
+            library: "b",
+            supported: true,
+            signature: "b.a.C.a()",
+            packageName: "b.a",
+            typeName: "C",
+            methodName: "a",
+            methodParameters: "()",
+          }),
+          createMethod({
+            library: "a",
+            supported: true,
+            signature: "a.b.C.d()",
+            packageName: "a.b",
+            typeName: "C",
+            methodName: "d",
+            methodParameters: "()",
+          }),
+          createMethod({
+            library: "b",
+            supported: false,
+            signature: "b.a.C.b()",
+            packageName: "b.a",
+            typeName: "C",
+            methodName: "b",
+            methodParameters: "()",
+            usages: [
+              {
+                label: "test",
+                classification: CallClassification.Source,
+                url: {
+                  uri: "a/b/",
+                  startLine: 1,
+                  startColumn: 1,
+                  endLine: 1,
+                  endColumn: 1,
+                },
+              },
+            ],
+          }),
+          createMethod({
+            library: "b",
+            supported: false,
+            signature: "b.a.C.d()",
+            packageName: "b.a",
+            typeName: "C",
+            methodName: "d",
+            methodParameters: "()",
+            usages: [
+              {
+                label: "test",
+                classification: CallClassification.Source,
+                url: {
+                  uri: "a/b/",
+                  startLine: 1,
+                  startColumn: 1,
+                  endLine: 1,
+                  endColumn: 1,
+                },
+              },
+              {
+                label: "test",
+                classification: CallClassification.Source,
+                url: {
+                  uri: "a/b/",
+                  startLine: 1,
+                  startColumn: 1,
+                  endLine: 1,
+                  endColumn: 1,
+                },
+              },
+            ],
+          }),
+        ];
+
+        it("should sort methods", async () => {
+          await dataProvider.setState(
+            methods,
+            dbItem,
+            hideModeledMethods,
+            mode,
+            modeledMethods,
+            modifiedMethodSignatures,
+          );
+          expect(
+            dataProvider
+              .getChildren()
+              .map((item) => (item as Method).signature),
+          ).toEqual(["b.a.C.d()", "b.a.C.b()", "b.a.C.a()", "a.b.C.d()"]);
+          // reasoning for sort order:
+          // b.a.C.d() has more usages than b.a.C.b()
+          // b.a.C.b() is supported, b.a.C.a() is not
+          // b.a.C.a() is in a more unsupported library, a.b.C.d() is in a more supported library
+        });
+      });
     });
   });
 });

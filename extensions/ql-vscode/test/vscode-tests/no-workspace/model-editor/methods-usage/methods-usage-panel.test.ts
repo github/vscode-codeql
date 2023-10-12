@@ -11,6 +11,7 @@ import {
 import { ModelingStore } from "../../../../../src/model-editor/modeling-store";
 import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
 import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
+import { Mode } from "../../../../../src/model-editor/shared/mode";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -20,6 +21,7 @@ describe("MethodsUsagePanel", () => {
 
   describe("setState", () => {
     const hideModeledMethods = false;
+    const mode = Mode.Application;
     const methods: Method[] = [createMethod()];
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
@@ -37,6 +39,7 @@ describe("MethodsUsagePanel", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -50,6 +53,7 @@ describe("MethodsUsagePanel", () => {
     let modelingStore: ModelingStore;
 
     const hideModeledMethods: boolean = false;
+    const mode = Mode.Application;
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
     const usage = createUsage();
@@ -75,6 +79,7 @@ describe("MethodsUsagePanel", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
@@ -91,6 +96,7 @@ describe("MethodsUsagePanel", () => {
         methods,
         dbItem,
         hideModeledMethods,
+        mode,
         modeledMethods,
         modifiedMethodSignatures,
       );
