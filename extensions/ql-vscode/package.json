@@ -34,7 +34,6 @@
     }
   },
   "activationEvents": [
-    "onLanguage:ql-summary",
     "onView:test-explorer",
     "onWebviewPanel:resultsView",
     "onWebviewPanel:codeQL.variantAnalysis",
