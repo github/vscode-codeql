@@ -92,7 +92,9 @@ type Props = {
    * important enough to require the user's immediate attention.
    *
    * Can be left out if the alert is not important enough to require the user's
-   * immediate attention.
+   * immediate attention. In this case, no ARIA role will be set and the alert
+   * will be read as normal text. The user will not be notified about any changes
+   * to the alert.
    */
   role?: "alert" | "status";
 };
