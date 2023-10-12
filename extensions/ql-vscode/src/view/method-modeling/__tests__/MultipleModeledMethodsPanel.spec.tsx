@@ -252,6 +252,16 @@ describe(MultipleModeledMethodsPanel.name, () => {
       ).toHaveValue("source");
     });
 
+    it("does not show errors", () => {
+      render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
     it("can update the first modeling", async () => {
       render({
         method,
@@ -350,6 +360,47 @@ describe(MultipleModeledMethodsPanel.name, () => {
           provenance: "manual",
         },
       ]);
+    });
+
+    it("shows an error when adding a neutral modeling", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Add modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][0]
+          }
+          onChange={onChange}
+        />,
+      );
+
+      const modelTypeDropdown = screen.getByRole("combobox", {
+        name: "Model type",
+      });
+
+      await userEvent.selectOptions(modelTypeDropdown, "neutral");
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][0]
+          }
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(
+        screen.getByText("Error: Conflicting classification"),
+      ).toBeInTheDocument();
     });
   });
 
@@ -560,6 +611,58 @@ describe(MultipleModeledMethodsPanel.name, () => {
           provenance: "manual",
         },
       ]);
+    });
+  });
+
+  describe("with duplicate modeled methods", () => {
+    const modeledMethods = [
+      createModeledMethod({
+        ...method,
+      }),
+      createModeledMethod({
+        ...method,
+      }),
+    ];
+
+    it("shows errors", () => {
+      render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+
+    it("shows the correct error message", async () => {
+      render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      expect(
+        screen.getByText("Error: Duplicated classification"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "This method has two identical or conflicting classifications.",
+        ),
+      ).toBeInTheDocument();
+
+      expect(screen.getByText("1/2")).toBeInTheDocument();
+
+      const button = screen.getByText(
+        "Modify or remove the duplicated classification.",
+      );
+
+      await userEvent.click(button);
+
+      expect(screen.getByText("2/2")).toBeInTheDocument();
+
+      expect(
+        screen.getByText("Modify or remove the duplicated classification."),
+      ).toBeInTheDocument();
     });
   });
 });
