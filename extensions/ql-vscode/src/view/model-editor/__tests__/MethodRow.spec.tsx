@@ -276,7 +276,7 @@ describe(MethodRow.name, () => {
 
     const addButton = screen.queryByLabelText("Add new model");
     expect(addButton).toBeInTheDocument();
-    expect(addButton).toBeDisabled();
+    expect(addButton?.getElementsByTagName("input")[0]).toBeDisabled();
 
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
@@ -292,7 +292,7 @@ describe(MethodRow.name, () => {
 
     const addButton = screen.queryByLabelText("Add new model");
     expect(addButton).toBeInTheDocument();
-    expect(addButton).toBeDisabled();
+    expect(addButton?.getElementsByTagName("input")[0]).toBeDisabled();
 
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
@@ -308,7 +308,7 @@ describe(MethodRow.name, () => {
 
     const addButton = screen.queryByLabelText("Add new model");
     expect(addButton).toBeInTheDocument();
-    expect(addButton).toBeEnabled();
+    expect(addButton?.getElementsByTagName("input")[0]).toBeEnabled();
 
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
@@ -327,11 +327,11 @@ describe(MethodRow.name, () => {
 
     const addButton = screen.queryByLabelText("Add new model");
     expect(addButton).toBeInTheDocument();
-    expect(addButton).toBeEnabled();
+    expect(addButton?.getElementsByTagName("input")[0]).toBeEnabled();
 
     const removeButton = screen.queryByLabelText("Remove model");
     expect(removeButton).toBeInTheDocument();
-    expect(removeButton).toBeEnabled();
+    expect(removeButton?.getElementsByTagName("input")[0]).toBeEnabled();
   });
 
   it("shows add model button on last row and remove model button on all other rows", async () => {
@@ -350,12 +350,12 @@ describe(MethodRow.name, () => {
 
     const addButtons = screen.queryAllByLabelText("Add new model");
     expect(addButtons.length).toBe(1);
-    expect(addButtons[0]).toBeEnabled();
+    expect(addButtons[0]?.getElementsByTagName("input")[0]).toBeEnabled();
 
     const removeButtons = screen.queryAllByLabelText("Remove model");
     expect(removeButtons.length).toBe(3);
     for (const removeButton of removeButtons) {
-      expect(removeButton).toBeEnabled();
+      expect(removeButton?.getElementsByTagName("input")[0]).toBeEnabled();
     }
   });
 });

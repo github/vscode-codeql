@@ -227,13 +227,18 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     <CodiconRow
                       key={index}
                       appearance="icon"
+                      aria-label="Add new model"
                       disabled={addModelButtonDisabled}
                     >
-                      <Codicon name="add" label="Add new model" />
+                      <Codicon name="add" />
                     </CodiconRow>
                   ) : (
-                    <CodiconRow key={index} appearance="icon">
-                      <Codicon name="trash" label="Remove model" />
+                    <CodiconRow
+                      key={index}
+                      appearance="icon"
+                      aria-label="Remove model"
+                    >
+                      <Codicon name="trash" />
                     </CodiconRow>
                   ),
                 )}
