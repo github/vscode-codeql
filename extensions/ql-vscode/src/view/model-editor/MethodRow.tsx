@@ -1,4 +1,5 @@
 import {
+  VSCodeButton,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeLink,
@@ -22,6 +23,7 @@ import { ModelTypeDropdown } from "./ModelTypeDropdown";
 import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import { Codicon } from "../common";
 
 const MultiModelColumn = styled(VSCodeDataGridCell)`
   display: flex;
@@ -53,6 +55,11 @@ const ProgressRing = styled(VSCodeProgressRing)`
   width: 16px;
   height: 16px;
   margin-left: auto;
+`;
+
+const CodiconRow = styled(VSCodeButton)`
+  min-height: calc(var(--input-height) * 1px);
+  align-items: center;
 `;
 
 const DataGridRow = styled(VSCodeDataGridRow)<{ focused?: boolean }>`
@@ -159,6 +166,13 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <VSCodeDataGridCell gridColumn={5}>
               <InProgressDropdown />
             </VSCodeDataGridCell>
+            {viewState.showMultipleModels && (
+              <VSCodeDataGridCell gridColumn={6}>
+                <CodiconRow appearance="icon" disabled={true}>
+                  <Codicon name="add" label="Add new model" />
+                </CodiconRow>
+              </VSCodeDataGridCell>
+            )}
           </>
         )}
         {!props.modelingInProgress && (
@@ -203,6 +217,19 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 />
               ))}
             </MultiModelColumn>
+            {viewState.showMultipleModels && (
+              <MultiModelColumn gridColumn={6}>
+                {modeledMethods.map((_, index) => (
+                  <CodiconRow key={index} appearance="icon" disabled={false}>
+                    {index === modeledMethods.length - 1 ? (
+                      <Codicon name="add" label="Add new model" />
+                    ) : (
+                      <Codicon name="trash" label="Remove model" />
+                    )}
+                  </CodiconRow>
+                ))}
+              </MultiModelColumn>
+            )}
           </>
         )}
       </DataGridRow>

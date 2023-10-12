@@ -12,8 +12,12 @@ import { sortMethods } from "../../model-editor/shared/sorting";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
 
-export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
+export const SINGLE_MODEL_GRID_TEMPLATE_COLUMNS =
+  "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
+export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
+  "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
 
 export type ModeledMethodDataGridProps = {
   packageName: string;
@@ -64,8 +68,12 @@ export const ModeledMethodDataGrid = ({
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
 
+  const gridTemplateColumns = viewState.showMultipleModels
+    ? MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS
+    : SINGLE_MODEL_GRID_TEMPLATE_COLUMNS;
+
   return (
-    <VSCodeDataGrid gridTemplateColumns={GRID_TEMPLATE_COLUMNS}>
+    <VSCodeDataGrid gridTemplateColumns={gridTemplateColumns}>
       {someMethodsAreVisible && (
         <>
           <VSCodeDataGridRow rowType="header">
@@ -84,6 +92,11 @@ export const ModeledMethodDataGrid = ({
             <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
               Kind
             </VSCodeDataGridCell>
+            {viewState.showMultipleModels && (
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
+                <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
+              </VSCodeDataGridCell>
+            )}
           </VSCodeDataGridRow>
           {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
             const modeledMethods = modeledMethodsMap[method.signature] ?? [];

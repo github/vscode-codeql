@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.9.2 - 12 October 2023
 
 - Fix a bug where the query to Find Definitions in database source files would not be cancelled appropriately. [#2885](https://github.com/github/vscode-codeql/pull/2885)
