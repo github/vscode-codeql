@@ -252,7 +252,7 @@ describe(MethodRow.name, () => {
     expect(screen.getByText("Method already modeled")).toBeInTheDocument();
   });
 
-  it("Doesn't show add/remove buttons when multiple methods feature flag is disabled", async () => {
+  it("doesn't show add/remove buttons when multiple methods feature flag is disabled", async () => {
     render({
       modeledMethods: [modeledMethod],
       viewState: {
@@ -265,7 +265,7 @@ describe(MethodRow.name, () => {
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
 
-  it("Button to add new model is disabled when there are no modeled methods", async () => {
+  it("shows disabled button add new model when there are no modeled methods", async () => {
     render({
       modeledMethods: [],
       viewState: {
@@ -281,7 +281,7 @@ describe(MethodRow.name, () => {
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
 
-  it("Button to add new model is disabled when there is one unmodeled method", async () => {
+  it("disabled button to add new model when there is one unmodeled method", async () => {
     render({
       modeledMethods: [{ ...modeledMethod, type: "none" }],
       viewState: {
@@ -297,7 +297,7 @@ describe(MethodRow.name, () => {
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
 
-  it("Add button is shown and enabed when there is one modeled methods", async () => {
+  it("enabled button to add new model when there is one modeled method", async () => {
     render({
       modeledMethods: [modeledMethod],
       viewState: {
@@ -313,7 +313,7 @@ describe(MethodRow.name, () => {
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
 
-  it("Add and remove buttons are shown and enabed when there are multiple modeled methods", async () => {
+  it("enabled add/remove model buttons when there are multiple modeled methods", async () => {
     render({
       modeledMethods: [
         { ...modeledMethod, type: "source" },
@@ -334,7 +334,7 @@ describe(MethodRow.name, () => {
     expect(removeButton).toBeEnabled();
   });
 
-  it("Shows add button on last row and remove button on all other rows", async () => {
+  it("shows add model button on last row and remove model button on all other rows", async () => {
     render({
       modeledMethods: [
         { ...modeledMethod, type: "source" },
