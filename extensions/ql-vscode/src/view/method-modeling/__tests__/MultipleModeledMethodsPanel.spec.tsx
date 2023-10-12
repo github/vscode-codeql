@@ -361,6 +361,47 @@ describe(MultipleModeledMethodsPanel.name, () => {
         },
       ]);
     });
+
+    it("shows an error when adding a neutral modeling", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Add modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][0]
+          }
+          onChange={onChange}
+        />,
+      );
+
+      const modelTypeDropdown = screen.getByRole("combobox", {
+        name: "Model type",
+      });
+
+      await userEvent.selectOptions(modelTypeDropdown, "neutral");
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][0]
+          }
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(
+        screen.getByText("Error: Conflicting classification"),
+      ).toBeInTheDocument();
+    });
   });
 
   describe("with three modeled methods", () => {
