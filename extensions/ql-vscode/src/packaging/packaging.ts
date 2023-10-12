@@ -1,4 +1,4 @@
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { QuickPickItem, window } from "vscode";
 import {
@@ -16,6 +16,7 @@ import { redactableError } from "../common/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "../common/query-language";
 import { PackagingCommands } from "../common/commands";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { containsPath } from "../common/files";
 
 type PackagingOptions = {
   cliServer: CodeQLCliServer;
@@ -126,9 +127,10 @@ export async function handleInstallPackDependencies(
     step: 1,
     maxStep: 2,
   });
-  const workspacePacks = await cliServer.resolveQlpacks(
-    getOnDiskWorkspaceFolders(),
-  );
+  const workspaceFolders = getOnDiskWorkspaceFolders();
+  const resolvedPacks = await cliServer.resolveQlpacks(workspaceFolders);
+  const workspacePacks = filterWorkspacePacks(resolvedPacks, workspaceFolders);
+
   const quickPickItems = Object.entries(
     workspacePacks,
   ).map<QLPackQuickPickItem>(([key, value]) => ({
@@ -178,4 +180,28 @@ export async function handleInstallPackDependencies(
   } else {
     throw new UserCancellationException("No packs selected.");
   }
+}
+
+/**
+ * This filter will remove any packs from the qlpacks that are not in the workspace. It will
+ * filter out any packs that are in e.g. the package cache or in the distribution, which the
+ * user does not need to install dependencies for.
+ *
+ * @param qlpacks The qlpacks to filter.
+ * @param workspaceFolders The workspace folders to filter by.
+ */
+export function filterWorkspacePacks(
+  qlpacks: QlpacksInfo,
+  workspaceFolders: string[],
+): QlpacksInfo {
+  return Object.fromEntries(
+    Object.entries(qlpacks).filter(([, packDirs]) =>
+      // If any of the pack dirs are in the workspace, keep the pack
+      packDirs.some((packDir) =>
+        workspaceFolders.some((workspaceFolder) =>
+          containsPath(workspaceFolder, packDir),
+        ),
+      ),
+    ),
+  );
 }
