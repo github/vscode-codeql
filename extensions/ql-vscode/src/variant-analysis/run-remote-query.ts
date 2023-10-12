@@ -83,6 +83,7 @@ async function generateQueryPack(
 
   let queryPackDir: string;
   let precompilationOpts: string[];
+  let needsInstall: boolean;
   if (mustSynthesizePack) {
     // This section applies whether or not the CLI supports MRVA pack creation directly.
 
@@ -100,13 +101,8 @@ async function generateQueryPack(
     // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
     await cliServer.clearCache();
 
-    // Install the dependencies of the synthesized query pack.
-    await cliServer.packInstall(queryPackDir, {
-      workspaceFolders,
-    });
-
-    // Clear the CLI cache so that the most recent qlpack lock file is used.
-    await cliServer.clearCache();
+    // Install packs, since we just synthesized a dependency on the language's standard library.
+    needsInstall = true;
   } else if (!cliSupportsMrvaPackCreate) {
     // We need to copy the query pack to a temporary directory and then fix it up to work with MRVA.
     queryPackDir = tmpDir.queryPackDir;
@@ -117,9 +113,26 @@ async function generateQueryPack(
       queryPackDir,
       packRelativePath,
     );
+
+    // We should already have all the dependencies available, but these older versions of the CLI
+    // have a bug where they will not search `--additional-packs` during validation in `codeql pack bundle`.
+    // Installing the packs will ensure that any extension packs get put in the right place.
+    needsInstall = true;
   } else {
     // The CLI supports creating a MRVA query pack directly from the source pack.
     queryPackDir = originalPackRoot;
+    // We expect any dependencies to be available already.
+    needsInstall = false;
+  }
+
+  if (needsInstall) {
+    // Install the dependencies of the synthesized query pack.
+    await cliServer.packInstall(queryPackDir, {
+      workspaceFolders,
+    });
+
+    // Clear the CLI cache so that the most recent qlpack lock file is used.
+    await cliServer.clearCache();
   }
 
   // Clear the CLI cache so that the most recent qlpack lock file is used.
