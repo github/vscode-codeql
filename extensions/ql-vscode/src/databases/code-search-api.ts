@@ -4,6 +4,7 @@ import { Progress, CancellationToken } from "vscode";
 import { Credentials } from "../common/authentication";
 import { BaseLogger } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
+import { UserCancellationException } from "../common/vscode/progress";
 
 export async function getCodeSearchRepositories(
   query: string,
@@ -15,7 +16,7 @@ export async function getCodeSearchRepositories(
   credentials: Credentials,
   logger: BaseLogger,
 ): Promise<string[]> {
-  let nwos: string[] = [];
+  const nwos: string[] = [];
   const octokit = await provideOctokitWithThrottling(credentials, logger);
 
   for await (const response of octokit.paginate.iterator(
@@ -34,8 +35,7 @@ export async function getCodeSearchRepositories(
     progress.report({ increment });
 
     if (token.isCancellationRequested) {
-      nwos = [];
-      break;
+      throw new UserCancellationException("Code search cancelled.", true);
     }
   }
 
