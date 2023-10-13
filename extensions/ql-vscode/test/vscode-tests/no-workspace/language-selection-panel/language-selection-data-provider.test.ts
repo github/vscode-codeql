@@ -49,12 +49,12 @@ describe("LanguageSelectionTreeDataProvider", () => {
       expect(actualLanguagesNames.sort()).toEqual(expectedLanguageNames.sort());
     });
 
-    it("default selection is All languages", async () => {
+    it("has a default selection of All languages", async () => {
       const items = dataProvider.getChildren();
       expectSelected(items, undefined);
     });
 
-    it("When language is changed then the selected element changes", async () => {
+    it("changes the selected element when the language is changed", async () => {
       await languageContext.setLanguageContext(QueryLanguage.CSharp);
       const items = dataProvider.getChildren();
       expectSelected(items, QueryLanguage.CSharp);
