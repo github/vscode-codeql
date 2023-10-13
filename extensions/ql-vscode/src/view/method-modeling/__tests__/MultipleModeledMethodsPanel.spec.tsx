@@ -378,7 +378,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         <MultipleModeledMethodsPanel
           method={method}
           modeledMethods={
-            onChange.mock.calls[onChange.mock.calls.length - 1][0]
+            onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           onChange={onChange}
         />,
@@ -394,7 +394,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         <MultipleModeledMethodsPanel
           method={method}
           modeledMethods={
-            onChange.mock.calls[onChange.mock.calls.length - 1][0]
+            onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           onChange={onChange}
         />,
