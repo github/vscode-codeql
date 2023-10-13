@@ -34,10 +34,7 @@ import { DatabasePanelCommands } from "../../common/commands";
 import { App } from "../../common/app";
 import { QueryLanguage } from "../../common/query-language";
 import { getCodeSearchRepositories } from "../code-search-api";
-import {
-  showAndLogErrorMessage,
-  showAndLogInformationMessage,
-} from "../../common/logging";
+import { showAndLogErrorMessage } from "../../common/logging";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -426,13 +423,9 @@ export class DbPanel extends DisposableObject {
           this.app.logger,
         );
 
-        token.onCancellationRequested(() => {
-          void showAndLogInformationMessage(
-            this.app.logger,
-            "Code search cancelled",
-          );
-          return;
-        });
+        if (token.isCancellationRequested) {
+          throw new UserCancellationException("Code search cancelled.", true);
+        }
 
         progress.report({ increment: 10, message: "Processing results..." });
 
