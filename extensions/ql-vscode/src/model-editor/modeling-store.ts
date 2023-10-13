@@ -5,6 +5,10 @@ import { DatabaseItem } from "../databases/local-databases";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
+import {
+  InProgressMethods,
+  setPackageInProgressMethods,
+} from "./shared/in-progress-methods";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 
 interface InternalDbModelingState {
@@ -14,6 +18,7 @@ interface InternalDbModelingState {
   mode: Mode;
   modeledMethods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: Set<string>;
+  inProgressMethods: InProgressMethods;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
 }
@@ -73,6 +78,11 @@ interface SelectedMethodChangedEvent {
   readonly isModified: boolean;
 }
 
+interface InProgressMethodsChangedEvent {
+  dbUri: string;
+  methods: InProgressMethods;
+}
+
 export class ModelingStore extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
   public readonly onDbOpened: AppEvent<string>;
@@ -83,6 +93,7 @@ export class ModelingStore extends DisposableObject {
   public readonly onModeledMethodsChanged: AppEvent<ModeledMethodsChangedEvent>;
   public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
+  public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
 
   private readonly state: Map<string, InternalDbModelingState>;
   private activeDb: string | undefined;
@@ -96,6 +107,7 @@ export class ModelingStore extends DisposableObject {
   private readonly onModeledMethodsChangedEventEmitter: AppEventEmitter<ModeledMethodsChangedEvent>;
   private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
+  private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
 
   constructor(app: App) {
     super();
@@ -148,6 +160,12 @@ export class ModelingStore extends DisposableObject {
     );
     this.onSelectedMethodChanged =
       this.onSelectedMethodChangedEventEmitter.event;
+
+    this.onInProgressMethodsChangedEventEmitter = this.push(
+      app.createEventEmitter<InProgressMethodsChangedEvent>(),
+    );
+    this.onInProgressMethodsChanged =
+      this.onInProgressMethodsChangedEventEmitter.event;
   }
 
   public initializeStateForDb(
@@ -164,6 +182,7 @@ export class ModelingStore extends DisposableObject {
       modifiedMethodSignatures: new Set(),
       selectedMethod: undefined,
       selectedUsage: undefined,
+      inProgressMethods: {},
     });
 
     this.onDbOpenedEventEmitter.fire(dbUri);
@@ -393,6 +412,25 @@ export class ModelingStore extends DisposableObject {
       usage,
       modeledMethods: dbState.modeledMethods[method.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(method.signature),
+    });
+  }
+
+  public setInProgressMethods(
+    dbItem: DatabaseItem,
+    packageName: string,
+    inProgressMethods: string[],
+  ) {
+    const dbState = this.getState(dbItem);
+
+    dbState.inProgressMethods = setPackageInProgressMethods(
+      dbState.inProgressMethods,
+      packageName,
+      inProgressMethods,
+    );
+
+    this.onInProgressMethodsChangedEventEmitter.fire({
+      dbUri: dbItem.databaseUri.toString(),
+      methods: dbState.inProgressMethods,
     });
   }
 

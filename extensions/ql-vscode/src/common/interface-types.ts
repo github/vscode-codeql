@@ -25,6 +25,7 @@ import {
 } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 import { QueryLanguage } from "./query-language";
+import { InProgressMethods } from "../model-editor/shared/in-progress-methods";
 
 /**
  * This module contains types and code that are shared between
@@ -517,8 +518,7 @@ interface SetModifiedMethodsMessage {
 
 interface SetInProgressMethodsMessage {
   t: "setInProgressMethods";
-  packageName: string;
-  inProgressMethods: string[];
+  methods: InProgressMethods;
 }
 
 interface SwitchModeMessage {
