@@ -389,9 +389,16 @@ describe("Variant Analysis Manager", () => {
 
       // Assume the first dependency to check is the core library.
       if (dependenciesToCheck.length > 0) {
-        expect(qlpackContents.dependencies?.[dependenciesToCheck[0]]).toEqual(
-          "*",
-        );
+        // The version in the pack file might be
+        const dependencyVersion =
+          qlpackContents.dependencies?.[dependenciesToCheck[0]];
+        // There should be a version specified.
+        expect(dependencyVersion).toBeDefined();
+        // Any `${workspace}` placeholder should have been replaced.
+        // The actual version might be `*` (for the legacy code path where we replace workspace
+        // references with `*`) or a specific version (for the new code path where the CLI does all
+        // the work).
+        expect(dependencyVersion).not.toEqual("${workspace}");
       }
       const qlpackLockContents = load(
         packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),
