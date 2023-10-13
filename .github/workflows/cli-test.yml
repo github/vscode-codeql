@@ -111,7 +111,7 @@ jobs:
           npm run test:cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/variant-analysis/variant-analysis-manager.test.ts
 
       - name: Upload pack tarballs (Windows)
-        if: matrix.os == 'windows-latest'
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: pack-tarballs
