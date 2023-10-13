@@ -34,19 +34,25 @@ import { load } from "js-yaml";
 import { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
 import { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
 
-function existenceString(file: string, exists: boolean): string {
-  return `${exists ? "exists" : "does not exist"}: ${file}`;
+function existenceString(
+  packFS: QueryPackFS,
+  file: string,
+  exists: boolean,
+): string {
+  return `${exists ? "exists" : "does not exist"}: ${file} (${packFS
+    .allFiles()
+    .join(";")})`;
 }
 
 function expectFileExists(packFS: QueryPackFS, file: string): void {
-  expect(existenceString(file, packFS.fileExists(file))).toEqual(
-    existenceString(file, true),
+  expect(existenceString(packFS, file, packFS.fileExists(file))).toEqual(
+    existenceString(packFS, file, true),
   );
 }
 
 function expectFileNotExists(packFS: QueryPackFS, file: string): void {
-  expect(existenceString(file, packFS.fileExists(file))).toEqual(
-    existenceString(file, false),
+  expect(existenceString(packFS, file, packFS.fileExists(file))).toEqual(
+    existenceString(packFS, file, false),
   );
 }
 
