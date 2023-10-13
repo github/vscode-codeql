@@ -53,7 +53,7 @@ export type MethodModelingProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
   showMultipleModels?: boolean;
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
 export const MethodModeling = ({

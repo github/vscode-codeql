@@ -14,7 +14,6 @@ import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
-import { convertFromLegacyModeledMethod } from "../shared/modeled-methods-legacy";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -108,19 +107,19 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         );
         break;
 
-      case "setModeledMethod": {
+      case "setMultipleModeledMethods": {
         if (!this.databaseItem) {
           return;
         }
 
         this.modelingStore.updateModeledMethods(
           this.databaseItem,
-          msg.method.signature,
-          convertFromLegacyModeledMethod(msg.method),
+          msg.methodSignature,
+          msg.modeledMethods,
         );
         this.modelingStore.addModifiedMethod(
           this.databaseItem,
-          msg.method.signature,
+          msg.methodSignature,
         );
         break;
       }

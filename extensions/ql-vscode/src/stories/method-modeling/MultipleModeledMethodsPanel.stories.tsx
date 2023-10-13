@@ -25,8 +25,8 @@ const Template: StoryFn<typeof MultipleModeledMethodsPanelComponent> = (
   }, [args.modeledMethods]);
 
   const handleChange = useCallback(
-    (modeledMethods: ModeledMethod[]) => {
-      args.onChange(modeledMethods);
+    (methodSignature: string, modeledMethods: ModeledMethod[]) => {
+      args.onChange(methodSignature, modeledMethods);
       setModeledMethods(modeledMethods);
     },
     [args],
