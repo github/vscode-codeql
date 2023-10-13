@@ -2,6 +2,7 @@ import { Readable } from "stream";
 import { extract as tar_extract, Headers } from "tar-stream";
 import { pipeline } from "stream/promises";
 import { createGunzip } from "zlib";
+import * as fs from "fs/promises";
 
 export interface QueryPackFS {
   fileExists: (name: string) => boolean;
@@ -10,9 +11,15 @@ export interface QueryPackFS {
   allFiles: () => string[];
 }
 
+let bufferIndex = 0;
+
 export async function readBundledPack(
   base64Pack: string,
 ): Promise<QueryPackFS> {
+  const fileName = `pack-${bufferIndex}.tar.gz`;
+  await fs.writeFile(fileName, Buffer.from(base64Pack, "base64"));
+  bufferIndex++;
+
   const buffer = Buffer.from(base64Pack, "base64");
   const stream = Readable.from(buffer);
 
