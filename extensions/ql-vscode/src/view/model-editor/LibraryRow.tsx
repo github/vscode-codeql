@@ -14,7 +14,10 @@ import {
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
-import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
+import {
+  InProgressMethods,
+  hasInProgressMethod,
+} from "../../model-editor/shared/in-progress-methods";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -177,7 +180,7 @@ export const LibraryRow = ({
 
   const canStopAutoModeling = useMemo(() => {
     return methods.some((method) =>
-      inProgressMethods.hasMethod(title, method.signature),
+      hasInProgressMethod(inProgressMethods, title, method.signature),
     );
   }, [methods, title, inProgressMethods]);
 

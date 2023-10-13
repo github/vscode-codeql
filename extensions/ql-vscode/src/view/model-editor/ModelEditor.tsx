@@ -17,7 +17,10 @@ import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../model-editor/shared/mode";
-import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
+import {
+  InProgressMethods,
+  setPackageInProgressMethods,
+} from "../../model-editor/shared/in-progress-methods";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hide-modeled-methods";
 
@@ -94,7 +97,7 @@ export function ModelEditor({
   );
 
   const [inProgressMethods, setInProgressMethods] = useState<InProgressMethods>(
-    new InProgressMethods(),
+    {},
   );
 
   const [hideModeledMethods, setHideModeledMethods] = useState(
@@ -135,9 +138,10 @@ export function ModelEditor({
             break;
           case "setInProgressMethods":
             setInProgressMethods((oldInProgressMethods) =>
-              oldInProgressMethods.setPackageMethods(
+              setPackageInProgressMethods(
+                oldInProgressMethods,
                 msg.packageName,
-                new Set(msg.inProgressMethods),
+                msg.inProgressMethods,
               ),
             );
             break;

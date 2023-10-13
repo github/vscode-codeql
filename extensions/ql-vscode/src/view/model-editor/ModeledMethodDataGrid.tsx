@@ -9,7 +9,10 @@ import { Method, canMethodBeModeled } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
 import { sortMethods } from "../../model-editor/shared/sorting";
-import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
+import {
+  InProgressMethods,
+  hasInProgressMethod,
+} from "../../model-editor/shared/in-progress-methods";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
@@ -107,7 +110,8 @@ export const ModeledMethodDataGrid = ({
                 methodCanBeModeled={methodCanBeModeled}
                 modeledMethods={modeledMethods}
                 methodIsUnsaved={modifiedSignatures.has(method.signature)}
-                modelingInProgress={inProgressMethods.hasMethod(
+                modelingInProgress={hasInProgressMethod(
+                  inProgressMethods,
                   packageName,
                   method.signature,
                 )}
