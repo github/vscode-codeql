@@ -5,7 +5,6 @@ import { Meta, StoryFn } from "@storybook/react";
 import { Mode } from "../../model-editor/shared/mode";
 import { LibraryRow as LibraryRowComponent } from "../../view/model-editor/LibraryRow";
 import { CallClassification } from "../../model-editor/method";
-import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 import { createMockExtensionPack } from "../../../test/factories/model-editor/extension-pack";
 
 export default {
@@ -219,7 +218,7 @@ LibraryRow.args = {
     ],
   },
   modifiedSignatures: new Set(["org.sql2o.Sql2o#Sql2o(String)"]),
-  inProgressMethods: new InProgressMethods(),
+  inProgressMethods: {},
   viewState: {
     extensionPack: createMockExtensionPack(),
     showFlowGeneration: true,
