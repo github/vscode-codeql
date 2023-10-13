@@ -26,8 +26,11 @@ export async function readBundledPack(
     }
   > = {};
 
+  let entryCount = 0;
   extract.on("entry", function (headers: Headers, stream, next) {
     const buffers: Buffer[] = [];
+
+    entryCount++;
 
     stream.on("data", (chunk) => buffers.push(chunk));
     stream.on("end", () => {
@@ -45,6 +48,8 @@ export async function readBundledPack(
   });
 
   await pipeline(stream, createGunzip(), extract);
+
+  expect(entryCount).toBeGreaterThan(0);
 
   const directories: Record<string, number> = {};
   for (let file of Object.keys(files)) {

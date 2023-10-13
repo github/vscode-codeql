@@ -374,6 +374,7 @@ describe("Variant Analysis Manager", () => {
       const request: VariantAnalysisSubmission =
         mockSubmitVariantAnalysis.mock.calls[0][1];
 
+      //      expect(request.query.pack).toEqual("deadbeef");
       const packFS = await readBundledPack(request.query.pack);
       expect(packFS.allFiles().length).not.toEqual(0);
       filesThatExist.forEach((file) => {
