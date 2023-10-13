@@ -14,7 +14,6 @@ import { dir } from "tmp-promise";
 import { isQueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
-import { Mode } from "./shared/mode";
 import { Method, Usage } from "./method";
 import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
@@ -128,6 +127,15 @@ export class ModelEditorModule extends DisposableObject {
         return;
       }
 
+      const existingView = this.editorViewTracker.getView(
+        db.databaseUri.toString(),
+      );
+      if (existingView) {
+        await existingView.focusView();
+
+        return;
+      }
+
       return withProgress(
         async (progress) => {
           const maxStep = 4;
@@ -192,6 +200,17 @@ export class ModelEditorModule extends DisposableObject {
             maxStep,
           });
 
+          // Check again just before opening the editor to ensure no model editor has been opened between
+          // our first check and now.
+          const existingView = this.editorViewTracker.getView(
+            db.databaseUri.toString(),
+          );
+          if (existingView) {
+            await existingView.focusView();
+
+            return;
+          }
+
           const view = new ModelEditorView(
             this.app,
             this.modelingStore,
@@ -204,7 +223,6 @@ export class ModelEditorModule extends DisposableObject {
             queryDir,
             db,
             modelFile,
-            Mode.Application,
           );
 
           this.modelingStore.onDbClosed(async (dbUri) => {

@@ -7,6 +7,7 @@ export interface ModelEditorViewState {
   showLlmButton: boolean;
   showMultipleModels: boolean;
   mode: Mode;
+  sourceArchiveAvailable: boolean;
 }
 
 export interface MethodModelingPanelViewState {

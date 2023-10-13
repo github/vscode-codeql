@@ -71,13 +71,13 @@ export type LibraryRowProps = {
   title: string;
   libraryVersion?: string;
   methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     dependencyName: string,
@@ -92,7 +92,7 @@ export const LibraryRow = ({
   title,
   libraryVersion,
   methods,
-  modeledMethods,
+  modeledMethodsMap,
   modifiedSignatures,
   inProgressMethods,
   viewState,
@@ -231,7 +231,7 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             packageName={title}
             methods={methods}
-            modeledMethods={modeledMethods}
+            modeledMethodsMap={modeledMethodsMap}
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}
             viewState={viewState}

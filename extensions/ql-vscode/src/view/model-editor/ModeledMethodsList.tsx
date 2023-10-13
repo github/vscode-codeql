@@ -13,13 +13,13 @@ import { InProgressMethods } from "../../model-editor/shared/in-progress-methods
 
 export type ModeledMethodsListProps = {
   methods: Method[];
-  modeledMethods: Record<string, ModeledMethod>;
+  modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   revealedMethodSignature: string | null;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     packageName: string,
@@ -36,7 +36,7 @@ const libraryNameOverrides: Record<string, string> = {
 
 export const ModeledMethodsList = ({
   methods,
-  modeledMethods,
+  modeledMethodsMap,
   modifiedSignatures,
   inProgressMethods,
   viewState,
@@ -82,7 +82,7 @@ export const ModeledMethodsList = ({
           title={libraryNameOverrides[libraryName] ?? libraryName}
           libraryVersion={libraryVersions[libraryName]}
           methods={grouped[libraryName]}
-          modeledMethods={modeledMethods}
+          modeledMethodsMap={modeledMethodsMap}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}

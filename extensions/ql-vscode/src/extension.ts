@@ -1170,13 +1170,16 @@ function addUnhandledRejectionListener() {
       const message = redactableError(
         asError(error),
       )`Unhandled error: ${getErrorMessage(error)}`;
+      const stack = getErrorStack(error);
+      const fullMessage = stack
+        ? `Unhandled error: ${stack}`
+        : message.fullMessage;
+
       // Add a catch so that showAndLogExceptionWithTelemetry fails, we avoid
       // triggering "unhandledRejection" and avoid an infinite loop
-      showAndLogExceptionWithTelemetry(
-        extLogger,
-        telemetryListener,
-        message,
-      ).catch((telemetryError: unknown) => {
+      showAndLogExceptionWithTelemetry(extLogger, telemetryListener, message, {
+        fullMessage,
+      }).catch((telemetryError: unknown) => {
         void extLogger.log(
           `Failed to send error telemetry: ${getErrorMessage(telemetryError)}`,
         );

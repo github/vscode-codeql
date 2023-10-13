@@ -24,6 +24,7 @@ import { BaseLogger, showAndLogWarningMessage } from "./common/logging";
 import { extLogger } from "./common/logging/vscode";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./common/helpers-pure";
+import { createHash } from "crypto";
 
 /**
  * run-queries.ts
@@ -150,7 +151,12 @@ export class QueryEvaluationInfo extends QueryOutputDir {
     };
   }
   getSortedResultSetPath(resultSetName: string) {
-    return join(this.querySaveDir, `sortedResults-${resultSetName}.bqrs`);
+    const hasher = createHash("sha256");
+    hasher.update(resultSetName);
+    return join(
+      this.querySaveDir,
+      `sortedResults-${hasher.digest("hex")}.bqrs`,
+    );
   }
 
   /**

@@ -74,7 +74,7 @@ const ButtonsContainer = styled.div`
 type Props = {
   initialViewState?: ModelEditorViewState;
   initialMethods?: Method[];
-  initialModeledMethods?: Record<string, ModeledMethod>;
+  initialModeledMethods?: Record<string, ModeledMethod[]>;
   initialHideModeledMethods?: boolean;
 };
 
@@ -113,7 +113,7 @@ export function ModelEditor({
   }, [hideModeledMethods]);
 
   const [modeledMethods, setModeledMethods] = useState<
-    Record<string, ModeledMethod>
+    Record<string, ModeledMethod[]>
   >(initialModeledMethods);
 
   useEffect(() => {
@@ -180,12 +180,16 @@ export function ModelEditor({
     [methods],
   );
 
-  const onChange = useCallback((model: ModeledMethod) => {
-    vscode.postMessage({
-      t: "setModeledMethod",
-      method: model,
-    });
-  }, []);
+  const onChange = useCallback(
+    (methodSignature: string, modeledMethods: ModeledMethod[]) => {
+      vscode.postMessage({
+        t: "setMultipleModeledMethods",
+        methodSignature,
+        modeledMethods,
+      });
+    },
+    [],
+  );
 
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
@@ -282,10 +286,12 @@ export function ModelEditor({
             <>{viewState.extensionPack.name}</>
           </HeaderRow>
           <HeaderRow>
-            <LinkIconButton onClick={onOpenDatabaseClick}>
-              <span slot="start" className="codicon codicon-package"></span>
-              Open database
-            </LinkIconButton>
+            {viewState.sourceArchiveAvailable && (
+              <LinkIconButton onClick={onOpenDatabaseClick}>
+                <span slot="start" className="codicon codicon-package"></span>
+                Open source
+              </LinkIconButton>
+            )}
             <LinkIconButton onClick={onOpenExtensionPackClick}>
               <span slot="start" className="codicon codicon-package"></span>
               Open extension pack
@@ -329,7 +335,7 @@ export function ModelEditor({
         </ButtonsContainer>
         <ModeledMethodsList
           methods={methods}
-          modeledMethods={modeledMethods}
+          modeledMethodsMap={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}

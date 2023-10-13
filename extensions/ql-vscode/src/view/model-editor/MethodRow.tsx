@@ -1,11 +1,12 @@
 import {
+  VSCodeButton,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeLink,
   VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
-import { forwardRef, useCallback, useEffect, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
@@ -22,6 +23,7 @@ import { ModelTypeDropdown } from "./ModelTypeDropdown";
 import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import { Codicon } from "../common";
 
 const MultiModelColumn = styled(VSCodeDataGridCell)`
   display: flex;
@@ -55,6 +57,11 @@ const ProgressRing = styled(VSCodeProgressRing)`
   margin-left: auto;
 `;
 
+const CodiconRow = styled(VSCodeButton)`
+  min-height: calc(var(--input-height) * 1px);
+  align-items: center;
+`;
+
 const DataGridRow = styled(VSCodeDataGridRow)<{ focused?: boolean }>`
   outline: ${(props) =>
     props.focused ? "1px solid var(--vscode-focusBorder)" : "none"};
@@ -68,7 +75,7 @@ export type MethodRowProps = {
   modelingInProgress: boolean;
   viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
 export const MethodRow = (props: MethodRowProps) => {
@@ -103,9 +110,20 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       onChange,
     } = props;
 
-    const modeledMethods = viewState.showMultipleModels
-      ? modeledMethodsProp
-      : modeledMethodsProp.slice(0, 1);
+    const modeledMethods = useMemo(
+      () => modeledMethodsToDisplay(modeledMethodsProp, method, viewState),
+      [modeledMethodsProp, method, viewState],
+    );
+
+    const modeledMethodChangedHandlers = useMemo(
+      () =>
+        modeledMethods.map((_, index) => (modeledMethod: ModeledMethod) => {
+          const newModeledMethods = [...modeledMethods];
+          newModeledMethods[index] = modeledMethod;
+          onChange(method.signature, newModeledMethods);
+        }),
+      [method, modeledMethods, onChange],
+    );
 
     const jumpToMethod = useCallback(
       () => sendJumpToMethodMessage(method),
@@ -148,50 +166,70 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <VSCodeDataGridCell gridColumn={5}>
               <InProgressDropdown />
             </VSCodeDataGridCell>
+            {viewState.showMultipleModels && (
+              <VSCodeDataGridCell gridColumn={6}>
+                <CodiconRow appearance="icon" disabled={true}>
+                  <Codicon name="add" label="Add new model" />
+                </CodiconRow>
+              </VSCodeDataGridCell>
+            )}
           </>
         )}
         {!props.modelingInProgress && (
           <>
             <MultiModelColumn gridColumn={2}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelTypeDropdown
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={3}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelInputDropdown
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={4}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelOutputDropdown
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>
             <MultiModelColumn gridColumn={5}>
-              {forEachModeledMethod(modeledMethods, (modeledMethod, index) => (
+              {modeledMethods.map((modeledMethod, index) => (
                 <ModelKindDropdown
                   key={index}
                   method={method}
                   modeledMethod={modeledMethod}
-                  onChange={onChange}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               ))}
             </MultiModelColumn>
+            {viewState.showMultipleModels && (
+              <MultiModelColumn gridColumn={6}>
+                {modeledMethods.map((_, index) => (
+                  <CodiconRow key={index} appearance="icon" disabled={false}>
+                    {index === modeledMethods.length - 1 ? (
+                      <Codicon name="add" label="Add new model" />
+                    ) : (
+                      <Codicon name="trash" label="Remove model" />
+                    )}
+                  </CodiconRow>
+                ))}
+              </MultiModelColumn>
+            )}
           </>
         )}
       </DataGridRow>
@@ -245,16 +283,31 @@ function sendJumpToMethodMessage(method: Method) {
   });
 }
 
-function forEachModeledMethod(
+function modeledMethodsToDisplay(
   modeledMethods: ModeledMethod[],
-  renderer: (
-    modeledMethod: ModeledMethod | undefined,
-    index: number,
-  ) => JSX.Element,
-): JSX.Element | JSX.Element[] {
+  method: Method,
+  viewState: ModelEditorViewState,
+): ModeledMethod[] {
   if (modeledMethods.length === 0) {
-    return renderer(undefined, 0);
+    return [
+      {
+        type: "none",
+        input: "",
+        output: "",
+        kind: "",
+        provenance: "manual",
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
+      },
+    ];
+  }
+
+  if (viewState.showMultipleModels) {
+    return modeledMethods;
   } else {
-    return modeledMethods.map(renderer);
+    return modeledMethods.slice(0, 1);
   }
 }

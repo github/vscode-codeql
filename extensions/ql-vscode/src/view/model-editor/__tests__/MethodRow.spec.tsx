@@ -39,6 +39,7 @@ describe(MethodRow.name, () => {
     showLlmButton: false,
     showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
   };
 
   const render = (props: Partial<MethodRowProps> = {}) =>
@@ -72,6 +73,33 @@ describe(MethodRow.name, () => {
     expect(screen.queryByLabelText("Loading")).not.toBeInTheDocument();
   });
 
+  it("can change the type when there is no modeled method", async () => {
+    render({ modeledMethods: [] });
+
+    onChange.mockReset();
+
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: "Model type" }),
+      "source",
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      {
+        type: "source",
+        input: "Argument[0]",
+        output: "ReturnValue",
+        kind: "value",
+        provenance: "manual",
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
+      },
+    ]);
+  });
+
   it("can change the kind", async () => {
     render();
 
@@ -85,10 +113,12 @@ describe(MethodRow.name, () => {
     );
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith({
-      ...modeledMethod,
-      kind: "value",
-    });
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      {
+        ...modeledMethod,
+        kind: "value",
+      },
+    ]);
   });
 
   it("has the correct input options", () => {
@@ -178,6 +208,38 @@ describe(MethodRow.name, () => {
     const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
     expect(kindInputs.length).toBe(1);
     expect(kindInputs[0]).toHaveValue("source");
+  });
+
+  it("can update fields when there are multiple models", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink", kind: "code-injection" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    onChange.mockReset();
+
+    expect(screen.getAllByRole("combobox", { name: "Kind" })[1]).toHaveValue(
+      "code-injection",
+    );
+
+    await userEvent.selectOptions(
+      screen.getAllByRole("combobox", { name: "Kind" })[1],
+      "sql-injection",
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      { ...modeledMethod, type: "source" },
+      { ...modeledMethod, type: "sink", kind: "sql-injection" },
+      { ...modeledMethod, type: "summary" },
+    ]);
   });
 
   it("renders an unmodelable method", () => {

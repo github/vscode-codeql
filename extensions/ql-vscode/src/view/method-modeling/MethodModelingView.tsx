@@ -2,7 +2,7 @@ import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { MethodModeling } from "./MethodModeling";
 import { getModelingStatus } from "../../model-editor/shared/modeling-status";
-import { Method } from "../../model-editor/method";
+import { Method, canMethodBeModeled } from "../../model-editor/method";
 import { ToMethodModelingMessage } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { ModeledMethod } from "../../model-editor/modeled-method";
@@ -10,6 +10,7 @@ import { vscode } from "../vscode-api";
 import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
 import { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
+import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
 
 type Props = {
   initialViewState?: MethodModelingPanelViewState;
@@ -23,16 +24,13 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
 
   const [method, setMethod] = useState<Method | undefined>(undefined);
 
-  const [modeledMethod, setModeledMethod] = React.useState<
-    ModeledMethod | undefined
-  >(undefined);
+  const [modeledMethods, setModeledMethods] = useState<ModeledMethod[]>([]);
 
   const [isMethodModified, setIsMethodModified] = useState<boolean>(false);
 
   const modelingStatus = useMemo(
-    () =>
-      getModelingStatus(modeledMethod ? [modeledMethod] : [], isMethodModified),
-    [modeledMethod, isMethodModified],
+    () => getModelingStatus(modeledMethods, isMethodModified),
+    [modeledMethods, isMethodModified],
   );
 
   useEffect(() => {
@@ -49,15 +47,15 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
           case "setMethod":
             setMethod(msg.method);
             break;
-          case "setModeledMethod":
-            setModeledMethod(msg.method);
+          case "setMultipleModeledMethods":
+            setModeledMethods(msg.modeledMethods);
             break;
           case "setMethodModified":
             setIsMethodModified(msg.isModified);
             break;
           case "setSelectedMethod":
             setMethod(msg.method);
-            setModeledMethod(msg.modeledMethod);
+            setModeledMethods(msg.modeledMethods);
             setIsMethodModified(msg.isModified);
             break;
           default:
@@ -84,10 +82,18 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     return <NoMethodSelected />;
   }
 
-  const onChange = (modeledMethod: ModeledMethod) => {
+  if (!canMethodBeModeled(method, modeledMethods, isMethodModified)) {
+    return <MethodAlreadyModeled />;
+  }
+
+  const onChange = (
+    methodSignature: string,
+    modeledMethods: ModeledMethod[],
+  ) => {
     vscode.postMessage({
-      t: "setModeledMethod",
-      method: modeledMethod,
+      t: "setMultipleModeledMethods",
+      methodSignature,
+      modeledMethods,
     });
   };
 
@@ -95,7 +101,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     <MethodModeling
       modelingStatus={modelingStatus}
       method={method}
-      modeledMethods={modeledMethod ? [modeledMethod] : []}
+      modeledMethods={modeledMethods}
       showMultipleModels={viewState?.showMultipleModels}
       onChange={onChange}
     />

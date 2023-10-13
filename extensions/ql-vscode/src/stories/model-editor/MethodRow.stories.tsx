@@ -6,7 +6,10 @@ import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodR
 import { CallClassification, Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { VSCodeDataGrid } from "@vscode/webview-ui-toolkit/react";
-import { GRID_TEMPLATE_COLUMNS } from "../../view/model-editor/ModeledMethodDataGrid";
+import {
+  MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS,
+  SINGLE_MODEL_GRID_TEMPLATE_COLUMNS,
+} from "../../view/model-editor/ModeledMethodDataGrid";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { createMockExtensionPack } from "../../../test/factories/model-editor/extension-pack";
 import { Mode } from "../../model-editor/shared/mode";
@@ -16,11 +19,16 @@ export default {
   component: MethodRowComponent,
 } as Meta<typeof MethodRowComponent>;
 
-const Template: StoryFn<typeof MethodRowComponent> = (args) => (
-  <VSCodeDataGrid gridTemplateColumns={GRID_TEMPLATE_COLUMNS}>
-    <MethodRowComponent {...args} />
-  </VSCodeDataGrid>
-);
+const Template: StoryFn<typeof MethodRowComponent> = (args) => {
+  const gridTemplateColumns = args.viewState?.showMultipleModels
+    ? MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS
+    : SINGLE_MODEL_GRID_TEMPLATE_COLUMNS;
+  return (
+    <VSCodeDataGrid gridTemplateColumns={gridTemplateColumns}>
+      <MethodRowComponent {...args} />
+    </VSCodeDataGrid>
+  );
+};
 
 const method: Method = {
   library: "sql2o-1.6.0.jar",
@@ -75,6 +83,7 @@ const viewState: ModelEditorViewState = {
   showLlmButton: true,
   showMultipleModels: true,
   mode: Mode.Application,
+  sourceArchiveAvailable: true,
 };
 
 export const Unmodeled = Template.bind({});

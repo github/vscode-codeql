@@ -507,7 +507,7 @@ interface SetMethodsMessage {
 
 interface SetModeledMethodsMessage {
   t: "setModeledMethods";
-  methods: Record<string, ModeledMethod>;
+  methods: Record<string, ModeledMethod[]>;
 }
 
 interface SetModifiedMethodsMessage {
@@ -572,9 +572,10 @@ interface HideModeledMethodsMessage {
   hideModeledMethods: boolean;
 }
 
-interface SetModeledMethodMessage {
-  t: "setModeledMethod";
-  method: ModeledMethod;
+interface SetMultipleModeledMethodsMessage {
+  t: "setMultipleModeledMethods";
+  methodSignature: string;
+  modeledMethods: ModeledMethod[];
 }
 
 interface SetInModelingModeMessage {
@@ -596,7 +597,7 @@ export type ToModelEditorMessage =
   | RevealMethodMessage;
 
 export type FromModelEditorMessage =
-  | ViewLoadedMsg
+  | CommonFromViewMessages
   | SwitchModeMessage
   | RefreshMethods
   | OpenDatabaseMessage
@@ -608,7 +609,7 @@ export type FromModelEditorMessage =
   | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
   | HideModeledMethodsMessage
-  | SetModeledMethodMessage;
+  | SetMultipleModeledMethodsMessage;
 
 interface RevealInEditorMessage {
   t: "revealInModelEditor";
@@ -621,7 +622,7 @@ interface StartModelingMessage {
 
 export type FromMethodModelingMessage =
   | CommonFromViewMessages
-  | SetModeledMethodMessage
+  | SetMultipleModeledMethodsMessage
   | RevealInEditorMessage
   | StartModelingMessage;
 
@@ -643,14 +644,14 @@ interface SetMethodModifiedMessage {
 interface SetSelectedMethodMessage {
   t: "setSelectedMethod";
   method: Method;
-  modeledMethod?: ModeledMethod;
+  modeledMethods: ModeledMethod[];
   isModified: boolean;
 }
 
 export type ToMethodModelingMessage =
   | SetMethodModelingPanelViewStateMessage
   | SetMethodMessage
-  | SetModeledMethodMessage
+  | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
   | SetSelectedMethodMessage
   | SetInModelingModeMessage;

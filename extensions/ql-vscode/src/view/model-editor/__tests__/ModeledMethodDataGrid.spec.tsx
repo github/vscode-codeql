@@ -49,6 +49,7 @@ describe(ModeledMethodDataGrid.name, () => {
     showLlmButton: false,
     showMultipleModels: false,
     extensionPack: createMockExtensionPack(),
+    sourceArchiveAvailable: true,
   };
 
   const render = (props: Partial<ModeledMethodDataGridProps> = {}) =>
@@ -56,15 +57,17 @@ describe(ModeledMethodDataGrid.name, () => {
       <ModeledMethodDataGrid
         packageName="sql2o"
         methods={[method1, method2, method3]}
-        modeledMethods={{
-          [method1.signature]: {
-            ...method1,
-            type: "sink",
-            input: "Argument[0]",
-            output: "",
-            kind: "jndi-injection",
-            provenance: "df-generated",
-          },
+        modeledMethodsMap={{
+          [method1.signature]: [
+            {
+              ...method1,
+              type: "sink",
+              input: "Argument[0]",
+              output: "",
+              kind: "jndi-injection",
+              provenance: "df-generated",
+            },
+          ],
         }}
         modifiedSignatures={new Set([method1.signature])}
         inProgressMethods={new InProgressMethods()}
