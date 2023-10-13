@@ -1528,7 +1528,7 @@ export class CodeQLCliServer implements Disposable {
         await this.app.commands.execute(
           "setContext",
           "codeql.supportsTrimCache",
-          newVersion.compare(
+          newVersionAndFeatures.version.compare(
             CliVersionConstraint.CLI_VERSION_WITH_TRIM_CACHE,
           ) >= 0,
         );
