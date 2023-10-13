@@ -3,7 +3,7 @@ import { extract as tar_extract, Headers } from "tar-stream";
 import { pipeline } from "stream/promises";
 import { createGunzip } from "zlib";
 
-interface QueryPackFS {
+export interface QueryPackFS {
   fileExists: (name: string) => boolean;
   fileContents: (name: string) => Buffer;
   directoryContents: (name: string) => string[];

@@ -29,10 +29,26 @@ import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { readBundledPack } from "../../utils/bundled-pack-helpers";
+import { QueryPackFS, readBundledPack } from "../../utils/bundled-pack-helpers";
 import { load } from "js-yaml";
 import { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
 import { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
+
+function existenceString(file: string, exists: boolean): string {
+  return `${exists ? "exists" : "does not exist"}: ${file}`;
+}
+
+function expectFileExists(packFS: QueryPackFS, file: string): void {
+  expect(existenceString(file, packFS.fileExists(file))).toEqual(
+    existenceString(file, true),
+  );
+}
+
+function expectFileNotExists(packFS: QueryPackFS, file: string): void {
+  expect(existenceString(file, packFS.fileExists(file))).toEqual(
+    existenceString(file, false),
+  );
+}
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
@@ -354,16 +370,16 @@ describe("Variant Analysis Manager", () => {
 
       const packFS = await readBundledPack(request.query.pack);
       filesThatExist.forEach((file) => {
-        expect(packFS.fileExists(file)).toBe(true);
+        expectFileExists(packFS, file);
       });
 
       if (await cli.cliConstraints.supportsQlxRemote()) {
         qlxFilesThatExist.forEach((file) => {
-          expect(packFS.fileExists(file)).toBe(true);
+          expectFileExists(packFS, file);
         });
       }
       filesThatDoNotExist.forEach((file) => {
-        expect(packFS.fileExists(file)).toBe(false);
+        expectFileNotExists(packFS, file);
       });
 
       expect(
