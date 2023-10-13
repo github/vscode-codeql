@@ -11,7 +11,7 @@ export type ModeledMethodsPanelProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
   showMultipleModels: boolean;
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
 const SingleMethodModelingInputs = styled(MethodModelingInputs)`
@@ -24,9 +24,9 @@ export const ModeledMethodsPanel = ({
   showMultipleModels,
   onChange,
 }: ModeledMethodsPanelProps) => {
-  const handleMultipleChange = useCallback(
-    (modeledMethods: ModeledMethod[]) => {
-      onChange(modeledMethods[0]);
+  const handleSingleChange = useCallback(
+    (modeledMethod: ModeledMethod) => {
+      onChange(modeledMethod.signature, [modeledMethod]);
     },
     [onChange],
   );
@@ -36,7 +36,7 @@ export const ModeledMethodsPanel = ({
       <SingleMethodModelingInputs
         method={method}
         modeledMethod={convertToLegacyModeledMethod(modeledMethods)}
-        onChange={onChange}
+        onChange={handleSingleChange}
       />
     );
   }
@@ -45,7 +45,7 @@ export const ModeledMethodsPanel = ({
     <MultipleModeledMethodsPanel
       method={method}
       modeledMethods={modeledMethods}
-      onChange={handleMultipleChange}
+      onChange={onChange}
     />
   );
 };
