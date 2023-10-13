@@ -40,16 +40,13 @@ describe("LanguageSelectionTreeDataProvider", () => {
           return getLanguageDisplayName(language);
         }),
       ];
-      // Note that the internal order of C# and C / C++ is different from what is shown in the UI.
-      [expectedLanguageNames[1], expectedLanguageNames[2]] = [
-        expectedLanguageNames[2],
-        expectedLanguageNames[1],
-      ];
       const actualLanguagesNames = dataProvider.getChildren().map((item) => {
         return item.label;
       });
 
-      expect(actualLanguagesNames).toEqual(expectedLanguageNames);
+      // Note that the internal order of C# and C / C++ is different from what is shown in the UI.
+      // So we sort to make sure we can compare the two lists.
+      expect(actualLanguagesNames.sort()).toEqual(expectedLanguageNames.sort());
     });
 
     it("default selection is All languages", async () => {

@@ -367,6 +367,7 @@ export type AllExtensionCommands = BaseCommands &
   QueryEditorCommands &
   ResultsViewCommands &
   QueryHistoryCommands &
+  LanguageSelectionCommands &
   LocalDatabasesCommands &
   DebuggerCommands &
   VariantAnalysisCommands &

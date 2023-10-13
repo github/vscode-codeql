@@ -51,12 +51,12 @@ export class LanguageSelectionTreeDataProvider
   public constructor(private readonly languageContext: LanguageContextStore) {
     super();
 
-    this.treeItems = this.createTree(languageContext);
+    this.treeItems = this.createTree();
 
     // If the language context changes, we need to update the tree.
     this.push(
       this.languageContext.onLanguageContextChanged(() => {
-        this.treeItems = this.createTree(languageContext);
+        this.treeItems = this.createTree();
         this.onDidChangeTreeDataEmitter.fire();
       }),
     );
@@ -80,13 +80,11 @@ export class LanguageSelectionTreeDataProvider
     }
   }
 
-  private createTree(
-    languageContext: LanguageContextStore,
-  ): LanguageSelectionTreeViewItem[] {
+  private createTree(): LanguageSelectionTreeViewItem[] {
     return ALL_LANGUAGE_SELECTION_OPTIONS.map((language) => {
       return new LanguageSelectionTreeViewItem(
         language,
-        languageContext.selectedLanguage(language),
+        this.languageContext.isSelectedLanguage(language),
       );
     });
   }

@@ -14,6 +14,7 @@ export class LanguageSelectionPanel extends DisposableObject {
     super();
 
     const dataProvider = new LanguageSelectionTreeDataProvider(languageContext);
+    this.push(dataProvider);
 
     const treeView = window.createTreeView("codeQLLanguageSelection", {
       treeDataProvider: dataProvider,

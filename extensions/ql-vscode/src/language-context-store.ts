@@ -43,11 +43,15 @@ export class LanguageContextStore extends DisposableObject {
     );
   }
 
+  // shouldInclude should return true if the given language should be included.
+  // That means that either the given language is selected or the "All" option is selected.
   public shouldInclude(language: QueryLanguage | undefined): boolean {
     return this.languageFilter === "All" || this.languageFilter === language;
   }
 
-  public selectedLanguage(language: QueryLanguage | undefined): boolean {
+  // isSelectedLanguage returns true if the given language is selected. If no language
+  // is given then it returns true if the "All" option is selected.
+  public isSelectedLanguage(language: QueryLanguage | undefined): boolean {
     return (
       (this.languageFilter === "All" && language === undefined) ||
       this.languageFilter === language
