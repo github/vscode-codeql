@@ -57,7 +57,7 @@ describe("LanguageSelectionTreeDataProvider", () => {
       expectSelected(items, undefined);
     });
 
-    it("When language is changed then the selected element change", async () => {
+    it("When language is changed then the selected element changes", async () => {
       await languageContext.setLanguageContext(QueryLanguage.CSharp);
       const items = dataProvider.getChildren();
       expectSelected(items, QueryLanguage.CSharp);

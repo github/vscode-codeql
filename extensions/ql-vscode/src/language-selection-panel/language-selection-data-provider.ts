@@ -13,7 +13,7 @@ import {
 } from "../common/query-language";
 
 const ALL_LANGUAGE_SELECTION_OPTIONS = [
-  undefined, // All langauges
+  undefined, // All languages
   QueryLanguage.Cpp,
   QueryLanguage.CSharp,
   QueryLanguage.Go,
@@ -24,7 +24,7 @@ const ALL_LANGUAGE_SELECTION_OPTIONS = [
   QueryLanguage.Swift,
 ];
 
-// A tree view items consisting of of a language (or undefined for all languages
+// A tree view items consisting of of a language (or undefined for all languages)
 // and a boolean indicating whether it is selected or not.
 export class LanguageSelectionTreeViewItem extends TreeItem {
   constructor(
