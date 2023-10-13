@@ -53,10 +53,20 @@ export class LegacyQueryRunner extends QueryRunner {
   ) {
     this.qs.onDidStartQueryServer(callBack);
   }
+
   async clearCacheInDatabase(
     dbItem: DatabaseItem,
     token: CancellationToken,
   ): Promise<void> {
+    await clearCacheInDatabase(this.qs, dbItem, token);
+  }
+
+  async trimCacheInDatabase(
+    dbItem: DatabaseItem,
+    token: CancellationToken,
+  ): Promise<void> {
+    // For the sake of conforming to the QueryRunner interface, delegate to clearCacheInDatabase
+    // just for the effect of getting a legacy query server deprecation error response.
     await clearCacheInDatabase(this.qs, dbItem, token);
   }
 

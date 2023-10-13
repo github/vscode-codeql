@@ -20,11 +20,11 @@ export type Provenance =
   | "manual";
 
 export interface ModeledMethod extends MethodSignature {
-  type: ModeledMethodType;
-  input: string;
-  output: string;
-  kind: ModeledMethodKind;
-  provenance: Provenance;
+  readonly type: ModeledMethodType;
+  readonly input: string;
+  readonly output: string;
+  readonly kind: ModeledMethodKind;
+  readonly provenance: Provenance;
 }
 
 export type ModeledMethodKind = string;

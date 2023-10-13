@@ -572,11 +572,6 @@ interface HideModeledMethodsMessage {
   hideModeledMethods: boolean;
 }
 
-interface SetModeledMethodMessage {
-  t: "setModeledMethod";
-  method: ModeledMethod;
-}
-
 interface SetMultipleModeledMethodsMessage {
   t: "setMultipleModeledMethods";
   methodSignature: string;
@@ -627,7 +622,7 @@ interface StartModelingMessage {
 
 export type FromMethodModelingMessage =
   | CommonFromViewMessages
-  | SetModeledMethodMessage
+  | SetMultipleModeledMethodsMessage
   | RevealInEditorMessage
   | StartModelingMessage;
 

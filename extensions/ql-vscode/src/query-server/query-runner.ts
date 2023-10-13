@@ -67,6 +67,11 @@ export abstract class QueryRunner {
     token: CancellationToken,
   ): Promise<void>;
 
+  abstract trimCacheInDatabase(
+    dbItem: DatabaseItem,
+    token: CancellationToken,
+  ): Promise<void>;
+
   /**
    * Overridden in subclasses to evaluate the query via the query server and return the results.
    */

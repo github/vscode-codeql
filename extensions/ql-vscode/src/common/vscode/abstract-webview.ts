@@ -12,6 +12,7 @@ import { App } from "../app";
 import { Disposable } from "../disposable-object";
 import { tmpDir } from "../../tmp-dir";
 import { getHtmlForWebview, WebviewMessage, WebviewKind } from "./webview-html";
+import { DeepReadonly } from "../readonly";
 
 export type WebviewPanelConfig = {
   viewId: string;
@@ -146,7 +147,7 @@ export abstract class AbstractWebview<
     this.panelLoadedCallBacks = [];
   }
 
-  protected async postMessage(msg: ToMessage): Promise<boolean> {
+  protected async postMessage(msg: DeepReadonly<ToMessage>): Promise<boolean> {
     const panel = await this.getPanel();
     return panel.webview.postMessage(msg);
   }

@@ -1,6 +1,6 @@
 import { Method } from "../method";
 
-export function calculateModeledPercentage(methods: Method[]): number {
+export function calculateModeledPercentage(methods: readonly Method[]): number {
   if (methods.length === 0) {
     return 0;
   }

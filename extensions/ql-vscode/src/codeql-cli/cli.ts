@@ -1525,6 +1525,13 @@ export class CodeQLCliServer implements Disposable {
             CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
           ) >= 0,
         );
+        await this.app.commands.execute(
+          "setContext",
+          "codeql.supportsTrimCache",
+          newVersion.compare(
+            CliVersionConstraint.CLI_VERSION_WITH_TRIM_CACHE,
+          ) >= 0,
+        );
       } catch (e) {
         this._versionChangedListeners.forEach((listener) =>
           listener(undefined),
@@ -1796,6 +1803,12 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_VISIBILITY_NOTIFICATIONS = new SemVer(
     "2.14.0",
   );
+
+  /**
+   * CLI version where the query server supports the `evaluation/trimCache` method
+   * with `codeql database cleanup --mode=trim` semantics.
+   */
+  public static CLI_VERSION_WITH_TRIM_CACHE = new SemVer("2.15.1");
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/

@@ -58,8 +58,8 @@ export class AutoModeler {
    */
   public async startModeling(
     packageName: string,
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod[]>,
+    methods: readonly Method[],
+    modeledMethods: Record<string, readonly ModeledMethod[]>,
     mode: Mode,
   ): Promise<void> {
     if (this.jobs.has(packageName)) {
@@ -105,8 +105,8 @@ export class AutoModeler {
 
   private async modelPackage(
     packageName: string,
-    methods: Method[],
-    modeledMethods: Record<string, ModeledMethod[]>,
+    methods: readonly Method[],
+    modeledMethods: Record<string, readonly ModeledMethod[]>,
     mode: Mode,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {

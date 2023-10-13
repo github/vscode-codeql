@@ -1,7 +1,6 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import { InProgressMethods } from "../../../model-editor/shared/in-progress-methods";
 import { Mode } from "../../../model-editor/shared/mode";
 import {
   ModeledMethodDataGrid,
@@ -70,7 +69,7 @@ describe(ModeledMethodDataGrid.name, () => {
           ],
         }}
         modifiedSignatures={new Set([method1.signature])}
-        inProgressMethods={new InProgressMethods()}
+        inProgressMethods={{}}
         viewState={viewState}
         hideModeledMethods={false}
         revealedMethodSignature={null}

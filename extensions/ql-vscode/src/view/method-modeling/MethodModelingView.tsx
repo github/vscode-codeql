@@ -86,10 +86,14 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     return <MethodAlreadyModeled />;
   }
 
-  const onChange = (modeledMethod: ModeledMethod) => {
+  const onChange = (
+    methodSignature: string,
+    modeledMethods: ModeledMethod[],
+  ) => {
     vscode.postMessage({
-      t: "setModeledMethod",
-      method: modeledMethod,
+      t: "setMultipleModeledMethods",
+      methodSignature,
+      modeledMethods,
     });
   };
 

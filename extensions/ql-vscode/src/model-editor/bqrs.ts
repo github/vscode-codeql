@@ -88,9 +88,16 @@ export function decodeBqrsToMethods(
     }
 
     const method = methodsByApiName.get(signature)!;
-    method.usages.push({
-      ...usage,
-      classification,
+    const usages = [
+      ...method.usages,
+      {
+        ...usage,
+        classification,
+      },
+    ];
+    methodsByApiName.set(signature, {
+      ...method,
+      usages,
     });
   });
 
