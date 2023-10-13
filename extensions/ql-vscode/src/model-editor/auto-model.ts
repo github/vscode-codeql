@@ -19,8 +19,8 @@ import { groupMethods, sortGroupNames, sortMethods } from "./shared/sorting";
  */
 export function getCandidates(
   mode: Mode,
-  methods: Method[],
-  modeledMethodsBySignature: Record<string, ModeledMethod[]>,
+  methods: readonly Method[],
+  modeledMethodsBySignature: Record<string, readonly ModeledMethod[]>,
 ): MethodSignature[] {
   // Sort the same way as the UI so we send the first ones listed in the UI first
   const grouped = groupMethods(methods, mode);
@@ -32,8 +32,9 @@ export function getCandidates(
   const candidates: MethodSignature[] = [];
 
   for (const method of sortedMethods) {
-    const modeledMethods: ModeledMethod[] =
-      modeledMethodsBySignature[method.signature] ?? [];
+    const modeledMethods: ModeledMethod[] = [
+      ...(modeledMethodsBySignature[method.signature] ?? []),
+    ];
 
     // Anything that is modeled is not a candidate
     if (modeledMethods.some((m) => m.type !== "none")) {
