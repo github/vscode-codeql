@@ -5,10 +5,7 @@ import { DatabaseItem } from "../databases/local-databases";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
-import {
-  InProgressMethods,
-  setPackageInProgressMethods,
-} from "./shared/in-progress-methods";
+import { InProgressMethods } from "./shared/in-progress-methods";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 
 interface InternalDbModelingState {
@@ -79,8 +76,8 @@ interface SelectedMethodChangedEvent {
 }
 
 interface InProgressMethodsChangedEvent {
-  dbUri: string;
-  methods: InProgressMethods;
+  readonly dbUri: string;
+  readonly methods: InProgressMethods;
 }
 
 export class ModelingStore extends DisposableObject {
@@ -422,11 +419,10 @@ export class ModelingStore extends DisposableObject {
   ) {
     const dbState = this.getState(dbItem);
 
-    dbState.inProgressMethods = setPackageInProgressMethods(
-      dbState.inProgressMethods,
-      packageName,
-      inProgressMethods,
-    );
+    dbState.inProgressMethods = {
+      ...dbState.inProgressMethods,
+      [packageName]: inProgressMethods,
+    };
 
     this.onInProgressMethodsChangedEventEmitter.fire({
       dbUri: dbItem.databaseUri.toString(),
