@@ -92,4 +92,45 @@ describe(ModelKindDropdown.name, () => {
       }),
     );
   });
+
+  it("does not call onChange when unmodeled and the kind is valid", () => {
+    const method = createMethod();
+    const modeledMethod = createModeledMethod({
+      type: "none",
+      kind: "",
+    });
+
+    render(
+      <ModelKindDropdown
+        method={method}
+        modeledMethod={modeledMethod}
+        onChange={onChange}
+      />,
+    );
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("calls onChange when unmodeled and the kind is valid", () => {
+    const method = createMethod();
+    const modeledMethod = createModeledMethod({
+      type: "none",
+      kind: "local",
+    });
+
+    render(
+      <ModelKindDropdown
+        method={method}
+        modeledMethod={modeledMethod}
+        onChange={onChange}
+      />,
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "",
+      }),
+    );
+  });
 });
