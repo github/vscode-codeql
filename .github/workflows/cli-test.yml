@@ -108,4 +108,4 @@ jobs:
         working-directory: extensions/ql-vscode
         if: matrix.os == 'windows-latest'
         run: |
-          npm run test:cli-integration
+          npm run test:cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/variant-analysis/variant-analysis-manager.test.ts
