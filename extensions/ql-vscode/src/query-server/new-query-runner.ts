@@ -10,6 +10,8 @@ import {
   clearPackCache,
   deregisterDatabases,
   registerDatabases,
+  trimCache,
+  TrimCacheParams,
   upgradeDatabase,
 } from "./new-messages";
 import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "./query-runner";
@@ -68,6 +70,21 @@ export class NewQueryRunner extends QueryRunner {
       db,
     };
     await this.qs.sendRequest(clearCache, params, token);
+  }
+
+  async trimCacheInDatabase(
+    dbItem: DatabaseItem,
+    token: CancellationToken,
+  ): Promise<void> {
+    if (dbItem.contents === undefined) {
+      throw new Error("Can't trim the cache in an invalid database.");
+    }
+
+    const db = dbItem.databaseUri.fsPath;
+    const params: TrimCacheParams = {
+      db,
+    };
+    await this.qs.sendRequest(trimCache, params, token);
   }
 
   public async compileAndRunQueryAgainstDatabaseCore(

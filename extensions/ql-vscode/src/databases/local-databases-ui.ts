@@ -252,6 +252,7 @@ export class DatabaseUI extends DisposableObject {
       "codeQL.upgradeCurrentDatabase":
         this.handleUpgradeCurrentDatabase.bind(this),
       "codeQL.clearCache": this.handleClearCache.bind(this),
+      "codeQL.trimCache": this.handleTrimCache.bind(this),
       "codeQLDatabases.chooseDatabaseFolder":
         this.handleChooseDatabaseFolder.bind(this),
       "codeQLDatabases.chooseDatabaseArchive":
@@ -699,6 +700,25 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Clearing cache",
+      },
+    );
+  }
+
+  private async handleTrimCache(): Promise<void> {
+    return withProgress(
+      async (_progress, token) => {
+        if (
+          this.queryServer !== undefined &&
+          this.databaseManager.currentDatabaseItem !== undefined
+        ) {
+          await this.queryServer.trimCacheInDatabase(
+            this.databaseManager.currentDatabaseItem,
+            token,
+          );
+        }
+      },
+      {
+        title: "Trimming cache",
       },
     );
   }
