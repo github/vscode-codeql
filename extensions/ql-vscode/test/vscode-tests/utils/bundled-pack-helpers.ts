@@ -56,7 +56,9 @@ export async function readBundledPack(
 
   await pipeline(stream, createGunzip(), extract);
 
-  expect(entryCount).toBeGreaterThan(0);
+  expect(`${entryCount} ${bufferIndex - 1}`).not.toEqual(
+    `0 ${bufferIndex - 1}`,
+  );
 
   const directories: Record<string, number> = {};
   for (let file of Object.keys(files)) {
