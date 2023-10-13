@@ -375,6 +375,7 @@ describe("Variant Analysis Manager", () => {
         mockSubmitVariantAnalysis.mock.calls[0][1];
 
       const packFS = await readBundledPack(request.query.pack);
+      expect(packFS.allFiles().length).not.toEqual(0);
       filesThatExist.forEach((file) => {
         expectFileExists(packFS, file);
       });
