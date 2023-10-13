@@ -24,16 +24,17 @@ export class MethodsUsageDataProvider
   extends DisposableObject
   implements TreeDataProvider<MethodsUsageTreeViewItem>
 {
-  private methods: Method[] = [];
+  private methods: readonly Method[] = [];
   // sortedMethods is a separate field so we can check if the methods have changed
   // by reference, which is faster than checking if the methods have changed by value.
-  private sortedMethods: Method[] = [];
+  private sortedMethods: readonly Method[] = [];
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
   private hideModeledMethods: boolean = INITIAL_HIDE_MODELED_METHODS_VALUE;
   private mode: Mode = INITIAL_MODE;
-  private modeledMethods: Record<string, ModeledMethod[]> = {};
-  private modifiedMethodSignatures: Set<string> = new Set();
+  private modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>> =
+    {};
+  private modifiedMethodSignatures: ReadonlySet<string> = new Set();
 
   private readonly onDidChangeTreeDataEmitter = this.push(
     new EventEmitter<void>(),
@@ -55,12 +56,12 @@ export class MethodsUsageDataProvider
    * method and instead always pass new objects/arrays.
    */
   public async setState(
-    methods: Method[],
+    methods: readonly Method[],
     databaseItem: DatabaseItem,
     hideModeledMethods: boolean,
     mode: Mode,
-    modeledMethods: Record<string, ModeledMethod[]>,
-    modifiedMethodSignatures: Set<string>,
+    modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
+    modifiedMethodSignatures: ReadonlySet<string>,
   ): Promise<void> {
     if (
       this.methods !== methods ||
@@ -145,10 +146,10 @@ export class MethodsUsageDataProvider
       if (this.hideModeledMethods) {
         return this.sortedMethods.filter((api) => !api.supported);
       } else {
-        return this.sortedMethods;
+        return [...this.sortedMethods];
       }
     } else if (isExternalApiUsage(item)) {
-      return item.usages;
+      return [...item.usages];
     } else {
       return [];
     }
@@ -194,7 +195,7 @@ function usagesAreEqual(u1: Usage, u2: Usage): boolean {
   );
 }
 
-function sortMethodsInGroups(methods: Method[], mode: Mode): Method[] {
+function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {
   const grouped = groupMethods(methods, mode);
 
   const sortedGroupNames = sortGroupNames(grouped);

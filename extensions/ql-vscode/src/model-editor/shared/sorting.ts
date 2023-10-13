@@ -3,7 +3,7 @@ import { Mode } from "./mode";
 import { calculateModeledPercentage } from "./modeled-percentage";
 
 export function groupMethods(
-  methods: Method[],
+  methods: readonly Method[],
   mode: Mode,
 ): Record<string, Method[]> {
   const groupedByLibrary: Record<string, Method[]> = {};
@@ -19,22 +19,24 @@ export function groupMethods(
   return groupedByLibrary;
 }
 
-export function sortGroupNames(methods: Record<string, Method[]>): string[] {
+export function sortGroupNames(
+  methods: Record<string, readonly Method[]>,
+): string[] {
   return Object.keys(methods).sort((a, b) =>
     compareGroups(methods[a], a, methods[b], b),
   );
 }
 
-export function sortMethods(methods: Method[]): Method[] {
+export function sortMethods(methods: readonly Method[]): Method[] {
   const sortedMethods = [...methods];
   sortedMethods.sort((a, b) => compareMethod(a, b));
   return sortedMethods;
 }
 
 function compareGroups(
-  a: Method[],
+  a: readonly Method[],
   aName: string,
-  b: Method[],
+  b: readonly Method[],
   bName: string,
 ): number {
   const supportedPercentageA = calculateModeledPercentage(a);

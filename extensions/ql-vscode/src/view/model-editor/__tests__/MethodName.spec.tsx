@@ -16,8 +16,9 @@ describe(MethodName.name, () => {
   });
 
   it("renders method name without package name", () => {
-    const method = createMethod();
-    method.packageName = "";
+    const method = createMethod({
+      packageName: "",
+    });
     render(method);
 
     const name = `${method.typeName}.${method.methodName}${method.methodParameters}`;

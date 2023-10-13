@@ -16,7 +16,7 @@ const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
 
 function createDataProperty(
-  methods: ModeledMethod[],
+  methods: readonly ModeledMethod[],
   definition: ExtensiblePredicateDefinition,
 ) {
   if (methods.length === 0) {
@@ -35,7 +35,7 @@ function createDataProperty(
 
 export function createDataExtensionYaml(
   language: string,
-  modeledMethods: ModeledMethod[],
+  modeledMethods: readonly ModeledMethod[],
 ) {
   const methodsByType: Record<
     Exclude<ModeledMethodType, "none">,
@@ -70,9 +70,11 @@ ${extensions.join("\n")}`;
 
 export function createDataExtensionYamls(
   language: string,
-  methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod[]>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
+  methods: readonly Method[],
+  newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
+  existingModeledMethods: Readonly<
+    Record<string, Record<string, readonly ModeledMethod[]>>
+  >,
   mode: Mode,
 ) {
   switch (mode) {
@@ -97,9 +99,11 @@ export function createDataExtensionYamls(
 
 function createDataExtensionYamlsByGrouping(
   language: string,
-  methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod[]>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
+  methods: readonly Method[],
+  newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
+  existingModeledMethods: Readonly<
+    Record<string, Record<string, readonly ModeledMethod[]>>
+  >,
   createFilename: (method: Method) => string,
 ): Record<string, string> {
   const methodsByFilename: Record<string, Record<string, ModeledMethod[]>> = {};
@@ -119,7 +123,7 @@ function createDataExtensionYamlsByGrouping(
   )) {
     if (filename in methodsByFilename) {
       for (const [signature, methods] of Object.entries(methodsBySignature)) {
-        methodsByFilename[filename][signature] = methods;
+        methodsByFilename[filename][signature] = [...methods];
       }
     }
   }
@@ -132,7 +136,7 @@ function createDataExtensionYamlsByGrouping(
       const filename = createFilename(method);
 
       // Override any existing modeled methods with the new ones.
-      methodsByFilename[filename][method.signature] = newMethods;
+      methodsByFilename[filename][method.signature] = [...newMethods];
     }
   }
 
@@ -150,9 +154,11 @@ function createDataExtensionYamlsByGrouping(
 
 export function createDataExtensionYamlsForApplicationMode(
   language: string,
-  methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod[]>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
+  methods: readonly Method[],
+  newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
+  existingModeledMethods: Readonly<
+    Record<string, Record<string, readonly ModeledMethod[]>>
+  >,
 ): Record<string, string> {
   return createDataExtensionYamlsByGrouping(
     language,
@@ -165,9 +171,11 @@ export function createDataExtensionYamlsForApplicationMode(
 
 export function createDataExtensionYamlsForFrameworkMode(
   language: string,
-  methods: Method[],
-  newModeledMethods: Record<string, ModeledMethod[]>,
-  existingModeledMethods: Record<string, Record<string, ModeledMethod[]>>,
+  methods: readonly Method[],
+  newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
+  existingModeledMethods: Readonly<
+    Record<string, Record<string, readonly ModeledMethod[]>>
+  >,
 ): Record<string, string> {
   return createDataExtensionYamlsByGrouping(
     language,

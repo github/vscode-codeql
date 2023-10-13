@@ -14,8 +14,8 @@ import { pathsEqual } from "../common/files";
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
   language: string,
-  methods: Method[],
-  modeledMethods: Record<string, ModeledMethod[]>,
+  methods: readonly Method[],
+  modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   mode: Mode,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,

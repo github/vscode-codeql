@@ -3,6 +3,7 @@ import { Uri, WebviewViewProvider } from "vscode";
 import { WebviewKind, WebviewMessage, getHtmlForWebview } from "./webview-html";
 import { Disposable } from "../disposable-object";
 import { App } from "../app";
+import { DeepReadonly } from "../readonly";
 
 export abstract class AbstractWebviewViewProvider<
   ToMessage extends WebviewMessage,
@@ -53,7 +54,7 @@ export abstract class AbstractWebviewViewProvider<
     return this.webviewView?.visible ?? false;
   }
 
-  protected async postMessage(msg: ToMessage): Promise<void> {
+  protected async postMessage(msg: DeepReadonly<ToMessage>): Promise<void> {
     await this.webviewView?.webview.postMessage(msg);
   }
 

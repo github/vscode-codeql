@@ -7,7 +7,7 @@ import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 
-interface DbModelingState {
+interface InternalDbModelingState {
   databaseItem: DatabaseItem;
   methods: Method[];
   hideModeledMethods: boolean;
@@ -18,40 +18,59 @@ interface DbModelingState {
   selectedUsage: Usage | undefined;
 }
 
+interface DbModelingState {
+  readonly databaseItem: DatabaseItem;
+  readonly methods: readonly Method[];
+  readonly hideModeledMethods: boolean;
+  readonly mode: Mode;
+  readonly modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>;
+  readonly modifiedMethodSignatures: ReadonlySet<string>;
+  readonly selectedMethod: Method | undefined;
+  readonly selectedUsage: Usage | undefined;
+}
+
+interface SelectedMethodDetails {
+  readonly databaseItem: DatabaseItem;
+  readonly method: Method;
+  readonly usage: Usage | undefined;
+  readonly modeledMethods: readonly ModeledMethod[];
+  readonly isModified: boolean;
+}
+
 interface MethodsChangedEvent {
-  methods: Method[];
-  dbUri: string;
-  isActiveDb: boolean;
+  readonly methods: readonly Method[];
+  readonly dbUri: string;
+  readonly isActiveDb: boolean;
 }
 
 interface HideModeledMethodsChangedEvent {
-  hideModeledMethods: boolean;
-  isActiveDb: boolean;
+  readonly hideModeledMethods: boolean;
+  readonly isActiveDb: boolean;
 }
 
 interface ModeChangedEvent {
-  mode: Mode;
-  isActiveDb: boolean;
+  readonly mode: Mode;
+  readonly isActiveDb: boolean;
 }
 
 interface ModeledMethodsChangedEvent {
-  modeledMethods: Record<string, ModeledMethod[]>;
-  dbUri: string;
-  isActiveDb: boolean;
+  readonly modeledMethods: Readonly<Record<string, ModeledMethod[]>>;
+  readonly dbUri: string;
+  readonly isActiveDb: boolean;
 }
 
 interface ModifiedMethodsChangedEvent {
-  modifiedMethods: Set<string>;
-  dbUri: string;
-  isActiveDb: boolean;
+  readonly modifiedMethods: ReadonlySet<string>;
+  readonly dbUri: string;
+  readonly isActiveDb: boolean;
 }
 
 interface SelectedMethodChangedEvent {
-  databaseItem: DatabaseItem;
-  method: Method;
-  usage: Usage;
-  modeledMethods: ModeledMethod[];
-  isModified: boolean;
+  readonly databaseItem: DatabaseItem;
+  readonly method: Method;
+  readonly usage: Usage;
+  readonly modeledMethods: readonly ModeledMethod[];
+  readonly isModified: boolean;
 }
 
 export class ModelingStore extends DisposableObject {
@@ -65,7 +84,7 @@ export class ModelingStore extends DisposableObject {
   public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
 
-  private readonly state: Map<string, DbModelingState>;
+  private readonly state: Map<string, InternalDbModelingState>;
   private activeDb: string | undefined;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
@@ -82,7 +101,7 @@ export class ModelingStore extends DisposableObject {
     super();
 
     // State initialization
-    this.state = new Map<string, DbModelingState>();
+    this.state = new Map<string, InternalDbModelingState>();
 
     // Event initialization
     this.onActiveDbChangedEventEmitter = this.push(
@@ -179,6 +198,14 @@ export class ModelingStore extends DisposableObject {
     return this.state.get(this.activeDb);
   }
 
+  private getInternalStateForActiveDb(): InternalDbModelingState | undefined {
+    if (!this.activeDb) {
+      return undefined;
+    }
+
+    return this.state.get(this.activeDb);
+  }
+
   public hasStateForActiveDb(): boolean {
     return !!this.getStateForActiveDb();
   }
@@ -194,7 +221,7 @@ export class ModelingStore extends DisposableObject {
   public getMethods(
     dbItem: DatabaseItem,
     methodSignatures?: string[],
-  ): Method[] {
+  ): readonly Method[] {
     const methods = this.getState(dbItem).methods;
     if (!methodSignatures) {
       return methods;
@@ -255,7 +282,7 @@ export class ModelingStore extends DisposableObject {
   public getModeledMethods(
     dbItem: DatabaseItem,
     methodSignatures?: string[],
-  ): Record<string, ModeledMethod[]> {
+  ): Readonly<Record<string, readonly ModeledMethod[]>> {
     const modeledMethods = this.getState(dbItem).modeledMethods;
     if (!methodSignatures) {
       return modeledMethods;
@@ -369,8 +396,8 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
-  public getSelectedMethodDetails() {
-    const dbState = this.getStateForActiveDb();
+  public getSelectedMethodDetails(): SelectedMethodDetails | undefined {
+    const dbState = this.getInternalStateForActiveDb();
     if (!dbState) {
       throw new Error("No active state found in modeling store");
     }
@@ -391,7 +418,7 @@ export class ModelingStore extends DisposableObject {
     };
   }
 
-  private getState(databaseItem: DatabaseItem): DbModelingState {
+  private getState(databaseItem: DatabaseItem): InternalDbModelingState {
     if (!this.state.has(databaseItem.databaseUri.toString())) {
       throw Error(
         "Cannot get state for a database that has not been initialized",
@@ -403,7 +430,7 @@ export class ModelingStore extends DisposableObject {
 
   private changeModifiedMethods(
     dbItem: DatabaseItem,
-    updateState: (state: DbModelingState) => void,
+    updateState: (state: InternalDbModelingState) => void,
   ) {
     const state = this.getState(dbItem);
 
@@ -418,7 +445,7 @@ export class ModelingStore extends DisposableObject {
 
   private changeModeledMethods(
     dbItem: DatabaseItem,
-    updateState: (state: DbModelingState) => void,
+    updateState: (state: InternalDbModelingState) => void,
   ) {
     const state = this.getState(dbItem);
 

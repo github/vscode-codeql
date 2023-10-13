@@ -32,12 +32,12 @@ export class MethodsUsagePanel extends DisposableObject {
   }
 
   public async setState(
-    methods: Method[],
+    methods: readonly Method[],
     databaseItem: DatabaseItem,
     hideModeledMethods: boolean,
     mode: Mode,
-    modeledMethods: Record<string, ModeledMethod[]>,
-    modifiedMethodSignatures: Set<string>,
+    modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
+    modifiedMethodSignatures: ReadonlySet<string>,
   ): Promise<void> {
     await this.dataProvider.setState(
       methods,

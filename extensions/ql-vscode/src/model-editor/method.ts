@@ -2,8 +2,8 @@ import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 
 export type Call = {
-  label: string;
-  url: ResolvableLocationValue;
+  readonly label: string;
+  readonly url: Readonly<ResolvableLocationValue>;
 };
 
 export enum CallClassification {
@@ -14,14 +14,14 @@ export enum CallClassification {
 }
 
 export type Usage = Call & {
-  classification: CallClassification;
+  readonly classification: CallClassification;
 };
 
 export interface MethodSignature {
   /**
    * Contains the version of the library if it can be determined by CodeQL, e.g. `4.2.2.2`
    */
-  libraryVersion?: string;
+  readonly libraryVersion?: string;
   /**
    * A unique signature that can be used to identify this external API usage.
    *
@@ -29,33 +29,33 @@ export interface MethodSignature {
    * in the form "packageName.typeName#methodName(methodParameters)".
    * e.g. `org.sql2o.Connection#createQuery(String)`
    */
-  signature: string;
+  readonly signature: string;
   /**
    * The package name in Java, or the namespace in C#, e.g. `org.sql2o` or `System.Net.Http.Headers`.
    *
    * If the class is not in a package, the value should be an empty string.
    */
-  packageName: string;
-  typeName: string;
-  methodName: string;
+  readonly packageName: string;
+  readonly typeName: string;
+  readonly methodName: string;
   /**
    * The method parameters, including enclosing parentheses, e.g. `(String, String)`
    */
-  methodParameters: string;
+  readonly methodParameters: string;
 }
 
 export interface Method extends MethodSignature {
   /**
    * Contains the name of the library containing the method declaration, e.g. `sql2o-1.6.0.jar` or `System.Runtime.dll`
    */
-  library: string;
+  readonly library: string;
   /**
    * Is this method already supported by CodeQL standard libraries.
    * If so, there is no need for the user to model it themselves.
    */
-  supported: boolean;
-  supportedType: ModeledMethodType;
-  usages: Usage[];
+  readonly supported: boolean;
+  readonly supportedType: ModeledMethodType;
+  readonly usages: readonly Usage[];
 }
 
 export function getArgumentsList(methodParameters: string): string[] {
@@ -68,7 +68,7 @@ export function getArgumentsList(methodParameters: string): string[] {
 
 export function canMethodBeModeled(
   method: Method,
-  modeledMethods: ModeledMethod[],
+  modeledMethods: readonly ModeledMethod[],
   methodIsUnsaved: boolean,
 ): boolean {
   return (
