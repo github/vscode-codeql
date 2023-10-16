@@ -24,6 +24,7 @@ import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { Codicon } from "../common";
+import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-modeled-methods";
 
 const MultiModelColumn = styled(VSCodeDataGridCell)`
   display: flex;
@@ -132,6 +133,8 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
 
     const modelingStatus = getModelingStatus(modeledMethods, methodIsUnsaved);
 
+    const addModelButtonDisabled = !canAddNewModeledMethod(modeledMethods);
+
     return (
       <DataGridRow
         data-testid="modelable-method-row"
@@ -219,15 +222,26 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             </MultiModelColumn>
             {viewState.showMultipleModels && (
               <MultiModelColumn gridColumn={6}>
-                {modeledMethods.map((_, index) => (
-                  <CodiconRow key={index} appearance="icon" disabled={false}>
-                    {index === modeledMethods.length - 1 ? (
-                      <Codicon name="add" label="Add new model" />
-                    ) : (
-                      <Codicon name="trash" label="Remove model" />
-                    )}
-                  </CodiconRow>
-                ))}
+                {modeledMethods.map((_, index) =>
+                  index === modeledMethods.length - 1 ? (
+                    <CodiconRow
+                      key={index}
+                      appearance="icon"
+                      aria-label="Add new model"
+                      disabled={addModelButtonDisabled}
+                    >
+                      <Codicon name="add" />
+                    </CodiconRow>
+                  ) : (
+                    <CodiconRow
+                      key={index}
+                      appearance="icon"
+                      aria-label="Remove model"
+                    >
+                      <Codicon name="trash" />
+                    </CodiconRow>
+                  ),
+                )}
               </MultiModelColumn>
             )}
           </>
