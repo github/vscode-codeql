@@ -27,7 +27,7 @@ export class MethodsUsageDataProvider
   private methods: readonly Method[] = [];
   // sortedMethods is a separate field so we can check if the methods have changed
   // by reference, which is faster than checking if the methods have changed by value.
-  private sortedMethods: readonly Method[] = [];
+  private sortedTreeItems: readonly MethodTreeViewItem[] = [];
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
   private hideModeledMethods: boolean = INITIAL_HIDE_MODELED_METHODS_VALUE;
@@ -72,7 +72,9 @@ export class MethodsUsageDataProvider
       this.modifiedMethodSignatures !== modifiedMethodSignatures
     ) {
       this.methods = methods;
-      this.sortedMethods = sortMethodsInGroups(methods, mode);
+      this.sortedTreeItems = createTreeItems(
+        sortMethodsInGroups(methods, mode),
+      );
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
@@ -86,7 +88,7 @@ export class MethodsUsageDataProvider
   }
 
   getTreeItem(item: MethodsUsageTreeViewItem): TreeItem {
-    if (isExternalApiUsage(item)) {
+    if (isMethodTreeViewItem(item)) {
       return {
         label: `${item.packageName}.${item.typeName}.${item.methodName}${item.methodParameters}`,
         collapsibleState: TreeItemCollapsibleState.Collapsed,
@@ -94,7 +96,7 @@ export class MethodsUsageDataProvider
       };
     } else {
       const method = this.getParent(item);
-      if (!method || !isExternalApiUsage(method)) {
+      if (!method || !isMethodTreeViewItem(method)) {
         throw new Error("Parent not found for tree item");
       }
       return {
@@ -144,12 +146,12 @@ export class MethodsUsageDataProvider
   getChildren(item?: MethodsUsageTreeViewItem): MethodsUsageTreeViewItem[] {
     if (item === undefined) {
       if (this.hideModeledMethods) {
-        return this.sortedMethods.filter((api) => !api.supported);
+        return this.sortedTreeItems.filter((api) => !api.supported);
       } else {
-        return [...this.sortedMethods];
+        return [...this.sortedTreeItems];
       }
-    } else if (isExternalApiUsage(item)) {
-      return [...item.usages];
+    } else if (isMethodTreeViewItem(item)) {
+      return item.children;
     } else {
       return [];
     }
@@ -158,29 +160,42 @@ export class MethodsUsageDataProvider
   getParent(
     item: MethodsUsageTreeViewItem,
   ): MethodsUsageTreeViewItem | undefined {
-    if (isExternalApiUsage(item)) {
+    if (isMethodTreeViewItem(item)) {
       return undefined;
     } else {
-      return this.methods.find((e) => e.usages.includes(item));
+      return item.parent;
     }
   }
 
-  public resolveCanonicalUsage(usage: Usage): Usage | undefined {
-    for (const method of this.methods) {
-      for (const u of method.usages) {
-        if (usagesAreEqual(u, usage)) {
-          return u;
-        }
-      }
+  public resolveUsageTreeViewItem(
+    methodSignature: string,
+    usage: Usage,
+  ): UsageTreeViewItem | undefined {
+    const method = this.sortedTreeItems.find(
+      (m) => m.signature === methodSignature,
+    );
+    if (!method) {
+      return undefined;
     }
-    return undefined;
+
+    return method.children.find((u) => usagesAreEqual(u, usage));
   }
 }
 
-export type MethodsUsageTreeViewItem = Method | Usage;
+type MethodTreeViewItem = Method & {
+  children: UsageTreeViewItem[];
+};
 
-function isExternalApiUsage(item: MethodsUsageTreeViewItem): item is Method {
-  return (item as any).usages !== undefined;
+type UsageTreeViewItem = Usage & {
+  parent: MethodTreeViewItem;
+};
+
+export type MethodsUsageTreeViewItem = MethodTreeViewItem | UsageTreeViewItem;
+
+function isMethodTreeViewItem(
+  item: MethodsUsageTreeViewItem,
+): item is MethodTreeViewItem {
+  return "children" in item && "usages" in item;
 }
 
 function usagesAreEqual(u1: Usage, u2: Usage): boolean {
@@ -204,5 +219,22 @@ function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {
     const group = grouped[groupName];
 
     return sortMethods(group);
+  });
+}
+
+function createTreeItems(methods: readonly Method[]): MethodTreeViewItem[] {
+  return methods.map((method) => {
+    const newMethod: MethodTreeViewItem = {
+      ...method,
+      children: [],
+    };
+
+    newMethod.children = method.usages.map((usage) => ({
+      ...usage,
+      // This needs to be a reference to the parent method, not a copy of it.
+      parent: newMethod,
+    }));
+
+    return newMethod;
   });
 }
