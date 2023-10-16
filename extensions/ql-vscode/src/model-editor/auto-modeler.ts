@@ -16,6 +16,7 @@ import { QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { Mode } from "./shared/mode";
 import { CancellationTokenSource } from "vscode";
+import { ModelingStore } from "./modeling-store";
 
 // Limit the number of candidates we send to the model in each request
 // to avoid long requests.
@@ -35,12 +36,9 @@ export class AutoModeler {
     private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
+    private readonly modelingStore: ModelingStore,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
-    private readonly setInProgressMethods: (
-      packageName: string,
-      inProgressMethods: string[],
-    ) => Promise<void>,
     private readonly addModeledMethods: (
       modeledMethods: Record<string, ModeledMethod[]>,
     ) => Promise<void>,
@@ -137,7 +135,8 @@ export class AutoModeler {
           const candidatesToProcess = allCandidateMethods.slice(start, end);
 
           // Let the UI know which candidates we are modeling
-          await this.setInProgressMethods(
+          this.modelingStore.setInProgressMethods(
+            this.databaseItem,
             packageName,
             candidatesToProcess.map((c) => c.signature),
           );
@@ -152,7 +151,11 @@ export class AutoModeler {
         }
       } finally {
         // Clear out in progress methods
-        await this.setInProgressMethods(packageName, []);
+        this.modelingStore.setInProgressMethods(
+          this.databaseItem,
+          packageName,
+          [],
+        );
       }
     });
   }

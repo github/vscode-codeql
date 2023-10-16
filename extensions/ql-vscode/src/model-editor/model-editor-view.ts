@@ -76,15 +76,9 @@ export class ModelEditorView extends AbstractWebview<
       app,
       cliServer,
       queryRunner,
+      modelingStore,
       queryStorageDir,
       databaseItem,
-      async (packageName, inProgressMethods) => {
-        await this.postMessage({
-          t: "setInProgressMethods",
-          packageName,
-          inProgressMethods,
-        });
-      },
       async (modeledMethods) => {
         this.addModeledMethods(modeledMethods);
       },
@@ -679,6 +673,17 @@ export class ModelEditorView extends AbstractWebview<
           await this.postMessage({
             t: "setModifiedMethods",
             methodSignatures: [...event.modifiedMethods],
+          });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onInProgressMethodsChanged(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.postMessage({
+            t: "setInProgressMethods",
+            methods: event.methods,
           });
         }
       }),
