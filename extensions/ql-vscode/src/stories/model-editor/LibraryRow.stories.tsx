@@ -218,7 +218,7 @@ LibraryRow.args = {
     ],
   },
   modifiedSignatures: new Set(["org.sql2o.Sql2o#Sql2o(String)"]),
-  inProgressMethods: {},
+  inProgressMethods: new Set(),
   viewState: {
     extensionPack: createMockExtensionPack(),
     showFlowGeneration: true,

@@ -693,7 +693,7 @@ export class ModelEditorView extends AbstractWebview<
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setInProgressMethods",
-            methods: event.methods,
+            methods: Array.from(event.methods),
           });
         }
       }),

@@ -9,10 +9,6 @@ import { Method, canMethodBeModeled } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
 import { sortMethods } from "../../model-editor/shared/sorting";
-import {
-  InProgressMethods,
-  hasInProgressMethod,
-} from "../../model-editor/shared/in-progress-methods";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
@@ -27,7 +23,7 @@ export type ModeledMethodDataGridProps = {
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
-  inProgressMethods: InProgressMethods;
+  inProgressMethods: Set<string>;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
@@ -110,11 +106,7 @@ export const ModeledMethodDataGrid = ({
                 methodCanBeModeled={methodCanBeModeled}
                 modeledMethods={modeledMethods}
                 methodIsUnsaved={modifiedSignatures.has(method.signature)}
-                modelingInProgress={hasInProgressMethod(
-                  inProgressMethods,
-                  packageName,
-                  method.signature,
-                )}
+                modelingInProgress={inProgressMethods.has(method.signature)}
                 viewState={viewState}
                 revealedMethodSignature={revealedMethodSignature}
                 onChange={onChange}

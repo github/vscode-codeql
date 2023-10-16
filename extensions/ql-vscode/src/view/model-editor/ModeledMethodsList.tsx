@@ -9,13 +9,12 @@ import {
   sortGroupNames,
 } from "../../model-editor/shared/sorting";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
-import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 
 export type ModeledMethodsListProps = {
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
-  inProgressMethods: InProgressMethods;
+  inProgressMethods: Set<string>;
   revealedMethodSignature: string | null;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;

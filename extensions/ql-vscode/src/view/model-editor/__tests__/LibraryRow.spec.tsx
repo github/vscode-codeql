@@ -43,7 +43,7 @@ describe(LibraryRow.name, () => {
           ],
         }}
         modifiedSignatures={new Set([method.signature])}
-        inProgressMethods={{}}
+        inProgressMethods={new Set()}
         viewState={viewState}
         hideModeledMethods={false}
         revealedMethodSignature={null}

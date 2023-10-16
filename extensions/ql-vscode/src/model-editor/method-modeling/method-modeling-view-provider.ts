@@ -14,7 +14,6 @@ import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
-import { hasInProgressMethodSignature } from "../shared/in-progress-methods";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -225,10 +224,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         if (this.method && this.databaseItem) {
           const dbUri = this.databaseItem.databaseUri.toString();
           if (e.dbUri === dbUri) {
-            const inProgress = hasInProgressMethodSignature(
-              e.methods,
-              this.method.signature,
-            );
+            const inProgress = e.methods.has(this.method.signature);
             await this.postMessage({
               t: "setInProgress",
               inProgress,
