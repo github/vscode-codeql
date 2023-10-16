@@ -164,35 +164,12 @@ export class MethodsUsageDataProvider
       return this.methods.find((e) => e.usages.includes(item));
     }
   }
-
-  public resolveCanonicalUsage(usage: Usage): Usage | undefined {
-    for (const method of this.methods) {
-      for (const u of method.usages) {
-        if (usagesAreEqual(u, usage)) {
-          return u;
-        }
-      }
-    }
-    return undefined;
-  }
 }
 
 export type MethodsUsageTreeViewItem = Method | Usage;
 
 function isExternalApiUsage(item: MethodsUsageTreeViewItem): item is Method {
   return (item as any).usages !== undefined;
-}
-
-function usagesAreEqual(u1: Usage, u2: Usage): boolean {
-  return (
-    u1.label === u2.label &&
-    u1.classification === u2.classification &&
-    u1.url.uri === u2.url.uri &&
-    u1.url.startLine === u2.url.startLine &&
-    u1.url.startColumn === u2.url.startColumn &&
-    u1.url.endLine === u2.url.endLine &&
-    u1.url.endColumn === u2.url.endColumn
-  );
 }
 
 function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {

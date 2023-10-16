@@ -57,10 +57,7 @@ export class MethodsUsagePanel extends DisposableObject {
   }
 
   public async revealItem(usage: Usage): Promise<void> {
-    const canonicalUsage = this.dataProvider.resolveCanonicalUsage(usage);
-    if (canonicalUsage !== undefined) {
-      await this.treeView.reveal(canonicalUsage);
-    }
+    await this.treeView.reveal(usage);
   }
 
   private registerToModelingStoreEvents(): void {
