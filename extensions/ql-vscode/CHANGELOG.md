@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Sorted result set filenames now include a hash of the result set name instead of the full name. [#2955](https://github.com/github/vscode-codeql/pull/2955)
+- The "Install Pack Dependencies" will now only list CodeQL packs located in the workspace. [#2960](https://github.com/github/vscode-codeql/pull/2960)
 
 ## 1.9.2 - 12 October 2023
 
