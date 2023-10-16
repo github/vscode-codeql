@@ -264,6 +264,33 @@ describe(MultipleModeledMethodsPanel.name, () => {
       ).toHaveValue("source");
     });
 
+    it("correctly updates selected pagination index when the number of models decreases", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Next modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={[modeledMethods[1]]}
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getAllByRole("combobox")).toHaveLength(4);
+      expect(
+        screen.getByRole("combobox", {
+          name: "Model type",
+        }),
+      ).toHaveValue("source");
+    });
+
     it("does not show errors", () => {
       render({
         method,
