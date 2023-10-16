@@ -231,6 +231,19 @@ export class ModelingStore extends DisposableObject {
   }
 
   /**
+   * Returns the method for the given database item and method signature.
+   * Returns undefined if no method exists with that signature.
+   */
+  public getMethod(
+    dbItem: DatabaseItem,
+    methodSignature: string,
+  ): Method | undefined {
+    return this.getState(dbItem).methods.find(
+      (m) => m.signature === methodSignature,
+    );
+  }
+
+  /**
    * Returns the methods for the given database item and method signatures.
    * If the `methodSignatures` argument is not provided or is undefined, returns all methods.
    */
@@ -388,17 +401,15 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
-  public setSelectedMethod(dbItem: DatabaseItem, methodSignature: string) {
+  /**
+   * Sets which method is considered to be selected. This method will be shown in the method modeling panel.
+   *
+   * The `Method` and `Usage` objects must have been retrieved from the modeling store, and not from
+   * a webview. This is because we rely on object referential identity so it must be the same object
+   * that is held internally by the modeling store.
+   */
+  public setSelectedMethod(dbItem: DatabaseItem, method: Method, usage: Usage) {
     const dbState = this.getState(dbItem);
-
-    const method = dbState.methods.find((m) => m.signature === methodSignature);
-    if (method === undefined) {
-      throw new Error(
-        `No method with signature "${methodSignature}" found in modeling store`,
-      );
-    }
-
-    const usage = method.usages[0];
 
     dbState.selectedMethod = method;
     dbState.selectedUsage = usage;

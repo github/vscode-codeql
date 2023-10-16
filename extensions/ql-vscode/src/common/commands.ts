@@ -13,6 +13,7 @@ import type {
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import type { LanguageSelectionTreeViewItem } from "../language-selection-panel/language-selection-data-provider";
+import type { Method, Usage } from "../model-editor/method";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -333,7 +334,8 @@ export type ModelEditorCommands = {
   "codeQL.openModelEditor": () => Promise<void>;
   "codeQL.openModelEditorFromModelingPanel": () => Promise<void>;
   "codeQLModelEditor.jumpToMethod": (
-    methodSignature: string,
+    method: Method,
+    usage: Usage,
     databaseItem: DatabaseItem,
   ) => Promise<void>;
 };

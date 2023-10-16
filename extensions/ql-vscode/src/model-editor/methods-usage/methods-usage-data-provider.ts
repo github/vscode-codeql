@@ -106,7 +106,7 @@ export class MethodsUsageDataProvider
         command: {
           title: "Show usage",
           command: "codeQLModelEditor.jumpToMethod",
-          arguments: [method.signature, this.databaseItem],
+          arguments: [method, item, this.databaseItem],
         },
       };
     }
