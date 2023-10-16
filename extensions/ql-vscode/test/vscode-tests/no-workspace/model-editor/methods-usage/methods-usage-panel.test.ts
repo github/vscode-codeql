@@ -68,11 +68,10 @@ describe("MethodsUsagePanel", () => {
     });
 
     it("should reveal the correct item in the tree view", async () => {
-      const methods = [
-        createMethod({
-          usages: [usage],
-        }),
-      ];
+      const method = createMethod({
+        usages: [usage],
+      });
+      const methods = [method];
 
       const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
       await panel.setState(
@@ -84,13 +83,16 @@ describe("MethodsUsagePanel", () => {
         modifiedMethodSignatures,
       );
 
-      await panel.revealItem(usage);
+      await panel.revealItem(method.signature, usage);
 
-      expect(mockTreeView.reveal).toHaveBeenCalledWith(usage);
+      expect(mockTreeView.reveal).toHaveBeenCalledWith(
+        expect.objectContaining(usage),
+      );
     });
 
     it("should do nothing if usage cannot be found", async () => {
-      const methods = [createMethod({})];
+      const method = createMethod({});
+      const methods = [method];
       const panel = new MethodsUsagePanel(modelingStore, mockCliServer);
       await panel.setState(
         methods,
@@ -101,7 +103,7 @@ describe("MethodsUsagePanel", () => {
         modifiedMethodSignatures,
       );
 
-      await panel.revealItem(usage);
+      await panel.revealItem(method.signature, usage);
 
       expect(mockTreeView.reveal).not.toHaveBeenCalled();
     });

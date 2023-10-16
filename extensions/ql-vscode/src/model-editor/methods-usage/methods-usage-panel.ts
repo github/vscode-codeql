@@ -56,10 +56,16 @@ export class MethodsUsagePanel extends DisposableObject {
     };
   }
 
-  public async revealItem(usage: Usage): Promise<void> {
-    const canonicalUsage = this.dataProvider.resolveCanonicalUsage(usage);
-    if (canonicalUsage !== undefined) {
-      await this.treeView.reveal(canonicalUsage);
+  public async revealItem(
+    methodSignature: string,
+    usage: Usage,
+  ): Promise<void> {
+    const usageTreeViewItem = this.dataProvider.resolveUsageTreeViewItem(
+      methodSignature,
+      usage,
+    );
+    if (usageTreeViewItem !== undefined) {
+      await this.treeView.reveal(usageTreeViewItem);
     }
   }
 
