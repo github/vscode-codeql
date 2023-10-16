@@ -358,4 +358,67 @@ describe(MethodRow.name, () => {
       expect(removeButton?.getElementsByTagName("input")[0]).toBeEnabled();
     }
   });
+
+  it("can add a new model", async () => {
+    render({
+      modeledMethods: [modeledMethod],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    await userEvent.click(screen.getByLabelText("Add new model"));
+
+    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
+    expect(kindInputs).toHaveLength(2);
+    expect(kindInputs[0]).toHaveValue(modeledMethod.type);
+    expect(kindInputs[1]).toHaveValue("none");
+  });
+
+  it("can delete the first modeled method", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "none" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    await userEvent.click(screen.getAllByLabelText("Remove model")[0]);
+
+    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
+    expect(kindInputs).toHaveLength(3);
+    expect(kindInputs[0]).toHaveValue("sink");
+    expect(kindInputs[1]).toHaveValue("none");
+    expect(kindInputs[2]).toHaveValue("summary");
+  });
+
+  it("can delete a modeled method in the middle", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "none" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    await userEvent.click(screen.getAllByLabelText("Remove model")[2]);
+
+    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
+    expect(kindInputs).toHaveLength(3);
+    expect(kindInputs[0]).toHaveValue("source");
+    expect(kindInputs[1]).toHaveValue("sink");
+    expect(kindInputs[2]).toHaveValue("summary");
+  });
 });
