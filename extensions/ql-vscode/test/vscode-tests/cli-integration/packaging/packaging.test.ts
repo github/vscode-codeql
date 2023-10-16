@@ -12,9 +12,12 @@ import {
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { getActivatedExtension } from "../../global.helper";
 import {
-  showAndLogInformationMessage,
   showAndLogExceptionWithTelemetry,
+  showAndLogInformationMessage,
 } from "../../../../src/common/logging";
+import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
+import { getOnDiskWorkspaceFolders } from "../../../../src/common/vscode/workspace-folders";
+import { pathsEqual } from "../../../../src/common/files";
 
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
@@ -85,6 +88,48 @@ describe("Packaging commands", () => {
     expect(
       showAndLogExceptionWithTelemetrySpy.mock.calls[0][2].fullMessage,
     ).toEqual("Unable to download all packs. See log for more details.");
+  });
+
+  it("should only show workspace packs", async () => {
+    const originalWorkspaceFolders = getOnDiskWorkspaceFolders();
+
+    // Remove the CodeQL workspace folder from the list of workspace folders
+    // since that includes all the packs that are already in the package cache,
+    // so the test would be useless if we included it since nothing would be
+    // filtered out (except for maybe the distribution legacy-upgrades).
+    jest
+      .spyOn(workspaceFolders, "getOnDiskWorkspaceFolders")
+      .mockReturnValue(
+        originalWorkspaceFolders.filter(
+          (folder) => !pathsEqual(folder, process.env.TEST_CODEQL_PATH ?? ""),
+        ),
+      );
+
+    const rootDir = join(__dirname, "../data");
+    quickPickSpy.mockResolvedValue(
+      mockedQuickPickItem([
+        {
+          label: "integration-test-queries-javascript",
+          packRootDir: [rootDir],
+        },
+      ]),
+    );
+
+    await handleInstallPackDependencies(cli, progress);
+    expect(quickPickSpy).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          label: "integration-test-debugger-javascript",
+        }),
+        expect.objectContaining({
+          label: "semmle/has-extension",
+        }),
+        expect.objectContaining({
+          label: "semmle/targets-extension",
+        }),
+      ],
+      expect.anything(),
+    );
   });
 
   it("should install valid workspace pack", async () => {
