@@ -562,6 +562,10 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
+        "command": "codeQLLanguageSelection.setSelectedItem",
+        "title": "Select"
+      },
+      {
         "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
         "title": "Run local query",
         "icon": "$(run)"
@@ -1148,6 +1152,11 @@
           "group": "2_qlContextMenu@1"
         },
         {
+          "command": "codeQLLanguageSelection.setSelectedItem",
+          "when": "view == codeQLLanguageSelection && viewItem =~ /canBeSelected/",
+          "group": "inline"
+        },
+        {
           "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
           "when": "view == codeQLDatabases && viewItem != currentDatabase"
@@ -1494,6 +1503,10 @@
         },
         {
           "command": "codeQL.openModelEditor"
+        },
+        {
+          "command": "codeQLLanguageSelection.setSelectedItem",
+          "when": "false"
         },
         {
           "command": "codeQLQueries.runLocalQueryContextMenu",
@@ -1965,6 +1978,11 @@
     },
     "views": {
       "ql-container": [
+        {
+          "id": "codeQLLanguageSelection",
+          "name": "Language",
+          "when": "config.codeQL.canary && config.codeQL.showLanguageFilter"
+        },
         {
           "id": "codeQLDatabases",
           "name": "Databases"

@@ -136,6 +136,7 @@ import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
 import { LanguageContextStore } from "./language-context-store";
+import { LanguageSelectionPanel } from "./language-selection-panel/language-selection-panel";
 
 /**
  * extension.ts
@@ -779,6 +780,10 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing language context.");
   const languageContext = new LanguageContextStore(app);
 
+  void extLogger.log("Initializing language selector.");
+  const languageSelectionPanel = new LanguageSelectionPanel(languageContext);
+  ctx.subscriptions.push(languageSelectionPanel);
+
   void extLogger.log("Initializing database panel.");
   const databaseUI = new DatabaseUI(
     app,
@@ -1016,6 +1021,7 @@ async function activateWithInstalledDistribution(
     ...getPackagingCommands({
       cliServer,
     }),
+    ...languageSelectionPanel.getCommands(),
     ...modelEditorModule.getCommands(),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),

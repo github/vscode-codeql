@@ -12,6 +12,7 @@ import type {
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { LanguageSelectionTreeViewItem } from "../language-selection-panel/language-selection-data-provider";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -198,6 +199,13 @@ export type QueryHistoryCommands = {
   "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;
 };
 
+// Commands user for the language selector panel
+export type LanguageSelectionCommands = {
+  "codeQLLanguageSelection.setSelectedItem": (
+    item: LanguageSelectionTreeViewItem,
+  ) => Promise<void>;
+};
+
 // Commands used for the local databases panel
 export type LocalDatabasesCommands = {
   // Command palette commands
@@ -360,6 +368,7 @@ export type AllExtensionCommands = BaseCommands &
   QueryEditorCommands &
   ResultsViewCommands &
   QueryHistoryCommands &
+  LanguageSelectionCommands &
   LocalDatabasesCommands &
   DebuggerCommands &
   VariantAnalysisCommands &
