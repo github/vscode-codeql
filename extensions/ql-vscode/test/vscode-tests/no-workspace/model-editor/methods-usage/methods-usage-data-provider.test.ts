@@ -3,7 +3,10 @@ import {
   CallClassification,
   Method,
 } from "../../../../../src/model-editor/method";
-import { MethodsUsageDataProvider } from "../../../../../src/model-editor/methods-usage/methods-usage-data-provider";
+import {
+  MethodsUsageDataProvider,
+  MethodsUsageTreeViewItem,
+} from "../../../../../src/model-editor/methods-usage/methods-usage-data-provider";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
   createMethod,
@@ -242,13 +245,23 @@ describe("MethodsUsageDataProvider", () => {
 
     const usage = createUsage({});
 
+    const methodTreeItem: MethodsUsageTreeViewItem = {
+      ...supportedMethod,
+      children: [],
+    };
+
+    const usageTreeItem: MethodsUsageTreeViewItem = {
+      ...usage,
+      parent: methodTreeItem,
+    };
+    methodTreeItem.children = [usageTreeItem];
+
     it("should return [] if item is a usage", async () => {
-      expect(dataProvider.getChildren(usage)).toEqual([]);
+      expect(dataProvider.getChildren(usageTreeItem)).toEqual([]);
     });
 
-    it("should return usages if item is external api usage", async () => {
-      const method = createMethod({ usages: [usage] });
-      expect(dataProvider.getChildren(method)).toEqual([usage]);
+    it("should return usages if item is method", async () => {
+      expect(dataProvider.getChildren(methodTreeItem)).toEqual([usageTreeItem]);
     });
 
     it("should show all methods if hideModeledMethods is false and looking at the root", async () => {

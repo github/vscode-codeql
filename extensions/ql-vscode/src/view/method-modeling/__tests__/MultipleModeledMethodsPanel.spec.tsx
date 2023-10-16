@@ -409,6 +409,25 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       await userEvent.selectOptions(modelTypeDropdown, "neutral");
 
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][1]
+          }
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      const kindDropdown = screen.getByRole("combobox", {
+        name: "Kind",
+      });
+
+      await userEvent.selectOptions(kindDropdown, "source");
+
       rerender(
         <MultipleModeledMethodsPanel
           method={method}
