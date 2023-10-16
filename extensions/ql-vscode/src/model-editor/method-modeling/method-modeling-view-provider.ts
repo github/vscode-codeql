@@ -14,6 +14,7 @@ import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
+import { hasInProgressMethodSignature } from "../shared/in-progress-methods";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -75,6 +76,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           method: selectedMethod.method,
           modeledMethods: selectedMethod.modeledMethods,
           isModified: selectedMethod.isModified,
+          isInProgress: selectedMethod.isInProgress,
         });
       }
 
@@ -188,6 +190,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             method: e.method,
             modeledMethods: e.modeledMethods,
             isModified: e.isModified,
+            isInProgress: e.isInProgress,
           });
         }
       }),
@@ -213,6 +216,24 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
         if (dbUri === this.databaseItem?.databaseUri.toString()) {
           await this.setMethod(undefined, undefined);
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onInProgressMethodsChanged(async (e) => {
+        if (this.method && this.databaseItem) {
+          const dbUri = this.databaseItem.databaseUri.toString();
+          if (e.dbUri === dbUri) {
+            const inProgress = hasInProgressMethodSignature(
+              e.methods,
+              this.method.signature,
+            );
+            await this.postMessage({
+              t: "setInProgress",
+              inProgress,
+            });
+          }
         }
       }),
     );

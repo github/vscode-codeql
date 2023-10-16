@@ -15,3 +15,16 @@ export function hasInProgressMethod(
 
   return false;
 }
+
+export function hasInProgressMethodSignature(
+  inProgressMethods: InProgressMethods,
+  signature: string,
+): boolean {
+  for (const methods of Object.values(inProgressMethods)) {
+    if (methods.includes(signature)) {
+      return true;
+    }
+  }
+
+  return false;
+}

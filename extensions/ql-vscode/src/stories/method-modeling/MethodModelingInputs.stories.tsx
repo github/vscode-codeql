@@ -51,3 +51,10 @@ FullyModeledMethod.args = {
   method,
   modeledMethod,
 };
+
+export const ModelingInProgress = Template.bind({});
+ModelingInProgress.args = {
+  method,
+  modeledMethod,
+  isModelingInProgress: true,
+};

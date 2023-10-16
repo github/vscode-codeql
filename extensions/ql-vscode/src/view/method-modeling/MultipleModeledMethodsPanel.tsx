@@ -16,6 +16,7 @@ import { ModeledMethodAlert } from "./ModeledMethodAlert";
 export type MultipleModeledMethodsPanelProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
+  isModelingInProgress: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
@@ -54,6 +55,7 @@ const ModificationActions = styled.div`
 export const MultipleModeledMethodsPanel = ({
   method,
   modeledMethods,
+  isModelingInProgress,
   onChange,
 }: MultipleModeledMethodsPanelProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -134,12 +136,14 @@ export const MultipleModeledMethodsPanel = ({
         <MethodModelingInputs
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
+          isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
       ) : (
         <MethodModelingInputs
           method={method}
           modeledMethod={undefined}
+          isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
       )}

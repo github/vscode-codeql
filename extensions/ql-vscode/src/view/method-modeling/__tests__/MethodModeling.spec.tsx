@@ -11,12 +11,14 @@ describe(MethodModeling.name, () => {
   it("renders method modeling panel", () => {
     const method = createMethod();
     const modeledMethod = createModeledMethod();
+    const isModelingInProgress = false;
     const onChange = jest.fn();
 
     render({
       modelingStatus: "saved",
       method,
       modeledMethods: [modeledMethod],
+      isModelingInProgress,
       onChange,
     });
 

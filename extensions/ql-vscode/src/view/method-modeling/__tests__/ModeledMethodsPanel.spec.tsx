@@ -13,6 +13,7 @@ describe(ModeledMethodsPanel.name, () => {
 
   const method = createMethod();
   const modeledMethods = [createModeledMethod(), createModeledMethod()];
+  const isModelingInProgress = false;
   const onChange = jest.fn();
 
   describe("when show multiple models is disabled", () => {
@@ -22,6 +23,7 @@ describe(ModeledMethodsPanel.name, () => {
       render({
         method,
         modeledMethods,
+        isModelingInProgress,
         onChange,
         showMultipleModels,
       });
@@ -33,6 +35,7 @@ describe(ModeledMethodsPanel.name, () => {
       render({
         method,
         modeledMethods,
+        isModelingInProgress,
         onChange,
         showMultipleModels,
       });
@@ -51,6 +54,7 @@ describe(ModeledMethodsPanel.name, () => {
       render({
         method,
         modeledMethods,
+        isModelingInProgress,
         onChange,
         showMultipleModels,
       });
@@ -62,6 +66,7 @@ describe(ModeledMethodsPanel.name, () => {
       render({
         method,
         modeledMethods,
+        isModelingInProgress,
         onChange,
         showMultipleModels,
       });

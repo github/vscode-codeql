@@ -14,12 +14,14 @@ describe(MethodModelingInputs.name, () => {
 
   const method = createMethod();
   const modeledMethod = createModeledMethod();
+  const isModelingInProgress = false;
   const onChange = jest.fn();
 
   it("renders the method modeling inputs", () => {
     render({
       method,
       modeledMethod,
+      isModelingInProgress,
       onChange,
     });
 
@@ -44,6 +46,7 @@ describe(MethodModelingInputs.name, () => {
     render({
       method,
       modeledMethod,
+      isModelingInProgress,
       onChange,
     });
 
@@ -64,6 +67,7 @@ describe(MethodModelingInputs.name, () => {
     const { rerender } = render({
       method,
       modeledMethod,
+      isModelingInProgress,
       onChange,
     });
 
@@ -75,6 +79,7 @@ describe(MethodModelingInputs.name, () => {
       <MethodModelingInputs
         method={method}
         modeledMethod={updatedModeledMethod}
+        isModelingInProgress={isModelingInProgress}
         onChange={onChange}
       />,
     );
@@ -96,5 +101,30 @@ describe(MethodModelingInputs.name, () => {
     expect(modelInputDropdown).toHaveValue("-");
     expect(modelOutputDropdown).toHaveValue("ReturnValue");
     expect(modelKindDropdown).toHaveValue("local");
+  });
+
+  it("sets in progress dropdowns when modeling is in progress", () => {
+    render({
+      method,
+      modeledMethod,
+      isModelingInProgress: true,
+      onChange,
+    });
+
+    // Check that all the labels are rendered.
+    expect(screen.getByText("Model Type")).toBeInTheDocument();
+    expect(screen.getByText("Input")).toBeInTheDocument();
+    expect(screen.getByText("Output")).toBeInTheDocument();
+    expect(screen.getByText("Kind")).toBeInTheDocument();
+
+    // Check that all the dropdowns are rendered.
+    const dropdowns = screen.getAllByRole("combobox");
+    expect(dropdowns.length).toBe(4);
+
+    // Check that all the dropdowns are disabled and indicate have the value "Thinking...".
+    dropdowns.forEach((dropdown) => {
+      expect(dropdown).toBeDisabled();
+      expect(dropdown).toHaveValue("Thinking...");
+    });
   });
 });
