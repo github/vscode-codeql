@@ -51,7 +51,7 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
-import { QueryLanguage, tryGetQueryLanguage } from "../common/query-language";
+import { tryGetQueryLanguage } from "../common/query-language";
 import { LanguageContextStore } from "../language-context-store";
 
 enum SortOrder {
@@ -218,7 +218,7 @@ export class DatabaseUI extends DisposableObject {
   public constructor(
     private app: App,
     private databaseManager: DatabaseManager,
-    private languageContext: LanguageContextStore,
+    languageContext: LanguageContextStore,
     private readonly queryServer: QueryRunner | undefined,
     private readonly storagePath: string,
     readonly extensionPath: string,
@@ -265,60 +265,6 @@ export class DatabaseUI extends DisposableObject {
         this.handleMakeCurrentDatabase.bind(this),
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
-      "codeQLDatabases.displayAllLanguages":
-        this.handleClearLanguageFilter.bind(this),
-      "codeQLDatabases.displayCpp": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Cpp,
-      ),
-      "codeQLDatabases.displayCsharp": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.CSharp,
-      ),
-      "codeQLDatabases.displayGo": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Go,
-      ),
-      "codeQLDatabases.displayJava": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Java,
-      ),
-      "codeQLDatabases.displayJavascript": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Javascript,
-      ),
-      "codeQLDatabases.displayPython": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Python,
-      ),
-      "codeQLDatabases.displayRuby": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Ruby,
-      ),
-      "codeQLDatabases.displaySwift": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Swift,
-      ),
-      "codeQLDatabases.displayAllLanguagesSelected":
-        this.handleClearLanguageFilter.bind(this),
-      "codeQLDatabases.displayCppSelected":
-        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Cpp),
-      "codeQLDatabases.displayCsharpSelected":
-        this.handleChangeLanguageFilter.bind(this, QueryLanguage.CSharp),
-      "codeQLDatabases.displayGoSelected": this.handleChangeLanguageFilter.bind(
-        this,
-        QueryLanguage.Go,
-      ),
-      "codeQLDatabases.displayJavaSelected":
-        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Java),
-      "codeQLDatabases.displayJavascriptSelected":
-        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Javascript),
-      "codeQLDatabases.displayPythonSelected":
-        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Python),
-      "codeQLDatabases.displayRubySelected":
-        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Ruby),
-      "codeQLDatabases.displaySwiftSelected":
-        this.handleChangeLanguageFilter.bind(this, QueryLanguage.Swift),
       "codeQLDatabases.removeDatabase": createMultiSelectionCommand(
         this.handleRemoveDatabase.bind(this),
       ),
@@ -607,14 +553,6 @@ export class DatabaseUI extends DisposableObject {
     } else {
       this.treeDataProvider.sortOrder = SortOrder.DateAddedAsc;
     }
-  }
-
-  private async handleClearLanguageFilter() {
-    await this.languageContext.clearLanguageContext();
-  }
-
-  private async handleChangeLanguageFilter(languageFilter: QueryLanguage) {
-    await this.languageContext.setLanguageContext(languageFilter);
   }
 
   private async handleUpgradeCurrentDatabase(): Promise<void> {
