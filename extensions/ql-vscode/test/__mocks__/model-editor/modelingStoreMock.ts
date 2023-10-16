@@ -11,6 +11,7 @@ export function createMockModelingStore({
   onModeChanged = jest.fn(),
   onModeledMethodsChanged = jest.fn(),
   onModifiedMethodsChanged = jest.fn(),
+  onInProgressMethodsChanged = jest.fn(),
 }: {
   initializeStateForDb?: ModelingStore["initializeStateForDb"];
   getStateForActiveDb?: ModelingStore["getStateForActiveDb"];
@@ -21,6 +22,7 @@ export function createMockModelingStore({
   onModeChanged?: ModelingStore["onModeChanged"];
   onModeledMethodsChanged?: ModelingStore["onModeledMethodsChanged"];
   onModifiedMethodsChanged?: ModelingStore["onModifiedMethodsChanged"];
+  onInProgressMethodsChanged?: ModelingStore["onInProgressMethodsChanged"];
 } = {}): ModelingStore {
   return mockedObject<ModelingStore>({
     initializeStateForDb,
@@ -32,5 +34,6 @@ export function createMockModelingStore({
     onModeChanged,
     onModeledMethodsChanged,
     onModifiedMethodsChanged,
+    onInProgressMethodsChanged,
   });
 }
