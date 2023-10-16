@@ -14,10 +14,6 @@ import {
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
-import {
-  InProgressMethods,
-  hasInProgressMethod,
-} from "../../model-editor/shared/in-progress-methods";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -76,7 +72,7 @@ export type LibraryRowProps = {
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
-  inProgressMethods: InProgressMethods;
+  inProgressMethods: Set<string>;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
@@ -179,10 +175,8 @@ export const LibraryRow = ({
   }, [methods, modifiedSignatures]);
 
   const canStopAutoModeling = useMemo(() => {
-    return methods.some((method) =>
-      hasInProgressMethod(inProgressMethods, title, method.signature),
-    );
-  }, [methods, title, inProgressMethods]);
+    return methods.some((method) => inProgressMethods.has(method.signature));
+  }, [methods, inProgressMethods]);
 
   return (
     <LibraryContainer>

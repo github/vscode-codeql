@@ -5,10 +5,6 @@ import { DatabaseItem } from "../databases/local-databases";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
-import {
-  InProgressMethods,
-  hasInProgressMethodSignature,
-} from "./shared/in-progress-methods";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 
 interface InternalDbModelingState {
@@ -18,7 +14,7 @@ interface InternalDbModelingState {
   mode: Mode;
   modeledMethods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: Set<string>;
-  inProgressMethods: InProgressMethods;
+  inProgressMethods: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
 }
@@ -30,6 +26,7 @@ interface DbModelingState {
   readonly mode: Mode;
   readonly modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>;
   readonly modifiedMethodSignatures: ReadonlySet<string>;
+  readonly inProgressMethods: ReadonlySet<string>;
   readonly selectedMethod: Method | undefined;
   readonly selectedUsage: Usage | undefined;
 }
@@ -82,7 +79,7 @@ interface SelectedMethodChangedEvent {
 
 interface InProgressMethodsChangedEvent {
   readonly dbUri: string;
-  readonly methods: InProgressMethods;
+  readonly methods: ReadonlySet<string>;
 }
 
 export class ModelingStore extends DisposableObject {
@@ -184,7 +181,7 @@ export class ModelingStore extends DisposableObject {
       modifiedMethodSignatures: new Set(),
       selectedMethod: undefined,
       selectedUsage: undefined,
-      inProgressMethods: {},
+      inProgressMethods: new Set(),
     });
 
     this.onDbOpenedEventEmitter.fire(dbUri);
@@ -425,28 +422,32 @@ export class ModelingStore extends DisposableObject {
       usage,
       modeledMethods: dbState.modeledMethods[method.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(method.signature),
-      isInProgress: hasInProgressMethodSignature(
-        dbState.inProgressMethods,
-        method.signature,
-      ),
+      isInProgress: dbState.inProgressMethods.has(method.signature),
     });
   }
 
-  public setInProgressMethods(
+  public addInProgressMethods(
     dbItem: DatabaseItem,
-    packageName: string,
     inProgressMethods: string[],
   ) {
-    const dbState = this.getState(dbItem);
+    this.changeInProgressMethods(dbItem, (state) => {
+      state.inProgressMethods = new Set([
+        ...state.inProgressMethods,
+        ...inProgressMethods,
+      ]);
+    });
+  }
 
-    dbState.inProgressMethods = {
-      ...dbState.inProgressMethods,
-      [packageName]: inProgressMethods,
-    };
-
-    this.onInProgressMethodsChangedEventEmitter.fire({
-      dbUri: dbItem.databaseUri.toString(),
-      methods: dbState.inProgressMethods,
+  public removeInProgressMethods(
+    dbItem: DatabaseItem,
+    methodSignatures: string[],
+  ) {
+    this.changeInProgressMethods(dbItem, (state) => {
+      state.inProgressMethods = new Set(
+        Array.from(state.inProgressMethods).filter(
+          (s) => !methodSignatures.includes(s),
+        ),
+      );
     });
   }
 
@@ -469,10 +470,7 @@ export class ModelingStore extends DisposableObject {
       isModified: dbState.modifiedMethodSignatures.has(
         selectedMethod.signature,
       ),
-      isInProgress: hasInProgressMethodSignature(
-        dbState.inProgressMethods,
-        selectedMethod.signature,
-      ),
+      isInProgress: dbState.inProgressMethods.has(selectedMethod.signature),
     };
   }
 
@@ -513,6 +511,20 @@ export class ModelingStore extends DisposableObject {
       modeledMethods: state.modeledMethods,
       dbUri: dbItem.databaseUri.toString(),
       isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    });
+  }
+
+  private changeInProgressMethods(
+    dbItem: DatabaseItem,
+    updateState: (state: InternalDbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.onInProgressMethodsChangedEventEmitter.fire({
+      dbUri: dbItem.databaseUri.toString(),
+      methods: state.inProgressMethods,
     });
   }
 }

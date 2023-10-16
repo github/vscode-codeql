@@ -133,12 +133,14 @@ export class AutoModeler {
           const start = i * candidateBatchSize;
           const end = start + candidateBatchSize;
           const candidatesToProcess = allCandidateMethods.slice(start, end);
+          const candidateSignatures = candidatesToProcess.map(
+            (c) => c.signature,
+          );
 
           // Let the UI know which candidates we are modeling
-          this.modelingStore.setInProgressMethods(
+          this.modelingStore.addInProgressMethods(
             this.databaseItem,
-            packageName,
-            candidatesToProcess.map((c) => c.signature),
+            candidateSignatures,
           );
 
           // Kick off the process to model the slice of candidates
@@ -148,13 +150,18 @@ export class AutoModeler {
             progress,
             cancellationTokenSource,
           );
+
+          // Let the UI know which candidates we are done modeling
+          this.modelingStore.removeInProgressMethods(
+            this.databaseItem,
+            candidateSignatures,
+          );
         }
       } finally {
-        // Clear out in progress methods
-        this.modelingStore.setInProgressMethods(
+        // Clear out in progress methods in case anything went wrong
+        this.modelingStore.removeInProgressMethods(
           this.databaseItem,
-          packageName,
-          [],
+          allCandidateMethods.map((c) => c.signature),
         );
       }
     });

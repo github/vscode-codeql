@@ -17,7 +17,6 @@ import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../model-editor/shared/mode";
-import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hide-modeled-methods";
 
@@ -93,8 +92,8 @@ export function ModelEditor({
     new Set(),
   );
 
-  const [inProgressMethods, setInProgressMethods] = useState<InProgressMethods>(
-    {},
+  const [inProgressMethods, setInProgressMethods] = useState<Set<string>>(
+    new Set(),
   );
 
   const [hideModeledMethods, setHideModeledMethods] = useState(
@@ -134,7 +133,7 @@ export function ModelEditor({
             setModifiedSignatures(new Set(msg.methodSignatures));
             break;
           case "setInProgressMethods": {
-            setInProgressMethods(msg.methods);
+            setInProgressMethods(new Set(msg.methods));
             break;
           }
           case "revealMethod":

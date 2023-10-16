@@ -69,7 +69,7 @@ describe(ModeledMethodDataGrid.name, () => {
           ],
         }}
         modifiedSignatures={new Set([method1.signature])}
-        inProgressMethods={{}}
+        inProgressMethods={new Set()}
         viewState={viewState}
         hideModeledMethods={false}
         revealedMethodSignature={null}
