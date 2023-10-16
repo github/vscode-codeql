@@ -28,6 +28,9 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
 
   const [isMethodModified, setIsMethodModified] = useState<boolean>(false);
 
+  const [isModelingInProgress, setIsModelingInProgress] =
+    useState<boolean>(false);
+
   const modelingStatus = useMemo(
     () => getModelingStatus(modeledMethods, isMethodModified),
     [modeledMethods, isMethodModified],
@@ -57,6 +60,9 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
             setMethod(msg.method);
             setModeledMethods(msg.modeledMethods);
             setIsMethodModified(msg.isModified);
+            break;
+          case "setInProgress":
+            setIsModelingInProgress(msg.inProgress);
             break;
           default:
             assertNever(msg);
@@ -102,6 +108,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
       modelingStatus={modelingStatus}
       method={method}
       modeledMethods={modeledMethods}
+      isModelingInProgress={isModelingInProgress}
       showMultipleModels={viewState?.showMultipleModels}
       onChange={onChange}
     />

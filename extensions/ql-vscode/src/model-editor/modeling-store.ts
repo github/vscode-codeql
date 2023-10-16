@@ -5,7 +5,10 @@ import { DatabaseItem } from "../databases/local-databases";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
-import { InProgressMethods } from "./shared/in-progress-methods";
+import {
+  InProgressMethods,
+  hasInProgressMethodSignature,
+} from "./shared/in-progress-methods";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 
 interface InternalDbModelingState {
@@ -37,6 +40,7 @@ interface SelectedMethodDetails {
   readonly usage: Usage | undefined;
   readonly modeledMethods: readonly ModeledMethod[];
   readonly isModified: boolean;
+  readonly isInProgress: boolean;
 }
 
 interface MethodsChangedEvent {
@@ -73,6 +77,7 @@ interface SelectedMethodChangedEvent {
   readonly usage: Usage;
   readonly modeledMethods: readonly ModeledMethod[];
   readonly isModified: boolean;
+  readonly isInProgress: boolean;
 }
 
 interface InProgressMethodsChangedEvent {
@@ -409,6 +414,10 @@ export class ModelingStore extends DisposableObject {
       usage,
       modeledMethods: dbState.modeledMethods[method.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(method.signature),
+      isInProgress: hasInProgressMethodSignature(
+        dbState.inProgressMethods,
+        method.signature,
+      ),
     });
   }
 
@@ -447,6 +456,10 @@ export class ModelingStore extends DisposableObject {
       usage: dbState.selectedUsage,
       modeledMethods: dbState.modeledMethods[selectedMethod.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(
+        selectedMethod.signature,
+      ),
+      isInProgress: hasInProgressMethodSignature(
+        dbState.inProgressMethods,
         selectedMethod.signature,
       ),
     };

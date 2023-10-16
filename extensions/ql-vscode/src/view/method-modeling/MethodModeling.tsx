@@ -52,6 +52,7 @@ export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
   method: Method;
   modeledMethods: ModeledMethod[];
+  isModelingInProgress: boolean;
   showMultipleModels?: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
@@ -60,6 +61,7 @@ export const MethodModeling = ({
   modelingStatus,
   modeledMethods,
   method,
+  isModelingInProgress,
   showMultipleModels = false,
   onChange,
 }: MethodModelingProps): JSX.Element => {
@@ -78,6 +80,7 @@ export const MethodModeling = ({
         method={method}
         modeledMethods={modeledMethods}
         showMultipleModels={showMultipleModels}
+        isModelingInProgress={isModelingInProgress}
         onChange={onChange}
       />
       <ReviewInEditorButton method={method} />

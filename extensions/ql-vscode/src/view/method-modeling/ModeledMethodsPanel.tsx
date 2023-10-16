@@ -10,6 +10,7 @@ import { convertToLegacyModeledMethod } from "../../model-editor/shared/modeled-
 export type ModeledMethodsPanelProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
+  isModelingInProgress: boolean;
   showMultipleModels: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
@@ -21,6 +22,7 @@ const SingleMethodModelingInputs = styled(MethodModelingInputs)`
 export const ModeledMethodsPanel = ({
   method,
   modeledMethods,
+  isModelingInProgress,
   showMultipleModels,
   onChange,
 }: ModeledMethodsPanelProps) => {
@@ -36,6 +38,7 @@ export const ModeledMethodsPanel = ({
       <SingleMethodModelingInputs
         method={method}
         modeledMethod={convertToLegacyModeledMethod(modeledMethods)}
+        isModelingInProgress={isModelingInProgress}
         onChange={handleSingleChange}
       />
     );
@@ -45,6 +48,7 @@ export const ModeledMethodsPanel = ({
     <MultipleModeledMethodsPanel
       method={method}
       modeledMethods={modeledMethods}
+      isModelingInProgress={isModelingInProgress}
       onChange={onChange}
     />
   );

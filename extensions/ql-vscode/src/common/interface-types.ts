@@ -583,6 +583,11 @@ interface SetInModelingModeMessage {
   inModelingMode: boolean;
 }
 
+interface SetInProgressMessage {
+  t: "setInProgress";
+  inProgress: boolean;
+}
+
 interface RevealMethodMessage {
   t: "revealMethod";
   methodSignature: string;
@@ -646,6 +651,7 @@ interface SetSelectedMethodMessage {
   method: Method;
   modeledMethods: ModeledMethod[];
   isModified: boolean;
+  isInProgress: boolean;
 }
 
 export type ToMethodModelingMessage =
@@ -654,4 +660,5 @@ export type ToMethodModelingMessage =
   | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
   | SetSelectedMethodMessage
-  | SetInModelingModeMessage;
+  | SetInModelingModeMessage
+  | SetInProgressMessage;

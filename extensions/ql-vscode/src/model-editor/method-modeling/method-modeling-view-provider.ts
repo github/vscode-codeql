@@ -14,6 +14,7 @@ import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
+import { hasInProgressMethodSignature } from "../shared/in-progress-methods";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -23,6 +24,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
   private method: Method | undefined = undefined;
   private databaseItem: DatabaseItem | undefined = undefined;
+  private inProgress: boolean = false;
 
   constructor(
     app: App,
@@ -69,12 +71,14 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       if (selectedMethod) {
         this.databaseItem = selectedMethod.databaseItem;
         this.method = selectedMethod.method;
+        this.inProgress = selectedMethod.isInProgress;
 
         await this.postMessage({
           t: "setSelectedMethod",
           method: selectedMethod.method,
           modeledMethods: selectedMethod.modeledMethods,
           isModified: selectedMethod.isModified,
+          isInProgress: selectedMethod.isInProgress,
         });
       }
 
@@ -188,6 +192,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             method: e.method,
             modeledMethods: e.modeledMethods,
             isModified: e.isModified,
+            isInProgress: e.isInProgress,
           });
         }
       }),
@@ -213,6 +218,27 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
         if (dbUri === this.databaseItem?.databaseUri.toString()) {
           await this.setMethod(undefined, undefined);
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingStore.onInProgressMethodsChanged(async (e) => {
+        if (this.method && this.databaseItem) {
+          const dbUri = this.databaseItem.databaseUri.toString();
+          if (e.dbUri === dbUri) {
+            const inProgress = hasInProgressMethodSignature(
+              e.methods,
+              this.method.signature,
+            );
+            if (inProgress !== this.inProgress) {
+              this.inProgress = inProgress;
+              await this.postMessage({
+                t: "setInProgress",
+                inProgress,
+              });
+            }
+          }
         }
       }),
     );
