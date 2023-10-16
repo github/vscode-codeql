@@ -128,13 +128,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
 
     const removeModelClickedHandlers = useMemo(
       () =>
-        modeledMethods
-          .slice(0, modeledMethods.length - 1)
-          .map((_, index) => () => {
-            const newModeledMethods = [...modeledMethods];
-            newModeledMethods.splice(index, 1);
-            onChange(method.signature, newModeledMethods);
-          }),
+        modeledMethods.map((_, index) => () => {
+          const newModeledMethods = [...modeledMethods];
+          newModeledMethods.splice(index, 1);
+          onChange(method.signature, newModeledMethods);
+        }),
       [method, modeledMethods, onChange],
     );
 
