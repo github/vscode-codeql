@@ -401,6 +401,13 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
+  /**
+   * Sets which method is considered to be selected. This method will be shown in the method modeling panel.
+   *
+   * The `Method` and `Usage` objects must have been retrieved from the modeling store, and not from
+   * a webview. This is because we rely on object referential identity so it must be the same object
+   * that is held internally by the modeling store.
+   */
   public setSelectedMethod(dbItem: DatabaseItem, method: Method, usage: Usage) {
     const dbState = this.getState(dbItem);
 
