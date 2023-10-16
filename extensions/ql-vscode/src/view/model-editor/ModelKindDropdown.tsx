@@ -62,21 +62,11 @@ export const ModelKindDropdown = ({
   );
 
   useEffect(() => {
-    const value = modeledMethod?.kind;
+    const value = modeledMethod?.kind ?? "";
 
-    if (kinds.length === 0) {
-      if (value !== "") {
-        onChangeKind("");
-      }
-
-      return;
-    }
-
-    if (value === undefined) {
-      onChangeKind(kinds[0]);
-    }
-
-    if (value !== undefined && !kinds.includes(value)) {
+    if (kinds.length === 0 && value !== "") {
+      onChangeKind("");
+    } else if (kinds.length > 0 && !kinds.includes(value)) {
       onChangeKind(kinds[0]);
     }
   }, [modeledMethod?.kind, kinds, onChangeKind]);
