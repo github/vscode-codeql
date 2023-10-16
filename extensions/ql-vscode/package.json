@@ -753,78 +753,6 @@
         "title": "Add Database Source to Workspace"
       },
       {
-        "command": "codeQLDatabases.displayAllLanguages",
-        "title": "All languages"
-      },
-      {
-        "command": "codeQLDatabases.displayAllLanguagesSelected",
-        "title": "All languages (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displayCpp",
-        "title": "C/C++"
-      },
-      {
-        "command": "codeQLDatabases.displayCppSelected",
-        "title": "C/C++ (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displayCsharp",
-        "title": "C#"
-      },
-      {
-        "command": "codeQLDatabases.displayCsharpSelected",
-        "title": "C# (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displayGo",
-        "title": "Go"
-      },
-      {
-        "command": "codeQLDatabases.displayGoSelected",
-        "title": "Go (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displayJava",
-        "title": "Java/Kotlin"
-      },
-      {
-        "command": "codeQLDatabases.displayJavaSelected",
-        "title": "Java/Kotlin (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displayJavascript",
-        "title": "JavaScript/TypeScript"
-      },
-      {
-        "command": "codeQLDatabases.displayJavascriptSelected",
-        "title": "JavaScript/TypeScript (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displayPython",
-        "title": "Python"
-      },
-      {
-        "command": "codeQLDatabases.displayPythonSelected",
-        "title": "Python (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displayRuby",
-        "title": "Ruby"
-      },
-      {
-        "command": "codeQLDatabases.displayRubySelected",
-        "title": "Ruby (selected)"
-      },
-      {
-        "command": "codeQLDatabases.displaySwift",
-        "title": "Swift"
-      },
-      {
-        "command": "codeQLDatabases.displaySwiftSelected",
-        "title": "Swift (selected)"
-      },
-      {
         "command": "codeQL.chooseDatabaseFolder",
         "title": "CodeQL: Choose Database from Folder"
       },
@@ -1073,11 +1001,6 @@
           "command": "codeQLDatabases.sortByDateAdded",
           "when": "view == codeQLDatabases",
           "group": "1_databases@1"
-        },
-        {
-          "submenu": "codeQLDatabases.languages",
-          "when": "view == codeQLDatabases && config.codeQL.canary && config.codeQL.showLanguageFilter",
-          "group": "2_databases@0"
         },
         {
           "command": "codeQLQueries.createQuery",
@@ -1609,78 +1532,6 @@
           "when": "false"
         },
         {
-          "command": "codeQLDatabases.displayAllLanguages",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayAllLanguagesSelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayCpp",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayCppSelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayCsharp",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayCsharpSelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayGo",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayGoSelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayJava",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayJavaSelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayJavascript",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayJavascriptSelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayPython",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayPythonSelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayRuby",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displayRubySelected",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displaySwift",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.displaySwiftSelected",
-          "when": "false"
-        },
-        {
           "command": "codeQLQueryHistory.openQueryContextMenu",
           "when": "false"
         },
@@ -1878,88 +1729,8 @@
           "command": "codeQL.gotoQLContextEditor",
           "when": "editorLangId == ql-summary && config.codeQL.canary"
         }
-      ],
-      "codeQLDatabases.languages": [
-        {
-          "command": "codeQLDatabases.displayAllLanguages",
-          "when": "codeQLDatabases.languageFilter"
-        },
-        {
-          "command": "codeQLDatabases.displayAllLanguagesSelected",
-          "when": "!codeQLDatabases.languageFilter"
-        },
-        {
-          "command": "codeQLDatabases.displayCpp",
-          "when": "codeQLDatabases.languageFilter != cpp"
-        },
-        {
-          "command": "codeQLDatabases.displayCppSelected",
-          "when": "codeQLDatabases.languageFilter == cpp"
-        },
-        {
-          "command": "codeQLDatabases.displayCsharp",
-          "when": "codeQLDatabases.languageFilter != csharp"
-        },
-        {
-          "command": "codeQLDatabases.displayCsharpSelected",
-          "when": "codeQLDatabases.languageFilter == csharp"
-        },
-        {
-          "command": "codeQLDatabases.displayGo",
-          "when": "codeQLDatabases.languageFilter != go"
-        },
-        {
-          "command": "codeQLDatabases.displayGoSelected",
-          "when": "codeQLDatabases.languageFilter == go"
-        },
-        {
-          "command": "codeQLDatabases.displayJava",
-          "when": "codeQLDatabases.languageFilter != java"
-        },
-        {
-          "command": "codeQLDatabases.displayJavaSelected",
-          "when": "codeQLDatabases.languageFilter == java"
-        },
-        {
-          "command": "codeQLDatabases.displayJavascript",
-          "when": "codeQLDatabases.languageFilter != javascript"
-        },
-        {
-          "command": "codeQLDatabases.displayJavascriptSelected",
-          "when": "codeQLDatabases.languageFilter == javascript"
-        },
-        {
-          "command": "codeQLDatabases.displayPython",
-          "when": "codeQLDatabases.languageFilter != python"
-        },
-        {
-          "command": "codeQLDatabases.displayPythonSelected",
-          "when": "codeQLDatabases.languageFilter == python"
-        },
-        {
-          "command": "codeQLDatabases.displayRuby",
-          "when": "codeQLDatabases.languageFilter != ruby"
-        },
-        {
-          "command": "codeQLDatabases.displayRubySelected",
-          "when": "codeQLDatabases.languageFilter == ruby"
-        },
-        {
-          "command": "codeQLDatabases.displaySwift",
-          "when": "codeQLDatabases.languageFilter != swift"
-        },
-        {
-          "command": "codeQLDatabases.displaySwiftSelected",
-          "when": "codeQLDatabases.languageFilter == swift"
-        }
       ]
     },
-    "submenus": [
-      {
-        "id": "codeQLDatabases.languages",
-        "label": "Languages"
-      }
-    ],
     "viewsContainers": {
       "activitybar": [
         {

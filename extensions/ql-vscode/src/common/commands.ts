@@ -227,24 +227,6 @@ export type LocalDatabasesCommands = {
   "codeQLDatabases.chooseDatabaseGithub": () => Promise<void>;
   "codeQLDatabases.sortByName": () => Promise<void>;
   "codeQLDatabases.sortByDateAdded": () => Promise<void>;
-  "codeQLDatabases.displayAllLanguages": () => Promise<void>;
-  "codeQLDatabases.displayCpp": () => Promise<void>;
-  "codeQLDatabases.displayCsharp": () => Promise<void>;
-  "codeQLDatabases.displayGo": () => Promise<void>;
-  "codeQLDatabases.displayJava": () => Promise<void>;
-  "codeQLDatabases.displayJavascript": () => Promise<void>;
-  "codeQLDatabases.displayPython": () => Promise<void>;
-  "codeQLDatabases.displayRuby": () => Promise<void>;
-  "codeQLDatabases.displaySwift": () => Promise<void>;
-  "codeQLDatabases.displayAllLanguagesSelected": () => Promise<void>;
-  "codeQLDatabases.displayCppSelected": () => Promise<void>;
-  "codeQLDatabases.displayCsharpSelected": () => Promise<void>;
-  "codeQLDatabases.displayGoSelected": () => Promise<void>;
-  "codeQLDatabases.displayJavaSelected": () => Promise<void>;
-  "codeQLDatabases.displayJavascriptSelected": () => Promise<void>;
-  "codeQLDatabases.displayPythonSelected": () => Promise<void>;
-  "codeQLDatabases.displayRubySelected": () => Promise<void>;
-  "codeQLDatabases.displaySwiftSelected": () => Promise<void>;
 
   // Database panel context menu
   "codeQLDatabases.setCurrentDatabase": (
