@@ -246,6 +246,7 @@ describe(validateModeledMethods.name, () => {
       }),
       createModeledMethod({
         type: "neutral",
+        kind: "sink",
       }),
     ];
 
@@ -261,16 +262,34 @@ describe(validateModeledMethods.name, () => {
     ]);
   });
 
-  it("should give an error with duplicate neutral combined with other models", () => {
+  it("should not give an error with other neutral combined with other models", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "neutral",
-      }),
       createModeledMethod({
         type: "sink",
       }),
       createModeledMethod({
         type: "neutral",
+        kind: "summary",
+      }),
+    ];
+
+    const errors = validateModeledMethods(modeledMethods);
+
+    expect(errors).toEqual([]);
+  });
+
+  it("should give an error with duplicate neutral combined with other models", () => {
+    const modeledMethods = [
+      createModeledMethod({
+        type: "neutral",
+        kind: "summary",
+      }),
+      createModeledMethod({
+        type: "summary",
+      }),
+      createModeledMethod({
+        type: "neutral",
+        kind: "summary",
       }),
     ];
 
@@ -299,12 +318,14 @@ describe(validateModeledMethods.name, () => {
       }),
       createModeledMethod({
         type: "neutral",
+        kind: "sink",
       }),
       createModeledMethod({
         type: "sink",
       }),
       createModeledMethod({
         type: "neutral",
+        kind: "sink",
       }),
     ];
 

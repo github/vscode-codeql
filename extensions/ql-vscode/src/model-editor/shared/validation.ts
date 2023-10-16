@@ -75,7 +75,7 @@ function canonicalizeModeledMethod(
         type: "neutral",
         input: "",
         output: "",
-        kind: "",
+        kind: modeledMethod.kind,
         provenance: "manual",
       };
     default:
@@ -117,24 +117,40 @@ export function validateModeledMethods(
     }
   }
 
-  const neutralModeledMethod = consideredModeledMethods.find(
+  const neutralModeledMethods = consideredModeledMethods.filter(
     (modeledMethod) => modeledMethod.type === "neutral",
   );
-  const hasNonNeutralModeledMethod = consideredModeledMethods.some(
-    (modeledMethod) => modeledMethod.type !== "neutral",
-  );
 
-  // If there is a neutral model and any other model, that is an error
-  if (neutralModeledMethod && hasNonNeutralModeledMethod) {
-    // Another validation will validate that only one neutral method is present, so we only need
-    // to return an error for the first one
+  const neutralModeledMethodsByKind = new Map<string, ModeledMethod[]>();
+  for (const neutralModeledMethod of neutralModeledMethods) {
+    if (!neutralModeledMethodsByKind.has(neutralModeledMethod.kind)) {
+      neutralModeledMethodsByKind.set(neutralModeledMethod.kind, []);
+    }
+
+    neutralModeledMethodsByKind
+      .get(neutralModeledMethod.kind)
+      ?.push(neutralModeledMethod);
+  }
+
+  for (const [
+    neutralModeledMethodKind,
+    neutralModeledMethods,
+  ] of neutralModeledMethodsByKind) {
+    const conflictingMethods = consideredModeledMethods.filter(
+      (method) => neutralModeledMethodKind === method.type,
+    );
+
+    if (conflictingMethods.length < 1) {
+      continue;
+    }
 
     result.push({
       title: "Conflicting classification",
-      message:
-        "This method has a neutral classification, which conflicts with other classifications.",
+      message: `This method has a neutral ${neutralModeledMethodKind} classification, which conflicts with other ${neutralModeledMethodKind} classifications.`,
       actionText: "Modify or remove the neutral classification.",
-      index: modeledMethods.indexOf(neutralModeledMethod),
+      // Another validation will validate that only one neutral method is present, so we only need
+      // to return an error for the first one
+      index: modeledMethods.indexOf(neutralModeledMethods[0]),
     });
   }
 
