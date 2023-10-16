@@ -368,12 +368,25 @@ describe(MethodRow.name, () => {
       },
     });
 
+    onChange.mockReset();
     await userEvent.click(screen.getByLabelText("Add new model"));
 
-    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
-    expect(kindInputs).toHaveLength(2);
-    expect(kindInputs[0]).toHaveValue(modeledMethod.type);
-    expect(kindInputs[1]).toHaveValue("none");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      modeledMethod,
+      {
+        type: "none",
+        input: "",
+        output: "",
+        kind: "",
+        provenance: "manual",
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
+      },
+    ]);
   });
 
   it("can delete the first modeled method", async () => {
@@ -390,13 +403,15 @@ describe(MethodRow.name, () => {
       },
     });
 
+    onChange.mockReset();
     await userEvent.click(screen.getAllByLabelText("Remove model")[0]);
 
-    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
-    expect(kindInputs).toHaveLength(3);
-    expect(kindInputs[0]).toHaveValue("sink");
-    expect(kindInputs[1]).toHaveValue("none");
-    expect(kindInputs[2]).toHaveValue("summary");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      { ...modeledMethod, type: "sink" },
+      { ...modeledMethod, type: "none" },
+      { ...modeledMethod, type: "summary" },
+    ]);
   });
 
   it("can delete a modeled method in the middle", async () => {
@@ -413,12 +428,14 @@ describe(MethodRow.name, () => {
       },
     });
 
+    onChange.mockReset();
     await userEvent.click(screen.getAllByLabelText("Remove model")[2]);
 
-    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
-    expect(kindInputs).toHaveLength(3);
-    expect(kindInputs[0]).toHaveValue("source");
-    expect(kindInputs[1]).toHaveValue("sink");
-    expect(kindInputs[2]).toHaveValue("summary");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      { ...modeledMethod, type: "source" },
+      { ...modeledMethod, type: "sink" },
+      { ...modeledMethod, type: "summary" },
+    ]);
   });
 });
