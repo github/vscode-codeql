@@ -24,7 +24,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
   private method: Method | undefined = undefined;
   private databaseItem: DatabaseItem | undefined = undefined;
-  private inProgress: boolean = false;
 
   constructor(
     app: App,
@@ -71,7 +70,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       if (selectedMethod) {
         this.databaseItem = selectedMethod.databaseItem;
         this.method = selectedMethod.method;
-        this.inProgress = selectedMethod.isInProgress;
 
         await this.postMessage({
           t: "setSelectedMethod",
@@ -231,13 +229,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
               e.methods,
               this.method.signature,
             );
-            if (inProgress !== this.inProgress) {
-              this.inProgress = inProgress;
-              await this.postMessage({
-                t: "setInProgress",
-                inProgress,
-              });
-            }
+            await this.postMessage({
+              t: "setInProgress",
+              inProgress,
+            });
           }
         }
       }),
