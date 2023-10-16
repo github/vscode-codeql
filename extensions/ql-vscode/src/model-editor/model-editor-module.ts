@@ -77,10 +77,11 @@ export class ModelEditorModule extends DisposableObject {
       "codeQL.openModelEditorFromModelingPanel":
         this.openModelEditor.bind(this),
       "codeQLModelEditor.jumpToMethod": async (
-        methodSignature: string,
+        method: Method,
+        usage: Usage,
         databaseItem: DatabaseItem,
       ) => {
-        this.modelingStore.setSelectedMethod(databaseItem, methodSignature);
+        this.modelingStore.setSelectedMethod(databaseItem, method, usage);
       },
     };
   }

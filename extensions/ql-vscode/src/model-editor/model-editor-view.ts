@@ -374,7 +374,17 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   protected async handleJumpToMethod(methodSignature: string) {
-    this.modelingStore.setSelectedMethod(this.databaseItem, methodSignature);
+    const method = this.modelingStore.getMethod(
+      this.databaseItem,
+      methodSignature,
+    );
+    if (method) {
+      this.modelingStore.setSelectedMethod(
+        this.databaseItem,
+        method,
+        method.usages[0],
+      );
+    }
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
