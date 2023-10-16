@@ -417,6 +417,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
+          isModelingInProgress={isModelingInProgress}
           onChange={onChange}
         />,
       );
