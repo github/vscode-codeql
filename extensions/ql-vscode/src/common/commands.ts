@@ -13,7 +13,7 @@ import type {
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import type { LanguageSelectionTreeViewItem } from "../language-selection-panel/language-selection-data-provider";
-import { Method, Usage } from "../model-editor/method";
+import type { Method, Usage } from "../model-editor/method";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
