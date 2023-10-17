@@ -17,11 +17,7 @@ import { DatabaseItem } from "../databases/local-databases";
 import { Mode } from "./shared/mode";
 import { CancellationTokenSource } from "vscode";
 import { ModelingStore } from "./modeling-store";
-
-// Limit the number of candidates we send to the model in each request
-// to avoid long requests.
-// Note that the model may return fewer than this number of candidates.
-const candidateBatchSize = 20;
+import { ModelConfigListener } from "../config";
 
 /**
  * The auto-modeler holds state around auto-modeling jobs and allows
@@ -36,6 +32,7 @@ export class AutoModeler {
     private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
+    private readonly modelConfig: ModelConfigListener,
     private readonly modelingStore: ModelingStore,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
@@ -109,6 +106,9 @@ export class AutoModeler {
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
     void extLogger.log(`Modeling package ${packageName}`);
+
+    const candidateBatchSize = this.modelConfig.llmGenerationBatchSize;
+
     await withProgress(async (progress) => {
       // Fetch the candidates to send to the model
       const allCandidateMethods = getCandidates(mode, methods, modeledMethods);
