@@ -137,7 +137,7 @@ async function extractSourceMap() {
           }
         }
 
-        const sourceMap = rawSourceMaps.get(file) as RawSourceMap | null;
+        const sourceMap = rawSourceMaps.get(file);
         if (!sourceMap) {
           return match;
         }
