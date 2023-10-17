@@ -76,6 +76,7 @@ export class ModelEditorView extends AbstractWebview<
       app,
       cliServer,
       queryRunner,
+      this.modelConfig,
       modelingStore,
       queryStorageDir,
       databaseItem,

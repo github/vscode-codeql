@@ -702,6 +702,10 @@ export function showQueriesPanel(): boolean {
 const MODEL_SETTING = new Setting("model", ROOT_SETTING);
 const FLOW_GENERATION = new Setting("flowGeneration", MODEL_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
+const LLM_GENERATION_BATCH_SIZE = new Setting(
+  "llmGenerationBatchSize",
+  MODEL_SETTING,
+);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 const SHOW_MULTIPLE_MODELS = new Setting("showMultipleModels", MODEL_SETTING);
 
@@ -723,6 +727,14 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
   public get llmGeneration(): boolean {
     return !!LLM_GENERATION.getValue<boolean>();
+  }
+
+  /**
+   * Limits the number of candidates we send to the model in each request to avoid long requests.
+   * Note that the model may return fewer than this number of candidates.
+   */
+  public get llmGenerationBatchSize(): number {
+    return LLM_GENERATION_BATCH_SIZE.getValue<number | null>() || 10;
   }
 
   public getExtensionsDirectory(languageId: string): string | undefined {
