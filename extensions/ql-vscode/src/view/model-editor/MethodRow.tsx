@@ -1,7 +1,5 @@
 import {
   VSCodeButton,
-  VSCodeDataGridCell,
-  VSCodeDataGridRow,
   VSCodeLink,
   VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
@@ -25,8 +23,9 @@ import { ModelOutputDropdown } from "./ModelOutputDropdown";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { Codicon } from "../common";
 import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-modeled-methods";
+import { DataGridCell, DataGridRow } from "../common/DataGrid";
 
-const MultiModelColumn = styled(VSCodeDataGridCell)`
+const MultiModelColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5em;
@@ -63,12 +62,8 @@ const CodiconRow = styled(VSCodeButton)`
   align-items: center;
 `;
 
-const DataGridRow = styled(VSCodeDataGridRow)<{ focused?: boolean }>`
-  outline: ${(props) =>
-    props.focused ? "1px solid var(--vscode-focusBorder)" : "none"};
-`;
-
 export type MethodRowProps = {
+  gridRow: number;
   method: Method;
   methodCanBeModeled: boolean;
   modeledMethods: ModeledMethod[];
@@ -103,6 +98,7 @@ export const MethodRow = (props: MethodRowProps) => {
 const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
   (props, ref) => {
     const {
+      gridRow,
       method,
       modeledMethods: modeledMethodsProp,
       methodIsUnsaved,
@@ -166,9 +162,9 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       <DataGridRow
         data-testid="modelable-method-row"
         ref={ref}
-        focused={revealedMethodSignature === method.signature}
+        $focused={revealedMethodSignature === method.signature}
       >
-        <VSCodeDataGridCell gridColumn={1}>
+        <DataGridCell gridRow={gridRow} gridColumn={1}>
           <ApiOrMethodRow>
             <ModelingStatusIndicator status={modelingStatus} />
             <MethodClassifications method={method} />
@@ -181,97 +177,107 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <ViewLink onClick={jumpToMethod}>View</ViewLink>
             {props.modelingInProgress && <ProgressRing />}
           </ApiOrMethodRow>
-        </VSCodeDataGridCell>
+        </DataGridCell>
         {props.modelingInProgress && (
           <>
-            <VSCodeDataGridCell gridColumn={2}>
+            <DataGridCell gridRow={gridRow} gridColumn={2}>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={3}>
+            </DataGridCell>
+            <DataGridCell gridRow={gridRow} gridColumn={3}>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={4}>
+            </DataGridCell>
+            <DataGridCell gridRow={gridRow} gridColumn={4}>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={5}>
+            </DataGridCell>
+            <DataGridCell gridRow={gridRow} gridColumn={5}>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
+            </DataGridCell>
             {viewState.showMultipleModels && (
-              <VSCodeDataGridCell gridColumn={6}>
+              <DataGridCell gridRow={gridRow} gridColumn={6}>
                 <CodiconRow appearance="icon" disabled={true}>
                   <Codicon name="add" label="Add new model" />
                 </CodiconRow>
-              </VSCodeDataGridCell>
+              </DataGridCell>
             )}
           </>
         )}
         {!props.modelingInProgress && (
           <>
-            <MultiModelColumn gridColumn={2}>
-              {modeledMethods.map((modeledMethod, index) => (
-                <ModelTypeDropdown
-                  key={index}
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              ))}
-            </MultiModelColumn>
-            <MultiModelColumn gridColumn={3}>
-              {modeledMethods.map((modeledMethod, index) => (
-                <ModelInputDropdown
-                  key={index}
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              ))}
-            </MultiModelColumn>
-            <MultiModelColumn gridColumn={4}>
-              {modeledMethods.map((modeledMethod, index) => (
-                <ModelOutputDropdown
-                  key={index}
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              ))}
-            </MultiModelColumn>
-            <MultiModelColumn gridColumn={5}>
-              {modeledMethods.map((modeledMethod, index) => (
-                <ModelKindDropdown
-                  key={index}
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              ))}
-            </MultiModelColumn>
-            {viewState.showMultipleModels && (
-              <MultiModelColumn gridColumn={6}>
-                {modeledMethods.map((_, index) =>
-                  index === modeledMethods.length - 1 ? (
-                    <CodiconRow
-                      key={index}
-                      appearance="icon"
-                      aria-label="Add new model"
-                      onClick={handleAddModelClick}
-                      disabled={addModelButtonDisabled}
-                    >
-                      <Codicon name="add" />
-                    </CodiconRow>
-                  ) : (
-                    <CodiconRow
-                      key={index}
-                      appearance="icon"
-                      aria-label="Remove model"
-                      onClick={removeModelClickedHandlers[index]}
-                    >
-                      <Codicon name="trash" />
-                    </CodiconRow>
-                  ),
-                )}
+            <DataGridCell gridRow={gridRow} gridColumn={2}>
+              <MultiModelColumn>
+                {modeledMethods.map((modeledMethod, index) => (
+                  <ModelTypeDropdown
+                    key={index}
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                ))}
               </MultiModelColumn>
+            </DataGridCell>
+            <DataGridCell gridRow={gridRow} gridColumn={3}>
+              <MultiModelColumn>
+                {modeledMethods.map((modeledMethod, index) => (
+                  <ModelInputDropdown
+                    key={index}
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                ))}
+              </MultiModelColumn>
+            </DataGridCell>
+            <DataGridCell gridRow={gridRow} gridColumn={4}>
+              <MultiModelColumn>
+                {modeledMethods.map((modeledMethod, index) => (
+                  <ModelOutputDropdown
+                    key={index}
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                ))}
+              </MultiModelColumn>
+            </DataGridCell>
+            <DataGridCell gridRow={gridRow} gridColumn={5}>
+              <MultiModelColumn>
+                {modeledMethods.map((modeledMethod, index) => (
+                  <ModelKindDropdown
+                    key={index}
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                ))}
+              </MultiModelColumn>
+            </DataGridCell>
+            {viewState.showMultipleModels && (
+              <DataGridCell gridRow={gridRow} gridColumn={6}>
+                <MultiModelColumn>
+                  {modeledMethods.map((_, index) =>
+                    index === modeledMethods.length - 1 ? (
+                      <CodiconRow
+                        key={index}
+                        appearance="icon"
+                        aria-label="Add new model"
+                        onClick={handleAddModelClick}
+                        disabled={addModelButtonDisabled}
+                      >
+                        <Codicon name="add" />
+                      </CodiconRow>
+                    ) : (
+                      <CodiconRow
+                        key={index}
+                        appearance="icon"
+                        aria-label="Remove model"
+                        onClick={removeModelClickedHandlers[index]}
+                      >
+                        <Codicon name="trash" />
+                      </CodiconRow>
+                    ),
+                  )}
+                </MultiModelColumn>
+              </DataGridCell>
             )}
           </>
         )}
@@ -285,7 +291,7 @@ const UnmodelableMethodRow = forwardRef<
   HTMLElement | undefined,
   MethodRowProps
 >((props, ref) => {
-  const { method, viewState, revealedMethodSignature } = props;
+  const { gridRow, method, viewState, revealedMethodSignature } = props;
 
   const jumpToMethod = useCallback(
     () => sendJumpToMethodMessage(method),
@@ -296,9 +302,9 @@ const UnmodelableMethodRow = forwardRef<
     <DataGridRow
       data-testid="unmodelable-method-row"
       ref={ref}
-      focused={revealedMethodSignature === method.signature}
+      $focused={revealedMethodSignature === method.signature}
     >
-      <VSCodeDataGridCell gridColumn={1}>
+      <DataGridCell gridRow={gridRow} gridColumn={1}>
         <ApiOrMethodRow>
           <ModelingStatusIndicator status="saved" />
           <MethodName {...props.method} />
@@ -310,10 +316,10 @@ const UnmodelableMethodRow = forwardRef<
           <ViewLink onClick={jumpToMethod}>View</ViewLink>
           <MethodClassifications method={method} />
         </ApiOrMethodRow>
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn="span 4">
+      </DataGridCell>
+      <DataGridCell gridRow={gridRow} gridColumn="span 4">
         Method already modeled
-      </VSCodeDataGridCell>
+      </DataGridCell>
     </DataGridRow>
   );
 });

@@ -45,6 +45,7 @@ describe(MethodRow.name, () => {
   const render = (props: Partial<MethodRowProps> = {}) =>
     reactRender(
       <MethodRow
+        gridRow={1}
         method={method}
         methodCanBeModeled={true}
         modeledMethods={[modeledMethod]}
