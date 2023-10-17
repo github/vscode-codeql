@@ -4,6 +4,7 @@ import {
   submitVariantAnalysis,
   getVariantAnalysisRepo,
 } from "./gh-api/gh-api-client";
+import { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
 import {
   authentication,
   AuthenticationSessionsChangeEvent,
@@ -76,6 +77,8 @@ import {
   showAndLogWarningMessage,
 } from "../common/logging";
 import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import { RequestError } from "@octokit/request-error";
+import { handleRequestError } from "./custom-errors";
 
 const maxRetryCount = 3;
 
@@ -254,10 +257,20 @@ export class VariantAnalysisManager
       },
     };
 
-    const variantAnalysisResponse = await submitVariantAnalysis(
-      this.app.credentials,
-      variantAnalysisSubmission,
-    );
+    let variantAnalysisResponse: ApiVariantAnalysis;
+    try {
+      variantAnalysisResponse = await submitVariantAnalysis(
+        this.app.credentials,
+        variantAnalysisSubmission,
+      );
+    } catch (e: unknown) {
+      // If the error is handled by the handleRequestError function, we don't need to throw
+      if (e instanceof RequestError && handleRequestError(e, this.app.logger)) {
+        return;
+      }
+
+      throw e;
+    }
 
     const processedVariantAnalysis = processVariantAnalysis(
       variantAnalysisSubmission,
