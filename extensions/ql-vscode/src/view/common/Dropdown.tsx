@@ -4,7 +4,12 @@ import { styled } from "styled-components";
 
 const DISABLED_VALUE = "-";
 
-const StyledDropdown = styled.select<{ disabled?: boolean }>`
+type FontStyle = "normal" | "italic" | "oblique";
+
+const StyledDropdown = styled.select<{
+  disabled?: boolean;
+  fontStyle?: FontStyle;
+}>`
   width: 100%;
   height: calc(var(--input-height) * 1px);
   background: var(--vscode-dropdown-background);
@@ -13,12 +18,14 @@ const StyledDropdown = styled.select<{ disabled?: boolean }>`
   padding: 2px 6px 2px 8px;
   opacity: ${(props) =>
     props.disabled ? "var(--disabled-opacity)" : "inherit"};
+  font-style: ${(props) => props.fontStyle ?? "normal"};
 `;
 
 type Props = {
   value: string | undefined;
   options: Array<{ value: string; label: string }>;
   disabled?: boolean;
+  fontStyle?: FontStyle;
   disabledPlaceholder?: string;
   onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
 

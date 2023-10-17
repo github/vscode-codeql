@@ -8,6 +8,7 @@ export const InProgressDropdown = () => {
       options={[]}
       disabled={true}
       disabledPlaceholder="Thinking..."
+      fontStyle="italic"
     />
   );
 };
