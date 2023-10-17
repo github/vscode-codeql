@@ -115,21 +115,35 @@ async function extractSourceMap() {
   }
 
   if (stacktrace.includes("at")) {
-    const rawSourceMaps = new Map<string, RawSourceMap>();
+    const rawSourceMaps = new Map<string, RawSourceMap | null>();
 
     const mappedStacktrace = await replaceAsync(
       stacktrace,
       stackLineRegex,
       async (match, name, file, line, column) => {
         if (!rawSourceMaps.has(file)) {
-          const rawSourceMap: RawSourceMap = await readJSON(
-            resolve(sourceMapsDirectory, `${basename(file)}.map`),
-          );
-          rawSourceMaps.set(file, rawSourceMap);
+          try {
+            const rawSourceMap: RawSourceMap = await readJSON(
+              resolve(sourceMapsDirectory, `${basename(file)}.map`),
+            );
+            rawSourceMaps.set(file, rawSourceMap);
+          } catch (e: unknown) {
+            // If the file is not found, we will not decode it and not try reading this source map again
+            if (e instanceof Error && "code" in e && e.code === "ENOENT") {
+              rawSourceMaps.set(file, null);
+            } else {
+              throw e;
+            }
+          }
+        }
+
+        const sourceMap = rawSourceMaps.get(file) as RawSourceMap | null;
+        if (!sourceMap) {
+          return match;
         }
 
         const originalPosition = await SourceMapConsumer.with(
-          rawSourceMaps.get(file) as RawSourceMap,
+          sourceMap,
           null,
           async function (consumer) {
             return consumer.originalPositionFor({
