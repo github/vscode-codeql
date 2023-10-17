@@ -4,12 +4,7 @@ import { styled } from "styled-components";
 
 const DISABLED_VALUE = "-";
 
-type FontStyle = "normal" | "italic" | "oblique";
-
-const StyledDropdown = styled.select<{
-  disabled?: boolean;
-  fontStyle?: FontStyle;
-}>`
+const StyledDropdown = styled.select<{ disabled?: boolean }>`
   width: 100%;
   height: calc(var(--input-height) * 1px);
   background: var(--vscode-dropdown-background);
@@ -18,14 +13,13 @@ const StyledDropdown = styled.select<{
   padding: 2px 6px 2px 8px;
   opacity: ${(props) =>
     props.disabled ? "var(--disabled-opacity)" : "inherit"};
-  font-style: ${(props) => props.fontStyle ?? "normal"};
 `;
 
 type Props = {
   value: string | undefined;
   options: Array<{ value: string; label: string }>;
   disabled?: boolean;
-  fontStyle?: FontStyle;
+  className?: string;
   disabledPlaceholder?: string;
   onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
 
@@ -47,6 +41,7 @@ export function Dropdown({
   options,
   disabled,
   disabledPlaceholder,
+  className,
   onChange,
   ...props
 }: Props) {
@@ -56,6 +51,7 @@ export function Dropdown({
       value={disabled ? disabledValue : value}
       disabled={disabled}
       onChange={onChange}
+      className={className}
       {...props}
     >
       {disabled ? (
