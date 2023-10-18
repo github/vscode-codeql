@@ -23,7 +23,7 @@ import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelConfigListener } from "../config";
 import { ModelingEvents } from "./modeling-events";
 
-const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
+const SUPPORTED_LANGUAGES: string[] = ["java", "csharp", "ruby"];
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
