@@ -18,7 +18,6 @@ describe(HiddenMethodsRow.name, () => {
   it("does not render with 0 hidden methods", () => {
     const { container } = render(
       <HiddenMethodsRow
-        gridRow={1}
         numHiddenMethods={0}
         someMethodsAreVisible={true}
         viewState={viewState}
@@ -31,7 +30,6 @@ describe(HiddenMethodsRow.name, () => {
   it("renders with 1 hidden methods and no visible methods", () => {
     render(
       <HiddenMethodsRow
-        gridRow={1}
         numHiddenMethods={1}
         someMethodsAreVisible={false}
         viewState={viewState}
@@ -46,7 +44,6 @@ describe(HiddenMethodsRow.name, () => {
   it("renders with 1 hidden methods and visible methods", () => {
     render(
       <HiddenMethodsRow
-        gridRow={1}
         numHiddenMethods={1}
         someMethodsAreVisible={true}
         viewState={viewState}
@@ -61,7 +58,6 @@ describe(HiddenMethodsRow.name, () => {
   it("renders with 3 hidden methods and no visible methods", () => {
     render(
       <HiddenMethodsRow
-        gridRow={1}
         numHiddenMethods={3}
         someMethodsAreVisible={false}
         viewState={viewState}
@@ -76,7 +72,6 @@ describe(HiddenMethodsRow.name, () => {
   it("renders with 3 hidden methods and visible methods", () => {
     render(
       <HiddenMethodsRow
-        gridRow={1}
         numHiddenMethods={3}
         someMethodsAreVisible={true}
         viewState={viewState}

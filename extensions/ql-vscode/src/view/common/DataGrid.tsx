@@ -48,17 +48,17 @@ export const DataGridRow = styled.div<{ $focused?: boolean }>`
 `;
 
 const StyledDataGridCell = styled.div<{
-  $gridRow: string | number;
-  $gridColumn: string | number;
+  $gridRow?: string | number;
+  $gridColumn?: string | number;
 }>`
-  grid-row: ${(props) => props.$gridRow};
-  grid-column: ${(props) => props.$gridColumn};
+  ${({ $gridRow }) => ($gridRow ? `grid-row: ${$gridRow};` : "")}
+  ${({ $gridColumn }) => ($gridColumn ? `grid-column: ${$gridColumn};` : "")}
   padding: 4px 12px;
 `;
 
 interface DataGridCellProps {
-  gridRow: string | number;
-  gridColumn: string | number;
+  gridRow?: string | number;
+  gridColumn?: string | number;
   className?: string;
   children: React.ReactNode;
 }

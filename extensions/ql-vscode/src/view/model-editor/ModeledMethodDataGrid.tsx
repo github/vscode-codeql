@@ -71,23 +71,13 @@ export const ModeledMethodDataGrid = ({
     <DataGrid gridTemplateColumns={gridTemplateColumns}>
       {someMethodsAreVisible && (
         <>
-          <DataGridCell gridRow={1} gridColumn={1}>
-            API or method
-          </DataGridCell>
-          <DataGridCell gridRow={1} gridColumn={2}>
-            Model type
-          </DataGridCell>
-          <DataGridCell gridRow={1} gridColumn={3}>
-            Input
-          </DataGridCell>
-          <DataGridCell gridRow={1} gridColumn={4}>
-            Output
-          </DataGridCell>
-          <DataGridCell gridRow={1} gridColumn={5}>
-            Kind
-          </DataGridCell>
+          <DataGridCell>API or method</DataGridCell>
+          <DataGridCell>Model type</DataGridCell>
+          <DataGridCell>Input</DataGridCell>
+          <DataGridCell>Output</DataGridCell>
+          <DataGridCell>Kind</DataGridCell>
           {viewState.showMultipleModels && (
-            <DataGridCell gridRow={1} gridColumn={6}>
+            <DataGridCell>
               <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
             </DataGridCell>
           )}
@@ -97,7 +87,6 @@ export const ModeledMethodDataGrid = ({
               return (
                 <MethodRow
                   key={method.signature}
-                  gridRow={index + 2}
                   method={method}
                   methodCanBeModeled={methodCanBeModeled}
                   modeledMethods={modeledMethods}
@@ -113,7 +102,6 @@ export const ModeledMethodDataGrid = ({
         </>
       )}
       <HiddenMethodsRow
-        gridRow={methodsWithModelability.length + 2}
         numHiddenMethods={numHiddenMethods}
         someMethodsAreVisible={someMethodsAreVisible}
         viewState={viewState}

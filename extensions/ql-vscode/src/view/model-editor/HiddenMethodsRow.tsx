@@ -9,14 +9,12 @@ const HiddenMethodsText = styled(DataGridCell)`
 `;
 
 interface Props {
-  gridRow: number;
   numHiddenMethods: number;
   someMethodsAreVisible: boolean;
   viewState: ModelEditorViewState;
 }
 
 export function HiddenMethodsRow({
-  gridRow,
   numHiddenMethods,
   someMethodsAreVisible,
   viewState,
@@ -29,7 +27,7 @@ export function HiddenMethodsRow({
 
   return (
     <DataGridRow>
-      <HiddenMethodsText gridRow={gridRow} gridColumn={gridColumn}>
+      <HiddenMethodsText gridColumn={gridColumn}>
         {someMethodsAreVisible && "And "}
         {pluralize(numHiddenMethods, "method", "methods")} modeled in other
         CodeQL packs

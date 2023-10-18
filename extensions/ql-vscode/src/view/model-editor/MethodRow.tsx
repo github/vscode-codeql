@@ -63,7 +63,6 @@ const CodiconRow = styled(VSCodeButton)`
 `;
 
 export type MethodRowProps = {
-  gridRow: number;
   method: Method;
   methodCanBeModeled: boolean;
   modeledMethods: ModeledMethod[];
@@ -98,7 +97,6 @@ export const MethodRow = (props: MethodRowProps) => {
 const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
   (props, ref) => {
     const {
-      gridRow,
       method,
       modeledMethods: modeledMethodsProp,
       methodIsUnsaved,
@@ -164,7 +162,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         ref={ref}
         $focused={revealedMethodSignature === method.signature}
       >
-        <DataGridCell gridRow={gridRow} gridColumn={1}>
+        <DataGridCell>
           <ApiOrMethodRow>
             <ModelingStatusIndicator status={modelingStatus} />
             <MethodClassifications method={method} />
@@ -180,20 +178,20 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         </DataGridCell>
         {props.modelingInProgress && (
           <>
-            <DataGridCell gridRow={gridRow} gridColumn={2}>
+            <DataGridCell>
               <InProgressDropdown />
             </DataGridCell>
-            <DataGridCell gridRow={gridRow} gridColumn={3}>
+            <DataGridCell>
               <InProgressDropdown />
             </DataGridCell>
-            <DataGridCell gridRow={gridRow} gridColumn={4}>
+            <DataGridCell>
               <InProgressDropdown />
             </DataGridCell>
-            <DataGridCell gridRow={gridRow} gridColumn={5}>
+            <DataGridCell>
               <InProgressDropdown />
             </DataGridCell>
             {viewState.showMultipleModels && (
-              <DataGridCell gridRow={gridRow} gridColumn={6}>
+              <DataGridCell>
                 <CodiconRow appearance="icon" disabled={true}>
                   <Codicon name="add" label="Add new model" />
                 </CodiconRow>
@@ -203,7 +201,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         )}
         {!props.modelingInProgress && (
           <>
-            <MultiModelColumn gridRow={gridRow} gridColumn={2}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelTypeDropdown
                   key={index}
@@ -213,7 +211,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 />
               ))}
             </MultiModelColumn>
-            <MultiModelColumn gridRow={gridRow} gridColumn={3}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelInputDropdown
                   key={index}
@@ -223,7 +221,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 />
               ))}
             </MultiModelColumn>
-            <MultiModelColumn gridRow={gridRow} gridColumn={4}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelOutputDropdown
                   key={index}
@@ -233,7 +231,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 />
               ))}
             </MultiModelColumn>
-            <MultiModelColumn gridRow={gridRow} gridColumn={5}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelKindDropdown
                   key={index}
@@ -244,7 +242,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             {viewState.showMultipleModels && (
-              <MultiModelColumn gridRow={gridRow} gridColumn={6}>
+              <MultiModelColumn>
                 {modeledMethods.map((_, index) =>
                   index === modeledMethods.length - 1 ? (
                     <CodiconRow
@@ -281,7 +279,7 @@ const UnmodelableMethodRow = forwardRef<
   HTMLElement | undefined,
   MethodRowProps
 >((props, ref) => {
-  const { gridRow, method, viewState, revealedMethodSignature } = props;
+  const { method, viewState, revealedMethodSignature } = props;
 
   const jumpToMethod = useCallback(
     () => sendJumpToMethodMessage(method),
@@ -294,7 +292,7 @@ const UnmodelableMethodRow = forwardRef<
       ref={ref}
       $focused={revealedMethodSignature === method.signature}
     >
-      <DataGridCell gridRow={gridRow} gridColumn={1}>
+      <DataGridCell>
         <ApiOrMethodRow>
           <ModelingStatusIndicator status="saved" />
           <MethodName {...props.method} />
@@ -307,9 +305,7 @@ const UnmodelableMethodRow = forwardRef<
           <MethodClassifications method={method} />
         </ApiOrMethodRow>
       </DataGridCell>
-      <DataGridCell gridRow={gridRow} gridColumn="span 4">
-        Method already modeled
-      </DataGridCell>
+      <DataGridCell gridColumn="span 4">Method already modeled</DataGridCell>
     </DataGridRow>
   );
 });
