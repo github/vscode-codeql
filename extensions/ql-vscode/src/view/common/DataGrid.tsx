@@ -24,6 +24,11 @@ interface DataGridProps {
   children: ReactNode;
 }
 
+/**
+ * The top level for a grid systemm that will contain `DataGridRow` and `DataGridCell` components.
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-columns for how to use `gridTemplateColumns`.
+ */
 export function DataGrid({ gridTemplateColumns, children }: DataGridProps) {
   return (
     <StyledDataGrid $gridTemplateColumns={gridTemplateColumns}>
@@ -54,6 +59,14 @@ interface DataGridRowProps {
   "data-testid"?: string;
 }
 
+/**
+ * Optional component for encompasing a single row in a `DataGrid`.
+ * Implements hover and focus states that highlight all cells in the row.
+ *
+ * Note that using this component is not mandatory. Cells can be placed directly
+ * inside a `DataGrid`. Feel free to skip this component if your cells do not
+ * line up into neat rows, or you do not need the hover and focus states.
+ */
 export const DataGridRow = forwardRef(
   (
     { focused, children, "data-testid": testId }: DataGridRowProps,
@@ -85,6 +98,15 @@ interface DataGridCellProps {
   children: ReactNode;
 }
 
+/**
+ * A cell in a `DataGrid`.
+ *
+ * By default, the position of cells in the grid is determined by the order in which
+ * they appear in the DOM. Cells will fill up the current row and then move on to the
+ * next row. This can be overridden using the `gridRow` and `gridColumn` to place
+ * cells anywhere within the grid. You can also configure cells to span multiple rows
+ * or columns. See https://developer.mozilla.org/en-US/docs/Web/CSS/grid-column.
+ */
 export function DataGridCell({
   rowType = "default",
   gridRow,
