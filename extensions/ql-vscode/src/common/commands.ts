@@ -227,6 +227,7 @@ export type LocalDatabasesCommands = {
   "codeQLDatabases.chooseDatabaseInternet": () => Promise<void>;
   "codeQLDatabases.chooseDatabaseGithub": () => Promise<void>;
   "codeQLDatabases.sortByName": () => Promise<void>;
+  "codeQLDatabases.sortByLanguage": () => Promise<void>;
   "codeQLDatabases.sortByDateAdded": () => Promise<void>;
 
   // Database panel context menu

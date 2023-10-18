@@ -57,6 +57,8 @@ import { LanguageContextStore } from "../language-context-store";
 enum SortOrder {
   NameAsc = "NameAsc",
   NameDesc = "NameDesc",
+  LanguageAsc = "LanguageAsc",
+  LanguageDesc = "LanguageDesc",
   DateAddedAsc = "DateAddedAsc",
   DateAddedDesc = "DateAddedDesc",
 }
@@ -155,6 +157,10 @@ class DatabaseTreeDataProvider
             return db1.name.localeCompare(db2.name, env.language);
           case SortOrder.NameDesc:
             return db2.name.localeCompare(db1.name, env.language);
+          case SortOrder.LanguageAsc:
+            return db1.language.localeCompare(db2.language, env.language);
+          case SortOrder.LanguageDesc:
+            return db2.language.localeCompare(db1.language, env.language);
           case SortOrder.DateAddedAsc:
             return (db1.dateAdded || 0) - (db2.dateAdded || 0);
           case SortOrder.DateAddedDesc:
@@ -264,6 +270,7 @@ export class DatabaseUI extends DisposableObject {
       "codeQLDatabases.setCurrentDatabase":
         this.handleMakeCurrentDatabase.bind(this),
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
+      "codeQLDatabases.sortByLanguage": this.handleSortByLanguage.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
       "codeQLDatabases.removeDatabase": createMultiSelectionCommand(
         this.handleRemoveDatabase.bind(this),
@@ -544,6 +551,14 @@ export class DatabaseUI extends DisposableObject {
       this.treeDataProvider.sortOrder = SortOrder.NameDesc;
     } else {
       this.treeDataProvider.sortOrder = SortOrder.NameAsc;
+    }
+  }
+
+  private async handleSortByLanguage() {
+    if (this.treeDataProvider.sortOrder === SortOrder.LanguageAsc) {
+      this.treeDataProvider.sortOrder = SortOrder.LanguageDesc;
+    } else {
+      this.treeDataProvider.sortOrder = SortOrder.LanguageAsc;
     }
   }
 
