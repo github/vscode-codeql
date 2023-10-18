@@ -1,4 +1,5 @@
 import * as React from "react";
+import { forwardRef } from "react";
 import { styled } from "styled-components";
 
 /*
@@ -50,22 +51,24 @@ const StyledDataGridRow = styled.div<{ $focused?: boolean }>`
 interface DataGridRowProps {
   focused?: boolean;
   children: React.ReactNode;
-  ref?: React.Ref<HTMLElement | undefined>;
   "data-testid"?: string;
 }
 
-export function DataGridRow(props: DataGridRowProps) {
-  const { focused, children, ref } = props;
-  return (
-    <StyledDataGridRow
-      $focused={focused}
-      ref={ref}
-      data-testid={props["data-testid"]}
-    >
-      {children}
-    </StyledDataGridRow>
-  );
-}
+export const DataGridRow = forwardRef(
+  (props: DataGridRowProps, ref?: React.Ref<HTMLElement | undefined>) => {
+    const { focused, children } = props;
+    return (
+      <StyledDataGridRow
+        $focused={focused}
+        ref={ref}
+        data-testid={props["data-testid"]}
+      >
+        {children}
+      </StyledDataGridRow>
+    );
+  },
+);
+DataGridRow.displayName = "DataGridRow";
 
 const StyledDataGridCell = styled.div<{
   $gridRow?: string | number;
