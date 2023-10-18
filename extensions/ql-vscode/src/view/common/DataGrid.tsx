@@ -55,18 +55,14 @@ interface DataGridRowProps {
 }
 
 export const DataGridRow = forwardRef(
-  (props: DataGridRowProps, ref?: React.Ref<HTMLElement | undefined>) => {
-    const { focused, children } = props;
-    return (
-      <StyledDataGridRow
-        $focused={focused}
-        ref={ref}
-        data-testid={props["data-testid"]}
-      >
-        {children}
-      </StyledDataGridRow>
-    );
-  },
+  (
+    { focused, children, "data-testid": testId }: DataGridRowProps,
+    ref?: React.Ref<HTMLElement | undefined>,
+  ) => (
+    <StyledDataGridRow $focused={focused} ref={ref} data-testid={testId}>
+      {children}
+    </StyledDataGridRow>
+  ),
 );
 DataGridRow.displayName = "DataGridRow";
 
