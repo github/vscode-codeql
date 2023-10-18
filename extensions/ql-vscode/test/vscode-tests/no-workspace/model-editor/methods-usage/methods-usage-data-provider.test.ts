@@ -246,12 +246,13 @@ describe("MethodsUsageDataProvider", () => {
     const usage = createUsage({});
 
     const methodTreeItem: MethodsUsageTreeViewItem = {
-      ...supportedMethod,
+      method: supportedMethod,
       children: [],
     };
 
     const usageTreeItem: MethodsUsageTreeViewItem = {
-      ...usage,
+      method: supportedMethod,
+      usage,
       parent: methodTreeItem,
     };
     methodTreeItem.children = [usageTreeItem];
@@ -383,7 +384,9 @@ describe("MethodsUsageDataProvider", () => {
           expect(
             dataProvider
               .getChildren()
-              .map((item) => (item as Method).signature),
+              .map(
+                (item) => (item as MethodsUsageTreeViewItem).method.signature,
+              ),
           ).toEqual(["b.a.C.d()", "b.a.C.b()", "b.a.C.a()", "a.b.C.d()"]);
           // reasoning for sort order:
           // b.a.C.d() has more usages than b.a.C.b()
