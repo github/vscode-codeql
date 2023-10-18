@@ -25,7 +25,7 @@ import { Codicon } from "../common";
 import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-modeled-methods";
 import { DataGridCell, DataGridRow } from "../common/DataGrid";
 
-const MultiModelColumn = styled.div`
+const MultiModelColumn = styled(DataGridCell)`
   display: flex;
   flex-direction: column;
   gap: 0.5em;
@@ -203,81 +203,71 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         )}
         {!props.modelingInProgress && (
           <>
-            <DataGridCell gridRow={gridRow} gridColumn={2}>
-              <MultiModelColumn>
-                {modeledMethods.map((modeledMethod, index) => (
-                  <ModelTypeDropdown
-                    key={index}
-                    method={method}
-                    modeledMethod={modeledMethod}
-                    onChange={modeledMethodChangedHandlers[index]}
-                  />
-                ))}
-              </MultiModelColumn>
-            </DataGridCell>
-            <DataGridCell gridRow={gridRow} gridColumn={3}>
-              <MultiModelColumn>
-                {modeledMethods.map((modeledMethod, index) => (
-                  <ModelInputDropdown
-                    key={index}
-                    method={method}
-                    modeledMethod={modeledMethod}
-                    onChange={modeledMethodChangedHandlers[index]}
-                  />
-                ))}
-              </MultiModelColumn>
-            </DataGridCell>
-            <DataGridCell gridRow={gridRow} gridColumn={4}>
-              <MultiModelColumn>
-                {modeledMethods.map((modeledMethod, index) => (
-                  <ModelOutputDropdown
-                    key={index}
-                    method={method}
-                    modeledMethod={modeledMethod}
-                    onChange={modeledMethodChangedHandlers[index]}
-                  />
-                ))}
-              </MultiModelColumn>
-            </DataGridCell>
-            <DataGridCell gridRow={gridRow} gridColumn={5}>
-              <MultiModelColumn>
-                {modeledMethods.map((modeledMethod, index) => (
-                  <ModelKindDropdown
-                    key={index}
-                    method={method}
-                    modeledMethod={modeledMethod}
-                    onChange={modeledMethodChangedHandlers[index]}
-                  />
-                ))}
-              </MultiModelColumn>
-            </DataGridCell>
+            <MultiModelColumn gridRow={gridRow} gridColumn={2}>
+              {modeledMethods.map((modeledMethod, index) => (
+                <ModelTypeDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={modeledMethodChangedHandlers[index]}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridRow={gridRow} gridColumn={3}>
+              {modeledMethods.map((modeledMethod, index) => (
+                <ModelInputDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={modeledMethodChangedHandlers[index]}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridRow={gridRow} gridColumn={4}>
+              {modeledMethods.map((modeledMethod, index) => (
+                <ModelOutputDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={modeledMethodChangedHandlers[index]}
+                />
+              ))}
+            </MultiModelColumn>
+            <MultiModelColumn gridRow={gridRow} gridColumn={5}>
+              {modeledMethods.map((modeledMethod, index) => (
+                <ModelKindDropdown
+                  key={index}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={modeledMethodChangedHandlers[index]}
+                />
+              ))}
+            </MultiModelColumn>
             {viewState.showMultipleModels && (
-              <DataGridCell gridRow={gridRow} gridColumn={6}>
-                <MultiModelColumn>
-                  {modeledMethods.map((_, index) =>
-                    index === modeledMethods.length - 1 ? (
-                      <CodiconRow
-                        key={index}
-                        appearance="icon"
-                        aria-label="Add new model"
-                        onClick={handleAddModelClick}
-                        disabled={addModelButtonDisabled}
-                      >
-                        <Codicon name="add" />
-                      </CodiconRow>
-                    ) : (
-                      <CodiconRow
-                        key={index}
-                        appearance="icon"
-                        aria-label="Remove model"
-                        onClick={removeModelClickedHandlers[index]}
-                      >
-                        <Codicon name="trash" />
-                      </CodiconRow>
-                    ),
-                  )}
-                </MultiModelColumn>
-              </DataGridCell>
+              <MultiModelColumn gridRow={gridRow} gridColumn={6}>
+                {modeledMethods.map((_, index) =>
+                  index === modeledMethods.length - 1 ? (
+                    <CodiconRow
+                      key={index}
+                      appearance="icon"
+                      aria-label="Add new model"
+                      onClick={handleAddModelClick}
+                      disabled={addModelButtonDisabled}
+                    >
+                      <Codicon name="add" />
+                    </CodiconRow>
+                  ) : (
+                    <CodiconRow
+                      key={index}
+                      appearance="icon"
+                      aria-label="Remove model"
+                      onClick={removeModelClickedHandlers[index]}
+                    >
+                      <Codicon name="trash" />
+                    </CodiconRow>
+                  ),
+                )}
+              </MultiModelColumn>
             )}
           </>
         )}

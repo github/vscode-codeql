@@ -65,14 +65,19 @@ const StyledDataGridCell = styled.div<{
 interface DataGridCellProps {
   gridRow: string | number;
   gridColumn: string | number;
+  className?: string;
   children: React.ReactNode;
 }
 
 export function DataGridCell(props: DataGridCellProps) {
-  const { gridRow, gridColumn, children } = props;
+  const { gridRow, gridColumn, className, children } = props;
 
   return (
-    <StyledDataGridCell $gridRow={gridRow} $gridColumn={gridColumn}>
+    <StyledDataGridCell
+      $gridRow={gridRow}
+      $gridColumn={gridColumn}
+      className={className}
+    >
       {children}
     </StyledDataGridCell>
   );

@@ -4,7 +4,7 @@ import { pluralize } from "../../common/word";
 import { DataGridCell, DataGridRow } from "../common/DataGrid";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
-const HiddenMethodsText = styled.div`
+const HiddenMethodsText = styled(DataGridCell)`
   text-align: center;
 `;
 
@@ -29,13 +29,11 @@ export function HiddenMethodsRow({
 
   return (
     <DataGridRow>
-      <DataGridCell gridRow={gridRow} gridColumn={gridColumn}>
-        <HiddenMethodsText>
-          {someMethodsAreVisible && "And "}
-          {pluralize(numHiddenMethods, "method", "methods")} modeled in other
-          CodeQL packs
-        </HiddenMethodsText>
-      </DataGridCell>
+      <HiddenMethodsText gridRow={gridRow} gridColumn={gridColumn}>
+        {someMethodsAreVisible && "And "}
+        {pluralize(numHiddenMethods, "method", "methods")} modeled in other
+        CodeQL packs
+      </HiddenMethodsText>
     </DataGridRow>
   );
 }
