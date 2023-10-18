@@ -28,10 +28,7 @@ export function DataGrid(props: DataGridProps) {
   const { gridTemplateColumns, children } = props;
 
   return (
-    <StyledDataGrid
-      aria-label="DataGrid"
-      $gridTemplateColumns={gridTemplateColumns}
-    >
+    <StyledDataGrid $gridTemplateColumns={gridTemplateColumns}>
       {children}
     </StyledDataGrid>
   );
