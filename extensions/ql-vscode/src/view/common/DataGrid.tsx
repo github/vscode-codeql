@@ -20,7 +20,7 @@ const StyledDataGrid = styled.div<{ $gridTemplateColumns: string | number }>`
 `;
 
 interface DataGridProps {
-  gridTemplateColumns: string | number;
+  gridTemplateColumns: string;
   children: React.ReactNode;
 }
 
