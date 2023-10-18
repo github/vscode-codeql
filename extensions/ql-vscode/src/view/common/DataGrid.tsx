@@ -67,16 +67,14 @@ export const DataGridRow = forwardRef(
 DataGridRow.displayName = "DataGridRow";
 
 const StyledDataGridCell = styled.div<{
+  $rowType: "default" | "header";
   $gridRow?: string | number;
   $gridColumn?: string | number;
 }>`
+  ${({ $rowType }) => ($rowType === "header" ? "font-weight: 600;" : "")}
   ${({ $gridRow }) => ($gridRow ? `grid-row: ${$gridRow};` : "")}
   ${({ $gridColumn }) => ($gridColumn ? `grid-column: ${$gridColumn};` : "")}
   padding: 4px 12px;
-
-  &.header {
-    font-weight: 600;
-  }
 `;
 
 interface DataGridCellProps {
@@ -94,9 +92,9 @@ export function DataGridCell({
   className,
   children,
 }: DataGridCellProps) {
-  className = `${className || ""} ${rowType}`;
   return (
     <StyledDataGridCell
+      $rowType={rowType}
       $gridRow={gridRow}
       $gridColumn={gridColumn}
       className={className}
