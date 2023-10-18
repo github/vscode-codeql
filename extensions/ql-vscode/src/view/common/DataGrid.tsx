@@ -1,5 +1,5 @@
 import * as React from "react";
-import { forwardRef } from "react";
+import { ReactNode, forwardRef } from "react";
 import { styled } from "styled-components";
 
 /*
@@ -21,7 +21,7 @@ const StyledDataGrid = styled.div<{ $gridTemplateColumns: string | number }>`
 
 interface DataGridProps {
   gridTemplateColumns: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function DataGrid({ gridTemplateColumns, children }: DataGridProps) {
@@ -50,7 +50,7 @@ const StyledDataGridRow = styled.div<{ $focused?: boolean }>`
 
 interface DataGridRowProps {
   focused?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
   "data-testid"?: string;
 }
 
@@ -84,7 +84,7 @@ interface DataGridCellProps {
   gridRow?: string | number;
   gridColumn?: string | number;
   className?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function DataGridCell({
