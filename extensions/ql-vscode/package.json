@@ -773,6 +773,10 @@
         "title": "Sort by Name"
       },
       {
+        "command": "codeQLDatabases.sortByLanguage",
+        "title": "Sort by Language"
+      },
+      {
         "command": "codeQLDatabases.sortByDateAdded",
         "title": "Sort by Date Added"
       },
@@ -998,9 +1002,14 @@
           "group": "1_databases@0"
         },
         {
-          "command": "codeQLDatabases.sortByDateAdded",
+          "command": "codeQLDatabases.sortByLanguage",
           "when": "view == codeQLDatabases",
           "group": "1_databases@1"
+        },
+        {
+          "command": "codeQLDatabases.sortByDateAdded",
+          "when": "view == codeQLDatabases",
+          "group": "1_databases@2"
         },
         {
           "command": "codeQLQueries.createQuery",
@@ -1497,6 +1506,10 @@
         },
         {
           "command": "codeQLDatabases.sortByName",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.sortByLanguage",
           "when": "false"
         },
         {

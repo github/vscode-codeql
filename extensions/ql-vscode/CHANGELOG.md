@@ -5,6 +5,7 @@
 - Sorted result set filenames now include a hash of the result set name instead of the full name. [#2955](https://github.com/github/vscode-codeql/pull/2955)
 - The "Install Pack Dependencies" will now only list CodeQL packs located in the workspace. [#2960](https://github.com/github/vscode-codeql/pull/2960)
 - Fix a bug where the "View Query Log" action for a query history item was not working. [#2984](https://github.com/github/vscode-codeql/pull/2984)
+- Add a command to sort items in the databases view by language. [#2993](https://github.com/github/vscode-codeql/pull/2993)
 
 ## 1.9.2 - 12 October 2023
 

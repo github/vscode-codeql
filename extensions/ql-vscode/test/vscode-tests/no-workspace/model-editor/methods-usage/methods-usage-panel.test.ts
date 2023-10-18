@@ -86,7 +86,10 @@ describe("MethodsUsagePanel", () => {
       await panel.revealItem(method.signature, usage);
 
       expect(mockTreeView.reveal).toHaveBeenCalledWith(
-        expect.objectContaining(usage),
+        expect.objectContaining({
+          method,
+          usage,
+        }),
       );
     });
 
