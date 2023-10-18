@@ -74,10 +74,7 @@ export class CompletedQueryInfo implements QueryWithResults {
      * Map from result set name to SortedResultSetInfo.
      */
     public sortedResultsInfo: Record<string, SortedResultSetInfo> = {},
-  ) {
-    // The log path is only set when loading from the query history.
-    this.logFileLocation = logFileLocation ?? this.query.logPath;
-  }
+  ) {}
 
   setResultCount(value: number) {
     this.resultCount = value;
@@ -293,7 +290,7 @@ export class LocalQueryInfo {
     this.completedQuery = new CompletedQueryInfo(
       info.query,
       info.result,
-      info.logFileLocation,
+      info.query.logPath,
       info.successful,
       info.message,
       undefined,
