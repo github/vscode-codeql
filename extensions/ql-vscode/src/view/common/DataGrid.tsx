@@ -13,7 +13,6 @@ import { styled } from "styled-components";
 const StyledDataGrid = styled.div<{ $gridTemplateColumns: string | number }>`
   display: grid;
   grid-template-columns: ${(props) => props.$gridTemplateColumns};
-  padding: calc((var(--design-unit) / 4) * 1px) 0;
   box-sizing: border-box;
   width: 100%;
   background: transparent;
@@ -54,7 +53,7 @@ const StyledDataGridCell = styled.div<{
 }>`
   grid-row: ${(props) => props.$gridRow};
   grid-column: ${(props) => props.$gridColumn};
-  padding: calc(var(--design-unit) * 1px) calc(var(--design-unit) * 3px);
+  padding: 4px 12px;
 `;
 
 interface DataGridCellProps {
