@@ -97,6 +97,15 @@ export class LocalQueryRun {
    * Updates the UI in the case where query evaluation throws an exception.
    */
   public async fail(err: Error): Promise<void> {
+    const evalLogPaths = await this.summarizeEvalLog(
+      QueryResultType.OTHER_ERROR,
+      this.outputDir,
+      this.logger,
+    );
+    if (evalLogPaths !== undefined) {
+      this.queryInfo.setEvaluatorLogPaths(evalLogPaths);
+    }
+
     err.message = `Error running query: ${err.message}`;
     this.queryInfo.failureReason = err.message;
     await this.queryHistoryManager.refreshTreeView();
