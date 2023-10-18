@@ -160,7 +160,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       <DataGridRow
         data-testid="modelable-method-row"
         ref={ref}
-        $focused={revealedMethodSignature === method.signature}
+        focused={revealedMethodSignature === method.signature}
       >
         <DataGridCell>
           <ApiOrMethodRow>
@@ -290,7 +290,7 @@ const UnmodelableMethodRow = forwardRef<
     <DataGridRow
       data-testid="unmodelable-method-row"
       ref={ref}
-      $focused={revealedMethodSignature === method.signature}
+      focused={revealedMethodSignature === method.signature}
     >
       <DataGridCell>
         <ApiOrMethodRow>

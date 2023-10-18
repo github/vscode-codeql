@@ -31,7 +31,7 @@ export function DataGrid({ gridTemplateColumns, children }: DataGridProps) {
   );
 }
 
-export const DataGridRow = styled.div<{ $focused?: boolean }>`
+const StyledDataGridRow = styled.div<{ $focused?: boolean }>`
   display: contents;
 
   &:hover > * {
@@ -46,6 +46,20 @@ export const DataGridRow = styled.div<{ $focused?: boolean }>`
         : "inherit"};
   }
 `;
+
+interface DataGridRowProps {
+  focused?: boolean;
+  children: React.ReactNode;
+  ref?: React.Ref<HTMLElement | undefined>;
+}
+
+export function DataGridRow({ focused, children, ref }: DataGridRowProps) {
+  return (
+    <StyledDataGridRow $focused={focused} ref={ref}>
+      {children}
+    </StyledDataGridRow>
+  );
+}
 
 const StyledDataGridCell = styled.div<{
   $gridRow?: string | number;
