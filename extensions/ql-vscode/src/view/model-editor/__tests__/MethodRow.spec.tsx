@@ -358,4 +358,84 @@ describe(MethodRow.name, () => {
       expect(removeButton?.getElementsByTagName("input")[0]).toBeEnabled();
     }
   });
+
+  it("can add a new model", async () => {
+    render({
+      modeledMethods: [modeledMethod],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    onChange.mockReset();
+    await userEvent.click(screen.getByLabelText("Add new model"));
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      modeledMethod,
+      {
+        type: "none",
+        input: "",
+        output: "",
+        kind: "",
+        provenance: "manual",
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
+      },
+    ]);
+  });
+
+  it("can delete the first modeled method", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "none" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    onChange.mockReset();
+    await userEvent.click(screen.getAllByLabelText("Remove model")[0]);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      { ...modeledMethod, type: "sink" },
+      { ...modeledMethod, type: "none" },
+      { ...modeledMethod, type: "summary" },
+    ]);
+  });
+
+  it("can delete a modeled method in the middle", async () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+        { ...modeledMethod, type: "none" },
+        { ...modeledMethod, type: "summary" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    onChange.mockReset();
+    await userEvent.click(screen.getAllByLabelText("Remove model")[2]);
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      { ...modeledMethod, type: "source" },
+      { ...modeledMethod, type: "sink" },
+      { ...modeledMethod, type: "summary" },
+    ]);
+  });
 });

@@ -126,6 +126,33 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       [method, modeledMethods, onChange],
     );
 
+    const removeModelClickedHandlers = useMemo(
+      () =>
+        modeledMethods.map((_, index) => () => {
+          const newModeledMethods = [...modeledMethods];
+          newModeledMethods.splice(index, 1);
+          onChange(method.signature, newModeledMethods);
+        }),
+      [method, modeledMethods, onChange],
+    );
+
+    const handleAddModelClick = useCallback(() => {
+      const newModeledMethod: ModeledMethod = {
+        type: "none",
+        input: "",
+        output: "",
+        kind: "",
+        provenance: "manual",
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
+      };
+      const newModeledMethods = [...modeledMethods, newModeledMethod];
+      onChange(method.signature, newModeledMethods);
+    }, [method, modeledMethods, onChange]);
+
     const jumpToMethod = useCallback(
       () => sendJumpToMethodMessage(method),
       [method],
@@ -228,6 +255,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                       key={index}
                       appearance="icon"
                       aria-label="Add new model"
+                      onClick={handleAddModelClick}
                       disabled={addModelButtonDisabled}
                     >
                       <Codicon name="add" />
@@ -237,6 +265,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                       key={index}
                       appearance="icon"
                       aria-label="Remove model"
+                      onClick={removeModelClickedHandlers[index]}
                     >
                       <Codicon name="trash" />
                     </CodiconRow>

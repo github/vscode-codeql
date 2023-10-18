@@ -89,26 +89,26 @@ export class MethodsUsageDataProvider
 
   getTreeItem(item: MethodsUsageTreeViewItem): TreeItem {
     if (isMethodTreeViewItem(item)) {
+      const { method } = item;
+
       return {
-        label: `${item.packageName}.${item.typeName}.${item.methodName}${item.methodParameters}`,
+        label: `${method.packageName}.${method.typeName}.${method.methodName}${method.methodParameters}`,
         collapsibleState: TreeItemCollapsibleState.Collapsed,
-        iconPath: this.getModelingStatusIcon(item),
+        iconPath: this.getModelingStatusIcon(method),
       };
     } else {
-      const method = this.getParent(item);
-      if (!method || !isMethodTreeViewItem(method)) {
-        throw new Error("Parent not found for tree item");
-      }
+      const { method, usage } = item;
+
       return {
-        label: item.label,
-        description: `${this.relativePathWithinDatabase(item.url.uri)} [${
-          item.url.startLine
-        }, ${item.url.endLine}]`,
+        label: usage.label,
+        description: `${this.relativePathWithinDatabase(usage.url.uri)} [${
+          usage.url.startLine
+        }, ${usage.url.endLine}]`,
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
           command: "codeQLModelEditor.jumpToMethod",
-          arguments: [method, item, this.databaseItem],
+          arguments: [method, usage, this.databaseItem],
         },
       };
     }
@@ -146,7 +146,7 @@ export class MethodsUsageDataProvider
   getChildren(item?: MethodsUsageTreeViewItem): MethodsUsageTreeViewItem[] {
     if (item === undefined) {
       if (this.hideModeledMethods) {
-        return this.sortedTreeItems.filter((api) => !api.supported);
+        return this.sortedTreeItems.filter((api) => !api.method.supported);
       } else {
         return [...this.sortedTreeItems];
       }
@@ -172,21 +172,24 @@ export class MethodsUsageDataProvider
     usage: Usage,
   ): UsageTreeViewItem | undefined {
     const method = this.sortedTreeItems.find(
-      (m) => m.signature === methodSignature,
+      (m) => m.method.signature === methodSignature,
     );
     if (!method) {
       return undefined;
     }
 
-    return method.children.find((u) => usagesAreEqual(u, usage));
+    return method.children.find((u) => usagesAreEqual(u.usage, usage));
   }
 }
 
-type MethodTreeViewItem = Method & {
+type MethodTreeViewItem = {
+  method: Method;
   children: UsageTreeViewItem[];
 };
 
-type UsageTreeViewItem = Usage & {
+type UsageTreeViewItem = {
+  method: Method;
+  usage: Usage;
   parent: MethodTreeViewItem;
 };
 
@@ -195,7 +198,7 @@ export type MethodsUsageTreeViewItem = MethodTreeViewItem | UsageTreeViewItem;
 function isMethodTreeViewItem(
   item: MethodsUsageTreeViewItem,
 ): item is MethodTreeViewItem {
-  return "children" in item && "usages" in item;
+  return "children" in item && "method" in item;
 }
 
 function usagesAreEqual(u1: Usage, u2: Usage): boolean {
@@ -225,12 +228,13 @@ function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {
 function createTreeItems(methods: readonly Method[]): MethodTreeViewItem[] {
   return methods.map((method) => {
     const newMethod: MethodTreeViewItem = {
-      ...method,
+      method,
       children: [],
     };
 
     newMethod.children = method.usages.map((usage) => ({
-      ...usage,
+      method,
+      usage,
       // This needs to be a reference to the parent method, not a copy of it.
       parent: newMethod,
     }));

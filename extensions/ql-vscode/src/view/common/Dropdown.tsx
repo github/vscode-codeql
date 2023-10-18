@@ -19,6 +19,7 @@ type Props = {
   value: string | undefined;
   options: Array<{ value: string; label: string }>;
   disabled?: boolean;
+  className?: string;
   disabledPlaceholder?: string;
   onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
 
@@ -40,6 +41,7 @@ export function Dropdown({
   options,
   disabled,
   disabledPlaceholder,
+  className,
   onChange,
   ...props
 }: Props) {
@@ -49,6 +51,7 @@ export function Dropdown({
       value={disabled ? disabledValue : value}
       disabled={disabled}
       onChange={onChange}
+      className={className}
       {...props}
     >
       {disabled ? (
