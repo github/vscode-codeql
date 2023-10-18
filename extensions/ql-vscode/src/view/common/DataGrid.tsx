@@ -24,9 +24,7 @@ interface DataGridProps {
   children: React.ReactNode;
 }
 
-export function DataGrid(props: DataGridProps) {
-  const { gridTemplateColumns, children } = props;
-
+export function DataGrid({ gridTemplateColumns, children }: DataGridProps) {
   return (
     <StyledDataGrid $gridTemplateColumns={gridTemplateColumns}>
       {children}
@@ -66,9 +64,12 @@ interface DataGridCellProps {
   children: React.ReactNode;
 }
 
-export function DataGridCell(props: DataGridCellProps) {
-  const { gridRow, gridColumn, className, children } = props;
-
+export function DataGridCell({
+  gridRow,
+  gridColumn,
+  className,
+  children,
+}: DataGridCellProps) {
   return (
     <StyledDataGridCell
       $gridRow={gridRow}
