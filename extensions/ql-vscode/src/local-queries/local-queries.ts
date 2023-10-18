@@ -362,11 +362,15 @@ export class LocalQueries extends DisposableObject {
       );
     }
 
-    const initialInfo = await createInitialQueryInfo(selectedQuery, {
-      databaseUri: dbItem.databaseUri.toString(),
-      name: dbItem.name,
-      language: tryGetQueryLanguage(dbItem.language),
-    });
+    const initialInfo = await createInitialQueryInfo(
+      selectedQuery,
+      {
+        databaseUri: dbItem.databaseUri.toString(),
+        name: dbItem.name,
+        language: tryGetQueryLanguage(dbItem.language),
+      },
+      outputDir,
+    );
 
     // When cancellation is requested from the query history view, we just stop the debug session.
     const queryInfo = new LocalQueryInfo(initialInfo, tokenSource);

@@ -723,11 +723,12 @@ export class QueryHistoryManager extends DisposableObject {
   async handleOpenQueryDirectory(item: QueryHistoryInfo) {
     let externalFilePath: string | undefined;
     if (item.t === "local") {
-      if (item.completedQuery) {
-        externalFilePath = join(
-          item.completedQuery.query.querySaveDir,
-          "timestamp",
-        );
+      const querySaveDir =
+        item.initialInfo.outputDir?.querySaveDir ??
+        item.completedQuery?.query.querySaveDir;
+
+      if (querySaveDir) {
+        externalFilePath = join(querySaveDir, "timestamp");
       }
     } else if (item.t === "variant-analysis") {
       externalFilePath = join(
@@ -761,7 +762,16 @@ export class QueryHistoryManager extends DisposableObject {
           `Failed to open ${externalFilePath}: ${getErrorMessage(e)}`,
         );
       }
+    } else {
+      this.warnNoQueryDir();
     }
+  }
+
+  private warnNoQueryDir() {
+    void showAndLogWarningMessage(
+      this.app.logger,
+      `Results directory is not available for this run.`,
+    );
   }
 
   private warnNoEvalLogs() {

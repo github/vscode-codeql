@@ -24,6 +24,11 @@ export interface InitialQueryInfoDto {
   databaseInfo: DatabaseInfoDto;
   start: Date;
   id: string;
+  outputDir?: QueryOutputDirDto; // Undefined for backwards compatibility
+}
+
+interface QueryOutputDirDto {
+  querySaveDir: string;
 }
 
 interface DatabaseInfoDto {

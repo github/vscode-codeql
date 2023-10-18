@@ -19,6 +19,7 @@ import { QueryStatus } from "./query-history/query-status";
 import {
   EvaluatorLogPaths,
   QueryEvaluationInfo,
+  QueryOutputDir,
   QueryWithResults,
 } from "./run-queries-shared";
 import { formatLegacyMessage } from "./query-server/legacy";
@@ -47,6 +48,7 @@ export interface InitialQueryInfo {
   readonly databaseInfo: DatabaseInfo;
   readonly start: Date;
   readonly id: string; // unique id for this query.
+  readonly outputDir?: QueryOutputDir; // If missing, we do not have a query save dir. The query may have been cancelled. This is only for backwards compatibility.
 }
 
 export class CompletedQueryInfo implements QueryWithResults {

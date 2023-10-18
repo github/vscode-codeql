@@ -3,7 +3,7 @@ import {
   CompletedQueryInfo,
   InitialQueryInfo,
 } from "../../query-results";
-import { QueryEvaluationInfo } from "../../run-queries-shared";
+import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
 import {
   CompletedQueryInfoDto,
   QueryEvaluationInfoDto,
@@ -26,7 +26,10 @@ export function mapLocalQueryItemToDomainModel(
   localQuery: QueryHistoryLocalQueryDto,
 ): LocalQueryInfo {
   return new LocalQueryInfo(
-    mapInitialQueryInfoToDomainModel(localQuery.initialInfo),
+    mapInitialQueryInfoToDomainModel(
+      localQuery.initialInfo,
+      localQuery.completedQuery?.query?.querySaveDir,
+    ),
     undefined,
     localQuery.failureReason,
     localQuery.completedQuery &&
@@ -72,7 +75,14 @@ function mapCompletedQueryInfoToDomainModel(
 
 function mapInitialQueryInfoToDomainModel(
   initialInfo: InitialQueryInfoDto,
+  // The completedQuerySaveDir is a migration to support old query items that don't have
+  // the querySaveDir in the initialInfo. It should be removed once all query
+  // items have the querySaveDir in the initialInfo.
+  completedQuerySaveDir?: string,
 ): InitialQueryInfo {
+  const querySaveDir =
+    initialInfo.outputDir?.querySaveDir ?? completedQuerySaveDir;
+
   return {
     userSpecifiedLabel: initialInfo.userSpecifiedLabel,
     queryText: initialInfo.queryText,
@@ -90,6 +100,7 @@ function mapInitialQueryInfoToDomainModel(
     },
     start: new Date(initialInfo.start),
     id: initialInfo.id,
+    outputDir: querySaveDir ? new QueryOutputDir(querySaveDir) : undefined,
   };
 }
 

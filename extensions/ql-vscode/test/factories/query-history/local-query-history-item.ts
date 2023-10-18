@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { InitialQueryInfo, LocalQueryInfo } from "../../../src/query-results";
 import {
   QueryEvaluationInfo,
+  QueryOutputDir,
   QueryWithResults,
 } from "../../../src/run-queries-shared";
 import { CancellationTokenSource } from "vscode";
@@ -18,6 +19,7 @@ export function createMockLocalQueryInfo({
   hasMetadata = false,
   queryWithResults = undefined,
   language = undefined,
+  outputDir = new QueryOutputDir("/a/b/c"),
 }: {
   startTime?: Date;
   resultCount?: number;
@@ -27,6 +29,7 @@ export function createMockLocalQueryInfo({
   hasMetadata?: boolean;
   queryWithResults?: QueryWithResults | undefined;
   language?: QueryLanguage;
+  outputDir?: QueryOutputDir | undefined;
 }): LocalQueryInfo {
   const cancellationToken = {
     dispose: () => {
@@ -48,6 +51,7 @@ export function createMockLocalQueryInfo({
     start: startTime,
     id: faker.number.int().toString(),
     userSpecifiedLabel,
+    outputDir,
   } as InitialQueryInfo;
 
   const localQuery = new LocalQueryInfo(initialQueryInfo, cancellationToken);

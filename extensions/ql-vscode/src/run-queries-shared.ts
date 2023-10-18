@@ -562,11 +562,13 @@ async function convertToQlPath(filePath: string): Promise<string> {
  *
  * @param selectedQuery The query to run, including any quickeval info.
  * @param databaseInfo The database to run the query against.
+ * @param outputDir The output directory for this query.
  * @returns The initial information for the query to be run.
  */
 export async function createInitialQueryInfo(
   selectedQuery: SelectedQuery,
   databaseInfo: DatabaseInfo,
+  outputDir: QueryOutputDir,
 ): Promise<InitialQueryInfo> {
   const isQuickEval = selectedQuery.quickEval !== undefined;
   const isQuickEvalCount =
@@ -587,6 +589,7 @@ export async function createInitialQueryInfo(
       : {
           queryText: await readFile(selectedQuery.queryPath, "utf8"),
         }),
+    outputDir,
   };
 }
 

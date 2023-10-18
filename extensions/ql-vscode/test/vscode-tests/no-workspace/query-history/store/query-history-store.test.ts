@@ -8,7 +8,10 @@ import {
   LocalQueryInfo,
   InitialQueryInfo,
 } from "../../../../../src/query-results";
-import { QueryWithResults } from "../../../../../src/run-queries-shared";
+import {
+  QueryOutputDir,
+  QueryWithResults,
+} from "../../../../../src/run-queries-shared";
 import { DatabaseInfo } from "../../../../../src/common/interface-types";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
@@ -130,6 +133,38 @@ describe("write and read", () => {
     expect(allHistoryActual.length).toEqual(expectedHistory.length);
   });
 
+  it("should read query output dir from completed query if not present", async () => {
+    const historyPath = join(tmpDir.name, "workspace-query-history.json");
+
+    const queryItem = createMockFullQueryInfo(
+      "a",
+      createMockQueryWithResults(
+        `${queryPath}-a`,
+        false,
+        false,
+        "/a/b/c/a",
+        false,
+      ),
+      false,
+      null,
+    );
+
+    // write and read
+    await writeQueryHistoryToFile([queryItem], historyPath);
+    const actual = await readQueryHistoryFromFile(historyPath);
+
+    expect(actual).toHaveLength(1);
+
+    expect(actual[0].t).toEqual("local");
+
+    if (actual[0].t === "local") {
+      expect(actual[0].initialInfo.outputDir?.querySaveDir).not.toBeUndefined();
+      expect(actual[0].initialInfo.outputDir?.querySaveDir).toEqual(
+        queryItem.completedQuery?.query?.querySaveDir,
+      );
+    }
+  });
+
   it("should remove remote queries from the history", async () => {
     const path = join(tmpDir.name, "query-history-with-remote.json");
     await writeFile(
@@ -205,6 +240,9 @@ describe("write and read", () => {
     dbName = "a",
     queryWithResults?: QueryWithResults,
     isFail = false,
+    outputDir: QueryOutputDir | null = new QueryOutputDir(
+      "/path/to/output/dir",
+    ),
   ): LocalQueryInfo {
     const fqi = new LocalQueryInfo(
       {
@@ -218,6 +256,7 @@ describe("write and read", () => {
         isQuickQuery: false,
         isQuickEval: false,
         id: `some-id-${dbName}`,
+        outputDir: outputDir ? outputDir : undefined,
       } as InitialQueryInfo,
       {
         dispose: () => {
