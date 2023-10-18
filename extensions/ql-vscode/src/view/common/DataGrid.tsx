@@ -51,11 +51,17 @@ interface DataGridRowProps {
   focused?: boolean;
   children: React.ReactNode;
   ref?: React.Ref<HTMLElement | undefined>;
+  "data-testid"?: string;
 }
 
-export function DataGridRow({ focused, children, ref }: DataGridRowProps) {
+export function DataGridRow(props: DataGridRowProps) {
+  const { focused, children, ref } = props;
   return (
-    <StyledDataGridRow $focused={focused} ref={ref}>
+    <StyledDataGridRow
+      $focused={focused}
+      ref={ref}
+      data-testid={props["data-testid"]}
+    >
       {children}
     </StyledDataGridRow>
   );
