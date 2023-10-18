@@ -9,7 +9,7 @@ import { RawResultRow } from "./RawResultRow";
 const numOfResultsInContractedMode = 5;
 
 type TableContainerProps = {
-  columnCount: number;
+  $columnCount: number;
 };
 
 const TableContainer = styled.div<TableContainerProps>`
@@ -18,7 +18,7 @@ const TableContainer = styled.div<TableContainerProps>`
   // minimum width of 1fr is auto, not 0.
   // https://css-tricks.com/equal-width-columns-in-css-grid-are-kinda-weird/
   grid-template-columns: repeat(
-    ${(props) => props.columnCount},
+    ${(props) => props.$columnCount},
     minmax(0, 1fr)
   );
   max-width: 45rem;
@@ -51,7 +51,7 @@ const RawResultsTable = ({
 
   return (
     <>
-      <TableContainer columnCount={schema.columns.length}>
+      <TableContainer $columnCount={schema.columns.length}>
         {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
           <RawResultRow
             key={rowIndex}
