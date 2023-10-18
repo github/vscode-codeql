@@ -6,12 +6,12 @@ import { useCallback } from "react";
 
 type Props = {
   error: ModeledMethodValidationError;
-  setSelectedIndex: (index: number) => void;
+  setSelectedIndex?: (index: number) => void;
 };
 
 export const ModeledMethodAlert = ({ error, setSelectedIndex }: Props) => {
   const handleClick = useCallback(() => {
-    setSelectedIndex(error.index);
+    setSelectedIndex?.(error.index);
   }, [error.index, setSelectedIndex]);
 
   return (
@@ -22,7 +22,11 @@ export const ModeledMethodAlert = ({ error, setSelectedIndex }: Props) => {
       message={
         <>
           {error.message}{" "}
-          <TextButton onClick={handleClick}>{error.actionText}</TextButton>
+          {setSelectedIndex ? (
+            <TextButton onClick={handleClick}>{error.actionText}</TextButton>
+          ) : (
+            error.actionText
+          )}
         </>
       }
     />
