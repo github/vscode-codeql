@@ -290,7 +290,7 @@ export class LocalQueryInfo {
     this.completedQuery = new CompletedQueryInfo(
       info.query,
       info.result,
-      info.logFileLocation,
+      info.query.logPath,
       info.successful,
       info.message,
       undefined,
