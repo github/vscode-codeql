@@ -54,9 +54,14 @@ const StyledDataGridCell = styled.div<{
   ${({ $gridRow }) => ($gridRow ? `grid-row: ${$gridRow};` : "")}
   ${({ $gridColumn }) => ($gridColumn ? `grid-column: ${$gridColumn};` : "")}
   padding: 4px 12px;
+
+  &.header {
+    font-weight: 600;
+  }
 `;
 
 interface DataGridCellProps {
+  rowType?: "default" | "header";
   gridRow?: string | number;
   gridColumn?: string | number;
   className?: string;
@@ -64,11 +69,13 @@ interface DataGridCellProps {
 }
 
 export function DataGridCell({
+  rowType = "default",
   gridRow,
   gridColumn,
   className,
   children,
 }: DataGridCellProps) {
+  className = `${className || ""} ${rowType}`;
   return (
     <StyledDataGridCell
       $gridRow={gridRow}

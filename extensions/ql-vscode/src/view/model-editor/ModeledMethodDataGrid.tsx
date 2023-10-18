@@ -71,13 +71,13 @@ export const ModeledMethodDataGrid = ({
     <DataGrid gridTemplateColumns={gridTemplateColumns}>
       {someMethodsAreVisible && (
         <>
-          <DataGridCell>API or method</DataGridCell>
-          <DataGridCell>Model type</DataGridCell>
-          <DataGridCell>Input</DataGridCell>
-          <DataGridCell>Output</DataGridCell>
-          <DataGridCell>Kind</DataGridCell>
+          <DataGridCell rowType="header">API or method</DataGridCell>
+          <DataGridCell rowType="header">Model type</DataGridCell>
+          <DataGridCell rowType="header">Input</DataGridCell>
+          <DataGridCell rowType="header">Output</DataGridCell>
+          <DataGridCell rowType="header">Kind</DataGridCell>
           {viewState.showMultipleModels && (
-            <DataGridCell>
+            <DataGridCell rowType="header">
               <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
             </DataGridCell>
           )}
