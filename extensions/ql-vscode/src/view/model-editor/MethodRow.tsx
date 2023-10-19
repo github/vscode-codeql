@@ -4,7 +4,14 @@ import {
   VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
-import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  Fragment,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
@@ -195,7 +202,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         )}
         {!props.modelingInProgress &&
           modeledMethods.map((modeledMethod, index) => (
-            <>
+            <Fragment key={index}>
               <DataGridCell>
                 <ModelTypeDropdown
                   method={method}
@@ -246,7 +253,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   )}
                 </DataGridCell>
               )}
-            </>
+            </Fragment>
           ))}
       </DataGridRow>
     );
