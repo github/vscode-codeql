@@ -31,6 +31,8 @@ import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { Codicon } from "../common";
 import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-modeled-methods";
 import { DataGridCell, DataGridRow } from "../common/DataGrid";
+import { validateModeledMethods } from "../../model-editor/shared/validation";
+import { ModeledMethodAlert } from "../method-modeling/ModeledMethodAlert";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -111,6 +113,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       [modeledMethodsProp, method, viewState],
     );
 
+    const validationErrors = useMemo(
+      () => validateModeledMethods(modeledMethods),
+      [modeledMethods],
+    );
+
     const modeledMethodChangedHandlers = useMemo(
       () =>
         modeledMethods.map((_, index) => (modeledMethod: ModeledMethod) => {
@@ -163,7 +170,9 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         ref={ref}
         focused={revealedMethodSignature === method.signature}
       >
-        <DataGridCell gridRow={`span ${modeledMethods.length}`}>
+        <DataGridCell
+          gridRow={`span ${modeledMethods.length + validationErrors.length}`}
+        >
           <ApiOrMethodRow>
             <ModelingStatusIndicator status={modelingStatus} />
             <MethodClassifications method={method} />
@@ -255,6 +264,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   </DataGridCell>
                 )}
               </Fragment>
+            ))}
+            {validationErrors.map((error, index) => (
+              <DataGridCell gridColumn="span 5" key={index}>
+                <ModeledMethodAlert error={error} />
+              </DataGridCell>
             ))}
           </>
         )}
