@@ -31,6 +31,8 @@ import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { Codicon } from "../common";
 import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-modeled-methods";
 import { DataGridCell, DataGridRow } from "../common/DataGrid";
+import { validateModeledMethods } from "../../model-editor/shared/validation";
+import { ModeledMethodAlert } from "../method-modeling/ModeledMethodAlert";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -111,6 +113,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       [modeledMethodsProp, method, viewState],
     );
 
+    const validationErrors = useMemo(
+      () => validateModeledMethods(modeledMethods),
+      [modeledMethods],
+    );
+
     const modeledMethodChangedHandlers = useMemo(
       () =>
         modeledMethods.map((_, index) => (modeledMethod: ModeledMethod) => {
@@ -163,7 +170,9 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         ref={ref}
         focused={revealedMethodSignature === method.signature}
       >
-        <DataGridCell gridRow={`span ${modeledMethods.length}`}>
+        <DataGridCell
+          gridRow={`span ${modeledMethods.length + validationErrors.length}`}
+        >
           <ApiOrMethodRow>
             <ModelingStatusIndicator status={modelingStatus} />
             <MethodClassifications method={method} />
@@ -200,61 +209,69 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             )}
           </>
         )}
-        {!props.modelingInProgress &&
-          modeledMethods.map((modeledMethod, index) => (
-            <Fragment key={index}>
-              <DataGridCell>
-                <ModelTypeDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              <DataGridCell>
-                <ModelInputDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              <DataGridCell>
-                <ModelOutputDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              <DataGridCell>
-                <ModelKindDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              {viewState.showMultipleModels && (
+        {!props.modelingInProgress && (
+          <>
+            {modeledMethods.map((modeledMethod, index) => (
+              <Fragment key={index}>
                 <DataGridCell>
-                  {index === modeledMethods.length - 1 ? (
-                    <CodiconRow
-                      appearance="icon"
-                      aria-label="Add new model"
-                      onClick={handleAddModelClick}
-                      disabled={addModelButtonDisabled}
-                    >
-                      <Codicon name="add" />
-                    </CodiconRow>
-                  ) : (
-                    <CodiconRow
-                      appearance="icon"
-                      aria-label="Remove model"
-                      onClick={removeModelClickedHandlers[index]}
-                    >
-                      <Codicon name="trash" />
-                    </CodiconRow>
-                  )}
+                  <ModelTypeDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
                 </DataGridCell>
-              )}
-            </Fragment>
-          ))}
+                <DataGridCell>
+                  <ModelInputDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                </DataGridCell>
+                <DataGridCell>
+                  <ModelOutputDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                </DataGridCell>
+                <DataGridCell>
+                  <ModelKindDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                </DataGridCell>
+                {viewState.showMultipleModels && (
+                  <DataGridCell>
+                    {index === modeledMethods.length - 1 ? (
+                      <CodiconRow
+                        appearance="icon"
+                        aria-label="Add new model"
+                        onClick={handleAddModelClick}
+                        disabled={addModelButtonDisabled}
+                      >
+                        <Codicon name="add" />
+                      </CodiconRow>
+                    ) : (
+                      <CodiconRow
+                        appearance="icon"
+                        aria-label="Remove model"
+                        onClick={removeModelClickedHandlers[index]}
+                      >
+                        <Codicon name="trash" />
+                      </CodiconRow>
+                    )}
+                  </DataGridCell>
+                )}
+              </Fragment>
+            ))}
+            {validationErrors.map((error, index) => (
+              <DataGridCell gridColumn="span 5" key={index}>
+                <ModeledMethodAlert error={error} />
+              </DataGridCell>
+            ))}
+          </>
+        )}
       </DataGridRow>
     );
   },

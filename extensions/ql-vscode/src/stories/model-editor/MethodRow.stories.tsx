@@ -153,3 +153,28 @@ MultipleModelings.args = {
   methodCanBeModeled: true,
   viewState,
 };
+
+export const ValidationError = Template.bind({});
+ValidationError.args = {
+  method,
+  modeledMethods: [
+    { ...modeledMethod, type: "source" },
+    { ...modeledMethod, type: "source" },
+  ],
+  methodCanBeModeled: true,
+  viewState,
+};
+
+export const MultipleValidationErrors = Template.bind({});
+MultipleValidationErrors.args = {
+  method,
+  modeledMethods: [
+    { ...modeledMethod, type: "source" },
+    { ...modeledMethod, type: "source" },
+    { ...modeledMethod, type: "sink" },
+    { ...modeledMethod, type: "sink" },
+    { ...modeledMethod, type: "neutral", kind: "source" },
+  ],
+  methodCanBeModeled: true,
+  viewState,
+};

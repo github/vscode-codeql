@@ -438,4 +438,62 @@ describe(MethodRow.name, () => {
       { ...modeledMethod, type: "summary" },
     ]);
   });
+
+  it("does not display validation errors when everything is valid", () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "sink" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("displays a single validation error", () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "source" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(
+      screen.getByText("Error: Duplicated classification"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Error: Conflicting classification"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("displays multiple validation errors", () => {
+    render({
+      modeledMethods: [
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "source" },
+        { ...modeledMethod, type: "neutral", kind: "source" },
+      ],
+      viewState: {
+        ...viewState,
+        showMultipleModels: true,
+      },
+    });
+
+    expect(screen.getAllByRole("alert").length).toBe(2);
+    expect(
+      screen.getByText("Error: Duplicated classification"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Error: Conflicting classification"),
+    ).toBeInTheDocument();
+  });
 });
