@@ -200,61 +200,64 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             )}
           </>
         )}
-        {!props.modelingInProgress &&
-          modeledMethods.map((modeledMethod, index) => (
-            <Fragment key={index}>
-              <DataGridCell>
-                <ModelTypeDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              <DataGridCell>
-                <ModelInputDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              <DataGridCell>
-                <ModelOutputDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              <DataGridCell>
-                <ModelKindDropdown
-                  method={method}
-                  modeledMethod={modeledMethod}
-                  onChange={modeledMethodChangedHandlers[index]}
-                />
-              </DataGridCell>
-              {viewState.showMultipleModels && (
+        {!props.modelingInProgress && (
+          <>
+            {modeledMethods.map((modeledMethod, index) => (
+              <Fragment key={index}>
                 <DataGridCell>
-                  {index === modeledMethods.length - 1 ? (
-                    <CodiconRow
-                      appearance="icon"
-                      aria-label="Add new model"
-                      onClick={handleAddModelClick}
-                      disabled={addModelButtonDisabled}
-                    >
-                      <Codicon name="add" />
-                    </CodiconRow>
-                  ) : (
-                    <CodiconRow
-                      appearance="icon"
-                      aria-label="Remove model"
-                      onClick={removeModelClickedHandlers[index]}
-                    >
-                      <Codicon name="trash" />
-                    </CodiconRow>
-                  )}
+                  <ModelTypeDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
                 </DataGridCell>
-              )}
-            </Fragment>
-          ))}
+                <DataGridCell>
+                  <ModelInputDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                </DataGridCell>
+                <DataGridCell>
+                  <ModelOutputDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                </DataGridCell>
+                <DataGridCell>
+                  <ModelKindDropdown
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                </DataGridCell>
+                {viewState.showMultipleModels && (
+                  <DataGridCell>
+                    {index === modeledMethods.length - 1 ? (
+                      <CodiconRow
+                        appearance="icon"
+                        aria-label="Add new model"
+                        onClick={handleAddModelClick}
+                        disabled={addModelButtonDisabled}
+                      >
+                        <Codicon name="add" />
+                      </CodiconRow>
+                    ) : (
+                      <CodiconRow
+                        appearance="icon"
+                        aria-label="Remove model"
+                        onClick={removeModelClickedHandlers[index]}
+                      >
+                        <Codicon name="trash" />
+                      </CodiconRow>
+                    )}
+                  </DataGridCell>
+                )}
+              </Fragment>
+            ))}
+          </>
+        )}
       </DataGridRow>
     );
   },
