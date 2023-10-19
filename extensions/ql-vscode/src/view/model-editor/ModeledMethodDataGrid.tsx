@@ -1,9 +1,4 @@
 import * as React from "react";
-import {
-  VSCodeDataGrid,
-  VSCodeDataGridCell,
-  VSCodeDataGridRow,
-} from "@vscode/webview-ui-toolkit/react";
 import { MethodRow } from "./MethodRow";
 import { Method, canMethodBeModeled } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
@@ -12,6 +7,7 @@ import { sortMethods } from "../../model-editor/shared/sorting";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
+import { DataGrid, DataGridCell } from "../common/DataGrid";
 
 export const SINGLE_MODEL_GRID_TEMPLATE_COLUMNS =
   "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
@@ -72,53 +68,44 @@ export const ModeledMethodDataGrid = ({
     : SINGLE_MODEL_GRID_TEMPLATE_COLUMNS;
 
   return (
-    <VSCodeDataGrid gridTemplateColumns={gridTemplateColumns}>
+    <DataGrid gridTemplateColumns={gridTemplateColumns}>
       {someMethodsAreVisible && (
         <>
-          <VSCodeDataGridRow rowType="header">
-            <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-              API or method
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-              Model type
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-              Input
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
-              Output
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
-              Kind
-            </VSCodeDataGridCell>
-            {viewState.showMultipleModels && (
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
-                <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
-              </VSCodeDataGridCell>
-            )}
-          </VSCodeDataGridRow>
-          {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
-            const modeledMethods = modeledMethodsMap[method.signature] ?? [];
-            return (
-              <MethodRow
-                key={method.signature}
-                method={method}
-                methodCanBeModeled={methodCanBeModeled}
-                modeledMethods={modeledMethods}
-                methodIsUnsaved={modifiedSignatures.has(method.signature)}
-                modelingInProgress={inProgressMethods.has(method.signature)}
-                viewState={viewState}
-                revealedMethodSignature={revealedMethodSignature}
-                onChange={onChange}
-              />
-            );
-          })}
+          <DataGridCell rowType="header">API or method</DataGridCell>
+          <DataGridCell rowType="header">Model type</DataGridCell>
+          <DataGridCell rowType="header">Input</DataGridCell>
+          <DataGridCell rowType="header">Output</DataGridCell>
+          <DataGridCell rowType="header">Kind</DataGridCell>
+          {viewState.showMultipleModels && (
+            <DataGridCell rowType="header">
+              <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
+            </DataGridCell>
+          )}
+          {methodsWithModelability.map(
+            ({ method, methodCanBeModeled }, index) => {
+              const modeledMethods = modeledMethodsMap[method.signature] ?? [];
+              return (
+                <MethodRow
+                  key={method.signature}
+                  method={method}
+                  methodCanBeModeled={methodCanBeModeled}
+                  modeledMethods={modeledMethods}
+                  methodIsUnsaved={modifiedSignatures.has(method.signature)}
+                  modelingInProgress={inProgressMethods.has(method.signature)}
+                  viewState={viewState}
+                  revealedMethodSignature={revealedMethodSignature}
+                  onChange={onChange}
+                />
+              );
+            },
+          )}
         </>
       )}
       <HiddenMethodsRow
         numHiddenMethods={numHiddenMethods}
         someMethodsAreVisible={someMethodsAreVisible}
+        viewState={viewState}
       />
-    </VSCodeDataGrid>
+    </DataGrid>
   );
 };

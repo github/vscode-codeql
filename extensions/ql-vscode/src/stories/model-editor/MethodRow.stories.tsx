@@ -5,7 +5,6 @@ import { Meta, StoryFn } from "@storybook/react";
 import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
 import { CallClassification, Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
-import { VSCodeDataGrid } from "@vscode/webview-ui-toolkit/react";
 import {
   MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS,
   SINGLE_MODEL_GRID_TEMPLATE_COLUMNS,
@@ -13,6 +12,7 @@ import {
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { createMockExtensionPack } from "../../../test/factories/model-editor/extension-pack";
 import { Mode } from "../../model-editor/shared/mode";
+import { DataGrid } from "../../view/common/DataGrid";
 
 export default {
   title: "CodeQL Model Editor/Method Row",
@@ -24,9 +24,9 @@ const Template: StoryFn<typeof MethodRowComponent> = (args) => {
     ? MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS
     : SINGLE_MODEL_GRID_TEMPLATE_COLUMNS;
   return (
-    <VSCodeDataGrid gridTemplateColumns={gridTemplateColumns}>
+    <DataGrid gridTemplateColumns={gridTemplateColumns}>
       <MethodRowComponent {...args} />
-    </VSCodeDataGrid>
+    </DataGrid>
   );
 };
 

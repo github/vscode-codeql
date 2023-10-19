@@ -1,7 +1,5 @@
 import {
   VSCodeButton,
-  VSCodeDataGridCell,
-  VSCodeDataGridRow,
   VSCodeLink,
   VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
@@ -25,8 +23,9 @@ import { ModelOutputDropdown } from "./ModelOutputDropdown";
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { Codicon } from "../common";
 import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-modeled-methods";
+import { DataGridCell, DataGridRow } from "../common/DataGrid";
 
-const MultiModelColumn = styled(VSCodeDataGridCell)`
+const MultiModelColumn = styled(DataGridCell)`
   display: flex;
   flex-direction: column;
   gap: 0.5em;
@@ -61,11 +60,6 @@ const ProgressRing = styled(VSCodeProgressRing)`
 const CodiconRow = styled(VSCodeButton)`
   min-height: calc(var(--input-height) * 1px);
   align-items: center;
-`;
-
-const DataGridRow = styled(VSCodeDataGridRow)<{ focused?: boolean }>`
-  outline: ${(props) =>
-    props.focused ? "1px solid var(--vscode-focusBorder)" : "none"};
 `;
 
 export type MethodRowProps = {
@@ -168,7 +162,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         ref={ref}
         focused={revealedMethodSignature === method.signature}
       >
-        <VSCodeDataGridCell gridColumn={1}>
+        <DataGridCell>
           <ApiOrMethodRow>
             <ModelingStatusIndicator status={modelingStatus} />
             <MethodClassifications method={method} />
@@ -181,33 +175,33 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <ViewLink onClick={jumpToMethod}>View</ViewLink>
             {props.modelingInProgress && <ProgressRing />}
           </ApiOrMethodRow>
-        </VSCodeDataGridCell>
+        </DataGridCell>
         {props.modelingInProgress && (
           <>
-            <VSCodeDataGridCell gridColumn={2}>
+            <DataGridCell>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={3}>
+            </DataGridCell>
+            <DataGridCell>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={4}>
+            </DataGridCell>
+            <DataGridCell>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
-            <VSCodeDataGridCell gridColumn={5}>
+            </DataGridCell>
+            <DataGridCell>
               <InProgressDropdown />
-            </VSCodeDataGridCell>
+            </DataGridCell>
             {viewState.showMultipleModels && (
-              <VSCodeDataGridCell gridColumn={6}>
+              <DataGridCell>
                 <CodiconRow appearance="icon" disabled={true}>
                   <Codicon name="add" label="Add new model" />
                 </CodiconRow>
-              </VSCodeDataGridCell>
+              </DataGridCell>
             )}
           </>
         )}
         {!props.modelingInProgress && (
           <>
-            <MultiModelColumn gridColumn={2}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelTypeDropdown
                   key={index}
@@ -217,7 +211,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 />
               ))}
             </MultiModelColumn>
-            <MultiModelColumn gridColumn={3}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelInputDropdown
                   key={index}
@@ -227,7 +221,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 />
               ))}
             </MultiModelColumn>
-            <MultiModelColumn gridColumn={4}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelOutputDropdown
                   key={index}
@@ -237,7 +231,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 />
               ))}
             </MultiModelColumn>
-            <MultiModelColumn gridColumn={5}>
+            <MultiModelColumn>
               {modeledMethods.map((modeledMethod, index) => (
                 <ModelKindDropdown
                   key={index}
@@ -248,7 +242,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               ))}
             </MultiModelColumn>
             {viewState.showMultipleModels && (
-              <MultiModelColumn gridColumn={6}>
+              <MultiModelColumn>
                 {modeledMethods.map((_, index) =>
                   index === modeledMethods.length - 1 ? (
                     <CodiconRow
@@ -298,7 +292,7 @@ const UnmodelableMethodRow = forwardRef<
       ref={ref}
       focused={revealedMethodSignature === method.signature}
     >
-      <VSCodeDataGridCell gridColumn={1}>
+      <DataGridCell>
         <ApiOrMethodRow>
           <ModelingStatusIndicator status="saved" />
           <MethodName {...props.method} />
@@ -310,10 +304,8 @@ const UnmodelableMethodRow = forwardRef<
           <ViewLink onClick={jumpToMethod}>View</ViewLink>
           <MethodClassifications method={method} />
         </ApiOrMethodRow>
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn="span 4">
-        Method already modeled
-      </VSCodeDataGridCell>
+      </DataGridCell>
+      <DataGridCell gridColumn="span 4">Method already modeled</DataGridCell>
     </DataGridRow>
   );
 });
