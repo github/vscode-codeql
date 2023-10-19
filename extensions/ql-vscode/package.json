@@ -1986,7 +1986,7 @@
     "jest": "^29.0.3",
     "jest-environment-jsdom": "^29.0.3",
     "jest-runner-vscode": "^3.0.1",
-    "lint-staged": "^14.0.0",
+    "lint-staged": "^15.0.2",
     "markdownlint-cli2": "^0.6.0",
     "markdownlint-cli2-formatter-pretty": "^0.0.4",
     "mini-css-extract-plugin": "^2.6.1",
