@@ -4,6 +4,8 @@ import { join } from "path";
 import { autoPickExtensionsDirectory } from "../../../../src/model-editor/extensions-workspace-folder";
 import * as files from "../../../../src/common/files";
 import { mkdirp } from "fs-extra";
+import { NotificationLogger } from "../../../../src/common/logging";
+import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 describe("autoPickExtensionsDirectory", () => {
   let tmpDir: DirectoryResult;
@@ -19,6 +21,7 @@ describe("autoPickExtensionsDirectory", () => {
     typeof workspace.updateWorkspaceFolders
   >;
   let mockedTmpDirUri: Uri;
+  let logger: NotificationLogger;
 
   beforeEach(async () => {
     tmpDir = await dir({
@@ -47,6 +50,8 @@ describe("autoPickExtensionsDirectory", () => {
       .mockReturnValue(true);
 
     jest.spyOn(files, "tmpdir").mockReturnValue(mockedTmpDir);
+
+    logger = createMockLogger();
   });
 
   afterEach(async () => {
@@ -72,7 +77,9 @@ describe("autoPickExtensionsDirectory", () => {
       },
     ]);
 
-    expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(
+      extensionsDirectory,
+    );
     expect(updateWorkspaceFoldersSpy).not.toHaveBeenCalled();
   });
 
@@ -94,7 +101,9 @@ describe("autoPickExtensionsDirectory", () => {
       Uri.joinPath(rootDirectory, "workspace.code-workspace"),
     );
 
-    expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(
+      extensionsDirectory,
+    );
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(2, 0, {
       name: "CodeQL Extension Packs",
       uri: extensionsDirectory,
@@ -121,7 +130,7 @@ describe("autoPickExtensionsDirectory", () => {
       Uri.joinPath(rootDirectory, "workspace.code-workspace"),
     );
 
-    expect(await autoPickExtensionsDirectory()).toEqual(undefined);
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(undefined);
   });
 
   it("when a workspace file does not exist and there is a common root directory", async () => {
@@ -138,7 +147,9 @@ describe("autoPickExtensionsDirectory", () => {
       },
     ]);
 
-    expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(
+      extensionsDirectory,
+    );
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(2, 0, {
       name: "CodeQL Extension Packs",
       uri: extensionsDirectory,
@@ -164,7 +175,9 @@ describe("autoPickExtensionsDirectory", () => {
       },
     ]);
 
-    expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(
+      extensionsDirectory,
+    );
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(3, 0, {
       name: "CodeQL Extension Packs",
       uri: extensionsDirectory,
@@ -185,7 +198,7 @@ describe("autoPickExtensionsDirectory", () => {
       },
     ]);
 
-    expect(await autoPickExtensionsDirectory()).toEqual(undefined);
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(undefined);
     expect(updateWorkspaceFoldersSpy).not.toHaveBeenCalled();
   });
 
@@ -205,10 +218,28 @@ describe("autoPickExtensionsDirectory", () => {
       },
     ]);
 
-    expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(
+      extensionsDirectory,
+    );
     expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(2, 0, {
       name: "CodeQL Extension Packs",
       uri: extensionsDirectory,
     });
+  });
+
+  it("when there is no on-disk workspace folder", async () => {
+    workspaceFoldersSpy.mockReturnValue([
+      {
+        uri: Uri.parse("codeql-zip-archive://codeql_db"),
+        name: "my-db",
+        index: 0,
+      },
+    ]);
+
+    expect(await autoPickExtensionsDirectory(logger)).toEqual(undefined);
+    expect(updateWorkspaceFoldersSpy).not.toHaveBeenCalled();
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
+      "Could not find any on-disk workspace folders. Please ensure that you have opened a folder or workspace.",
+    );
   });
 });

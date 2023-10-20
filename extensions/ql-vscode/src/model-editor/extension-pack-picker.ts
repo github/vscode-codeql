@@ -64,7 +64,7 @@ export async function pickExtensionPack(
   // If the setting is not set, automatically pick a suitable directory
   const extensionsDirectory = userExtensionsDirectory
     ? Uri.file(userExtensionsDirectory)
-    : await autoPickExtensionsDirectory();
+    : await autoPickExtensionsDirectory(logger);
 
   if (!extensionsDirectory) {
     return undefined;

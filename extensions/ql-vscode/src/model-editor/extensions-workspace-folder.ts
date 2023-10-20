@@ -2,6 +2,7 @@ import { FileType, Uri, workspace, WorkspaceFolder } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common/logging/vscode";
 import { tmpdir } from "../common/files";
+import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 
 /**
  * Returns the ancestors of this path in order from furthest to closest (i.e. root of filesystem to parent directory)
@@ -143,8 +144,19 @@ async function findGitFolder(
  *    for which the .git directory is closest to a workspace folder
  * 6. If none of the above apply, return `undefined`
  */
-export async function autoPickExtensionsDirectory(): Promise<Uri | undefined> {
+export async function autoPickExtensionsDirectory(
+  logger: NotificationLogger,
+): Promise<Uri | undefined> {
   const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+
+  // If there are no on-disk workspace folders, we can't do anything
+  if (workspaceFolders.length === 0) {
+    void showAndLogErrorMessage(
+      logger,
+      `Could not find any on-disk workspace folders. Please ensure that you have opened a folder or workspace.`,
+    );
+    return undefined;
+  }
 
   // If there's only 1 workspace folder, use the `.github/codeql/extensions` directory in that folder
   if (workspaceFolders.length === 1) {
