@@ -71,6 +71,7 @@ const baseConfig = {
     "no-shadow": "off",
     "github/array-foreach": "off",
     "github/no-then": "off",
+    "react/jsx-key": ["error", { checkFragmentShorthand: true }],
   },
 };
 
