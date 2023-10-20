@@ -14,6 +14,7 @@ import { assertNever } from "../../common/helpers-pure";
 import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
+import { ModelingEvents } from "../modeling-events";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -27,6 +28,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   constructor(
     app: App,
     private readonly modelingStore: ModelingStore,
+    private readonly modelingEvents: ModelingEvents,
     private readonly editorViewTracker: ModelEditorViewTracker,
     private readonly modelConfig: ModelConfigListener,
   ) {
@@ -35,7 +37,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
   protected override async onWebViewLoaded(): Promise<void> {
     await Promise.all([this.setViewState(), this.setInitialState()]);
-    this.registerToModelingStoreEvents();
+    this.registerToModelingEvents();
     this.registerToModelConfigEvents();
   }
 
@@ -150,9 +152,9 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     await view?.revealMethod(method);
   }
 
-  private registerToModelingStoreEvents(): void {
+  private registerToModelingEvents(): void {
     this.push(
-      this.modelingStore.onModeledMethodsChanged(async (e) => {
+      this.modelingEvents.onModeledMethodsChanged(async (e) => {
         if (this.webviewView && e.isActiveDb && this.method) {
           const modeledMethods = e.modeledMethods[this.method.signature];
           if (modeledMethods) {
@@ -167,7 +169,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingStore.onModifiedMethodsChanged(async (e) => {
+      this.modelingEvents.onModifiedMethodsChanged(async (e) => {
         if (this.webviewView && e.isActiveDb && this.method) {
           const isModified = e.modifiedMethods.has(this.method.signature);
           await this.postMessage({
@@ -179,7 +181,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingStore.onSelectedMethodChanged(async (e) => {
+      this.modelingEvents.onSelectedMethodChanged(async (e) => {
         if (this.webviewView) {
           this.method = e.method;
           this.databaseItem = e.databaseItem;
@@ -196,7 +198,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingStore.onDbOpened(async () => {
+      this.modelingEvents.onDbOpened(async () => {
         await this.postMessage({
           t: "setInModelingMode",
           inModelingMode: true,
@@ -205,7 +207,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingStore.onDbClosed(async (dbUri) => {
+      this.modelingEvents.onDbClosed(async (dbUri) => {
         if (!this.modelingStore.anyDbsBeingModeled()) {
           await this.postMessage({
             t: "setInModelingMode",
@@ -220,7 +222,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingStore.onInProgressMethodsChanged(async (e) => {
+      this.modelingEvents.onInProgressMethodsChanged(async (e) => {
         if (this.method && this.databaseItem) {
           const dbUri = this.databaseItem.databaseUri.toString();
           if (e.dbUri === dbUri) {

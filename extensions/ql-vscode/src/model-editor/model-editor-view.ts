@@ -43,6 +43,7 @@ import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
+import { ModelingEvents } from "./modeling-events";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -53,6 +54,7 @@ export class ModelEditorView extends AbstractWebview<
   public constructor(
     protected readonly app: App,
     private readonly modelingStore: ModelingStore,
+    private readonly modelingEvents: ModelingEvents,
     private readonly viewTracker: ModelEditorViewTracker<ModelEditorView>,
     private readonly modelConfig: ModelConfigListener,
     private readonly databaseManager: DatabaseManager,
@@ -67,7 +69,7 @@ export class ModelEditorView extends AbstractWebview<
     super(app);
 
     this.modelingStore.initializeStateForDb(databaseItem, initialMode);
-    this.registerToModelingStoreEvents();
+    this.registerToModelingEvents();
     this.registerToModelConfigEvents();
 
     this.viewTracker.registerView(this);
@@ -567,6 +569,7 @@ export class ModelEditorView extends AbstractWebview<
       const view = new ModelEditorView(
         this.app,
         this.modelingStore,
+        this.modelingEvents,
         this.viewTracker,
         this.modelConfig,
         this.databaseManager,
@@ -655,9 +658,9 @@ export class ModelEditorView extends AbstractWebview<
     return addedDatabase;
   }
 
-  private registerToModelingStoreEvents() {
+  private registerToModelingEvents() {
     this.push(
-      this.modelingStore.onMethodsChanged(async (event) => {
+      this.modelingEvents.onMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setMethods",
@@ -668,7 +671,7 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingStore.onModeledMethodsChanged(async (event) => {
+      this.modelingEvents.onModeledMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setModeledMethods",
@@ -679,7 +682,7 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingStore.onModifiedMethodsChanged(async (event) => {
+      this.modelingEvents.onModifiedMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setModifiedMethods",
@@ -690,7 +693,7 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingStore.onInProgressMethodsChanged(async (event) => {
+      this.modelingEvents.onInProgressMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setInProgressMethods",
