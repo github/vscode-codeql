@@ -1170,10 +1170,7 @@ function addUnhandledRejectionListener() {
       const message = redactableError(
         asError(error),
       )`Unhandled error: ${getErrorMessage(error)}`;
-      const stack = getErrorStack(error);
-      const fullMessage = stack
-        ? `Unhandled error: ${stack}`
-        : message.fullMessage;
+      const fullMessage = message.fullMessageWithStack;
 
       // Add a catch so that showAndLogExceptionWithTelemetry fails, we avoid
       // triggering "unhandledRejection" and avoid an infinite loop

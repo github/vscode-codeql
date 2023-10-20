@@ -22,6 +22,14 @@ export class RedactableError extends Error {
       .join("");
   }
 
+  public get fullMessageWithStack(): string {
+    if (!this.stack) {
+      return this.fullMessage;
+    }
+
+    return `${this.fullMessage}\n${this.stack}`;
+  }
+
   public get redactedMessage(): string {
     return this.strings
       .map((s, i) => s + (this.hasValue(i) ? this.getRedactedValue(i) : ""))

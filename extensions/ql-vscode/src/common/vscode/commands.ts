@@ -6,11 +6,7 @@ import {
   showAndLogExceptionWithTelemetry,
 } from "../logging";
 import { extLogger } from "../logging/vscode";
-import {
-  asError,
-  getErrorMessage,
-  getErrorStack,
-} from "../../common/helpers-pure";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { redactableError } from "../../common/errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
@@ -66,10 +62,7 @@ export function registerCommandWithErrorHandling(
         }
       } else {
         // Include the full stack in the error log only.
-        const errorStack = getErrorStack(e);
-        const fullMessage = errorStack
-          ? `${errorMessage.fullMessage}\n${errorStack}`
-          : errorMessage.fullMessage;
+        const fullMessage = errorMessage.fullMessageWithStack;
         void showAndLogExceptionWithTelemetry(logger, telemetry, errorMessage, {
           fullMessage,
           extraTelemetryProperties: {

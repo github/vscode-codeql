@@ -441,7 +441,6 @@ export async function compileAndRunQueryAgainstDatabaseCore(
         const error = result.message
           ? redactableError`${result.message}`
           : redactableError`Failed to run query`;
-        void extLogger.log(error.fullMessage);
         void showAndLogExceptionWithTelemetry(
           extLogger,
           telemetryListener,
