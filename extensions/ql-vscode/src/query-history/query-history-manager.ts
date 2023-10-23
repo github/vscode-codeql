@@ -702,32 +702,15 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async getQueryHistoryItemDirectory(
-    queryHistoryItem: QueryHistoryInfo,
-  ): Promise<string> {
-    if (queryHistoryItem.t === "local") {
-      if (queryHistoryItem.completedQuery) {
-        return queryHistoryItem.completedQuery.query.querySaveDir;
-      }
-    } else if (queryHistoryItem.t === "variant-analysis") {
-      return this.variantAnalysisManager.getVariantAnalysisStorageLocation(
-        queryHistoryItem.variantAnalysis.id,
-      );
-    } else {
-      assertNever(queryHistoryItem);
-    }
-
-    throw new Error("Unable to get query directory");
-  }
-
   async handleOpenQueryDirectory(item: QueryHistoryInfo) {
     let externalFilePath: string | undefined;
     if (item.t === "local") {
-      if (item.completedQuery) {
-        externalFilePath = join(
-          item.completedQuery.query.querySaveDir,
-          "timestamp",
-        );
+      const querySaveDir =
+        item.initialInfo.outputDir?.querySaveDir ??
+        item.completedQuery?.query.querySaveDir;
+
+      if (querySaveDir) {
+        externalFilePath = join(querySaveDir, "timestamp");
       }
     } else if (item.t === "variant-analysis") {
       externalFilePath = join(
@@ -761,7 +744,16 @@ export class QueryHistoryManager extends DisposableObject {
           `Failed to open ${externalFilePath}: ${getErrorMessage(e)}`,
         );
       }
+    } else {
+      this.warnNoQueryDir();
     }
+  }
+
+  private warnNoQueryDir() {
+    void showAndLogWarningMessage(
+      this.app.logger,
+      `Results directory is not available for this run.`,
+    );
   }
 
   private warnNoEvalLogs() {
@@ -771,18 +763,20 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  private warnInProgressEvalLogSummary() {
-    void showAndLogWarningMessage(
-      this.app.logger,
-      'The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.',
-    );
-  }
+  private async warnNoEvalLogSummary(item: LocalQueryInfo) {
+    const evalLogLocation =
+      item.evalLogLocation ?? item.initialInfo.outputDir?.evalLogPath;
 
-  private warnInProgressEvalLogViewer() {
-    void showAndLogWarningMessage(
-      this.app.logger,
-      "The viewer's data is still being generated for this run. Please try again or re-run the query.",
-    );
+    // Summary log file doesn't exist.
+    if (evalLogLocation && (await pathExists(evalLogLocation))) {
+      // If raw log does exist, then the summary log is still being generated.
+      void showAndLogWarningMessage(
+        this.app.logger,
+        'The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.',
+      );
+    } else {
+      this.warnNoEvalLogs();
+    }
   }
 
   async handleShowEvalLog(item: QueryHistoryInfo) {
@@ -790,8 +784,11 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (item.evalLogLocation) {
-      await tryOpenExternalFile(this.app.commands, item.evalLogLocation);
+    const evalLogLocation =
+      item.evalLogLocation ?? item.initialInfo.outputDir?.evalLogPath;
+
+    if (evalLogLocation && (await pathExists(evalLogLocation))) {
+      await tryOpenExternalFile(this.app.commands, evalLogLocation);
     } else {
       this.warnNoEvalLogs();
     }
@@ -802,18 +799,13 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (item.evalLogSummaryLocation) {
-      await tryOpenExternalFile(this.app.commands, item.evalLogSummaryLocation);
+    // If the summary file location wasn't saved, display error
+    if (!item.evalLogSummaryLocation) {
+      await this.warnNoEvalLogSummary(item);
       return;
     }
 
-    // Summary log file doesn't exist.
-    if (item.evalLogLocation && (await pathExists(item.evalLogLocation))) {
-      // If raw log does exist, then the summary log is still being generated.
-      this.warnInProgressEvalLogSummary();
-    } else {
-      this.warnNoEvalLogs();
-    }
+    await tryOpenExternalFile(this.app.commands, item.evalLogSummaryLocation);
   }
 
   async handleShowEvalLogViewer(item: QueryHistoryInfo) {
@@ -823,7 +815,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     // If the JSON summary file location wasn't saved, display error
     if (item.jsonEvalLogSummaryLocation === undefined) {
-      this.warnInProgressEvalLogViewer();
+      await this.warnNoEvalLogSummary(item);
       return;
     }
 

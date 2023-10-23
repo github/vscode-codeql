@@ -6,6 +6,7 @@
 - The "Install Pack Dependencies" will now only list CodeQL packs located in the workspace. [#2960](https://github.com/github/vscode-codeql/pull/2960)
 - Fix a bug where the "View Query Log" action for a query history item was not working. [#2984](https://github.com/github/vscode-codeql/pull/2984)
 - Add a command to sort items in the databases view by language. [#2993](https://github.com/github/vscode-codeql/pull/2993)
+- Fix not being able to open the results directory or evaluator log for a cancelled local query run. [#2996](https://github.com/github/vscode-codeql/pull/2996)
 
 ## 1.9.2 - 12 October 2023
 

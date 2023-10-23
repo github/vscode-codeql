@@ -109,6 +109,11 @@ function mapInitialQueryInfoToDto(
     },
     start: localQueryInitialInfo.start,
     id: localQueryInitialInfo.id,
+    outputDir: localQueryInitialInfo.outputDir
+      ? {
+          querySaveDir: localQueryInitialInfo.outputDir.querySaveDir,
+        }
+      : undefined,
   };
 }
 

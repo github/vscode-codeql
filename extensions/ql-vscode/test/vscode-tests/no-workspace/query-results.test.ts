@@ -12,7 +12,10 @@ import {
   InitialQueryInfo,
   interpretResultsSarif,
 } from "../../../src/query-results";
-import { QueryWithResults } from "../../../src/run-queries-shared";
+import {
+  QueryOutputDir,
+  QueryWithResults,
+} from "../../../src/run-queries-shared";
 import {
   DatabaseInfo,
   SortDirection,
@@ -506,6 +509,7 @@ describe("query-results", () => {
         isQuickQuery: false,
         isQuickEval: false,
         id: `some-id-${dbName}`,
+        outputDir: new QueryOutputDir("path/to/output/dir"),
       } as InitialQueryInfo,
       {
         dispose: () => {
