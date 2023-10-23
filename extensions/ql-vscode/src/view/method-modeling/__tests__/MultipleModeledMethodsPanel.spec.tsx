@@ -636,6 +636,52 @@ describe(MultipleModeledMethodsPanel.name, () => {
         }),
       ).toHaveValue("remote");
     });
+
+    it("preserves selection when a modeling other than the selected modeling is removed", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      expect(screen.getByText("1/3")).toBeInTheDocument();
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={modeledMethods.slice(0, 2)}
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("1/2")).toBeInTheDocument();
+    });
+
+    it("reduces selection when the selected modeling is removed", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Next modeling"));
+      await userEvent.click(screen.getByLabelText("Next modeling"));
+      expect(screen.getByText("3/3")).toBeInTheDocument();
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={modeledMethods.slice(0, 2)}
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("2/2")).toBeInTheDocument();
+    });
   });
 
   describe("with 1 modeled and 1 unmodeled method", () => {
