@@ -112,5 +112,5 @@ export async function showAndLogExceptionWithTelemetry(
   options: ShowAndLogExceptionOptions = {},
 ): Promise<void> {
   telemetry?.sendError(error, options.extraTelemetryProperties);
-  return showAndLogErrorMessage(logger, error.fullMessage, options);
+  return showAndLogErrorMessage(logger, error.fullMessageWithStack, options);
 }
