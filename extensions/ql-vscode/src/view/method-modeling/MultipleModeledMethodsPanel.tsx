@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import {
@@ -60,6 +60,22 @@ export const MultipleModeledMethodsPanel = ({
 }: MultipleModeledMethodsPanelProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
+  const selectNewMethod = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (selectNewMethod.current === modeledMethods.length - 1) {
+      setSelectedIndex(selectNewMethod.current);
+      selectNewMethod.current = null;
+      return;
+    }
+
+    if (selectedIndex >= modeledMethods.length) {
+      setSelectedIndex(
+        modeledMethods.length > 0 ? modeledMethods.length - 1 : 0,
+      );
+    }
+  }, [modeledMethods.length, selectedIndex]);
+
   const handlePreviousClick = useCallback(() => {
     setSelectedIndex((previousIndex) => previousIndex - 1);
   }, []);
@@ -89,7 +105,7 @@ export const MultipleModeledMethodsPanel = ({
     const newModeledMethods = [...modeledMethods, newModeledMethod];
 
     onChange(method.signature, newModeledMethods);
-    setSelectedIndex(newModeledMethods.length - 1);
+    selectNewMethod.current = newModeledMethods.length - 1;
   }, [onChange, modeledMethods, method]);
 
   const handleRemoveClick = useCallback(() => {

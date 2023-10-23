@@ -162,6 +162,30 @@ describe(MultipleModeledMethodsPanel.name, () => {
         },
       ]);
     });
+
+    it("changes selection to the newly added modeling", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Add modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][1]
+          }
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("2/2")).toBeInTheDocument();
+    });
   });
 
   describe("with two modeled methods", () => {
@@ -257,6 +281,33 @@ describe(MultipleModeledMethodsPanel.name, () => {
       ).toBeDisabled();
       expect(screen.getByText("2/2")).toBeInTheDocument();
 
+      expect(
+        screen.getByRole("combobox", {
+          name: "Model type",
+        }),
+      ).toHaveValue("source");
+    });
+
+    it("correctly updates selected pagination index when the number of models decreases", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Next modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={[modeledMethods[1]]}
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getAllByRole("combobox")).toHaveLength(4);
       expect(
         screen.getByRole("combobox", {
           name: "Model type",
@@ -444,6 +495,32 @@ describe(MultipleModeledMethodsPanel.name, () => {
         screen.getByText("Error: Conflicting classification"),
       ).toBeInTheDocument();
     });
+
+    it("changes selection to the newly added modeling", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      expect(screen.getByText("1/2")).toBeInTheDocument();
+
+      await userEvent.click(screen.getByLabelText("Add modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][1]
+          }
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("3/3")).toBeInTheDocument();
+    });
   });
 
   describe("with three modeled methods", () => {
@@ -558,6 +635,52 @@ describe(MultipleModeledMethodsPanel.name, () => {
           name: "Kind",
         }),
       ).toHaveValue("remote");
+    });
+
+    it("preserves selection when a modeling other than the selected modeling is removed", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      expect(screen.getByText("1/3")).toBeInTheDocument();
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={modeledMethods.slice(0, 2)}
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("1/2")).toBeInTheDocument();
+    });
+
+    it("reduces selection when the selected modeling is removed", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Next modeling"));
+      await userEvent.click(screen.getByLabelText("Next modeling"));
+      expect(screen.getByText("3/3")).toBeInTheDocument();
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={modeledMethods.slice(0, 2)}
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("2/2")).toBeInTheDocument();
     });
   });
 
