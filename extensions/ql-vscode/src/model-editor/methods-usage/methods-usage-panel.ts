@@ -10,6 +10,7 @@ import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { ModelingStore } from "../modeling-store";
 import { ModeledMethod } from "../modeled-method";
 import { Mode } from "../shared/mode";
+import { ModelingEvents } from "../modeling-events";
 
 export class MethodsUsagePanel extends DisposableObject {
   private readonly dataProvider: MethodsUsageDataProvider;
@@ -17,6 +18,7 @@ export class MethodsUsagePanel extends DisposableObject {
 
   public constructor(
     private readonly modelingStore: ModelingStore,
+    private readonly modelingEvents: ModelingEvents,
     cliServer: CodeQLCliServer,
   ) {
     super();
@@ -28,7 +30,7 @@ export class MethodsUsagePanel extends DisposableObject {
     });
     this.push(this.treeView);
 
-    this.registerToModelingStoreEvents();
+    this.registerToModelingEvents();
   }
 
   public async setState(
@@ -69,15 +71,15 @@ export class MethodsUsagePanel extends DisposableObject {
     }
   }
 
-  private registerToModelingStoreEvents(): void {
+  private registerToModelingEvents(): void {
     this.push(
-      this.modelingStore.onActiveDbChanged(async () => {
+      this.modelingEvents.onActiveDbChanged(async () => {
         await this.handleStateChangeEvent();
       }),
     );
 
     this.push(
-      this.modelingStore.onMethodsChanged(async (event) => {
+      this.modelingEvents.onMethodsChanged(async (event) => {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
         }
@@ -85,7 +87,7 @@ export class MethodsUsagePanel extends DisposableObject {
     );
 
     this.push(
-      this.modelingStore.onHideModeledMethodsChanged(async (event) => {
+      this.modelingEvents.onHideModeledMethodsChanged(async (event) => {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
         }
@@ -93,7 +95,7 @@ export class MethodsUsagePanel extends DisposableObject {
     );
 
     this.push(
-      this.modelingStore.onModeChanged(async (event) => {
+      this.modelingEvents.onModeChanged(async (event) => {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
         }
@@ -101,7 +103,7 @@ export class MethodsUsagePanel extends DisposableObject {
     );
 
     this.push(
-      this.modelingStore.onModifiedMethodsChanged(async (event) => {
+      this.modelingEvents.onModifiedMethodsChanged(async (event) => {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
         }

@@ -1,9 +1,8 @@
-import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
-import { AppEvent, AppEventEmitter } from "../common/events";
 import { DatabaseItem } from "../databases/local-databases";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
+import { ModelingEvents } from "./modeling-events";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 
@@ -40,131 +39,15 @@ interface SelectedMethodDetails {
   readonly isInProgress: boolean;
 }
 
-interface MethodsChangedEvent {
-  readonly methods: readonly Method[];
-  readonly dbUri: string;
-  readonly isActiveDb: boolean;
-}
-
-interface HideModeledMethodsChangedEvent {
-  readonly hideModeledMethods: boolean;
-  readonly isActiveDb: boolean;
-}
-
-interface ModeChangedEvent {
-  readonly mode: Mode;
-  readonly isActiveDb: boolean;
-}
-
-interface ModeledMethodsChangedEvent {
-  readonly modeledMethods: Readonly<Record<string, ModeledMethod[]>>;
-  readonly dbUri: string;
-  readonly isActiveDb: boolean;
-}
-
-interface ModifiedMethodsChangedEvent {
-  readonly modifiedMethods: ReadonlySet<string>;
-  readonly dbUri: string;
-  readonly isActiveDb: boolean;
-}
-
-interface SelectedMethodChangedEvent {
-  readonly databaseItem: DatabaseItem;
-  readonly method: Method;
-  readonly usage: Usage;
-  readonly modeledMethods: readonly ModeledMethod[];
-  readonly isModified: boolean;
-  readonly isInProgress: boolean;
-}
-
-interface InProgressMethodsChangedEvent {
-  readonly dbUri: string;
-  readonly methods: ReadonlySet<string>;
-}
-
 export class ModelingStore extends DisposableObject {
-  public readonly onActiveDbChanged: AppEvent<void>;
-  public readonly onDbOpened: AppEvent<string>;
-  public readonly onDbClosed: AppEvent<string>;
-  public readonly onMethodsChanged: AppEvent<MethodsChangedEvent>;
-  public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
-  public readonly onModeChanged: AppEvent<ModeChangedEvent>;
-  public readonly onModeledMethodsChanged: AppEvent<ModeledMethodsChangedEvent>;
-  public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
-  public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
-  public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
-
   private readonly state: Map<string, InternalDbModelingState>;
   private activeDb: string | undefined;
 
-  private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
-  private readonly onDbOpenedEventEmitter: AppEventEmitter<string>;
-  private readonly onDbClosedEventEmitter: AppEventEmitter<string>;
-  private readonly onMethodsChangedEventEmitter: AppEventEmitter<MethodsChangedEvent>;
-  private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
-  private readonly onModeChangedEventEmitter: AppEventEmitter<ModeChangedEvent>;
-  private readonly onModeledMethodsChangedEventEmitter: AppEventEmitter<ModeledMethodsChangedEvent>;
-  private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
-  private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
-  private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
-
-  constructor(app: App) {
+  constructor(private readonly modelingEvents: ModelingEvents) {
     super();
 
     // State initialization
     this.state = new Map<string, InternalDbModelingState>();
-
-    // Event initialization
-    this.onActiveDbChangedEventEmitter = this.push(
-      app.createEventEmitter<void>(),
-    );
-    this.onActiveDbChanged = this.onActiveDbChangedEventEmitter.event;
-
-    this.onDbOpenedEventEmitter = this.push(app.createEventEmitter<string>());
-    this.onDbOpened = this.onDbOpenedEventEmitter.event;
-
-    this.onDbClosedEventEmitter = this.push(app.createEventEmitter<string>());
-    this.onDbClosed = this.onDbClosedEventEmitter.event;
-
-    this.onMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<MethodsChangedEvent>(),
-    );
-    this.onMethodsChanged = this.onMethodsChangedEventEmitter.event;
-
-    this.onHideModeledMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<HideModeledMethodsChangedEvent>(),
-    );
-    this.onHideModeledMethodsChanged =
-      this.onHideModeledMethodsChangedEventEmitter.event;
-
-    this.onModeChangedEventEmitter = this.push(
-      app.createEventEmitter<ModeChangedEvent>(),
-    );
-    this.onModeChanged = this.onModeChangedEventEmitter.event;
-
-    this.onModeledMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ModeledMethodsChangedEvent>(),
-    );
-    this.onModeledMethodsChanged =
-      this.onModeledMethodsChangedEventEmitter.event;
-
-    this.onModifiedMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ModifiedMethodsChangedEvent>(),
-    );
-    this.onModifiedMethodsChanged =
-      this.onModifiedMethodsChangedEventEmitter.event;
-
-    this.onSelectedMethodChangedEventEmitter = this.push(
-      app.createEventEmitter<SelectedMethodChangedEvent>(),
-    );
-    this.onSelectedMethodChanged =
-      this.onSelectedMethodChangedEventEmitter.event;
-
-    this.onInProgressMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<InProgressMethodsChangedEvent>(),
-    );
-    this.onInProgressMethodsChanged =
-      this.onInProgressMethodsChangedEventEmitter.event;
   }
 
   public initializeStateForDb(
@@ -184,12 +67,12 @@ export class ModelingStore extends DisposableObject {
       inProgressMethods: new Set(),
     });
 
-    this.onDbOpenedEventEmitter.fire(dbUri);
+    this.modelingEvents.fireDbClosedEvent(dbUri);
   }
 
   public setActiveDb(databaseItem: DatabaseItem) {
     this.activeDb = databaseItem.databaseUri.toString();
-    this.onActiveDbChangedEventEmitter.fire();
+    this.modelingEvents.fireActiveDbChangedEvent();
   }
 
   public removeDb(databaseItem: DatabaseItem) {
@@ -201,11 +84,11 @@ export class ModelingStore extends DisposableObject {
 
     if (this.activeDb === dbUri) {
       this.activeDb = undefined;
-      this.onActiveDbChangedEventEmitter.fire();
+      this.modelingEvents.fireActiveDbChangedEvent();
     }
 
     this.state.delete(dbUri);
-    this.onDbClosedEventEmitter.fire(dbUri);
+    this.modelingEvents.fireDbClosedEvent(dbUri);
   }
 
   public getStateForActiveDb(): DbModelingState | undefined {
@@ -268,11 +151,11 @@ export class ModelingStore extends DisposableObject {
 
     dbState.methods = [...methods];
 
-    this.onMethodsChangedEventEmitter.fire({
+    this.modelingEvents.fireMethodsChangedEvent(
       methods,
       dbUri,
-      isActiveDb: dbUri === this.activeDb,
-    });
+      dbUri === this.activeDb,
+    );
   }
 
   public setHideModeledMethods(
@@ -284,10 +167,10 @@ export class ModelingStore extends DisposableObject {
 
     dbState.hideModeledMethods = hideModeledMethods;
 
-    this.onHideModeledMethodsChangedEventEmitter.fire({
+    this.modelingEvents.fireHideModeledMethodsChangedEvent(
       hideModeledMethods,
-      isActiveDb: dbUri === this.activeDb,
-    });
+      dbUri === this.activeDb,
+    );
   }
 
   public setMode(dbItem: DatabaseItem, mode: Mode) {
@@ -296,10 +179,7 @@ export class ModelingStore extends DisposableObject {
 
     dbState.mode = mode;
 
-    this.onModeChangedEventEmitter.fire({
-      mode,
-      isActiveDb: dbUri === this.activeDb,
-    });
+    this.modelingEvents.fireModeChangedEvent(mode, dbUri === this.activeDb);
   }
 
   public getMode(dbItem: DatabaseItem) {
@@ -416,14 +296,17 @@ export class ModelingStore extends DisposableObject {
     dbState.selectedMethod = method;
     dbState.selectedUsage = usage;
 
-    this.onSelectedMethodChangedEventEmitter.fire({
-      databaseItem: dbItem,
+    const modeledMethods = dbState.modeledMethods[method.signature] ?? [];
+    const isModified = dbState.modifiedMethodSignatures.has(method.signature);
+    const isInProgress = dbState.inProgressMethods.has(method.signature);
+    this.modelingEvents.fireSelectedMethodChangedEvent(
+      dbItem,
       method,
       usage,
-      modeledMethods: dbState.modeledMethods[method.signature] ?? [],
-      isModified: dbState.modifiedMethodSignatures.has(method.signature),
-      isInProgress: dbState.inProgressMethods.has(method.signature),
-    });
+      modeledMethods,
+      isModified,
+      isInProgress,
+    );
   }
 
   public addInProgressMethods(
@@ -492,11 +375,11 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.onModifiedMethodsChangedEventEmitter.fire({
-      modifiedMethods: state.modifiedMethodSignatures,
-      dbUri: dbItem.databaseUri.toString(),
-      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
-    });
+    this.modelingEvents.fireModifiedMethodsChangedEvent(
+      state.modifiedMethodSignatures,
+      dbItem.databaseUri.toString(),
+      dbItem.databaseUri.toString() === this.activeDb,
+    );
   }
 
   private changeModeledMethods(
@@ -507,11 +390,11 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.onModeledMethodsChangedEventEmitter.fire({
-      modeledMethods: state.modeledMethods,
-      dbUri: dbItem.databaseUri.toString(),
-      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
-    });
+    this.modelingEvents.fireModeledMethodsChangedEvent(
+      state.modeledMethods,
+      dbItem.databaseUri.toString(),
+      dbItem.databaseUri.toString() === this.activeDb,
+    );
   }
 
   private changeInProgressMethods(
@@ -522,9 +405,9 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.onInProgressMethodsChangedEventEmitter.fire({
-      dbUri: dbItem.databaseUri.toString(),
-      methods: state.inProgressMethods,
-    });
+    this.modelingEvents.fireInProgressMethodsChangedEvent(
+      dbItem.databaseUri.toString(),
+      state.inProgressMethods,
+    );
   }
 }

@@ -11,10 +11,12 @@ import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pac
 import { createMockModelingStore } from "../../../__mocks__/model-editor/modelingStoreMock";
 import { createMockModelEditorViewTracker } from "../../../__mocks__/model-editor/modelEditorViewTrackerMock";
 import { ModelConfigListener } from "../../../../src/config";
+import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
   const modelingStore = createMockModelingStore();
+  const modelingEvents = createMockModelingEvents();
   const viewTracker = createMockModelEditorViewTracker();
   const modelConfig = mockedObject<ModelConfigListener>({
     onDidChangeConfiguration: jest.fn(),
@@ -44,6 +46,7 @@ describe("ModelEditorView", () => {
     view = new ModelEditorView(
       app,
       modelingStore,
+      modelingEvents,
       viewTracker,
       modelConfig,
       databaseManager,
