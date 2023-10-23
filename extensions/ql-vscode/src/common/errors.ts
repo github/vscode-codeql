@@ -1,5 +1,3 @@
-import * as os from "os";
-
 export class RedactableError extends Error {
   constructor(
     cause: ErrorLike | undefined,
@@ -29,7 +27,7 @@ export class RedactableError extends Error {
       return this.fullMessage;
     }
 
-    return `${this.fullMessage}${os.EOL}${this.stack}`;
+    return `${this.fullMessage}\n${this.stack}`;
   }
 
   public get redactedMessage(): string {
