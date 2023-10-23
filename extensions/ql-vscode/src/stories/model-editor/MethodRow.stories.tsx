@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Meta, StoryFn } from "@storybook/react";
 
@@ -20,12 +21,33 @@ export default {
 } as Meta<typeof MethodRowComponent>;
 
 const Template: StoryFn<typeof MethodRowComponent> = (args) => {
+  const [modeledMethods, setModeledMethods] = useState<ModeledMethod[]>(
+    args.modeledMethods,
+  );
+
+  useEffect(() => {
+    setModeledMethods(args.modeledMethods);
+  }, [args.modeledMethods]);
+
+  const handleChange = useCallback(
+    (methodSignature: string, modeledMethods: ModeledMethod[]) => {
+      args.onChange(methodSignature, modeledMethods);
+      setModeledMethods(modeledMethods);
+    },
+    [args],
+  );
+
   const gridTemplateColumns = args.viewState?.showMultipleModels
     ? MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS
     : SINGLE_MODEL_GRID_TEMPLATE_COLUMNS;
+
   return (
     <DataGrid gridTemplateColumns={gridTemplateColumns}>
-      <MethodRowComponent {...args} />
+      <MethodRowComponent
+        {...args}
+        modeledMethods={modeledMethods}
+        onChange={handleChange}
+      />
     </DataGrid>
   );
 };

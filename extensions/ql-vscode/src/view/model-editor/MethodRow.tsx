@@ -5,12 +5,12 @@ import {
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
 import {
-  Fragment,
   forwardRef,
   useCallback,
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
@@ -107,6 +107,32 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       revealedMethodSignature,
       onChange,
     } = props;
+
+    const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+
+    useEffect(() => {
+      if (focusedIndex === null) {
+        return;
+      }
+
+      // If a row is focused, hide it when the user clicks anywhere. In this case, we do need to
+      // show the user where the method is anymore and they should have seen it.
+      const listener = () => {
+        setFocusedIndex(null);
+      };
+
+      // Use a timeout to ensure the click event is not triggered by the click that focused the row.
+      const timeoutId = setTimeout(
+        () => window.addEventListener("click", listener),
+        200,
+      );
+
+      return () => {
+        clearTimeout(timeoutId);
+
+        window.removeEventListener("click", listener);
+      };
+    }, [focusedIndex]);
 
     const modeledMethods = useMemo(
       () => modeledMethodsToDisplay(modeledMethodsProp, method, viewState),
@@ -212,7 +238,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         {!props.modelingInProgress && (
           <>
             {modeledMethods.map((modeledMethod, index) => (
-              <Fragment key={index}>
+              <DataGridRow key={index} focused={focusedIndex === index}>
                 <DataGridCell>
                   <ModelTypeDropdown
                     method={method}
@@ -263,11 +289,14 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     )}
                   </DataGridCell>
                 )}
-              </Fragment>
+              </DataGridRow>
             ))}
             {validationErrors.map((error, index) => (
               <DataGridCell gridColumn="span 5" key={index}>
-                <ModeledMethodAlert error={error} />
+                <ModeledMethodAlert
+                  error={error}
+                  setSelectedIndex={setFocusedIndex}
+                />
               </DataGridCell>
             ))}
           </>
