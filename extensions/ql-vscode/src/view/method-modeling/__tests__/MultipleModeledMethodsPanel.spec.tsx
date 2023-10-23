@@ -162,6 +162,30 @@ describe(MultipleModeledMethodsPanel.name, () => {
         },
       ]);
     });
+
+    it("changes selection to the newly added modeling", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      await userEvent.click(screen.getByLabelText("Add modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][1]
+          }
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("2/2")).toBeInTheDocument();
+    });
   });
 
   describe("with two modeled methods", () => {
@@ -470,6 +494,32 @@ describe(MultipleModeledMethodsPanel.name, () => {
       expect(
         screen.getByText("Error: Conflicting classification"),
       ).toBeInTheDocument();
+    });
+
+    it("changes selection to the newly added modeling", async () => {
+      const { rerender } = render({
+        method,
+        modeledMethods,
+        isModelingInProgress,
+        onChange,
+      });
+
+      expect(screen.getByText("1/2")).toBeInTheDocument();
+
+      await userEvent.click(screen.getByLabelText("Add modeling"));
+
+      rerender(
+        <MultipleModeledMethodsPanel
+          method={method}
+          modeledMethods={
+            onChange.mock.calls[onChange.mock.calls.length - 1][1]
+          }
+          isModelingInProgress={isModelingInProgress}
+          onChange={onChange}
+        />,
+      );
+
+      expect(screen.getByText("3/3")).toBeInTheDocument();
     });
   });
 
