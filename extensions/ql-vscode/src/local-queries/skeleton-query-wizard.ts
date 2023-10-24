@@ -82,11 +82,7 @@ export class SkeletonQueryWizard {
       await this.createQlPack();
     }
 
-    // select existing database for language or download a new one
-    await this.selectOrDownloadDatabase();
-
-    // open a query file
-
+    // open the query file
     try {
       await this.openExampleFile();
     } catch (e: unknown) {
@@ -94,6 +90,9 @@ export class SkeletonQueryWizard {
         `Could not open example query file: ${getErrorMessage(e)}`,
       );
     }
+
+    // select existing database for language or download a new one
+    await this.selectOrDownloadDatabase();
   }
 
   private async openExampleFile() {
