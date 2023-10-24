@@ -327,6 +327,7 @@ const UnmodelableMethodRow = forwardRef<
       <DataGridCell>
         <ApiOrMethodRow>
           <ModelingStatusIndicator status="saved" />
+          <MethodClassifications method={method} />
           <MethodName {...props.method} />
           {viewState.mode === Mode.Application && (
             <UsagesButton onClick={jumpToMethod}>
@@ -334,7 +335,6 @@ const UnmodelableMethodRow = forwardRef<
             </UsagesButton>
           )}
           <ViewLink onClick={jumpToMethod}>View</ViewLink>
-          <MethodClassifications method={method} />
         </ApiOrMethodRow>
       </DataGridCell>
       <DataGridCell gridColumn={`span ${viewState.showMultipleModels ? 5 : 4}`}>
