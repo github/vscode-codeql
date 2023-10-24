@@ -152,6 +152,22 @@ Run one of the above MRVAs, but cancel it from within VS Code:
    - Check that the editor loads and shows methods to model.
    - Check that methods are grouped per library (e.g. `rocksdbjni@7.7.3` or `asm@6.0`)
    - Check that the "Open database" link works.
+   - Check that a method can have multiple models:
+      - add a couple of new models for one method
+      - save and check that the modeling file (use the 'open extension pack' button to open it) shows multiple methods
+      - check that a 'duplicated classification' error appears in both model editor and modeling panel when a duplicate modeling occurs
+      - check that a 'conflicting classigication' error appears when a neutral model type is paired with a source kind
+      - check that clicking on the error highlights the correct modeling in both the editor and the modeling panel
+3. Check the Method Usage
+   - Check that the Method Usage Panel opens and jumps to the correct usage when clicking on 'View' in the model editor
+   - Check that the usages are opening when clicking on a usage
+   - Check that the usage icon color turns green when saving a newly modeled method
+   - Check that the usage icon color turns red when saving a newly unmodeld method
+4. Check the Method Modeling
+   - Check that the 'Start modeling' button opens a new model editor
+   - Check that it refreshes the blank state when a model editor is opened/closed
+   - Check that when modeling in the editor the modeling panel updates accordingly
+   - Check that when modeling in the modeling panel the model editor updates accordingly
 
 #### Test Case 2: Model methods
 
