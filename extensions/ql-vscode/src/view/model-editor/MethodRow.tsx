@@ -337,7 +337,9 @@ const UnmodelableMethodRow = forwardRef<
           <MethodClassifications method={method} />
         </ApiOrMethodRow>
       </DataGridCell>
-      <DataGridCell gridColumn="span 4">Method already modeled</DataGridCell>
+      <DataGridCell gridColumn={`span ${viewState.showMultipleModels ? 5 : 4}`}>
+        Method already modeled
+      </DataGridCell>
     </DataGridRow>
   );
 });
