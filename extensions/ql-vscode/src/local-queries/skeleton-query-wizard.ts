@@ -1,5 +1,5 @@
-import { join } from "path";
-import { Uri, workspace, window as Window } from "vscode";
+import { dirname, join } from "path";
+import { Uri, window as Window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { BaseLogger } from "../common/logging";
 import { Credentials } from "../common/authentication";
@@ -24,8 +24,9 @@ import {
   isCodespacesTemplate,
   setQlPackLocation,
 } from "../config";
-import { existsSync } from "fs-extra";
+import { lstat, pathExists } from "fs-extra";
 import { askForLanguage } from "../codeql-cli/query-language";
+import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -51,6 +52,7 @@ export class SkeletonQueryWizard {
     private readonly logger: BaseLogger,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseStoragePath: string | undefined,
+    private readonly selectedItems: readonly QueryTreeViewItem[],
     private language: QueryLanguage | undefined = undefined,
   ) {}
 
@@ -71,7 +73,7 @@ export class SkeletonQueryWizard {
     this.qlPackStoragePath = await this.determineStoragePath();
 
     const skeletonPackAlreadyExists =
-      existsSync(join(this.qlPackStoragePath, this.folderName)) ||
+      (await pathExists(join(this.qlPackStoragePath, this.folderName))) ||
       isFolderAlreadyInWorkspace(this.folderName);
 
     if (skeletonPackAlreadyExists) {
@@ -109,7 +111,29 @@ export class SkeletonQueryWizard {
     });
   }
 
-  public async determineStoragePath() {
+  public async determineStoragePath(): Promise<string> {
+    if (this.selectedItems.length === 0) {
+      return this.determineRootStoragePath();
+    }
+
+    // Just like VS Code's "New File" command, if the user has selected multiple files/folders in the queries panel,
+    // we will create the new file in the same folder as the first selected item.
+    // See https://github.com/microsoft/vscode/blob/a8b7239d0311d4915b57c837972baf4b01394491/src/vs/workbench/contrib/files/browser/fileActions.ts#L893-L900
+    const selectedItem = this.selectedItems[0];
+
+    const path = selectedItem.path;
+
+    // We use stat to protect against outdated query tree items
+    const fileStat = await lstat(path);
+
+    if (fileStat.isDirectory()) {
+      return path;
+    }
+
+    return dirname(path);
+  }
+
+  public async determineRootStoragePath() {
     const firstStorageFolder = getFirstWorkspaceFolder();
 
     if (isCodespacesTemplate()) {
@@ -118,7 +142,7 @@ export class SkeletonQueryWizard {
 
     let storageFolder = getQlPackLocation();
 
-    if (storageFolder === undefined || !existsSync(storageFolder)) {
+    if (storageFolder === undefined || !(await pathExists(storageFolder))) {
       storageFolder = await Window.showInputBox({
         title:
           "Please choose a folder in which to create your new query pack. You can change this in the extension settings.",
@@ -131,7 +155,7 @@ export class SkeletonQueryWizard {
       throw new UserCancellationException("No storage folder entered.");
     }
 
-    if (!existsSync(storageFolder)) {
+    if (!(await pathExists(storageFolder))) {
       throw new UserCancellationException(
         "Invalid folder. Must be a folder that already exists.",
       );

@@ -1,7 +1,13 @@
 import { DisposableObject } from "../common/disposable-object";
 import { QueryTreeDataProvider } from "./query-tree-data-provider";
 import { QueryDiscovery } from "./query-discovery";
-import { TextEditor, TreeView, window } from "vscode";
+import {
+  Event,
+  TextEditor,
+  TreeView,
+  TreeViewSelectionChangeEvent,
+  window,
+} from "vscode";
 import { App } from "../common/app";
 import { QueryTreeViewItem } from "./query-tree-view-item";
 
@@ -16,6 +22,7 @@ export class QueriesPanel extends DisposableObject {
     super();
 
     this.dataProvider = new QueryTreeDataProvider(queryDiscovery, app);
+    this.push(this.dataProvider);
 
     this.treeView = window.createTreeView("codeQLQueries", {
       treeDataProvider: this.dataProvider,
@@ -23,6 +30,12 @@ export class QueriesPanel extends DisposableObject {
     this.push(this.treeView);
 
     this.subscribeToTreeSelectionEvents();
+  }
+
+  public get onDidChangeSelection(): Event<
+    TreeViewSelectionChangeEvent<QueryTreeViewItem>
+  > {
+    return this.treeView.onDidChangeSelection;
   }
 
   private subscribeToTreeSelectionEvents(): void {
