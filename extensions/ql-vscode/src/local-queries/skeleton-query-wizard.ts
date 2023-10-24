@@ -1,4 +1,4 @@
-import { dirname, join } from "path";
+import { basename, dirname, join } from "path";
 import { Uri, window as Window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { BaseLogger } from "../common/logging";
@@ -116,6 +116,18 @@ export class SkeletonQueryWizard {
       return this.determineRootStoragePath();
     }
 
+    const storagePath = await this.determineStoragePathFromSelection();
+
+    // If the user has selected a folder or file within a folder that matches the current
+    // folder name, we should create a query rather than a query pack
+    if (basename(storagePath) === this.folderName) {
+      return dirname(storagePath);
+    }
+
+    return storagePath;
+  }
+
+  private async determineStoragePathFromSelection(): Promise<string> {
     // Just like VS Code's "New File" command, if the user has selected multiple files/folders in the queries panel,
     // we will create the new file in the same folder as the first selected item.
     // See https://github.com/microsoft/vscode/blob/a8b7239d0311d4915b57c837972baf4b01394491/src/vs/workbench/contrib/files/browser/fileActions.ts#L893-L900
@@ -232,7 +244,7 @@ export class SkeletonQueryWizard {
       await qlPackGenerator.createExampleQlFile(this.fileName);
     } catch (e: unknown) {
       void this.logger.log(
-        `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
+        `Could not create query example file: ${getErrorMessage(e)}`,
       );
     }
   }

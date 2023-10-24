@@ -442,6 +442,9 @@ describe("SkeletonQueryWizard", () => {
 
         await ensureDir(join(queriesDir.name, "folder"));
         await ensureFile(join(queriesDir.name, "queries-java", "example.ql"));
+        await ensureFile(
+          join(queriesDir.name, "codeql-custom-queries-swift", "example.ql"),
+        );
       });
 
       describe("with selected folder", () => {
@@ -507,6 +510,41 @@ describe("SkeletonQueryWizard", () => {
           const chosenPath = await wizard.determineStoragePath();
 
           expect(chosenPath).toEqual(dirname(selectedItems[0].path));
+        });
+      });
+
+      describe("with selected file with same name", () => {
+        let selectedItems: QueryTreeViewItem[];
+
+        beforeEach(async () => {
+          selectedItems = [
+            createQueryTreeFileItem(
+              "example.ql",
+              join(
+                queriesDir.name,
+                "codeql-custom-queries-swift",
+                "example.ql",
+              ),
+              "java",
+            ),
+          ];
+
+          wizard = new SkeletonQueryWizard(
+            mockCli,
+            jest.fn(),
+            credentials,
+            extLogger,
+            mockDatabaseManager,
+            storagePath,
+            selectedItems,
+            QueryLanguage.Swift,
+          );
+        });
+
+        it("returns the parent path", async () => {
+          const chosenPath = await wizard.determineStoragePath();
+
+          expect(chosenPath).toEqual(queriesDir.name);
         });
       });
 
