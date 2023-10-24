@@ -141,9 +141,7 @@ class DatabaseTreeDataProvider
     return item;
   }
 
-  public async getChildren(
-    element?: DatabaseItem,
-  ): Promise<DatabaseItem[] | null | undefined> {
+  public getChildren(element?: DatabaseItem): ProviderResult<DatabaseItem[]> {
     if (element === undefined) {
       // Filter items by language
       const displayItems = this.databaseManager.databaseItems.filter((item) => {
@@ -151,19 +149,6 @@ class DatabaseTreeDataProvider
           tryGetQueryLanguage(item.language),
         );
       });
-
-      if (
-        this.currentDatabaseItem &&
-        !this.languageContext.isSelectedLanguage(
-          tryGetQueryLanguage(this.currentDatabaseItem.language),
-        )
-      ) {
-        this.currentDatabaseItem = undefined;
-        await this.databaseManager.setCurrentDatabaseItem(
-          this.currentDatabaseItem,
-        );
-        this._onDidChangeTreeData.fire(this.currentDatabaseItem);
-      }
 
       // Sort items
       return displayItems.slice(0).sort((db1, db2) => {
