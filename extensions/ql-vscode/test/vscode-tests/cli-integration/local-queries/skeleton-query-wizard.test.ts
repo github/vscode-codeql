@@ -21,6 +21,7 @@ import * as databaseFetcher from "../../../../src/databases/database-fetcher";
 import { createMockDB } from "../../../factories/databases/databases";
 import { asError } from "../../../../src/common/helpers-pure";
 import { Setting } from "../../../../src/config";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;
@@ -132,6 +133,27 @@ describe("SkeletonQueryWizard", () => {
 
     expect(mockCli.getSupportedLanguages).toHaveBeenCalled();
     expect(quickPickSpy).toHaveBeenCalled();
+  });
+
+  describe("with language", () => {
+    beforeEach(() => {
+      wizard = new SkeletonQueryWizard(
+        mockCli,
+        jest.fn(),
+        credentials,
+        extLogger,
+        mockDatabaseManager,
+        storagePath,
+        QueryLanguage.Swift,
+      );
+    });
+
+    it("should not prompt for language", async () => {
+      await wizard.execute();
+
+      expect(mockCli.getSupportedLanguages).not.toHaveBeenCalled();
+      expect(quickPickSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe("if QL pack doesn't exist", () => {

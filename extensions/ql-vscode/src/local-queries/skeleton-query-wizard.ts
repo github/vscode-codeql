@@ -41,7 +41,6 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
 };
 
 export class SkeletonQueryWizard {
-  private language: QueryLanguage | undefined;
   private fileName = "example.ql";
   private qlPackStoragePath: string | undefined;
 
@@ -52,6 +51,7 @@ export class SkeletonQueryWizard {
     private readonly logger: BaseLogger,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseStoragePath: string | undefined,
+    private language: QueryLanguage | undefined = undefined,
   ) {}
 
   private get folderName() {
@@ -59,8 +59,11 @@ export class SkeletonQueryWizard {
   }
 
   public async execute() {
-    // show quick pick to choose language
-    this.language = await this.chooseLanguage();
+    if (!this.language) {
+      // show quick pick to choose language
+      this.language = await this.chooseLanguage();
+    }
+
     if (!this.language) {
       return;
     }
