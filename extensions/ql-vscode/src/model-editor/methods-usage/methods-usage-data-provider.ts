@@ -9,7 +9,7 @@ import {
   Uri,
 } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
-import { Method, Usage } from "../method";
+import { Method, Usage, canMethodBeModeled } from "../method";
 import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
@@ -146,7 +146,13 @@ export class MethodsUsageDataProvider
   getChildren(item?: MethodsUsageTreeViewItem): MethodsUsageTreeViewItem[] {
     if (item === undefined) {
       if (this.hideModeledMethods) {
-        return this.sortedTreeItems.filter((api) => !api.method.supported);
+        return this.sortedTreeItems.filter((api) =>
+          canMethodBeModeled(
+            api.method,
+            this.modeledMethods[api.method.signature] ?? [],
+            this.modifiedMethodSignatures.has(api.method.signature),
+          ),
+        );
       } else {
         return [...this.sortedTreeItems];
       }
