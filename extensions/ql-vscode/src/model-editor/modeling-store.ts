@@ -67,7 +67,7 @@ export class ModelingStore extends DisposableObject {
       inProgressMethods: new Set(),
     });
 
-    this.modelingEvents.fireDbClosedEvent(dbUri);
+    this.modelingEvents.fireDbOpenedEvent(dbUri);
   }
 
   public setActiveDb(databaseItem: DatabaseItem) {
