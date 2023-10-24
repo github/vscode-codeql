@@ -50,6 +50,7 @@ import { createMultiSelectionCommand } from "../common/vscode/selection-commands
 import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { tryGetQueryLanguage } from "../common/query-language";
+import { LanguageContextStore } from "../language-context-store";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -71,6 +72,7 @@ export class LocalQueries extends DisposableObject {
     private readonly databaseUI: DatabaseUI,
     private readonly localQueryResultsView: ResultsView,
     private readonly queryStorageDir: string,
+    private readonly languageContextStore: LanguageContextStore,
   ) {
     super();
   }
@@ -323,6 +325,7 @@ export class LocalQueries extends DisposableObject {
         const credentials = isCanary() ? this.app.credentials : undefined;
         const contextStoragePath =
           this.app.workspaceStoragePath || this.app.globalStoragePath;
+        const language = this.languageContextStore.selectedLanguage;
         const skeletonQueryWizard = new SkeletonQueryWizard(
           this.cliServer,
           progress,
@@ -330,6 +333,7 @@ export class LocalQueries extends DisposableObject {
           this.app.logger,
           this.databaseManager,
           contextStoragePath,
+          language,
         );
         await skeletonQueryWizard.execute();
       },
