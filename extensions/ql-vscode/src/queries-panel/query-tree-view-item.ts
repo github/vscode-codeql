@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 export class QueryTreeViewItem extends vscode.TreeItem {
   constructor(
     name: string,
-    public readonly path: string | undefined,
+    public readonly path: string,
     public readonly children: QueryTreeViewItem[],
   ) {
     super(name);

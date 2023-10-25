@@ -7,6 +7,7 @@ import {
 import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 import { App } from "../common/app";
+import { containsPath } from "../common/files";
 
 export interface QueryDiscoverer {
   readonly buildQueryTree: () => Array<FileTreeNode<string>> | undefined;
@@ -39,6 +40,54 @@ export class QueryTreeDataProvider
 
   public get onDidChangeTreeData(): Event<void> {
     return this.onDidChangeTreeDataEmitter.event;
+  }
+
+  /**
+   * Retrieves a specific tree view item by its path. If it's not found, returns undefined.
+   *
+   * @param path The path to retrieve the item for.
+   */
+  public getTreeItemByPath(path: string): QueryTreeViewItem | undefined {
+    const itemPath = this.findItemPath(path, this.queryTreeItems);
+    if (!itemPath) {
+      return undefined;
+    }
+
+    return itemPath[itemPath.length - 1];
+  }
+
+  /**
+   * Find a specific tree view item by path.
+   *
+   * @param path The path to find the item for.
+   * @param items The items to search.
+   * @param currentPath The current path to the item.
+   * @return The path to the tree view item, or undefined if it could not be found. The last item in the
+   *         array is the item itself.
+   */
+  private findItemPath(
+    path: string,
+    items: QueryTreeViewItem[],
+    currentPath: QueryTreeViewItem[] = [],
+  ): QueryTreeViewItem[] | undefined {
+    const relevantItems = items.filter((item) => containsPath(item.path, path));
+
+    const matchingItem = relevantItems.find((item) => item.path === path);
+    if (matchingItem) {
+      return [...currentPath, matchingItem];
+    }
+
+    for (const item of relevantItems) {
+      const childItem = this.findItemPath(path, item.children, [
+        ...currentPath,
+        item,
+      ]);
+      if (childItem) {
+        return childItem;
+      }
+    }
+
+    return undefined;
   }
 
   private createTree(): QueryTreeViewItem[] {
@@ -94,5 +143,15 @@ export class QueryTreeDataProvider
     } else {
       return item.children;
     }
+  }
+
+  public getParent(item: QueryTreeViewItem): QueryTreeViewItem | undefined {
+    const itemPath = this.findItemPath(item.path, this.queryTreeItems);
+    if (!itemPath) {
+      return undefined;
+    }
+
+    // The item itself is last in the last, so the parent is the second last item.
+    return itemPath[itemPath.length - 2];
   }
 }
