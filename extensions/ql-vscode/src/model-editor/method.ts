@@ -66,6 +66,12 @@ export function getArgumentsList(methodParameters: string): string[] {
   return methodParameters.substring(1, methodParameters.length - 1).split(",");
 }
 
+/**
+ * Should we present the user with the ability to edit to modelings for this method.
+ *
+ * A method may be unmodelable if it is already modeled by CodeQL or by an extension
+ * pack other than the one currently being edited.
+ */
 export function canMethodBeModeled(
   method: Method,
   modeledMethods: readonly ModeledMethod[],

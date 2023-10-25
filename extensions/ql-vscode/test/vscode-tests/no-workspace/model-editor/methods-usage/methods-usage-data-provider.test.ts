@@ -15,6 +15,7 @@ import {
 import { mockedObject } from "../../../utils/mocking.helpers";
 import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 import { Mode } from "../../../../../src/model-editor/shared/mode";
+import { createModeledMethod } from "../../../../factories/model-editor/modeled-method-factories";
 
 describe("MethodsUsageDataProvider", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -226,17 +227,35 @@ describe("MethodsUsageDataProvider", () => {
   });
 
   describe("getChildren", () => {
-    const supportedMethod = createMethod({
+    const supportedUnmodeledMethod = createMethod({
+      signature: "some.supported.unmodeled.method()",
       supported: true,
     });
-
-    const unsupportedMethod = createMethod({
+    const supportedModeledMethod = createMethod({
+      signature: "some.supported.modeled.method()",
+      supported: true,
+    });
+    const unsupportedUnmodeledMethod = createMethod({
+      signature: "some.unsupported.unmodeled.method()",
+      supported: false,
+    });
+    const unsupportedModeledMethod = createMethod({
+      signature: "some.unsupported.modeled.method()",
       supported: false,
     });
 
     const mode = Mode.Application;
-    const methods: Method[] = [supportedMethod, unsupportedMethod];
+    const methods: Method[] = [
+      supportedUnmodeledMethod,
+      supportedModeledMethod,
+      unsupportedUnmodeledMethod,
+      unsupportedModeledMethod,
+    ];
     const modeledMethods: Record<string, ModeledMethod[]> = {};
+    modeledMethods[supportedModeledMethod.signature] = [createModeledMethod()];
+    modeledMethods[unsupportedModeledMethod.signature] = [
+      createModeledMethod(),
+    ];
     const modifiedMethodSignatures: Set<string> = new Set();
 
     const dbItem = mockedObject<DatabaseItem>({
@@ -246,12 +265,12 @@ describe("MethodsUsageDataProvider", () => {
     const usage = createUsage({});
 
     const methodTreeItem: MethodsUsageTreeViewItem = {
-      method: supportedMethod,
+      method: unsupportedUnmodeledMethod,
       children: [],
     };
 
     const usageTreeItem: MethodsUsageTreeViewItem = {
-      method: supportedMethod,
+      method: unsupportedUnmodeledMethod,
       usage,
       parent: methodTreeItem,
     };
@@ -275,7 +294,7 @@ describe("MethodsUsageDataProvider", () => {
         modeledMethods,
         modifiedMethodSignatures,
       );
-      expect(dataProvider.getChildren().length).toEqual(2);
+      expect(dataProvider.getChildren().length).toEqual(4);
     });
 
     it("should filter methods if hideModeledMethods is true and looking at the root", async () => {
@@ -288,7 +307,7 @@ describe("MethodsUsageDataProvider", () => {
         modeledMethods,
         modifiedMethodSignatures,
       );
-      expect(dataProvider.getChildren().length).toEqual(1);
+      expect(dataProvider.getChildren().length).toEqual(3);
     });
 
     describe("with multiple libraries", () => {
