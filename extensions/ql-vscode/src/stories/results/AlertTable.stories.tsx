@@ -393,6 +393,22 @@ WithCodeFlows.args = {
                             location: {
                               physicalLocation: {
                                 artifactLocation: {
+                                  uri: "file:/",
+                                  index: 5,
+                                },
+                                region: {
+                                  startLine: 13,
+                                  startColumn: 25,
+                                  endColumn: 54,
+                                },
+                              },
+                              message: { text: "id : String" },
+                            },
+                          },
+                          {
+                            location: {
+                              physicalLocation: {
+                                artifactLocation: {
                                   uri: "src/main/java/org/example/HelloController.java",
                                   uriBaseId: "%SRCROOT%",
                                   index: 0,
