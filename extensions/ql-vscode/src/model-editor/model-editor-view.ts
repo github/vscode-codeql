@@ -38,7 +38,7 @@ import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { ModelConfigListener } from "../config";
-import { INITIAL_MODE, Mode } from "./shared/mode";
+import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
 import {
@@ -72,7 +72,7 @@ export class ModelEditorView extends AbstractWebview<
     private readonly extensionPack: ExtensionPack,
     // The language is equal to databaseItem.language but is properly typed as QueryLanguage
     private readonly language: QueryLanguage,
-    initialMode: Mode = INITIAL_MODE,
+    initialMode: Mode,
   ) {
     super(app);
 
