@@ -11,7 +11,7 @@ import { pickExtensionPack } from "./extension-pack-picker";
 import { showAndLogErrorMessage } from "../common/logging";
 import { dir } from "tmp-promise";
 
-import { isQueryLanguage } from "../common/query-language";
+import { isQueryLanguage, QueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Method, Usage } from "./method";
@@ -23,7 +23,7 @@ import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelConfigListener } from "../config";
 import { ModelingEvents } from "./modeling-events";
 
-const SUPPORTED_LANGUAGES: string[] = ["java", "csharp", "ruby"];
+const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
@@ -32,6 +32,7 @@ export class ModelEditorModule extends DisposableObject {
   private readonly editorViewTracker: ModelEditorViewTracker<ModelEditorView>;
   private readonly methodsUsagePanel: MethodsUsagePanel;
   private readonly methodModelingPanel: MethodModelingPanel;
+  private readonly modelConfig: ModelConfigListener;
 
   private constructor(
     private readonly app: App,
@@ -56,6 +57,7 @@ export class ModelEditorModule extends DisposableObject {
         this.editorViewTracker,
       ),
     );
+    this.modelConfig = this.push(new ModelConfigListener());
 
     this.registerToModelingEvents();
   }
@@ -125,10 +127,13 @@ export class ModelEditorModule extends DisposableObject {
       }
 
       const language = db.language;
-      if (
-        !SUPPORTED_LANGUAGES.includes(language) ||
-        !isQueryLanguage(language)
-      ) {
+
+      // Ruby is only enabled when the config setting is set
+      const isSupportedLanguage =
+        SUPPORTED_LANGUAGES.includes(language) ||
+        (language === QueryLanguage.Ruby && this.modelConfig.enableRuby);
+
+      if (!isSupportedLanguage || !isQueryLanguage(language)) {
         void showAndLogErrorMessage(
           this.app.logger,
           `The CodeQL Model Editor is not supported for ${language} databases.`,
@@ -167,12 +172,10 @@ export class ModelEditorModule extends DisposableObject {
             return;
           }
 
-          const modelConfig = this.push(new ModelConfigListener());
-
           const modelFile = await pickExtensionPack(
             this.cliServer,
             db,
-            modelConfig,
+            this.modelConfig,
             this.app.logger,
             progress,
             maxStep,
@@ -196,7 +199,7 @@ export class ModelEditorModule extends DisposableObject {
             this.cliServer,
             queryDir,
             language,
-            modelConfig,
+            this.modelConfig,
           );
           if (!success) {
             await cleanupQueryDir();
@@ -225,7 +228,7 @@ export class ModelEditorModule extends DisposableObject {
             this.modelingStore,
             this.modelingEvents,
             this.editorViewTracker,
-            modelConfig,
+            this.modelConfig,
             this.databaseManager,
             this.cliServer,
             this.queryRunner,
