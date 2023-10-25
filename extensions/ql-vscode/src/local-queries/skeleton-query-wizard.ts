@@ -45,6 +45,7 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
 export class SkeletonQueryWizard {
   private fileName = "example.ql";
   private qlPackStoragePath: string | undefined;
+  private downloadPromise: Promise<void> | undefined;
 
   constructor(
     private readonly cliServer: CodeQLCliServer,
@@ -58,6 +59,16 @@ export class SkeletonQueryWizard {
 
   private get folderName() {
     return `codeql-custom-queries-${this.language}`;
+  }
+
+  /**
+   * Wait for the download process to complete by waiting for the user to select
+   * either "Download database" or closing the dialog. This is used for testing.
+   */
+  public async waitForDownload() {
+    if (this.downloadPromise) {
+      await this.downloadPromise;
+    }
   }
 
   public async execute() {
@@ -313,7 +324,9 @@ export class SkeletonQueryWizard {
       }
     } else {
       // download new database and select it
-      void this.promptDownloadDatabase();
+      this.downloadPromise = this.promptDownloadDatabase().finally(() => {
+        this.downloadPromise = undefined;
+      });
     }
   }
 
