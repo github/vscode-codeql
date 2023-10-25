@@ -12,6 +12,7 @@ export function createMockModelEditorViewState(
     showFlowGeneration: false,
     showLlmButton: false,
     showMultipleModels: false,
+    showModeSwitchButton: true,
     extensionPack: createMockExtensionPack(),
     sourceArchiveAvailable: true,
     ...data,

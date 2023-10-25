@@ -376,6 +376,8 @@ export class ModelEditorView extends AbstractWebview<
     const sourceArchiveAvailable =
       this.databaseItem.hasSourceArchiveInExplorer();
 
+    const showModeSwitchButton = this.language !== QueryLanguage.Ruby;
+
     await this.postMessage({
       t: "setModelEditorViewState",
       viewState: {
@@ -385,6 +387,7 @@ export class ModelEditorView extends AbstractWebview<
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),
+        showModeSwitchButton,
         sourceArchiveAvailable,
       },
     });

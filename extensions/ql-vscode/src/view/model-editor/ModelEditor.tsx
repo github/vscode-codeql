@@ -291,12 +291,14 @@ export function ModelEditor({
               <span slot="start" className="codicon codicon-package"></span>
               Open extension pack
             </LinkIconButton>
-            <LinkIconButton onClick={onSwitchModeClick}>
-              <span slot="start" className="codicon codicon-library"></span>
-              {viewState.mode === Mode.Framework
-                ? "Model as application"
-                : "Model as dependency"}
-            </LinkIconButton>
+            {viewState.showModeSwitchButton && (
+              <LinkIconButton onClick={onSwitchModeClick}>
+                <span slot="start" className="codicon codicon-library"></span>
+                {viewState.mode === Mode.Framework
+                  ? "Model as application"
+                  : "Model as dependency"}
+              </LinkIconButton>
+            )}
           </HeaderRow>
         </HeaderColumn>
         <HeaderSpacer />
