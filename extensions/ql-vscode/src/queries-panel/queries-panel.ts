@@ -60,6 +60,23 @@ export class QueriesPanel extends DisposableObject {
 
       void this.revealTextEditor(changedTextEditor);
     });
+
+    // If there is an active text editor when activating the extension, we want to show it in the tree view.
+    if (window.activeTextEditor) {
+      // We need to wait for the data provider to load its data. Without this, we will end up in a situation
+      // where we're trying to show an item that does not exist yet since the query discoverer has not yet
+      // finished running.
+      const initialEventDisposable = this.dataProvider.onDidChangeTreeData(
+        () => {
+          if (window.activeTextEditor && this.treeView.visible) {
+            void this.revealTextEditor(window.activeTextEditor);
+          }
+
+          // We only want to listen to this event once, so dispose of the listener to unsubscribe.
+          initialEventDisposable.dispose();
+        },
+      );
+    }
   }
 
   private revealTextEditor(textEditor: TextEditor): void {
