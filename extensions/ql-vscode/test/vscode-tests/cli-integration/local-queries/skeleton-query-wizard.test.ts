@@ -8,7 +8,6 @@ import * as tmp from "tmp";
 import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";
-import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
 import {
   createFileSync,
   ensureDir,
@@ -171,11 +170,6 @@ describe("SkeletonQueryWizard", () => {
   });
 
   describe("if QL pack doesn't exist", () => {
-    beforeEach(() => {
-      jest
-        .spyOn(workspaceFolders, "isFolderAlreadyInWorkspace")
-        .mockReturnValue(false);
-    });
     it("should try to create a new QL pack based on the language", async () => {
       await wizard.execute();
 
@@ -201,10 +195,6 @@ describe("SkeletonQueryWizard", () => {
 
   describe("if QL pack exists", () => {
     beforeEach(async () => {
-      jest
-        .spyOn(workspaceFolders, "isFolderAlreadyInWorkspace")
-        .mockReturnValue(true);
-
       // create a skeleton codeql-custom-queries-${language} folder
       // with an example QL file inside
       ensureDirSync(

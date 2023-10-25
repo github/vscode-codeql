@@ -4,10 +4,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { BaseLogger } from "../common/logging";
 import { Credentials } from "../common/authentication";
 import { QueryLanguage } from "../common/query-language";
-import {
-  getFirstWorkspaceFolder,
-  isFolderAlreadyInWorkspace,
-} from "../common/vscode/workspace-folders";
+import { getFirstWorkspaceFolder } from "../common/vscode/workspace-folders";
 import { getErrorMessage } from "../common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
@@ -72,9 +69,9 @@ export class SkeletonQueryWizard {
 
     this.qlPackStoragePath = await this.determineStoragePath();
 
-    const skeletonPackAlreadyExists =
-      (await pathExists(join(this.qlPackStoragePath, this.folderName))) ||
-      isFolderAlreadyInWorkspace(this.folderName);
+    const skeletonPackAlreadyExists = await pathExists(
+      join(this.qlPackStoragePath, this.folderName),
+    );
 
     if (skeletonPackAlreadyExists) {
       // just create a new example query file in skeleton QL pack
