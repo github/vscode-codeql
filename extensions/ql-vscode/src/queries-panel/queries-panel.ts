@@ -22,6 +22,10 @@ export class QueriesPanel extends DisposableObject {
     });
     this.push(this.treeView);
 
+    this.subscribeToTreeSelectionEvents();
+  }
+
+  private subscribeToTreeSelectionEvents(): void {
     // Keep track of whether the user has changed their text editor while
     // the tree view was not visible. If so, we will focus the text editor
     // in the tree view when it becomes visible.
