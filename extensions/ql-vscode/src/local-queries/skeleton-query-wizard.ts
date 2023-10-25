@@ -1,5 +1,5 @@
 import { join } from "path";
-import { Uri, workspace, window as Window } from "vscode";
+import { Uri, window as Window, window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { BaseLogger } from "../common/logging";
 import { Credentials } from "../common/authentication";
@@ -14,6 +14,7 @@ import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
   ProgressCallback,
   UserCancellationException,
+  withProgress,
 } from "../common/vscode/progress";
 import {
   askForGitHubRepo,
@@ -26,6 +27,7 @@ import {
 } from "../config";
 import { existsSync } from "fs-extra";
 import { askForLanguage } from "../codeql-cli/query-language";
+import { showInformationMessageWithAction } from "../common/vscode/dialog";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -105,7 +107,9 @@ export class SkeletonQueryWizard {
     );
 
     void workspace.openTextDocument(queryFileUri).then((doc) => {
-      void Window.showTextDocument(doc);
+      void Window.showTextDocument(doc, {
+        preview: false,
+      });
     });
   }
 
@@ -227,7 +231,24 @@ export class SkeletonQueryWizard {
     return `example${qlFiles.length + 1}.ql`;
   }
 
-  private async downloadDatabase() {
+  private async promptDownloadDatabase() {
+    if (this.qlPackStoragePath === undefined) {
+      throw new Error("QL Pack storage path is undefined");
+    }
+
+    const openFileLink = this.openFileMarkdownLink;
+
+    const action = await showInformationMessageWithAction(
+      `New CodeQL query for ${this.language} ${openFileLink} created, but no CodeQL databases for ${this.language} were detected in your workspace. Would you like to download a CodeQL database for ${this.language} to analyze with ${openFileLink}?`,
+      "Download database",
+    );
+
+    if (action) {
+      void withProgress((progress) => this.downloadDatabase(progress));
+    }
+  }
+
+  private async downloadDatabase(progress: ProgressCallback) {
     if (this.qlPackStoragePath === undefined) {
       throw new Error("QL Pack storage path is undefined");
     }
@@ -240,10 +261,10 @@ export class SkeletonQueryWizard {
       throw new Error("Language is undefined");
     }
 
-    this.progress({
+    progress({
       message: "Downloading database",
-      step: 3,
-      maxStep: 3,
+      step: 1,
+      maxStep: 2,
     });
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
@@ -258,7 +279,7 @@ export class SkeletonQueryWizard {
       this.databaseManager,
       this.databaseStoragePath,
       this.credentials,
-      this.progress,
+      progress,
       this.cliServer,
       this.language,
     );
@@ -280,12 +301,32 @@ export class SkeletonQueryWizard {
       );
 
     if (existingDatabaseItem) {
-      // select the found database
-      await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
+      const openFileLink = this.openFileMarkdownLink;
+
+      if (this.databaseManager.currentDatabaseItem !== existingDatabaseItem) {
+        // select the found database
+        await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
+
+        void window.showInformationMessage(
+          `New CodeQL query for ${this.language} ${openFileLink} created. We have automatically selected your existing CodeQL ${this.language} database ${existingDatabaseItem.name} for you to analyze with ${openFileLink}.`,
+        );
+      }
     } else {
       // download new database and select it
-      await this.downloadDatabase();
+      void this.promptDownloadDatabase();
     }
+  }
+
+  private get openFileMarkdownLink() {
+    if (this.qlPackStoragePath === undefined) {
+      throw new Error("QL Pack storage path is undefined");
+    }
+
+    const openFileArgs = [
+      join(this.qlPackStoragePath, this.folderName, this.fileName),
+    ];
+    const queryString = encodeURI(JSON.stringify(openFileArgs));
+    return `[${this.fileName}](command:vscode.open?${queryString})`;
   }
 
   public static async findDatabaseItemByNwo(
