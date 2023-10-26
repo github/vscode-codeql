@@ -1,7 +1,7 @@
 import {
   readQueryResults,
   runModelEditorQueries,
-} from "../../../../src/model-editor/external-api-usage-queries";
+} from "../../../../src/model-editor/model-editor-queries";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import {
   DatabaseItem,

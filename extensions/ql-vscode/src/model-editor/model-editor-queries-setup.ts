@@ -2,7 +2,7 @@ import { join } from "path";
 import { QueryLanguage } from "../common/query-language";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
-import { prepareModelEditorQueries } from "./external-api-usage-queries";
+import { prepareModelEditorQueries } from "./model-editor-queries";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { ModelConfig } from "../config";
 import { Mode } from "./shared/mode";

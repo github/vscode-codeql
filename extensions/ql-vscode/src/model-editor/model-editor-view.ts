@@ -30,7 +30,7 @@ import { redactableError } from "../common/errors";
 import {
   externalApiQueriesProgressMaxStep,
   runModelEditorQueries,
-} from "./external-api-usage-queries";
+} from "./model-editor-queries";
 import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
