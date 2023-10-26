@@ -38,7 +38,10 @@ import { ModelConfigListener } from "../config";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
-import { getLanguageDisplayName } from "../common/query-language";
+import {
+  getLanguageDisplayName,
+  QueryLanguage,
+} from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
@@ -64,6 +67,8 @@ export class ModelEditorView extends AbstractWebview<
     private readonly queryDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
+    // The language is equal to databaseItem.language but is properly typed as QueryLanguage
+    private readonly language: QueryLanguage,
     initialMode: Mode = INITIAL_MODE,
   ) {
     super(app);
@@ -579,6 +584,7 @@ export class ModelEditorView extends AbstractWebview<
         this.queryDir,
         addedDatabase,
         modelFile,
+        this.language,
         Mode.Framework,
       );
       await view.openView();
