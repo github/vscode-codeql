@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.9.3 - 26 October 2023
 
 - Sorted result set filenames now include a hash of the result set name instead of the full name. [#2955](https://github.com/github/vscode-codeql/pull/2955)
