@@ -1,6 +1,7 @@
 import * as Sarif from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
 import { ResolvableLocationValue } from "../common/bqrs-cli-types";
+import { isEmptyPath } from "./bqrs-utils";
 
 export interface SarifLink {
   dest: number;
@@ -111,6 +112,9 @@ export function parseSarifLocation(
     return { hint: "no artifact location" };
   if (physicalLocation.artifactLocation.uri === undefined)
     return { hint: "artifact location has no uri" };
+  if (isEmptyPath(physicalLocation.artifactLocation.uri)) {
+    return { hint: "artifact location has empty uri" };
+  }
 
   // This is not necessarily really an absolute uri; it could either be a
   // file uri or a relative uri.

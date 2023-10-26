@@ -76,6 +76,36 @@ describe("parsing sarif", () => {
       ).toEqual({
         hint: "artifact location has no uri",
       });
+      expect(
+        parseSarifLocation(
+          {
+            physicalLocation: {
+              artifactLocation: {
+                uri: "",
+                index: 5,
+              },
+            },
+          },
+          "",
+        ),
+      ).toEqual({
+        hint: "artifact location has empty uri",
+      });
+      expect(
+        parseSarifLocation(
+          {
+            physicalLocation: {
+              artifactLocation: {
+                uri: "file:/",
+                index: 5,
+              },
+            },
+          },
+          "",
+        ),
+      ).toEqual({
+        hint: "artifact location has empty uri",
+      });
     });
 
     it("should parse a sarif location with no region and no file protocol", () => {
