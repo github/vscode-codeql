@@ -5,12 +5,10 @@ import {
   screen,
 } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import { Mode } from "../../../model-editor/shared/mode";
 import { MethodRow, MethodRowProps } from "../MethodRow";
 import { ModeledMethod } from "../../../model-editor/modeled-method";
 import userEvent from "@testing-library/user-event";
-import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
-import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
+import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(MethodRow.name, () => {
   const method = createMethod({
@@ -33,14 +31,7 @@ describe(MethodRow.name, () => {
   };
   const onChange = jest.fn();
 
-  const viewState: ModelEditorViewState = {
-    mode: Mode.Application,
-    showFlowGeneration: false,
-    showLlmButton: false,
-    showMultipleModels: false,
-    extensionPack: createMockExtensionPack(),
-    sourceArchiveAvailable: true,
-  };
+  const viewState = createMockModelEditorViewState();
 
   const render = (props: Partial<MethodRowProps> = {}) =>
     reactRender(

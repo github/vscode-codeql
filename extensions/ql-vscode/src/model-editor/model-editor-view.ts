@@ -373,6 +373,7 @@ export class ModelEditorView extends AbstractWebview<
       t: "setModelEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
+        language: this.language,
         showFlowGeneration: this.modelConfig.flowGeneration,
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,

@@ -1,13 +1,11 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import { Mode } from "../../../model-editor/shared/mode";
 import {
   ModeledMethodDataGrid,
   ModeledMethodDataGridProps,
 } from "../ModeledMethodDataGrid";
-import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
-import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
+import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(ModeledMethodDataGrid.name, () => {
   const method1 = createMethod({
@@ -42,14 +40,7 @@ describe(ModeledMethodDataGrid.name, () => {
   });
   const onChange = jest.fn();
 
-  const viewState: ModelEditorViewState = {
-    mode: Mode.Application,
-    showFlowGeneration: false,
-    showLlmButton: false,
-    showMultipleModels: false,
-    extensionPack: createMockExtensionPack(),
-    sourceArchiveAvailable: true,
-  };
+  const viewState = createMockModelEditorViewState();
 
   const render = (props: Partial<ModeledMethodDataGridProps> = {}) =>
     reactRender(

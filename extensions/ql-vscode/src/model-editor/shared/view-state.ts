@@ -1,8 +1,10 @@
 import { ExtensionPack } from "./extension-pack";
 import { Mode } from "./mode";
+import { QueryLanguage } from "../../common/query-language";
 
 export interface ModelEditorViewState {
   extensionPack: ExtensionPack;
+  language: QueryLanguage;
   showFlowGeneration: boolean;
   showLlmButton: boolean;
   showMultipleModels: boolean;
@@ -11,5 +13,6 @@ export interface ModelEditorViewState {
 }
 
 export interface MethodModelingPanelViewState {
+  language: QueryLanguage | undefined;
   showMultipleModels: boolean;
 }

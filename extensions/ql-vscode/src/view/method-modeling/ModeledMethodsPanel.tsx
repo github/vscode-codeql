@@ -6,8 +6,10 @@ import { Method } from "../../model-editor/method";
 import { styled } from "styled-components";
 import { MultipleModeledMethodsPanel } from "./MultipleModeledMethodsPanel";
 import { convertToLegacyModeledMethod } from "../../model-editor/shared/modeled-methods-legacy";
+import { QueryLanguage } from "../../common/query-language";
 
 export type ModeledMethodsPanelProps = {
+  language: QueryLanguage;
   method: Method;
   modeledMethods: ModeledMethod[];
   isModelingInProgress: boolean;
@@ -20,6 +22,7 @@ const SingleMethodModelingInputs = styled(MethodModelingInputs)`
 `;
 
 export const ModeledMethodsPanel = ({
+  language,
   method,
   modeledMethods,
   isModelingInProgress,
@@ -36,6 +39,7 @@ export const ModeledMethodsPanel = ({
   if (!showMultipleModels) {
     return (
       <SingleMethodModelingInputs
+        language={language}
         method={method}
         modeledMethod={convertToLegacyModeledMethod(modeledMethods)}
         isModelingInProgress={isModelingInProgress}
@@ -46,6 +50,7 @@ export const ModeledMethodsPanel = ({
 
   return (
     <MultipleModeledMethodsPanel
+      language={language}
       method={method}
       modeledMethods={modeledMethods}
       isModelingInProgress={isModelingInProgress}

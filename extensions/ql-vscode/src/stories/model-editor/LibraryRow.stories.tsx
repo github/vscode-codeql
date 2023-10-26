@@ -2,10 +2,9 @@ import * as React from "react";
 
 import { Meta, StoryFn } from "@storybook/react";
 
-import { Mode } from "../../model-editor/shared/mode";
 import { LibraryRow as LibraryRowComponent } from "../../view/model-editor/LibraryRow";
 import { CallClassification } from "../../model-editor/method";
-import { createMockExtensionPack } from "../../../test/factories/model-editor/extension-pack";
+import { createMockModelEditorViewState } from "../../../test/factories/model-editor/view-state";
 
 export default {
   title: "CodeQL Model Editor/Library Row",
@@ -219,13 +218,10 @@ LibraryRow.args = {
   },
   modifiedSignatures: new Set(["org.sql2o.Sql2o#Sql2o(String)"]),
   inProgressMethods: new Set(),
-  viewState: {
-    extensionPack: createMockExtensionPack(),
+  viewState: createMockModelEditorViewState({
     showFlowGeneration: true,
     showLlmButton: true,
     showMultipleModels: true,
-    mode: Mode.Application,
-    sourceArchiveAvailable: true,
-  },
+  }),
   hideModeledMethods: false,
 };

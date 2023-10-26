@@ -80,7 +80,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
     };
   }, []);
 
-  if (!inModelingMode) {
+  if (!inModelingMode || !viewState?.language) {
     return <NotInModelingMode />;
   }
 
@@ -105,6 +105,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
 
   return (
     <MethodModeling
+      language={viewState?.language}
       modelingStatus={modelingStatus}
       method={method}
       modeledMethods={modeledMethods}

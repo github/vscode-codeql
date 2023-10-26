@@ -6,24 +6,32 @@ import type {
 } from "../../model-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
 import { Method } from "../../model-editor/method";
-import { extensiblePredicateDefinitions } from "../../model-editor/languages";
+import { getModelsAsDataLanguage } from "../../model-editor/languages";
+import { QueryLanguage } from "../../common/query-language";
 
 type Props = {
+  language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelKindDropdown = ({
+  language,
   method,
   modeledMethod,
   onChange,
 }: Props) => {
   const predicate = useMemo(() => {
+    const modelsAsDataLanguage = getModelsAsDataLanguage(language);
+    if (!modelsAsDataLanguage) {
+      throw new Error(`No models for language ${language}`);
+    }
+
     return modeledMethod?.type && modeledMethod.type !== "none"
-      ? extensiblePredicateDefinitions[modeledMethod.type]
+      ? modelsAsDataLanguage[modeledMethod.type]
       : undefined;
-  }, [modeledMethod?.type]);
+  }, [language, modeledMethod?.type]);
 
   const kinds = useMemo(() => predicate?.supportedKinds || [], [predicate]);
 

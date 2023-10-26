@@ -6,11 +6,13 @@ import {
   ModeledMethodsPanel,
   ModeledMethodsPanelProps,
 } from "../ModeledMethodsPanel";
+import { QueryLanguage } from "../../../common/query-language";
 
 describe(ModeledMethodsPanel.name, () => {
   const render = (props: ModeledMethodsPanelProps) =>
     reactRender(<ModeledMethodsPanel {...props} />);
 
+  const language = QueryLanguage.Java;
   const method = createMethod();
   const modeledMethods = [createModeledMethod(), createModeledMethod()];
   const isModelingInProgress = false;
@@ -21,6 +23,7 @@ describe(ModeledMethodsPanel.name, () => {
 
     it("renders the method modeling inputs", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -33,6 +36,7 @@ describe(ModeledMethodsPanel.name, () => {
 
     it("does not render the pagination", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -52,6 +56,7 @@ describe(ModeledMethodsPanel.name, () => {
 
     it("renders the method modeling inputs once", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -64,6 +69,7 @@ describe(ModeledMethodsPanel.name, () => {
 
     it("renders the pagination", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,

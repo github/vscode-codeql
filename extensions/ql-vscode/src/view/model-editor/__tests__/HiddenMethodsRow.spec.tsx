@@ -1,19 +1,10 @@
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
 import { HiddenMethodsRow } from "../HiddenMethodsRow";
-import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
-import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
-import { Mode } from "../../../model-editor/shared/mode";
+import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(HiddenMethodsRow.name, () => {
-  const viewState: ModelEditorViewState = {
-    mode: Mode.Application,
-    showFlowGeneration: false,
-    showLlmButton: false,
-    showMultipleModels: false,
-    extensionPack: createMockExtensionPack(),
-    sourceArchiveAvailable: true,
-  };
+  const viewState = createMockModelEditorViewState();
 
   it("does not render with 0 hidden methods", () => {
     const { container } = render(
