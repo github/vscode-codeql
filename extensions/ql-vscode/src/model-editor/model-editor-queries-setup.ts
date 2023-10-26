@@ -9,7 +9,7 @@ import { Mode } from "./shared/mode";
 import { resolveQueriesFromPacks } from "../local-queries";
 import { modeTag } from "./mode-tag";
 
-export const syntheticQueryPackName = "codeql/external-api-usage";
+export const syntheticQueryPackName = "codeql/model-editor-queries";
 
 /**
  * setUpPack sets up a directory to use for the data extension editor queries if required.

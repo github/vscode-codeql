@@ -57,7 +57,7 @@ describe("setUpPack", () => {
       );
       const suiteYaml = load(suiteFileContents);
       expect(suiteYaml).toEqual({
-        name: "codeql/external-api-usage",
+        name: "codeql/model-editor-queries",
         version: "0.0.0",
         dependencies: {
           [`codeql/${language}-all`]: "*",
@@ -108,7 +108,7 @@ describe("setUpPack", () => {
       );
       const suiteYaml = load(suiteFileContents);
       expect(suiteYaml).toEqual({
-        name: "codeql/external-api-usage",
+        name: "codeql/model-editor-queries",
         version: "0.0.0",
         dependencies: {},
       });
