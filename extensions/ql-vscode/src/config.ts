@@ -707,7 +707,6 @@ const LLM_GENERATION_BATCH_SIZE = new Setting(
   MODEL_SETTING,
 );
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
-const SHOW_MULTIPLE_MODELS = new Setting("showMultipleModels", MODEL_SETTING);
 
 export interface ModelConfig {
   flowGeneration: boolean;
@@ -744,6 +743,6 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
   }
 
   public get showMultipleModels(): boolean {
-    return !!SHOW_MULTIPLE_MODELS.getValue<boolean>();
+    return isCanary();
   }
 }
