@@ -8,9 +8,14 @@ import * as tmp from "tmp";
 import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";
-import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
-import { createFileSync, ensureDirSync, removeSync } from "fs-extra";
-import { join } from "path";
+import {
+  createFileSync,
+  ensureDir,
+  ensureDirSync,
+  ensureFile,
+  removeSync,
+} from "fs-extra";
+import { dirname, join } from "path";
 import { testCredentialsWithStub } from "../../../factories/authentication";
 import {
   DatabaseItem,
@@ -22,6 +27,11 @@ import { createMockDB } from "../../../factories/databases/databases";
 import { asError } from "../../../../src/common/helpers-pure";
 import { Setting } from "../../../../src/config";
 import { QueryLanguage } from "../../../../src/common/query-language";
+import {
+  createQueryTreeFileItem,
+  createQueryTreeFolderItem,
+  QueryTreeViewItem,
+} from "../../../../src/queries-panel/query-tree-view-item";
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;
@@ -49,6 +59,7 @@ describe("SkeletonQueryWizard", () => {
 
   const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
+  const selectedItems: QueryTreeViewItem[] = [];
 
   jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
@@ -117,6 +128,7 @@ describe("SkeletonQueryWizard", () => {
       extLogger,
       mockDatabaseManager,
       storagePath,
+      selectedItems,
     );
 
     askForGitHubRepoSpy = jest
@@ -144,6 +156,7 @@ describe("SkeletonQueryWizard", () => {
         extLogger,
         mockDatabaseManager,
         storagePath,
+        selectedItems,
         QueryLanguage.Swift,
       );
     });
@@ -157,11 +170,6 @@ describe("SkeletonQueryWizard", () => {
   });
 
   describe("if QL pack doesn't exist", () => {
-    beforeEach(() => {
-      jest
-        .spyOn(workspaceFolders, "isFolderAlreadyInWorkspace")
-        .mockReturnValue(false);
-    });
     it("should try to create a new QL pack based on the language", async () => {
       await wizard.execute();
 
@@ -187,10 +195,6 @@ describe("SkeletonQueryWizard", () => {
 
   describe("if QL pack exists", () => {
     beforeEach(async () => {
-      jest
-        .spyOn(workspaceFolders, "isFolderAlreadyInWorkspace")
-        .mockReturnValue(true);
-
       // create a skeleton codeql-custom-queries-${language} folder
       // with an example QL file inside
       ensureDirSync(
@@ -272,6 +276,7 @@ describe("SkeletonQueryWizard", () => {
           extLogger,
           mockDatabaseManagerWithItems,
           storagePath,
+          selectedItems,
         );
       });
 
@@ -407,8 +412,178 @@ describe("SkeletonQueryWizard", () => {
   });
 
   describe("determineStoragePath", () => {
-    it("should prompt the user to provide a storage path", async () => {
+    it("should prompt the user to provide a storage path when no items are selected", async () => {
       const chosenPath = await wizard.determineStoragePath();
+
+      expect(showInputBoxSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ value: storagePath }),
+      );
+      expect(chosenPath).toEqual(storagePath);
+    });
+
+    describe("with folders and files", () => {
+      let queriesDir: tmp.DirResult;
+
+      beforeEach(async () => {
+        queriesDir = tmp.dirSync({
+          prefix: "queries_",
+          unsafeCleanup: true,
+        });
+
+        await ensureDir(join(queriesDir.name, "folder"));
+        await ensureFile(join(queriesDir.name, "queries-java", "example.ql"));
+        await ensureFile(
+          join(queriesDir.name, "codeql-custom-queries-swift", "example.ql"),
+        );
+      });
+
+      describe("with selected folder", () => {
+        let selectedItems: QueryTreeViewItem[];
+
+        beforeEach(async () => {
+          selectedItems = [
+            createQueryTreeFolderItem(
+              "folder",
+              join(queriesDir.name, "folder"),
+              [
+                createQueryTreeFileItem(
+                  "example.ql",
+                  join(queriesDir.name, "folder", "example.ql"),
+                  "java",
+                ),
+              ],
+            ),
+          ];
+
+          wizard = new SkeletonQueryWizard(
+            mockCli,
+            jest.fn(),
+            credentials,
+            extLogger,
+            mockDatabaseManager,
+            storagePath,
+            selectedItems,
+          );
+        });
+
+        it("returns the selected folder path", async () => {
+          const chosenPath = await wizard.determineStoragePath();
+
+          expect(chosenPath).toEqual(selectedItems[0].path);
+        });
+      });
+
+      describe("with selected file", () => {
+        let selectedItems: QueryTreeViewItem[];
+
+        beforeEach(async () => {
+          selectedItems = [
+            createQueryTreeFileItem(
+              "example.ql",
+              join(queriesDir.name, "queries-java", "example.ql"),
+              "java",
+            ),
+          ];
+
+          wizard = new SkeletonQueryWizard(
+            mockCli,
+            jest.fn(),
+            credentials,
+            extLogger,
+            mockDatabaseManager,
+            storagePath,
+            selectedItems,
+          );
+        });
+
+        it("returns the selected file path", async () => {
+          const chosenPath = await wizard.determineStoragePath();
+
+          expect(chosenPath).toEqual(dirname(selectedItems[0].path));
+        });
+      });
+
+      describe("with selected file with same name", () => {
+        let selectedItems: QueryTreeViewItem[];
+
+        beforeEach(async () => {
+          selectedItems = [
+            createQueryTreeFileItem(
+              "example.ql",
+              join(
+                queriesDir.name,
+                "codeql-custom-queries-swift",
+                "example.ql",
+              ),
+              "java",
+            ),
+          ];
+
+          wizard = new SkeletonQueryWizard(
+            mockCli,
+            jest.fn(),
+            credentials,
+            extLogger,
+            mockDatabaseManager,
+            storagePath,
+            selectedItems,
+            QueryLanguage.Swift,
+          );
+        });
+
+        it("returns the parent path", async () => {
+          const chosenPath = await wizard.determineStoragePath();
+
+          expect(chosenPath).toEqual(queriesDir.name);
+        });
+      });
+
+      describe("with multiple selected items", () => {
+        let selectedItems: QueryTreeViewItem[];
+
+        beforeEach(async () => {
+          selectedItems = [
+            createQueryTreeFileItem(
+              "example.ql",
+              join(queriesDir.name, "queries-java", "example.ql"),
+              "java",
+            ),
+            createQueryTreeFolderItem(
+              "folder",
+              join(queriesDir.name, "folder"),
+              [
+                createQueryTreeFileItem(
+                  "example.ql",
+                  join(queriesDir.name, "folder", "example.ql"),
+                  "java",
+                ),
+              ],
+            ),
+          ];
+
+          wizard = new SkeletonQueryWizard(
+            mockCli,
+            jest.fn(),
+            credentials,
+            extLogger,
+            mockDatabaseManager,
+            storagePath,
+            selectedItems,
+          );
+        });
+
+        it("returns the first selected item path", async () => {
+          const chosenPath = await wizard.determineStoragePath();
+
+          expect(chosenPath).toEqual(dirname(selectedItems[0].path));
+        });
+      });
+    });
+  });
+
+  describe("determineRootStoragePath", () => {
+    it("should prompt the user to provide a storage path", async () => {
+      const chosenPath = await wizard.determineRootStoragePath();
 
       expect(showInputBoxSpy).toHaveBeenCalledWith(
         expect.objectContaining({ value: storagePath }),
@@ -419,7 +594,7 @@ describe("SkeletonQueryWizard", () => {
     it("should write the chosen folder to settings", async () => {
       const updateValueSpy = jest.spyOn(Setting.prototype, "updateValue");
 
-      await wizard.determineStoragePath();
+      await wizard.determineRootStoragePath();
 
       expect(updateValueSpy).toHaveBeenCalledWith(storagePath, 2);
     });
@@ -453,7 +628,7 @@ describe("SkeletonQueryWizard", () => {
       });
 
       it("should not prompt the user", async () => {
-        const chosenPath = await wizard.determineStoragePath();
+        const chosenPath = await wizard.determineRootStoragePath();
 
         expect(showInputBoxSpy).not.toHaveBeenCalled();
         expect(chosenPath).toEqual(storagePath);
@@ -484,7 +659,7 @@ describe("SkeletonQueryWizard", () => {
         });
 
         it("should return it and not prompt the user", async () => {
-          const chosenPath = await wizard.determineStoragePath();
+          const chosenPath = await wizard.determineRootStoragePath();
 
           expect(showInputBoxSpy).not.toHaveBeenCalled();
           expect(chosenPath).toEqual(storedPath);
@@ -513,7 +688,7 @@ describe("SkeletonQueryWizard", () => {
         });
 
         it("should prompt the user for to provide a new folder name", async () => {
-          const chosenPath = await wizard.determineStoragePath();
+          const chosenPath = await wizard.determineRootStoragePath();
 
           expect(showInputBoxSpy).toHaveBeenCalled();
           expect(chosenPath).toEqual(storagePath);

@@ -802,7 +802,11 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(databaseUI);
 
-  QueriesModule.initialize(app, languageContext, cliServer);
+  const queriesModule = QueriesModule.initialize(
+    app,
+    languageContext,
+    cliServer,
+  );
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();
@@ -940,6 +944,10 @@ async function activateWithInstalledDistribution(
     languageContext,
   );
   ctx.subscriptions.push(localQueries);
+
+  queriesModule.onDidChangeSelection((event) =>
+    localQueries.setSelectedQueryTreeViewItems(event.selection),
+  );
 
   void extLogger.log("Initializing debugger factory.");
   ctx.subscriptions.push(
