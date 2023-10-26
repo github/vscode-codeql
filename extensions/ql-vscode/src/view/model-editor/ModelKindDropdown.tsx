@@ -6,7 +6,7 @@ import type {
 } from "../../model-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
 import { Method } from "../../model-editor/method";
-import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
+import { extensiblePredicateDefinitions } from "../../model-editor/languages";
 
 type Props = {
   method: Method;

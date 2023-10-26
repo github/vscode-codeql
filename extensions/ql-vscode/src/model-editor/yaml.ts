@@ -5,7 +5,7 @@ import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
   ExtensiblePredicateDefinition,
   extensiblePredicateDefinitions,
-} from "./predicates";
+} from "./languages";
 
 import * as modelExtensionFileSchema from "./model-extension-file.schema.json";
 import { Mode } from "./shared/mode";

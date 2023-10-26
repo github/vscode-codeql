@@ -1,5 +1,9 @@
-import { ModeledMethod, ModeledMethodType, Provenance } from "./modeled-method";
-import { DataTuple } from "./model-extension-file";
+import {
+  ModeledMethod,
+  ModeledMethodType,
+  Provenance,
+} from "../modeled-method";
+import { DataTuple } from "../model-extension-file";
 
 export type ExtensiblePredicateDefinition = {
   extensiblePredicate: string;
