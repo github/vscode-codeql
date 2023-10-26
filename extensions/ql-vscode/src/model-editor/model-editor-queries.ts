@@ -2,7 +2,7 @@ import { join } from "path";
 import { QueryLanguage } from "../common/query-language";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
-import { prepareExternalApiQuery } from "./external-api-usage-queries";
+import { prepareModelEditorQueries } from "./external-api-usage-queries";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { ModelConfig } from "../config";
 import { Mode } from "./shared/mode";
@@ -63,7 +63,7 @@ export async function setUpPack(
     await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
   } else {
     // If we can't resolve the query, we need to write them to desk ourselves.
-    const externalApiQuerySuccess = await prepareExternalApiQuery(
+    const externalApiQuerySuccess = await prepareModelEditorQueries(
       queryDir,
       language,
     );

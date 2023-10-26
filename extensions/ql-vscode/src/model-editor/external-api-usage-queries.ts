@@ -32,7 +32,7 @@ type RunQueryOptions = {
   token: CancellationToken;
 };
 
-export async function prepareExternalApiQuery(
+export async function prepareModelEditorQueries(
   queryDir: string,
   language: QueryLanguage,
 ): Promise<boolean> {
