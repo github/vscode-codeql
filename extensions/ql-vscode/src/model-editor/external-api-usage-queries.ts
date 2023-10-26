@@ -19,7 +19,7 @@ import { decodeBqrsToMethods } from "./bqrs";
 import {
   resolveEndpointsQuery,
   syntheticQueryPackName,
-} from "./model-editor-queries";
+} from "./model-editor-queries-setup";
 
 type RunQueryOptions = {
   cliServer: CodeQLCliServer;
