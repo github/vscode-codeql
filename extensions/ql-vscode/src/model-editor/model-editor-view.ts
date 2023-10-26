@@ -433,9 +433,9 @@ export class ModelEditorView extends AbstractWebview<
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
         this.app.telemetry,
-        redactableError(
-          asError(err),
-        )`Failed to load external API usages: ${getErrorMessage(err)}`,
+        redactableError(asError(err))`Failed to load results: ${getErrorMessage(
+          err,
+        )}`,
       );
     }
   }
