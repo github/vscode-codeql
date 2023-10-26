@@ -10,10 +10,11 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { load as loadYaml } from "js-yaml";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
+import { QueryLanguage } from "../common/query-language";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
-  language: string,
+  language: QueryLanguage,
   methods: readonly Method[],
   modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   mode: Mode,
@@ -22,6 +23,7 @@ export async function saveModeledMethods(
 ): Promise<void> {
   const existingModeledMethods = await loadModeledMethodFiles(
     extensionPack,
+    language,
     cliServer,
     logger,
   );
@@ -43,6 +45,7 @@ export async function saveModeledMethods(
 
 async function loadModeledMethodFiles(
   extensionPack: ExtensionPack,
+  language: QueryLanguage,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
 ): Promise<Record<string, Record<string, ModeledMethod[]>>> {
@@ -60,7 +63,7 @@ async function loadModeledMethodFiles(
       filename: modelFile,
     });
 
-    const modeledMethods = loadDataExtensionYaml(data);
+    const modeledMethods = loadDataExtensionYaml(data, language);
     if (!modeledMethods) {
       void showAndLogErrorMessage(
         logger,
@@ -76,6 +79,7 @@ async function loadModeledMethodFiles(
 
 export async function loadModeledMethods(
   extensionPack: ExtensionPack,
+  language: QueryLanguage,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
 ): Promise<Record<string, ModeledMethod[]>> {
@@ -83,6 +87,7 @@ export async function loadModeledMethods(
 
   const modeledMethodsByFile = await loadModeledMethodFiles(
     extensionPack,
+    language,
     cliServer,
     logger,
   );

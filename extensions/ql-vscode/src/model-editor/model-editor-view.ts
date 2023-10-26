@@ -87,6 +87,7 @@ export class ModelEditorView extends AbstractWebview<
       modelingStore,
       queryStorageDir,
       databaseItem,
+      language,
       async (modeledMethods) => {
         this.addModeledMethods(modeledMethods);
       },
@@ -223,7 +224,7 @@ export class ModelEditorView extends AbstractWebview<
               });
               await saveModeledMethods(
                 this.extensionPack,
-                this.databaseItem.language,
+                this.language,
                 methods,
                 modeledMethods,
                 mode,
@@ -399,6 +400,7 @@ export class ModelEditorView extends AbstractWebview<
     try {
       const modeledMethods = await loadModeledMethods(
         this.extensionPack,
+        this.language,
         this.cliServer,
         this.app.logger,
       );
@@ -463,6 +465,14 @@ export class ModelEditorView extends AbstractWebview<
           if (!addedDatabase) {
             return;
           }
+
+          if (addedDatabase.language !== this.language) {
+            void showAndLogErrorMessage(
+              this.app.logger,
+              `The selected database is for ${addedDatabase.language}, but the current database is for ${this.language}.`,
+            );
+            return;
+          }
         }
 
         progress({
@@ -477,6 +487,7 @@ export class ModelEditorView extends AbstractWebview<
             queryRunner: this.queryRunner,
             queryStorageDir: this.queryStorageDir,
             databaseItem: addedDatabase ?? this.databaseItem,
+            language: this.language,
             onResults: async (modeledMethods) => {
               const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
 
