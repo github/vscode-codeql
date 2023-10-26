@@ -42,7 +42,7 @@ export async function prepareModelEditorQueries(
     void showAndLogExceptionWithTelemetry(
       extLogger,
       telemetryListener,
-      redactableError`No external API usage query found for language ${language}`,
+      redactableError`No bundled model editor query found for language ${language}`,
     );
     return false;
   }
