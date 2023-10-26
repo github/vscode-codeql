@@ -1,6 +1,6 @@
 import {
   readQueryResults,
-  runExternalApiQueries,
+  runModelEditorQueries,
 } from "../../../../src/model-editor/external-api-usage-queries";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import {
@@ -22,7 +22,7 @@ import { QueryRunner } from "../../../../src/query-server";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 
 describe("external api usage query", () => {
-  describe("runQuery", () => {
+  describe("runModelEditorQueries", () => {
     const language = Object.keys(fetchExternalApiQueries)[
       Math.floor(Math.random() * Object.keys(fetchExternalApiQueries).length)
     ] as QueryLanguage;
@@ -85,7 +85,7 @@ describe("external api usage query", () => {
       };
 
       expect(
-        await runExternalApiQueries(Mode.Application, options),
+        await runModelEditorQueries(Mode.Application, options),
       ).toBeUndefined();
       expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
         expect.anything(),
@@ -149,7 +149,7 @@ describe("external api usage query", () => {
         },
       };
 
-      const result = await runExternalApiQueries(Mode.Framework, options);
+      const result = await runModelEditorQueries(Mode.Framework, options);
 
       expect(result).not.toBeUndefined;
 

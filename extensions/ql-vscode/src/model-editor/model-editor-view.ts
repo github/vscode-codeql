@@ -29,7 +29,7 @@ import { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import {
   externalApiQueriesProgressMaxStep,
-  runExternalApiQueries,
+  runModelEditorQueries,
 } from "./external-api-usage-queries";
 import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
@@ -411,7 +411,7 @@ export class ModelEditorView extends AbstractWebview<
 
     try {
       const cancellationTokenSource = new CancellationTokenSource();
-      const queryResult = await runExternalApiQueries(mode, {
+      const queryResult = await runModelEditorQueries(mode, {
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         databaseItem: this.databaseItem,

@@ -64,7 +64,7 @@ export async function prepareModelEditorQueries(
 
 export const externalApiQueriesProgressMaxStep = 2000;
 
-export async function runExternalApiQueries(
+export async function runModelEditorQueries(
   mode: Mode,
   {
     cliServer,
