@@ -1,6 +1,10 @@
 import { CodeQLCliServer } from "./cli";
 import { Uri, window } from "vscode";
-import { isQueryLanguage, QueryLanguage } from "../common/query-language";
+import {
+  getLanguageDisplayName,
+  isQueryLanguage,
+  QueryLanguage,
+} from "../common/query-language";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common/logging/vscode";
 import { UserCancellationException } from "../common/vscode/progress";
@@ -46,14 +50,22 @@ export async function askForLanguage(
   cliServer: CodeQLCliServer,
   throwOnEmpty = true,
 ): Promise<QueryLanguage | undefined> {
-  const language = await window.showQuickPick(
-    await cliServer.getSupportedLanguages(),
-    {
-      placeHolder: "Select target language for your query",
-      ignoreFocusOut: true,
-    },
-  );
-  if (!language) {
+  const supportedLanguages = await cliServer.getSupportedLanguages();
+
+  const items = supportedLanguages
+    .filter((language) => isQueryLanguage(language))
+    .map((language) => ({
+      label: getLanguageDisplayName(language),
+      description: language,
+      language,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const selectedItem = await window.showQuickPick(items, {
+    placeHolder: "Select target language for your query",
+    ignoreFocusOut: true,
+  });
+  if (!selectedItem) {
     // This only happens if the user cancels the quick pick.
     if (throwOnEmpty) {
       throw new UserCancellationException("Cancelled.");
@@ -65,6 +77,8 @@ export async function askForLanguage(
     }
     return undefined;
   }
+
+  const language = selectedItem.language;
 
   if (!isQueryLanguage(language)) {
     void showAndLogErrorMessage(

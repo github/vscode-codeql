@@ -79,9 +79,12 @@ describe("Variant Analysis Manager", () => {
     ).fsPath;
 
     beforeEach(async () => {
-      jest
-        .spyOn(window, "showQuickPick")
-        .mockResolvedValueOnce(mockedQuickPickItem("javascript"));
+      jest.spyOn(window, "showQuickPick").mockResolvedValueOnce(
+        mockedQuickPickItem({
+          label: "JavaScript",
+          language: "javascript",
+        }),
+      );
 
       cancellationTokenSource = new CancellationTokenSource();
 

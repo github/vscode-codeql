@@ -65,7 +65,7 @@ describe("SkeletonQueryWizard", () => {
 
   beforeEach(async () => {
     mockCli = mockedObject<CodeQLCliServer>({
-      resolveLanguages: jest
+      getSupportedLanguages: jest
         .fn()
         .mockResolvedValue([
           "ruby",
@@ -76,7 +76,6 @@ describe("SkeletonQueryWizard", () => {
           "csharp",
           "cpp",
         ]),
-      getSupportedLanguages: jest.fn(),
     });
 
     mockDatabaseManager = mockedObject<DatabaseManager>({
@@ -102,9 +101,12 @@ describe("SkeletonQueryWizard", () => {
       },
     ] as WorkspaceFolder[]);
 
-    quickPickSpy = jest
-      .spyOn(window, "showQuickPick")
-      .mockResolvedValueOnce(mockedQuickPickItem(chosenLanguage));
+    quickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValueOnce(
+      mockedQuickPickItem({
+        label: chosenLanguage,
+        language: chosenLanguage,
+      }),
+    );
     showInputBoxSpy = jest
       .spyOn(window, "showInputBox")
       .mockResolvedValue(storagePath);
