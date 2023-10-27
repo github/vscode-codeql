@@ -1,5 +1,6 @@
 import { ModelsAsDataLanguage } from "./models-as-data";
 import { sharedExtensiblePredicates, sharedKinds } from "./shared";
+import { Mode } from "../shared/mode";
 
 function parseRubyMethodFromPath(path: string): string {
   const match = path.match(/Method\[([^\]]+)].*/);
@@ -27,6 +28,7 @@ function rubyMethodSignature(typeName: string, methodName: string) {
 }
 
 export const ruby: ModelsAsDataLanguage = {
+  availableModes: [Mode.Framework],
   createMethodSignature: ({ typeName, methodName }) =>
     `${typeName}#${methodName}`,
   predicates: {

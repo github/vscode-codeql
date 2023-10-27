@@ -50,12 +50,14 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelingEvents } from "./modeling-events";
+import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
   FromModelEditorMessage
 > {
   private readonly autoModeler: AutoModeler;
+  private readonly languageDefinition: ModelsAsDataLanguage;
 
   public constructor(
     protected readonly app: App,
@@ -95,6 +97,7 @@ export class ModelEditorView extends AbstractWebview<
         this.addModeledMethods(modeledMethods);
       },
     );
+    this.languageDefinition = getModelsAsDataLanguage(language);
   }
 
   public async openView() {
@@ -376,7 +379,9 @@ export class ModelEditorView extends AbstractWebview<
     const sourceArchiveAvailable =
       this.databaseItem.hasSourceArchiveInExplorer();
 
-    const showModeSwitchButton = this.language !== QueryLanguage.Ruby;
+    const showModeSwitchButton =
+      this.languageDefinition.availableModes === undefined ||
+      this.languageDefinition.availableModes.length > 1;
 
     await this.postMessage({
       t: "setModelEditorViewState",

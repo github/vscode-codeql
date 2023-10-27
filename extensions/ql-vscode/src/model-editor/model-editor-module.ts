@@ -22,7 +22,8 @@ import { showResolvableLocation } from "../databases/local-databases/locations";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelConfigListener } from "../config";
 import { ModelingEvents } from "./modeling-events";
-import { getInitialMode } from "./languages";
+import { getModelsAsDataLanguage } from "./languages";
+import { Mode } from "./shared/mode";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -142,6 +143,10 @@ export class ModelEditorModule extends DisposableObject {
         return;
       }
 
+      const definition = getModelsAsDataLanguage(language);
+
+      const initialMode = definition.availableModes?.[0] ?? Mode.Application;
+
       const existingView = this.editorViewTracker.getView(
         db.databaseUri.toString(),
       );
@@ -238,7 +243,7 @@ export class ModelEditorModule extends DisposableObject {
             db,
             modelFile,
             language,
-            getInitialMode(language),
+            initialMode,
           );
 
           this.modelingEvents.onDbClosed(async (dbUri) => {
