@@ -1,5 +1,4 @@
 import {
-  ProgressLocation,
   QuickPickItem,
   TreeView,
   TreeViewExpansionEvent,
@@ -7,7 +6,10 @@ import {
   window,
   workspace,
 } from "vscode";
-import { UserCancellationException } from "../../common/vscode/progress";
+import {
+  UserCancellationException,
+  withProgress,
+} from "../../common/vscode/progress";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
@@ -406,15 +408,8 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    await window.withProgress(
-      {
-        location: ProgressLocation.Notification,
-        title: "Searching for repositories... This might take a while",
-        cancellable: true,
-      },
+    await withProgress(
       async (progress, token) => {
-        progress.report({ increment: 10 });
-
         const repositories = await getCodeSearchRepositories(
           `${codeSearchQuery} ${languagePrompt}`,
           progress,
@@ -427,9 +422,17 @@ export class DbPanel extends DisposableObject {
           throw new UserCancellationException("Code search cancelled.", true);
         }
 
-        progress.report({ increment: 10, message: "Processing results..." });
+        progress({
+          maxStep: 12,
+          step: 12,
+          message: "Processing results...",
+        });
 
         await this.dbManager.addNewRemoteReposToList(repositories, listName);
+      },
+      {
+        title: "Searching for repositories...",
+        cancellable: true,
       },
     );
   }
