@@ -24,9 +24,6 @@ export const ModelKindDropdown = ({
 }: Props) => {
   const predicate = useMemo(() => {
     const modelsAsDataLanguage = getModelsAsDataLanguage(language);
-    if (!modelsAsDataLanguage) {
-      throw new Error(`No models for language ${language}`);
-    }
 
     return modeledMethod?.type && modeledMethod.type !== "none"
       ? modelsAsDataLanguage[modeledMethod.type]

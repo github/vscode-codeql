@@ -9,6 +9,10 @@ const languages: Partial<Record<QueryLanguage, ModelsAsDataLanguage>> = {
 
 export function getModelsAsDataLanguage(
   language: QueryLanguage,
-): ModelsAsDataLanguage | undefined {
-  return languages[language];
+): ModelsAsDataLanguage {
+  const definition = languages[language];
+  if (!definition) {
+    throw new Error(`No models-as-data definition for ${language}`);
+  }
+  return definition;
 }

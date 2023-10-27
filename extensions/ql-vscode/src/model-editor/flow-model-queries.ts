@@ -144,9 +144,6 @@ async function runSingleFlowQuery(
 
   // Interpret the results
   const modelsAsDataLanguage = getModelsAsDataLanguage(language);
-  if (!modelsAsDataLanguage) {
-    throw new Error(`No models-as-data definition for ${language}`);
-  }
 
   const definition = modelsAsDataLanguage[type];
 

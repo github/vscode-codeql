@@ -39,9 +39,6 @@ export function createDataExtensionYaml(
   modeledMethods: readonly ModeledMethod[],
 ) {
   const modelsAsDataLanguage = getModelsAsDataLanguage(language);
-  if (!modelsAsDataLanguage) {
-    throw new Error(`No models as data language for ${language}`);
-  }
 
   const methodsByType: Record<
     Exclude<ModeledMethodType, "none">,
@@ -253,9 +250,6 @@ export function loadDataExtensionYaml(
   }
 
   const modelsAsDataLanguage = getModelsAsDataLanguage(language);
-  if (!modelsAsDataLanguage) {
-    throw new Error(`No models as data language for ${language}`);
-  }
 
   const extensions = data.extensions;
 
