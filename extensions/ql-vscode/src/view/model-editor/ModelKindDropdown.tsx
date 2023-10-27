@@ -26,7 +26,7 @@ export const ModelKindDropdown = ({
     const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
     return modeledMethod?.type && modeledMethod.type !== "none"
-      ? modelsAsDataLanguage[modeledMethod.type]
+      ? modelsAsDataLanguage.predicates[modeledMethod.type]
       : undefined;
   }, [language, modeledMethod?.type]);
 

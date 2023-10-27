@@ -156,7 +156,7 @@ async function runSingleFlowQuery(
   // Interpret the results
   const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
-  const definition = modelsAsDataLanguage[type];
+  const definition = modelsAsDataLanguage.predicates[type];
 
   const bqrsPath = completedQuery.outputDir.bqrsPath;
 

@@ -4,7 +4,7 @@ import { Method } from "./method";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
   getModelsAsDataLanguage,
-  ModelsAsDataLanguageModel,
+  ModelsAsDataLanguagePredicate,
 } from "./languages";
 
 import * as modelExtensionFileSchema from "./model-extension-file.schema.json";
@@ -18,7 +18,7 @@ const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
 
 function createDataProperty(
   methods: readonly ModeledMethod[],
-  definition: ModelsAsDataLanguageModel,
+  definition: ModelsAsDataLanguagePredicate,
 ) {
   if (methods.length === 0) {
     return " []";
@@ -56,7 +56,7 @@ export function createDataExtensionYaml(
     }
   }
 
-  const extensions = Object.entries(modelsAsDataLanguage).map(
+  const extensions = Object.entries(modelsAsDataLanguage.predicates).map(
     ([type, definition]) => `  - addsTo:
       pack: codeql/${language}-all
       extensible: ${definition.extensiblePredicate}
@@ -260,7 +260,7 @@ export function loadDataExtensionYaml(
     const extensible = addsTo.extensible;
     const data = extension.data;
 
-    const definition = Object.values(modelsAsDataLanguage).find(
+    const definition = Object.values(modelsAsDataLanguage.predicates).find(
       (definition) => definition.extensiblePredicate === extensible,
     );
     if (!definition) {

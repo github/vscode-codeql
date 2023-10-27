@@ -430,6 +430,7 @@ export class ModelEditorView extends AbstractWebview<
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         databaseItem: this.databaseItem,
+        language: this.language,
         queryStorageDir: this.queryStorageDir,
         queryDir: this.queryDir,
         progress: (update) =>

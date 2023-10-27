@@ -4,12 +4,17 @@ import { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
 import { Mode } from "./shared/mode";
 import { ApplicationModeTuple, FrameworkModeTuple } from "./queries/query";
+import { QueryLanguage } from "../common/query-language";
+import { getModelsAsDataLanguage } from "./languages";
 
 export function decodeBqrsToMethods(
   chunk: DecodedBqrsChunk,
   mode: Mode,
+  language: QueryLanguage,
 ): Method[] {
   const methodsByApiName = new Map<string, Method>();
+
+  const definition = getModelsAsDataLanguage(language);
 
   chunk?.tuples.forEach((tuple) => {
     let usage: Call;
@@ -51,7 +56,12 @@ export function decodeBqrsToMethods(
       classification = CallClassification.Unknown;
     }
 
-    const signature = `${packageName}.${typeName}#${methodName}${methodParameters}`;
+    const signature = definition.createMethodSignature({
+      packageName,
+      typeName,
+      methodName,
+      methodParameters,
+    });
 
     // For Java, we'll always get back a .jar file, and the library version may be bad because not all library authors
     // properly specify the version. Therefore, we'll always try to parse the name and version from the library filename

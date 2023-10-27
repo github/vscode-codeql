@@ -17,19 +17,7 @@ export type Usage = Call & {
   readonly classification: CallClassification;
 };
 
-export interface MethodSignature {
-  /**
-   * Contains the version of the library if it can be determined by CodeQL, e.g. `4.2.2.2`
-   */
-  readonly libraryVersion?: string;
-  /**
-   * A unique signature that can be used to identify this external API usage.
-   *
-   * The signature contains the package name, type name, method name, and method parameters
-   * in the form "packageName.typeName#methodName(methodParameters)".
-   * e.g. `org.sql2o.Connection#createQuery(String)`
-   */
-  readonly signature: string;
+export interface MethodDefinition {
   /**
    * The package name in Java, or the namespace in C#, e.g. `org.sql2o` or `System.Net.Http.Headers`.
    *
@@ -42,6 +30,21 @@ export interface MethodSignature {
    * The method parameters, including enclosing parentheses, e.g. `(String, String)`
    */
   readonly methodParameters: string;
+}
+
+export interface MethodSignature extends MethodDefinition {
+  /**
+   * Contains the version of the library if it can be determined by CodeQL, e.g. `4.2.2.2`
+   */
+  readonly libraryVersion?: string;
+  /**
+   * A unique signature that can be used to identify this external API usage.
+   *
+   * The signature contains the package name, type name, method name, and method parameters
+   * in the form "packageName.typeName#methodName(methodParameters)".
+   * e.g. `org.sql2o.Connection#createQuery(String)`
+   */
+  readonly signature: string;
 }
 
 export interface Method extends MethodSignature {
