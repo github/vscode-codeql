@@ -3,7 +3,10 @@ import { Uri, window as Window, window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { Credentials } from "../common/authentication";
-import { QueryLanguage } from "../common/query-language";
+import {
+  getLanguageDisplayName,
+  QueryLanguage,
+} from "../common/query-language";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
@@ -249,10 +252,15 @@ export class SkeletonQueryWizard {
       throw new Error("QL Pack storage path is undefined");
     }
 
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
+
     const openFileLink = this.openFileMarkdownLink;
 
+    const displayLanguage = getLanguageDisplayName(this.language);
     const action = await showInformationMessageWithAction(
-      `New CodeQL query for ${this.language} ${openFileLink} created, but no CodeQL databases for ${this.language} were detected in your workspace. Would you like to download a CodeQL database for ${this.language} to analyze with ${openFileLink}?`,
+      `New CodeQL query for ${displayLanguage} ${openFileLink} created, but no CodeQL databases for ${displayLanguage} were detected in your workspace. Would you like to download a CodeQL database for ${displayLanguage} to analyze with ${openFileLink}?`,
       "Download database",
     );
 
@@ -338,8 +346,9 @@ export class SkeletonQueryWizard {
         // select the found database
         await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
 
+        const displayLanguage = getLanguageDisplayName(this.language);
         void window.showInformationMessage(
-          `New CodeQL query for ${this.language} ${openFileLink} created. We have automatically selected your existing CodeQL ${this.language} database ${existingDatabaseItem.name} for you to analyze with ${openFileLink}.`,
+          `New CodeQL query for ${displayLanguage} ${openFileLink} created. We have automatically selected your existing CodeQL ${displayLanguage} database ${existingDatabaseItem.name} for you to analyze with ${openFileLink}.`,
         );
       }
     } else {
