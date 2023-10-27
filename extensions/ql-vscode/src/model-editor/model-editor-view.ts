@@ -29,8 +29,8 @@ import { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import {
   externalApiQueriesProgressMaxStep,
-  runExternalApiQueries,
-} from "./external-api-usage-queries";
+  runModelEditorQueries,
+} from "./model-editor-queries";
 import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -411,7 +411,7 @@ export class ModelEditorView extends AbstractWebview<
 
     try {
       const cancellationTokenSource = new CancellationTokenSource();
-      const queryResult = await runExternalApiQueries(mode, {
+      const queryResult = await runModelEditorQueries(mode, {
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         databaseItem: this.databaseItem,
@@ -433,9 +433,9 @@ export class ModelEditorView extends AbstractWebview<
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
         this.app.telemetry,
-        redactableError(
-          asError(err),
-        )`Failed to load external API usages: ${getErrorMessage(err)}`,
+        redactableError(asError(err))`Failed to load results: ${getErrorMessage(
+          err,
+        )}`,
       );
     }
   }
