@@ -2,6 +2,7 @@ import { decodeBqrsToMethods } from "../../../src/model-editor/bqrs";
 import { DecodedBqrsChunk } from "../../../src/common/bqrs-cli-types";
 import { CallClassification } from "../../../src/model-editor/method";
 import { Mode } from "../../../src/model-editor/shared/mode";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 describe("decodeBqrsToMethods", () => {
   describe("Java queries", () => {
@@ -237,7 +238,9 @@ describe("decodeBqrsToMethods", () => {
         // Even though there are a number of methods with the same number of usages, the order returned should be stable:
         // - Iterating over a map (as done by .values()) is guaranteed to be in insertion order
         // - Sorting the array of methods is guaranteed to be a stable sort
-        expect(decodeBqrsToMethods(chunk, Mode.Application)).toEqual([
+        expect(
+          decodeBqrsToMethods(chunk, Mode.Application, QueryLanguage.Java),
+        ).toEqual([
           {
             library: "rt",
             libraryVersion: undefined,
@@ -499,7 +502,9 @@ describe("decodeBqrsToMethods", () => {
       };
 
       it("extracts methods", () => {
-        expect(decodeBqrsToMethods(chunk, Mode.Framework)).toEqual([
+        expect(
+          decodeBqrsToMethods(chunk, Mode.Framework, QueryLanguage.Java),
+        ).toEqual([
           {
             library: "",
             libraryVersion: undefined,
@@ -594,7 +599,9 @@ describe("decodeBqrsToMethods", () => {
       };
 
       it("extracts methods", () => {
-        expect(decodeBqrsToMethods(chunk, Mode.Application)).toEqual([
+        expect(
+          decodeBqrsToMethods(chunk, Mode.Application, QueryLanguage.Java),
+        ).toEqual([
           {
             library: "mscorlib",
             libraryVersion: "4.0.0.0",
@@ -660,7 +667,9 @@ describe("decodeBqrsToMethods", () => {
       };
 
       it("extracts methods", () => {
-        expect(decodeBqrsToMethods(chunk, Mode.Framework)).toEqual([
+        expect(
+          decodeBqrsToMethods(chunk, Mode.Framework, QueryLanguage.Java),
+        ).toEqual([
           {
             library: "Times",
             libraryVersion: undefined,

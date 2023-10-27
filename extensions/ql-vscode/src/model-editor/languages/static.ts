@@ -8,6 +8,12 @@ function readRowToMethod(row: DataTuple[]): string {
 }
 
 export const staticLanguage: ModelsAsDataLanguage = {
+  createMethodSignature: ({
+    packageName,
+    typeName,
+    methodName,
+    methodParameters,
+  }) => `${packageName}.${typeName}#${methodName}${methodParameters}`,
   predicates: {
     source: {
       extensiblePredicate: sharedExtensiblePredicates.source,

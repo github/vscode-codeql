@@ -1,3 +1,4 @@
+import { MethodDefinition } from "../method";
 import { ModeledMethod, ModeledMethodType } from "../modeled-method";
 import { DataTuple } from "../model-extension-file";
 
@@ -19,5 +20,6 @@ export type ModelsAsDataLanguagePredicates = Record<
 >;
 
 export type ModelsAsDataLanguage = {
+  createMethodSignature: (method: MethodDefinition) => string;
   predicates: ModelsAsDataLanguagePredicates;
 };

@@ -25,6 +25,7 @@ type RunQueryOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
+  language: QueryLanguage;
   queryStorageDir: string;
   queryDir: string;
 
@@ -70,6 +71,7 @@ export async function runModelEditorQueries(
     cliServer,
     queryRunner,
     databaseItem,
+    language,
     queryStorageDir,
     queryDir,
     progress,
@@ -157,7 +159,7 @@ export async function runModelEditorQueries(
     maxStep: externalApiQueriesProgressMaxStep,
   });
 
-  return decodeBqrsToMethods(bqrsChunk, mode);
+  return decodeBqrsToMethods(bqrsChunk, mode, language);
 }
 
 type GetResultsOptions = {
