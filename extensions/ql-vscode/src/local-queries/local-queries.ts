@@ -63,6 +63,8 @@ export enum QuickEvalType {
 }
 
 export class LocalQueries extends DisposableObject {
+  private selectedQueryTreeViewItems: readonly QueryTreeViewItem[] = [];
+
   public constructor(
     private readonly app: App,
     private readonly queryRunner: QueryRunner,
@@ -75,6 +77,12 @@ export class LocalQueries extends DisposableObject {
     private readonly languageContextStore: LanguageContextStore,
   ) {
     super();
+  }
+
+  public setSelectedQueryTreeViewItems(
+    selection: readonly QueryTreeViewItem[],
+  ) {
+    this.selectedQueryTreeViewItems = selection;
   }
 
   public getCommands(): LocalQueryCommands {
@@ -333,6 +341,7 @@ export class LocalQueries extends DisposableObject {
           this.app,
           this.databaseManager,
           contextStoragePath,
+          this.selectedQueryTreeViewItems,
           language,
         );
         await skeletonQueryWizard.execute();

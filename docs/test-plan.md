@@ -152,11 +152,14 @@ Run one of the above MRVAs, but cancel it from within VS Code:
    - Check that the editor loads and shows methods to model.
    - Check that methods are grouped per library (e.g. `rocksdbjni@7.7.3` or `asm@6.0`)
    - Check that the "Open database" link works.
+   - Check that the 'View' button works and the Method Usage panel highlight the correct method and usage
+   - Check that the Method Modeling panel shows the correct method and modeling state
 
 #### Test Case 2: Model methods
 
 1. Expand one of the libraries.
    - Change the model type and check that the other dropdowns change.
+   - Check that the method modeling panel updates accordingly
 2. Save the modeled methods.
 3. Click "Open extension pack"
    - Check that the file explorer opens a directory with a "models" directory
@@ -189,9 +192,28 @@ Are there any components that are not showing up?
 
 ## Optional Test Cases
 
-These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA queries.
+### Modeling Flow
 
-### Selecting repositories to run on
+1. Check that a method can have multiple models:
+   - Add a couple of new models for one method in the model editor
+   - Save and check that the modeling file (use the 'open extension pack' button to open it) shows multiple methods
+   - Check that the Method Modeling Panel shows the correct multiple models
+   - Check that you can browse through different models in the Method Modeling Panel
+   - Check that a 'duplicated classification' error appears in both model editor and modeling panel when a duplicate modeling occurs
+   - Check that a 'conflicting classification' error appears when a neutral model type is paired with a model of the same kind
+   - Check that clicking on the error highlights the correct modeling in both the editor and the modeling panel
+2. Check the Method Usage Panel
+   - Check that the Method Usage Panel opens and jumps to the correct usage when clicking on 'View' in the model editor
+   - Check that the first and following usages are opening when clicking on a usage
+   - Check that the usage icon color turns green when saving a newly modeled method
+   - Check that the usage icon color turns red when saving a newly unmodeld method
+3. Check the Method Modeling Panel
+   - Check that the 'Start modeling' button opens a new model editor
+   - Check that it refreshes the blank state when a model editor is opened/closed
+   - Check that when modeling in the editor the modeling panel updates accordingly
+   - Check that when modeling in the modeling panel the model editor updates accordingly
+
+### Selecting MRVA repositories to run on
 
 #### Test case 1: Running a query on a single repository
 
@@ -221,7 +243,7 @@ These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA
    4. The org contains private repositories that are inaccessible
 2. The org does not exist
 
-### Using different types of controller repos
+### Using different types of controller repos for MRVA
 
 #### Test case 1: Running a query when the controller repository is public
 

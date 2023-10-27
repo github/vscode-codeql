@@ -769,20 +769,27 @@ async function activateWithInstalledDistribution(
     fsWatcher.onDidDelete(clearPackCache);
   }
 
-  void extLogger.log("Initializing database manager.");
-  const dbm = new DatabaseManager(ctx, app, qs, cliServer, extLogger);
-
-  // Let this run async.
-  void dbm.loadPersistedState();
-
-  ctx.subscriptions.push(dbm);
-
   void extLogger.log("Initializing language context.");
   const languageContext = new LanguageContextStore(app);
 
   void extLogger.log("Initializing language selector.");
   const languageSelectionPanel = new LanguageSelectionPanel(languageContext);
   ctx.subscriptions.push(languageSelectionPanel);
+
+  void extLogger.log("Initializing database manager.");
+  const dbm = new DatabaseManager(
+    ctx,
+    app,
+    qs,
+    cliServer,
+    languageContext,
+    extLogger,
+  );
+
+  // Let this run async.
+  void dbm.loadPersistedState();
+
+  ctx.subscriptions.push(dbm);
 
   void extLogger.log("Initializing database panel.");
   const databaseUI = new DatabaseUI(
@@ -795,7 +802,11 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(databaseUI);
 
-  QueriesModule.initialize(app, languageContext, cliServer);
+  const queriesModule = QueriesModule.initialize(
+    app,
+    languageContext,
+    cliServer,
+  );
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();
@@ -933,6 +944,10 @@ async function activateWithInstalledDistribution(
     languageContext,
   );
   ctx.subscriptions.push(localQueries);
+
+  queriesModule.onDidChangeSelection((event) =>
+    localQueries.setSelectedQueryTreeViewItems(event.selection),
+  );
 
   void extLogger.log("Initializing debugger factory.");
   ctx.subscriptions.push(

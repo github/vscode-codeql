@@ -31,6 +31,7 @@ import {
   sourceLocationUri,
 } from "../../../factories/databases/databases";
 import { findSourceArchive } from "../../../../src/databases/local-databases/database-resolver";
+import { LanguageContextStore } from "../../../../src/language-context-store";
 
 describe("local databases", () => {
   let databaseManager: DatabaseManager;
@@ -84,9 +85,10 @@ describe("local databases", () => {
       },
     );
 
+    const mockApp = createMockApp({});
     databaseManager = new DatabaseManager(
       extensionContext,
-      createMockApp({}),
+      mockApp,
       mockedObject<QueryRunner>({
         registerDatabase: registerSpy,
         deregisterDatabase: deregisterSpy,
@@ -98,6 +100,7 @@ describe("local databases", () => {
         resolveDatabase: resolveDatabaseSpy,
         packAdd: packAddSpy,
       }),
+      new LanguageContextStore(mockApp),
       mockedObject<Logger>({
         log: logSpy,
       }),

@@ -15,7 +15,7 @@ import { isQueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Method, Usage } from "./method";
-import { setUpPack } from "./model-editor-queries";
+import { setUpPack } from "./model-editor-queries-setup";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 import { ModelingStore } from "./modeling-store";
 import { showResolvableLocation } from "../databases/local-databases/locations";

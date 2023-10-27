@@ -19,7 +19,10 @@ import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
 } from "../../common/vscode/workspace-folders";
-import { isQueryLanguage } from "../../common/query-language";
+import {
+  isQueryLanguage,
+  tryGetQueryLanguage,
+} from "../../common/query-language";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../local-queries/qlpack-generator";
 import { asError, getErrorMessage } from "../../common/helpers-pure";
@@ -30,6 +33,7 @@ import { containsPath } from "../../common/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
+import { LanguageContextStore } from "../../language-context-store";
 
 /**
  * The name of the key in the workspaceState dictionary in which we
@@ -100,11 +104,25 @@ export class DatabaseManager extends DisposableObject {
     private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly cli: cli.CodeQLCliServer,
+    private readonly languageContext: LanguageContextStore,
     public logger: Logger,
   ) {
     super();
 
     qs.onStart(this.reregisterDatabases.bind(this));
+
+    this.push(
+      this.languageContext.onLanguageContextChanged(async () => {
+        if (
+          this.currentDatabaseItem !== undefined &&
+          !this.languageContext.isSelectedLanguage(
+            tryGetQueryLanguage(this.currentDatabaseItem.language),
+          )
+        ) {
+          await this.setCurrentDatabaseItem(undefined);
+        }
+      }),
+    );
   }
 
   /**

@@ -1,140 +1,189 @@
-import { join } from "path";
-import { QueryLanguage } from "../common/query-language";
-import { writeFile } from "fs-extra";
-import { dump } from "js-yaml";
-import { prepareExternalApiQuery } from "./external-api-usage-queries";
+import { QueryRunner } from "../query-server";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
+import { extLogger } from "../common/logging/vscode";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { ModelConfig } from "../config";
+import { DatabaseItem } from "../databases/local-databases";
+import { ProgressCallback } from "../common/vscode/progress";
+import { redactableError } from "../common/errors";
+import { telemetryListener } from "../common/vscode/telemetry";
+import { join } from "path";
 import { Mode } from "./shared/mode";
-import { resolveQueriesFromPacks } from "../local-queries";
-import { modeTag } from "./mode-tag";
+import { writeFile } from "fs-extra";
+import { QueryLanguage } from "../common/query-language";
+import { fetchExternalApiQueries } from "./queries";
+import { Method } from "./method";
+import { runQuery } from "../local-queries/run-query";
+import { decodeBqrsToMethods } from "./bqrs";
+import {
+  resolveEndpointsQuery,
+  syntheticQueryPackName,
+} from "./model-editor-queries-setup";
 
-export const syntheticQueryPackName = "codeql/external-api-usage";
+type RunQueryOptions = {
+  cliServer: CodeQLCliServer;
+  queryRunner: QueryRunner;
+  databaseItem: DatabaseItem;
+  queryStorageDir: string;
+  queryDir: string;
 
-/**
- * setUpPack sets up a directory to use for the data extension editor queries if required.
- *
- * There are two cases (example language is Java):
- * - In case the queries are present in the codeql/java-queries, we don't need to write our own queries
- *   to disk. We still need to create a synthetic query pack so we can pass the queryDir to the query
- *   resolver without caring about whether the queries are present in the pack or not.
- * - In case the queries are not present in the codeql/java-queries, we need to write our own queries
- *   to disk. We will create a synthetic query pack and install its dependencies so it is fully independent
- *   and we can simply pass it through when resolving the queries.
- *
- * These steps together ensure that later steps of the process don't need to keep track of whether the queries
- * are present in codeql/java-queries or in our own query pack. They just need to resolve the query.
- *
- * @param cliServer The CodeQL CLI server to use.
- * @param queryDir The directory to set up.
- * @param language The language to use for the queries.
- * @param modelConfig The model config to use.
- * @returns true if the setup was successful, false otherwise.
- */
-export async function setUpPack(
-  cliServer: CodeQLCliServer,
+  progress: ProgressCallback;
+  token: CancellationToken;
+};
+
+export async function prepareModelEditorQueries(
   queryDir: string,
   language: QueryLanguage,
-  modelConfig: ModelConfig,
 ): Promise<boolean> {
-  // Download the required query packs
-  await cliServer.packDownload([`codeql/${language}-queries`]);
-
-  // We'll only check if the application mode query exists in the pack and assume that if it does,
-  // the framework mode query will also exist.
-  const applicationModeQuery = await resolveEndpointsQuery(
-    cliServer,
-    language,
-    Mode.Application,
-    [],
-    [],
-  );
-
-  if (applicationModeQuery) {
-    // Set up a synthetic pack so CodeQL doesn't crash later when we try
-    // to resolve a query within this directory
-    const syntheticQueryPack = {
-      name: syntheticQueryPackName,
-      version: "0.0.0",
-      dependencies: {},
-    };
-
-    const qlpackFile = join(queryDir, "codeql-pack.yml");
-    await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
-  } else {
-    // If we can't resolve the query, we need to write them to desk ourselves.
-    const externalApiQuerySuccess = await prepareExternalApiQuery(
-      queryDir,
-      language,
+  // Resolve the query that we want to run.
+  const query = fetchExternalApiQueries[language];
+  if (!query) {
+    void showAndLogExceptionWithTelemetry(
+      extLogger,
+      telemetryListener,
+      redactableError`No bundled model editor query found for language ${language}`,
     );
-    if (!externalApiQuerySuccess) {
-      return false;
+    return false;
+  }
+  // Create the query file.
+  Object.values(Mode).map(async (mode) => {
+    const queryFile = join(queryDir, queryNameFromMode(mode));
+    await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
+  });
+
+  // Create any dependencies
+  if (query.dependencies) {
+    for (const [filename, contents] of Object.entries(query.dependencies)) {
+      const dependencyFile = join(queryDir, filename);
+      await writeFile(dependencyFile, contents, "utf8");
     }
-
-    // Set up a synthetic pack so that the query can be resolved later.
-    const syntheticQueryPack = {
-      name: syntheticQueryPackName,
-      version: "0.0.0",
-      dependencies: {
-        [`codeql/${language}-all`]: "*",
-      },
-    };
-
-    const qlpackFile = join(queryDir, "codeql-pack.yml");
-    await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
-    await cliServer.packInstall(queryDir);
   }
-
-  // Download any other required packs
-  if (language === "java" && modelConfig.llmGeneration) {
-    await cliServer.packDownload([`codeql/${language}-automodel-queries`]);
-  }
-
   return true;
 }
 
-/**
- * Resolve the query path to the model editor endpoints query. All queries are tagged like this:
- * modeleditor endpoints <mode>
- * Example: modeleditor endpoints framework-mode
- *
- * @param cliServer The CodeQL CLI server to use.
- * @param language The language of the query pack to use.
- * @param mode The mode to resolve the query for.
- * @param additionalPackNames Additional pack names to search.
- * @param additionalPackPaths Additional pack paths to search.
- */
-export async function resolveEndpointsQuery(
-  cliServer: CodeQLCliServer,
-  language: string,
-  mode: Mode,
-  additionalPackNames: string[] = [],
-  additionalPackPaths: string[] = [],
-): Promise<string | undefined> {
-  const packsToSearch = [`codeql/${language}-queries`, ...additionalPackNames];
+export const externalApiQueriesProgressMaxStep = 2000;
 
-  // First, resolve the query that we want to run.
-  // All queries are tagged like this:
-  // internal extract automodel <mode> <queryTag>
-  // Example: internal extract automodel framework-mode candidates
-  const queries = await resolveQueriesFromPacks(
+export async function runModelEditorQueries(
+  mode: Mode,
+  {
     cliServer,
-    packsToSearch,
-    {
-      kind: "table",
-      "tags contain all": ["modeleditor", "endpoints", modeTag(mode)],
-    },
-    additionalPackPaths,
+    queryRunner,
+    databaseItem,
+    queryStorageDir,
+    queryDir,
+    progress,
+    token,
+  }: RunQueryOptions,
+): Promise<Method[] | undefined> {
+  // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
+  // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
+  // This is intentionally not pretty code, as it will be removed soon.
+  // For a reference of what this should do in the future, see the previous implementation in
+  // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
+
+  progress({
+    message: "Resolving QL packs",
+    step: 1,
+    maxStep: externalApiQueriesProgressMaxStep,
+  });
+  const additionalPacks = getOnDiskWorkspaceFolders();
+  const extensionPacks = Object.keys(
+    await cliServer.resolveQlpacks(additionalPacks, true),
   );
-  if (queries.length > 1) {
-    throw new Error(
-      `Found multiple endpoints queries for ${mode}. Can't continue`,
+
+  progress({
+    message: "Resolving query",
+    step: 2,
+    maxStep: externalApiQueriesProgressMaxStep,
+  });
+
+  // Resolve the queries from either codeql/java-queries or from the temporary queryDir
+  const queryPath = await resolveEndpointsQuery(
+    cliServer,
+    databaseItem.language,
+    mode,
+    [syntheticQueryPackName],
+    [queryDir],
+  );
+  if (!queryPath) {
+    void showAndLogExceptionWithTelemetry(
+      extLogger,
+      telemetryListener,
+      redactableError`The ${mode} model editor query could not be found. Try re-opening the model editor. If that doesn't work, try upgrading the CodeQL libraries.`,
     );
+    return;
   }
 
-  if (queries.length === 0) {
+  // Run the actual query
+  const completedQuery = await runQuery({
+    queryRunner,
+    databaseItem,
+    queryPath,
+    queryStorageDir,
+    additionalPacks,
+    extensionPacks,
+    progress: (update) =>
+      progress({
+        step: update.step + 500,
+        maxStep: externalApiQueriesProgressMaxStep,
+        message: update.message,
+      }),
+    token,
+  });
+
+  if (!completedQuery) {
+    return;
+  }
+
+  // Read the results and covert to internal representation
+  progress({
+    message: "Decoding results",
+    step: 1600,
+    maxStep: externalApiQueriesProgressMaxStep,
+  });
+
+  const bqrsChunk = await readQueryResults({
+    cliServer,
+    bqrsPath: completedQuery.outputDir.bqrsPath,
+  });
+  if (!bqrsChunk) {
+    return;
+  }
+
+  progress({
+    message: "Finalizing results",
+    step: 1950,
+    maxStep: externalApiQueriesProgressMaxStep,
+  });
+
+  return decodeBqrsToMethods(bqrsChunk, mode);
+}
+
+type GetResultsOptions = {
+  cliServer: Pick<CodeQLCliServer, "bqrsInfo" | "bqrsDecode">;
+  bqrsPath: string;
+};
+
+export async function readQueryResults({
+  cliServer,
+  bqrsPath,
+}: GetResultsOptions) {
+  const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
+  if (bqrsInfo["result-sets"].length !== 1) {
+    void showAndLogExceptionWithTelemetry(
+      extLogger,
+      telemetryListener,
+      redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
+    );
     return undefined;
   }
 
-  return queries[0];
+  const resultSet = bqrsInfo["result-sets"][0];
+
+  return cliServer.bqrsDecode(bqrsPath, resultSet.name);
+}
+
+function queryNameFromMode(mode: Mode): string {
+  return `${mode.charAt(0).toUpperCase() + mode.slice(1)}ModeEndpoints.ql`;
 }
