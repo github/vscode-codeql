@@ -29,13 +29,13 @@ export async function getCodeSearchRepositories(
   )) {
     i++;
     nwos.push(...response.data.map((item) => item.repository.full_name));
-    const totalNumberOfResults = Math.ceil(response.data.total_count / 100);
+    const totalNumberOfResultPages = Math.ceil(response.data.total_count / 100);
     const totalNumberOfRequests =
-      totalNumberOfResults > 10 ? 10 : totalNumberOfResults;
+      totalNumberOfResultPages > 10 ? 10 : totalNumberOfResultPages;
     progress({
       maxStep: totalNumberOfRequests,
       step: i,
-      message: "Sending api requests to get code search results.",
+      message: "Sending API requests to get Code Search results.",
     });
 
     if (token.isCancellationRequested) {
