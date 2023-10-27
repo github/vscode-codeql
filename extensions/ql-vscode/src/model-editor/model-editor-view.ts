@@ -38,7 +38,10 @@ import { ModelConfigListener } from "../config";
 import { INITIAL_MODE, Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
-import { getLanguageDisplayName } from "../common/query-language";
+import {
+  getLanguageDisplayName,
+  QueryLanguage,
+} from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
@@ -64,6 +67,8 @@ export class ModelEditorView extends AbstractWebview<
     private readonly queryDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
+    // The language is equal to databaseItem.language but is properly typed as QueryLanguage
+    private readonly language: QueryLanguage,
     initialMode: Mode = INITIAL_MODE,
   ) {
     super(app);
@@ -82,6 +87,7 @@ export class ModelEditorView extends AbstractWebview<
       modelingStore,
       queryStorageDir,
       databaseItem,
+      language,
       async (modeledMethods) => {
         this.addModeledMethods(modeledMethods);
       },
@@ -218,7 +224,7 @@ export class ModelEditorView extends AbstractWebview<
               });
               await saveModeledMethods(
                 this.extensionPack,
-                this.databaseItem.language,
+                this.language,
                 methods,
                 modeledMethods,
                 mode,
@@ -367,6 +373,7 @@ export class ModelEditorView extends AbstractWebview<
       t: "setModelEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
+        language: this.language,
         showFlowGeneration: this.modelConfig.flowGeneration,
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
@@ -394,6 +401,7 @@ export class ModelEditorView extends AbstractWebview<
     try {
       const modeledMethods = await loadModeledMethods(
         this.extensionPack,
+        this.language,
         this.cliServer,
         this.app.logger,
       );
@@ -458,6 +466,14 @@ export class ModelEditorView extends AbstractWebview<
           if (!addedDatabase) {
             return;
           }
+
+          if (addedDatabase.language !== this.language) {
+            void showAndLogErrorMessage(
+              this.app.logger,
+              `The selected database is for ${addedDatabase.language}, but the current database is for ${this.language}.`,
+            );
+            return;
+          }
         }
 
         progress({
@@ -472,6 +488,7 @@ export class ModelEditorView extends AbstractWebview<
             queryRunner: this.queryRunner,
             queryStorageDir: this.queryStorageDir,
             databaseItem: addedDatabase ?? this.databaseItem,
+            language: this.language,
             onResults: async (modeledMethods) => {
               const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
 
@@ -579,6 +596,7 @@ export class ModelEditorView extends AbstractWebview<
         this.queryDir,
         addedDatabase,
         modelFile,
+        this.language,
         Mode.Framework,
       );
       await view.openView();

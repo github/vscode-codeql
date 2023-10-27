@@ -2,9 +2,9 @@ import * as React from "react";
 
 import { Meta, StoryFn } from "@storybook/react";
 
-import { Mode } from "../../model-editor/shared/mode";
 import { ModelEditor as ModelEditorComponent } from "../../view/model-editor/ModelEditor";
 import { CallClassification } from "../../model-editor/method";
+import { createMockModelEditorViewState } from "../../../test/factories/model-editor/view-state";
 
 export default {
   title: "CodeQL Model Editor/CodeQL Model Editor",
@@ -17,7 +17,7 @@ const Template: StoryFn<typeof ModelEditorComponent> = (args) => (
 
 export const ModelEditor = Template.bind({});
 ModelEditor.args = {
-  initialViewState: {
+  initialViewState: createMockModelEditorViewState({
     extensionPack: {
       path: "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o",
       yamlPath:
@@ -31,9 +31,7 @@ ModelEditor.args = {
     showFlowGeneration: true,
     showLlmButton: true,
     showMultipleModels: true,
-    mode: Mode.Application,
-    sourceArchiveAvailable: true,
-  },
+  }),
   initialMethods: [
     {
       library: "sql2o",

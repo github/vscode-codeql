@@ -3,21 +3,22 @@ import Ajv from "ajv";
 import { Method } from "./method";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
-  ExtensiblePredicateDefinition,
-  extensiblePredicateDefinitions,
-} from "./predicates";
+  getModelsAsDataLanguage,
+  ModelsAsDataLanguageModel,
+} from "./languages";
 
 import * as modelExtensionFileSchema from "./model-extension-file.schema.json";
 import { Mode } from "./shared/mode";
 import { assertNever } from "../common/helpers-pure";
 import { ModelExtensionFile } from "./model-extension-file";
+import { QueryLanguage } from "../common/query-language";
 
 const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
 
 function createDataProperty(
   methods: readonly ModeledMethod[],
-  definition: ExtensiblePredicateDefinition,
+  definition: ModelsAsDataLanguageModel,
 ) {
   if (methods.length === 0) {
     return " []";
@@ -34,9 +35,11 @@ function createDataProperty(
 }
 
 export function createDataExtensionYaml(
-  language: string,
+  language: QueryLanguage,
   modeledMethods: readonly ModeledMethod[],
 ) {
+  const modelsAsDataLanguage = getModelsAsDataLanguage(language);
+
   const methodsByType: Record<
     Exclude<ModeledMethodType, "none">,
     ModeledMethod[]
@@ -53,7 +56,7 @@ export function createDataExtensionYaml(
     }
   }
 
-  const extensions = Object.entries(extensiblePredicateDefinitions).map(
+  const extensions = Object.entries(modelsAsDataLanguage).map(
     ([type, definition]) => `  - addsTo:
       pack: codeql/${language}-all
       extensible: ${definition.extensiblePredicate}
@@ -69,7 +72,7 @@ ${extensions.join("\n")}`;
 }
 
 export function createDataExtensionYamls(
-  language: string,
+  language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   existingModeledMethods: Readonly<
@@ -98,7 +101,7 @@ export function createDataExtensionYamls(
 }
 
 function createDataExtensionYamlsByGrouping(
-  language: string,
+  language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   existingModeledMethods: Readonly<
@@ -153,7 +156,7 @@ function createDataExtensionYamlsByGrouping(
 }
 
 export function createDataExtensionYamlsForApplicationMode(
-  language: string,
+  language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   existingModeledMethods: Readonly<
@@ -170,7 +173,7 @@ export function createDataExtensionYamlsForApplicationMode(
 }
 
 export function createDataExtensionYamlsForFrameworkMode(
-  language: string,
+  language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   existingModeledMethods: Readonly<
@@ -240,10 +243,13 @@ function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
 
 export function loadDataExtensionYaml(
   data: unknown,
+  language: QueryLanguage,
 ): Record<string, ModeledMethod[]> | undefined {
   if (!validateModelExtensionFile(data)) {
     return undefined;
   }
+
+  const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
   const extensions = data.extensions;
 
@@ -254,7 +260,7 @@ export function loadDataExtensionYaml(
     const extensible = addsTo.extensible;
     const data = extension.data;
 
-    const definition = Object.values(extensiblePredicateDefinitions).find(
+    const definition = Object.values(modelsAsDataLanguage).find(
       (definition) => definition.extensiblePredicate === extensible,
     );
     if (!definition) {

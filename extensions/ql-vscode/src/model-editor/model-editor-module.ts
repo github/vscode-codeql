@@ -233,6 +233,7 @@ export class ModelEditorModule extends DisposableObject {
             queryDir,
             db,
             modelFile,
+            language,
           );
 
           this.modelingEvents.onDbClosed(async (dbUri) => {

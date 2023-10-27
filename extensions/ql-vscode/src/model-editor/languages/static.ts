@@ -1,24 +1,16 @@
-import { ModeledMethod, ModeledMethodType, Provenance } from "./modeled-method";
-import { DataTuple } from "./model-extension-file";
-
-export type ExtensiblePredicateDefinition = {
-  extensiblePredicate: string;
-  generateMethodDefinition: (method: ModeledMethod) => DataTuple[];
-  readModeledMethod: (row: DataTuple[]) => ModeledMethod;
-
-  supportedKinds?: string[];
-};
+import { ModelsAsDataLanguage } from "./models-as-data";
+import { ModeledMethodType, Provenance } from "../modeled-method";
+import { DataTuple } from "../model-extension-file";
+import { sharedExtensiblePredicates, sharedKinds } from "./shared";
 
 function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
 }
 
-export const extensiblePredicateDefinitions: Record<
-  Exclude<ModeledMethodType, "none">,
-  ExtensiblePredicateDefinition
-> = {
+export const staticLanguage: ModelsAsDataLanguage = {
   source: {
-    extensiblePredicate: "sourceModel",
+    extensiblePredicate: sharedExtensiblePredicates.source,
+    supportedKinds: sharedKinds.source,
     // extensible predicate sourceModel(
     //   string package, string type, boolean subtypes, string name, string signature, string ext,
     //   string output, string kind, string provenance
@@ -35,7 +27,7 @@ export const extensiblePredicateDefinitions: Record<
       method.provenance,
     ],
     readModeledMethod: (row) => ({
-      type: "source",
+      type: "source" as ModeledMethodType,
       input: "",
       output: row[6] as string,
       kind: row[7] as string,
@@ -46,10 +38,10 @@ export const extensiblePredicateDefinitions: Record<
       methodName: row[3] as string,
       methodParameters: row[4] as string,
     }),
-    supportedKinds: ["local", "remote"],
   },
   sink: {
-    extensiblePredicate: "sinkModel",
+    extensiblePredicate: sharedExtensiblePredicates.sink,
+    supportedKinds: sharedKinds.sink,
     // extensible predicate sinkModel(
     //   string package, string type, boolean subtypes, string name, string signature, string ext,
     //   string input, string kind, string provenance
@@ -77,22 +69,10 @@ export const extensiblePredicateDefinitions: Record<
       methodName: row[3] as string,
       methodParameters: row[4] as string,
     }),
-    supportedKinds: [
-      "code-injection",
-      "command-injection",
-      "file-content-store",
-      "html-injection",
-      "js-injection",
-      "ldap-injection",
-      "log-injection",
-      "path-injection",
-      "request-forgery",
-      "sql-injection",
-      "url-redirection",
-    ],
   },
   summary: {
-    extensiblePredicate: "summaryModel",
+    extensiblePredicate: sharedExtensiblePredicates.summary,
+    supportedKinds: sharedKinds.summary,
     // extensible predicate summaryModel(
     //   string package, string type, boolean subtypes, string name, string signature, string ext,
     //   string input, string output, string kind, string provenance
@@ -121,10 +101,10 @@ export const extensiblePredicateDefinitions: Record<
       methodName: row[3] as string,
       methodParameters: row[4] as string,
     }),
-    supportedKinds: ["taint", "value"],
   },
   neutral: {
-    extensiblePredicate: "neutralModel",
+    extensiblePredicate: sharedExtensiblePredicates.neutral,
+    supportedKinds: sharedKinds.neutral,
     // extensible predicate neutralModel(
     //   string package, string type, string name, string signature, string kind, string provenance
     // );
@@ -148,6 +128,5 @@ export const extensiblePredicateDefinitions: Record<
       methodName: row[2] as string,
       methodParameters: row[3] as string,
     }),
-    supportedKinds: ["summary", "source", "sink"],
   },
 };

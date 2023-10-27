@@ -10,10 +10,8 @@ import {
   MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS,
   SINGLE_MODEL_GRID_TEMPLATE_COLUMNS,
 } from "../../view/model-editor/ModeledMethodDataGrid";
-import { ModelEditorViewState } from "../../model-editor/shared/view-state";
-import { createMockExtensionPack } from "../../../test/factories/model-editor/extension-pack";
-import { Mode } from "../../model-editor/shared/mode";
 import { DataGrid } from "../../view/common/DataGrid";
+import { createMockModelEditorViewState } from "../../../test/factories/model-editor/view-state";
 
 export default {
   title: "CodeQL Model Editor/Method Row",
@@ -99,14 +97,11 @@ const modeledMethod: ModeledMethod = {
   methodParameters: "()",
 };
 
-const viewState: ModelEditorViewState = {
-  extensionPack: createMockExtensionPack(),
+const viewState = createMockModelEditorViewState({
   showFlowGeneration: true,
   showLlmButton: true,
   showMultipleModels: true,
-  mode: Mode.Application,
-  sourceArchiveAvailable: true,
-};
+});
 
 export const Unmodeled = Template.bind({});
 Unmodeled.args = {

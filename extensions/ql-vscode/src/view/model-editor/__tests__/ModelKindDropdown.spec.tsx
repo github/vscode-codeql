@@ -4,6 +4,7 @@ import { ModelKindDropdown } from "../ModelKindDropdown";
 import userEvent from "@testing-library/user-event";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { createModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
+import { QueryLanguage } from "../../../common/query-language";
 
 describe(ModelKindDropdown.name, () => {
   const onChange = jest.fn();
@@ -21,6 +22,7 @@ describe(ModelKindDropdown.name, () => {
 
     render(
       <ModelKindDropdown
+        language={QueryLanguage.Java}
         method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
@@ -45,6 +47,7 @@ describe(ModelKindDropdown.name, () => {
 
     const { rerender } = render(
       <ModelKindDropdown
+        language={QueryLanguage.Java}
         method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
@@ -62,6 +65,7 @@ describe(ModelKindDropdown.name, () => {
 
     rerender(
       <ModelKindDropdown
+        language={QueryLanguage.Java}
         method={method}
         modeledMethod={updatedModeledMethod}
         onChange={onChange}
@@ -79,6 +83,7 @@ describe(ModelKindDropdown.name, () => {
 
     render(
       <ModelKindDropdown
+        language={QueryLanguage.Java}
         method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
@@ -102,6 +107,7 @@ describe(ModelKindDropdown.name, () => {
 
     render(
       <ModelKindDropdown
+        language={QueryLanguage.Java}
         method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
@@ -120,6 +126,7 @@ describe(ModelKindDropdown.name, () => {
 
     render(
       <ModelKindDropdown
+        language={QueryLanguage.Java}
         method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}

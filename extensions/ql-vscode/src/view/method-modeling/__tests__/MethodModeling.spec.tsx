@@ -3,6 +3,7 @@ import { render as reactRender, screen } from "@testing-library/react";
 import { MethodModeling, MethodModelingProps } from "../MethodModeling";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { createModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
+import { QueryLanguage } from "../../../common/query-language";
 
 describe(MethodModeling.name, () => {
   const render = (props: MethodModelingProps) =>
@@ -15,6 +16,7 @@ describe(MethodModeling.name, () => {
     const onChange = jest.fn();
 
     render({
+      language: QueryLanguage.Java,
       modelingStatus: "saved",
       method,
       modeledMethods: [modeledMethod],

@@ -5,7 +5,7 @@ import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
-import { extensiblePredicateDefinitions } from "./predicates";
+import { getModelsAsDataLanguage } from "./languages";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
@@ -13,12 +13,14 @@ import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { runQuery } from "../local-queries/run-query";
 import { resolveQueries } from "../local-queries";
+import { QueryLanguage } from "../common/query-language";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   queryStorageDir: string;
   databaseItem: DatabaseItem;
+  language: QueryLanguage;
   progress: ProgressCallback;
   token: CancellationToken;
   onResults: (results: ModeledMethod[]) => void | Promise<void>;
@@ -104,6 +106,7 @@ async function runSingleFlowQuery(
     queryRunner,
     queryStorageDir,
     databaseItem,
+    language,
     progress,
     token,
   }: Omit<FlowModelOptions, "onResults">,
@@ -140,7 +143,9 @@ async function runSingleFlowQuery(
   }
 
   // Interpret the results
-  const definition = extensiblePredicateDefinitions[type];
+  const modelsAsDataLanguage = getModelsAsDataLanguage(language);
+
+  const definition = modelsAsDataLanguage[type];
 
   const bqrsPath = completedQuery.outputDir.bqrsPath;
 

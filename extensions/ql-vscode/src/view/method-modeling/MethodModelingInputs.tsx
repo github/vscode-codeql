@@ -7,6 +7,7 @@ import { ModelInputDropdown } from "../model-editor/ModelInputDropdown";
 import { ModelOutputDropdown } from "../model-editor/ModelOutputDropdown";
 import { ModelKindDropdown } from "../model-editor/ModelKindDropdown";
 import { InProgressDropdown } from "../model-editor/InProgressDropdown";
+import { QueryLanguage } from "../../common/query-language";
 
 const Container = styled.div`
   padding-top: 0.5rem;
@@ -23,6 +24,7 @@ const Name = styled.span`
 `;
 
 export type MethodModelingInputsProps = {
+  language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   isModelingInProgress: boolean;
@@ -30,6 +32,7 @@ export type MethodModelingInputsProps = {
 };
 
 export const MethodModelingInputs = ({
+  language,
   method,
   modeledMethod,
   isModelingInProgress,
@@ -79,7 +82,7 @@ export const MethodModelingInputs = ({
           {isModelingInProgress ? (
             <InProgressDropdown />
           ) : (
-            <ModelKindDropdown {...inputProps} />
+            <ModelKindDropdown language={language} {...inputProps} />
           )}
         </Input>
       </Container>

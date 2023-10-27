@@ -2,10 +2,8 @@ import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { LibraryRow, LibraryRowProps } from "../LibraryRow";
-import { createMockExtensionPack } from "../../../../test/factories/model-editor/extension-pack";
-import { Mode } from "../../../model-editor/shared/mode";
-import { ModelEditorViewState } from "../../../model-editor/shared/view-state";
 import userEvent from "@testing-library/user-event";
+import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(LibraryRow.name, () => {
   const method = createMethod();
@@ -15,14 +13,7 @@ describe(LibraryRow.name, () => {
   const onStopGenerateFromLlmClick = jest.fn();
   const onModelDependencyClick = jest.fn();
 
-  const viewState: ModelEditorViewState = {
-    mode: Mode.Application,
-    showFlowGeneration: false,
-    showLlmButton: false,
-    showMultipleModels: false,
-    extensionPack: createMockExtensionPack(),
-    sourceArchiveAvailable: true,
-  };
+  const viewState = createMockModelEditorViewState();
 
   const render = (props: Partial<LibraryRowProps> = {}) =>
     reactRender(

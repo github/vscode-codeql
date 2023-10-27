@@ -12,6 +12,7 @@ import { createMockModelingStore } from "../../../__mocks__/model-editor/modelin
 import { createMockModelEditorViewTracker } from "../../../__mocks__/model-editor/modelEditorViewTrackerMock";
 import { ModelConfigListener } from "../../../../src/config";
 import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
@@ -56,6 +57,7 @@ describe("ModelEditorView", () => {
       queryDir,
       databaseItem,
       extensionPack,
+      QueryLanguage.Java,
       mode,
     );
   });

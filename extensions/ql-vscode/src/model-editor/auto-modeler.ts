@@ -18,6 +18,7 @@ import { Mode } from "./shared/mode";
 import { CancellationTokenSource } from "vscode";
 import { ModelingStore } from "./modeling-store";
 import { ModelConfigListener } from "../config";
+import { QueryLanguage } from "../common/query-language";
 
 /**
  * The auto-modeler holds state around auto-modeling jobs and allows
@@ -36,6 +37,7 @@ export class AutoModeler {
     private readonly modelingStore: ModelingStore,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
+    private readonly language: QueryLanguage,
     private readonly addModeledMethods: (
       modeledMethods: Record<string, ModeledMethod[]>,
     ) => Promise<void>,
@@ -202,7 +204,7 @@ export class AutoModeler {
       filename: "auto-model.yml",
     });
 
-    const loadedMethods = loadDataExtensionYaml(models);
+    const loadedMethods = loadDataExtensionYaml(models, this.language);
     if (!loadedMethods) {
       return;
     }

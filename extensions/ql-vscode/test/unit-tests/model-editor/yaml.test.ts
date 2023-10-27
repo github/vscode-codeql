@@ -7,10 +7,11 @@ import {
   loadDataExtensionYaml,
 } from "../../../src/model-editor/yaml";
 import { CallClassification } from "../../../src/model-editor/method";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {
-    const yaml = createDataExtensionYaml("java", [
+    const yaml = createDataExtensionYaml(QueryLanguage.Java, [
       {
         type: "sink",
         input: "Argument[0]",
@@ -50,7 +51,7 @@ describe("createDataExtensionYaml", () => {
   });
 
   it("includes the correct language", () => {
-    const yaml = createDataExtensionYaml("csharp", []);
+    const yaml = createDataExtensionYaml(QueryLanguage.CSharp, []);
 
     expect(yaml).toEqual(`extensions:
   - addsTo:
@@ -79,7 +80,7 @@ describe("createDataExtensionYaml", () => {
 describe("createDataExtensionYamlsForApplicationMode", () => {
   it("creates the correct YAML files when there are no existing modeled methods", () => {
     const yaml = createDataExtensionYamlsForApplicationMode(
-      "java",
+      QueryLanguage.Java,
       [
         {
           library: "sql2o",
@@ -323,7 +324,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
 
   it("creates the correct YAML files when there are existing modeled methods", () => {
     const yaml = createDataExtensionYamlsForApplicationMode(
-      "java",
+      QueryLanguage.Java,
       [
         {
           library: "sql2o",
@@ -618,7 +619,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
 describe("createDataExtensionYamlsForFrameworkMode", () => {
   it("creates the correct YAML files when there are no existing modeled methods", () => {
     const yaml = createDataExtensionYamlsForFrameworkMode(
-      "java",
+      QueryLanguage.Java,
       [
         {
           library: "sql2o",
@@ -774,7 +775,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
 
   it("creates the correct YAML files when there are existing modeled methods", () => {
     const yaml = createDataExtensionYamlsForFrameworkMode(
-      "java",
+      QueryLanguage.Java,
       [
         {
           library: "sql2o",
@@ -980,38 +981,41 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
 
 describe("loadDataExtensionYaml", () => {
   it("loads the YAML file", () => {
-    const data = loadDataExtensionYaml({
-      extensions: [
-        {
-          addsTo: { pack: "codeql/java-all", extensible: "sourceModel" },
-          data: [],
-        },
-        {
-          addsTo: { pack: "codeql/java-all", extensible: "sinkModel" },
-          data: [
-            [
-              "org.sql2o",
-              "Connection",
-              true,
-              "createQuery",
-              "(String)",
-              "",
-              "Argument[0]",
-              "sql",
-              "manual",
+    const data = loadDataExtensionYaml(
+      {
+        extensions: [
+          {
+            addsTo: { pack: "codeql/java-all", extensible: "sourceModel" },
+            data: [],
+          },
+          {
+            addsTo: { pack: "codeql/java-all", extensible: "sinkModel" },
+            data: [
+              [
+                "org.sql2o",
+                "Connection",
+                true,
+                "createQuery",
+                "(String)",
+                "",
+                "Argument[0]",
+                "sql",
+                "manual",
+              ],
             ],
-          ],
-        },
-        {
-          addsTo: { pack: "codeql/java-all", extensible: "summaryModel" },
-          data: [],
-        },
-        {
-          addsTo: { pack: "codeql/java-all", extensible: "neutralModel" },
-          data: [],
-        },
-      ],
-    });
+          },
+          {
+            addsTo: { pack: "codeql/java-all", extensible: "summaryModel" },
+            data: [],
+          },
+          {
+            addsTo: { pack: "codeql/java-all", extensible: "neutralModel" },
+            data: [],
+          },
+        ],
+      },
+      QueryLanguage.Java,
+    );
 
     expect(data).toEqual({
       "org.sql2o.Connection#createQuery(String)": [
@@ -1033,13 +1037,16 @@ describe("loadDataExtensionYaml", () => {
 
   it("returns undefined if given a string", () => {
     expect(() =>
-      loadDataExtensionYaml(`extensions:
+      loadDataExtensionYaml(
+        `extensions:
   - addsTo:
       pack: codeql/java-all
       extensible: sinkModel
     data:
       - ["org.sql2o","Connection",true,"createQuery","(String)","","Argument[0]","sql","manual"]
-`),
+`,
+        QueryLanguage.Java,
+      ),
     ).toThrow("Invalid data extension YAML:  must be object");
   });
 });

@@ -15,6 +15,10 @@ import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
 import { ModelingEvents } from "../modeling-events";
+import {
+  QueryLanguage,
+  tryGetQueryLanguage,
+} from "../../common/query-language";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -24,6 +28,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
   private method: Method | undefined = undefined;
   private databaseItem: DatabaseItem | undefined = undefined;
+  private language: QueryLanguage | undefined = undefined;
 
   constructor(
     app: App,
@@ -45,6 +50,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     await this.postMessage({
       t: "setMethodModelingPanelViewState",
       viewState: {
+        language: this.language,
         showMultipleModels: this.modelConfig.showMultipleModels,
       },
     });
@@ -56,6 +62,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ): Promise<void> {
     this.method = method;
     this.databaseItem = databaseItem;
+    this.language = databaseItem && tryGetQueryLanguage(databaseItem.language);
 
     if (this.isShowingView) {
       await this.postMessage({
@@ -70,6 +77,9 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       const selectedMethod = this.modelingStore.getSelectedMethodDetails();
       if (selectedMethod) {
         this.databaseItem = selectedMethod.databaseItem;
+        this.language = tryGetQueryLanguage(
+          selectedMethod.databaseItem.language,
+        );
         this.method = selectedMethod.method;
 
         await this.postMessage({
@@ -185,6 +195,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         if (this.webviewView) {
           this.method = e.method;
           this.databaseItem = e.databaseItem;
+          this.language = tryGetQueryLanguage(e.databaseItem.language);
 
           await this.postMessage({
             t: "setSelectedMethod",

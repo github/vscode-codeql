@@ -8,11 +8,13 @@ import {
 } from "../MultipleModeledMethodsPanel";
 import userEvent from "@testing-library/user-event";
 import { ModeledMethod } from "../../../model-editor/modeled-method";
+import { QueryLanguage } from "../../../common/query-language";
 
 describe(MultipleModeledMethodsPanel.name, () => {
   const render = (props: MultipleModeledMethodsPanelProps) =>
     reactRender(<MultipleModeledMethodsPanel {...props} />);
 
+  const language = QueryLanguage.Java;
   const method = createMethod();
   const isModelingInProgress = false;
   const onChange = jest.fn<void, [string, ModeledMethod[]]>();
@@ -22,6 +24,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("renders the method modeling inputs once", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -38,6 +41,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("disables all pagination", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -58,6 +62,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("cannot add or delete modeling", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -88,6 +93,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("renders the method modeling inputs once", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -104,6 +110,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("disables all pagination", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -123,6 +130,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("cannot delete modeling", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -138,6 +146,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can add modeling", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -165,6 +174,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("changes selection to the newly added modeling", async () => {
       const { rerender } = render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -175,6 +185,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
@@ -208,6 +219,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("renders the method modeling inputs once", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -224,6 +236,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("renders the pagination", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -237,6 +250,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("disables the correct pagination", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -255,6 +269,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can use the pagination", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -290,6 +305,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("correctly updates selected pagination index when the number of models decreases", async () => {
       const { rerender } = render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -300,6 +316,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={[modeledMethods[1]]}
           isModelingInProgress={isModelingInProgress}
@@ -317,6 +334,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("does not show errors", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -328,6 +346,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can update the first modeling", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -359,6 +378,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can update the second modeling", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -392,6 +412,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can delete modeling", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -408,6 +429,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can add modeling", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -435,6 +457,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("shows an error when adding a neutral modeling", async () => {
       const { rerender } = render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -445,6 +468,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
@@ -464,6 +488,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
@@ -481,6 +506,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
@@ -498,6 +524,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("changes selection to the newly added modeling", async () => {
       const { rerender } = render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -510,6 +537,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
@@ -550,6 +578,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can use the pagination", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -639,6 +668,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("preserves selection when a modeling other than the selected modeling is removed", async () => {
       const { rerender } = render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -649,6 +679,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={modeledMethods.slice(0, 2)}
           isModelingInProgress={isModelingInProgress}
@@ -661,6 +692,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("reduces selection when the selected modeling is removed", async () => {
       const { rerender } = render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -673,6 +705,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={modeledMethods.slice(0, 2)}
           isModelingInProgress={isModelingInProgress}
@@ -704,6 +737,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can add modeling", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -717,6 +751,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can delete first modeling", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -733,6 +768,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can delete second modeling", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -750,6 +786,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("can add modeling after deleting second modeling", async () => {
       const { rerender } = render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -766,6 +803,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
+          language={language}
           method={method}
           modeledMethods={modeledMethods.slice(0, 1)}
           isModelingInProgress={isModelingInProgress}
@@ -806,6 +844,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("shows errors", () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,
@@ -817,6 +856,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     it("shows the correct error message", async () => {
       render({
+        language,
         method,
         modeledMethods,
         isModelingInProgress,

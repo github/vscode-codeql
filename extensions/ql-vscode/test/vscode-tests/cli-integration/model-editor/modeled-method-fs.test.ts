@@ -11,6 +11,7 @@ import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pac
 import { join } from "path";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { homedir } from "os";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 const dummyExtensionPackContents = `
 name: dummy/pack
@@ -192,6 +193,7 @@ describe("modeled-method-fs", () => {
 
       const modeledMethods = await loadModeledMethods(
         makeExtensionPack(extensionPackPath),
+        QueryLanguage.Java,
         cli,
         extLogger,
       );

@@ -7,11 +7,13 @@ import {
 } from "../MethodModelingInputs";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { createModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
+import { QueryLanguage } from "../../../common/query-language";
 
 describe(MethodModelingInputs.name, () => {
   const render = (props: MethodModelingInputsProps) =>
     reactRender(<MethodModelingInputs {...props} />);
 
+  const language = QueryLanguage.Java;
   const method = createMethod();
   const modeledMethod = createModeledMethod();
   const isModelingInProgress = false;
@@ -19,6 +21,7 @@ describe(MethodModelingInputs.name, () => {
 
   it("renders the method modeling inputs", () => {
     render({
+      language,
       method,
       modeledMethod,
       isModelingInProgress,
@@ -44,6 +47,7 @@ describe(MethodModelingInputs.name, () => {
 
   it("allows changing the type", async () => {
     render({
+      language,
       method,
       modeledMethod,
       isModelingInProgress,
@@ -65,6 +69,7 @@ describe(MethodModelingInputs.name, () => {
 
   it("sets other dropdowns when model type is changed", () => {
     const { rerender } = render({
+      language,
       method,
       modeledMethod,
       isModelingInProgress,
@@ -77,6 +82,7 @@ describe(MethodModelingInputs.name, () => {
 
     rerender(
       <MethodModelingInputs
+        language={language}
         method={method}
         modeledMethod={updatedModeledMethod}
         isModelingInProgress={isModelingInProgress}
@@ -105,6 +111,7 @@ describe(MethodModelingInputs.name, () => {
 
   it("sets in progress dropdowns when modeling is in progress", () => {
     render({
+      language,
       method,
       modeledMethod,
       isModelingInProgress: true,

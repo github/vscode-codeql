@@ -12,8 +12,10 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { Codicon } from "../common";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "./ModeledMethodAlert";
+import { QueryLanguage } from "../../common/query-language";
 
 export type MultipleModeledMethodsPanelProps = {
+  language: QueryLanguage;
   method: Method;
   modeledMethods: ModeledMethod[];
   isModelingInProgress: boolean;
@@ -53,6 +55,7 @@ const ModificationActions = styled.div`
 `;
 
 export const MultipleModeledMethodsPanel = ({
+  language,
   method,
   modeledMethods,
   isModelingInProgress,
@@ -150,6 +153,7 @@ export const MultipleModeledMethodsPanel = ({
       )}
       {modeledMethods.length > 0 ? (
         <MethodModelingInputs
+          language={language}
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
           isModelingInProgress={isModelingInProgress}
@@ -157,6 +161,7 @@ export const MultipleModeledMethodsPanel = ({
         />
       ) : (
         <MethodModelingInputs
+          language={language}
           method={method}
           modeledMethod={undefined}
           isModelingInProgress={isModelingInProgress}
