@@ -32,6 +32,7 @@ import { AppCommandManager } from "../common/commands";
 import { allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
+import { getLanguageDisplayName } from "../common/query-language";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -579,10 +580,23 @@ export async function promptForLanguage(
     return languages[0];
   }
 
-  return await window.showQuickPick(languages, {
+  const items = languages
+    .map((language) => ({
+      label: getLanguageDisplayName(language),
+      description: language,
+      language,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const selectedItem = await window.showQuickPick(items, {
     placeHolder: "Select the database language to download:",
     ignoreFocusOut: true,
   });
+  if (!selectedItem) {
+    return undefined;
+  }
+
+  return selectedItem.language;
 }
 
 /**
