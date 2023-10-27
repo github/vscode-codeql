@@ -23,7 +23,10 @@ import {
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
-import { runFlowModelQueries } from "./flow-model-queries";
+import {
+  isFlowModelGenerationSupported,
+  runFlowModelQueries,
+} from "./flow-model-queries";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { redactableError } from "../common/errors";
@@ -363,6 +366,10 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private async setViewState(): Promise<void> {
+    const showFlowGeneration =
+      this.modelConfig.flowGeneration &&
+      isFlowModelGenerationSupported(this.language);
+
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
 
@@ -374,7 +381,7 @@ export class ModelEditorView extends AbstractWebview<
       viewState: {
         extensionPack: this.extensionPack,
         language: this.language,
-        showFlowGeneration: this.modelConfig.flowGeneration,
+        showFlowGeneration,
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),

@@ -15,6 +15,17 @@ import { runQuery } from "../local-queries/run-query";
 import { resolveQueries } from "../local-queries";
 import { QueryLanguage } from "../common/query-language";
 
+const FLOW_MODEL_SUPPORTED_LANGUAGES = [
+  QueryLanguage.CSharp,
+  QueryLanguage.Java,
+];
+
+export function isFlowModelGenerationSupported(
+  language: QueryLanguage,
+): boolean {
+  return FLOW_MODEL_SUPPORTED_LANGUAGES.includes(language);
+}
+
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
