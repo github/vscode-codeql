@@ -60,6 +60,7 @@ export const DataFlowPaths = ({
         <PathDropdownContainer>
           <CodeFlowsDropdown
             codeFlows={codeFlows}
+            selectedCodeFlow={selectedCodeFlow}
             setSelectedCodeFlow={setSelectedCodeFlow}
           />
         </PathDropdownContainer>
