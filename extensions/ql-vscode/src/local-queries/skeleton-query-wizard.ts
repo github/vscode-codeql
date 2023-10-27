@@ -364,9 +364,14 @@ export class SkeletonQueryWizard {
       throw new Error("QL Pack storage path is undefined");
     }
 
-    const openFileArgs = [
-      join(this.qlPackStoragePath, this.folderName, this.fileName),
-    ];
+    const queryPath = join(
+      this.qlPackStoragePath,
+      this.folderName,
+      this.fileName,
+    );
+    const queryPathUri = Uri.file(queryPath);
+
+    const openFileArgs = [queryPathUri.toString(true)];
     const queryString = encodeURI(JSON.stringify(openFileArgs));
     return `[${this.fileName}](command:vscode.open?${queryString})`;
   }
