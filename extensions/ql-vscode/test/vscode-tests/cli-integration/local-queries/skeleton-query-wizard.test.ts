@@ -12,7 +12,6 @@ import {
   workspace,
   WorkspaceFolder,
 } from "vscode";
-import { extLogger } from "../../../../src/common/logging/vscode";
 import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";
 import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
 import { createFileSync, ensureDirSync, removeSync } from "fs-extra";
@@ -28,9 +27,12 @@ import { createMockDB } from "../../../factories/databases/databases";
 import { asError } from "../../../../src/common/helpers-pure";
 import { Setting } from "../../../../src/config";
 import { QueryLanguage } from "../../../../src/common/query-language";
+import { App } from "../../../../src/common/app";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;
+  let mockApp: App;
   let wizard: SkeletonQueryWizard;
   let mockDatabaseManager: DatabaseManager;
   let dir: tmp.DirResult;
@@ -59,8 +61,6 @@ describe("SkeletonQueryWizard", () => {
   const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
 
-  jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
-
   beforeEach(async () => {
     mockCli = mockedObject<CodeQLCliServer>({
       resolveLanguages: jest
@@ -76,6 +76,7 @@ describe("SkeletonQueryWizard", () => {
         ]),
       getSupportedLanguages: jest.fn(),
     });
+    mockApp = createMockApp();
 
     mockDatabaseManager = mockedObject<DatabaseManager>({
       setCurrentDatabaseItem: jest.fn(),
@@ -126,7 +127,7 @@ describe("SkeletonQueryWizard", () => {
       mockCli,
       jest.fn(),
       credentials,
-      extLogger,
+      mockApp,
       mockDatabaseManager,
       storagePath,
     );
@@ -153,7 +154,7 @@ describe("SkeletonQueryWizard", () => {
         mockCli,
         jest.fn(),
         credentials,
-        extLogger,
+        mockApp,
         mockDatabaseManager,
         storagePath,
         QueryLanguage.Swift,
@@ -308,7 +309,7 @@ describe("SkeletonQueryWizard", () => {
             mockCli,
             jest.fn(),
             credentials,
-            extLogger,
+            mockApp,
             mockDatabaseManagerWithItems,
             storagePath,
           );
@@ -357,7 +358,7 @@ describe("SkeletonQueryWizard", () => {
             mockCli,
             jest.fn(),
             credentials,
-            extLogger,
+            mockApp,
             mockDatabaseManagerWithItems,
             storagePath,
           );

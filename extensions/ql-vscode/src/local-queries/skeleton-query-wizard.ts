@@ -1,14 +1,14 @@
 import { join } from "path";
 import { Uri, window as Window, window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { BaseLogger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { Credentials } from "../common/authentication";
 import { QueryLanguage } from "../common/query-language";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
 } from "../common/vscode/workspace-folders";
-import { getErrorMessage } from "../common/helpers-pure";
+import { asError, getErrorMessage } from "../common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
@@ -28,6 +28,8 @@ import {
 import { existsSync } from "fs-extra";
 import { askForLanguage } from "../codeql-cli/query-language";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
+import { redactableError } from "../common/errors";
+import { App } from "../common/app";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -51,7 +53,7 @@ export class SkeletonQueryWizard {
     private readonly cliServer: CodeQLCliServer,
     private readonly progress: ProgressCallback,
     private readonly credentials: Credentials | undefined,
-    private readonly logger: BaseLogger,
+    private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseStoragePath: string | undefined,
     private language: QueryLanguage | undefined = undefined,
@@ -99,7 +101,7 @@ export class SkeletonQueryWizard {
     try {
       await this.openExampleFile();
     } catch (e: unknown) {
-      void this.logger.log(
+      void this.app.logger.log(
         `Could not open example query file: ${getErrorMessage(e)}`,
       );
     }
@@ -190,7 +192,7 @@ export class SkeletonQueryWizard {
 
       await qlPackGenerator.generate();
     } catch (e: unknown) {
-      void this.logger.log(
+      void this.app.logger.log(
         `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
       );
     }
@@ -222,7 +224,7 @@ export class SkeletonQueryWizard {
       this.fileName = await this.determineNextFileName(this.folderName);
       await qlPackGenerator.createExampleQlFile(this.fileName);
     } catch (e: unknown) {
-      void this.logger.log(
+      void this.app.logger.log(
         `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
       );
     }
@@ -255,7 +257,25 @@ export class SkeletonQueryWizard {
     );
 
     if (action) {
-      void withProgress((progress) => this.downloadDatabase(progress));
+      void withProgress(async (progress) => {
+        try {
+          await this.downloadDatabase(progress);
+        } catch (e: unknown) {
+          if (e instanceof UserCancellationException) {
+            return;
+          }
+
+          void showAndLogExceptionWithTelemetry(
+            this.app.logger,
+            this.app.telemetry,
+            redactableError(
+              asError(e),
+            )`An error occurred while downloading the GitHub repository: ${getErrorMessage(
+              e,
+            )}`,
+          );
+        }
+      });
     }
   }
 

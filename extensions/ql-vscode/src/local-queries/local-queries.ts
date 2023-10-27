@@ -330,7 +330,7 @@ export class LocalQueries extends DisposableObject {
           this.cliServer,
           progress,
           credentials,
-          this.app.logger,
+          this.app,
           this.databaseManager,
           contextStoragePath,
           language,
