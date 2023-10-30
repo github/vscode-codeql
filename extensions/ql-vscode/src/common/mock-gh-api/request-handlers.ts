@@ -1,6 +1,6 @@
 import { join } from "path";
 import { readdir, readJson, readFile } from "fs-extra";
-import { RequestHandler, rest } from "msw";
+import { http, RequestHandler } from "msw";
 import {
   GitHubApiRequest,
   isAutoModelRequest,
@@ -94,7 +94,7 @@ function createGetRepoRequestHandler(
 
   const getRepoRequest = getRepoRequests[0];
 
-  return rest.get(`${baseUrl}/repos/:owner/:name`, () => {
+  return http.get(`${baseUrl}/repos/:owner/:name`, () => {
     return jsonResponse(getRepoRequest.response.body, {
       status: getRepoRequest.response.status,
     });
@@ -114,7 +114,7 @@ function createSubmitVariantAnalysisRequestHandler(
 
   const getRepoRequest = submitVariantAnalysisRequests[0];
 
-  return rest.post(
+  return http.post(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses`,
     () => {
       return jsonResponse(getRepoRequest.response.body, {
@@ -135,7 +135,7 @@ function createGetVariantAnalysisRequestHandler(
   // During the lifetime of a variant analysis run, there are multiple requests
   // to get the variant analysis. We need to return different responses for each
   // request, so keep an index of the request and return the appropriate response.
-  return rest.get(
+  return http.get(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId`,
     () => {
       const request = getVariantAnalysisRequests[requestIndex];
@@ -159,7 +159,7 @@ function createGetVariantAnalysisRepoRequestHandler(
     isGetVariantAnalysisRepoRequest,
   );
 
-  return rest.get(
+  return http.get(
     `${baseUrl}/repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId`,
     ({ request, params }) => {
       const scenarioRequest = getVariantAnalysisRepoRequests.find(
@@ -183,7 +183,7 @@ function createGetVariantAnalysisRepoResultRequestHandler(
     isGetVariantAnalysisRepoResultRequest,
   );
 
-  return rest.get(
+  return http.get(
     "https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/:variantAnalysisId/:repoId/*",
     ({ request, params }) => {
       const scenarioRequest = getVariantAnalysisRepoResultRequests.find(
@@ -216,7 +216,7 @@ function createCodeSearchRequestHandler(
   // During a code search, there are multiple request to get pages of results. We
   // need to return different responses for each request, so keep an index of the
   // request and return the appropriate response.
-  return rest.get(`${baseUrl}/search/code`, () => {
+  return http.get(`${baseUrl}/search/code`, () => {
     const request = codeSearchRequests[requestIndex];
 
     if (requestIndex < codeSearchRequests.length - 1) {
@@ -239,7 +239,7 @@ function createAutoModelRequestHandler(
   // During automodeling there can be multiple API requests for each batch
   // of candidates we want to model. We need to return different responses for each request,
   // so keep an index of the request and return the appropriate response.
-  return rest.post(
+  return http.post(
     `${baseUrl}/repos/github/codeql/code-scanning/codeql/auto-model`,
     () => {
       const request = autoModelRequests[requestIndex];
