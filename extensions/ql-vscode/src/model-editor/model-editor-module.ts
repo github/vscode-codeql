@@ -11,7 +11,7 @@ import { pickExtensionPack } from "./extension-pack-picker";
 import { showAndLogErrorMessage } from "../common/logging";
 import { dir } from "tmp-promise";
 
-import { isQueryLanguage, QueryLanguage } from "../common/query-language";
+import { isQueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Method, Usage } from "./method";
@@ -24,8 +24,7 @@ import { ModelConfigListener } from "../config";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage } from "./languages";
 import { INITIAL_MODE } from "./shared/mode";
-
-const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
+import { isSupportedLanguage } from "./supported-languages";
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
@@ -130,12 +129,10 @@ export class ModelEditorModule extends DisposableObject {
 
       const language = db.language;
 
-      // Ruby is only enabled when the config setting is set
-      const isSupportedLanguage =
-        SUPPORTED_LANGUAGES.includes(language) ||
-        (language === QueryLanguage.Ruby && this.modelConfig.enableRuby);
-
-      if (!isSupportedLanguage || !isQueryLanguage(language)) {
+      if (
+        !isQueryLanguage(language) ||
+        !isSupportedLanguage(language, this.modelConfig)
+      ) {
         void showAndLogErrorMessage(
           this.app.logger,
           `The CodeQL Model Editor is not supported for ${language} databases.`,
