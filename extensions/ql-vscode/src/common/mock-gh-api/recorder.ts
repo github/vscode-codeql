@@ -112,11 +112,14 @@ export class Recorder extends DisposableObject {
     return scenarioDirectory;
   }
 
-  private async onResponseBypass(
-    response: Response,
-    request: Request,
-    _requestId: string,
-  ): Promise<void> {
+  private async onResponseBypass({
+    response,
+    request,
+  }: {
+    response: Response;
+    request: Request;
+    requestId: string;
+  }): Promise<void> {
     if (request.headers.has("x-vscode-codeql-msw-bypass")) {
       return;
     }
