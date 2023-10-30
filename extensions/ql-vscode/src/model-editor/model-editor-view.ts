@@ -38,7 +38,7 @@ import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { ModelConfigListener } from "../config";
-import { INITIAL_MODE, Mode } from "./shared/mode";
+import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
 import {
@@ -50,12 +50,14 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelingEvents } from "./modeling-events";
+import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
   FromModelEditorMessage
 > {
   private readonly autoModeler: AutoModeler;
+  private readonly languageDefinition: ModelsAsDataLanguage;
 
   public constructor(
     protected readonly app: App,
@@ -72,7 +74,7 @@ export class ModelEditorView extends AbstractWebview<
     private readonly extensionPack: ExtensionPack,
     // The language is equal to databaseItem.language but is properly typed as QueryLanguage
     private readonly language: QueryLanguage,
-    initialMode: Mode = INITIAL_MODE,
+    initialMode: Mode,
   ) {
     super(app);
 
@@ -95,6 +97,7 @@ export class ModelEditorView extends AbstractWebview<
         this.addModeledMethods(modeledMethods);
       },
     );
+    this.languageDefinition = getModelsAsDataLanguage(language);
   }
 
   public async openView() {
@@ -376,6 +379,10 @@ export class ModelEditorView extends AbstractWebview<
     const sourceArchiveAvailable =
       this.databaseItem.hasSourceArchiveInExplorer();
 
+    const showModeSwitchButton =
+      this.languageDefinition.availableModes === undefined ||
+      this.languageDefinition.availableModes.length > 1;
+
     await this.postMessage({
       t: "setModelEditorViewState",
       viewState: {
@@ -385,6 +392,7 @@ export class ModelEditorView extends AbstractWebview<
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),
+        showModeSwitchButton,
         sourceArchiveAvailable,
       },
     });

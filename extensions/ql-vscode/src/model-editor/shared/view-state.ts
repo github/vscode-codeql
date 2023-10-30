@@ -9,6 +9,7 @@ export interface ModelEditorViewState {
   showLlmButton: boolean;
   showMultipleModels: boolean;
   mode: Mode;
+  showModeSwitchButton: boolean;
   sourceArchiveAvailable: boolean;
 }
 

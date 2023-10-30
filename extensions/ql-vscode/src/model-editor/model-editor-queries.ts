@@ -10,7 +10,7 @@ import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { join } from "path";
 import { Mode } from "./shared/mode";
-import { writeFile } from "fs-extra";
+import { outputFile, writeFile } from "fs-extra";
 import { QueryLanguage } from "../common/query-language";
 import { fetchExternalApiQueries } from "./queries";
 import { Method } from "./method";
@@ -57,7 +57,7 @@ export async function prepareModelEditorQueries(
   if (query.dependencies) {
     for (const [filename, contents] of Object.entries(query.dependencies)) {
       const dependencyFile = join(queryDir, filename);
-      await writeFile(dependencyFile, contents, "utf8");
+      await outputFile(dependencyFile, contents, "utf8");
     }
   }
   return true;

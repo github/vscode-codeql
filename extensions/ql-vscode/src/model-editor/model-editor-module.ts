@@ -22,8 +22,9 @@ import { showResolvableLocation } from "../databases/local-databases/locations";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelConfigListener } from "../config";
 import { ModelingEvents } from "./modeling-events";
-
-const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
+import { getModelsAsDataLanguage } from "./languages";
+import { INITIAL_MODE } from "./shared/mode";
+import { isSupportedLanguage } from "./supported-languages";
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
@@ -32,6 +33,7 @@ export class ModelEditorModule extends DisposableObject {
   private readonly editorViewTracker: ModelEditorViewTracker<ModelEditorView>;
   private readonly methodsUsagePanel: MethodsUsagePanel;
   private readonly methodModelingPanel: MethodModelingPanel;
+  private readonly modelConfig: ModelConfigListener;
 
   private constructor(
     private readonly app: App,
@@ -56,6 +58,7 @@ export class ModelEditorModule extends DisposableObject {
         this.editorViewTracker,
       ),
     );
+    this.modelConfig = this.push(new ModelConfigListener());
 
     this.registerToModelingEvents();
   }
@@ -125,9 +128,10 @@ export class ModelEditorModule extends DisposableObject {
       }
 
       const language = db.language;
+
       if (
-        !SUPPORTED_LANGUAGES.includes(language) ||
-        !isQueryLanguage(language)
+        !isQueryLanguage(language) ||
+        !isSupportedLanguage(language, this.modelConfig)
       ) {
         void showAndLogErrorMessage(
           this.app.logger,
@@ -135,6 +139,10 @@ export class ModelEditorModule extends DisposableObject {
         );
         return;
       }
+
+      const definition = getModelsAsDataLanguage(language);
+
+      const initialMode = definition.availableModes?.[0] ?? INITIAL_MODE;
 
       const existingView = this.editorViewTracker.getView(
         db.databaseUri.toString(),
@@ -167,12 +175,10 @@ export class ModelEditorModule extends DisposableObject {
             return;
           }
 
-          const modelConfig = this.push(new ModelConfigListener());
-
           const modelFile = await pickExtensionPack(
             this.cliServer,
             db,
-            modelConfig,
+            this.modelConfig,
             this.app.logger,
             progress,
             maxStep,
@@ -196,7 +202,7 @@ export class ModelEditorModule extends DisposableObject {
             this.cliServer,
             queryDir,
             language,
-            modelConfig,
+            this.modelConfig,
           );
           if (!success) {
             await cleanupQueryDir();
@@ -225,7 +231,7 @@ export class ModelEditorModule extends DisposableObject {
             this.modelingStore,
             this.modelingEvents,
             this.editorViewTracker,
-            modelConfig,
+            this.modelConfig,
             this.databaseManager,
             this.cliServer,
             this.queryRunner,
@@ -234,6 +240,7 @@ export class ModelEditorModule extends DisposableObject {
             db,
             modelFile,
             language,
+            initialMode,
           );
 
           this.modelingEvents.onDbClosed(async (dbUri) => {

@@ -40,15 +40,12 @@ describe("setUpPack", () => {
       await setUpPack(cliServer, queryDir, language, modelConfig);
 
       const queryFiles = await readdir(queryDir);
-      expect(queryFiles.sort()).toEqual(
-        [
+      expect(queryFiles).toEqual(
+        expect.arrayContaining([
           "codeql-pack.yml",
           "ApplicationModeEndpoints.ql",
-          "ApplicationModeEndpointsQuery.qll",
           "FrameworkModeEndpoints.ql",
-          "FrameworkModeEndpointsQuery.qll",
-          "ModelEditor.qll",
-        ].sort(),
+        ]),
       );
 
       const suiteFileContents = await readFile(
