@@ -15,7 +15,6 @@ describe("createDataExtensionYaml", () => {
       {
         type: "sink",
         input: "Argument[0]",
-        output: "",
         kind: "sql",
         provenance: "df-generated",
         signature: "org.sql2o.Connection#createQuery(String)",
@@ -230,7 +229,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
@@ -243,8 +241,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
         "org.springframework.boot.SpringApplication#run(Class,String[])": [
           {
             type: "neutral",
-            input: "",
-            output: "",
             kind: "summary",
             provenance: "manual",
             signature:
@@ -259,7 +255,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "jndi",
             provenance: "manual",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
@@ -474,7 +469,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
@@ -487,8 +481,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
         "org.springframework.boot.SpringApplication#run(Class,String[])": [
           {
             type: "neutral",
-            input: "",
-            output: "",
             kind: "summary",
             provenance: "manual",
             signature:
@@ -503,7 +495,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "jndi",
             provenance: "manual",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
@@ -519,8 +510,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           "org.sql2o.Connection#createQuery(String)": [
             {
               type: "neutral",
-              input: "",
-              output: "",
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Connection#createQuery(String)",
@@ -533,8 +522,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           "org.sql2o.Query#executeScalar(Class)": [
             {
               type: "neutral",
-              input: "",
-              output: "",
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Query#executeScalar(Class)",
@@ -718,7 +705,6 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
@@ -732,7 +718,6 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "jndi",
             provenance: "manual",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
@@ -874,7 +859,6 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
@@ -888,7 +872,6 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           {
             type: "sink",
             input: "Argument[0]",
-            output: "",
             kind: "jndi",
             provenance: "manual",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
@@ -904,8 +887,6 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           "org.sql2o.Connection#createQuery(String)": [
             {
               type: "neutral",
-              input: "",
-              output: "",
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Connection#createQuery(String)",
@@ -918,8 +899,6 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           "org.sql2o.Query#executeScalar(Class)": [
             {
               type: "neutral",
-              input: "",
-              output: "",
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Query#executeScalar(Class)",

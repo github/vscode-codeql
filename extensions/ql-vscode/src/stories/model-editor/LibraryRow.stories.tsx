@@ -149,7 +149,6 @@ LibraryRow.args = {
       {
         type: "sink",
         input: "Argument[0]",
-        output: "",
         kind: "jndi-injection",
         provenance: "df-generated",
         signature: "org.sql2o.Sql2o#Sql2o(String)",
@@ -190,9 +189,7 @@ LibraryRow.args = {
     "org.sql2o.Query#executeScalar(Class)": [
       {
         type: "neutral",
-        input: "",
-        output: "",
-        kind: "",
+        kind: "summary",
         provenance: "df-generated",
         signature: "org.sql2o.Query#executeScalar(Class)",
         packageName: "org.sql2o",
@@ -204,9 +201,7 @@ LibraryRow.args = {
     "org.sql2o.Sql2o#Sql2o(String,String,String)": [
       {
         type: "neutral",
-        input: "",
-        output: "",
-        kind: "",
+        kind: "sink",
         provenance: "df-generated",
         signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
         packageName: "org.sql2o",

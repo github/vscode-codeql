@@ -94,9 +94,6 @@ export const MultipleModeledMethodsPanel = ({
   const handleAddClick = useCallback(() => {
     const newModeledMethod: ModeledMethod = {
       type: "none",
-      input: "",
-      output: "",
-      kind: "",
       provenance: "manual",
       signature: method.signature,
       packageName: method.packageName,

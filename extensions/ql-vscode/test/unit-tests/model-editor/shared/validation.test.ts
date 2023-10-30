@@ -1,15 +1,19 @@
 import { validateModeledMethods } from "../../../../src/model-editor/shared/validation";
-import { createModeledMethod } from "../../../factories/model-editor/modeled-method-factories";
+import {
+  createNeutralModeledMethod,
+  createNoneModeledMethod,
+  createSinkModeledMethod,
+  createSourceModeledMethod,
+  createSummaryModeledMethod,
+} from "../../../factories/model-editor/modeled-method-factories";
 
 describe(validateModeledMethods.name, () => {
   it("should not give an error with valid modeled methods", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "source",
+      createSourceModeledMethod({
         output: "ReturnValue",
       }),
-      createModeledMethod({
-        type: "sink",
+      createSinkModeledMethod({
         input: "Argument[this]",
       }),
     ];
@@ -21,17 +25,13 @@ describe(validateModeledMethods.name, () => {
 
   it("should not give an error with valid modeled methods and an unmodeled method", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "source",
+      createSourceModeledMethod({
         output: "ReturnValue",
       }),
-      createModeledMethod({
-        type: "sink",
+      createSinkModeledMethod({
         input: "Argument[this]",
       }),
-      createModeledMethod({
-        type: "none",
-      }),
+      createNoneModeledMethod(),
     ];
 
     const errors = validateModeledMethods(modeledMethods);
@@ -41,20 +41,14 @@ describe(validateModeledMethods.name, () => {
 
   it("should not give an error with valid modeled methods and multiple unmodeled methods", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "none",
-      }),
-      createModeledMethod({
-        type: "source",
+      createNoneModeledMethod(),
+      createSourceModeledMethod({
         output: "ReturnValue",
       }),
-      createModeledMethod({
-        type: "sink",
+      createSinkModeledMethod({
         input: "Argument[this]",
       }),
-      createModeledMethod({
-        type: "none",
-      }),
+      createNoneModeledMethod(),
     ];
 
     const errors = validateModeledMethods(modeledMethods);
@@ -63,11 +57,7 @@ describe(validateModeledMethods.name, () => {
   });
 
   it("should not give an error with a single neutral model", () => {
-    const modeledMethods = [
-      createModeledMethod({
-        type: "neutral",
-      }),
-    ];
+    const modeledMethods = [createNeutralModeledMethod()];
 
     const errors = validateModeledMethods(modeledMethods);
 
@@ -76,12 +66,8 @@ describe(validateModeledMethods.name, () => {
 
   it("should not give an error with a neutral model and an unmodeled method", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "neutral",
-      }),
-      createModeledMethod({
-        type: "none",
-      }),
+      createNeutralModeledMethod(),
+      createNoneModeledMethod(),
     ];
 
     const errors = validateModeledMethods(modeledMethods);
@@ -90,7 +76,10 @@ describe(validateModeledMethods.name, () => {
   });
 
   it("should give an error with exact duplicate modeled methods", () => {
-    const modeledMethods = [createModeledMethod(), createModeledMethod()];
+    const modeledMethods = [
+      createSinkModeledMethod(),
+      createSinkModeledMethod(),
+    ];
 
     const errors = validateModeledMethods(modeledMethods);
 
@@ -106,10 +95,10 @@ describe(validateModeledMethods.name, () => {
 
   it("should give an error with duplicate modeled methods with different provenance", () => {
     const modeledMethods = [
-      createModeledMethod({
+      createSinkModeledMethod({
         provenance: "df-generated",
       }),
-      createModeledMethod({
+      createSinkModeledMethod({
         provenance: "manual",
       }),
     ];
@@ -127,18 +116,21 @@ describe(validateModeledMethods.name, () => {
   });
 
   it("should give an error with duplicate modeled methods with different source unused fields", () => {
-    const modeledMethods = [
-      createModeledMethod({
-        type: "source",
+    const modeledMethod1 = createSourceModeledMethod({
+      output: "ReturnValue",
+      ...{
         input: "Argument[this]",
-        output: "ReturnValue",
-      }),
-      createModeledMethod({
-        type: "source",
+      },
+    });
+
+    const modeledMethod2 = createSourceModeledMethod({
+      output: "ReturnValue",
+      ...{
         input: "Argument[1]",
-        output: "ReturnValue",
-      }),
-    ];
+      },
+    });
+
+    const modeledMethods = [modeledMethod1, modeledMethod2];
 
     const errors = validateModeledMethods(modeledMethods);
 
@@ -153,18 +145,22 @@ describe(validateModeledMethods.name, () => {
   });
 
   it("should give an error with duplicate modeled methods with different sink unused fields", () => {
-    const modeledMethods = [
-      createModeledMethod({
-        type: "sink",
-        input: "Argument[this]",
+    const modeledMethod1 = createSinkModeledMethod({
+      type: "sink",
+      input: "Argument[this]",
+      ...{
         output: "ReturnValue",
-      }),
-      createModeledMethod({
-        type: "sink",
-        input: "Argument[this]",
+      },
+    });
+    const modeledMethod2 = createSinkModeledMethod({
+      type: "sink",
+      input: "Argument[this]",
+      ...{
         output: "Argument[this]",
-      }),
-    ];
+      },
+    });
+
+    const modeledMethods = [modeledMethod1, modeledMethod2];
 
     const errors = validateModeledMethods(modeledMethods);
 
@@ -187,16 +183,14 @@ describe(validateModeledMethods.name, () => {
     };
 
     const modeledMethods = [
-      createModeledMethod({
-        type: "sink",
+      createSummaryModeledMethod({
         input: "Argument[this]",
         output: "ReturnValue",
         ...supportedTrue,
       }),
-      createModeledMethod({
-        type: "sink",
+      createSummaryModeledMethod({
         input: "Argument[this]",
-        output: "Argument[this]",
+        output: "ReturnValue",
         ...supportedFalse,
       }),
     ];
@@ -215,15 +209,19 @@ describe(validateModeledMethods.name, () => {
 
   it("should give an error with duplicate modeled methods with different neutral unused fields", () => {
     const modeledMethods = [
-      createModeledMethod({
+      createNeutralModeledMethod({
         type: "neutral",
-        input: "Argument[this]",
-        output: "ReturnValue",
+        ...{
+          input: "Argument[this]",
+          output: "ReturnValue",
+        },
       }),
-      createModeledMethod({
+      createNeutralModeledMethod({
         type: "neutral",
-        input: "Argument[1]",
-        output: "Argument[this]",
+        ...{
+          input: "Argument[1]",
+          output: "Argument[this]",
+        },
       }),
     ];
 
@@ -241,11 +239,8 @@ describe(validateModeledMethods.name, () => {
 
   it("should give an error with neutral combined with other models", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "sink",
-      }),
-      createModeledMethod({
-        type: "neutral",
+      createSinkModeledMethod(),
+      createNeutralModeledMethod({
         kind: "sink",
       }),
     ];
@@ -264,11 +259,8 @@ describe(validateModeledMethods.name, () => {
 
   it("should not give an error with other neutral combined with other models", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "sink",
-      }),
-      createModeledMethod({
-        type: "neutral",
+      createSinkModeledMethod(),
+      createNeutralModeledMethod({
         kind: "summary",
       }),
     ];
@@ -280,15 +272,11 @@ describe(validateModeledMethods.name, () => {
 
   it("should give an error with duplicate neutral combined with other models", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "neutral",
+      createNeutralModeledMethod({
         kind: "summary",
       }),
-      createModeledMethod({
-        type: "summary",
-      }),
-      createModeledMethod({
-        type: "neutral",
+      createSummaryModeledMethod(),
+      createNeutralModeledMethod({
         kind: "summary",
       }),
     ];
@@ -313,18 +301,12 @@ describe(validateModeledMethods.name, () => {
 
   it("should include unmodeled methods in the index", () => {
     const modeledMethods = [
-      createModeledMethod({
-        type: "none",
-      }),
-      createModeledMethod({
-        type: "neutral",
+      createNoneModeledMethod(),
+      createNeutralModeledMethod({
         kind: "sink",
       }),
-      createModeledMethod({
-        type: "sink",
-      }),
-      createModeledMethod({
-        type: "neutral",
+      createSinkModeledMethod(),
+      createNeutralModeledMethod({
         kind: "sink",
       }),
     ];

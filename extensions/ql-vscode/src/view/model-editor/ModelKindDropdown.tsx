@@ -4,6 +4,7 @@ import type {
   ModeledMethod,
   ModeledMethodKind,
 } from "../../model-editor/modeled-method";
+import { modeledMethodSupportsKind } from "../../model-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
 import { Method } from "../../model-editor/method";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
@@ -44,7 +45,7 @@ export const ModelKindDropdown = ({
 
   const onChangeKind = useCallback(
     (kind: ModeledMethodKind) => {
-      if (!modeledMethod) {
+      if (!modeledMethod || !modeledMethodSupportsKind(modeledMethod)) {
         return;
       }
 
@@ -66,19 +67,26 @@ export const ModelKindDropdown = ({
     [onChangeKind],
   );
 
+  const value =
+    modeledMethod && modeledMethodSupportsKind(modeledMethod)
+      ? modeledMethod.kind
+      : undefined;
+
   useEffect(() => {
-    const value = modeledMethod?.kind ?? "";
+    if (!modeledMethod || !modeledMethodSupportsKind(modeledMethod)) {
+      return;
+    }
 
     if (kinds.length === 0 && value !== "") {
       onChangeKind("");
-    } else if (kinds.length > 0 && !kinds.includes(value)) {
+    } else if (kinds.length > 0 && !kinds.includes(value ?? "")) {
       onChangeKind(kinds[0]);
     }
-  }, [modeledMethod?.kind, kinds, onChangeKind]);
+  }, [modeledMethod, value, kinds, onChangeKind]);
 
   return (
     <Dropdown
-      value={modeledMethod?.kind}
+      value={value ?? undefined}
       options={options}
       disabled={disabled}
       onChange={handleChange}

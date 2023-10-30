@@ -1,7 +1,10 @@
 import * as React from "react";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import { Dropdown } from "../common/Dropdown";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import {
+  ModeledMethod,
+  modeledMethodSupportsInput,
+} from "../../model-editor/modeled-method";
 import { Method, getArgumentsList } from "../../model-editor/method";
 
 type Props = {
@@ -32,14 +35,13 @@ export const ModelInputDropdown = ({
   );
 
   const enabled = useMemo(
-    () =>
-      modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type),
-    [modeledMethod?.type],
+    () => modeledMethod && modeledMethodSupportsInput(modeledMethod),
+    [modeledMethod],
   );
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
-      if (!modeledMethod) {
+      if (!modeledMethod || !modeledMethodSupportsInput(modeledMethod)) {
         return;
       }
 
@@ -53,9 +55,14 @@ export const ModelInputDropdown = ({
     [onChange, modeledMethod],
   );
 
+  const value =
+    modeledMethod && modeledMethodSupportsInput(modeledMethod)
+      ? modeledMethod.input
+      : undefined;
+
   return (
     <Dropdown
-      value={modeledMethod?.input}
+      value={value}
       options={options}
       disabled={!enabled}
       onChange={handleChange}

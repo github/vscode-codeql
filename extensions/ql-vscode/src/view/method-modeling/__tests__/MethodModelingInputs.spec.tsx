@@ -6,8 +6,12 @@ import {
   MethodModelingInputsProps,
 } from "../MethodModelingInputs";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import { createModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
+import {
+  createMethodSignature,
+  createSinkModeledMethod,
+} from "../../../../test/factories/model-editor/modeled-method-factories";
 import { QueryLanguage } from "../../../common/query-language";
+import { createEmptyModeledMethod } from "../../../model-editor/modeled-method-empty";
 
 describe(MethodModelingInputs.name, () => {
   const render = (props: MethodModelingInputsProps) =>
@@ -15,7 +19,7 @@ describe(MethodModelingInputs.name, () => {
 
   const language = QueryLanguage.Java;
   const method = createMethod();
-  const modeledMethod = createModeledMethod();
+  const modeledMethod = createSinkModeledMethod();
   const isModelingInProgress = false;
   const onChange = jest.fn();
 
@@ -76,9 +80,10 @@ describe(MethodModelingInputs.name, () => {
       onChange,
     });
 
-    const updatedModeledMethod = createModeledMethod({
-      type: "source",
-    });
+    const updatedModeledMethod = createEmptyModeledMethod(
+      "source",
+      createMethodSignature(),
+    );
 
     rerender(
       <MethodModelingInputs

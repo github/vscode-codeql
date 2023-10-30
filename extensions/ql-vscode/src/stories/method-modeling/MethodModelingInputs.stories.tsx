@@ -4,7 +4,7 @@ import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodModelingInputs as MethodModelingInputsComponent } from "../../view/method-modeling/MethodModelingInputs";
 import { createMethod } from "../../../test/factories/model-editor/method-factories";
-import { createModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
+import { createSinkModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
 import { useState } from "react";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 
@@ -39,7 +39,7 @@ const Template: StoryFn<typeof MethodModelingInputsComponent> = (args) => {
 };
 
 const method = createMethod();
-const modeledMethod = createModeledMethod();
+const modeledMethod = createSinkModeledMethod();
 
 export const UnmodeledMethod = Template.bind({});
 UnmodeledMethod.args = {

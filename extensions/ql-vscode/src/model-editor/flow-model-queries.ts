@@ -5,10 +5,13 @@ import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
-import { getModelsAsDataLanguage } from "./languages";
+import {
+  getModelsAsDataLanguageModel,
+  ModelsAsDataLanguagePredicates,
+} from "./languages";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { ModeledMethod, ModeledMethodType } from "./modeled-method";
+import { ModeledMethod } from "./modeled-method";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { runQuery } from "../local-queries/run-query";
@@ -109,7 +112,7 @@ async function resolveFlowQueries(
 }
 
 async function runSingleFlowQuery(
-  type: Exclude<ModeledMethodType, "none">,
+  type: keyof ModelsAsDataLanguagePredicates,
   queryPath: string | undefined,
   queryStep: number,
   {
@@ -154,9 +157,7 @@ async function runSingleFlowQuery(
   }
 
   // Interpret the results
-  const modelsAsDataLanguage = getModelsAsDataLanguage(language);
-
-  const definition = modelsAsDataLanguage.predicates[type];
+  const definition = getModelsAsDataLanguageModel(language, type);
 
   const bqrsPath = completedQuery.outputDir.bqrsPath;
 

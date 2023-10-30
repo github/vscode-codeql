@@ -53,7 +53,6 @@ describe(ModeledMethodsList.name, () => {
               ...method1,
               type: "sink",
               input: "Argument[0]",
-              output: "",
               kind: "jndi-injection",
               provenance: "df-generated",
             },

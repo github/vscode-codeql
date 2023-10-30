@@ -19,12 +19,87 @@ export type Provenance =
   // Entered by the user in the editor manually
   | "manual";
 
-export interface ModeledMethod extends MethodSignature {
-  readonly type: ModeledMethodType;
+export interface NoneModeledMethod extends MethodSignature {
+  readonly type: "none";
+  // Provenance is always propagated
+  readonly provenance: Provenance;
+}
+
+export interface SourceModeledMethod extends MethodSignature {
+  readonly type: "source";
+  readonly output: string;
+  readonly kind: ModeledMethodKind;
+  readonly provenance: Provenance;
+}
+
+export interface SinkModeledMethod extends MethodSignature {
+  readonly type: "sink";
+  readonly input: string;
+  readonly kind: ModeledMethodKind;
+  readonly provenance: Provenance;
+}
+
+export interface SummaryModeledMethod extends MethodSignature {
+  readonly type: "summary";
   readonly input: string;
   readonly output: string;
   readonly kind: ModeledMethodKind;
   readonly provenance: Provenance;
 }
 
+export interface NeutralModeledMethod extends MethodSignature {
+  readonly type: "neutral";
+  readonly kind: ModeledMethodKind;
+  readonly provenance: Provenance;
+}
+
+export type ModeledMethod =
+  | NoneModeledMethod
+  | SourceModeledMethod
+  | SinkModeledMethod
+  | SummaryModeledMethod
+  | NeutralModeledMethod;
+
 export type ModeledMethodKind = string;
+
+export function modeledMethodSupportsKind(
+  modeledMethod: ModeledMethod,
+): modeledMethod is
+  | SourceModeledMethod
+  | SinkModeledMethod
+  | SummaryModeledMethod
+  | NeutralModeledMethod {
+  return (
+    modeledMethod.type === "source" ||
+    modeledMethod.type === "sink" ||
+    modeledMethod.type === "summary" ||
+    modeledMethod.type === "neutral"
+  );
+}
+
+export function modeledMethodSupportsInput(
+  modeledMethod: ModeledMethod,
+): modeledMethod is SinkModeledMethod | SummaryModeledMethod {
+  return modeledMethod.type === "sink" || modeledMethod.type === "summary";
+}
+
+export function modeledMethodSupportsOutput(
+  modeledMethod: ModeledMethod,
+): modeledMethod is SourceModeledMethod | SummaryModeledMethod {
+  return modeledMethod.type === "source" || modeledMethod.type === "summary";
+}
+
+export function modeledMethodSupportsProvenance(
+  modeledMethod: ModeledMethod,
+): modeledMethod is
+  | SourceModeledMethod
+  | SinkModeledMethod
+  | SummaryModeledMethod
+  | NeutralModeledMethod {
+  return (
+    modeledMethod.type === "source" ||
+    modeledMethod.type === "sink" ||
+    modeledMethod.type === "summary" ||
+    modeledMethod.type === "neutral"
+  );
+}

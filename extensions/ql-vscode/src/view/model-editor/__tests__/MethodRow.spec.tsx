@@ -78,7 +78,6 @@ describe(MethodRow.name, () => {
     expect(onChange).toHaveBeenCalledWith(method.signature, [
       {
         type: "source",
-        input: "Argument[0]",
         output: "ReturnValue",
         kind: "value",
         provenance: "manual",
@@ -367,9 +366,6 @@ describe(MethodRow.name, () => {
       modeledMethod,
       {
         type: "none",
-        input: "",
-        output: "",
-        kind: "",
         provenance: "manual",
         signature: method.signature,
         packageName: method.packageName,

@@ -167,9 +167,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
     const handleAddModelClick = useCallback(() => {
       const newModeledMethod: ModeledMethod = {
         type: "none",
-        input: "",
-        output: "",
-        kind: "",
         provenance: "manual",
         signature: method.signature,
         packageName: method.packageName,
@@ -362,9 +359,6 @@ function modeledMethodsToDisplay(
     return [
       {
         type: "none",
-        input: "",
-        output: "",
-        kind: "",
         provenance: "manual",
         signature: method.signature,
         packageName: method.packageName,
