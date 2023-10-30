@@ -73,7 +73,12 @@ describe("database-fetcher", () => {
 
     it("should convert a GitHub nwo to a database url", async () => {
       mockRequest.mockResolvedValue(successfullMockApiResponse);
-      quickPickSpy.mockResolvedValue(mockedQuickPickItem("javascript"));
+      quickPickSpy.mockResolvedValue(
+        mockedQuickPickItem({
+          label: "JavaScript",
+          language: "javascript",
+        }),
+      );
       const githubRepo = "github/codeql";
       const result = await convertGithubNwoToDatabaseUrl(
         githubRepo,
@@ -94,7 +99,23 @@ describe("database-fetcher", () => {
       expect(owner).toBe("github");
       expect(quickPickSpy).toHaveBeenNthCalledWith(
         1,
-        ["csharp", "javascript", "ql"],
+        [
+          expect.objectContaining({
+            label: "C#",
+            description: "csharp",
+            language: "csharp",
+          }),
+          expect.objectContaining({
+            label: "JavaScript",
+            description: "javascript",
+            language: "javascript",
+          }),
+          expect.objectContaining({
+            label: "ql",
+            description: "ql",
+            language: "ql",
+          }),
+        ],
         expect.anything(),
       );
     });

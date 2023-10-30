@@ -67,7 +67,12 @@ describe("Variant Analysis Submission Integration", () => {
       await showQlDocument("query.ql");
 
       // Select target language for your query
-      quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
+      quickPickSpy.mockResolvedValueOnce(
+        mockedQuickPickItem({
+          label: "JavaScript",
+          language: "javascript",
+        }),
+      );
 
       await commandManager.execute("codeQL.runVariantAnalysis");
 
@@ -106,7 +111,12 @@ describe("Variant Analysis Submission Integration", () => {
       await showQlDocument("query.ql");
 
       // Select target language for your query
-      quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
+      quickPickSpy.mockResolvedValueOnce(
+        mockedQuickPickItem({
+          label: "JavaScript",
+          language: "javascript",
+        }),
+      );
 
       await commandManager.execute("codeQL.runVariantAnalysis");
 
