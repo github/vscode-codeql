@@ -27,7 +27,7 @@ Pre-requisites:
 Then, from the `extensions/ql-vscode` directory, use the appropriate command to run the tests:
 
 * Unit tests: `npm run test:unit`
-* View Tests: `npm test:view`
+* View Tests: `npm run test:view`
 * VSCode integration tests: `npm run test:vscode-integration`
 
 #### Running CLI integration tests from the terminal
@@ -48,8 +48,8 @@ Alternatively, you can run the tests inside of VSCode. There are several VSCode 
 
 You will need to run tests using a task from inside of VS Code, under the "Run and Debug" view:
 
-* Unit tests: run the _Launch Unit Tests - React_ task
-* View Tests: run the _Launch Unit Tests_ task
+* Unit tests: run the _Launch Unit Tests_ task
+* View Tests: run the _Launch Unit Tests - React_ task
 * VSCode integration tests: run the _Launch Unit Tests - No Workspace_ and _Launch Unit Tests - Minimal Workspace_ tasks
 
 #### Running CLI integration tests from VSCode
