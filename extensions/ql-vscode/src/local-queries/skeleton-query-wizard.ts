@@ -1,16 +1,20 @@
 import { basename, dirname, join } from "path";
-import { Uri, window as Window, workspace } from "vscode";
+import { Uri, window, window as Window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { BaseLogger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { Credentials } from "../common/authentication";
-import { QueryLanguage } from "../common/query-language";
+import {
+  getLanguageDisplayName,
+  QueryLanguage,
+} from "../common/query-language";
 import { getFirstWorkspaceFolder } from "../common/vscode/workspace-folders";
-import { getErrorMessage } from "../common/helpers-pure";
+import { asError, getErrorMessage } from "../common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
   ProgressCallback,
   UserCancellationException,
+  withProgress,
 } from "../common/vscode/progress";
 import {
   askForGitHubRepo,
@@ -23,6 +27,9 @@ import {
 } from "../config";
 import { lstat, pathExists } from "fs-extra";
 import { askForLanguage } from "../codeql-cli/query-language";
+import { showInformationMessageWithAction } from "../common/vscode/dialog";
+import { redactableError } from "../common/errors";
+import { App } from "../common/app";
 import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
@@ -41,12 +48,13 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
 export class SkeletonQueryWizard {
   private fileName = "example.ql";
   private qlPackStoragePath: string | undefined;
+  private downloadPromise: Promise<void> | undefined;
 
   constructor(
     private readonly cliServer: CodeQLCliServer,
     private readonly progress: ProgressCallback,
     private readonly credentials: Credentials | undefined,
-    private readonly logger: BaseLogger,
+    private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseStoragePath: string | undefined,
     private readonly selectedItems: readonly QueryTreeViewItem[],
@@ -55,6 +63,16 @@ export class SkeletonQueryWizard {
 
   private get folderName() {
     return `codeql-custom-queries-${this.language}`;
+  }
+
+  /**
+   * Wait for the download process to complete by waiting for the user to select
+   * either "Download database" or closing the dialog. This is used for testing.
+   */
+  public async waitForDownload() {
+    if (this.downloadPromise) {
+      await this.downloadPromise;
+    }
   }
 
   public async execute() {
@@ -85,7 +103,7 @@ export class SkeletonQueryWizard {
     try {
       await this.openExampleFile();
     } catch (e: unknown) {
-      void this.logger.log(
+      void this.app.logger.log(
         `Could not open example query file: ${getErrorMessage(e)}`,
       );
     }
@@ -104,7 +122,9 @@ export class SkeletonQueryWizard {
     );
 
     void workspace.openTextDocument(queryFileUri).then((doc) => {
-      void Window.showTextDocument(doc);
+      void Window.showTextDocument(doc, {
+        preview: false,
+      });
     });
   }
 
@@ -208,7 +228,7 @@ export class SkeletonQueryWizard {
 
       await qlPackGenerator.generate();
     } catch (e: unknown) {
-      void this.logger.log(
+      void this.app.logger.log(
         `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
       );
     }
@@ -240,7 +260,7 @@ export class SkeletonQueryWizard {
       this.fileName = await this.determineNextFileName(this.folderName);
       await qlPackGenerator.createExampleQlFile(this.fileName);
     } catch (e: unknown) {
-      void this.logger.log(
+      void this.app.logger.log(
         `Could not create query example file: ${getErrorMessage(e)}`,
       );
     }
@@ -260,7 +280,47 @@ export class SkeletonQueryWizard {
     return `example${qlFiles.length + 1}.ql`;
   }
 
-  private async downloadDatabase() {
+  private async promptDownloadDatabase() {
+    if (this.qlPackStoragePath === undefined) {
+      throw new Error("QL Pack storage path is undefined");
+    }
+
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
+
+    const openFileLink = this.openFileMarkdownLink;
+
+    const displayLanguage = getLanguageDisplayName(this.language);
+    const action = await showInformationMessageWithAction(
+      `New CodeQL query for ${displayLanguage} ${openFileLink} created, but no CodeQL databases for ${displayLanguage} were detected in your workspace. Would you like to download a CodeQL database for ${displayLanguage} to analyze with ${openFileLink}?`,
+      "Download database",
+    );
+
+    if (action) {
+      void withProgress(async (progress) => {
+        try {
+          await this.downloadDatabase(progress);
+        } catch (e: unknown) {
+          if (e instanceof UserCancellationException) {
+            return;
+          }
+
+          void showAndLogExceptionWithTelemetry(
+            this.app.logger,
+            this.app.telemetry,
+            redactableError(
+              asError(e),
+            )`An error occurred while downloading the GitHub repository: ${getErrorMessage(
+              e,
+            )}`,
+          );
+        }
+      });
+    }
+  }
+
+  private async downloadDatabase(progress: ProgressCallback) {
     if (this.qlPackStoragePath === undefined) {
       throw new Error("QL Pack storage path is undefined");
     }
@@ -273,10 +333,10 @@ export class SkeletonQueryWizard {
       throw new Error("Language is undefined");
     }
 
-    this.progress({
+    progress({
       message: "Downloading database",
-      step: 3,
-      maxStep: 3,
+      step: 1,
+      maxStep: 2,
     });
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
@@ -291,7 +351,7 @@ export class SkeletonQueryWizard {
       this.databaseManager,
       this.databaseStoragePath,
       this.credentials,
-      this.progress,
+      progress,
       this.cliServer,
       this.language,
     );
@@ -313,12 +373,40 @@ export class SkeletonQueryWizard {
       );
 
     if (existingDatabaseItem) {
-      // select the found database
-      await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
+      const openFileLink = this.openFileMarkdownLink;
+
+      if (this.databaseManager.currentDatabaseItem !== existingDatabaseItem) {
+        // select the found database
+        await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
+
+        const displayLanguage = getLanguageDisplayName(this.language);
+        void window.showInformationMessage(
+          `New CodeQL query for ${displayLanguage} ${openFileLink} created. We have automatically selected your existing CodeQL ${displayLanguage} database ${existingDatabaseItem.name} for you to analyze with ${openFileLink}.`,
+        );
+      }
     } else {
       // download new database and select it
-      await this.downloadDatabase();
+      this.downloadPromise = this.promptDownloadDatabase().finally(() => {
+        this.downloadPromise = undefined;
+      });
     }
+  }
+
+  private get openFileMarkdownLink() {
+    if (this.qlPackStoragePath === undefined) {
+      throw new Error("QL Pack storage path is undefined");
+    }
+
+    const queryPath = join(
+      this.qlPackStoragePath,
+      this.folderName,
+      this.fileName,
+    );
+    const queryPathUri = Uri.file(queryPath);
+
+    const openFileArgs = [queryPathUri.toString(true)];
+    const queryString = encodeURI(JSON.stringify(openFileArgs));
+    return `[${this.fileName}](command:vscode.open?${queryString})`;
   }
 
   public static async findDatabaseItemByNwo(

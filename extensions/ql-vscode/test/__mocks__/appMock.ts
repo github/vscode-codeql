@@ -34,7 +34,7 @@ export function createMockApp({
   environment?: EnvironmentContext;
   logger?: NotificationLogger;
   telemetry?: AppTelemetry;
-}): App {
+} = {}): App {
   return {
     mode: AppMode.Test,
     logger,
