@@ -23,7 +23,7 @@ import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelConfigListener } from "../config";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage } from "./languages";
-import { Mode } from "./shared/mode";
+import { INITIAL_MODE } from "./shared/mode";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -145,7 +145,7 @@ export class ModelEditorModule extends DisposableObject {
 
       const definition = getModelsAsDataLanguage(language);
 
-      const initialMode = definition.availableModes?.[0] ?? Mode.Application;
+      const initialMode = definition.availableModes?.[0] ?? INITIAL_MODE;
 
       const existingView = this.editorViewTracker.getView(
         db.databaseUri.toString(),
