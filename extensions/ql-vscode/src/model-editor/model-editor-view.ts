@@ -515,19 +515,7 @@ export class ModelEditorView extends AbstractWebview<
             databaseItem: addedDatabase ?? this.databaseItem,
             language: this.language,
             onResults: async (modeledMethods) => {
-              const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
-
-              for (const modeledMethod of modeledMethods) {
-                if (!(modeledMethod.signature in modeledMethodsByName)) {
-                  modeledMethodsByName[modeledMethod.signature] = [];
-                }
-
-                modeledMethodsByName[modeledMethod.signature].push(
-                  modeledMethod,
-                );
-              }
-
-              this.addModeledMethods(modeledMethodsByName);
+              this.addModeledMethodsFromArray(modeledMethods);
             },
             progress,
             token: tokenSource.token,
@@ -563,17 +551,7 @@ export class ModelEditorView extends AbstractWebview<
             token: tokenSource.token,
           });
 
-          const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
-
-          for (const modeledMethod of modeledMethods) {
-            if (!(modeledMethod.signature in modeledMethodsByName)) {
-              modeledMethodsByName[modeledMethod.signature] = [];
-            }
-
-            modeledMethodsByName[modeledMethod.signature].push(modeledMethod);
-          }
-
-          this.addModeledMethods(modeledMethodsByName);
+          this.addModeledMethodsFromArray(modeledMethods);
         } catch (e: unknown) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
@@ -804,6 +782,20 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       new Set(Object.keys(modeledMethods)),
     );
+  }
+
+  private addModeledMethodsFromArray(modeledMethods: ModeledMethod[]) {
+    const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
+
+    for (const modeledMethod of modeledMethods) {
+      if (!(modeledMethod.signature in modeledMethodsByName)) {
+        modeledMethodsByName[modeledMethod.signature] = [];
+      }
+
+      modeledMethodsByName[modeledMethod.signature].push(modeledMethod);
+    }
+
+    this.addModeledMethods(modeledMethodsByName);
   }
 
   private setModeledMethods(signature: string, methods: ModeledMethod[]) {
