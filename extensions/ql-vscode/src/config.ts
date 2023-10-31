@@ -735,7 +735,7 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
    * Note that the model may return fewer than this number of candidates.
    */
   public get llmGenerationBatchSize(): number {
-    return LLM_GENERATION_BATCH_SIZE.getValue<number | null>() || 10;
+    return LLM_GENERATION_BATCH_SIZE.getValue<number | null>() || 5;
   }
 
   public getExtensionsDirectory(languageId: string): string | undefined {
