@@ -121,3 +121,5 @@ export interface DecodedBqrsChunk {
   next?: number;
   columns: BqrsColumn[];
 }
+
+export type DecodedBqrs = Record<string, DecodedBqrsChunk>;

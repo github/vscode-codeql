@@ -10,7 +10,11 @@ import tk from "tree-kill";
 import { promisify } from "util";
 import { CancellationToken, Disposable, Uri } from "vscode";
 
-import { BQRSInfo, DecodedBqrsChunk } from "../common/bqrs-cli-types";
+import {
+  BQRSInfo,
+  DecodedBqrs,
+  DecodedBqrsChunk,
+} from "../common/bqrs-cli-types";
 import { allowCanaryQueryServer, CliConfig } from "../config";
 import {
   DistributionProvider,
@@ -1037,6 +1041,18 @@ export class CodeQLCliServer implements Disposable {
       ["bqrs", "decode"],
       subcommandArgs,
       "Reading bqrs data",
+    );
+  }
+
+  /**
+   * Gets all results from a bqrs.
+   * @param bqrsPath The path to the bqrs.
+   */
+  async bqrsDecodeAll(bqrsPath: string): Promise<DecodedBqrs> {
+    return await this.runJsonCodeQlCliCommand<DecodedBqrs>(
+      ["bqrs", "decode"],
+      [bqrsPath],
+      "Reading all bqrs data",
     );
   }
 
