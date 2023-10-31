@@ -3,10 +3,9 @@ import { DatabaseItem } from "../databases/local-databases";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
-  BaseLogger,
+  NotificationLogger,
   showAndLogExceptionWithTelemetry,
 } from "../common/logging";
-import { extLogger } from "../common/logging/vscode";
 import { getModelsAsDataLanguage } from "./languages";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -27,7 +26,7 @@ export function isGenerateModelSupported(language: QueryLanguage): boolean {
 type GenerateModelOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
-  logger: BaseLogger;
+  logger: NotificationLogger;
   queryStorageDir: string;
   databaseItem: DatabaseItem;
   language: QueryLanguage;
@@ -54,7 +53,11 @@ export async function runGenerateModelQuery({
     maxStep,
   });
 
-  const queryPath = await resolveGenerateModelQuery(cliServer, databaseItem);
+  const queryPath = await resolveGenerateModelQuery(
+    cliServer,
+    logger,
+    databaseItem,
+  );
   if (queryPath === undefined) {
     return [];
   }
@@ -133,6 +136,7 @@ export async function runGenerateModelQuery({
 
 async function resolveGenerateModelQuery(
   cliServer: CodeQLCliServer,
+  logger: NotificationLogger,
   databaseItem: DatabaseItem,
 ): Promise<string | undefined> {
   const packsToSearch = [`codeql/${databaseItem.language}-queries`];
@@ -147,7 +151,7 @@ async function resolveGenerateModelQuery(
   );
   if (queries.length !== 1) {
     void showAndLogExceptionWithTelemetry(
-      extLogger,
+      logger,
       telemetryListener,
       redactableError`Expected exactly one generate model query, got ${queries.length}`,
     );
