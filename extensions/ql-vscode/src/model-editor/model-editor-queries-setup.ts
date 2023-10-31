@@ -8,6 +8,7 @@ import { ModelConfig } from "../config";
 import { Mode } from "./shared/mode";
 import { resolveQueriesFromPacks } from "../local-queries";
 import { modeTag } from "./mode-tag";
+import { NotificationLogger } from "../common/logging";
 
 export const syntheticQueryPackName = "codeql/model-editor-queries";
 
@@ -26,6 +27,7 @@ export const syntheticQueryPackName = "codeql/model-editor-queries";
  * are present in codeql/java-queries or in our own query pack. They just need to resolve the query.
  *
  * @param cliServer The CodeQL CLI server to use.
+ * @param logger The logger to use.
  * @param queryDir The directory to set up.
  * @param language The language to use for the queries.
  * @param modelConfig The model config to use.
@@ -33,6 +35,7 @@ export const syntheticQueryPackName = "codeql/model-editor-queries";
  */
 export async function setUpPack(
   cliServer: CodeQLCliServer,
+  logger: NotificationLogger,
   queryDir: string,
   language: QueryLanguage,
   modelConfig: ModelConfig,
@@ -64,6 +67,7 @@ export async function setUpPack(
   } else {
     // If we can't resolve the query, we need to write them to desk ourselves.
     const externalApiQuerySuccess = await prepareModelEditorQueries(
+      logger,
       queryDir,
       language,
     );

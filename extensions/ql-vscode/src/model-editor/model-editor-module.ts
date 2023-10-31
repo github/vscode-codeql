@@ -200,6 +200,7 @@ export class ModelEditorModule extends DisposableObject {
 
           const success = await setUpPack(
             this.cliServer,
+            this.app.logger,
             queryDir,
             language,
             this.modelConfig,

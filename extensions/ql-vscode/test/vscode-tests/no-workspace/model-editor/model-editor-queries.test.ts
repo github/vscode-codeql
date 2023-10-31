@@ -9,6 +9,7 @@ import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { ModelConfig } from "../../../../src/config";
+import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 describe("setUpPack", () => {
   let queryDir: string;
@@ -33,11 +34,12 @@ describe("setUpPack", () => {
         packInstall: jest.fn(),
         resolveQueriesInSuite: jest.fn().mockResolvedValue([]),
       });
+      const logger = createMockLogger();
       const modelConfig = mockedObject<ModelConfig>({
         llmGeneration: false,
       });
 
-      await setUpPack(cliServer, queryDir, language, modelConfig);
+      await setUpPack(cliServer, logger, queryDir, language, modelConfig);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles).toEqual(
@@ -90,11 +92,12 @@ describe("setUpPack", () => {
           .fn()
           .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
       });
+      const logger = createMockLogger();
       const modelConfig = mockedObject<ModelConfig>({
         llmGeneration: false,
       });
 
-      await setUpPack(cliServer, queryDir, language, modelConfig);
+      await setUpPack(cliServer, logger, queryDir, language, modelConfig);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles.sort()).toEqual(["codeql-pack.yml"].sort());
