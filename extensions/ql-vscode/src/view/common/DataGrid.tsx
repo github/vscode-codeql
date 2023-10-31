@@ -107,21 +107,28 @@ interface DataGridCellProps {
  * cells anywhere within the grid. You can also configure cells to span multiple rows
  * or columns. See https://developer.mozilla.org/en-US/docs/Web/CSS/grid-column.
  */
-export function DataGridCell({
-  rowType = "default",
-  gridRow,
-  gridColumn,
-  className,
-  children,
-}: DataGridCellProps) {
-  return (
-    <StyledDataGridCell
-      $rowType={rowType}
-      $gridRow={gridRow}
-      $gridColumn={gridColumn}
-      className={className}
-    >
-      {children}
-    </StyledDataGridCell>
-  );
-}
+export const DataGridCell = forwardRef(
+  (
+    {
+      rowType = "default",
+      gridRow,
+      gridColumn,
+      className,
+      children,
+    }: DataGridCellProps,
+    ref?: React.Ref<HTMLElement | undefined>,
+  ) => {
+    return (
+      <StyledDataGridCell
+        $rowType={rowType}
+        $gridRow={gridRow}
+        $gridColumn={gridColumn}
+        className={className}
+        ref={ref}
+      >
+        {children}
+      </StyledDataGridCell>
+    );
+  },
+);
+DataGridCell.displayName = "DataGridCell";
