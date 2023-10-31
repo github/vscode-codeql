@@ -1,4 +1,4 @@
-import { basename, dirname, join } from "path";
+import { dirname, join } from "path";
 import { Uri, window, window as Window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
@@ -7,7 +7,10 @@ import {
   getLanguageDisplayName,
   QueryLanguage,
 } from "../common/query-language";
-import { getFirstWorkspaceFolder } from "../common/vscode/workspace-folders";
+import {
+  getFirstWorkspaceFolder,
+  getOnDiskWorkspaceFolders,
+} from "../common/vscode/workspace-folders";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
@@ -25,12 +28,16 @@ import {
   isCodespacesTemplate,
   setQlPackLocation,
 } from "../config";
-import { lstat, pathExists } from "fs-extra";
+import { lstat, pathExists, readFile } from "fs-extra";
 import { askForLanguage } from "../codeql-cli/query-language";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
 import { redactableError } from "../common/errors";
 import { App } from "../common/app";
 import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import { containsPath } from "../common/files";
+import { getQlPackPath } from "../common/ql";
+import { load } from "js-yaml";
+import { QlPackFile } from "../packaging/qlpack-file";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -48,6 +55,7 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
 export class SkeletonQueryWizard {
   private fileName = "example.ql";
   private qlPackStoragePath: string | undefined;
+  private queryStoragePath: string | undefined;
   private downloadPromise: Promise<void> | undefined;
 
   constructor(
@@ -61,10 +69,6 @@ export class SkeletonQueryWizard {
     private language: QueryLanguage | undefined = undefined,
   ) {}
 
-  private get folderName() {
-    return `codeql-custom-queries-${this.language}`;
-  }
-
   /**
    * Wait for the download process to complete by waiting for the user to select
    * either "Download database" or closing the dialog. This is used for testing.
@@ -76,6 +80,14 @@ export class SkeletonQueryWizard {
   }
 
   public async execute() {
+    // First try detecting the language based on the existing qlpacks.
+    // This will override the selected language if there is an existing query pack.
+    const detectedLanguage = await this.detectLanguage();
+    if (detectedLanguage) {
+      this.language = detectedLanguage;
+    }
+
+    // If no existing qlpack was found, we need to ask the user for the language
     if (!this.language) {
       // show quick pick to choose language
       this.language = await this.chooseLanguage();
@@ -85,18 +97,39 @@ export class SkeletonQueryWizard {
       return;
     }
 
-    this.qlPackStoragePath = await this.determineStoragePath();
+    let createSkeletonQueryPack: boolean = false;
 
-    const skeletonPackAlreadyExists = await pathExists(
-      join(this.qlPackStoragePath, this.folderName),
-    );
+    if (!this.qlPackStoragePath) {
+      // This means no existing qlpack was detected in the selected folder, so we need
+      // to find a new location to store the qlpack. This new location could potentially
+      // already exist.
+      const storagePath = await this.determineStoragePath();
+      this.qlPackStoragePath = join(
+        storagePath,
+        `codeql-custom-queries-${this.language}`,
+      );
 
-    if (skeletonPackAlreadyExists) {
-      // just create a new example query file in skeleton QL pack
-      await this.createExampleFile();
+      // Try to detect if there is already a qlpack in this location. We will assume that
+      // the user hasn't changed the language of the qlpack.
+      const qlPackPath = await getQlPackPath(this.qlPackStoragePath);
+
+      // If we are creating or using a qlpack in the user's selected folder, we will also
+      // create the query in that folder
+      this.queryStoragePath = this.qlPackStoragePath;
+
+      createSkeletonQueryPack = qlPackPath === undefined;
     } else {
+      // A query pack was detected in the selected folder or one of its ancestors, so we
+      // directly use the selected folder as the storage path for the query.
+      this.queryStoragePath = await this.determineStoragePathFromSelection();
+    }
+
+    if (createSkeletonQueryPack) {
       // generate a new skeleton QL pack with query file
       await this.createQlPack();
+    } else {
+      // just create a new example query file in skeleton QL pack
+      await this.createExampleFile();
     }
 
     // open the query file
@@ -113,13 +146,11 @@ export class SkeletonQueryWizard {
   }
 
   private async openExampleFile() {
-    if (this.folderName === undefined || this.qlPackStoragePath === undefined) {
+    if (this.queryStoragePath === undefined) {
       throw new Error("Path to folder is undefined");
     }
 
-    const queryFileUri = Uri.file(
-      join(this.qlPackStoragePath, this.folderName, this.fileName),
-    );
+    const queryFileUri = Uri.file(join(this.queryStoragePath, this.fileName));
 
     void workspace.openTextDocument(queryFileUri).then((doc) => {
       void Window.showTextDocument(doc, {
@@ -133,15 +164,7 @@ export class SkeletonQueryWizard {
       return this.determineRootStoragePath();
     }
 
-    const storagePath = await this.determineStoragePathFromSelection();
-
-    // If the user has selected a folder or file within a folder that matches the current
-    // folder name, we should create a query rather than a query pack
-    if (basename(storagePath) === this.folderName) {
-      return dirname(storagePath);
-    }
-
-    return storagePath;
+    return this.determineStoragePathFromSelection();
   }
 
   private async determineStoragePathFromSelection(): Promise<string> {
@@ -194,6 +217,62 @@ export class SkeletonQueryWizard {
     return storageFolder;
   }
 
+  private async detectLanguage(): Promise<QueryLanguage | undefined> {
+    if (this.selectedItems.length < 1) {
+      return undefined;
+    }
+
+    this.progress({
+      message: "Resolving existing query packs",
+      step: 1,
+      maxStep: 3,
+    });
+
+    const storagePath = await this.determineStoragePathFromSelection();
+
+    const queryPacks = await this.cliServer.resolveQlpacks(
+      getOnDiskWorkspaceFolders(),
+      false,
+      "query",
+    );
+
+    const matchingQueryPacks = Object.values(queryPacks)
+      .map((paths) => paths.find((path) => containsPath(path, storagePath)))
+      .filter((path): path is string => path !== undefined)
+      // Find the longest matching path
+      .sort((a, b) => b.length - a.length);
+
+    if (matchingQueryPacks.length === 0) {
+      return undefined;
+    }
+
+    const matchingQueryPackPath = matchingQueryPacks[0];
+
+    const qlPackPath = await getQlPackPath(matchingQueryPackPath);
+    if (!qlPackPath) {
+      return undefined;
+    }
+
+    const qlPack = load(await readFile(qlPackPath, "utf8")) as
+      | QlPackFile
+      | undefined;
+    const dependencies = qlPack?.dependencies;
+    if (!dependencies || typeof dependencies !== "object") {
+      return;
+    }
+
+    const matchingLanguages = Object.values(QueryLanguage).filter(
+      (language) => `codeql/${language}-all` in dependencies,
+    );
+    if (matchingLanguages.length !== 1) {
+      return undefined;
+    }
+
+    this.qlPackStoragePath = matchingQueryPackPath;
+
+    return matchingLanguages[0];
+  }
+
   private async chooseLanguage() {
     this.progress({
       message: "Choose language",
@@ -205,8 +284,8 @@ export class SkeletonQueryWizard {
   }
 
   private async createQlPack() {
-    if (this.folderName === undefined) {
-      throw new Error("Folder name is undefined");
+    if (this.qlPackStoragePath === undefined) {
+      throw new Error("Query pack storage path is undefined");
     }
     if (this.language === undefined) {
       throw new Error("Language is undefined");
@@ -220,7 +299,6 @@ export class SkeletonQueryWizard {
 
     try {
       const qlPackGenerator = new QlPackGenerator(
-        this.folderName,
         this.language,
         this.cliServer,
         this.qlPackStoragePath,
@@ -235,7 +313,7 @@ export class SkeletonQueryWizard {
   }
 
   private async createExampleFile() {
-    if (this.folderName === undefined) {
+    if (this.qlPackStoragePath === undefined) {
       throw new Error("Folder name is undefined");
     }
     if (this.language === undefined) {
@@ -251,13 +329,12 @@ export class SkeletonQueryWizard {
 
     try {
       const qlPackGenerator = new QlPackGenerator(
-        this.folderName,
         this.language,
         this.cliServer,
         this.qlPackStoragePath,
       );
 
-      this.fileName = await this.determineNextFileName(this.folderName);
+      this.fileName = await this.determineNextFileName();
       await qlPackGenerator.createExampleQlFile(this.fileName);
     } catch (e: unknown) {
       void this.app.logger.log(
@@ -266,13 +343,18 @@ export class SkeletonQueryWizard {
     }
   }
 
-  private async determineNextFileName(folderName: string): Promise<string> {
-    if (this.qlPackStoragePath === undefined) {
-      throw new Error("QL Pack storage path is undefined");
+  private async determineNextFileName(): Promise<string> {
+    if (this.queryStoragePath === undefined) {
+      throw new Error("Query storage path is undefined");
     }
 
-    const folderUri = Uri.file(join(this.qlPackStoragePath, folderName));
+    const folderUri = Uri.file(this.queryStoragePath);
     const files = await workspace.fs.readDirectory(folderUri);
+    // If the example.ql file doesn't exist yet, use that name
+    if (!files.some(([filename, _fileType]) => filename === this.fileName)) {
+      return this.fileName;
+    }
+
     const qlFiles = files.filter(([filename, _fileType]) =>
       filename.match(/^example[0-9]*\.ql$/),
     );
@@ -281,10 +363,6 @@ export class SkeletonQueryWizard {
   }
 
   private async promptDownloadDatabase() {
-    if (this.qlPackStoragePath === undefined) {
-      throw new Error("QL Pack storage path is undefined");
-    }
-
     if (this.language === undefined) {
       throw new Error("Language is undefined");
     }
@@ -321,10 +399,6 @@ export class SkeletonQueryWizard {
   }
 
   private async downloadDatabase(progress: ProgressCallback) {
-    if (this.qlPackStoragePath === undefined) {
-      throw new Error("QL Pack storage path is undefined");
-    }
-
     if (this.databaseStoragePath === undefined) {
       throw new Error("Database storage path is undefined");
     }
@@ -362,10 +436,6 @@ export class SkeletonQueryWizard {
       throw new Error("Language is undefined");
     }
 
-    if (this.qlPackStoragePath === undefined) {
-      throw new Error("QL Pack storage path is undefined");
-    }
-
     const existingDatabaseItem =
       await SkeletonQueryWizard.findExistingDatabaseItem(
         this.language,
@@ -393,15 +463,11 @@ export class SkeletonQueryWizard {
   }
 
   private get openFileMarkdownLink() {
-    if (this.qlPackStoragePath === undefined) {
+    if (this.queryStoragePath === undefined) {
       throw new Error("QL Pack storage path is undefined");
     }
 
-    const queryPath = join(
-      this.qlPackStoragePath,
-      this.folderName,
-      this.fileName,
-    );
+    const queryPath = join(this.queryStoragePath, this.fileName);
     const queryPathUri = Uri.file(queryPath);
 
     const openFileArgs = [queryPathUri.toString(true)];

@@ -274,10 +274,9 @@ export class DatabaseManager extends DisposableObject {
 
     try {
       const qlPackGenerator = new QlPackGenerator(
-        folderName,
         databaseItem.language,
         this.cli,
-        firstWorkspaceFolder,
+        join(firstWorkspaceFolder, folderName),
       );
       await qlPackGenerator.generate();
     } catch (e: unknown) {

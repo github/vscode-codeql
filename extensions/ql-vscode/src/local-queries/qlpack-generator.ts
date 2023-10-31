@@ -13,20 +13,16 @@ export class QlPackGenerator {
   private readonly folderUri: Uri;
 
   constructor(
-    private readonly folderName: string,
     private readonly queryLanguage: QueryLanguage,
     private readonly cliServer: CodeQLCliServer,
-    private readonly storagePath: string | undefined,
+    private readonly storagePath: string,
   ) {
-    if (this.storagePath === undefined) {
-      throw new Error("Workspace storage path is undefined");
-    }
     this.qlpackName = `getting-started/codeql-extra-queries-${this.queryLanguage}`;
     this.qlpackVersion = "1.0.0";
     this.header = "# This is an automatically generated file.\n\n";
 
     this.qlpackFileName = "codeql-pack.yml";
-    this.folderUri = Uri.file(join(this.storagePath, this.folderName));
+    this.folderUri = Uri.file(this.storagePath);
   }
 
   public async generate() {
