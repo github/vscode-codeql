@@ -437,6 +437,7 @@ export class ModelEditorView extends AbstractWebview<
       const queryResult = await runModelEditorQueries(mode, {
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
+        logger: this.app.logger,
         databaseItem: this.databaseItem,
         language: this.language,
         queryStorageDir: this.queryStorageDir,
@@ -502,6 +503,7 @@ export class ModelEditorView extends AbstractWebview<
           await runFlowModelQueries({
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
+            logger: this.app.logger,
             queryStorageDir: this.queryStorageDir,
             databaseItem: addedDatabase ?? this.databaseItem,
             language: this.language,

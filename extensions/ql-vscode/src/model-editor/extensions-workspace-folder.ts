@@ -1,6 +1,5 @@
 import { FileType, Uri, workspace, WorkspaceFolder } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
-import { extLogger } from "../common/logging/vscode";
 import { tmpdir } from "../common/files";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 
@@ -180,7 +179,7 @@ export async function autoPickExtensionsDirectory(
   // Get the root workspace directory, i.e. the common root directory of all workspace folders
   const rootDirectory = await getRootWorkspaceDirectory();
   if (!rootDirectory) {
-    void extLogger.log("Unable to determine root workspace directory");
+    void logger.log("Unable to determine root workspace directory");
 
     return undefined;
   }
@@ -204,7 +203,7 @@ export async function autoPickExtensionsDirectory(
       },
     )
   ) {
-    void extLogger.log(
+    void logger.log(
       `Failed to add workspace folder for extensions at ${extensionsUri.fsPath}`,
     );
     return undefined;
