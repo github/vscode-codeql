@@ -323,7 +323,7 @@ export function ModelEditor({
           <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
             Refresh
           </VSCodeButton>
-          {viewState.showFlowGeneration &&
+          {viewState.showGenerateButton &&
             viewState.mode === Mode.Framework && (
               <VSCodeButton onClick={onGenerateFromSourceClick}>
                 Generate

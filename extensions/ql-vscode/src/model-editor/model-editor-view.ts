@@ -377,7 +377,7 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private async setViewState(): Promise<void> {
-    const showFlowGeneration =
+    const showGenerateButton =
       this.modelConfig.flowGeneration &&
       (isFlowModelGenerationSupported(this.language) ||
         isGenerateModelSupported(this.language));
@@ -397,7 +397,7 @@ export class ModelEditorView extends AbstractWebview<
       viewState: {
         extensionPack: this.extensionPack,
         language: this.language,
-        showFlowGeneration,
+        showGenerateButton,
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),
