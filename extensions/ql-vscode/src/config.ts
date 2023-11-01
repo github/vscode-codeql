@@ -706,6 +706,10 @@ const LLM_GENERATION_BATCH_SIZE = new Setting(
   "llmGenerationBatchSize",
   MODEL_SETTING,
 );
+const LLM_GENERATION_DEV_ENDPOINT = new Setting(
+  "llmGenerationDevEndpoint",
+  MODEL_SETTING,
+);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 const ENABLE_RUBY = new Setting("enableRuby", MODEL_SETTING);
 
@@ -736,6 +740,14 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
    */
   public get llmGenerationBatchSize(): number {
     return LLM_GENERATION_BATCH_SIZE.getValue<number | null>() || 5;
+  }
+
+  /**
+   * The URL of the endpoint to use for LLM generation. This should only be set
+   * if you want to test against a dev server.
+   */
+  public get llmGenerationDevEndpoint(): string | undefined {
+    return LLM_GENERATION_DEV_ENDPOINT.getValue<string | undefined>();
   }
 
   public getExtensionsDirectory(languageId: string): string | undefined {

@@ -238,7 +238,7 @@ export class AutoModeler {
     request: ModelRequest,
   ): Promise<ModelResponse | null> {
     try {
-      return await autoModel(this.app.credentials, request);
+      return await autoModel(this.app.credentials, request, this.modelConfig);
     } catch (e) {
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
