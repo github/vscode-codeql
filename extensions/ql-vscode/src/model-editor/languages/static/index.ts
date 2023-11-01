@@ -1,7 +1,7 @@
-import { ModelsAsDataLanguage } from "./models-as-data";
-import { ModeledMethodType, Provenance } from "../modeled-method";
-import { DataTuple } from "../model-extension-file";
-import { sharedExtensiblePredicates, sharedKinds } from "./shared";
+import { ModelsAsDataLanguage } from "../models-as-data";
+import { ModeledMethodType, Provenance } from "../../modeled-method";
+import { DataTuple } from "../../model-extension-file";
+import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 
 function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
