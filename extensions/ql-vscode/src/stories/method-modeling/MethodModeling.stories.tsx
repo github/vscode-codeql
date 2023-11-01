@@ -5,6 +5,7 @@ import { Meta, StoryFn } from "@storybook/react";
 import { MethodModeling as MethodModelingComponent } from "../../view/method-modeling/MethodModeling";
 import { createMethod } from "../../../test/factories/model-editor/method-factories";
 import { createModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
+import { QueryLanguage } from "../../common/query-language";
 export default {
   title: "Method Modeling/Method Modeling",
   component: MethodModelingComponent,
@@ -15,9 +16,11 @@ const Template: StoryFn<typeof MethodModelingComponent> = (args) => (
 );
 
 const method = createMethod();
+const language = QueryLanguage.Java;
 
 export const MethodUnmodeled = Template.bind({});
 MethodUnmodeled.args = {
+  language,
   method,
   modeledMethods: [],
   modelingStatus: "unmodeled",
@@ -25,6 +28,7 @@ MethodUnmodeled.args = {
 
 export const MethodModeled = Template.bind({});
 MethodModeled.args = {
+  language,
   method,
   modeledMethods: [],
   modelingStatus: "unsaved",
@@ -32,6 +36,7 @@ MethodModeled.args = {
 
 export const MethodSaved = Template.bind({});
 MethodSaved.args = {
+  language,
   method,
   modeledMethods: [],
   modelingStatus: "saved",
@@ -39,6 +44,7 @@ MethodSaved.args = {
 
 export const MultipleModelingsUnmodeled = Template.bind({});
 MultipleModelingsUnmodeled.args = {
+  language,
   method,
   modeledMethods: [],
   showMultipleModels: true,
@@ -47,6 +53,7 @@ MultipleModelingsUnmodeled.args = {
 
 export const MultipleModelingsModeledSingle = Template.bind({});
 MultipleModelingsModeledSingle.args = {
+  language,
   method,
   modeledMethods: [createModeledMethod(method)],
   showMultipleModels: true,
@@ -55,6 +62,7 @@ MultipleModelingsModeledSingle.args = {
 
 export const MultipleModelingsModeledMultiple = Template.bind({});
 MultipleModelingsModeledMultiple.args = {
+  language,
   method,
   modeledMethods: [
     createModeledMethod(method),
@@ -72,6 +80,7 @@ MultipleModelingsModeledMultiple.args = {
 
 export const MultipleModelingsValidationFailedNeutral = Template.bind({});
 MultipleModelingsValidationFailedNeutral.args = {
+  language,
   method,
   modeledMethods: [
     createModeledMethod(method),
@@ -86,6 +95,7 @@ MultipleModelingsValidationFailedNeutral.args = {
 
 export const MultipleModelingsValidationFailedDuplicate = Template.bind({});
 MultipleModelingsValidationFailedDuplicate.args = {
+  language,
   method,
   modeledMethods: [
     createModeledMethod(method),

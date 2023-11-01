@@ -7,6 +7,7 @@ import { createMethod } from "../../../test/factories/model-editor/method-factor
 import { createModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
 import { useState } from "react";
 import { ModeledMethod } from "../../model-editor/modeled-method";
+import { QueryLanguage } from "../../common/query-language";
 
 export default {
   title: "Method Modeling/Method Modeling Inputs",
@@ -32,6 +33,7 @@ const Template: StoryFn<typeof MethodModelingInputsComponent> = (args) => {
   return (
     <MethodModelingInputsComponent
       {...args}
+      language={QueryLanguage.Java}
       modeledMethod={m}
       onChange={onChange}
     />
