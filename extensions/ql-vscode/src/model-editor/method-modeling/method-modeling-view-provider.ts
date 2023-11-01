@@ -151,9 +151,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         await this.app.commands.execute(
           "codeQL.openModelEditorFromModelingPanel",
         );
-        void telemetryListener?.sendUIInteraction(
-          "method-modeling-start-modeling",
-        );
         break;
       default:
         assertNever(msg);
