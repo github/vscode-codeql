@@ -137,6 +137,9 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       }
       case "revealInModelEditor":
         await this.revealInModelEditor(msg.method);
+        void telemetryListener?.sendUIInteraction(
+          "method-modeling-reveal-in-model-editor",
+        );
 
         break;
 
