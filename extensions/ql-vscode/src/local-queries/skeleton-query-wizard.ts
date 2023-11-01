@@ -455,7 +455,10 @@ export class SkeletonQueryWizard {
 
   private createQlPackGenerator() {
     if (this.qlPackStoragePath === undefined) {
-      throw new Error("Query pack storage path is undefined");
+      throw new Error("QL pack storage path is undefined");
+    }
+    if (this.queryStoragePath === undefined) {
+      throw new Error("Query storage path is undefined");
     }
     if (this.language === undefined) {
       throw new Error("Language is undefined");
@@ -472,6 +475,7 @@ export class SkeletonQueryWizard {
       this.language,
       this.cliServer,
       this.qlPackStoragePath,
+      this.queryStoragePath,
       includeFolderNameInQlpackName,
     );
   }

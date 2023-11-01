@@ -46,6 +46,7 @@ describe("QlPackGenerator", () => {
       language as QueryLanguage,
       mockCli,
       packFolderPath,
+      packFolderPath,
     );
   });
 
@@ -128,6 +129,7 @@ describe("QlPackGenerator", () => {
         language as QueryLanguage,
         mockCli,
         packFolderPath,
+        packFolderPath,
         true,
       );
     });
@@ -160,6 +162,7 @@ describe("QlPackGenerator", () => {
         generator = new QlPackGenerator(
           language as QueryLanguage,
           mockCli,
+          packFolderPath,
           packFolderPath,
           true,
         );
@@ -194,6 +197,7 @@ describe("QlPackGenerator", () => {
         generator = new QlPackGenerator(
           language as QueryLanguage,
           mockCli,
+          packFolderPath,
           packFolderPath,
           true,
         );

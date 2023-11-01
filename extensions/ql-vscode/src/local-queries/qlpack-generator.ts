@@ -18,6 +18,7 @@ export class QlPackGenerator {
     private readonly queryLanguage: QueryLanguage,
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
+    private readonly queryStoragePath: string,
     private readonly includeFolderNameInQlpackName: boolean = false,
   ) {
     this.qlpackVersion = "1.0.0";
@@ -91,7 +92,7 @@ export class QlPackGenerator {
   }
 
   public async createExampleQlFile(fileName = "example.ql") {
-    const exampleQlFilePath = join(this.folderUri.fsPath, fileName);
+    const exampleQlFilePath = join(this.queryStoragePath, fileName);
 
     const exampleQl = `
 /**
