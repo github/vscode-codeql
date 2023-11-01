@@ -366,7 +366,6 @@ describe(MethodRow.name, () => {
       modeledMethod,
       {
         type: "none",
-        provenance: "manual",
         signature: method.signature,
         packageName: method.packageName,
         typeName: method.typeName,

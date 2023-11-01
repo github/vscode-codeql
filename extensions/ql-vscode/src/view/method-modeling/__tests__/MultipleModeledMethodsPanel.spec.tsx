@@ -167,7 +167,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
-          provenance: "manual",
         },
       ]);
     });
@@ -437,7 +436,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
-          provenance: "manual",
         },
       ]);
     });
@@ -799,7 +797,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
-          provenance: "manual",
         },
       ]);
     });

@@ -27,7 +27,6 @@ export function createNoneModeledMethod(
   return {
     ...createMethodSignature(),
     type: "none",
-    provenance: "manual",
     ...data,
   };
 }

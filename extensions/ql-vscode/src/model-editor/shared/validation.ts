@@ -37,7 +37,6 @@ function canonicalizeModeledMethod(
       return {
         ...methodSignature,
         type: "none",
-        provenance: "manual",
       };
     case "source":
       return {

@@ -21,8 +21,6 @@ export type Provenance =
 
 export interface NoneModeledMethod extends MethodSignature {
   readonly type: "none";
-  // Provenance is always propagated
-  readonly provenance: Provenance;
 }
 
 export interface SourceModeledMethod extends MethodSignature {

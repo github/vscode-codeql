@@ -36,7 +36,6 @@ function createEmptyNoneModeledMethod(
   return {
     ...methodSignature,
     type: "none",
-    provenance: "manual",
   };
 }
 

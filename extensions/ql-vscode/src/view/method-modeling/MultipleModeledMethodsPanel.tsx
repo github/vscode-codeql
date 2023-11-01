@@ -13,6 +13,7 @@ import { Codicon } from "../common";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "./ModeledMethodAlert";
 import { QueryLanguage } from "../../common/query-language";
+import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
@@ -92,15 +93,10 @@ export const MultipleModeledMethodsPanel = ({
   );
 
   const handleAddClick = useCallback(() => {
-    const newModeledMethod: ModeledMethod = {
-      type: "none",
-      provenance: "manual",
-      signature: method.signature,
-      packageName: method.packageName,
-      typeName: method.typeName,
-      methodName: method.methodName,
-      methodParameters: method.methodParameters,
-    };
+    const newModeledMethod: ModeledMethod = createEmptyModeledMethod(
+      "none",
+      method,
+    );
 
     const newModeledMethods = [...modeledMethods, newModeledMethod];
 
