@@ -133,16 +133,26 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           this.databaseItem,
           msg.methodSignature,
         );
+
+        void telemetryListener?.sendUIInteraction(
+          "method-modeling-set-multiple-modeled-methods",
+        );
         break;
       }
       case "revealInModelEditor":
         await this.revealInModelEditor(msg.method);
+        void telemetryListener?.sendUIInteraction(
+          "method-modeling-reveal-in-model-editor",
+        );
 
         break;
 
       case "startModeling":
         await this.app.commands.execute(
           "codeQL.openModelEditorFromModelingPanel",
+        );
+        void telemetryListener?.sendUIInteraction(
+          "method-modeling-start-modeling",
         );
         break;
       default:
