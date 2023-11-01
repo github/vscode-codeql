@@ -151,7 +151,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 2. Open the Model Editor with the "CodeQL: Open CodeQL Model Editor" command from the command palette.
    - Check that the editor loads and shows methods to model.
    - Check that methods are grouped per library (e.g. `rocksdbjni@7.7.3` or `asm@6.0`)
-   - Check that the "Open database" link works.
+   - Check that the "Open source" link works.
    - Check that the 'View' button works and the Method Usage panel highlight the correct method and usage
    - Check that the Method Modeling panel shows the correct method and modeling state
 
@@ -164,7 +164,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 3. Click "Open extension pack"
    - Check that the file explorer opens a directory with a "models" directory
 4. Open the ".model.yml" file corresponding to the library that was changed.
-   - Check that the file contrains the entries that was modeled.
+   - Check that the file contains entries for the methods that were modeled.
 
 #### Test Case 3: Model with AI
 
