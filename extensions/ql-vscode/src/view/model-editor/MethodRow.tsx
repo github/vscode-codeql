@@ -263,7 +263,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 <DataGridCell>
                   <ModelKindDropdown
                     language={viewState.language}
-                    method={method}
                     modeledMethod={modeledMethod}
                     onChange={modeledMethodChangedHandlers[index]}
                   />
