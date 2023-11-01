@@ -208,11 +208,14 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingEvents.onDbOpened(async () => {
+      this.modelingEvents.onDbOpened(async (e) => {
         await this.postMessage({
           t: "setInModelingMode",
           inModelingMode: true,
         });
+
+        this.language = tryGetQueryLanguage(e.language);
+        await this.setViewState();
       }),
     );
 
