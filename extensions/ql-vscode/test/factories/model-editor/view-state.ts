@@ -9,9 +9,10 @@ export function createMockModelEditorViewState(
   return {
     language: QueryLanguage.Java,
     mode: Mode.Application,
-    showFlowGeneration: false,
+    showGenerateButton: false,
     showLlmButton: false,
     showMultipleModels: false,
+    showModeSwitchButton: true,
     extensionPack: createMockExtensionPack(),
     sourceArchiveAvailable: true,
     ...data,

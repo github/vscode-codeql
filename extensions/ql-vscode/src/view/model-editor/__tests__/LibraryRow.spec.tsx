@@ -56,11 +56,11 @@ describe(LibraryRow.name, () => {
     expect(screen.queryByText("Model dependency")).toBeInTheDocument();
   });
 
-  it("renders the row when flow generation is enabled", () => {
+  it("renders the row when generate button is enabled", () => {
     render({
       viewState: {
         ...viewState,
-        showFlowGeneration: true,
+        showGenerateButton: true,
       },
     });
 
@@ -82,11 +82,11 @@ describe(LibraryRow.name, () => {
     expect(screen.queryByText("Model dependency")).toBeInTheDocument();
   });
 
-  it("renders the row when flow generation and LLM are enabled", () => {
+  it("renders the row when generate button and LLM are enabled", () => {
     render({
       viewState: {
         ...viewState,
-        showFlowGeneration: true,
+        showGenerateButton: true,
         showLlmButton: true,
       },
     });

@@ -4,7 +4,7 @@ import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ModelingEvents } from "./modeling-events";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
-import { INITIAL_MODE, Mode } from "./shared/mode";
+import { Mode } from "./shared/mode";
 
 interface InternalDbModelingState {
   databaseItem: DatabaseItem;
@@ -50,10 +50,7 @@ export class ModelingStore extends DisposableObject {
     this.state = new Map<string, InternalDbModelingState>();
   }
 
-  public initializeStateForDb(
-    databaseItem: DatabaseItem,
-    mode: Mode = INITIAL_MODE,
-  ) {
+  public initializeStateForDb(databaseItem: DatabaseItem, mode: Mode) {
     const dbUri = databaseItem.databaseUri.toString();
     this.state.set(dbUri, {
       databaseItem,
@@ -67,7 +64,7 @@ export class ModelingStore extends DisposableObject {
       inProgressMethods: new Set(),
     });
 
-    this.modelingEvents.fireDbOpenedEvent(dbUri);
+    this.modelingEvents.fireDbOpenedEvent(databaseItem);
   }
 
   public setActiveDb(databaseItem: DatabaseItem) {

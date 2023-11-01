@@ -3,8 +3,10 @@ import { DatabaseItem } from "../databases/local-databases";
 import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { showAndLogExceptionWithTelemetry } from "../common/logging";
-import { extLogger } from "../common/logging/vscode";
+import {
+  NotificationLogger,
+  showAndLogExceptionWithTelemetry,
+} from "../common/logging";
 import {
   getModelsAsDataLanguageModel,
   ModelsAsDataLanguagePredicates,
@@ -32,6 +34,7 @@ export function isFlowModelGenerationSupported(
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
+  logger: NotificationLogger;
   queryStorageDir: string;
   databaseItem: DatabaseItem;
   language: QueryLanguage;
@@ -118,6 +121,7 @@ async function runSingleFlowQuery(
   {
     cliServer,
     queryRunner,
+    logger,
     queryStorageDir,
     databaseItem,
     language,
@@ -128,7 +132,7 @@ async function runSingleFlowQuery(
   // Check that the right query was found
   if (queryPath === undefined) {
     void showAndLogExceptionWithTelemetry(
-      extLogger,
+      logger,
       telemetryListener,
       redactableError`Failed to find ${type} query`,
     );
@@ -164,7 +168,7 @@ async function runSingleFlowQuery(
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
-      extLogger,
+      logger,
       telemetryListener,
       redactableError`Expected exactly one result set, got ${
         bqrsInfo["result-sets"].length

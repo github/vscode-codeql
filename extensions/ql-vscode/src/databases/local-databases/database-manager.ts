@@ -248,8 +248,10 @@ export class DatabaseManager extends DisposableObject {
     const firstWorkspaceFolder = getFirstWorkspaceFolder();
     const folderName = `codeql-custom-queries-${databaseItem.language}`;
 
+    const qlpackStoragePath = join(firstWorkspaceFolder, folderName);
+
     if (
-      existsSync(join(firstWorkspaceFolder, folderName)) ||
+      existsSync(qlpackStoragePath) ||
       isFolderAlreadyInWorkspace(folderName)
     ) {
       return;
@@ -274,10 +276,10 @@ export class DatabaseManager extends DisposableObject {
 
     try {
       const qlPackGenerator = new QlPackGenerator(
-        folderName,
         databaseItem.language,
         this.cli,
-        firstWorkspaceFolder,
+        qlpackStoragePath,
+        qlpackStoragePath,
       );
       await qlPackGenerator.generate();
     } catch (e: unknown) {

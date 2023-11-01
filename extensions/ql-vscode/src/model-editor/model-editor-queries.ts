@@ -1,7 +1,9 @@
 import { QueryRunner } from "../query-server";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { extLogger } from "../common/logging/vscode";
-import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import {
+  NotificationLogger,
+  showAndLogExceptionWithTelemetry,
+} from "../common/logging";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
@@ -10,7 +12,7 @@ import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { join } from "path";
 import { Mode } from "./shared/mode";
-import { writeFile } from "fs-extra";
+import { outputFile, writeFile } from "fs-extra";
 import { QueryLanguage } from "../common/query-language";
 import { fetchExternalApiQueries } from "./queries";
 import { Method } from "./method";
@@ -24,6 +26,7 @@ import {
 type RunQueryOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
+  logger: NotificationLogger;
   databaseItem: DatabaseItem;
   language: QueryLanguage;
   queryStorageDir: string;
@@ -34,6 +37,7 @@ type RunQueryOptions = {
 };
 
 export async function prepareModelEditorQueries(
+  logger: NotificationLogger,
   queryDir: string,
   language: QueryLanguage,
 ): Promise<boolean> {
@@ -41,7 +45,7 @@ export async function prepareModelEditorQueries(
   const query = fetchExternalApiQueries[language];
   if (!query) {
     void showAndLogExceptionWithTelemetry(
-      extLogger,
+      logger,
       telemetryListener,
       redactableError`No bundled model editor query found for language ${language}`,
     );
@@ -57,7 +61,7 @@ export async function prepareModelEditorQueries(
   if (query.dependencies) {
     for (const [filename, contents] of Object.entries(query.dependencies)) {
       const dependencyFile = join(queryDir, filename);
-      await writeFile(dependencyFile, contents, "utf8");
+      await outputFile(dependencyFile, contents, "utf8");
     }
   }
   return true;
@@ -70,6 +74,7 @@ export async function runModelEditorQueries(
   {
     cliServer,
     queryRunner,
+    logger,
     databaseItem,
     language,
     queryStorageDir,
@@ -110,7 +115,7 @@ export async function runModelEditorQueries(
   );
   if (!queryPath) {
     void showAndLogExceptionWithTelemetry(
-      extLogger,
+      logger,
       telemetryListener,
       redactableError`The ${mode} model editor query could not be found. Try re-opening the model editor. If that doesn't work, try upgrading the CodeQL libraries.`,
     );
@@ -147,6 +152,7 @@ export async function runModelEditorQueries(
 
   const bqrsChunk = await readQueryResults({
     cliServer,
+    logger,
     bqrsPath: completedQuery.outputDir.bqrsPath,
   });
   if (!bqrsChunk) {
@@ -164,17 +170,19 @@ export async function runModelEditorQueries(
 
 type GetResultsOptions = {
   cliServer: Pick<CodeQLCliServer, "bqrsInfo" | "bqrsDecode">;
+  logger: NotificationLogger;
   bqrsPath: string;
 };
 
 export async function readQueryResults({
   cliServer,
+  logger,
   bqrsPath,
 }: GetResultsOptions) {
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
-      extLogger,
+      logger,
       telemetryListener,
       redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
     );

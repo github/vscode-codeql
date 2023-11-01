@@ -706,13 +706,19 @@ const LLM_GENERATION_BATCH_SIZE = new Setting(
   "llmGenerationBatchSize",
   MODEL_SETTING,
 );
+const LLM_GENERATION_DEV_ENDPOINT = new Setting(
+  "llmGenerationDevEndpoint",
+  MODEL_SETTING,
+);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
+const ENABLE_RUBY = new Setting("enableRuby", MODEL_SETTING);
 
 export interface ModelConfig {
   flowGeneration: boolean;
   llmGeneration: boolean;
   getExtensionsDirectory(languageId: string): string | undefined;
   showMultipleModels: boolean;
+  enableRuby: boolean;
 }
 
 export class ModelConfigListener extends ConfigListener implements ModelConfig {
@@ -733,7 +739,15 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
    * Note that the model may return fewer than this number of candidates.
    */
   public get llmGenerationBatchSize(): number {
-    return LLM_GENERATION_BATCH_SIZE.getValue<number | null>() || 10;
+    return LLM_GENERATION_BATCH_SIZE.getValue<number | null>() || 5;
+  }
+
+  /**
+   * The URL of the endpoint to use for LLM generation. This should only be set
+   * if you want to test against a dev server.
+   */
+  public get llmGenerationDevEndpoint(): string | undefined {
+    return LLM_GENERATION_DEV_ENDPOINT.getValue<string | undefined>();
   }
 
   public getExtensionsDirectory(languageId: string): string | undefined {
@@ -744,5 +758,9 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
   public get showMultipleModels(): boolean {
     return isCanary();
+  }
+
+  public get enableRuby(): boolean {
+    return !!ENABLE_RUBY.getValue<boolean>();
   }
 }

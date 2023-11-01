@@ -10,6 +10,7 @@ import {
   createSourceModeledMethod,
 } from "../../../test/factories/model-editor/modeled-method-factories";
 import { ModeledMethod } from "../../model-editor/modeled-method";
+import { QueryLanguage } from "../../common/query-language";
 
 export default {
   title: "Method Modeling/Multiple Modeled Methods Panel",
@@ -45,21 +46,25 @@ const Template: StoryFn<typeof MultipleModeledMethodsPanelComponent> = (
 };
 
 const method = createMethod();
+const language = QueryLanguage.Java;
 
 export const Unmodeled = Template.bind({});
 Unmodeled.args = {
+  language,
   method,
   modeledMethods: [],
 };
 
 export const Single = Template.bind({});
 Single.args = {
+  language,
   method,
   modeledMethods: [createSinkModeledMethod(method)],
 };
 
 export const Multiple = Template.bind({});
 Multiple.args = {
+  language,
   method,
   modeledMethods: [
     createSinkModeledMethod(method),

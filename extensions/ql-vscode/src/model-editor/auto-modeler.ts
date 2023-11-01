@@ -1,6 +1,5 @@
 import { Method, MethodSignature } from "./method";
 import { ModeledMethod } from "./modeled-method";
-import { extLogger } from "../common/logging/vscode";
 import { load as loadYaml } from "js-yaml";
 import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import { createAutoModelRequest, getCandidates } from "./auto-model";
@@ -84,7 +83,7 @@ export class AutoModeler {
    * @param packageName The name of the package to stop modeling.
    */
   public async stopModeling(packageName: string): Promise<void> {
-    void extLogger.log(`Stopping modeling for package ${packageName}`);
+    void this.app.logger.log(`Stopping modeling for package ${packageName}`);
     const cancellationTokenSource = this.jobs.get(packageName);
     if (cancellationTokenSource) {
       cancellationTokenSource.cancel();
@@ -107,7 +106,7 @@ export class AutoModeler {
     mode: Mode,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
-    void extLogger.log(`Modeling package ${packageName}`);
+    void this.app.logger.log(`Modeling package ${packageName}`);
 
     const candidateBatchSize = this.modelConfig.llmGenerationBatchSize;
 
@@ -117,7 +116,7 @@ export class AutoModeler {
 
       // If there are no candidates, there is nothing to model and we just return
       if (allCandidateMethods.length === 0) {
-        void extLogger.log("No candidates to model. Stopping.");
+        void this.app.logger.log("No candidates to model. Stopping.");
         return;
       }
 
@@ -175,7 +174,7 @@ export class AutoModeler {
     progress: ProgressCallback,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
-    void extLogger.log("Executing auto-model queries");
+    void this.app.logger.log("Executing auto-model queries");
 
     const usages = await runAutoModelQueries({
       mode,
@@ -193,7 +192,7 @@ export class AutoModeler {
 
     const request = await createAutoModelRequest(mode, usages);
 
-    void extLogger.log("Calling auto-model API");
+    void this.app.logger.log("Calling auto-model API");
 
     const response = await this.callAutoModelApi(request);
     if (!response) {
@@ -237,7 +236,7 @@ export class AutoModeler {
     request: ModelRequest,
   ): Promise<ModelResponse | null> {
     try {
-      return await autoModel(this.app.credentials, request);
+      return await autoModel(this.app.credentials, request, this.modelConfig);
     } catch (e) {
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(

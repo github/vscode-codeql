@@ -98,7 +98,7 @@ const modeledMethod: ModeledMethod = {
 };
 
 const viewState = createMockModelEditorViewState({
-  showFlowGeneration: true,
+  showGenerateButton: true,
   showLlmButton: true,
   showMultipleModels: true,
 });

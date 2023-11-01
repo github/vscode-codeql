@@ -186,11 +186,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
     return (
       <DataGridRow
         data-testid="modelable-method-row"
-        ref={ref}
         focused={revealedMethodSignature === method.signature}
       >
         <DataGridCell
           gridRow={`span ${modeledMethods.length + validationErrors.length}`}
+          ref={ref}
         >
           <ApiOrMethodRow>
             <ModelingStatusIndicator status={modelingStatus} />
@@ -315,10 +315,9 @@ const UnmodelableMethodRow = forwardRef<
   return (
     <DataGridRow
       data-testid="unmodelable-method-row"
-      ref={ref}
       focused={revealedMethodSignature === method.signature}
     >
-      <DataGridCell>
+      <DataGridCell ref={ref}>
         <ApiOrMethodRow>
           <ModelingStatusIndicator status="saved" />
           <MethodClassifications method={method} />

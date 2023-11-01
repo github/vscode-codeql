@@ -65,6 +65,7 @@ describe("runModelEditorQueries", () => {
         }),
         logger: createMockLogger(),
       }),
+      logger: createMockLogger(),
       databaseItem: mockedObject<DatabaseItem>({
         databaseUri: mockedUri("/a/b/c/src.zip"),
         contents: {
@@ -131,6 +132,7 @@ describe("runModelEditorQueries", () => {
         }),
         logger: createMockLogger(),
       }),
+      logger: createMockLogger(),
       databaseItem: mockedObject<DatabaseItem>({
         databaseUri: mockedUri("/a/b/c/src.zip"),
         contents: {
@@ -180,6 +182,7 @@ describe("readQueryResults", () => {
       bqrsInfo: jest.fn(),
       bqrsDecode: jest.fn(),
     },
+    logger: createMockLogger(),
     bqrsPath: "/tmp/results.bqrs",
   };
 

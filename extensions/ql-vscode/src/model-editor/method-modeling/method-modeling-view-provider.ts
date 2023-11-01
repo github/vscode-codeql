@@ -4,7 +4,6 @@ import {
 } from "../../common/interface-types";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging/notifications";
-import { extLogger } from "../../common/logging/vscode/loggers";
 import { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { Method } from "../method";
@@ -112,7 +111,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
-          extLogger,
+          this.app.logger,
           telemetryListener,
           redactableError(
             msg.error,
@@ -209,11 +208,16 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingEvents.onDbOpened(async () => {
+      this.modelingEvents.onDbOpened(async (databaseItem) => {
+        this.databaseItem = databaseItem;
+
         await this.postMessage({
           t: "setInModelingMode",
           inModelingMode: true,
         });
+
+        this.language = tryGetQueryLanguage(databaseItem.language);
+        await this.setViewState();
       }),
     );
 
