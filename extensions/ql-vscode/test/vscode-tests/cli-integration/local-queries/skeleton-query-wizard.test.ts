@@ -8,6 +8,7 @@ import * as tmp from "tmp";
 import {
   MessageItem,
   TextDocument,
+  Uri,
   window,
   workspace,
   WorkspaceFolder,
@@ -18,6 +19,7 @@ import {
   ensureDir,
   ensureDirSync,
   ensureFile,
+  outputFile,
   removeSync,
 } from "fs-extra";
 import { dirname, join } from "path";
@@ -39,6 +41,7 @@ import {
   createQueryTreeFolderItem,
   QueryTreeViewItem,
 } from "../../../../src/queries-panel/query-tree-view-item";
+import { dump } from "js-yaml";
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;
@@ -67,12 +70,19 @@ describe("SkeletonQueryWizard", () => {
   let openTextDocumentSpy: jest.SpiedFunction<
     typeof workspace.openTextDocument
   >;
+  let resolveQlpacksMock: jest.MockedFunction<
+    typeof CodeQLCliServer.prototype.resolveQlpacks
+  >;
 
   const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
   const selectedItems: QueryTreeViewItem[] = [];
 
   beforeEach(async () => {
+    resolveQlpacksMock = jest.fn().mockImplementation(() => {
+      throw new Error("Not implemented");
+    });
+
     mockCli = mockedObject<CodeQLCliServer>({
       getSupportedLanguages: jest
         .fn()
@@ -85,6 +95,7 @@ describe("SkeletonQueryWizard", () => {
           "csharp",
           "cpp",
         ]),
+      resolveQlpacks: resolveQlpacksMock,
     });
     mockApp = createMockApp();
 
@@ -232,12 +243,16 @@ describe("SkeletonQueryWizard", () => {
   });
 
   describe("if QL pack exists", () => {
+    let qlPackPath: string;
+
     beforeEach(async () => {
       // create a skeleton codeql-custom-queries-${language} folder
       // with an example QL file inside
-      ensureDirSync(
-        join(dir.name, `codeql-custom-queries-${chosenLanguage}`, "example.ql"),
-      );
+
+      qlPackPath = join(dir.name, `codeql-custom-queries-${chosenLanguage}`);
+
+      await ensureFile(join(qlPackPath, "qlpack.yml"));
+      await ensureFile(join(qlPackPath, "example.ql"));
     });
 
     it("should create new query file in the same QL pack folder", async () => {
@@ -267,7 +282,7 @@ describe("SkeletonQueryWizard", () => {
         );
         await wizard.execute();
 
-        expect(createExampleQlFileSpy).toHaveBeenCalledWith("example1.ql");
+        expect(createExampleQlFileSpy).toHaveBeenCalledWith("example.ql");
       });
 
       it("should open the query file", async () => {
@@ -282,9 +297,7 @@ describe("SkeletonQueryWizard", () => {
         await wizard.execute();
 
         expect(openTextDocumentSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            path: expect.stringMatching("example1.ql"),
-          }),
+          Uri.joinPath(Uri.file(qlPackPath), "example.ql"),
         );
       });
     });
@@ -455,6 +468,145 @@ describe("SkeletonQueryWizard", () => {
           expect(askForGitHubRepoSpy).toHaveBeenCalled();
           expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
         });
+      });
+    });
+  });
+
+  describe("if selected QL pack exists with different language", () => {
+    let qlPackPath: string;
+    let selectedItems: QueryTreeViewItem[];
+
+    beforeEach(async () => {
+      // create a skeleton codeql-custom-queries-${language} folder
+      // with an example QL file inside
+
+      qlPackPath = join(dir.name, "my-custom-queries-swift");
+
+      await outputFile(
+        join(qlPackPath, "qlpack.yml"),
+        dump({
+          name: "getting-started/my-custom-queries-swift",
+          version: "1.0.0",
+          dependencies: {
+            "codeql/swift-all": "*",
+          },
+        }),
+        "utf-8",
+      );
+      await ensureFile(join(qlPackPath, "example.ql"));
+
+      resolveQlpacksMock.mockResolvedValue({
+        "my/root-pack": [dir.name],
+        "getting-started/my-custom-queries-swift": [qlPackPath],
+      });
+
+      selectedItems = [
+        createQueryTreeFolderItem("folder", qlPackPath, [
+          createQueryTreeFileItem(
+            "example.ql",
+            join(qlPackPath, "example.ql"),
+            "swift",
+          ),
+        ]),
+      ];
+
+      wizard = new SkeletonQueryWizard(
+        mockCli,
+        jest.fn(),
+        credentials,
+        mockApp,
+        mockDatabaseManager,
+        storagePath,
+        selectedItems,
+        QueryLanguage.Javascript,
+      );
+    });
+
+    it("should create new query file in the same QL pack folder", async () => {
+      await wizard.execute();
+
+      expect(createExampleQlFileSpy).toHaveBeenCalledWith("example2.ql");
+    });
+
+    it("should only take into account example QL files", async () => {
+      createFileSync(
+        join(dir.name, `codeql-custom-queries-${chosenLanguage}`, "MyQuery.ql"),
+      );
+
+      await wizard.execute();
+
+      expect(createExampleQlFileSpy).toHaveBeenCalledWith("example2.ql");
+    });
+
+    describe("when qlpack has no language dependencies", () => {
+      beforeEach(async () => {
+        await outputFile(
+          join(qlPackPath, "qlpack.yml"),
+          dump({
+            name: "getting-started/my-custom-queries-swift",
+            version: "1.0.0",
+          }),
+          "utf-8",
+        );
+      });
+
+      it("should open query file in a new QL pack folder", async () => {
+        await wizard.execute();
+
+        expect(openTextDocumentSpy).toHaveBeenCalledWith(
+          Uri.joinPath(
+            Uri.file(qlPackPath),
+            "codeql-custom-queries-javascript",
+            "example.ql",
+          ),
+        );
+      });
+    });
+
+    describe("when qlpack has multiple language dependencies", () => {
+      beforeEach(async () => {
+        await outputFile(
+          join(qlPackPath, "qlpack.yml"),
+          dump({
+            name: "getting-started/my-custom-queries-swift",
+            version: "1.0.0",
+            dependencies: {
+              "codeql/java-all": "*",
+              "codeql/swift-all": "*",
+            },
+          }),
+          "utf-8",
+        );
+      });
+
+      it("should open query file in a new QL pack folder", async () => {
+        await wizard.execute();
+
+        expect(openTextDocumentSpy).toHaveBeenCalledWith(
+          Uri.joinPath(
+            Uri.file(qlPackPath),
+            "codeql-custom-queries-javascript",
+            "example.ql",
+          ),
+        );
+      });
+    });
+
+    describe("when qlpack file is empty", () => {
+      beforeEach(async () => {
+        await outputFile(join(qlPackPath, "qlpack.yml"), "", "utf-8");
+      });
+
+      it("should open query file in a new QL pack folder", async () => {
+        await wizard.execute();
+
+        expect(openTextDocumentSpy).toHaveBeenCalledWith(
+          Uri.joinPath(
+            Uri.file(qlPackPath),
+            "codeql-custom-queries-javascript",
+            "example.ql",
+          ),
+        );
       });
     });
   });
@@ -659,7 +811,9 @@ describe("SkeletonQueryWizard", () => {
         it("returns the parent path", async () => {
           const chosenPath = await wizard.determineStoragePath();
 
-          expect(chosenPath).toEqual(queriesDir.name);
+          expect(chosenPath).toEqual(
+            join(queriesDir.name, "codeql-custom-queries-swift"),
+          );
         });
       });
 

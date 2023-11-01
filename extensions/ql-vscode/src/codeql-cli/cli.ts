@@ -1244,11 +1244,13 @@ export class CodeQLCliServer implements Disposable {
    * @param additionalPacks A list of directories to search for qlpacks.
    * @param extensionPacksOnly Whether to only search for extension packs. If true, only extension packs will
    *    be returned. If false, all packs will be returned.
+   * @param kind Whether to only search for qlpacks with a certain kind.
    * @returns A dictionary mapping qlpack name to the directory it comes from
    */
   async resolveQlpacks(
     additionalPacks: string[],
     extensionPacksOnly = false,
+    kind?: "query" | "library" | "all",
   ): Promise<QlpacksInfo> {
     const args = this.getAdditionalPacksArg(additionalPacks);
     if (extensionPacksOnly) {
@@ -1259,6 +1261,8 @@ export class CodeQLCliServer implements Disposable {
         return {};
       }
       args.push("--kind", "extension", "--no-recursive");
+    } else if (kind) {
+      args.push("--kind", kind);
     }
 
     return this.runJsonCodeQlCliCommand<QlpacksInfo>(

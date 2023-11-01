@@ -9,7 +9,6 @@ import * as tmp from "tmp";
 import { mockedObject } from "../utils/mocking.helpers";
 
 describe("QlPackGenerator", () => {
-  let packFolderName: string;
   let packFolderPath: string;
   let qlPackYamlFilePath: string;
   let exampleQlFilePath: string;
@@ -22,8 +21,9 @@ describe("QlPackGenerator", () => {
     dir = tmp.dirSync();
 
     language = "ruby";
-    packFolderName = `test-ql-pack-${language}`;
-    packFolderPath = Uri.file(join(dir.name, packFolderName)).fsPath;
+    packFolderPath = Uri.file(
+      join(dir.name, `test-ql-pack-${language}`),
+    ).fsPath;
 
     qlPackYamlFilePath = join(packFolderPath, "codeql-pack.yml");
     exampleQlFilePath = join(packFolderPath, "example.ql");
@@ -34,10 +34,9 @@ describe("QlPackGenerator", () => {
     });
 
     generator = new QlPackGenerator(
-      packFolderName,
       language as QueryLanguage,
       mockCli,
-      dir.name,
+      packFolderPath,
     );
   });
 
