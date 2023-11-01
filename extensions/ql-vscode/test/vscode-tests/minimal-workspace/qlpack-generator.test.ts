@@ -7,6 +7,9 @@ import { Uri, workspace } from "vscode";
 import { getErrorMessage } from "../../../src/common/helpers-pure";
 import * as tmp from "tmp";
 import { mockedObject } from "../utils/mocking.helpers";
+import { ensureDir, readFile } from "fs-extra";
+import { load } from "js-yaml";
+import { QlPackFile } from "../../../src/packaging/qlpack-file";
 
 describe("QlPackGenerator", () => {
   let packFolderPath: string;
@@ -14,7 +17,11 @@ describe("QlPackGenerator", () => {
   let exampleQlFilePath: string;
   let language: string;
   let generator: QlPackGenerator;
-  let packAddSpy: jest.Mock<any, []>;
+  let packAddSpy: jest.MockedFunction<typeof CodeQLCliServer.prototype.packAdd>;
+  let resolveQlpacksSpy: jest.MockedFunction<
+    typeof CodeQLCliServer.prototype.resolveQlpacks
+  >;
+  let mockCli: CodeQLCliServer;
   let dir: tmp.DirResult;
 
   beforeEach(async () => {
@@ -29,8 +36,10 @@ describe("QlPackGenerator", () => {
     exampleQlFilePath = join(packFolderPath, "example.ql");
 
     packAddSpy = jest.fn();
-    const mockCli = mockedObject<CodeQLCliServer>({
+    resolveQlpacksSpy = jest.fn().mockResolvedValue({});
+    mockCli = mockedObject<CodeQLCliServer>({
       packAdd: packAddSpy,
+      resolveQlpacks: resolveQlpacksSpy,
     });
 
     generator = new QlPackGenerator(
@@ -71,5 +80,137 @@ describe("QlPackGenerator", () => {
     expect(existsSync(exampleQlFilePath)).toBe(true);
 
     expect(packAddSpy).toHaveBeenCalledWith(packFolderPath, language);
+
+    const qlpack = load(
+      await readFile(qlPackYamlFilePath, "utf8"),
+    ) as QlPackFile;
+    expect(qlpack).toEqual(
+      expect.objectContaining({
+        name: "getting-started/codeql-extra-queries-ruby",
+      }),
+    );
+  });
+
+  describe("when a pack with the same name already exists", () => {
+    beforeEach(() => {
+      resolveQlpacksSpy.mockResolvedValue({
+        "getting-started/codeql-extra-queries-ruby": ["/path/to/pack"],
+      });
+    });
+
+    it("should change the name of the pack", async () => {
+      await generator.generate();
+
+      const qlpack = load(
+        await readFile(qlPackYamlFilePath, "utf8"),
+      ) as QlPackFile;
+      expect(qlpack).toEqual(
+        expect.objectContaining({
+          name: "getting-started/codeql-extra-queries-ruby-1",
+        }),
+      );
+    });
+  });
+
+  describe("when the folder name is included in the pack name", () => {
+    beforeEach(async () => {
+      const parentFolderPath = join(dir.name, "my-folder");
+
+      packFolderPath = Uri.file(
+        join(parentFolderPath, `test-ql-pack-${language}`),
+      ).fsPath;
+      await ensureDir(parentFolderPath);
+
+      qlPackYamlFilePath = join(packFolderPath, "codeql-pack.yml");
+      exampleQlFilePath = join(packFolderPath, "example.ql");
+
+      generator = new QlPackGenerator(
+        language as QueryLanguage,
+        mockCli,
+        packFolderPath,
+        true,
+      );
+    });
+
+    it("should set the name of the pack", async () => {
+      await generator.generate();
+
+      const qlpack = load(
+        await readFile(qlPackYamlFilePath, "utf8"),
+      ) as QlPackFile;
+      expect(qlpack).toEqual(
+        expect.objectContaining({
+          name: "getting-started/codeql-extra-queries-my-folder-ruby",
+        }),
+      );
+    });
+
+    describe("when the folder name includes codeql", () => {
+      beforeEach(async () => {
+        const parentFolderPath = join(dir.name, "my-codeql");
+
+        packFolderPath = Uri.file(
+          join(parentFolderPath, `test-ql-pack-${language}`),
+        ).fsPath;
+        await ensureDir(parentFolderPath);
+
+        qlPackYamlFilePath = join(packFolderPath, "codeql-pack.yml");
+        exampleQlFilePath = join(packFolderPath, "example.ql");
+
+        generator = new QlPackGenerator(
+          language as QueryLanguage,
+          mockCli,
+          packFolderPath,
+          true,
+        );
+      });
+
+      it("should set the name of the pack", async () => {
+        await generator.generate();
+
+        const qlpack = load(
+          await readFile(qlPackYamlFilePath, "utf8"),
+        ) as QlPackFile;
+        expect(qlpack).toEqual(
+          expect.objectContaining({
+            name: "getting-started/my-codeql-ruby",
+          }),
+        );
+      });
+    });
+
+    describe("when the folder name includes queries", () => {
+      beforeEach(async () => {
+        const parentFolderPath = join(dir.name, "my-queries");
+
+        packFolderPath = Uri.file(
+          join(parentFolderPath, `test-ql-pack-${language}`),
+        ).fsPath;
+        await ensureDir(parentFolderPath);
+
+        qlPackYamlFilePath = join(packFolderPath, "codeql-pack.yml");
+        exampleQlFilePath = join(packFolderPath, "example.ql");
+
+        generator = new QlPackGenerator(
+          language as QueryLanguage,
+          mockCli,
+          packFolderPath,
+          true,
+        );
+      });
+
+      it("should set the name of the pack", async () => {
+        await generator.generate();
+
+        const qlpack = load(
+          await readFile(qlPackYamlFilePath, "utf8"),
+        ) as QlPackFile;
+        expect(qlpack).toEqual(
+          expect.objectContaining({
+            name: "getting-started/my-queries-ruby",
+          }),
+        );
+      });
+    });
   });
 });

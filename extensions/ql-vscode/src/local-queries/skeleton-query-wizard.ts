@@ -34,7 +34,7 @@ import { showInformationMessageWithAction } from "../common/vscode/dialog";
 import { redactableError } from "../common/errors";
 import { App } from "../common/app";
 import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
-import { containsPath } from "../common/files";
+import { containsPath, pathsEqual } from "../common/files";
 import { getQlPackPath } from "../common/ql";
 import { load } from "js-yaml";
 import { QlPackFile } from "../packaging/qlpack-file";
@@ -284,13 +284,6 @@ export class SkeletonQueryWizard {
   }
 
   private async createQlPack() {
-    if (this.qlPackStoragePath === undefined) {
-      throw new Error("Query pack storage path is undefined");
-    }
-    if (this.language === undefined) {
-      throw new Error("Language is undefined");
-    }
-
     this.progress({
       message: "Creating skeleton QL pack around query",
       step: 2,
@@ -298,11 +291,7 @@ export class SkeletonQueryWizard {
     });
 
     try {
-      const qlPackGenerator = new QlPackGenerator(
-        this.language,
-        this.cliServer,
-        this.qlPackStoragePath,
-      );
+      const qlPackGenerator = this.createQlPackGenerator();
 
       await qlPackGenerator.generate();
     } catch (e: unknown) {
@@ -313,13 +302,6 @@ export class SkeletonQueryWizard {
   }
 
   private async createExampleFile() {
-    if (this.qlPackStoragePath === undefined) {
-      throw new Error("Folder name is undefined");
-    }
-    if (this.language === undefined) {
-      throw new Error("Language is undefined");
-    }
-
     this.progress({
       message:
         "Skeleton query pack already exists. Creating additional query example file.",
@@ -328,11 +310,7 @@ export class SkeletonQueryWizard {
     });
 
     try {
-      const qlPackGenerator = new QlPackGenerator(
-        this.language,
-        this.cliServer,
-        this.qlPackStoragePath,
-      );
+      const qlPackGenerator = this.createQlPackGenerator();
 
       this.fileName = await this.determineNextFileName();
       await qlPackGenerator.createExampleQlFile(this.fileName);
@@ -473,6 +451,29 @@ export class SkeletonQueryWizard {
     const openFileArgs = [queryPathUri.toString(true)];
     const queryString = encodeURI(JSON.stringify(openFileArgs));
     return `[${this.fileName}](command:vscode.open?${queryString})`;
+  }
+
+  private createQlPackGenerator() {
+    if (this.qlPackStoragePath === undefined) {
+      throw new Error("Query pack storage path is undefined");
+    }
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
+
+    const parentFolder = dirname(this.qlPackStoragePath);
+
+    // Only include the folder name in the qlpack name if the qlpack is not in the root of the workspace.
+    const includeFolderNameInQlpackName = !getOnDiskWorkspaceFolders().some(
+      (workspaceFolder) => pathsEqual(workspaceFolder, parentFolder),
+    );
+
+    return new QlPackGenerator(
+      this.language,
+      this.cliServer,
+      this.qlPackStoragePath,
+      includeFolderNameInQlpackName,
+    );
   }
 
   public static async findDatabaseItemByNwo(
