@@ -127,7 +127,7 @@ export const MultipleModeledMethodsPanel = ({
 
     onChange(method.signature, newModeledMethods);
     setSelectedIndex(newSelectedIndex);
-    sendTelemetry("method-modeling-add-model");
+    sendTelemetry("method-modeling-remove-model");
   }, [onChange, modeledMethods, selectedIndex, method]);
 
   const handleChange = useCallback(
