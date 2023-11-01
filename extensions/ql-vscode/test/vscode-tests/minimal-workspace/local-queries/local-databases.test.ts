@@ -729,7 +729,17 @@ describe("local databases", () => {
       expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
     });
 
-    it("should add database source archive folder", async () => {
+    it("should not add database source archive folder when `codeQL.databaseDownload.addDatabaseSourceToWorkspace` is `false`", async () => {
+      jest.spyOn(config, "addDatabaseSourceToWorkspace").mockReturnValue(false);
+
+      await databaseManager.openDatabase(mockDbItem.databaseUri);
+
+      expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(0);
+    });
+
+    it("should add database source archive folder when `codeQL.databaseDownload.addDatabaseSourceToWorkspace` is `true`", async () => {
+      jest.spyOn(config, "addDatabaseSourceToWorkspace").mockReturnValue(true);
+
       await databaseManager.openDatabase(mockDbItem.databaseUri);
 
       expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(1);
