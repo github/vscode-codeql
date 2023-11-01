@@ -688,7 +688,6 @@ export class ModelEditorView extends AbstractWebview<
       this.cliServer,
       this.databaseItem.language,
       makeSelected,
-      false,
     );
     if (!addedDatabase) {
       void this.app.logger.log("No database chosen");
