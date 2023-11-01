@@ -9,40 +9,26 @@ import { ModeledMethod } from "./modeled-method";
 import { runQuery } from "../local-queries/run-query";
 import { QueryConstraints, resolveQueries } from "../local-queries";
 import { DecodedBqrs } from "../common/bqrs-cli-types";
-
-/**
- * Options that are set by the caller of `runGenerateQueries`.
- */
-type GenerateQueriesQueryOptions = {
+type GenerateQueriesOptions = {
   queryConstraints: QueryConstraints;
   filterQueries?: (queryPath: string) => boolean;
   parseResults: (
     queryPath: string,
     results: DecodedBqrs,
   ) => ModeledMethod[] | Promise<ModeledMethod[]>;
-};
+  onResults: (results: ModeledMethod[]) => void | Promise<void>;
 
-/**
- * Options that are passed through by the caller of `runGenerateQueries`.
- */
-type GenerateQueriesOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   queryStorageDir: string;
   databaseItem: DatabaseItem;
   progress: ProgressCallback;
   token: CancellationToken;
-  onResults: (results: ModeledMethod[]) => void | Promise<void>;
 };
 
-export async function runGenerateQueries(
-  {
-    queryConstraints,
-    filterQueries,
-    parseResults,
-  }: GenerateQueriesQueryOptions,
-  { onResults, ...options }: GenerateQueriesOptions,
-) {
+export async function runGenerateQueries(options: GenerateQueriesOptions) {
+  const { queryConstraints, filterQueries, parseResults, onResults } = options;
+
   options.progress({
     message: "Resolving queries",
     step: 1,
@@ -84,7 +70,7 @@ async function runSingleGenerateQuery(
     databaseItem,
     progress,
     token,
-  }: Omit<GenerateQueriesOptions, "onResults">,
+  }: GenerateQueriesOptions,
 ): Promise<DecodedBqrs | undefined> {
   const queryBasename = basename(queryPath);
 

@@ -122,23 +122,21 @@ describe("runGenerateQueries", () => {
       queryStorageDir: "/tmp/queries",
       progress: jest.fn(),
       token: new CancellationTokenSource().token,
-      onResults,
     };
 
-    await runGenerateQueries(
-      {
-        queryConstraints: modelGeneration.queryConstraints,
-        filterQueries: modelGeneration.filterQueries,
-        parseResults: (queryPath, results) =>
-          modelGeneration.parseResults(
-            queryPath,
-            results,
-            modelsAsDataLanguage,
-            createMockLogger(),
-          ),
-      },
-      options,
-    );
+    await runGenerateQueries({
+      queryConstraints: modelGeneration.queryConstraints,
+      filterQueries: modelGeneration.filterQueries,
+      parseResults: (queryPath, results) =>
+        modelGeneration.parseResults(
+          queryPath,
+          results,
+          modelsAsDataLanguage,
+          createMockLogger(),
+        ),
+      onResults,
+      ...options,
+    });
     expect(onResults).toHaveBeenCalledWith([
       {
         input: "Argument[self]",

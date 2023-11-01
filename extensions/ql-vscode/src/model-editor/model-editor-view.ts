@@ -509,30 +509,26 @@ export class ModelEditorView extends AbstractWebview<
         });
 
         try {
-          await runGenerateQueries(
-            {
-              queryConstraints: modelGeneration.queryConstraints,
-              filterQueries: modelGeneration.filterQueries,
-              parseResults: (queryPath, results) =>
-                modelGeneration.parseResults(
-                  queryPath,
-                  results,
-                  modelsAsDataLanguage,
-                  this.app.logger,
-                ),
+          await runGenerateQueries({
+            queryConstraints: modelGeneration.queryConstraints,
+            filterQueries: modelGeneration.filterQueries,
+            parseResults: (queryPath, results) =>
+              modelGeneration.parseResults(
+                queryPath,
+                results,
+                modelsAsDataLanguage,
+                this.app.logger,
+              ),
+            onResults: async (modeledMethods) => {
+              this.addModeledMethodsFromArray(modeledMethods);
             },
-            {
-              cliServer: this.cliServer,
-              queryRunner: this.queryRunner,
-              queryStorageDir: this.queryStorageDir,
-              databaseItem: addedDatabase ?? this.databaseItem,
-              onResults: async (modeledMethods) => {
-                this.addModeledMethodsFromArray(modeledMethods);
-              },
-              progress,
-              token: tokenSource.token,
-            },
-          );
+            cliServer: this.cliServer,
+            queryRunner: this.queryRunner,
+            queryStorageDir: this.queryStorageDir,
+            databaseItem: addedDatabase ?? this.databaseItem,
+            progress,
+            token: tokenSource.token,
+          });
         } catch (e: unknown) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
