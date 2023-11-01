@@ -86,7 +86,7 @@ export const ModelKindDropdown = ({
 
   return (
     <Dropdown
-      value={value ?? undefined}
+      value={value}
       options={options}
       disabled={disabled}
       onChange={handleChange}
