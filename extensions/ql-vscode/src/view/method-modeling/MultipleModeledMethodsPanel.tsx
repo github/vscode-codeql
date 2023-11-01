@@ -13,6 +13,7 @@ import { Codicon } from "../common";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "./ModeledMethodAlert";
 import { QueryLanguage } from "../../common/query-language";
+import { sendTelemetry } from "../common/telemetry";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
@@ -81,9 +82,11 @@ export const MultipleModeledMethodsPanel = ({
 
   const handlePreviousClick = useCallback(() => {
     setSelectedIndex((previousIndex) => previousIndex - 1);
+    sendTelemetry("method-modeling-previous-modeling");
   }, []);
   const handleNextClick = useCallback(() => {
     setSelectedIndex((previousIndex) => previousIndex + 1);
+    sendTelemetry("method-modeling-next-modeling");
   }, []);
 
   const validationErrors = useMemo(
@@ -109,6 +112,7 @@ export const MultipleModeledMethodsPanel = ({
 
     onChange(method.signature, newModeledMethods);
     selectNewMethod.current = newModeledMethods.length - 1;
+    sendTelemetry("method-modeling-add-model");
   }, [onChange, modeledMethods, method]);
 
   const handleRemoveClick = useCallback(() => {
@@ -123,6 +127,7 @@ export const MultipleModeledMethodsPanel = ({
 
     onChange(method.signature, newModeledMethods);
     setSelectedIndex(newSelectedIndex);
+    sendTelemetry("method-modeling-add-model");
   }, [onChange, modeledMethods, selectedIndex, method]);
 
   const handleChange = useCallback(
