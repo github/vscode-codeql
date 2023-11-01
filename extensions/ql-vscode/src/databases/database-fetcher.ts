@@ -29,7 +29,7 @@ import {
 } from "../common/github-url-identifier-helper";
 import { Credentials } from "../common/authentication";
 import { AppCommandManager } from "../common/commands";
-import { allowHttp } from "../config";
+import { addDatabaseSourceToWorkspace, allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
@@ -99,7 +99,7 @@ export async function promptImportGithubDatabase(
   cli?: CodeQLCliServer,
   language?: string,
   makeSelected = true,
-  addSourceArchiveFolder = true,
+  addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
 ): Promise<DatabaseItem | undefined> {
   const githubRepo = await askForGitHubRepo(progress);
   if (!githubRepo) {
@@ -178,7 +178,7 @@ export async function downloadGitHubDatabase(
   cli?: CodeQLCliServer,
   language?: string,
   makeSelected = true,
-  addSourceArchiveFolder = true,
+  addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
 ): Promise<DatabaseItem | undefined> {
   const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
   if (!isValidGitHubNwo(nwo)) {
@@ -295,7 +295,7 @@ async function databaseArchiveFetcher(
   progress: ProgressCallback,
   cli?: CodeQLCliServer,
   makeSelected = true,
-  addSourceArchiveFolder = true,
+  addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
 ): Promise<DatabaseItem> {
   progress({
     message: "Getting database",
@@ -476,7 +476,7 @@ async function checkForFailingResponse(
     return response;
   }
 
-  // An error downloading the database. Attempt to extract the resaon behind it.
+  // An error downloading the database. Attempt to extract the reason behind it.
   const text = await response.text();
   let msg: string;
   try {

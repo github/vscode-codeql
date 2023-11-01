@@ -649,6 +649,15 @@ export function allowHttp(): boolean {
   return ALLOW_HTTP_SETTING.getValue<boolean>() || false;
 }
 
+const ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING = new Setting(
+  "addDatabaseSourceToWorkspace",
+  DATABASE_DOWNLOAD_SETTING,
+);
+
+export function addDatabaseSourceToWorkspace(): boolean {
+  return ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING.getValue<boolean>() || false;
+}
+
 /**
  * Parent setting for all settings related to the "Create Query" command.
  */

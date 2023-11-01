@@ -378,7 +378,12 @@
           "codeQL.databaseDownload.allowHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+            "description": "Allow databases to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+          },
+          "codeQL.databaseDownload.addDatabaseSourceToWorkspace": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "When downloading a database, automatically add the database's source folder as a workspace folder. Warning: enabling this option in a single-folder workspace will cause the workspace to reload as a [multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces). This may cause query history and database lists to be reset."
           }
         }
       },
