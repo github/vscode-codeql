@@ -33,6 +33,7 @@ import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-model
 import { DataGridCell, DataGridRow } from "../common/DataGrid";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "../method-modeling/ModeledMethodAlert";
+import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -165,15 +166,10 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
     );
 
     const handleAddModelClick = useCallback(() => {
-      const newModeledMethod: ModeledMethod = {
-        type: "none",
-        provenance: "manual",
-        signature: method.signature,
-        packageName: method.packageName,
-        typeName: method.typeName,
-        methodName: method.methodName,
-        methodParameters: method.methodParameters,
-      };
+      const newModeledMethod: ModeledMethod = createEmptyModeledMethod(
+        "none",
+        method,
+      );
       const newModeledMethods = [...modeledMethods, newModeledMethod];
       onChange(method.signature, newModeledMethods);
     }, [method, modeledMethods, onChange]);
@@ -356,17 +352,7 @@ function modeledMethodsToDisplay(
   viewState: ModelEditorViewState,
 ): ModeledMethod[] {
   if (modeledMethods.length === 0) {
-    return [
-      {
-        type: "none",
-        provenance: "manual",
-        signature: method.signature,
-        packageName: method.packageName,
-        typeName: method.typeName,
-        methodName: method.methodName,
-        methodParameters: method.methodParameters,
-      },
-    ];
+    return [createEmptyModeledMethod("none", method)];
   }
 
   if (viewState.showMultipleModels) {
