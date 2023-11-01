@@ -28,7 +28,7 @@ export function getModelsAsDataLanguageModel<
 ): NonNullable<ModelsAsDataLanguagePredicates[T]> {
   const definition = getModelsAsDataLanguage(language).predicates[model];
   if (!definition) {
-    throw new Error(`No models-as-data definition for ${model}`);
+    throw new Error(`No models-as-data predicate for ${model}`);
   }
   return definition;
 }
