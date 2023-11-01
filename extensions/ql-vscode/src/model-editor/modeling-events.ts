@@ -50,7 +50,7 @@ interface InProgressMethodsChangedEvent {
 
 export class ModelingEvents extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
-  public readonly onDbOpened: AppEvent<string>;
+  public readonly onDbOpened: AppEvent<DatabaseItem>;
   public readonly onDbClosed: AppEvent<string>;
   public readonly onMethodsChanged: AppEvent<MethodsChangedEvent>;
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
@@ -61,7 +61,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
-  private readonly onDbOpenedEventEmitter: AppEventEmitter<string>;
+  private readonly onDbOpenedEventEmitter: AppEventEmitter<DatabaseItem>;
   private readonly onDbClosedEventEmitter: AppEventEmitter<string>;
   private readonly onMethodsChangedEventEmitter: AppEventEmitter<MethodsChangedEvent>;
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
@@ -79,7 +79,9 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onActiveDbChanged = this.onActiveDbChangedEventEmitter.event;
 
-    this.onDbOpenedEventEmitter = this.push(app.createEventEmitter<string>());
+    this.onDbOpenedEventEmitter = this.push(
+      app.createEventEmitter<DatabaseItem>(),
+    );
     this.onDbOpened = this.onDbOpenedEventEmitter.event;
 
     this.onDbClosedEventEmitter = this.push(app.createEventEmitter<string>());
@@ -130,8 +132,8 @@ export class ModelingEvents extends DisposableObject {
     this.onActiveDbChangedEventEmitter.fire();
   }
 
-  public fireDbOpenedEvent(dbUri: string) {
-    this.onDbOpenedEventEmitter.fire(dbUri);
+  public fireDbOpenedEvent(databaseItem: DatabaseItem) {
+    this.onDbOpenedEventEmitter.fire(databaseItem);
   }
 
   public fireDbClosedEvent(dbUri: string) {
