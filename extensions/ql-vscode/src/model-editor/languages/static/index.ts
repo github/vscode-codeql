@@ -2,6 +2,7 @@ import { ModelsAsDataLanguage } from "../models-as-data";
 import { ModeledMethodType, Provenance } from "../../modeled-method";
 import { DataTuple } from "../../model-extension-file";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
+import { filterFlowModelQueries, parseFlowModelResults } from "./generate";
 
 function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
@@ -136,5 +137,12 @@ export const staticLanguage: ModelsAsDataLanguage = {
         methodParameters: row[3] as string,
       }),
     },
+  },
+  modelGeneration: {
+    queryConstraints: {
+      "tags contain": ["modelgenerator"],
+    },
+    filterQueries: filterFlowModelQueries,
+    parseResults: parseFlowModelResults,
   },
 };

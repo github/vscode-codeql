@@ -25,7 +25,7 @@ type GenerateQueriesQueryOptions = {
 /**
  * Options that are passed through by the caller of `runGenerateQueries`.
  */
-export type GenerateQueriesOptions = {
+type GenerateQueriesOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   queryStorageDir: string;
