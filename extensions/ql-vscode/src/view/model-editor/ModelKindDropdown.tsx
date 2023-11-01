@@ -5,20 +5,17 @@ import type {
   ModeledMethodKind,
 } from "../../model-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
-import { Method } from "../../model-editor/method";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { QueryLanguage } from "../../common/query-language";
 
 type Props = {
   language: QueryLanguage;
-  method: Method;
   modeledMethod: ModeledMethod | undefined;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelKindDropdown = ({
   language,
-  method,
   modeledMethod,
   onChange,
 }: Props) => {
