@@ -542,7 +542,7 @@ export class ModelEditorView extends AbstractWebview<
         const tokenSource = new CancellationTokenSource();
 
         try {
-          const modeledMethods = await runGenerateModelQuery({
+          await runGenerateModelQuery({
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
             logger: this.app.logger,
@@ -551,9 +551,10 @@ export class ModelEditorView extends AbstractWebview<
             language: this.language,
             progress,
             token: tokenSource.token,
+            onResults: async (modeledMethods) => {
+              this.addModeledMethodsFromArray(modeledMethods);
+            },
           });
-
-          this.addModeledMethodsFromArray(modeledMethods);
         } catch (e: unknown) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,

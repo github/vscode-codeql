@@ -1,21 +1,14 @@
-import { CancellationToken } from "vscode";
-import { DatabaseItem } from "../databases/local-databases";
 import { basename } from "path";
-import { QueryRunner } from "../query-server";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { BaseLogger } from "../common/logging";
 import {
-  NotificationLogger,
-  showAndLogExceptionWithTelemetry,
-} from "../common/logging";
-import { getModelsAsDataLanguage } from "./languages";
-import { ProgressCallback } from "../common/vscode/progress";
-import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { ModeledMethod, ModeledMethodType } from "./modeled-method";
-import { redactableError } from "../common/errors";
-import { telemetryListener } from "../common/vscode/telemetry";
-import { runQuery } from "../local-queries/run-query";
-import { resolveQueries } from "../local-queries";
+  getModelsAsDataLanguage,
+  ModelsAsDataLanguage,
+  ModelsAsDataLanguageModelType,
+} from "./languages";
+import { ModeledMethod } from "./modeled-method";
 import { QueryLanguage } from "../common/query-language";
+import { GenerateQueriesOptions, runGenerateQueries } from "./generate";
+import { DecodedBqrs } from "../common/bqrs-cli-types";
 
 const FLOW_MODEL_SUPPORTED_LANGUAGES = [
   QueryLanguage.CSharp,
@@ -28,158 +21,46 @@ export function isFlowModelGenerationSupported(
   return FLOW_MODEL_SUPPORTED_LANGUAGES.includes(language);
 }
 
-type FlowModelOptions = {
-  cliServer: CodeQLCliServer;
-  queryRunner: QueryRunner;
-  logger: NotificationLogger;
-  queryStorageDir: string;
-  databaseItem: DatabaseItem;
+type FlowModelOptions = GenerateQueriesOptions & {
+  logger: BaseLogger;
   language: QueryLanguage;
-  progress: ProgressCallback;
-  token: CancellationToken;
-  onResults: (results: ModeledMethod[]) => void | Promise<void>;
 };
 
-export async function runFlowModelQueries({
-  onResults,
-  ...options
-}: FlowModelOptions) {
-  const queries = await resolveFlowQueries(
-    options.cliServer,
-    options.databaseItem,
-  );
+const queriesToModel: Record<string, ModelsAsDataLanguageModelType> = {
+  "CaptureSummaryModels.ql": "summary",
+  "CaptureSinkModels.ql": "sink",
+  "CaptureSourceModels.ql": "source",
+  "CaptureNeutralModels.ql": "neutral",
+};
 
-  const queriesByBasename: Record<string, string> = {};
-  for (const query of queries) {
-    queriesByBasename[basename(query)] = query;
-  }
-
-  const summaryResults = await runSingleFlowQuery(
-    "summary",
-    queriesByBasename["CaptureSummaryModels.ql"],
-    0,
-    options,
-  );
-  if (summaryResults) {
-    await onResults(summaryResults);
-  }
-
-  const sinkResults = await runSingleFlowQuery(
-    "sink",
-    queriesByBasename["CaptureSinkModels.ql"],
-    1,
-    options,
-  );
-  if (sinkResults) {
-    await onResults(sinkResults);
-  }
-
-  const sourceResults = await runSingleFlowQuery(
-    "source",
-    queriesByBasename["CaptureSourceModels.ql"],
-    2,
-    options,
-  );
-  if (sourceResults) {
-    await onResults(sourceResults);
-  }
-
-  const neutralResults = await runSingleFlowQuery(
-    "neutral",
-    queriesByBasename["CaptureNeutralModels.ql"],
-    3,
-    options,
-  );
-  if (neutralResults) {
-    await onResults(neutralResults);
-  }
-}
-
-async function resolveFlowQueries(
-  cliServer: CodeQLCliServer,
-  databaseItem: DatabaseItem,
-): Promise<string[]> {
-  const packsToSearch = [`codeql/${databaseItem.language}-queries`];
-
-  return await resolveQueries(
-    cliServer,
-    packsToSearch,
-    "flow model generator",
-    {
-      "tags contain": ["modelgenerator"],
-    },
-  );
-}
-
-async function runSingleFlowQuery(
-  type: Exclude<ModeledMethodType, "none">,
-  queryPath: string | undefined,
-  queryStep: number,
-  {
-    cliServer,
-    queryRunner,
-    logger,
-    queryStorageDir,
-    databaseItem,
-    language,
-    progress,
-    token,
-  }: Omit<FlowModelOptions, "onResults">,
-): Promise<ModeledMethod[]> {
-  // Check that the right query was found
-  if (queryPath === undefined) {
-    void showAndLogExceptionWithTelemetry(
-      logger,
-      telemetryListener,
-      redactableError`Failed to find ${type} query`,
-    );
-    return [];
-  }
-
-  // Run the query
-  const completedQuery = await runQuery({
-    queryRunner,
-    databaseItem,
-    queryPath,
-    queryStorageDir,
-    additionalPacks: getOnDiskWorkspaceFolders(),
-    extensionPacks: undefined,
-    progress: ({ step, message }) =>
-      progress({
-        message: `Generating ${type} model: ${message}`,
-        step: queryStep * 1000 + step,
-        maxStep: 4000,
-      }),
-    token,
-  });
-
-  if (!completedQuery) {
-    return [];
-  }
-
-  // Interpret the results
-  const modelsAsDataLanguage = getModelsAsDataLanguage(language);
-
-  const definition = modelsAsDataLanguage.predicates[type];
-
-  const bqrsPath = completedQuery.outputDir.bqrsPath;
-
-  const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
-  if (bqrsInfo["result-sets"].length !== 1) {
-    void showAndLogExceptionWithTelemetry(
-      logger,
-      telemetryListener,
-      redactableError`Expected exactly one result set, got ${
-        bqrsInfo["result-sets"].length
-      } for ${basename(queryPath)}`,
+function parseFlowModelResults(
+  queryPath: string,
+  bqrs: DecodedBqrs,
+  modelsAsDataLanguage: ModelsAsDataLanguage,
+  logger: BaseLogger,
+): ModeledMethod[] {
+  if (Object.keys(bqrs).length !== 1) {
+    throw new Error(
+      `Expected exactly one result set from ${queryPath}, but got ${
+        Object.keys(bqrs).length
+      }`,
     );
   }
 
-  const resultSet = bqrsInfo["result-sets"][0];
+  const modelType = queriesToModel[basename(queryPath)];
+  if (!modelType) {
+    void logger.log(`Unknown model type for ${queryPath}`);
+    return [];
+  }
 
-  const decodedResults = await cliServer.bqrsDecode(bqrsPath, resultSet.name);
+  const resultSet = bqrs[Object.keys(bqrs)[0]];
 
-  const results = decodedResults.tuples;
+  const results = resultSet.tuples;
+
+  const definition = modelsAsDataLanguage.predicates[modelType];
+  if (!definition) {
+    throw new Error(`No definition for ${modelType}`);
+  }
 
   return (
     results
@@ -190,5 +71,39 @@ async function runSingleFlowQuery(
 
         return definition.readModeledMethod(row.split(";"));
       })
+  );
+}
+
+export async function runFlowModelQueries({
+  cliServer,
+  queryRunner,
+  logger,
+  queryStorageDir,
+  databaseItem,
+  language,
+  progress,
+  token,
+  onResults,
+}: FlowModelOptions) {
+  const modelsAsDataLanguage = getModelsAsDataLanguage(language);
+
+  return runGenerateQueries(
+    {
+      queryConstraints: {
+        "tags contain": ["modelgenerator"],
+      },
+      filterQueries: (queryPath) => basename(queryPath) in queriesToModel,
+      parseResults: (queryPath, results) =>
+        parseFlowModelResults(queryPath, results, modelsAsDataLanguage, logger),
+    },
+    {
+      cliServer,
+      queryRunner,
+      queryStorageDir,
+      databaseItem,
+      progress,
+      token,
+      onResults,
+    },
   );
 }
