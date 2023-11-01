@@ -133,10 +133,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           this.databaseItem,
           msg.methodSignature,
         );
-
-        void telemetryListener?.sendUIInteraction(
-          "method-modeling-set-multiple-modeled-methods",
-        );
         break;
       }
       case "revealInModelEditor":
