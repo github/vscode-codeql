@@ -208,7 +208,7 @@ export const LibraryRow = ({
             &nbsp;Stop
           </VSCodeButton>
         )}
-        {viewState.showFlowGeneration &&
+        {viewState.showGenerateButton &&
           viewState.mode === Mode.Application && (
             <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
               <Codicon name="code" label="Model from source" />

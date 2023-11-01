@@ -5,7 +5,7 @@ import { QueryLanguage } from "../../common/query-language";
 export interface ModelEditorViewState {
   extensionPack: ExtensionPack;
   language: QueryLanguage;
-  showFlowGeneration: boolean;
+  showGenerateButton: boolean;
   showLlmButton: boolean;
   showMultipleModels: boolean;
   mode: Mode;

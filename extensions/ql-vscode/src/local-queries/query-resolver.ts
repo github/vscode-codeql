@@ -31,6 +31,8 @@ export interface QueryConstraints {
   kind?: string;
   "tags contain"?: string[];
   "tags contain all"?: string[];
+  "query filename"?: string;
+  "query path"?: string;
 }
 
 /**
@@ -131,6 +133,14 @@ export async function resolveQueries(
     humanConstraints.push(
       `tagged all of "${constraints["tags contain all"].join(" ")}"`,
     );
+  }
+  if (constraints["query filename"] !== undefined) {
+    humanConstraints.push(
+      `with query filename "${constraints["query filename"]}"`,
+    );
+  }
+  if (constraints["query path"] !== undefined) {
+    humanConstraints.push(`with query path "${constraints["query path"]}"`);
   }
 
   const joinedPacksToSearch = packsToSearch.join(", ");

@@ -51,6 +51,10 @@ import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
+import {
+  isGenerateModelSupported,
+  runGenerateModelQuery,
+} from "./generate-model-queries";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -266,7 +270,11 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "generateMethod":
-        await this.generateModeledMethods();
+        if (isFlowModelGenerationSupported(this.language)) {
+          await this.generateModeledMethodsFromFlow();
+        } else if (isGenerateModelSupported(this.language)) {
+          await this.generateModeledMethodsFromGenerateModel();
+        }
         void telemetryListener?.sendUIInteraction(
           "model-editor-generate-modeled-methods",
         );
@@ -369,9 +377,10 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private async setViewState(): Promise<void> {
-    const showFlowGeneration =
+    const showGenerateButton =
       this.modelConfig.flowGeneration &&
-      isFlowModelGenerationSupported(this.language);
+      (isFlowModelGenerationSupported(this.language) ||
+        isGenerateModelSupported(this.language));
 
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
@@ -388,7 +397,7 @@ export class ModelEditorView extends AbstractWebview<
       viewState: {
         extensionPack: this.extensionPack,
         language: this.language,
-        showFlowGeneration,
+        showGenerateButton,
         showLlmButton,
         showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),
@@ -465,7 +474,7 @@ export class ModelEditorView extends AbstractWebview<
     }
   }
 
-  protected async generateModeledMethods(): Promise<void> {
+  protected async generateModeledMethodsFromFlow(): Promise<void> {
     await withProgress(
       async (progress) => {
         const tokenSource = new CancellationTokenSource();
@@ -508,19 +517,7 @@ export class ModelEditorView extends AbstractWebview<
             databaseItem: addedDatabase ?? this.databaseItem,
             language: this.language,
             onResults: async (modeledMethods) => {
-              const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
-
-              for (const modeledMethod of modeledMethods) {
-                if (!(modeledMethod.signature in modeledMethodsByName)) {
-                  modeledMethodsByName[modeledMethod.signature] = [];
-                }
-
-                modeledMethodsByName[modeledMethod.signature].push(
-                  modeledMethod,
-                );
-              }
-
-              this.addModeledMethods(modeledMethodsByName);
+              this.addModeledMethodsFromArray(modeledMethods);
             },
             progress,
             token: tokenSource.token,
@@ -532,6 +529,38 @@ export class ModelEditorView extends AbstractWebview<
             redactableError(
               asError(e),
             )`Failed to generate flow model: ${getErrorMessage(e)}`,
+          );
+        }
+      },
+      { cancellable: false },
+    );
+  }
+
+  protected async generateModeledMethodsFromGenerateModel(): Promise<void> {
+    await withProgress(
+      async (progress) => {
+        const tokenSource = new CancellationTokenSource();
+
+        try {
+          const modeledMethods = await runGenerateModelQuery({
+            cliServer: this.cliServer,
+            queryRunner: this.queryRunner,
+            logger: this.app.logger,
+            queryStorageDir: this.queryStorageDir,
+            databaseItem: this.databaseItem,
+            language: this.language,
+            progress,
+            token: tokenSource.token,
+          });
+
+          this.addModeledMethodsFromArray(modeledMethods);
+        } catch (e: unknown) {
+          void showAndLogExceptionWithTelemetry(
+            this.app.logger,
+            this.app.telemetry,
+            redactableError(
+              asError(e),
+            )`Failed to generate models: ${getErrorMessage(e)}`,
           );
         }
       },
@@ -755,6 +784,20 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       new Set(Object.keys(modeledMethods)),
     );
+  }
+
+  private addModeledMethodsFromArray(modeledMethods: ModeledMethod[]) {
+    const modeledMethodsByName: Record<string, ModeledMethod[]> = {};
+
+    for (const modeledMethod of modeledMethods) {
+      if (!(modeledMethod.signature in modeledMethodsByName)) {
+        modeledMethodsByName[modeledMethod.signature] = [];
+      }
+
+      modeledMethodsByName[modeledMethod.signature].push(modeledMethod);
+    }
+
+    this.addModeledMethods(modeledMethodsByName);
   }
 
   private setModeledMethods(signature: string, methods: ModeledMethod[]) {
