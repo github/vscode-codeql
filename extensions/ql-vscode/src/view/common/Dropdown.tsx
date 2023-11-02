@@ -4,7 +4,7 @@ import { styled } from "styled-components";
 
 const DISABLED_VALUE = "-";
 
-const StyledDropdown = styled.select<{ disabled?: boolean }>`
+const StyledDropdown = styled.select`
   width: 100%;
   height: calc(var(--input-height) * 1px);
   background: var(--vscode-dropdown-background);
