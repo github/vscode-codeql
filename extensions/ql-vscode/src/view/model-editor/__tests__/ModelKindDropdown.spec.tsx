@@ -2,7 +2,6 @@ import * as React from "react";
 import { render, screen } from "@testing-library/react";
 import { ModelKindDropdown } from "../ModelKindDropdown";
 import userEvent from "@testing-library/user-event";
-import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import {
   createNoneModeledMethod,
   createSinkModeledMethod,
@@ -12,7 +11,6 @@ import { QueryLanguage } from "../../../common/query-language";
 
 describe(ModelKindDropdown.name, () => {
   const onChange = jest.fn();
-  const method = createMethod();
 
   beforeEach(() => {
     onChange.mockReset();
@@ -26,7 +24,6 @@ describe(ModelKindDropdown.name, () => {
     render(
       <ModelKindDropdown
         language={QueryLanguage.Java}
-        method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
       />,
@@ -42,7 +39,6 @@ describe(ModelKindDropdown.name, () => {
   });
 
   it("resets the kind when changing the supported kinds", () => {
-    const method = createMethod();
     const modeledMethod = createSourceModeledMethod({
       kind: "local",
     });
@@ -50,7 +46,6 @@ describe(ModelKindDropdown.name, () => {
     const { rerender } = render(
       <ModelKindDropdown
         language={QueryLanguage.Java}
-        method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
       />,
@@ -67,7 +62,6 @@ describe(ModelKindDropdown.name, () => {
     rerender(
       <ModelKindDropdown
         language={QueryLanguage.Java}
-        method={method}
         modeledMethod={updatedModeledMethod}
         onChange={onChange}
       />,
@@ -77,7 +71,6 @@ describe(ModelKindDropdown.name, () => {
   });
 
   it("sets the kind when value is undefined", () => {
-    const method = createMethod();
     const modeledMethod = createSourceModeledMethod({
       type: "source",
       kind: undefined,
@@ -86,7 +79,6 @@ describe(ModelKindDropdown.name, () => {
     render(
       <ModelKindDropdown
         language={QueryLanguage.Java}
-        method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
       />,
@@ -101,13 +93,11 @@ describe(ModelKindDropdown.name, () => {
   });
 
   it("does not call onChange when unmodeled and the kind is valid", () => {
-    const method = createMethod();
     const modeledMethod = createNoneModeledMethod();
 
     render(
       <ModelKindDropdown
         language={QueryLanguage.Java}
-        method={method}
         modeledMethod={modeledMethod}
         onChange={onChange}
       />,
