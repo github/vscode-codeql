@@ -27,14 +27,14 @@ function getIcon(
     if (variantAnalysisStatus === VariantAnalysisStatus.Canceled) {
       return (
         <>
-          <HorizontalSpace size={2} />
+          <HorizontalSpace $size={2} />
           <ErrorIcon label="Some analyses were stopped" />
         </>
       );
     } else {
       return (
         <>
-          <HorizontalSpace size={2} />
+          <HorizontalSpace $size={2} />
           <ErrorIcon label="Some analyses failed" />
         </>
       );
@@ -42,14 +42,14 @@ function getIcon(
   } else if (skippedRepositoryCount > 0) {
     return (
       <>
-        <HorizontalSpace size={2} />
+        <HorizontalSpace $size={2} />
         <WarningIcon label="Some repositories were skipped" />
       </>
     );
   } else if (variantAnalysisStatus === VariantAnalysisStatus.Succeeded) {
     return (
       <>
-        <HorizontalSpace size={2} />
+        <HorizontalSpace $size={2} />
         <SuccessIcon label="Completed" />
       </>
     );
@@ -68,7 +68,7 @@ export const VariantAnalysisRepositoriesStats = ({
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
     return (
       <>
-        0<HorizontalSpace size={2} />
+        <HorizontalSpace $size={2} />
         <ErrorIcon label="Variant analysis failed" />
       </>
     );
