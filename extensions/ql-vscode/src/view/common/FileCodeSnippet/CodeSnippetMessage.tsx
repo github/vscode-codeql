@@ -86,7 +86,7 @@ export const CodeSnippetMessage = ({
         })}
         {children && (
           <>
-            <VerticalSpace size={2} />
+            <VerticalSpace $size={2} />
             {children}
           </>
         )}
