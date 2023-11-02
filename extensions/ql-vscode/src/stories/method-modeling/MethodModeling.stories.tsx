@@ -4,8 +4,13 @@ import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodModeling as MethodModelingComponent } from "../../view/method-modeling/MethodModeling";
 import { createMethod } from "../../../test/factories/model-editor/method-factories";
-import { createModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
+import {
+  createNeutralModeledMethod,
+  createSinkModeledMethod,
+  createSourceModeledMethod,
+} from "../../../test/factories/model-editor/modeled-method-factories";
 import { QueryLanguage } from "../../common/query-language";
+
 export default {
   title: "Method Modeling/Method Modeling",
   component: MethodModelingComponent,
@@ -55,7 +60,7 @@ export const MultipleModelingsModeledSingle = Template.bind({});
 MultipleModelingsModeledSingle.args = {
   language,
   method,
-  modeledMethods: [createModeledMethod(method)],
+  modeledMethods: [createSinkModeledMethod(method)],
   showMultipleModels: true,
   modelingStatus: "saved",
 };
@@ -65,11 +70,10 @@ MultipleModelingsModeledMultiple.args = {
   language,
   method,
   modeledMethods: [
-    createModeledMethod(method),
-    createModeledMethod({
+    createSinkModeledMethod(method),
+    createSourceModeledMethod({
       ...method,
       type: "source",
-      input: "",
       output: "ReturnValue",
       kind: "remote",
     }),
@@ -83,11 +87,8 @@ MultipleModelingsValidationFailedNeutral.args = {
   language,
   method,
   modeledMethods: [
-    createModeledMethod(method),
-    createModeledMethod({
-      ...method,
-      type: "neutral",
-    }),
+    createSinkModeledMethod(method),
+    createNeutralModeledMethod(method),
   ],
   showMultipleModels: true,
   modelingStatus: "unsaved",
@@ -98,15 +99,13 @@ MultipleModelingsValidationFailedDuplicate.args = {
   language,
   method,
   modeledMethods: [
-    createModeledMethod(method),
-    createModeledMethod({
+    createSinkModeledMethod(method),
+    createSourceModeledMethod({
       ...method,
-      type: "source",
-      input: "",
       output: "ReturnValue",
       kind: "remote",
     }),
-    createModeledMethod(method),
+    createSinkModeledMethod(method),
   ],
   showMultipleModels: true,
   modelingStatus: "unsaved",

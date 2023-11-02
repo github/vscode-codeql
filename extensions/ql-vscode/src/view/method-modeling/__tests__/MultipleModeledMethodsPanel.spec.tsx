@@ -1,7 +1,11 @@
 import * as React from "react";
 import { render as reactRender, screen, waitFor } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import { createModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
+import {
+  createNoneModeledMethod,
+  createSinkModeledMethod,
+  createSourceModeledMethod,
+} from "../../../../test/factories/model-editor/modeled-method-factories";
 import {
   MultipleModeledMethodsPanel,
   MultipleModeledMethodsPanelProps,
@@ -82,11 +86,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
   describe("with one modeled method", () => {
     const modeledMethods = [
-      createModeledMethod({
+      createSinkModeledMethod({
         ...method,
         type: "sink",
         input: "Argument[this]",
-        output: "",
         kind: "path-injection",
       }),
     ];
@@ -164,10 +167,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
-          input: "",
-          output: "",
-          kind: "",
-          provenance: "manual",
         },
       ]);
     });
@@ -201,19 +200,11 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
   describe("with two modeled methods", () => {
     const modeledMethods = [
-      createModeledMethod({
+      createSinkModeledMethod({
         ...method,
-        type: "sink",
-        input: "Argument[this]",
-        output: "",
-        kind: "path-injection",
       }),
-      createModeledMethod({
+      createSourceModeledMethod({
         ...method,
-        type: "source",
-        input: "",
-        output: "ReturnValue",
-        kind: "remote",
       }),
     ];
 
@@ -367,7 +358,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "source",
-          input: "Argument[this]",
           output: "ReturnValue",
           kind: "value",
           provenance: "manual",
@@ -403,7 +393,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodParameters: method.methodParameters,
           type: "sink",
           input: "Argument[this]",
-          output: "ReturnValue",
           kind: "value",
           provenance: "manual",
         },
@@ -447,10 +436,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
-          input: "",
-          output: "",
-          kind: "",
-          provenance: "manual",
         },
       ]);
     });
@@ -553,24 +538,18 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
   describe("with three modeled methods", () => {
     const modeledMethods = [
-      createModeledMethod({
+      createSinkModeledMethod({
         ...method,
-        type: "sink",
         input: "Argument[this]",
-        output: "",
         kind: "path-injection",
       }),
-      createModeledMethod({
+      createSourceModeledMethod({
         ...method,
-        type: "source",
-        input: "",
         output: "ReturnValue",
         kind: "remote",
       }),
-      createModeledMethod({
+      createSourceModeledMethod({
         ...method,
-        type: "source",
-        input: "",
         output: "ReturnValue",
         kind: "local",
       }),
@@ -719,19 +698,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
   describe("with 1 modeled and 1 unmodeled method", () => {
     const modeledMethods = [
-      createModeledMethod({
+      createSinkModeledMethod({
         ...method,
         type: "sink",
         input: "Argument[this]",
-        output: "",
         kind: "path-injection",
       }),
-      createModeledMethod({
+      createNoneModeledMethod({
         ...method,
-        type: "none",
-        input: "",
-        output: "",
-        kind: "",
       }),
     ];
 
@@ -823,10 +797,6 @@ describe(MultipleModeledMethodsPanel.name, () => {
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
-          input: "",
-          output: "",
-          kind: "",
-          provenance: "manual",
         },
       ]);
     });
@@ -834,10 +804,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
   describe("with duplicate modeled methods", () => {
     const modeledMethods = [
-      createModeledMethod({
+      createSinkModeledMethod({
         ...method,
       }),
-      createModeledMethod({
+      createSinkModeledMethod({
         ...method,
       }),
     ];

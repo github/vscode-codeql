@@ -15,7 +15,7 @@ import {
 import { mockedObject } from "../../../utils/mocking.helpers";
 import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 import { Mode } from "../../../../../src/model-editor/shared/mode";
-import { createModeledMethod } from "../../../../factories/model-editor/modeled-method-factories";
+import { createSinkModeledMethod } from "../../../../factories/model-editor/modeled-method-factories";
 
 describe("MethodsUsageDataProvider", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -252,9 +252,11 @@ describe("MethodsUsageDataProvider", () => {
       unsupportedModeledMethod,
     ];
     const modeledMethods: Record<string, ModeledMethod[]> = {};
-    modeledMethods[supportedModeledMethod.signature] = [createModeledMethod()];
+    modeledMethods[supportedModeledMethod.signature] = [
+      createSinkModeledMethod(),
+    ];
     modeledMethods[unsupportedModeledMethod.signature] = [
-      createModeledMethod(),
+      createSinkModeledMethod(),
     ];
     const modifiedMethodSignatures: Set<string> = new Set();
 

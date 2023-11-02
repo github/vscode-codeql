@@ -1,5 +1,8 @@
 import { QueryLanguage } from "../../common/query-language";
-import { ModelsAsDataLanguage } from "./models-as-data";
+import {
+  ModelsAsDataLanguage,
+  ModelsAsDataLanguagePredicates,
+} from "./models-as-data";
 import { ruby } from "./ruby";
 import { staticLanguage } from "./static";
 
@@ -15,6 +18,19 @@ export function getModelsAsDataLanguage(
   const definition = languages[language];
   if (!definition) {
     throw new Error(`No models-as-data definition for ${language}`);
+  }
+  return definition;
+}
+
+export function getModelsAsDataLanguageModel<
+  T extends keyof ModelsAsDataLanguagePredicates,
+>(
+  language: QueryLanguage,
+  model: T,
+): NonNullable<ModelsAsDataLanguagePredicates[T]> {
+  const definition = getModelsAsDataLanguage(language).predicates[model];
+  if (!definition) {
+    throw new Error(`No models-as-data predicate for ${model}`);
   }
   return definition;
 }

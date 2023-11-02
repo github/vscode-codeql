@@ -1,5 +1,5 @@
 import { ModelsAsDataLanguage } from "./models-as-data";
-import { ModeledMethodType, Provenance } from "../modeled-method";
+import { Provenance } from "../modeled-method";
 import { DataTuple } from "../model-extension-file";
 import { sharedExtensiblePredicates, sharedKinds } from "./shared";
 
@@ -34,7 +34,7 @@ export const staticLanguage: ModelsAsDataLanguage = {
         method.provenance,
       ],
       readModeledMethod: (row) => ({
-        type: "source" as ModeledMethodType,
+        type: "source",
         input: "",
         output: row[6] as string,
         kind: row[7] as string,

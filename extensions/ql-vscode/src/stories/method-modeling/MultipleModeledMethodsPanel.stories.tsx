@@ -5,7 +5,10 @@ import { Meta, StoryFn } from "@storybook/react";
 
 import { MultipleModeledMethodsPanel as MultipleModeledMethodsPanelComponent } from "../../view/method-modeling/MultipleModeledMethodsPanel";
 import { createMethod } from "../../../test/factories/model-editor/method-factories";
-import { createModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
+import {
+  createSinkModeledMethod,
+  createSourceModeledMethod,
+} from "../../../test/factories/model-editor/modeled-method-factories";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { QueryLanguage } from "../../common/query-language";
 
@@ -56,7 +59,7 @@ export const Single = Template.bind({});
 Single.args = {
   language,
   method,
-  modeledMethods: [createModeledMethod(method)],
+  modeledMethods: [createSinkModeledMethod(method)],
 };
 
 export const Multiple = Template.bind({});
@@ -64,11 +67,9 @@ Multiple.args = {
   language,
   method,
   modeledMethods: [
-    createModeledMethod(method),
-    createModeledMethod({
+    createSinkModeledMethod(method),
+    createSourceModeledMethod({
       ...method,
-      type: "source",
-      input: "",
       output: "ReturnValue",
       kind: "remote",
     }),

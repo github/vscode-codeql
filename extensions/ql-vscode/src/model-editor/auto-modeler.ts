@@ -218,8 +218,6 @@ export class AutoModeler {
           {
             type: "neutral",
             kind: "sink",
-            input: "",
-            output: "",
             provenance: "ai-generated",
             signature: candidate.signature,
             packageName: candidate.packageName,

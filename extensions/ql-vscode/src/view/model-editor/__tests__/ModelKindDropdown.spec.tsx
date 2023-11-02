@@ -2,7 +2,11 @@ import * as React from "react";
 import { render, screen } from "@testing-library/react";
 import { ModelKindDropdown } from "../ModelKindDropdown";
 import userEvent from "@testing-library/user-event";
-import { createModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
+import {
+  createNoneModeledMethod,
+  createSinkModeledMethod,
+  createSourceModeledMethod,
+} from "../../../../test/factories/model-editor/modeled-method-factories";
 import { QueryLanguage } from "../../../common/query-language";
 
 describe(ModelKindDropdown.name, () => {
@@ -13,8 +17,7 @@ describe(ModelKindDropdown.name, () => {
   });
 
   it("allows changing the kind", async () => {
-    const modeledMethod = createModeledMethod({
-      type: "source",
+    const modeledMethod = createSourceModeledMethod({
       kind: "local",
     });
 
@@ -36,8 +39,7 @@ describe(ModelKindDropdown.name, () => {
   });
 
   it("resets the kind when changing the supported kinds", () => {
-    const modeledMethod = createModeledMethod({
-      type: "source",
+    const modeledMethod = createSourceModeledMethod({
       kind: "local",
     });
 
@@ -53,8 +55,7 @@ describe(ModelKindDropdown.name, () => {
     expect(onChange).not.toHaveBeenCalled();
 
     // Changing the type to sink should update the supported kinds
-    const updatedModeledMethod = createModeledMethod({
-      type: "sink",
+    const updatedModeledMethod = createSinkModeledMethod({
       kind: "local",
     });
 
@@ -70,8 +71,9 @@ describe(ModelKindDropdown.name, () => {
   });
 
   it("sets the kind when value is undefined", () => {
-    const modeledMethod = createModeledMethod({
+    const modeledMethod = createSourceModeledMethod({
       type: "source",
+      kind: undefined,
     });
 
     render(
@@ -91,10 +93,7 @@ describe(ModelKindDropdown.name, () => {
   });
 
   it("does not call onChange when unmodeled and the kind is valid", () => {
-    const modeledMethod = createModeledMethod({
-      type: "none",
-      kind: "",
-    });
+    const modeledMethod = createNoneModeledMethod();
 
     render(
       <ModelKindDropdown
@@ -105,27 +104,5 @@ describe(ModelKindDropdown.name, () => {
     );
 
     expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it("calls onChange when unmodeled and the kind is valid", () => {
-    const modeledMethod = createModeledMethod({
-      type: "none",
-      kind: "local",
-    });
-
-    render(
-      <ModelKindDropdown
-        language={QueryLanguage.Java}
-        modeledMethod={modeledMethod}
-        onChange={onChange}
-      />,
-    );
-
-    expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        kind: "",
-      }),
-    );
   });
 });

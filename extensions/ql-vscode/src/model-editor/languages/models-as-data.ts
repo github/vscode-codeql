@@ -1,24 +1,30 @@
 import { MethodDefinition } from "../method";
-import { ModeledMethod, ModeledMethodType } from "../modeled-method";
+import {
+  ModeledMethod,
+  NeutralModeledMethod,
+  SinkModeledMethod,
+  SourceModeledMethod,
+  SummaryModeledMethod,
+} from "../modeled-method";
 import { DataTuple } from "../model-extension-file";
 import { Mode } from "../shared/mode";
 
-type GenerateMethodDefinition = (method: ModeledMethod) => DataTuple[];
+type GenerateMethodDefinition<T> = (method: T) => DataTuple[];
 type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;
 
-export type ModelsAsDataLanguageModelType = Exclude<ModeledMethodType, "none">;
-
-export type ModelsAsDataLanguagePredicate = {
+export type ModelsAsDataLanguagePredicate<T> = {
   extensiblePredicate: string;
   supportedKinds: string[];
-  generateMethodDefinition: GenerateMethodDefinition;
+  generateMethodDefinition: GenerateMethodDefinition<T>;
   readModeledMethod: ReadModeledMethod;
 };
 
-export type ModelsAsDataLanguagePredicates = Record<
-  ModelsAsDataLanguageModelType,
-  ModelsAsDataLanguagePredicate
->;
+export type ModelsAsDataLanguagePredicates = {
+  source?: ModelsAsDataLanguagePredicate<SourceModeledMethod>;
+  sink?: ModelsAsDataLanguagePredicate<SinkModeledMethod>;
+  summary?: ModelsAsDataLanguagePredicate<SummaryModeledMethod>;
+  neutral?: ModelsAsDataLanguagePredicate<NeutralModeledMethod>;
+};
 
 export type ModelsAsDataLanguage = {
   /**

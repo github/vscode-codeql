@@ -1,4 +1,4 @@
-import { ModeledMethod } from "../modeled-method";
+import { ModeledMethod, NeutralModeledMethod } from "../modeled-method";
 import { MethodSignature } from "../method";
 import { assertNever } from "../../common/helpers-pure";
 
@@ -37,16 +37,11 @@ function canonicalizeModeledMethod(
       return {
         ...methodSignature,
         type: "none",
-        input: "",
-        output: "",
-        kind: "",
-        provenance: "manual",
       };
     case "source":
       return {
         ...methodSignature,
         type: "source",
-        input: "",
         output: modeledMethod.output,
         kind: modeledMethod.kind,
         provenance: "manual",
@@ -56,7 +51,6 @@ function canonicalizeModeledMethod(
         ...methodSignature,
         type: "sink",
         input: modeledMethod.input,
-        output: "",
         kind: modeledMethod.kind,
         provenance: "manual",
       };
@@ -73,13 +67,11 @@ function canonicalizeModeledMethod(
       return {
         ...methodSignature,
         type: "neutral",
-        input: "",
-        output: "",
         kind: modeledMethod.kind,
         provenance: "manual",
       };
     default:
-      assertNever(modeledMethod.type);
+      assertNever(modeledMethod);
   }
 }
 
@@ -118,7 +110,8 @@ export function validateModeledMethods(
   }
 
   const neutralModeledMethods = consideredModeledMethods.filter(
-    (modeledMethod) => modeledMethod.type === "neutral",
+    (modeledMethod): modeledMethod is NeutralModeledMethod =>
+      modeledMethod.type === "neutral",
   );
 
   const neutralModeledMethodsByKind = new Map<string, ModeledMethod[]>();
