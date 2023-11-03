@@ -208,27 +208,6 @@ export class AutoModeler {
       return;
     }
 
-    // Any candidate that was part of the response is a negative result
-    // meaning that the canidate is not a sink for the kinds that the LLM is checking for.
-    // For now we model this as a sink neutral method, however this is subject
-    // to discussion.
-    for (const candidate of candidateMethods) {
-      if (!(candidate.signature in loadedMethods)) {
-        loadedMethods[candidate.signature] = [
-          {
-            type: "neutral",
-            kind: "sink",
-            provenance: "ai-generated",
-            signature: candidate.signature,
-            packageName: candidate.packageName,
-            typeName: candidate.typeName,
-            methodName: candidate.methodName,
-            methodParameters: candidate.methodParameters,
-          },
-        ];
-      }
-    }
-
     await this.addModeledMethods(loadedMethods);
   }
 
