@@ -1,10 +1,17 @@
 import Ajv from "ajv";
 
 import { Method } from "./method";
-import { ModeledMethod, ModeledMethodType } from "./modeled-method";
+import {
+  ModeledMethod,
+  NeutralModeledMethod,
+  SinkModeledMethod,
+  SourceModeledMethod,
+  SummaryModeledMethod,
+} from "./modeled-method";
 import {
   getModelsAsDataLanguage,
   ModelsAsDataLanguagePredicate,
+  ModelsAsDataLanguagePredicates,
 } from "./languages";
 
 import * as modelExtensionFileSchema from "./model-extension-file.schema.json";
@@ -16,9 +23,9 @@ import { QueryLanguage } from "../common/query-language";
 const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
 
-function createDataProperty(
-  methods: readonly ModeledMethod[],
-  definition: ModelsAsDataLanguagePredicate,
+function createDataProperty<T>(
+  methods: readonly T[],
+  definition: ModelsAsDataLanguagePredicate<T>,
 ) {
   if (methods.length === 0) {
     return " []";
@@ -34,38 +41,92 @@ function createDataProperty(
     .join("\n")}`;
 }
 
+function createExtensions<T>(
+  language: QueryLanguage,
+  methods: readonly T[],
+  definition: ModelsAsDataLanguagePredicate<T> | undefined,
+) {
+  if (!definition) {
+    return "";
+  }
+
+  return `  - addsTo:
+      pack: codeql/${language}-all
+      extensible: ${definition.extensiblePredicate}
+    data:${createDataProperty(methods, definition)}
+`;
+}
+
 export function createDataExtensionYaml(
   language: QueryLanguage,
   modeledMethods: readonly ModeledMethod[],
 ) {
   const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
-  const methodsByType: Record<
-    Exclude<ModeledMethodType, "none">,
-    ModeledMethod[]
-  > = {
-    source: [],
-    sink: [],
-    summary: [],
-    neutral: [],
-  };
+  const methodsByType = {
+    source: [] as SourceModeledMethod[],
+    sink: [] as SinkModeledMethod[],
+    summary: [] as SummaryModeledMethod[],
+    neutral: [] as NeutralModeledMethod[],
+  } satisfies Record<keyof ModelsAsDataLanguagePredicates, ModeledMethod[]>;
 
   for (const modeledMethod of modeledMethods) {
-    if (modeledMethod?.type && modeledMethod.type !== "none") {
-      methodsByType[modeledMethod.type].push(modeledMethod);
+    if (!modeledMethod?.type || modeledMethod.type === "none") {
+      continue;
+    }
+
+    switch (modeledMethod.type) {
+      case "source":
+        methodsByType.source.push(modeledMethod);
+        break;
+      case "sink":
+        methodsByType.sink.push(modeledMethod);
+        break;
+      case "summary":
+        methodsByType.summary.push(modeledMethod);
+        break;
+      case "neutral":
+        methodsByType.neutral.push(modeledMethod);
+        break;
+      default:
+        assertNever(modeledMethod);
     }
   }
 
-  const extensions = Object.entries(modelsAsDataLanguage.predicates).map(
-    ([type, definition]) => `  - addsTo:
-      pack: codeql/${language}-all
-      extensible: ${definition.extensiblePredicate}
-    data:${createDataProperty(
-      methodsByType[type as Exclude<ModeledMethodType, "none">],
-      definition,
-    )}
-`,
-  );
+  const extensions = Object.keys(methodsByType)
+    .map((typeKey) => {
+      const type = typeKey as keyof ModelsAsDataLanguagePredicates;
+
+      switch (type) {
+        case "source":
+          return createExtensions(
+            language,
+            methodsByType.source,
+            modelsAsDataLanguage.predicates.source,
+          );
+        case "sink":
+          return createExtensions(
+            language,
+            methodsByType.sink,
+            modelsAsDataLanguage.predicates.sink,
+          );
+        case "summary":
+          return createExtensions(
+            language,
+            methodsByType.summary,
+            modelsAsDataLanguage.predicates.summary,
+          );
+        case "neutral":
+          return createExtensions(
+            language,
+            methodsByType.neutral,
+            modelsAsDataLanguage.predicates.neutral,
+          );
+        default:
+          assertNever(type);
+      }
+    })
+    .filter((extensions) => extensions !== "");
 
   return `extensions:
 ${extensions.join("\n")}`;

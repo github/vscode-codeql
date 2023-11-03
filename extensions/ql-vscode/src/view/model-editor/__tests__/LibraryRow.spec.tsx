@@ -27,7 +27,6 @@ describe(LibraryRow.name, () => {
               ...method,
               type: "sink",
               input: "Argument[0]",
-              output: "",
               kind: "jndi-injection",
               provenance: "df-generated",
             },

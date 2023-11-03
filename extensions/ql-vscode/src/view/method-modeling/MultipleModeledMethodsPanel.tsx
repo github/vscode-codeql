@@ -13,6 +13,8 @@ import { Codicon } from "../common";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "./ModeledMethodAlert";
 import { QueryLanguage } from "../../common/query-language";
+import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
+import { sendTelemetry } from "../common/telemetry";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
@@ -81,9 +83,11 @@ export const MultipleModeledMethodsPanel = ({
 
   const handlePreviousClick = useCallback(() => {
     setSelectedIndex((previousIndex) => previousIndex - 1);
+    sendTelemetry("method-modeling-previous-modeling");
   }, []);
   const handleNextClick = useCallback(() => {
     setSelectedIndex((previousIndex) => previousIndex + 1);
+    sendTelemetry("method-modeling-next-modeling");
   }, []);
 
   const validationErrors = useMemo(
@@ -92,23 +96,16 @@ export const MultipleModeledMethodsPanel = ({
   );
 
   const handleAddClick = useCallback(() => {
-    const newModeledMethod: ModeledMethod = {
-      type: "none",
-      input: "",
-      output: "",
-      kind: "",
-      provenance: "manual",
-      signature: method.signature,
-      packageName: method.packageName,
-      typeName: method.typeName,
-      methodName: method.methodName,
-      methodParameters: method.methodParameters,
-    };
+    const newModeledMethod: ModeledMethod = createEmptyModeledMethod(
+      "none",
+      method,
+    );
 
     const newModeledMethods = [...modeledMethods, newModeledMethod];
 
     onChange(method.signature, newModeledMethods);
     selectNewMethod.current = newModeledMethods.length - 1;
+    sendTelemetry("method-modeling-add-model");
   }, [onChange, modeledMethods, method]);
 
   const handleRemoveClick = useCallback(() => {
@@ -123,6 +120,7 @@ export const MultipleModeledMethodsPanel = ({
 
     onChange(method.signature, newModeledMethods);
     setSelectedIndex(newSelectedIndex);
+    sendTelemetry("method-modeling-remove-model");
   }, [onChange, modeledMethods, selectedIndex, method]);
 
   const handleChange = useCallback(

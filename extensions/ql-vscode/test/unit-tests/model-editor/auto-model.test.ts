@@ -103,9 +103,7 @@ describe("getCandidates", () => {
       "org.my.A#x()": [
         {
           type: "neutral",
-          kind: "",
-          input: "",
-          output: "",
+          kind: "sink",
           provenance: "manual",
           signature: "org.my.A#x()",
           packageName: "org.my",

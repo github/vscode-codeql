@@ -1,13 +1,13 @@
 import { BaseLogger } from "../../../common/logging";
 import {
   ModelsAsDataLanguage,
-  ModelsAsDataLanguageModelType,
+  ModelsAsDataLanguagePredicates,
 } from "../models-as-data";
 import { DecodedBqrs } from "../../../common/bqrs-cli-types";
 import { ModeledMethod } from "../../modeled-method";
 import { basename } from "../../../common/path";
 
-const queriesToModel: Record<string, ModelsAsDataLanguageModelType> = {
+const queriesToModel: Record<string, keyof ModelsAsDataLanguagePredicates> = {
   "CaptureSummaryModels.ql": "summary",
   "CaptureSinkModels.ql": "sink",
   "CaptureSourceModels.ql": "source",

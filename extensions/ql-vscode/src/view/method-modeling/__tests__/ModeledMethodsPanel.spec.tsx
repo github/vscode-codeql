@@ -1,7 +1,7 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import { createModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
+import { createSinkModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
 import {
   ModeledMethodsPanel,
   ModeledMethodsPanelProps,
@@ -14,7 +14,7 @@ describe(ModeledMethodsPanel.name, () => {
 
   const language = QueryLanguage.Java;
   const method = createMethod();
-  const modeledMethods = [createModeledMethod(), createModeledMethod()];
+  const modeledMethods = [createSinkModeledMethod(), createSinkModeledMethod()];
   const isModelingInProgress = false;
   const onChange = jest.fn();
 
