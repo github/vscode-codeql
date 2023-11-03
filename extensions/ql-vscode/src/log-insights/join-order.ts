@@ -40,17 +40,19 @@ function makeKey(
 const DEPENDENT_PREDICATES_REGEXP = (() => {
   const regexps = [
     // SCAN id
-    String.raw`SCAN\s+([0-9a-zA-Z:#_]+)\s`,
+    String.raw`SCAN\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s`,
     // JOIN id WITH id
-    String.raw`JOIN\s+([0-9a-zA-Z:#_]+)\s+WITH\s+([0-9a-zA-Z:#_]+)\s`,
+    String.raw`JOIN\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s+WITH\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s`,
     // AGGREGATE id, id
-    String.raw`AGGREGATE\s+([0-9a-zA-Z:#_]+)\s*,\s+([0-9a-zA-Z:#_]+)`,
+    String.raw`AGGREGATE\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s*,\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)`,
     // id AND NOT id
-    String.raw`([0-9a-zA-Z:#_]+)\s+AND\s+NOT\s+([0-9a-zA-Z:#_]+)`,
+    String.raw`([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s+AND\s+NOT\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)`,
     // INVOKE HIGHER-ORDER RELATION rel ON <id, ..., id>
-    String.raw`INVOKE\s+HIGHER-ORDER\s+RELATION\s[^\s]+\sON\s+<([0-9a-zA-Z:#_<>]+)((?:,[0-9a-zA-Z:#_<>]+)*)>`,
+    String.raw`INVOKE\s+HIGHER-ORDER\s+RELATION\s[^\s]+\sON\s+<([0-9a-zA-Z:#_<>]+|\`[^\`\r\n]*\`)((?:,[0-9a-zA-Z:#_<>]+|,\`[^\`\r\n]*\`)*)>`,
     // SELECT id
-    String.raw`SELECT\s+([0-9a-zA-Z:#_]+)`,
+    String.raw`SELECT\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)`,
+    // REWRITE id WITH
+    String.raw`REWRITE\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s+WITH\s`,
   ];
   return new RegExp(
     `${String.raw`\{[0-9]+\}\s+[0-9a-zA-Z]+\s=\s(?:` + regexps.join("|")})`,
@@ -65,7 +67,12 @@ function getDependentPredicates(operations: string[]): I.List<string> {
         .rest() // Skip the first group as it's just the entire string
         .filter((x) => !!x && !x.match("r[0-9]+|PRIMITIVE")) // Only keep the references to predicates.
         .flatMap((x) => x.split(",")) // Group 2 in the INVOKE HIGHER_ORDER RELATION case is a comma-separated list of identifiers.
-        .filter((x) => !!x); // Remove empty strings
+        .filter((x) => !!x) // Remove empty strings
+        .map((x) =>
+          x.startsWith("`") && x.endsWith("`")
+            ? x.substring(1, x.length - 1)
+            : x,
+        ); // Remove quotes from quoted identifiers
     } else {
       return I.List();
     }
