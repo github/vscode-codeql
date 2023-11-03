@@ -234,6 +234,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               <DataGridRow key={index} focused={focusedIndex === index}>
                 <DataGridCell>
                   <ModelTypeDropdown
+                    language={viewState.language}
                     method={method}
                     modeledMethod={modeledMethod}
                     onChange={modeledMethodChangedHandlers[index]}
@@ -241,6 +242,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 </DataGridCell>
                 <DataGridCell>
                   <ModelInputDropdown
+                    language={viewState.language}
                     method={method}
                     modeledMethod={modeledMethod}
                     onChange={modeledMethodChangedHandlers[index]}
@@ -248,6 +250,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 </DataGridCell>
                 <DataGridCell>
                   <ModelOutputDropdown
+                    language={viewState.language}
                     method={method}
                     modeledMethod={modeledMethod}
                     onChange={modeledMethodChangedHandlers[index]}

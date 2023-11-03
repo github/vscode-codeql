@@ -5,34 +5,33 @@ import {
   ModeledMethod,
   modeledMethodSupportsInput,
 } from "../../model-editor/modeled-method";
-import { Method, getArgumentsList } from "../../model-editor/method";
+import { Method } from "../../model-editor/method";
+import { QueryLanguage } from "../../common/query-language";
+import { getModelsAsDataLanguage } from "../../model-editor/languages";
 
 type Props = {
+  language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelInputDropdown = ({
+  language,
   method,
   modeledMethod,
   onChange,
 }: Props): JSX.Element => {
-  const argumentsList = useMemo(
-    () => getArgumentsList(method.methodParameters),
-    [method.methodParameters],
-  );
+  const options = useMemo(() => {
+    const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
-  const options = useMemo(
-    () => [
-      { value: "Argument[this]", label: "Argument[this]" },
-      ...argumentsList.map((argument, index) => ({
-        value: `Argument[${index}]`,
-        label: `Argument[${index}]: ${argument}`,
-      })),
-    ],
-    [argumentsList],
-  );
+    return modelsAsDataLanguage
+      .getArgumentOptions(method)
+      .options.map((option) => ({
+        value: option.path,
+        label: option.label,
+      }));
+  }, [language, method]);
 
   const enabled = useMemo(
     () => modeledMethod && modeledMethodSupportsInput(modeledMethod),
