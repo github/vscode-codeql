@@ -150,6 +150,30 @@ export const ruby: ModelsAsDataLanguage = {
         };
       },
     },
+    type: {
+      extensiblePredicate: "typeModel",
+      // extensible predicate typeModel(string type1, string type2, string path);
+      generateMethodDefinition: (method) => [
+        method.relatedTypeName,
+        method.typeName,
+        `Method[${method.methodName}].${method.path}`,
+      ],
+      readModeledMethod: (row) => {
+        const typeName = row[1] as string;
+        const { methodName, path } = parseRubyAccessPath(row[2] as string);
+
+        return {
+          type: "type",
+          relatedTypeName: row[0] as string,
+          path,
+          signature: rubyMethodSignature(typeName, methodName),
+          packageName: "",
+          typeName,
+          methodName,
+          methodParameters: "",
+        };
+      },
+    },
   },
   modelGeneration: {
     queryConstraints: {

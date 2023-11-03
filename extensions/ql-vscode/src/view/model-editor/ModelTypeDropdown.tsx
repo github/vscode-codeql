@@ -73,6 +73,14 @@ export const ModelTypeDropdown = ({
     [onChange, method, modeledMethod, argumentsList],
   );
 
+  const value = modeledMethod?.type ?? "none";
+
+  const isShownOption = options.some((option) => option.value === value);
+
+  if (!isShownOption) {
+    return <>{value}</>;
+  }
+
   return (
     <Dropdown
       value={modeledMethod?.type ?? "none"}

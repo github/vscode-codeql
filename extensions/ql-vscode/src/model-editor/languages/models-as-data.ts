@@ -5,6 +5,7 @@ import {
   SinkModeledMethod,
   SourceModeledMethod,
   SummaryModeledMethod,
+  TypeModeledMethod,
 } from "../modeled-method";
 import { DataTuple } from "../model-extension-file";
 import { Mode } from "../shared/mode";
@@ -17,7 +18,7 @@ type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;
 
 export type ModelsAsDataLanguagePredicate<T> = {
   extensiblePredicate: string;
-  supportedKinds: string[];
+  supportedKinds?: string[];
   generateMethodDefinition: GenerateMethodDefinition<T>;
   readModeledMethod: ReadModeledMethod;
 };
@@ -43,6 +44,7 @@ export type ModelsAsDataLanguagePredicates = {
   sink?: ModelsAsDataLanguagePredicate<SinkModeledMethod>;
   summary?: ModelsAsDataLanguagePredicate<SummaryModeledMethod>;
   neutral?: ModelsAsDataLanguagePredicate<NeutralModeledMethod>;
+  type?: ModelsAsDataLanguagePredicate<TypeModeledMethod>;
 };
 
 export type ModelsAsDataLanguage = {

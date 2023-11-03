@@ -5,6 +5,7 @@ export type ModeledMethodType =
   | "source"
   | "sink"
   | "summary"
+  | "type"
   | "neutral";
 
 export type Provenance =
@@ -51,12 +52,19 @@ export interface NeutralModeledMethod extends MethodSignature {
   readonly provenance: Provenance;
 }
 
+export interface TypeModeledMethod extends MethodSignature {
+  readonly type: "type";
+  readonly relatedTypeName: string;
+  readonly path: string;
+}
+
 export type ModeledMethod =
   | NoneModeledMethod
   | SourceModeledMethod
   | SinkModeledMethod
   | SummaryModeledMethod
-  | NeutralModeledMethod;
+  | NeutralModeledMethod
+  | TypeModeledMethod;
 
 export type ModeledMethodKind = string;
 
