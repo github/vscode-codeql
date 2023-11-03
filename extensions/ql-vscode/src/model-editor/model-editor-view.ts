@@ -23,10 +23,6 @@ import {
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
-import {
-  isFlowModelGenerationSupported,
-  runFlowModelQueries,
-} from "./flow-model-queries";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { redactableError } from "../common/errors";
@@ -51,10 +47,7 @@ import { ModelingStore } from "./modeling-store";
 import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
-import {
-  isGenerateModelSupported,
-  runGenerateModelQuery,
-} from "./generate-model-queries";
+import { runGenerateQueries } from "./generate";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -270,11 +263,8 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "generateMethod":
-        if (isFlowModelGenerationSupported(this.language)) {
-          await this.generateModeledMethodsFromFlow();
-        } else if (isGenerateModelSupported(this.language)) {
-          await this.generateModeledMethodsFromGenerateModel();
-        }
+        await this.generateModeledMethods();
+
         void telemetryListener?.sendUIInteraction(
           "model-editor-generate-modeled-methods",
         );
@@ -377,10 +367,10 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private async setViewState(): Promise<void> {
+    const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
+
     const showGenerateButton =
-      this.modelConfig.flowGeneration &&
-      (isFlowModelGenerationSupported(this.language) ||
-        isGenerateModelSupported(this.language));
+      this.modelConfig.flowGeneration && !!modelsAsDataLanguage.modelGeneration;
 
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
@@ -474,12 +464,22 @@ export class ModelEditorView extends AbstractWebview<
     }
   }
 
-  protected async generateModeledMethodsFromFlow(): Promise<void> {
+  protected async generateModeledMethods(): Promise<void> {
     await withProgress(
       async (progress) => {
         const tokenSource = new CancellationTokenSource();
 
         const mode = this.modelingStore.getMode(this.databaseItem);
+
+        const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
+        const modelGeneration = modelsAsDataLanguage.modelGeneration;
+        if (!modelGeneration) {
+          void showAndLogErrorMessage(
+            this.app.logger,
+            `Model generation is not supported for ${this.language}.`,
+          );
+          return;
+        }
 
         let addedDatabase: DatabaseItem | undefined;
 
@@ -509,51 +509,26 @@ export class ModelEditorView extends AbstractWebview<
         });
 
         try {
-          await runFlowModelQueries({
-            cliServer: this.cliServer,
-            queryRunner: this.queryRunner,
-            logger: this.app.logger,
-            queryStorageDir: this.queryStorageDir,
-            databaseItem: addedDatabase ?? this.databaseItem,
-            language: this.language,
+          await runGenerateQueries({
+            queryConstraints: modelGeneration.queryConstraints,
+            filterQueries: modelGeneration.filterQueries,
+            parseResults: (queryPath, results) =>
+              modelGeneration.parseResults(
+                queryPath,
+                results,
+                modelsAsDataLanguage,
+                this.app.logger,
+              ),
             onResults: async (modeledMethods) => {
               this.addModeledMethodsFromArray(modeledMethods);
             },
-            progress,
-            token: tokenSource.token,
-          });
-        } catch (e: unknown) {
-          void showAndLogExceptionWithTelemetry(
-            this.app.logger,
-            this.app.telemetry,
-            redactableError(
-              asError(e),
-            )`Failed to generate flow model: ${getErrorMessage(e)}`,
-          );
-        }
-      },
-      { cancellable: false },
-    );
-  }
-
-  protected async generateModeledMethodsFromGenerateModel(): Promise<void> {
-    await withProgress(
-      async (progress) => {
-        const tokenSource = new CancellationTokenSource();
-
-        try {
-          const modeledMethods = await runGenerateModelQuery({
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
-            logger: this.app.logger,
             queryStorageDir: this.queryStorageDir,
-            databaseItem: this.databaseItem,
-            language: this.language,
+            databaseItem: addedDatabase ?? this.databaseItem,
             progress,
             token: tokenSource.token,
           });
-
-          this.addModeledMethodsFromArray(modeledMethods);
         } catch (e: unknown) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,

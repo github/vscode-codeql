@@ -14,6 +14,7 @@ import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { SuiteInstruction } from "../packaging/suite-instruction";
+import { QueryConstraints } from "./query-constraints";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,
@@ -25,14 +26,6 @@ export async function qlpackOfDatabase(
   const datasetPath = db.contents.datasetUri.fsPath;
   const dbscheme = await getPrimaryDbscheme(datasetPath);
   return await getQlPackForDbscheme(cli, dbscheme);
-}
-
-export interface QueryConstraints {
-  kind?: string;
-  "tags contain"?: string[];
-  "tags contain all"?: string[];
-  "query filename"?: string;
-  "query path"?: string;
 }
 
 /**

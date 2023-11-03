@@ -1,6 +1,7 @@
-import { ModelsAsDataLanguage } from "./models-as-data";
-import { sharedExtensiblePredicates, sharedKinds } from "./shared";
-import { Mode } from "../shared/mode";
+import { ModelsAsDataLanguage } from "../models-as-data";
+import { sharedExtensiblePredicates, sharedKinds } from "../shared";
+import { Mode } from "../../shared/mode";
+import { parseGenerateModelResults } from "./generate";
 
 function parseRubyMethodFromPath(path: string): string {
   const match = path.match(/Method\[([^\]]+)].*/);
@@ -149,5 +150,11 @@ export const ruby: ModelsAsDataLanguage = {
         };
       },
     },
+  },
+  modelGeneration: {
+    queryConstraints: {
+      "query path": "queries/modeling/GenerateModel.ql",
+    },
+    parseResults: parseGenerateModelResults,
   },
 };

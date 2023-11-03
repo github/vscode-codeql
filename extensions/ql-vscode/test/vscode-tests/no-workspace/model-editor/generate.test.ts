@@ -5,23 +5,29 @@ import {
 } from "../../../../src/databases/local-databases";
 import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/new-messages";
-import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";
 import { join } from "path";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
-import { runGenerateModelQuery } from "../../../../src/model-editor/generate-model-queries";
-import { QueryLanguage } from "../../../../src/common/query-language";
+import { runGenerateQueries } from "../../../../src/model-editor/generate";
+import { ruby } from "../../../../src/model-editor/languages/ruby";
 
-describe("runGenerateModelQuery", () => {
+describe("runGenerateQueries", () => {
+  const modelsAsDataLanguage = ruby;
+  const modelGeneration = modelsAsDataLanguage.modelGeneration;
+  if (!modelGeneration) {
+    throw new Error("Test requires a model generation step");
+  }
+
   it("should run the query and return the results", async () => {
     const queryStorageDir = (await file()).path;
     const outputDir = new QueryOutputDir(join(queryStorageDir, "1"));
 
+    const onResults = jest.fn();
+
     const options = {
-      mode: Mode.Application,
       cliServer: mockedObject<CodeQLCliServer>({
         resolveQueriesInSuite: jest
           .fn()
@@ -100,7 +106,6 @@ describe("runGenerateModelQuery", () => {
         }),
         logger: createMockLogger(),
       }),
-      logger: createMockLogger(),
       databaseItem: mockedObject<DatabaseItem>({
         databaseUri: mockedUri("/a/b/c/src.zip"),
         contents: {
@@ -114,41 +119,50 @@ describe("runGenerateModelQuery", () => {
           .mockResolvedValue("/home/runner/work/my-repo/my-repo"),
         sourceArchive: mockedUri("/a/b/c/src.zip"),
       }),
-      language: QueryLanguage.Ruby,
       queryStorageDir: "/tmp/queries",
       progress: jest.fn(),
       token: new CancellationTokenSource().token,
     };
 
-    const result = await runGenerateModelQuery(options);
-    expect(result.sort()).toEqual(
-      [
-        {
-          input: "Argument[self]",
-          kind: "value",
-          methodName: "create_function",
-          methodParameters: "",
-          output: "ReturnValue",
-          packageName: "",
-          provenance: "manual",
-          signature: "SQLite3::Database#create_function",
-          type: "summary",
-          typeName: "SQLite3::Database",
-        },
-        {
-          input: "Argument[1]",
-          kind: "value",
-          methodName: "new",
-          methodParameters: "",
-          output: "ReturnValue",
-          packageName: "",
-          provenance: "manual",
-          signature: "SQLite3::Value!#new",
-          type: "summary",
-          typeName: "SQLite3::Value!",
-        },
-      ].sort(),
-    );
+    await runGenerateQueries({
+      queryConstraints: modelGeneration.queryConstraints,
+      filterQueries: modelGeneration.filterQueries,
+      parseResults: (queryPath, results) =>
+        modelGeneration.parseResults(
+          queryPath,
+          results,
+          modelsAsDataLanguage,
+          createMockLogger(),
+        ),
+      onResults,
+      ...options,
+    });
+    expect(onResults).toHaveBeenCalledWith([
+      {
+        input: "Argument[self]",
+        kind: "value",
+        methodName: "create_function",
+        methodParameters: "",
+        output: "ReturnValue",
+        packageName: "",
+        provenance: "manual",
+        signature: "SQLite3::Database#create_function",
+        type: "summary",
+        typeName: "SQLite3::Database",
+      },
+      {
+        input: "Argument[1]",
+        kind: "value",
+        methodName: "new",
+        methodParameters: "",
+        output: "ReturnValue",
+        packageName: "",
+        provenance: "manual",
+        signature: "SQLite3::Value!#new",
+        type: "summary",
+        typeName: "SQLite3::Value!",
+      },
+    ]);
 
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledTimes(1);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
