@@ -27,14 +27,14 @@ const MessageText = styled.div`
 `;
 
 type CodeSnippetMessageContainerProps = {
-  severity: ResultSeverity;
+  $severity: ResultSeverity;
 };
 
 const CodeSnippetMessageContainer = styled.div<CodeSnippetMessageContainerProps>`
   border-color: var(--vscode-editor-snippetFinalTabstopHighlightBorder);
   border-width: 0.1em;
   border-style: solid;
-  border-left-color: ${(props) => getSeverityColor(props.severity)};
+  border-left-color: ${(props) => getSeverityColor(props.$severity)};
   border-left-width: 0.3em;
   padding-top: 1em;
   padding-bottom: 1em;
@@ -58,7 +58,7 @@ export const CodeSnippetMessage = ({
   children,
 }: CodeSnippetMessageProps) => {
   return (
-    <CodeSnippetMessageContainer severity={severity}>
+    <CodeSnippetMessageContainer $severity={severity}>
       <MessageText>
         {message.tokens.map((token, index) => {
           switch (token.t) {
@@ -86,7 +86,7 @@ export const CodeSnippetMessage = ({
         })}
         {children && (
           <>
-            <VerticalSpace size={2} />
+            <VerticalSpace $size={2} />
             {children}
           </>
         )}

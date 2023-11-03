@@ -39,12 +39,12 @@ const DependencyContainer = styled.div`
   margin-bottom: 0.8rem;
 `;
 
-const StyledVSCodeTag = styled(VSCodeTag)<{ visible: boolean }>`
-  visibility: ${(props) => (props.visible ? "visible" : "hidden")};
+const StyledVSCodeTag = styled(VSCodeTag)<{ $visible: boolean }>`
+  visibility: ${(props) => (props.$visible ? "visible" : "hidden")};
 `;
 
 const UnsavedTag = ({ modelingStatus }: { modelingStatus: ModelingStatus }) => (
-  <StyledVSCodeTag visible={modelingStatus === "unsaved"}>
+  <StyledVSCodeTag $visible={modelingStatus === "unsaved"}>
     Unsaved
   </StyledVSCodeTag>
 );
