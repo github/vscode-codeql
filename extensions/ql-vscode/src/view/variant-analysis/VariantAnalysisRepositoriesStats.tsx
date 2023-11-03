@@ -68,7 +68,7 @@ export const VariantAnalysisRepositoriesStats = ({
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
     return (
       <>
-        <HorizontalSpace $size={2} />
+        0<HorizontalSpace $size={2} />
         <ErrorIcon label="Variant analysis failed" />
       </>
     );
