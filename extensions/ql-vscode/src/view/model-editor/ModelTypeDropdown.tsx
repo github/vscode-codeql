@@ -10,6 +10,7 @@ import {
 import { Method, getArgumentsList } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { Mutable } from "../../common/mutable";
+import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 
 const options: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "none", label: "Unmodeled" },
@@ -78,7 +79,13 @@ export const ModelTypeDropdown = ({
   const isShownOption = options.some((option) => option.value === value);
 
   if (!isShownOption) {
-    return <>{value}</>;
+    return (
+      <ReadonlyDropdown
+        // Try to show this like a normal type with uppercased first letter
+        value={value.charAt(0).toUpperCase() + value.slice(1)}
+        aria-label="Model type"
+      />
+    );
   }
 
   return (

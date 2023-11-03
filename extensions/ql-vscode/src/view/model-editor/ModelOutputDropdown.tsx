@@ -6,6 +6,7 @@ import {
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
 import { Method, getArgumentsList } from "../../model-editor/method";
+import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 
 type Props = {
   method: Method;
@@ -60,6 +61,15 @@ export const ModelOutputDropdown = ({
     modeledMethod && modeledMethodSupportsOutput(modeledMethod)
       ? modeledMethod.output
       : undefined;
+
+  if (modeledMethod?.type === "type") {
+    return (
+      <ReadonlyDropdown
+        value={modeledMethod.relatedTypeName}
+        aria-label="Related type name"
+      />
+    );
+  }
 
   return (
     <Dropdown

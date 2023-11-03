@@ -6,6 +6,7 @@ import {
   modeledMethodSupportsInput,
 } from "../../model-editor/modeled-method";
 import { Method, getArgumentsList } from "../../model-editor/method";
+import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 
 type Props = {
   method: Method;
@@ -59,6 +60,10 @@ export const ModelInputDropdown = ({
     modeledMethod && modeledMethodSupportsInput(modeledMethod)
       ? modeledMethod.input
       : undefined;
+
+  if (modeledMethod?.type === "type") {
+    return <ReadonlyDropdown value={modeledMethod.path} aria-label="Path" />;
+  }
 
   return (
     <Dropdown
