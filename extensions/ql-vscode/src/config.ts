@@ -641,7 +641,7 @@ export function isCodespacesTemplate() {
   return !!CODESPACES_TEMPLATE.getValue<boolean>();
 }
 
-const DATABASE_DOWNLOAD_SETTING = new Setting("databaseDownload", ROOT_SETTING);
+const DATABASE_DOWNLOAD_SETTING = new Setting("addingDatabases", ROOT_SETTING);
 
 const ALLOW_HTTP_SETTING = new Setting("allowHttp", DATABASE_DOWNLOAD_SETTING);
 
