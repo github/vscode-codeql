@@ -634,7 +634,7 @@ describe("local databases", () => {
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
         expect(generateSpy).not.toBeCalled();
-        expect(setAutogenerateQlPacksSpy).toHaveBeenCalledWith("never", 1);
+        expect(setAutogenerateQlPacksSpy).toHaveBeenCalledWith("never");
       });
 
       it("should create the skeleton QL pack for the user", async () => {
