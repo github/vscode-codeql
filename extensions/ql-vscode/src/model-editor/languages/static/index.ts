@@ -3,6 +3,7 @@ import { Provenance } from "../../modeled-method";
 import { DataTuple } from "../../model-extension-file";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { filterFlowModelQueries, parseFlowModelResults } from "./generate";
+import { getArgumentsList, MethodArgument } from "../../method";
 
 function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
@@ -144,5 +145,26 @@ export const staticLanguage: ModelsAsDataLanguage = {
     },
     filterQueries: filterFlowModelQueries,
     parseResults: parseFlowModelResults,
+  },
+  getArgumentOptions: (method) => {
+    const argumentsList = getArgumentsList(method.methodParameters).map(
+      (argument, index): MethodArgument => ({
+        path: `Argument[${index}]`,
+        label: `Argument[${index}]: ${argument}`,
+      }),
+    );
+
+    return {
+      options: [
+        {
+          path: "Argument[this]",
+          label: "Argument[this]",
+        },
+        ...argumentsList,
+      ],
+      // If there are no arguments, we will default to "Argument[this]"
+      defaultArgumentPath:
+        argumentsList.length > 0 ? argumentsList[0].path : "Argument[this]",
+    };
   },
 };

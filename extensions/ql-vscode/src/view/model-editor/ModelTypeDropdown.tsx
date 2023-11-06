@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChangeEvent, useCallback, useMemo } from "react";
+import { ChangeEvent, useCallback } from "react";
 import { Dropdown } from "../common/Dropdown";
 import {
   ModeledMethod,
@@ -7,9 +7,11 @@ import {
   ModeledMethodType,
   Provenance,
 } from "../../model-editor/modeled-method";
-import { Method, getArgumentsList } from "../../model-editor/method";
+import { Method } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { Mutable } from "../../common/mutable";
+import { QueryLanguage } from "../../common/query-language";
+import { getModelsAsDataLanguage } from "../../model-editor/languages";
 
 const options: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "none", label: "Unmodeled" },
@@ -20,23 +22,22 @@ const options: Array<{ value: ModeledMethodType; label: string }> = [
 ];
 
 type Props = {
+  language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelTypeDropdown = ({
+  language,
   method,
   modeledMethod,
   onChange,
 }: Props): JSX.Element => {
-  const argumentsList = useMemo(
-    () => getArgumentsList(method.methodParameters),
-    [method.methodParameters],
-  );
-
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
+      const modelsAsDataLanguage = getModelsAsDataLanguage(language);
+
       let newProvenance: Provenance = "manual";
       if (modeledMethod && modeledMethodSupportsProvenance(modeledMethod)) {
         if (modeledMethod.provenance === "df-generated") {
@@ -54,9 +55,8 @@ export const ModelTypeDropdown = ({
         ...emptyModeledMethod,
       };
       if ("input" in updatedModeledMethod) {
-        // If there are no arguments, we will default to "Argument[this]"
         updatedModeledMethod.input =
-          argumentsList.length === 0 ? "Argument[this]" : "Argument[0]";
+          modelsAsDataLanguage.getArgumentOptions(method).defaultArgumentPath;
       }
       if ("output" in updatedModeledMethod) {
         updatedModeledMethod.output = "ReturnValue";
@@ -70,7 +70,7 @@ export const ModelTypeDropdown = ({
 
       onChange(updatedModeledMethod);
     },
-    [onChange, method, modeledMethod, argumentsList],
+    [onChange, method, modeledMethod, language],
   );
 
   return (

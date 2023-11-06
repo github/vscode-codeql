@@ -61,6 +61,11 @@ export interface Method extends MethodSignature {
   readonly usages: readonly Usage[];
 }
 
+export interface MethodArgument {
+  path: string;
+  label: string;
+}
+
 export function getArgumentsList(methodParameters: string): string[] {
   if (methodParameters === "()") {
     return [];
