@@ -212,6 +212,21 @@ export class ExtensionTelemetryListener
     this.reporter.sendTelemetryErrorEvent("error", properties, {});
   }
 
+  sendConfigInformation(config: Record<string, string>): void {
+    if (!this.reporter) {
+      return;
+    }
+
+    this.reporter.sendTelemetryEvent(
+      "config",
+      {
+        ...config,
+        cliVersion: this.cliVersionStr,
+      },
+      {},
+    );
+  }
+
   /**
    * Displays a popup asking the user if they want to enable telemetry
    * for this extension.
