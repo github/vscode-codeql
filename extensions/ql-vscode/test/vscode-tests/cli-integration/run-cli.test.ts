@@ -8,7 +8,10 @@ import {
 } from "../../../src/codeql-cli/cli";
 import { itWithCodeQL } from "../cli";
 import { getOnDiskWorkspaceFolders } from "../../../src/common/vscode/workspace-folders";
-import { KeyType, resolveQueries } from "../../../src/language-support";
+import {
+  KeyType,
+  resolveContextualQueries,
+} from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
 import { BaseLogger } from "../../../src/common/logging";
@@ -117,7 +120,11 @@ describe("Use cli", () => {
           expect(pack.queryPack).toContain(lang);
         }
 
-        const result = await resolveQueries(cli, pack, KeyType.PrintAstQuery);
+        const result = await resolveContextualQueries(
+          cli,
+          pack,
+          KeyType.PrintAstQuery,
+        );
 
         // It doesn't matter what the name or path of the query is, only
         // that we have found exactly one query.
