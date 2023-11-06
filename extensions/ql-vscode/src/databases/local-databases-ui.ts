@@ -158,9 +158,17 @@ class DatabaseTreeDataProvider
           case SortOrder.NameDesc:
             return db2.name.localeCompare(db1.name, env.language);
           case SortOrder.LanguageAsc:
-            return db1.language.localeCompare(db2.language, env.language);
+            return (
+              db1.language.localeCompare(db2.language, env.language) ||
+              // If the languages are the same, sort by name
+              db1.name.localeCompare(db2.name, env.language)
+            );
           case SortOrder.LanguageDesc:
-            return db2.language.localeCompare(db1.language, env.language);
+            return (
+              db2.language.localeCompare(db1.language, env.language) ||
+              // If the languages are the same, sort by name
+              db2.name.localeCompare(db1.name, env.language)
+            );
           case SortOrder.DateAddedAsc:
             return (db1.dateAdded || 0) - (db2.dateAdded || 0);
           case SortOrder.DateAddedDesc:

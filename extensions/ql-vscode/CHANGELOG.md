@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- The "Sort by Language" action in the databases view now sorts by name within each language. [#3055](https://github.com/github/vscode-codeql/pull/3055)
+
 ## 1.9.4 - 6 November 2023
 
 No user facing changes.
