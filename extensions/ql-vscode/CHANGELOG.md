@@ -1,6 +1,8 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.9.4 - 6 November 2023
+
+No user facing changes.
 
 ## 1.9.3 - 26 October 2023
 
