@@ -160,10 +160,19 @@ export const ruby: ModelsAsDataLanguage = {
   },
   getArgumentOptions: (method) => {
     const argumentsList = getArgumentsList(method.methodParameters).map(
-      (argument, index): MethodArgument => ({
-        path: `Argument[${index}]`,
-        label: `Argument[${index}]: ${argument}`,
-      }),
+      (argument, index): MethodArgument => {
+        if (argument.endsWith(":")) {
+          return {
+            path: `Argument[${argument}]`,
+            label: `Argument[${argument}]`,
+          };
+        }
+
+        return {
+          path: `Argument[${index}]`,
+          label: `Argument[${index}]: ${argument}`,
+        };
+      },
     );
 
     return {
