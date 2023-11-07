@@ -17,8 +17,12 @@ import { styled } from "styled-components";
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import { SuggestBoxItem } from "./SuggestBoxItem";
 import { useOpenKey } from "./useOpenKey";
-import { HighlightedText } from "./HighlightedText";
-import { createHighlights } from "./highlight";
+import { findMatchingOptions, suggestedOptions } from "./suggestions";
+import { LabelText } from "./LabelText";
+
+const Input = styled(VSCodeTextField)`
+  width: 430px;
+`;
 
 const Container = styled.div`
   width: 430px;
@@ -32,23 +36,6 @@ const Container = styled.div`
 
   user-select: none;
 `;
-
-const suggestedOptions = [
-  {
-    label: "Argument[self]",
-    icon: "symbol-class",
-    details: "sqlite3.SQLite3::Database",
-  },
-  { label: "Argument[0]", icon: "symbol-parameter", details: "name" },
-  { label: "Argument[1]", icon: "symbol-parameter", details: "arity" },
-  {
-    label: "Argument[text_rep:]",
-    icon: "symbol-parameter",
-    details: "text_rep:",
-  },
-  { label: "Argument[block]", icon: "symbol-parameter", details: "&block" },
-  { label: "ReturnValue", icon: "symbol-variable", details: undefined },
-];
 
 export const SuggestBox = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -96,21 +83,17 @@ export const SuggestBox = () => {
   const handleInput = useCallback((event: FormEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value;
     setInputValue(value);
+    setIsOpen(true);
+    setActiveIndex(0);
   }, []);
 
-  const matchingItems = useMemo(() => {
-    if (!inputValue) {
-      return suggestedOptions;
-    }
-
-    return suggestedOptions.filter((item) =>
-      item.label.toLowerCase().includes(inputValue.toLowerCase()),
-    );
+  const suggestionItems = useMemo(() => {
+    return findMatchingOptions(suggestedOptions, inputValue);
   }, [inputValue]);
 
   return (
     <>
-      <VSCodeTextField
+      <Input
         {...getReferenceProps({
           ref: refs.setReference,
           value: inputValue,
@@ -120,16 +103,17 @@ export const SuggestBox = () => {
             if (
               event.key === "Enter" &&
               activeIndex != null &&
-              matchingItems[activeIndex]
+              suggestionItems[activeIndex]
             ) {
-              setInputValue(matchingItems[activeIndex].label);
+              setInputValue(suggestionItems[activeIndex].value);
               setActiveIndex(null);
+              setIsOpen(false);
             }
           },
         })}
       />
       <FloatingPortal>
-        {isOpen && matchingItems.length > 0 && (
+        {isOpen && suggestionItems.length > 0 && (
           <FloatingFocusManager
             context={context}
             initialFocus={-1}
@@ -141,7 +125,7 @@ export const SuggestBox = () => {
                 style: floatingStyles,
               })}
             >
-              {matchingItems.map((item, index) => (
+              {suggestionItems.map((item, index) => (
                 <SuggestBoxItem
                   key={item.label}
                   {...getItemProps({
@@ -155,11 +139,7 @@ export const SuggestBox = () => {
                   })}
                   active={activeIndex === index}
                   icon={item.icon}
-                  labelText={
-                    <HighlightedText
-                      snippets={createHighlights(item.label, inputValue)}
-                    />
-                  }
+                  labelText={<LabelText item={item} inputValue={inputValue} />}
                   detailsText={item.details}
                 />
               ))}
