@@ -3,7 +3,6 @@ import { styled } from "styled-components";
 
 type Props = {
   percent: number;
-  label?: string;
 };
 
 const Circle = styled.div`
@@ -33,10 +32,7 @@ const progressSegments = 44;
 // See https://github.com/microsoft/fast/blob/21c210f2164c5cf285cade1a328460c67e4b97e6/packages/web-components/fast-foundation/src/progress-ring/progress-ring.template.ts
 // Once the determinate progress ring is available in the VSCode webview UI toolkit, we should use that instead
 
-export const DeterminateProgressRing = ({
-  percent,
-  label = "Loading...",
-}: Props) => (
+export const DeterminateProgressRing = ({ percent }: Props) => (
   <Circle
     role="progressbar"
     aria-valuemin={0}
