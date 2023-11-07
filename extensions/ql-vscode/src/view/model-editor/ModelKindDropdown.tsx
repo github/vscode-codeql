@@ -8,10 +8,12 @@ import { modeledMethodSupportsKind } from "../../model-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { QueryLanguage } from "../../common/query-language";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 type Props = {
   language: QueryLanguage;
   modeledMethod: ModeledMethod | undefined;
+  modelingStatus: ModelingStatus;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 

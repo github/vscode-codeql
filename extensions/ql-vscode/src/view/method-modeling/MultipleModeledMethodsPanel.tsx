@@ -15,11 +15,13 @@ import { ModeledMethodAlert } from "./ModeledMethodAlert";
 import { QueryLanguage } from "../../common/query-language";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { sendTelemetry } from "../common/telemetry";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
   method: Method;
   modeledMethods: ModeledMethod[];
+  modelingStatus: ModelingStatus;
   isModelingInProgress: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
@@ -60,6 +62,7 @@ export const MultipleModeledMethodsPanel = ({
   language,
   method,
   modeledMethods,
+  modelingStatus,
   isModelingInProgress,
   onChange,
 }: MultipleModeledMethodsPanelProps) => {
@@ -154,6 +157,7 @@ export const MultipleModeledMethodsPanel = ({
           language={language}
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
+          modelingStatus={modelingStatus}
           isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
@@ -162,6 +166,7 @@ export const MultipleModeledMethodsPanel = ({
           language={language}
           method={method}
           modeledMethod={undefined}
+          modelingStatus={modelingStatus}
           isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />

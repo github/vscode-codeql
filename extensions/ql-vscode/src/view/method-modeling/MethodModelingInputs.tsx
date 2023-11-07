@@ -8,6 +8,7 @@ import { ModelOutputDropdown } from "../model-editor/ModelOutputDropdown";
 import { ModelKindDropdown } from "../model-editor/ModelKindDropdown";
 import { InProgressDropdown } from "../model-editor/InProgressDropdown";
 import { QueryLanguage } from "../../common/query-language";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 const Container = styled.div`
   padding-top: 0.5rem;
@@ -27,6 +28,7 @@ export type MethodModelingInputsProps = {
   language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
+  modelingStatus: ModelingStatus;
   isModelingInProgress: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
@@ -35,6 +37,7 @@ export const MethodModelingInputs = ({
   language,
   method,
   modeledMethod,
+  modelingStatus,
   isModelingInProgress,
   onChange,
 }: MethodModelingInputsProps): JSX.Element => {
@@ -42,6 +45,7 @@ export const MethodModelingInputs = ({
     language,
     method,
     modeledMethod,
+    modelingStatus,
     onChange,
   };
 

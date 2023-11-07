@@ -9,11 +9,13 @@ import { Method } from "../../model-editor/method";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { QueryLanguage } from "../../common/query-language";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 type Props = {
   language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
+  modelingStatus: ModelingStatus;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 

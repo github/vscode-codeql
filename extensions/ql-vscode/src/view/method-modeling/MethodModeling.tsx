@@ -85,6 +85,7 @@ export const MethodModeling = ({
         modeledMethods={modeledMethods}
         showMultipleModels={showMultipleModels}
         isModelingInProgress={isModelingInProgress}
+        modelingStatus={modelingStatus}
         onChange={onChange}
       />
       <ReviewInEditorButton method={method} />

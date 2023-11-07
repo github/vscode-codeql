@@ -21,6 +21,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
   const language = QueryLanguage.Java;
   const method = createMethod();
   const isModelingInProgress = false;
+  const modelingStatus = "unmodeled";
   const onChange = jest.fn<void, [string, ModeledMethod[]]>();
 
   describe("with no modeled methods", () => {
@@ -31,6 +32,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -48,6 +50,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -69,6 +72,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -99,6 +103,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -116,6 +121,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -136,6 +142,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -152,6 +159,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -176,6 +184,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         language,
         method,
         modeledMethods,
+        modelingStatus,
         isModelingInProgress,
         onChange,
       });
@@ -190,6 +199,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -214,6 +224,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -231,6 +242,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -245,6 +257,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -264,6 +277,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -300,6 +314,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -311,6 +326,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={[modeledMethods[1]]}
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -329,6 +345,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -341,6 +358,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -372,6 +390,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -405,6 +424,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -422,6 +442,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -446,6 +467,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -459,6 +481,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -479,6 +502,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -497,6 +521,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -513,6 +538,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -528,6 +554,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -561,6 +588,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -651,6 +679,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -662,6 +691,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={modeledMethods.slice(0, 2)}
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -675,6 +705,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -688,6 +719,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={modeledMethods.slice(0, 2)}
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -715,6 +747,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -729,6 +762,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -746,6 +780,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -764,6 +799,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -781,6 +817,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={modeledMethods.slice(0, 1)}
           isModelingInProgress={isModelingInProgress}
+          modelingStatus={modelingStatus}
           onChange={onChange}
         />,
       );
@@ -818,6 +855,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 
@@ -830,6 +868,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
       });
 

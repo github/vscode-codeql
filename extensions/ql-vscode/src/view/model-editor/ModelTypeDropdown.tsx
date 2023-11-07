@@ -13,6 +13,7 @@ import { Mutable } from "../../common/mutable";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 const options: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "none", label: "Unmodeled" },
@@ -26,6 +27,7 @@ type Props = {
   language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
+  modelingStatus: ModelingStatus;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
