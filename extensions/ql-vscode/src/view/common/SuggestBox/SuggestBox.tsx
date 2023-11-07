@@ -35,12 +35,24 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   border-radius: 3px;
-  font-size: 95%;
 
   background-color: var(--vscode-editorSuggestWidget-background);
   border: 1px solid var(--vscode-editorSuggestWidget-border);
 
   user-select: none;
+`;
+
+const ListContainer = styled(Container)`
+  font-size: 95%;
+`;
+
+const NoSuggestionsContainer = styled(Container)`
+  padding-top: 2px;
+  padding-bottom: 2px;
+`;
+
+const NoSuggestionsText = styled.div`
+  padding-left: 22px;
 `;
 
 export const SuggestBox = () => {
@@ -125,13 +137,23 @@ export const SuggestBox = () => {
         $error={hasSyntaxError}
       />
       <FloatingPortal>
+        {isOpen && inputValue && suggestionItems.length === 0 && (
+          <NoSuggestionsContainer
+            {...getFloatingProps({
+              ref: refs.setFloating,
+              style: floatingStyles,
+            })}
+          >
+            <NoSuggestionsText>No suggestions.</NoSuggestionsText>
+          </NoSuggestionsContainer>
+        )}
         {isOpen && suggestionItems.length > 0 && (
           <FloatingFocusManager
             context={context}
             initialFocus={-1}
             visuallyHiddenDismiss
           >
-            <Container
+            <ListContainer
               {...getFloatingProps({
                 ref: refs.setFloating,
                 style: floatingStyles,
@@ -155,7 +177,7 @@ export const SuggestBox = () => {
                   detailsText={item.details}
                 />
               ))}
-            </Container>
+            </ListContainer>
           </FloatingFocusManager>
         )}
       </FloatingPortal>
