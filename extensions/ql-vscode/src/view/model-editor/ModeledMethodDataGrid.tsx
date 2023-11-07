@@ -15,7 +15,6 @@ export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
   "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
 
 export type ModeledMethodDataGridProps = {
-  packageName: string;
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
@@ -27,7 +26,6 @@ export type ModeledMethodDataGridProps = {
 };
 
 export const ModeledMethodDataGrid = ({
-  packageName,
   methods,
   modeledMethodsMap,
   modifiedSignatures,
