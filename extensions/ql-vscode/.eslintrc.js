@@ -35,7 +35,7 @@ const baseConfig = {
       "warn",
       {
         vars: "all",
-        args: "none",
+        args: "after-used",
         ignoreRestSiblings: false,
       },
     ],

@@ -1,23 +1,9 @@
-import {
-  TestHub,
-  TestController,
-  TestAdapter,
-  TestRunStartedEvent,
-  TestRunFinishedEvent,
-  TestEvent,
-  TestSuiteEvent,
-} from "vscode-test-adapter-api";
+import { TestHub, TestController, TestAdapter } from "vscode-test-adapter-api";
 import { TestTreeNode } from "./test-tree-node";
 import { DisposableObject } from "../common/disposable-object";
 import { QLTestAdapter } from "./test-adapter";
 import { App } from "../common/app";
 import { TestManagerBase } from "./test-manager-base";
-
-type VSCodeTestEvent =
-  | TestRunStartedEvent
-  | TestRunFinishedEvent
-  | TestSuiteEvent
-  | TestEvent;
 
 /**
  * Test event listener. Currently unused, but left in to keep the plumbing hooked up for future use.
@@ -29,7 +15,7 @@ class QLTestListener extends DisposableObject {
     this.push(adapter.testStates(this.onTestStatesEvent, this));
   }
 
-  private onTestStatesEvent(_e: VSCodeTestEvent): void {
+  private onTestStatesEvent(): void {
     /**/
   }
 }

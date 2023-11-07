@@ -22,7 +22,7 @@ const emptyComparison: SetComparisonsMessage = {
   message: "Empty comparison",
 };
 
-export function Compare(_: Record<string, never>): JSX.Element {
+export function Compare(): JSX.Element {
   const [comparison, setComparison] =
     useState<SetComparisonsMessage>(emptyComparison);
 

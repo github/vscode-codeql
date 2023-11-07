@@ -33,12 +33,14 @@ describe("CommandManager", () => {
     commandManager.register(
       "codeQL.openVariantAnalysisLogs",
       // @ts-expect-error wrong function parameter type should give a type error
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       async (variantAnalysisId: string): Promise<number> => 10,
     );
 
     commandManager.register(
       "codeQL.openVariantAnalysisLogs",
       // @ts-expect-error wrong function return type should give a type error
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       async (variantAnalysisId: number): Promise<string> => "hello",
     );
 

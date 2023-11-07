@@ -760,7 +760,7 @@ async function activateWithInstalledDistribution(
     const fsWatcher = workspace.createFileSystemWatcher(glob);
     ctx.subscriptions.push(fsWatcher);
 
-    const clearPackCache = async (_uri: Uri) => {
+    const clearPackCache = async () => {
       await qs.clearPackCache();
     };
 

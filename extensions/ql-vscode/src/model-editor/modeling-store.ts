@@ -211,8 +211,8 @@ export class ModelingStore extends DisposableObject {
         ...methods,
         // Keep all methods that are already modeled in some form in the state
         ...Object.fromEntries(
-          Object.entries(state.modeledMethods).filter(([_, value]) =>
-            value.some((m) => m.type !== "none"),
+          Object.entries(state.modeledMethods).filter((entry) =>
+            entry[1].some((m) => m.type !== "none"),
           ),
         ),
       };

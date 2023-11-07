@@ -22,11 +22,7 @@ export abstract class AbstractWebviewViewProvider<
    * This is called when a view first becomes visible. This may happen when the view is
    * first loaded or when the user hides and then shows a view again.
    */
-  public resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken,
-  ) {
+  public resolveWebviewView(webviewView: vscode.WebviewView) {
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [Uri.file(this.app.extensionPath)],

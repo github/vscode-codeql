@@ -329,11 +329,11 @@ export class SkeletonQueryWizard {
     const folderUri = Uri.file(this.queryStoragePath);
     const files = await workspace.fs.readDirectory(folderUri);
     // If the example.ql file doesn't exist yet, use that name
-    if (!files.some(([filename, _fileType]) => filename === this.fileName)) {
+    if (!files.some(([filename]) => filename === this.fileName)) {
       return this.fileName;
     }
 
-    const qlFiles = files.filter(([filename, _fileType]) =>
+    const qlFiles = files.filter(([filename]) =>
       filename.match(/^example[0-9]*\.ql$/),
     );
 

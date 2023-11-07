@@ -4,9 +4,7 @@ import {
   Position,
   Selection,
   TextDocument,
-  TextEditor,
   TextEditorRevealType,
-  TextEditorSelectionChangeEvent,
   ViewColumn,
   window,
   workspace,
@@ -168,15 +166,11 @@ export class SummaryLanguageSupport extends DisposableObject {
     );
   }
 
-  handleDidChangeActiveTextEditor = async (
-    _editor: TextEditor | undefined,
-  ): Promise<void> => {
+  handleDidChangeActiveTextEditor = async (): Promise<void> => {
     await this.updateContext();
   };
 
-  handleDidChangeTextEditorSelection = async (
-    _e: TextEditorSelectionChangeEvent,
-  ): Promise<void> => {
+  handleDidChangeTextEditorSelection = async (): Promise<void> => {
     await this.updateContext();
   };
 

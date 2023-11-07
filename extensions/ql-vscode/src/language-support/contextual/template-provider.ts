@@ -97,7 +97,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
           this.queryStorageDir,
           progress,
           multiToken,
-          (src, _dest) => src === uriString,
+          (src) => src === uriString,
         );
       },
       {
@@ -171,7 +171,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
           this.queryStorageDir,
           progress,
           multiToken,
-          (src, _dest) => src === uriString,
+          (src) => src === uriString,
         );
       },
       {

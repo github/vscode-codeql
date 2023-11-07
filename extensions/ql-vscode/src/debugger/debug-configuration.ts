@@ -1,5 +1,4 @@
 import {
-  CancellationToken,
   DebugConfiguration,
   DebugConfigurationProvider,
   WorkspaceFolder,
@@ -59,7 +58,6 @@ export class QLDebugConfigurationProvider
   public resolveDebugConfiguration(
     _folder: WorkspaceFolder | undefined,
     debugConfiguration: DebugConfiguration,
-    _token?: CancellationToken,
   ): DebugConfiguration {
     const qlConfiguration = <QLDebugConfiguration>debugConfiguration;
 
@@ -78,7 +76,6 @@ export class QLDebugConfigurationProvider
   public async resolveDebugConfigurationWithSubstitutedVariables(
     _folder: WorkspaceFolder | undefined,
     debugConfiguration: DebugConfiguration,
-    _token?: CancellationToken,
   ): Promise<DebugConfiguration | null> {
     try {
       const qlConfiguration = debugConfiguration as QLDebugConfiguration;

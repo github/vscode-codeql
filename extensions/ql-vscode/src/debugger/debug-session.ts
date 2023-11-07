@@ -12,7 +12,7 @@ import {
 import { DebugProtocol as Protocol } from "@vscode/debugprotocol";
 import { Disposable } from "vscode";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import { BaseLogger, LogOptions } from "../common/logging";
+import { BaseLogger } from "../common/logging";
 import { queryServerLogger } from "../common/logging/vscode";
 import { QueryResultType } from "../query-server/new-messages";
 import { CoreQueryResults, CoreQueryRun, QueryRunner } from "../query-server";
@@ -244,7 +244,7 @@ class RunningQuery extends DisposableObject {
 export class QLDebugSession extends LoggingDebugSession implements Disposable {
   /** A `BaseLogger` that sends output to the debug console. */
   private readonly logger: BaseLogger = {
-    log: async (message: string, _options: LogOptions): Promise<void> => {
+    log: async (message: string): Promise<void> => {
       // Only send the output event if we're still connected to the query evaluation.
       if (this.runningQuery !== undefined) {
         this.sendEvent(new OutputEvent(message, "console"));
@@ -290,10 +290,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     );
   }
 
-  protected initializeRequest(
-    response: Protocol.InitializeResponse,
-    _args: Protocol.InitializeRequestArguments,
-  ): void {
+  protected initializeRequest(response: Protocol.InitializeResponse): void {
     switch (this.state) {
       case "uninitialized":
         response.body = response.body ?? {};
@@ -318,22 +315,14 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     }
   }
 
-  protected disconnectRequest(
-    response: Protocol.DisconnectResponse,
-    _args: Protocol.DisconnectArguments,
-    _request?: Protocol.Request,
-  ): void {
+  protected disconnectRequest(response: Protocol.DisconnectResponse): void {
     // The client is forcing a disconnect. We'll signal cancellation, but since this request means
     // that the debug session itself is about to go away, we'll stop processing events from the
     // evaluation to avoid sending them to the client that is no longer interested in them.
     this.terminateOrDisconnect(response, true);
   }
 
-  protected terminateRequest(
-    response: Protocol.TerminateResponse,
-    _args: Protocol.TerminateArguments,
-    _request?: Protocol.Request,
-  ): void {
+  protected terminateRequest(response: Protocol.TerminateResponse): void {
     // The client is requesting a graceful termination. This will signal the cancellation token of
     // any in-progress evaluation, but that evaluation will continue to report events (like
     // progress) until the cancellation takes effect.
@@ -362,7 +351,6 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   protected launchRequest(
     response: Protocol.LaunchResponse,
     args: CodeQLProtocol.LaunchRequest["arguments"],
-    _request?: Protocol.Request,
   ): void {
     switch (this.state) {
       case "initialized":
@@ -385,35 +373,19 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     }
   }
 
-  protected nextRequest(
-    response: Protocol.NextResponse,
-    _args: Protocol.NextArguments,
-    _request?: Protocol.Request,
-  ): void {
+  protected nextRequest(response: Protocol.NextResponse): void {
     this.stepRequest(response);
   }
 
-  protected stepInRequest(
-    response: Protocol.StepInResponse,
-    _args: Protocol.StepInArguments,
-    _request?: Protocol.Request,
-  ): void {
+  protected stepInRequest(response: Protocol.StepInResponse): void {
     this.stepRequest(response);
   }
 
-  protected stepOutRequest(
-    response: Protocol.Response,
-    _args: Protocol.StepOutArguments,
-    _request?: Protocol.Request,
-  ): void {
+  protected stepOutRequest(response: Protocol.Response): void {
     this.stepRequest(response);
   }
 
-  protected stepBackRequest(
-    response: Protocol.StepBackResponse,
-    _args: Protocol.StepBackArguments,
-    _request?: Protocol.Request,
-  ): void {
+  protected stepBackRequest(response: Protocol.StepBackResponse): void {
     this.stepRequest(response);
   }
 
@@ -433,11 +405,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     }
   }
 
-  protected continueRequest(
-    response: Protocol.ContinueResponse,
-    _args: Protocol.ContinueArguments,
-    _request?: Protocol.Request,
-  ): void {
+  protected continueRequest(response: Protocol.ContinueResponse): void {
     switch (this.state) {
       case "stopped":
         response.body = response.body ?? {};
@@ -458,7 +426,6 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   protected cancelRequest(
     response: Protocol.CancelResponse,
     args: Protocol.CancelArguments,
-    _request?: Protocol.Request,
   ): void {
     if (
       args.progressId !== undefined &&
@@ -470,10 +437,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     this.sendResponse(response);
   }
 
-  protected threadsRequest(
-    response: Protocol.ThreadsResponse,
-    _request?: Protocol.Request,
-  ): void {
+  protected threadsRequest(response: Protocol.ThreadsResponse): void {
     response.body = response.body ?? {};
     response.body.threads = [
       {

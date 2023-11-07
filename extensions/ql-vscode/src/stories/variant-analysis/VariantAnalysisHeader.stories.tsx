@@ -101,7 +101,7 @@ Succeeded.args = {
   variantAnalysis: {
     ...createMockVariantAnalysis({
       status: VariantAnalysisStatus.Succeeded,
-      scannedRepos: Array.from({ length: 1000 }, (_) => ({
+      scannedRepos: Array.from({ length: 1000 }, () => ({
         ...createMockScannedRepo(),
         analysisStatus: VariantAnalysisRepoStatus.Succeeded,
         resultCount: 100,

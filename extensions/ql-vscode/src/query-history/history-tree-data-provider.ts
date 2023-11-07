@@ -182,7 +182,7 @@ export class HistoryTreeDataProvider
           });
   }
 
-  getParent(_element: QueryHistoryInfo): ProviderResult<QueryHistoryInfo> {
+  getParent(): ProviderResult<QueryHistoryInfo> {
     return null;
   }
 

@@ -180,7 +180,7 @@ class DatabaseTreeDataProvider
     }
   }
 
-  public getParent(_element: DatabaseItem): ProviderResult<DatabaseItem> {
+  public getParent(): ProviderResult<DatabaseItem> {
     return null;
   }
 

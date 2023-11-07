@@ -179,7 +179,7 @@ export class QueryHistoryManager extends DisposableObject {
     // Lazily update the tree view selection due to limitations of TreeView API (see
     // `updateTreeViewSelectionIfVisible` doc for details)
     this.push(
-      this.treeView.onDidChangeVisibility(async (_ev) =>
+      this.treeView.onDidChangeVisibility(async () =>
         this.updateTreeViewSelectionIfVisible(),
       ),
     );

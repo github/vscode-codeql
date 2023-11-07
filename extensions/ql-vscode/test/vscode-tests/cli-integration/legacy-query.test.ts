@@ -211,7 +211,7 @@ describeWithCodeQL()("using the legacy query server", () => {
 
       try {
         await compilationSucceeded.done();
-        const callbackId = qs.registerCallback((_res) => {
+        const callbackId = qs.registerCallback(() => {
           void evaluationSucceeded.resolve();
         });
         const queryToRun: messages.QueryToRun = {

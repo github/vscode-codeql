@@ -118,7 +118,7 @@ export class QueryServerClient extends DisposableObject {
   /** Starts a new query server process, sending progress messages to the status bar. */
   async startQueryServer(): Promise<void> {
     // Use an arrow function to preserve the value of `this`.
-    return this.withProgressReporting((progress, _) =>
+    return this.withProgressReporting((progress) =>
       this.startQueryServerImpl(progress),
     );
   }

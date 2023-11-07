@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 import { join, resolve } from "path";
 import { Readable } from "stream";
 import * as fetchModule from "node-fetch";
-import { RequestInfo, RequestInit, Response } from "node-fetch";
+import { RequestInfo, Response } from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
@@ -101,7 +101,7 @@ describe(VariantAnalysisResultsManager.name, () => {
 
         getVariantAnalysisRepoResultStub = jest
           .spyOn(fetchModule, "default")
-          .mockImplementation((url: RequestInfo, _init?: RequestInit) => {
+          .mockImplementation((url: RequestInfo) => {
             if (url === dummyRepoTask.artifactUrl) {
               return Promise.resolve(new Response(Readable.from(fileContents)));
             }
@@ -158,7 +158,7 @@ describe(VariantAnalysisResultsManager.name, () => {
         }
 
         getVariantAnalysisRepoResultStub.mockImplementation(
-          (url: RequestInfo, _init?: RequestInit) => {
+          (url: RequestInfo) => {
             if (url === dummyRepoTask.artifactUrl) {
               const response = new Response(Readable.from(generateInParts()));
               response.headers.set(

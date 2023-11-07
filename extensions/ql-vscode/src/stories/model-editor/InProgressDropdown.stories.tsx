@@ -9,7 +9,7 @@ export default {
   component: InProgressDropdownComponent,
 } as Meta<typeof InProgressDropdownComponent>;
 
-const Template: StoryFn<typeof InProgressDropdownComponent> = (args) => (
+const Template: StoryFn<typeof InProgressDropdownComponent> = () => (
   <InProgressDropdownComponent />
 );
 

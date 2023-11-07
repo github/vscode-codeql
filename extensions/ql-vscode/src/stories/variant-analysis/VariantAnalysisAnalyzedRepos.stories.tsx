@@ -129,7 +129,7 @@ Example.args = {
 faker.seed(42);
 const uniqueStore = {};
 
-const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
+const manyScannedRepos = Array.from({ length: 1000 }, () => {
   const mockedScannedRepo = createMockScannedRepo();
 
   return {
@@ -195,7 +195,7 @@ ManyResultsPerformanceExample.args = {
   repositoryResults: performanceNumbers.map((resultCount) => ({
     variantAnalysisId: 1,
     repositoryId: resultCount,
-    interpretedResults: Array.from({ length: resultCount }, (_, i) => ({
+    interpretedResults: Array.from({ length: resultCount }, () => ({
       ...mockAnalysisAlert,
     })),
   })),

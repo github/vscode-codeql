@@ -288,7 +288,7 @@ class DebugController
     }
   }
 
-  private handleDidTerminateDebugSession(_session: DebugSession): void {
+  private handleDidTerminateDebugSession(): void {
     this.handleEvent({
       kind: "terminated",
     });
@@ -319,7 +319,7 @@ class DebugController
         return Promise.resolve(event);
       } else {
         // No event available yet, so we need to wait.
-        return new Promise((resolve, _reject) => {
+        return new Promise((resolve) => {
           this.resolver = resolve;
         });
       }

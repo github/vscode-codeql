@@ -60,7 +60,7 @@ export class CodeQLLanguageClient extends LanguageClient {
 async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
   return window.withProgress(
     { title: "CodeQL language server", location: ProgressLocation.Window },
-    async (progressReporter, _) => {
+    async (progressReporter) => {
       const args = ["--check-errors", "ON_CHANGE"];
       if (shouldDebugIdeServer()) {
         args.push(

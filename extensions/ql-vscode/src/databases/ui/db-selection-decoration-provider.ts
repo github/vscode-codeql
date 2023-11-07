@@ -1,5 +1,4 @@
 import {
-  CancellationToken,
   FileDecoration,
   FileDecorationProvider,
   ProviderResult,
@@ -8,10 +7,7 @@ import {
 import { SELECTED_DB_ITEM_RESOURCE_URI } from "./db-tree-view-item";
 
 export class DbSelectionDecorationProvider implements FileDecorationProvider {
-  provideFileDecoration(
-    uri: Uri,
-    _token: CancellationToken,
-  ): ProviderResult<FileDecoration> {
+  provideFileDecoration(uri: Uri): ProviderResult<FileDecoration> {
     if (uri.toString(true) === SELECTED_DB_ITEM_RESOURCE_URI) {
       return {
         badge: "✓",

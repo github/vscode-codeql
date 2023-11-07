@@ -2,10 +2,8 @@ import {
   debug,
   DebugAdapterDescriptor,
   DebugAdapterDescriptorFactory,
-  DebugAdapterExecutable,
   DebugAdapterInlineImplementation,
   DebugConfigurationProviderTriggerKind,
-  DebugSession,
   ProviderResult,
 } from "vscode";
 import { isCanary } from "../config";
@@ -36,10 +34,7 @@ export class QLDebugAdapterDescriptorFactory
     );
   }
 
-  public createDebugAdapterDescriptor(
-    _session: DebugSession,
-    _executable: DebugAdapterExecutable | undefined,
-  ): ProviderResult<DebugAdapterDescriptor> {
+  public createDebugAdapterDescriptor(): ProviderResult<DebugAdapterDescriptor> {
     if (!isCanary()) {
       throw new Error("The CodeQL debugger feature is not available yet.");
     }

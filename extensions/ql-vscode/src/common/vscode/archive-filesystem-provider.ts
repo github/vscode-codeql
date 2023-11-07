@@ -238,27 +238,19 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   // write operations, all disabled
 
-  writeFile(
-    _uri: vscode.Uri,
-    _content: Uint8Array,
-    _options: { create: boolean; overwrite: boolean },
-  ): void {
+  writeFile(): void {
     throw this.readOnlyError;
   }
 
-  rename(
-    _oldUri: vscode.Uri,
-    _newUri: vscode.Uri,
-    _options: { overwrite: boolean },
-  ): void {
+  rename(): void {
     throw this.readOnlyError;
   }
 
-  delete(_uri: vscode.Uri): void {
+  delete(): void {
     throw this.readOnlyError;
   }
 
-  createDirectory(_uri: vscode.Uri): void {
+  createDirectory(): void {
     throw this.readOnlyError;
   }
 
@@ -314,7 +306,7 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
   readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
     this._emitter.event;
 
-  watch(_resource: vscode.Uri): vscode.Disposable {
+  watch(): vscode.Disposable {
     // ignore, fires for all changes...
     return new vscode.Disposable(() => {
       /**/

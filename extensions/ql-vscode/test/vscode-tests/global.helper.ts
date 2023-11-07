@@ -41,7 +41,7 @@ export async function ensureTestDatabase(
     uri.toString(true),
     databaseManager,
     storagePath,
-    (_p) => {
+    () => {
       /**/
     },
     cli,

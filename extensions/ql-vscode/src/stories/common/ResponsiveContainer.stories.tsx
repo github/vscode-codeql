@@ -9,7 +9,7 @@ export default {
   component: ResponsiveContainerComponent,
 } as Meta<typeof ResponsiveContainerComponent>;
 
-const Template: StoryFn<typeof ResponsiveContainerComponent> = (args) => (
+const Template: StoryFn<typeof ResponsiveContainerComponent> = () => (
   <ResponsiveContainerComponent>
     <span>Hello</span>
   </ResponsiveContainerComponent>

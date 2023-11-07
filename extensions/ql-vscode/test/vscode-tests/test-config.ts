@@ -83,11 +83,7 @@ class DefaultConfiguration implements WorkspaceConfiguration {
     return getIn(this.values, this.getKey(section, key)) !== undefined;
   }
 
-  public update(
-    _section: string | undefined,
-    _key: string,
-    _value: unknown,
-  ): void {
+  public update(): void {
     throw new Error("Cannot update default configuration");
   }
 
@@ -228,7 +224,7 @@ export const beforeEachAction = async () => {
           has(key: string) {
             return configuration.has(section, key);
           },
-          inspect(_key: string) {
+          inspect() {
             throw new Error("inspect is not supported in tests");
           },
           async update(

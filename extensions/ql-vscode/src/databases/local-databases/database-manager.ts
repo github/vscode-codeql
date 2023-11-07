@@ -56,7 +56,7 @@ function eventFired<T>(
   event: vscode.Event<T>,
   timeoutMs = 1000,
 ): Promise<T | undefined> {
-  return new Promise((res, _rej) => {
+  return new Promise((res) => {
     const timeout = setTimeout(() => {
       void extLogger.log(
         `Waiting for event ${event} timed out after ${timeoutMs}ms`,

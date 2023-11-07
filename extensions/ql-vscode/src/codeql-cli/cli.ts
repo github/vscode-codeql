@@ -334,7 +334,7 @@ export class CodeQLCliServer implements Disposable {
       ["execute", "cli-server"],
       args,
       this.logger,
-      (_data) => {
+      () => {
         /**/
       },
     );
@@ -495,9 +495,7 @@ export class CodeQLCliServer implements Disposable {
     try {
       if (cancellationToken !== undefined) {
         cancellationRegistration = cancellationToken.onCancellationRequested(
-          (_e) => {
-            tk(child.pid || 0);
-          },
+          () => tk(child.pid || 0),
         );
       }
       if (logger !== undefined) {
