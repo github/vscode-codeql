@@ -19,9 +19,15 @@ import { SuggestBoxItem } from "./SuggestBoxItem";
 import { useOpenKey } from "./useOpenKey";
 import { findMatchingOptions, suggestedOptions } from "./suggestions";
 import { LabelText } from "./LabelText";
+import { hasAccessPathSyntaxError } from "./access-path";
 
-const Input = styled(VSCodeTextField)`
+const Input = styled(VSCodeTextField)<{ $error: boolean }>`
   width: 430px;
+
+  border: ${(props) =>
+    props.$error
+      ? "1px solid var(--vscode-inputValidation-errorBorder)"
+      : undefined};
 `;
 
 const Container = styled.div`
@@ -91,6 +97,11 @@ export const SuggestBox = () => {
     return findMatchingOptions(suggestedOptions, inputValue);
   }, [inputValue]);
 
+  const hasSyntaxError = useMemo(
+    () => hasAccessPathSyntaxError(inputValue),
+    [inputValue],
+  );
+
   return (
     <>
       <Input
@@ -111,6 +122,7 @@ export const SuggestBox = () => {
             }
           },
         })}
+        $error={hasSyntaxError}
       />
       <FloatingPortal>
         {isOpen && suggestionItems.length > 0 && (

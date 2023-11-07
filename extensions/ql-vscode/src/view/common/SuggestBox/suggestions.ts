@@ -1,3 +1,5 @@
+import { parseAccessPathParts } from "./access-path";
+
 export type Option = {
   label: string;
   value: string;
@@ -119,7 +121,10 @@ export function findMatchingOptions(
     return options;
   }
 
-  const parts = value.split(".");
+  const parts = parseAccessPathParts(value);
+  if (parts.length === 0) {
+    return options;
+  }
   const prefixParts = parts.slice(0, parts.length - 1);
   const lastPart = parts[parts.length - 1];
 
