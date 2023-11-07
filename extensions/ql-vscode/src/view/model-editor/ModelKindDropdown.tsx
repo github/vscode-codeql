@@ -1,14 +1,15 @@
 import * as React from "react";
 import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
-import type {
+import {
   ModeledMethod,
   ModeledMethodKind,
+  modeledMethodSupportsKind,
+  isModelAccepted,
 } from "../../model-editor/modeled-method";
-import { modeledMethodSupportsKind } from "../../model-editor/modeled-method";
-import { Dropdown } from "../common/Dropdown";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { QueryLanguage } from "../../common/query-language";
 import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import { InputDropdown } from "./InputDropdown";
 
 type Props = {
   language: QueryLanguage;
@@ -20,6 +21,7 @@ type Props = {
 export const ModelKindDropdown = ({
   language,
   modeledMethod,
+  modelingStatus,
   onChange,
 }: Props) => {
   const predicate = useMemo(() => {
@@ -83,11 +85,14 @@ export const ModelKindDropdown = ({
     }
   }, [modeledMethod, value, kinds, onChangeKind]);
 
+  const modelAccepted = isModelAccepted(modeledMethod, modelingStatus);
+
   return (
-    <Dropdown
+    <InputDropdown
       value={value}
       options={options}
       disabled={disabled}
+      $accepted={modelAccepted}
       onChange={handleChange}
       aria-label="Kind"
     />

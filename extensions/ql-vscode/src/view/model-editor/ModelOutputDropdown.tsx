@@ -1,8 +1,8 @@
 import * as React from "react";
 import { ChangeEvent, useCallback, useMemo } from "react";
-import { Dropdown } from "../common/Dropdown";
 import {
   ModeledMethod,
+  isModelAccepted,
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
 import { Method } from "../../model-editor/method";
@@ -10,6 +10,7 @@ import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { QueryLanguage } from "../../common/query-language";
 import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import { InputDropdown } from "./InputDropdown";
 
 type Props = {
   language: QueryLanguage;
@@ -23,6 +24,7 @@ export const ModelOutputDropdown = ({
   language,
   method,
   modeledMethod,
+  modelingStatus,
   onChange,
 }: Props): JSX.Element => {
   const options = useMemo(() => {
@@ -72,11 +74,14 @@ export const ModelOutputDropdown = ({
     );
   }
 
+  const modelAccepted = isModelAccepted(modeledMethod, modelingStatus);
+
   return (
-    <Dropdown
+    <InputDropdown
       value={value}
       options={options}
       disabled={!enabled}
+      $accepted={modelAccepted}
       onChange={handleChange}
       aria-label="Output"
     />
