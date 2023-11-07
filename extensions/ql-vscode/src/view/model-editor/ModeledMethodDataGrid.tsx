@@ -79,24 +79,22 @@ export const ModeledMethodDataGrid = ({
               <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
             </DataGridCell>
           )}
-          {methodsWithModelability.map(
-            ({ method, methodCanBeModeled }, index) => {
-              const modeledMethods = modeledMethodsMap[method.signature] ?? [];
-              return (
-                <MethodRow
-                  key={method.signature}
-                  method={method}
-                  methodCanBeModeled={methodCanBeModeled}
-                  modeledMethods={modeledMethods}
-                  methodIsUnsaved={modifiedSignatures.has(method.signature)}
-                  modelingInProgress={inProgressMethods.has(method.signature)}
-                  viewState={viewState}
-                  revealedMethodSignature={revealedMethodSignature}
-                  onChange={onChange}
-                />
-              );
-            },
-          )}
+          {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
+            const modeledMethods = modeledMethodsMap[method.signature] ?? [];
+            return (
+              <MethodRow
+                key={method.signature}
+                method={method}
+                methodCanBeModeled={methodCanBeModeled}
+                modeledMethods={modeledMethods}
+                methodIsUnsaved={modifiedSignatures.has(method.signature)}
+                modelingInProgress={inProgressMethods.has(method.signature)}
+                viewState={viewState}
+                revealedMethodSignature={revealedMethodSignature}
+                onChange={onChange}
+              />
+            );
+          })}
         </>
       )}
       <HiddenMethodsRow
