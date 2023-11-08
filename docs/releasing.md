@@ -9,6 +9,7 @@
     * Accumulation of many changes, none of which are individually big enough to warrant a minor bump, but which together are. This does not include changes which are purely internal to the extension, such as refactoring, or which are only available behind a feature flag.
 1. Create a release branch named after the new version (e.g. `v1.3.6`):
     * For a regular scheduled release this branch will be based on latest `main`.
+        * Make sure your local copy of `main` is up to date so you are including all changes.    
     * To do a minimal bug-fix release, base the release branch on the tag from the most recent release and then add only the changes you want to release.
         * Choose this option if you want to release a specific set of changes (e.g. a bug fix) and don't want to incur extra risk by including other changes that have been merged to the `main` branch.
 
