@@ -265,7 +265,7 @@ export class DatabaseManager extends DisposableObject {
       `We've noticed you don't have a CodeQL pack available to analyze this database. Can we set up a query pack for you?`,
     );
 
-    if (answer === "No") {
+    if (answer === "No" || answer === undefined) {
       return;
     }
 
