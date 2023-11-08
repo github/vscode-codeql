@@ -30,6 +30,10 @@ describe("parseAccessPathParts", () => {
       path: "Argument[foo]..",
       parts: ["Argument[foo]", "", ""],
     },
+    {
+      path: "Argument[foo[bar].test].Element.",
+      parts: ["Argument[foo[bar].test]", "Element", ""],
+    },
   ])(`parses correctly for $path`, ({ path, parts }) => {
     expect(parseAccessPathParts(path)).toEqual(parts);
   });
@@ -63,6 +67,10 @@ describe("hasAccessPathSyntaxError", () => {
     },
     {
       path: "Argument[foo]..",
+      valid: false,
+    },
+    {
+      path: "Argument[foo[bar].test].Element.",
       valid: false,
     },
   ])(`validates $path correctly`, ({ path, valid }) => {

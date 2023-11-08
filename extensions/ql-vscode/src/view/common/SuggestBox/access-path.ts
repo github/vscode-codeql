@@ -7,15 +7,15 @@ export function parseAccessPathParts(path: string): string[] {
   const parts: string[] = [];
 
   let currentPart = "";
-  let inPath = false;
+  let bracketCounter = 0;
   for (let i = 0; i < path.length; i++) {
     const c = path[i];
 
     if (c === "[") {
-      inPath = true;
+      bracketCounter++;
     } else if (c === "]") {
-      inPath = false;
-    } else if (c === "." && !inPath) {
+      bracketCounter--;
+    } else if (c === "." && bracketCounter === 0) {
       parts.push(currentPart);
       currentPart = "";
       continue;
