@@ -17,8 +17,7 @@
 1. Run the ["Run CLI tests" workflow](https://github.com/github/vscode-codeql/actions/workflows/cli-test.yml) and make sure the tests are green.
     * You can skip this step if you are releasing from `main` and there were no merges since the most recent daily scheduled run of this workflow.
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
-    * If releasing from `main`, go through PRs that have been merged since the previous release and make sure they are properly accounted for.
-    * If doing a minimal bug-fix release, the changelog will only contain the changes you're intending to release.
+    * Go through PRs that have been merged since the previous release and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
 1. Double-check that the extension `package.json` and `package-lock.json` have the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
 1. Commit any changes made during steps 4 and 5 with a commit message the same as the branch name (e.g. `v1.3.6`).
