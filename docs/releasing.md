@@ -32,6 +32,7 @@
     git tag v1.3.6
     ```
 1. Merge the release PR into `main`.
+    * If there are conflicts in the changelog, make sure to place any new changelog entries at the top, above the section for the current release, as these new entries are not part of the current release and should be placed in the "unreleased" section.
     * The release PR must be merged before pushing the tag to ensure that we always release a commit that is present on the `main` branch. It's not required that the commit is the head of the `main` branch, but there should be no chance of a future release accidentally not including changes from this release.
 1. Push the new tag up:
     ```bash
