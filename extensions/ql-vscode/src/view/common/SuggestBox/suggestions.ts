@@ -1,4 +1,4 @@
-import { parseAccessPathParts } from "./access-path";
+import { parseAccessPathTokens } from "./access-path";
 
 export type Option = {
   label: string;
@@ -121,16 +121,19 @@ export function findMatchingOptions(
     return options;
   }
 
-  const parts = parseAccessPathParts(value);
+  const parts = parseAccessPathTokens(value);
   if (parts.length === 0) {
     return options;
   }
-  const prefixParts = parts.slice(0, parts.length - 1);
-  const lastPart = parts[parts.length - 1];
+  const prefixTokens = parts.slice(0, parts.length - 1);
+  const lastToken = parts[parts.length - 1];
 
-  const matchingOptions = findNestedMatchingOptions(prefixParts, options);
+  const matchingOptions = findNestedMatchingOptions(
+    prefixTokens.map((token) => token.text),
+    options,
+  );
 
   return matchingOptions.filter((item) =>
-    item.label.toLowerCase().includes(lastPart.toLowerCase()),
+    item.label.toLowerCase().includes(lastToken.text.toLowerCase()),
   );
 }

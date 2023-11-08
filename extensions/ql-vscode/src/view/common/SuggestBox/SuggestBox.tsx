@@ -19,7 +19,7 @@ import { SuggestBoxItem } from "./SuggestBoxItem";
 import { useOpenKey } from "./useOpenKey";
 import { findMatchingOptions, suggestedOptions } from "./suggestions";
 import { LabelText } from "./LabelText";
-import { hasAccessPathSyntaxError } from "./access-path";
+import { validateAccessPath } from "./access-path";
 
 const Input = styled(VSCodeTextField)<{ $error: boolean }>`
   width: 430px;
@@ -110,7 +110,7 @@ export const SuggestBox = () => {
   }, [inputValue]);
 
   const hasSyntaxError = useMemo(
-    () => hasAccessPathSyntaxError(inputValue),
+    () => validateAccessPath(inputValue).length > 0,
     [inputValue],
   );
 

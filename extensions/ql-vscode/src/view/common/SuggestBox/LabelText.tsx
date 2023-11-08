@@ -2,7 +2,7 @@ import type { Option } from "./suggestions";
 import { HighlightedText } from "./HighlightedText";
 import { createHighlights } from "./highlight";
 import { useMemo } from "react";
-import { parseAccessPathParts } from "./access-path";
+import { parseAccessPathTokens } from "./access-path";
 
 type Props = {
   item: Option;
@@ -11,8 +11,8 @@ type Props = {
 
 export const LabelText = ({ item, inputValue }: Props) => {
   const highlights = useMemo(() => {
-    const parts = parseAccessPathParts(inputValue);
-    const highlightedInputValue = parts[parts.length - 1] ?? "";
+    const tokens = parseAccessPathTokens(inputValue);
+    const highlightedInputValue = tokens[tokens.length - 1]?.text ?? "";
 
     return createHighlights(item.label, highlightedInputValue);
   }, [item, inputValue]);
