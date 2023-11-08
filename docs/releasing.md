@@ -11,9 +11,11 @@
     * For a regular scheduled release this branch will be based on latest `main`.
     * To do a minimal bug-fix release, base the release branch on the tag from the most recent release and then add only the changes you want to release.
         * Choose this option if you want to release a specific set of changes (e.g. a bug fix) and don't want to incur extra risk by including other changes that have been merged to the `main` branch.
+
         ```bash
         git checkout -b <new_release_branch> <previous_release_tag>
         ```
+
 1. Run the ["Run CLI tests" workflow](https://github.com/github/vscode-codeql/actions/workflows/cli-test.yml) and make sure the tests are green.
     * You can skip this step if you are releasing from `main` and there were no merges since the most recent daily scheduled run of this workflow.
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
@@ -28,16 +30,20 @@
 1. Build the extension using `npm run build` and install it on your VS Code using "Install from VSIX".
 1. Go through [our test plan](./test-plan.md) to ensure that the extension is working as expected.
 1. Create a new tag on the release branch with your new version (named after the release), e.g.
+
     ```bash
     git tag v1.3.6
     ```
+
 1. Merge the release PR into `main`.
     * If there are conflicts in the changelog, make sure to place any new changelog entries at the top, above the section for the current release, as these new entries are not part of the current release and should be placed in the "unreleased" section.
     * The release PR must be merged before pushing the tag to ensure that we always release a commit that is present on the `main` branch. It's not required that the commit is the head of the `main` branch, but there should be no chance of a future release accidentally not including changes from this release.
 1. Push the new tag up:
+
     ```bash
     git push origin refs/tags/v1.3.6
     ```
+
 1. Find the [Release](https://github.com/github/vscode-codeql/actions?query=workflow%3ARelease) workflow run that was just triggered by pushing the tag, and monitor the status of the release build.
     * DO NOT approve the "publish" stages of the workflow yet.
 1. Download the VSIX from the draft GitHub release at the top of [the releases page](https://github.com/github/vscode-codeql/releases) that is created when the release build finishes.
