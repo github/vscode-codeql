@@ -42,7 +42,6 @@ import { WebviewReveal } from "./webview";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
-import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
 import { SkeletonQueryWizard } from "./skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
@@ -51,6 +50,7 @@ import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { tryGetQueryLanguage } from "../common/query-language";
 import { LanguageContextStore } from "../language-context-store";
+import { ExtensionApp } from "../common/vscode/vscode-app";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -66,7 +66,7 @@ export class LocalQueries extends DisposableObject {
   private selectedQueryTreeViewItems: readonly QueryTreeViewItem[] = [];
 
   public constructor(
-    private readonly app: App,
+    private readonly app: ExtensionApp,
     private readonly queryRunner: QueryRunner,
     private readonly queryHistoryManager: QueryHistoryManager,
     private readonly databaseManager: DatabaseManager,
