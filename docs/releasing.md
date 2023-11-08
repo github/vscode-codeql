@@ -11,6 +11,9 @@
     * For a regular scheduled release this branch will be based on latest `main`.
     * To do a minimal bug-fix release, base the release branch on the tag from the most recent release and then add only the changes you want to release.
         * Choose this option if you want to release a specific set of changes (e.g. a bug fix) and don't want to incur extra risk by including other changes that have been merged to the `main` branch.
+        ```bash
+        git checkout -b <new_release_branch> <previous_release_tag>
+        ```
 1. Run the ["Run CLI tests" workflow](https://github.com/github/vscode-codeql/actions/workflows/cli-test.yml) and make sure the tests are green.
     * You can skip this step if you are releasing from `main` and there were no merges since the most recent daily scheduled run of this workflow.
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
