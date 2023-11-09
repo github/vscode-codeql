@@ -13,7 +13,7 @@ import {
   useListNavigation,
   useRole,
 } from "@floating-ui/react";
-import { styled } from "styled-components";
+import { css, styled } from "styled-components";
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import { SuggestBoxItem } from "./SuggestBoxItem";
 import { useOpenKey } from "./useOpenKey";
@@ -26,10 +26,12 @@ const Input = styled(VSCodeTextField)<{ $error: boolean }>`
 
   font-family: var(--vscode-editor-font-family);
 
-  border: ${(props) =>
-    props.$error
-      ? "1px solid var(--vscode-inputValidation-errorBorder)"
-      : undefined};
+  ${(props) =>
+    props.$error &&
+    css`
+      --dropdown-border: var(--vscode-inputValidation-errorBorder);
+      --focus-border: var(--vscode-inputValidation-errorBorder);
+    `}
 `;
 
 const Container = styled.div`
