@@ -175,6 +175,9 @@ export const SuggestBox = () => {
                         listRef.current[index] = node;
                       },
                       onClick() {
+                        setInputValue(item.value);
+                        setIsOpen(false);
+
                         refs.domReference.current?.focus();
                       },
                     })}
