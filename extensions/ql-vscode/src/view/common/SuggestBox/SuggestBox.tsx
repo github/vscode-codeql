@@ -24,6 +24,8 @@ import { validateAccessPath } from "./access-path";
 const Input = styled(VSCodeTextField)<{ $error: boolean }>`
   width: 430px;
 
+  font-family: var(--vscode-editor-font-family);
+
   border: ${(props) =>
     props.$error
       ? "1px solid var(--vscode-inputValidation-errorBorder)"

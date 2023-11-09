@@ -15,6 +15,8 @@ const Container = styled.div<{ $active: boolean }>`
   touch-action: none;
   padding-left: 2px;
 
+  font-family: var(--vscode-editor-font-family);
+
   color: ${(props) =>
     props.$active
       ? "var(--vscode-editorSuggestWidget-selectedForeground)"
