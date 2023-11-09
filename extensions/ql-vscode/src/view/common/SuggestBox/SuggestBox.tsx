@@ -142,51 +142,55 @@ export const SuggestBox = () => {
         })}
         $error={hasSyntaxError}
       />
-      <FloatingPortal>
-        {isOpen && inputValue && suggestionItems.length === 0 && (
-          <NoSuggestionsContainer
-            {...getFloatingProps({
-              ref: refs.setFloating,
-              style: floatingStyles,
-            })}
-          >
-            <NoSuggestionsText>No suggestions.</NoSuggestionsText>
-          </NoSuggestionsContainer>
-        )}
-        {isOpen && suggestionItems.length > 0 && (
-          <FloatingFocusManager
-            context={context}
-            initialFocus={-1}
-            visuallyHiddenDismiss
-          >
-            <ListContainer
+      {isOpen && (
+        <FloatingPortal>
+          {inputValue && suggestionItems.length === 0 && (
+            <NoSuggestionsContainer
               {...getFloatingProps({
                 ref: refs.setFloating,
                 style: floatingStyles,
               })}
             >
-              {suggestionItems.map((item, index) => (
-                <SuggestBoxItem
-                  key={item.label}
-                  {...getItemProps({
-                    key: item.label,
-                    ref(node) {
-                      listRef.current[index] = node;
-                    },
-                    onClick() {
-                      refs.domReference.current?.focus();
-                    },
-                  })}
-                  active={activeIndex === index}
-                  icon={item.icon}
-                  labelText={<LabelText item={item} inputValue={inputValue} />}
-                  detailsText={item.details}
-                />
-              ))}
-            </ListContainer>
-          </FloatingFocusManager>
-        )}
-      </FloatingPortal>
+              <NoSuggestionsText>No suggestions.</NoSuggestionsText>
+            </NoSuggestionsContainer>
+          )}
+          {suggestionItems.length > 0 && (
+            <FloatingFocusManager
+              context={context}
+              initialFocus={-1}
+              visuallyHiddenDismiss
+            >
+              <ListContainer
+                {...getFloatingProps({
+                  ref: refs.setFloating,
+                  style: floatingStyles,
+                })}
+              >
+                {suggestionItems.map((item, index) => (
+                  <SuggestBoxItem
+                    key={item.label}
+                    {...getItemProps({
+                      key: item.label,
+                      ref(node) {
+                        listRef.current[index] = node;
+                      },
+                      onClick() {
+                        refs.domReference.current?.focus();
+                      },
+                    })}
+                    active={activeIndex === index}
+                    icon={item.icon}
+                    labelText={
+                      <LabelText item={item} inputValue={inputValue} />
+                    }
+                    detailsText={item.details}
+                  />
+                ))}
+              </ListContainer>
+            </FloatingFocusManager>
+          )}
+        </FloatingPortal>
+      )}
     </>
   );
 };
