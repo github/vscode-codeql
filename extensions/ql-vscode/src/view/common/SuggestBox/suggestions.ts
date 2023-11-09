@@ -25,11 +25,19 @@ export const suggestedOptions: Option[] = [
         label: "Element[0]",
         icon: "symbol-field",
         value: "Argument[0].Element[0]",
+        details: "first character",
       },
       {
         label: "Element[1]",
         icon: "symbol-field",
         value: "Argument[0].Element[1]",
+        details: "second character",
+      },
+      {
+        label: "Element[any]",
+        icon: "symbol-field",
+        value: "Argument[0].Element[any]",
+        details: "any character",
       },
     ],
   },
@@ -55,6 +63,7 @@ export const suggestedOptions: Option[] = [
         label: "Parameter[0]",
         icon: "symbol-parameter",
         value: "Argument[block].Parameter[0]",
+        details: "val",
         followup: [
           {
             label: "Element[:query]",
@@ -72,6 +81,7 @@ export const suggestedOptions: Option[] = [
         label: "Parameter[1]",
         icon: "symbol-parameter",
         value: "Argument[block].Parameter[1]",
+        details: "context",
         followup: [
           {
             label: "Field[@query]",
