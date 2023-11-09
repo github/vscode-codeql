@@ -109,10 +109,12 @@ export const SuggestBox = () => {
     return findMatchingOptions(suggestedOptions, inputValue);
   }, [inputValue]);
 
-  const hasSyntaxError = useMemo(
-    () => validateAccessPath(inputValue).length > 0,
+  const diagnostics = useMemo(
+    () => validateAccessPath(inputValue),
     [inputValue],
   );
+
+  const hasSyntaxError = diagnostics.length > 0;
 
   return (
     <>
