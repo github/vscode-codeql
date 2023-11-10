@@ -112,6 +112,10 @@ export class ModelingStore extends DisposableObject {
     return this.state.size > 0;
   }
 
+  public isDbOpen(dbUri: string): boolean {
+    return this.state.has(dbUri);
+  }
+
   /**
    * Returns the method for the given database item and method signature.
    * Returns undefined if no method exists with that signature.

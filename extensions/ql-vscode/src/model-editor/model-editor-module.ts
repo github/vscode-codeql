@@ -19,7 +19,6 @@ import { setUpPack } from "./model-editor-queries-setup";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 import { ModelingStore } from "./modeling-store";
 import { showResolvableLocation } from "../databases/local-databases/locations";
-import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelConfigListener } from "../config";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage } from "./languages";
@@ -30,7 +29,6 @@ export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
   private readonly modelingStore: ModelingStore;
   private readonly modelingEvents: ModelingEvents;
-  private readonly editorViewTracker: ModelEditorViewTracker<ModelEditorView>;
   private readonly methodsUsagePanel: MethodsUsagePanel;
   private readonly methodModelingPanel: MethodModelingPanel;
   private readonly modelConfig: ModelConfigListener;
@@ -46,17 +44,11 @@ export class ModelEditorModule extends DisposableObject {
     this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
     this.modelingEvents = new ModelingEvents(app);
     this.modelingStore = new ModelingStore(this.modelingEvents);
-    this.editorViewTracker = new ModelEditorViewTracker();
     this.methodsUsagePanel = this.push(
       new MethodsUsagePanel(this.modelingStore, this.modelingEvents, cliServer),
     );
     this.methodModelingPanel = this.push(
-      new MethodModelingPanel(
-        app,
-        this.modelingStore,
-        this.modelingEvents,
-        this.editorViewTracker,
-      ),
+      new MethodModelingPanel(app, this.modelingStore, this.modelingEvents),
     );
     this.modelConfig = this.push(new ModelConfigListener());
 
@@ -144,12 +136,8 @@ export class ModelEditorModule extends DisposableObject {
 
       const initialMode = definition.availableModes?.[0] ?? INITIAL_MODE;
 
-      const existingView = this.editorViewTracker.getView(
-        db.databaseUri.toString(),
-      );
-      if (existingView) {
-        await existingView.focusView();
-
+      if (this.modelingStore.isDbOpen(db.databaseUri.toString())) {
+        this.modelingEvents.fireFocusDbEvent(db.databaseUri.toString());
         return;
       }
 
@@ -218,12 +206,8 @@ export class ModelEditorModule extends DisposableObject {
 
           // Check again just before opening the editor to ensure no model editor has been opened between
           // our first check and now.
-          const existingView = this.editorViewTracker.getView(
-            db.databaseUri.toString(),
-          );
-          if (existingView) {
-            await existingView.focusView();
-
+          if (this.modelingStore.isDbOpen(db.databaseUri.toString())) {
+            this.modelingEvents.fireFocusDbEvent(db.databaseUri.toString());
             return;
           }
 
@@ -231,7 +215,6 @@ export class ModelEditorModule extends DisposableObject {
             this.app,
             this.modelingStore,
             this.modelingEvents,
-            this.editorViewTracker,
             this.modelConfig,
             this.databaseManager,
             this.cliServer,

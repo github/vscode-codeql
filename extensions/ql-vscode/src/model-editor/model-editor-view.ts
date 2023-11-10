@@ -44,7 +44,6 @@ import {
 import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { ModelingStore } from "./modeling-store";
-import { ModelEditorViewTracker } from "./model-editor-view-tracker";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
@@ -60,7 +59,6 @@ export class ModelEditorView extends AbstractWebview<
     protected readonly app: App,
     private readonly modelingStore: ModelingStore,
     private readonly modelingEvents: ModelingEvents,
-    private readonly viewTracker: ModelEditorViewTracker<ModelEditorView>,
     private readonly modelConfig: ModelConfigListener,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
@@ -78,8 +76,6 @@ export class ModelEditorView extends AbstractWebview<
     this.modelingStore.initializeStateForDb(databaseItem, initialMode);
     this.registerToModelingEvents();
     this.registerToModelConfigEvents();
-
-    this.viewTracker.registerView(this);
 
     this.autoModeler = new AutoModeler(
       app,
@@ -166,7 +162,7 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   protected onPanelDispose(): void {
-    this.viewTracker.unregisterView(this);
+    // Nothing to do
   }
 
   protected async onMessage(msg: FromModelEditorMessage): Promise<void> {
@@ -573,12 +569,9 @@ export class ModelEditorView extends AbstractWebview<
         return;
       }
 
-      let existingView = this.viewTracker.getView(
-        addedDatabase.databaseUri.toString(),
-      );
-      if (existingView) {
-        await existingView.focusView();
-
+      const addedDbUri = addedDatabase.databaseUri.toString();
+      if (this.modelingStore.isDbOpen(addedDbUri)) {
+        this.modelingEvents.fireFocusDbEvent(addedDbUri);
         return;
       }
 
@@ -596,12 +589,8 @@ export class ModelEditorView extends AbstractWebview<
 
       // Check again just before opening the editor to ensure no model editor has been opened between
       // our first check and now.
-      existingView = this.viewTracker.getView(
-        addedDatabase.databaseUri.toString(),
-      );
-      if (existingView) {
-        await existingView.focusView();
-
+      if (this.modelingStore.isDbOpen(addedDbUri)) {
+        this.modelingEvents.fireFocusDbEvent(addedDbUri);
         return;
       }
 
@@ -609,7 +598,6 @@ export class ModelEditorView extends AbstractWebview<
         this.app,
         this.modelingStore,
         this.modelingEvents,
-        this.viewTracker,
         this.modelConfig,
         this.databaseManager,
         this.cliServer,
@@ -739,6 +727,22 @@ export class ModelEditorView extends AbstractWebview<
             t: "setInProgressMethods",
             methods: Array.from(event.methods),
           });
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingEvents.onRevealInModelEditor(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.revealMethod(event.method);
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingEvents.onFocusDb(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.focusView();
         }
       }),
     );

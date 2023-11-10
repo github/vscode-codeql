@@ -10,6 +10,8 @@ export function createMockModelingEvents({
   onModeledMethodsChanged = jest.fn(),
   onModifiedMethodsChanged = jest.fn(),
   onInProgressMethodsChanged = jest.fn(),
+  onRevealInModelEditor = jest.fn(),
+  onFocusDb = jest.fn(),
 }: {
   onActiveDbChanged?: ModelingEvents["onActiveDbChanged"];
   onDbClosed?: ModelingEvents["onDbClosed"];
@@ -19,6 +21,8 @@ export function createMockModelingEvents({
   onModeledMethodsChanged?: ModelingEvents["onModeledMethodsChanged"];
   onModifiedMethodsChanged?: ModelingEvents["onModifiedMethodsChanged"];
   onInProgressMethodsChanged?: ModelingEvents["onInProgressMethodsChanged"];
+  onRevealInModelEditor?: ModelingEvents["onRevealInModelEditor"];
+  onFocusDb?: ModelingEvents["onFocusDb"];
 } = {}): ModelingEvents {
   return mockedObject<ModelingEvents>({
     onActiveDbChanged,
@@ -29,5 +33,7 @@ export function createMockModelingEvents({
     onModeledMethodsChanged,
     onModifiedMethodsChanged,
     onInProgressMethodsChanged,
+    onRevealInModelEditor,
+    onFocusDb,
   });
 }
