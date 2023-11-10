@@ -1,4 +1,5 @@
 import { MethodSignature } from "./method";
+import { ModelingStatus } from "./shared/modeling-status";
 
 export type ModeledMethodType =
   | "none"
@@ -107,5 +108,21 @@ export function modeledMethodSupportsProvenance(
     modeledMethod.type === "sink" ||
     modeledMethod.type === "summary" ||
     modeledMethod.type === "neutral"
+  );
+}
+
+export function isModelAccepted(
+  modeledMethod: ModeledMethod | undefined,
+  modelingStatus: ModelingStatus,
+): boolean {
+  if (!modeledMethod) {
+    return true;
+  }
+
+  return (
+    modelingStatus !== "unsaved" ||
+    modeledMethod.type === "none" ||
+    !modeledMethodSupportsProvenance(modeledMethod) ||
+    modeledMethod.provenance !== "ai-generated"
   );
 }

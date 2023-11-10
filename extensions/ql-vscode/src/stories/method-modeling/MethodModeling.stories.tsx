@@ -52,8 +52,8 @@ MultipleModelingsUnmodeled.args = {
   language,
   method,
   modeledMethods: [],
-  showMultipleModels: true,
   modelingStatus: "saved",
+  showMultipleModels: true,
 };
 
 export const MultipleModelingsModeledSingle = Template.bind({});
@@ -61,8 +61,8 @@ MultipleModelingsModeledSingle.args = {
   language,
   method,
   modeledMethods: [createSinkModeledMethod(method)],
-  showMultipleModels: true,
   modelingStatus: "saved",
+  showMultipleModels: true,
 };
 
 export const MultipleModelingsModeledMultiple = Template.bind({});
@@ -78,8 +78,8 @@ MultipleModelingsModeledMultiple.args = {
       kind: "remote",
     }),
   ],
-  showMultipleModels: true,
   modelingStatus: "saved",
+  showMultipleModels: true,
 };
 
 export const MultipleModelingsValidationFailedNeutral = Template.bind({});
@@ -90,8 +90,8 @@ MultipleModelingsValidationFailedNeutral.args = {
     createSinkModeledMethod(method),
     createNeutralModeledMethod(method),
   ],
-  showMultipleModels: true,
   modelingStatus: "unsaved",
+  showMultipleModels: true,
 };
 
 export const MultipleModelingsValidationFailedDuplicate = Template.bind({});
@@ -107,6 +107,6 @@ MultipleModelingsValidationFailedDuplicate.args = {
     }),
     createSinkModeledMethod(method),
   ],
-  showMultipleModels: true,
   modelingStatus: "unsaved",
+  showMultipleModels: true,
 };

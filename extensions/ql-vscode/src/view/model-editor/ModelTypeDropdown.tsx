@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ChangeEvent, useCallback } from "react";
-import { Dropdown } from "../common/Dropdown";
 import {
+  isModelAccepted,
   ModeledMethod,
   modeledMethodSupportsProvenance,
   ModeledMethodType,
@@ -13,6 +13,8 @@ import { Mutable } from "../../common/mutable";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import { InputDropdown } from "./InputDropdown";
 
 const options: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "none", label: "Unmodeled" },
@@ -26,6 +28,7 @@ type Props = {
   language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
+  modelingStatus: ModelingStatus;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
@@ -33,6 +36,7 @@ export const ModelTypeDropdown = ({
   language,
   method,
   modeledMethod,
+  modelingStatus,
   onChange,
 }: Props): JSX.Element => {
   const handleChange = useCallback(
@@ -88,10 +92,13 @@ export const ModelTypeDropdown = ({
     );
   }
 
+  const modelAccepted = isModelAccepted(modeledMethod, modelingStatus);
+
   return (
-    <Dropdown
+    <InputDropdown
       value={modeledMethod?.type ?? "none"}
       options={options}
+      $accepted={modelAccepted}
       onChange={handleChange}
       aria-label="Model type"
     />

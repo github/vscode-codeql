@@ -20,6 +20,7 @@ describe(MethodModelingInputs.name, () => {
   const language = QueryLanguage.Java;
   const method = createMethod();
   const modeledMethod = createSinkModeledMethod();
+  const modelingStatus = "unmodeled";
   const isModelingInProgress = false;
   const onChange = jest.fn();
 
@@ -28,6 +29,7 @@ describe(MethodModelingInputs.name, () => {
       language,
       method,
       modeledMethod,
+      modelingStatus,
       isModelingInProgress,
       onChange,
     });
@@ -54,6 +56,7 @@ describe(MethodModelingInputs.name, () => {
       language,
       method,
       modeledMethod,
+      modelingStatus,
       isModelingInProgress,
       onChange,
     });
@@ -76,6 +79,7 @@ describe(MethodModelingInputs.name, () => {
       language,
       method,
       modeledMethod,
+      modelingStatus,
       isModelingInProgress,
       onChange,
     });
@@ -90,6 +94,7 @@ describe(MethodModelingInputs.name, () => {
         language={language}
         method={method}
         modeledMethod={updatedModeledMethod}
+        modelingStatus={modelingStatus}
         isModelingInProgress={isModelingInProgress}
         onChange={onChange}
       />,
@@ -119,6 +124,7 @@ describe(MethodModelingInputs.name, () => {
       language,
       method,
       modeledMethod,
+      modelingStatus,
       isModelingInProgress: true,
       onChange,
     });
