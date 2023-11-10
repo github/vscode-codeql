@@ -122,6 +122,7 @@ export function isModelAccepted(
   return (
     modelingStatus !== "unsaved" ||
     modeledMethod.type === "none" ||
+    !modeledMethodSupportsProvenance(modeledMethod) ||
     modeledMethod.provenance !== "ai-generated"
   );
 }
