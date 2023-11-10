@@ -17,19 +17,19 @@ import { QueryLanguage } from "../../../../src/common/query-language";
 describe("local-databases-ui", () => {
   describe("fixDbUri", () => {
     const fixDbUri = (DatabaseUI.prototype as any).fixDbUri;
-    it("should choose current directory direcory normally", async () => {
+    it("should choose current directory normally", async () => {
       const dir = dirSync().name;
       const uri = await fixDbUri(Uri.file(dir));
       expect(uri.toString()).toBe(Uri.file(dir).toString());
     });
 
-    it("should choose parent direcory when file is selected", async () => {
+    it("should choose parent directory when file is selected", async () => {
       const file = fileSync().name;
       const uri = await fixDbUri(Uri.file(file));
       expect(uri.toString()).toBe(Uri.file(dirname(file)).toString());
     });
 
-    it("should choose parent direcory when db-* is selected", async () => {
+    it("should choose parent directory when db-* is selected", async () => {
       const dir = dirSync().name;
       const dbDir = join(dir, "db-javascript");
       await mkdirs(dbDir);
@@ -38,7 +38,7 @@ describe("local-databases-ui", () => {
       expect(uri.toString()).toBe(Uri.file(dir).toString());
     });
 
-    it("should choose parent's parent direcory when file selected is in db-*", async () => {
+    it("should choose parent's parent directory when file selected is in db-*", async () => {
       const dir = dirSync().name;
       const dbDir = join(dir, "db-javascript");
       const file = join(dbDir, "nested");
