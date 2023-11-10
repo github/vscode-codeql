@@ -126,3 +126,24 @@ export function isModelAccepted(
     modeledMethod.provenance !== "ai-generated"
   );
 }
+
+export function calculateNewProvenance(
+  modeledMethod: ModeledMethod | undefined,
+) {
+  if (!modeledMethod || !modeledMethodSupportsProvenance(modeledMethod)) {
+    return "manual";
+  }
+
+  switch (modeledMethod.provenance) {
+    case "df-generated":
+      return "df-generated";
+    case "df-manual":
+      return "df-manual";
+    case "ai-generated":
+      return "ai-manual";
+    case "ai-manual":
+      return "ai-manual";
+    default:
+      return "manual";
+  }
+}

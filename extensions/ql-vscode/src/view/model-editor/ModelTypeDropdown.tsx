@@ -1,11 +1,10 @@
 import * as React from "react";
 import { ChangeEvent, useCallback } from "react";
 import {
+  calculateNewProvenance,
   isModelAccepted,
   ModeledMethod,
-  modeledMethodSupportsProvenance,
   ModeledMethodType,
-  Provenance,
 } from "../../model-editor/modeled-method";
 import { Method } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
@@ -43,15 +42,6 @@ export const ModelTypeDropdown = ({
     (e: ChangeEvent<HTMLSelectElement>) => {
       const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
-      let newProvenance: Provenance = "manual";
-      if (modeledMethod && modeledMethodSupportsProvenance(modeledMethod)) {
-        if (modeledMethod.provenance === "df-generated") {
-          newProvenance = "df-manual";
-        } else if (modeledMethod.provenance === "ai-generated") {
-          newProvenance = "ai-manual";
-        }
-      }
-
       const emptyModeledMethod = createEmptyModeledMethod(
         e.target.value as ModeledMethodType,
         method,
@@ -67,7 +57,8 @@ export const ModelTypeDropdown = ({
         updatedModeledMethod.output = "ReturnValue";
       }
       if ("provenance" in updatedModeledMethod) {
-        updatedModeledMethod.provenance = newProvenance;
+        console.log("** model-type-dropdown modeled method", modeledMethod);
+        updatedModeledMethod.provenance = calculateNewProvenance(modeledMethod);
       }
       if ("kind" in updatedModeledMethod) {
         updatedModeledMethod.kind = "value";
