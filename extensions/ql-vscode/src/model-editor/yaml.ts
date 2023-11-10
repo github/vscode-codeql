@@ -7,6 +7,7 @@ import {
   SinkModeledMethod,
   SourceModeledMethod,
   SummaryModeledMethod,
+  TypeModeledMethod,
 } from "./modeled-method";
 import {
   getModelsAsDataLanguage,
@@ -68,6 +69,7 @@ export function createDataExtensionYaml(
     sink: [] as SinkModeledMethod[],
     summary: [] as SummaryModeledMethod[],
     neutral: [] as NeutralModeledMethod[],
+    type: [] as TypeModeledMethod[],
   } satisfies Record<keyof ModelsAsDataLanguagePredicates, ModeledMethod[]>;
 
   for (const modeledMethod of modeledMethods) {
@@ -87,6 +89,9 @@ export function createDataExtensionYaml(
         break;
       case "neutral":
         methodsByType.neutral.push(modeledMethod);
+        break;
+      case "type":
+        methodsByType.type.push(modeledMethod);
         break;
       default:
         assertNever(modeledMethod);
@@ -121,6 +126,12 @@ export function createDataExtensionYaml(
             language,
             methodsByType.neutral,
             modelsAsDataLanguage.predicates.neutral,
+          );
+        case "type":
+          return createExtensions(
+            language,
+            methodsByType.type,
+            modelsAsDataLanguage.predicates.type,
           );
         default:
           assertNever(type);

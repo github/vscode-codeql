@@ -10,6 +10,7 @@ import {
 import { Method } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { Mutable } from "../../common/mutable";
+import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 
@@ -72,6 +73,20 @@ export const ModelTypeDropdown = ({
     },
     [onChange, method, modeledMethod, language],
   );
+
+  const value = modeledMethod?.type ?? "none";
+
+  const isShownOption = options.some((option) => option.value === value);
+
+  if (!isShownOption) {
+    return (
+      <ReadonlyDropdown
+        // Try to show this like a normal type with uppercased first letter
+        value={value.charAt(0).toUpperCase() + value.slice(1)}
+        aria-label="Model type"
+      />
+    );
+  }
 
   return (
     <Dropdown

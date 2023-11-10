@@ -25,6 +25,8 @@ export function createEmptyModeledMethod(
       return createEmptySummaryModeledMethod(canonicalMethodSignature);
     case "neutral":
       return createEmptyNeutralModeledMethod(canonicalMethodSignature);
+    case "type":
+      return createEmptyTypeModeledMethod(canonicalMethodSignature);
     default:
       assertNever(type);
   }
@@ -84,5 +86,16 @@ function createEmptyNeutralModeledMethod(
     type: "neutral",
     kind: "",
     provenance: "manual",
+  };
+}
+
+function createEmptyTypeModeledMethod(
+  methodSignature: MethodSignature,
+): ModeledMethod {
+  return {
+    ...methodSignature,
+    type: "type",
+    relatedTypeName: "",
+    path: "",
   };
 }

@@ -6,6 +6,7 @@ import {
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
 import { Method } from "../../model-editor/method";
+import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { QueryLanguage } from "../../common/query-language";
 
@@ -59,6 +60,15 @@ export const ModelOutputDropdown = ({
     modeledMethod && modeledMethodSupportsOutput(modeledMethod)
       ? modeledMethod.output
       : undefined;
+
+  if (modeledMethod?.type === "type") {
+    return (
+      <ReadonlyDropdown
+        value={modeledMethod.relatedTypeName}
+        aria-label="Related type name"
+      />
+    );
+  }
 
   return (
     <Dropdown

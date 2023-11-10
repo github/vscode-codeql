@@ -6,6 +6,7 @@ import {
   modeledMethodSupportsInput,
 } from "../../model-editor/modeled-method";
 import { Method } from "../../model-editor/method";
+import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 
@@ -58,6 +59,10 @@ export const ModelInputDropdown = ({
     modeledMethod && modeledMethodSupportsInput(modeledMethod)
       ? modeledMethod.input
       : undefined;
+
+  if (modeledMethod?.type === "type") {
+    return <ReadonlyDropdown value={modeledMethod.path} aria-label="Path" />;
+  }
 
   return (
     <Dropdown
