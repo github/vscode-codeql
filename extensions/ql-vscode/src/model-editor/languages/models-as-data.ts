@@ -1,4 +1,4 @@
-import { MethodDefinition } from "../method";
+import { MethodArgument, MethodDefinition } from "../method";
 import {
   ModeledMethod,
   NeutralModeledMethod,
@@ -47,6 +47,11 @@ export type ModelsAsDataLanguagePredicates = {
   type?: ModelsAsDataLanguagePredicate<TypeModeledMethod>;
 };
 
+export type MethodArgumentOptions = {
+  options: MethodArgument[];
+  defaultArgumentPath: string;
+};
+
 export type ModelsAsDataLanguage = {
   /**
    * The modes that are available for this language. If not specified, all
@@ -56,4 +61,9 @@ export type ModelsAsDataLanguage = {
   createMethodSignature: (method: MethodDefinition) => string;
   predicates: ModelsAsDataLanguagePredicates;
   modelGeneration?: ModelsAsDataLanguageModelGeneration;
+  /**
+   * Returns the list of valid arguments that can be selected for the given method.
+   * @param method The method to get the valid arguments for.
+   */
+  getArgumentOptions: (method: MethodDefinition) => MethodArgumentOptions;
 };

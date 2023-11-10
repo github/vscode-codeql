@@ -2,6 +2,7 @@ import { ModelsAsDataLanguage } from "../models-as-data";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { Mode } from "../../shared/mode";
 import { parseGenerateModelResults } from "./generate";
+import { getArgumentsList, MethodArgument } from "../../method";
 
 function parseRubyMethodFromPath(path: string): string {
   const match = path.match(/Method\[([^\]]+)].*/);
@@ -180,5 +181,35 @@ export const ruby: ModelsAsDataLanguage = {
       "query path": "queries/modeling/GenerateModel.ql",
     },
     parseResults: parseGenerateModelResults,
+  },
+  getArgumentOptions: (method) => {
+    const argumentsList = getArgumentsList(method.methodParameters).map(
+      (argument, index): MethodArgument => {
+        if (argument.endsWith(":")) {
+          return {
+            path: `Argument[${argument}]`,
+            label: `Argument[${argument}]`,
+          };
+        }
+
+        return {
+          path: `Argument[${index}]`,
+          label: `Argument[${index}]: ${argument}`,
+        };
+      },
+    );
+
+    return {
+      options: [
+        {
+          path: "Argument[self]",
+          label: "Argument[self]",
+        },
+        ...argumentsList,
+      ],
+      // If there are no arguments, we will default to "Argument[self]"
+      defaultArgumentPath:
+        argumentsList.length > 0 ? argumentsList[0].path : "Argument[self]",
+    };
   },
 };

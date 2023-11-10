@@ -48,9 +48,9 @@ export const DataFlowPaths = ({
 
   return (
     <>
-      <VerticalSpace size={2} />
+      <VerticalSpace $size={2} />
       <SectionTitle>{ruleDescription}</SectionTitle>
-      <VerticalSpace size={2} />
+      <VerticalSpace $size={2} />
 
       <PathsContainer>
         <PathDetailsContainer>
@@ -66,7 +66,7 @@ export const DataFlowPaths = ({
         </PathDropdownContainer>
       </PathsContainer>
 
-      <VerticalSpace size={2} />
+      <VerticalSpace $size={2} />
       <CodePath
         codeFlow={selectedCodeFlow}
         severity={severity}

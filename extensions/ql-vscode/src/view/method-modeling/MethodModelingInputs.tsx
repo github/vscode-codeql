@@ -39,6 +39,7 @@ export const MethodModelingInputs = ({
   onChange,
 }: MethodModelingInputsProps): JSX.Element => {
   const inputProps = {
+    language,
     method,
     modeledMethod,
     onChange,
@@ -82,7 +83,7 @@ export const MethodModelingInputs = ({
           {isModelingInProgress ? (
             <InProgressDropdown />
           ) : (
-            <ModelKindDropdown language={language} {...inputProps} />
+            <ModelKindDropdown {...inputProps} />
           )}
         </Input>
       </Container>

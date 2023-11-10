@@ -5,36 +5,35 @@ import {
   ModeledMethod,
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
-import { Method, getArgumentsList } from "../../model-editor/method";
+import { Method } from "../../model-editor/method";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
+import { getModelsAsDataLanguage } from "../../model-editor/languages";
+import { QueryLanguage } from "../../common/query-language";
 
 type Props = {
+  language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelOutputDropdown = ({
+  language,
   method,
   modeledMethod,
   onChange,
 }: Props): JSX.Element => {
-  const argumentsList = useMemo(
-    () => getArgumentsList(method.methodParameters),
-    [method.methodParameters],
-  );
+  const options = useMemo(() => {
+    const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
-  const options = useMemo(
-    () => [
-      { value: "ReturnValue", label: "ReturnValue" },
-      { value: "Argument[this]", label: "Argument[this]" },
-      ...argumentsList.map((argument, index) => ({
-        value: `Argument[${index}]`,
-        label: `Argument[${index}]: ${argument}`,
-      })),
-    ],
-    [argumentsList],
-  );
+    const options = modelsAsDataLanguage
+      .getArgumentOptions(method)
+      .options.map((option) => ({
+        value: option.path,
+        label: option.label,
+      }));
+    return [{ value: "ReturnValue", label: "ReturnValue" }, ...options];
+  }, [language, method]);
 
   const enabled = useMemo(
     () => modeledMethod && modeledMethodSupportsOutput(modeledMethod),
