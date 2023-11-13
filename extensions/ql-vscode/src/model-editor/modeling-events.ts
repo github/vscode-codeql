@@ -53,7 +53,7 @@ interface RevealInModelEditorEvent {
   method: Method;
 }
 
-interface FocusDbEvent {
+interface FocusModelEditorEvent {
   dbUri: string;
 }
 
@@ -69,7 +69,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
-  public readonly onFocusDb: AppEvent<FocusDbEvent>;
+  public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
   private readonly onDbOpenedEventEmitter: AppEventEmitter<DatabaseItem>;
@@ -82,7 +82,7 @@ export class ModelingEvents extends DisposableObject {
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
   private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
-  private readonly onFocusDbEventEmitter: AppEventEmitter<FocusDbEvent>;
+  private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
 
   constructor(app: App) {
     super();
@@ -145,10 +145,10 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onRevealInModelEditor = this.onRevealInModelEditorEventEmitter.event;
 
-    this.onFocusDbEventEmitter = this.push(
-      app.createEventEmitter<FocusDbEvent>(),
+    this.onFocusModelEditorEventEmitter = this.push(
+      app.createEventEmitter<FocusModelEditorEvent>(),
     );
-    this.onFocusDb = this.onFocusDbEventEmitter.event;
+    this.onFocusModelEditor = this.onFocusModelEditorEventEmitter.event;
   }
 
   public fireActiveDbChangedEvent() {
@@ -251,8 +251,8 @@ export class ModelingEvents extends DisposableObject {
     });
   }
 
-  public fireFocusDbEvent(dbUri: string) {
-    this.onFocusDbEventEmitter.fire({
+  public fireFocusModelEditorEvent(dbUri: string) {
+    this.onFocusModelEditorEventEmitter.fire({
       dbUri,
     });
   }

@@ -571,7 +571,7 @@ export class ModelEditorView extends AbstractWebview<
 
       const addedDbUri = addedDatabase.databaseUri.toString();
       if (this.modelingStore.isDbOpen(addedDbUri)) {
-        this.modelingEvents.fireFocusDbEvent(addedDbUri);
+        this.modelingEvents.fireFocusModelEditorEvent(addedDbUri);
         return;
       }
 
@@ -590,7 +590,7 @@ export class ModelEditorView extends AbstractWebview<
       // Check again just before opening the editor to ensure no model editor has been opened between
       // our first check and now.
       if (this.modelingStore.isDbOpen(addedDbUri)) {
-        this.modelingEvents.fireFocusDbEvent(addedDbUri);
+        this.modelingEvents.fireFocusModelEditorEvent(addedDbUri);
         return;
       }
 
@@ -740,7 +740,7 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingEvents.onFocusDb(async (event) => {
+      this.modelingEvents.onFocusModelEditor(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.focusView();
         }

@@ -137,7 +137,9 @@ export class ModelEditorModule extends DisposableObject {
       const initialMode = definition.availableModes?.[0] ?? INITIAL_MODE;
 
       if (this.modelingStore.isDbOpen(db.databaseUri.toString())) {
-        this.modelingEvents.fireFocusDbEvent(db.databaseUri.toString());
+        this.modelingEvents.fireFocusModelEditorEvent(
+          db.databaseUri.toString(),
+        );
         return;
       }
 
@@ -207,7 +209,9 @@ export class ModelEditorModule extends DisposableObject {
           // Check again just before opening the editor to ensure no model editor has been opened between
           // our first check and now.
           if (this.modelingStore.isDbOpen(db.databaseUri.toString())) {
-            this.modelingEvents.fireFocusDbEvent(db.databaseUri.toString());
+            this.modelingEvents.fireFocusModelEditorEvent(
+              db.databaseUri.toString(),
+            );
             return;
           }
 
