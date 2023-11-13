@@ -5,28 +5,97 @@ import { getErrorMessage } from "../../../../../src/common/helpers-pure";
 
 import * as log from "../../../../../src/common/logging/notifications";
 import * as workspaceFolders from "../../../../../src/common/vscode/workspace-folders";
-import { KeyType, resolveQueries } from "../../../../../src/language-support";
-import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
+import {
+  KeyType,
+  resolveContextualQlPacksForDatabase,
+  resolveContextualQueries,
+} from "../../../../../src/language-support";
+import { CodeQLCliServer, DbInfo } from "../../../../../src/codeql-cli/cli";
 import { mockedObject } from "../../../utils/mocking.helpers";
+import * as queryResolver from "../../../../../src/local-queries/query-resolver";
+import { DatabaseItem } from "../../../../../src/databases/local-databases";
+import { Uri } from "vscode";
 
 describe("queryResolver", () => {
-  const resolveQueriesInSuite = jest.fn();
+  let qlpackOfDatabase: jest.SpiedFunction<
+    typeof queryResolver.qlpackOfDatabase
+  >;
+
+  const resolveQueriesInSuite: jest.MockedFunction<
+    typeof CodeQLCliServer.prototype.resolveQueriesInSuite
+  > = jest.fn();
+  const resolveDatabase: jest.MockedFunction<
+    typeof CodeQLCliServer.prototype.resolveDatabase
+  > = jest.fn();
+  const packDownload: jest.MockedFunction<
+    typeof CodeQLCliServer.prototype.packDownload
+  > = jest.fn();
 
   const mockCli = mockedObject<CodeQLCliServer>({
     resolveQueriesInSuite,
+    resolveDatabase,
+    packDownload,
   });
 
   beforeEach(() => {
+    qlpackOfDatabase = jest.spyOn(queryResolver, "qlpackOfDatabase");
+
     jest
       .spyOn(workspaceFolders, "getOnDiskWorkspaceFolders")
       .mockReturnValue([]);
     jest.spyOn(log, "showAndLogErrorMessage").mockResolvedValue(undefined);
   });
 
-  describe("resolveQueries", () => {
+  describe("resolveContextualQlPacksForDatabase", () => {
+    let databaseItem: DatabaseItem;
+
+    beforeEach(() => {
+      databaseItem = {
+        name: "my-db",
+        language: "csharp",
+        databaseUri: Uri.file("/a/b/c/db"),
+      } as DatabaseItem;
+    });
+
+    it("should resolve a qlpack when CLI returns qlpack", async () => {
+      qlpackOfDatabase.mockResolvedValue({
+        dbschemePack: "dbschemePack",
+        dbschemePackIsLibraryPack: false,
+      });
+
+      expect(
+        await resolveContextualQlPacksForDatabase(mockCli, databaseItem),
+      ).toEqual({
+        dbschemePack: "dbschemePack",
+        dbschemePackIsLibraryPack: false,
+      });
+    });
+
+    it("should return qlpack when downloading packs", async () => {
+      qlpackOfDatabase.mockRejectedValue(new Error("error"));
+      resolveDatabase.mockResolvedValue({
+        languages: ["csharp"],
+      } as DbInfo);
+
+      expect(
+        await resolveContextualQlPacksForDatabase(mockCli, databaseItem),
+      ).toEqual({
+        dbschemePack: "codeql/csharp-all",
+        dbschemePackIsLibraryPack: true,
+        queryPack: "codeql/csharp-queries",
+      });
+      expect(packDownload).toHaveBeenCalledTimes(1);
+      expect(packDownload).toHaveBeenCalledWith([
+        "codeql/csharp-all",
+        "codeql/csharp-queries",
+      ]);
+    });
+  });
+
+  describe("resolveContextualQueries", () => {
     it("should resolve a query", async () => {
-      resolveQueriesInSuite.mockReturnValue(["a", "b"]);
-      const result = await resolveQueries(
+      resolveQueriesInSuite.mockResolvedValue(["a", "b"]);
+      const result = await resolveContextualQueries(
         mockCli,
         { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
         KeyType.DefinitionQuery,
@@ -53,10 +122,10 @@ describe("queryResolver", () => {
     });
 
     it("should throw an error when there are no queries found", async () => {
-      resolveQueriesInSuite.mockReturnValue([]);
+      resolveQueriesInSuite.mockResolvedValue([]);
 
       try {
-        await resolveQueries(
+        await resolveContextualQueries(
           mockCli,
           { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
           KeyType.DefinitionQuery,

@@ -9,16 +9,19 @@ import {
   ResultSetSchema,
 } from "../../common/bqrs-cli-types";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { DatabaseManager, DatabaseItem } from "../../databases/local-databases";
+import { DatabaseItem, DatabaseManager } from "../../databases/local-databases";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { KeyType } from "./key-type";
-import { resolveQueries, runContextualQuery } from "./query-resolver";
+import {
+  resolveContextualQlPacksForDatabase,
+  resolveContextualQueries,
+  runContextualQuery,
+} from "./query-resolver";
 import { CancellationToken, LocationLink, Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { QueryRunner } from "../../query-server";
 import { QueryResultType } from "../../query-server/new-messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
-import { qlpackOfDatabase } from "../../local-queries";
 
 export const SELECT_QUERY_NAME = "#select";
 export const SELECTED_SOURCE_FILE = "selectedSourceFile";
@@ -63,11 +66,11 @@ export async function getLocationsForUriString(
     return [];
   }
 
-  const qlpack = await qlpackOfDatabase(cli, db);
+  const qlpack = await resolveContextualQlPacksForDatabase(cli, db);
   const templates = createTemplates(uri.pathWithinSourceArchive);
 
   const links: FullLocationLink[] = [];
-  for (const query of await resolveQueries(cli, qlpack, keyType)) {
+  for (const query of await resolveContextualQueries(cli, qlpack, keyType)) {
     const results = await runContextualQuery(
       query,
       db,
