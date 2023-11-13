@@ -2,6 +2,7 @@ import * as React from "react";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import {
   ModeledMethod,
+  calculateNewProvenance,
   isModelAccepted,
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
@@ -54,6 +55,7 @@ export const ModelOutputDropdown = ({
 
       onChange({
         ...modeledMethod,
+        provenance: calculateNewProvenance(modeledMethod),
         output: target.value,
       });
     },

@@ -27,7 +27,7 @@ describe(MethodRow.name, () => {
     input: "Argument[0]",
     output: "ReturnValue",
     kind: "taint",
-    provenance: "df-generated",
+    provenance: "manual",
   };
   const onChange = jest.fn();
 
@@ -107,6 +107,32 @@ describe(MethodRow.name, () => {
       {
         ...modeledMethod,
         kind: "value",
+      },
+    ]);
+  });
+
+  it("changes the provenance when the kind is changed", async () => {
+    const modeledMethodWithGeneratedProvenance: ModeledMethod = {
+      ...modeledMethod,
+      provenance: "df-generated",
+    };
+    render({ modeledMethods: [modeledMethodWithGeneratedProvenance] });
+
+    onChange.mockReset();
+
+    expect(screen.getByRole("combobox", { name: "Kind" })).toHaveValue("taint");
+
+    await userEvent.selectOptions(
+      screen.getByRole("combobox", { name: "Kind" }),
+      "value",
+    );
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith(method.signature, [
+      {
+        ...modeledMethod,
+        kind: "value",
+        provenance: "df-manual",
       },
     ]);
   });
