@@ -39,12 +39,18 @@ describe("test-runner", () => {
   const preTestDatabaseItem = new DatabaseItemImpl(
     Uri.file("/path/to/test/dir/dir.testproj"),
     undefined,
-    mockedObject<FullDatabaseOptions>({ displayName: "custom display name" }),
+    mockedObject<FullDatabaseOptions>({
+      displayName: "custom display name",
+      source: { type: "folder" },
+    }),
   );
   const postTestDatabaseItem = new DatabaseItemImpl(
     Uri.file("/path/to/test/dir/dir.testproj"),
     undefined,
-    mockedObject<FullDatabaseOptions>({ displayName: "default name" }),
+    mockedObject<FullDatabaseOptions>({
+      displayName: "default name",
+      source: { type: "folder" },
+    }),
   );
 
   beforeEach(() => {
@@ -160,6 +166,7 @@ describe("test-runner", () => {
     expect(openDatabaseSpy).toBeCalledTimes(1);
     expect(openDatabaseSpy).toBeCalledWith(
       preTestDatabaseItem.databaseUri,
+      preTestDatabaseItem.source,
       false,
     );
 

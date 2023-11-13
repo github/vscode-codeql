@@ -33,6 +33,7 @@ import { allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
+import { DatabaseSource } from "./local-databases/database-source";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -62,6 +63,10 @@ export async function promptImportInternetDatabase(
     databaseManager,
     storagePath,
     undefined,
+    {
+      type: "url",
+      url: databaseUrl,
+    },
     progress,
     cli,
   );
@@ -199,7 +204,7 @@ export async function downloadGitHubDatabase(
     return;
   }
 
-  const { databaseUrl, name, owner } = result;
+  const { databaseUrl, name, owner, commitOid } = result;
 
   /**
    * The 'token' property of the token object returned by `octokit.auth()`.
@@ -221,6 +226,11 @@ export async function downloadGitHubDatabase(
     databaseManager,
     storagePath,
     `${owner}/${name}`,
+    {
+      type: "github",
+      repository: nwo,
+      commitOid,
+    },
     progress,
     cli,
     makeSelected,
@@ -250,6 +260,10 @@ export async function importArchiveDatabase(
       databaseManager,
       storagePath,
       undefined,
+      {
+        type: "archive",
+        path: databaseUrl,
+      },
       progress,
       cli,
     );
@@ -282,6 +296,7 @@ export async function importArchiveDatabase(
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  * @param nameOverride a name for the database that overrides the default
+ * @param source the source of the database
  * @param progress callback to send progress messages to
  * @param makeSelected make the new database selected in the databases panel (default: true)
  * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
@@ -292,6 +307,7 @@ async function databaseArchiveFetcher(
   databaseManager: DatabaseManager,
   storagePath: string,
   nameOverride: string | undefined,
+  source: DatabaseSource,
   progress: ProgressCallback,
   cli?: CodeQLCliServer,
   makeSelected = true,
@@ -336,6 +352,7 @@ async function databaseArchiveFetcher(
 
     const item = await databaseManager.openDatabase(
       Uri.file(dbPath),
+      source,
       makeSelected,
       nameOverride,
       {
@@ -533,6 +550,7 @@ export async function convertGithubNwoToDatabaseUrl(
       databaseUrl: string;
       owner: string;
       name: string;
+      commitOid: string | null;
     }
   | undefined
 > {
@@ -553,10 +571,18 @@ export async function convertGithubNwoToDatabaseUrl(
       }
     }
 
+    const databaseForLanguage = response.data.find(
+      (db: any) => db.language === language,
+    );
+    if (!databaseForLanguage) {
+      throw new Error(`No database found for language '${language}'`);
+    }
+
     return {
       databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
       owner,
       name: repo,
+      commitOid: databaseForLanguage.commit_oid,
     };
   } catch (e) {
     void extLogger.log(`Error: ${getErrorMessage(e)}`);

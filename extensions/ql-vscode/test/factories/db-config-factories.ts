@@ -7,6 +7,7 @@ import {
   SelectedDbItem,
   DB_CONFIG_VERSION,
 } from "../../src/databases/config/db-config";
+import { DatabaseSource } from "../../src/databases/local-databases/database-source";
 
 export function createDbConfig({
   remoteLists = [],
@@ -45,16 +46,21 @@ export function createLocalDbConfigItem({
   dateAdded = faker.date.past().getTime(),
   language = `language${faker.number.int()}`,
   storagePath = `storagePath${faker.number.int()}`,
+  source = {
+    type: "folder",
+  },
 }: {
   name?: string;
   dateAdded?: number;
   language?: string;
   storagePath?: string;
+  source?: DatabaseSource;
 } = {}): LocalDatabase {
   return {
     name,
     dateAdded,
     language,
     storagePath,
+    source,
   };
 }

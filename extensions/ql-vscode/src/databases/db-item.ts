@@ -1,5 +1,7 @@
 // This file contains models that are used to represent the databases.
 
+import { DatabaseSource } from "./local-databases/database-source";
+
 export enum DbItemKind {
   RootLocal = "RootLocal",
   LocalList = "LocalList",
@@ -38,6 +40,7 @@ export interface LocalDatabaseDbItem {
   databaseName: string;
   dateAdded: number;
   language: string;
+  source: DatabaseSource;
   storagePath: string;
   parentListName?: string;
 }
