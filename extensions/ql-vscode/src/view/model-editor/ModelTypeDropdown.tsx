@@ -57,7 +57,6 @@ export const ModelTypeDropdown = ({
         updatedModeledMethod.output = "ReturnValue";
       }
       if ("provenance" in updatedModeledMethod) {
-        console.log("** model-type-dropdown modeled method", modeledMethod);
         updatedModeledMethod.provenance = calculateNewProvenance(modeledMethod);
       }
       if ("kind" in updatedModeledMethod) {

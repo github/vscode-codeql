@@ -127,23 +127,37 @@ export function isModelAccepted(
   );
 }
 
+/**
+ * Calculates the new provenance for a modeled method based on the current provenance.
+ * @param modeledMethod The modeled method if there is one.
+ * @returns The new provencance
+ */
 export function calculateNewProvenance(
   modeledMethod: ModeledMethod | undefined,
 ) {
   if (!modeledMethod || !modeledMethodSupportsProvenance(modeledMethod)) {
+    // If nothing has been modeled or the modeled method does not support
+    // provenance, we assume that the user has entered it manually.
     return "manual";
   }
 
   switch (modeledMethod.provenance) {
     case "df-generated":
-      return "df-generated";
+      // If the method has been generated and there has been a change, we assume
+      // that the user has manually edited it.
+      return "df-manual";
     case "df-manual":
+      // If the method has had manual edits, we want the provenance to stay the same.
       return "df-manual";
     case "ai-generated":
+      // If the method has been generated and there has been a change, we assume
+      // that the user has manually edited it.
       return "ai-manual";
     case "ai-manual":
+      // If the method has had manual edits, we want the provenance to stay the same.
       return "ai-manual";
     default:
+      // The method has been modeled manually.
       return "manual";
   }
 }
