@@ -622,6 +622,16 @@ describe("local databases", () => {
         expect(generateSpy).not.toBeCalled();
       });
 
+      it("should return early if the user escapes out of the dialog", async () => {
+        showNeverAskAgainDialogSpy = jest
+          .spyOn(dialog, "showNeverAskAgainDialog")
+          .mockResolvedValue(undefined);
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(generateSpy).not.toBeCalled();
+      });
+
       it("should return early and write choice to settings if user wants to never be asked again", async () => {
         showNeverAskAgainDialogSpy = jest
           .spyOn(dialog, "showNeverAskAgainDialog")
