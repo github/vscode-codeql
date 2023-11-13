@@ -1687,10 +1687,6 @@
           "when": "config.codeQL.mockGitHubApiServer.enabled && codeQL.mockGitHubApiServer.scenarioLoaded"
         },
         {
-          "command": "codeQL.createQuery",
-          "when": "config.codeQL.codespacesTemplate || config.codeQL.canary && config.codeQL.queriesPanel"
-        },
-        {
           "command": "codeQLTests.acceptOutputContextTestItem",
           "when": "false"
         },
@@ -1774,8 +1770,7 @@
       "ql-container": [
         {
           "id": "codeQLLanguageSelection",
-          "name": "Language",
-          "when": "config.codeQL.canary && config.codeQL.showLanguageFilter"
+          "name": "Language"
         },
         {
           "id": "codeQLDatabases",
@@ -1783,8 +1778,7 @@
         },
         {
           "id": "codeQLQueries",
-          "name": "Queries",
-          "when": "config.codeQL.canary && config.codeQL.queriesPanel"
+          "name": "Queries"
         },
         {
           "id": "codeQLVariantAnalysisRepositories",
