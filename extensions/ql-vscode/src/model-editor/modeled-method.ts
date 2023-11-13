@@ -130,7 +130,7 @@ export function isModelAccepted(
 /**
  * Calculates the new provenance for a modeled method based on the current provenance.
  * @param modeledMethod The modeled method if there is one.
- * @returns The new provencance
+ * @returns The new provenance.
  */
 export function calculateNewProvenance(
   modeledMethod: ModeledMethod | undefined,
