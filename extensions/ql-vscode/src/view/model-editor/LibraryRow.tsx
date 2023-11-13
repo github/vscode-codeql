@@ -226,7 +226,6 @@ export const LibraryRow = ({
         <>
           <SectionDivider />
           <ModeledMethodDataGrid
-            packageName={title}
             methods={methods}
             modeledMethodsMap={modeledMethodsMap}
             modifiedSignatures={modifiedSignatures}

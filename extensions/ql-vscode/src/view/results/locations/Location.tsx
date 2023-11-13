@@ -48,7 +48,6 @@ export function Location({
       loc={resolvableLoc}
       label={displayLabel}
       databaseUri={databaseUri}
-      title={title}
       onClick={onClick}
     />
   );

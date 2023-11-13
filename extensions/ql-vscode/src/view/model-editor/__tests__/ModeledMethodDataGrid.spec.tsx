@@ -45,7 +45,6 @@ describe(ModeledMethodDataGrid.name, () => {
   const render = (props: Partial<ModeledMethodDataGridProps> = {}) =>
     reactRender(
       <ModeledMethodDataGrid
-        packageName="sql2o"
         methods={[method1, method2, method3]}
         modeledMethodsMap={{
           [method1.signature]: [

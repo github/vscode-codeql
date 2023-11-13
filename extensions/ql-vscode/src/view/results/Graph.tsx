@@ -47,9 +47,7 @@ export function Graph({ graphData, databaseUri }: GraphProps) {
             d.attributes["xlink:href"] = "#";
             d.attributes["href"] = "#";
             loc.uri = `file://${loc.uri}`;
-            select(this).on("click", function (e) {
-              jumpToLocation(loc, databaseUri);
-            });
+            select(this).on("click", () => jumpToLocation(loc, databaseUri));
           }
         }
         if ("fill" in d.attributes) {
