@@ -20,7 +20,7 @@ import {
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { QueryRunner } from "../../../../src/query-server/query-runner";
 import * as dialog from "../../../../src/common/vscode/dialog";
-import { Setting } from "../../../../src/config";
+import * as config from "../../../../src/config";
 import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockApp } from "../../../__mocks__/appMock";
@@ -636,12 +636,15 @@ describe("local databases", () => {
         showNeverAskAgainDialogSpy = jest
           .spyOn(dialog, "showNeverAskAgainDialog")
           .mockResolvedValue("No, and never ask me again");
-        const updateValueSpy = jest.spyOn(Setting.prototype, "updateValue");
+        const setAutogenerateQlPacksSpy = jest.spyOn(
+          config,
+          "setAutogenerateQlPacks",
+        );
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
         expect(generateSpy).not.toBeCalled();
-        expect(updateValueSpy).toHaveBeenCalledWith("never", 2);
+        expect(setAutogenerateQlPacksSpy).toHaveBeenCalledWith("never");
       });
 
       it("should create the skeleton QL pack for the user", async () => {
@@ -745,7 +748,7 @@ describe("local databases", () => {
     describe("when codeQL.codespacesTemplate is set to true", () => {
       describe("when we add the tutorial database to the codespace", () => {
         it("should not offer to create a skeleton QL pack", async () => {
-          jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
+          jest.spyOn(config, "isCodespacesTemplate").mockReturnValue(true);
 
           const isTutorialDatabase = true;
           const makeSelected = true;
@@ -764,7 +767,7 @@ describe("local databases", () => {
 
       describe("when we add a new database that isn't the tutorial one", () => {
         it("should create a skeleton QL pack", async () => {
-          jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
+          jest.spyOn(config, "isCodespacesTemplate").mockReturnValue(true);
 
           await databaseManager.openDatabase(mockDbItem.databaseUri);
 
@@ -773,18 +776,9 @@ describe("local databases", () => {
       });
     });
 
-    describe("when codeQL.codespacesTemplate is set to false", () => {
+    describe("when codeQL.codespacesTemplate is set to false or not defined", () => {
       it("should not create a skeleton QL pack", async () => {
-        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(false);
-
-        await databaseManager.openDatabase(mockDbItem.databaseUri);
-        expect(createSkeletonPacksSpy).toBeCalledTimes(0);
-      });
-    });
-
-    describe("when codeQL.codespacesTemplate is not set", () => {
-      it("should not create a skeleton QL pack", async () => {
-        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(undefined);
+        jest.spyOn(config, "isCodespacesTemplate").mockReturnValue(false);
 
         await databaseManager.openDatabase(mockDbItem.databaseUri);
         expect(createSkeletonPacksSpy).toBeCalledTimes(0);

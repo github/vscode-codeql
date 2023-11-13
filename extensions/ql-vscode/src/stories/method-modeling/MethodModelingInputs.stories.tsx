@@ -60,3 +60,13 @@ ModelingInProgress.args = {
   modeledMethod,
   isModelingInProgress: true,
 };
+
+const generatedModeledMethod = createSinkModeledMethod({
+  provenance: "ai-generated",
+});
+export const ModelingNotAccepted = Template.bind({});
+ModelingNotAccepted.args = {
+  method,
+  modeledMethod: generatedModeledMethod,
+  modelingStatus: "unsaved",
+};

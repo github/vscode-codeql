@@ -16,6 +16,11 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import { SuiteInstruction } from "../packaging/suite-instruction";
 import { QueryConstraints } from "./query-constraints";
 
+/**
+ * Consider using `resolveContextualQlPacksForDatabase` instead.
+ * @param cli The CLI server instance to use.
+ * @param db The database to find the QLPack for.
+ */
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,
   db: Pick<DatabaseItem, "contents">,

@@ -23,11 +23,15 @@ import { KeyType } from "./key-type";
 import {
   FullLocationLink,
   getLocationsForUriString,
+  SELECTED_SOURCE_COLUMN,
   SELECTED_SOURCE_FILE,
   SELECTED_SOURCE_LINE,
-  SELECTED_SOURCE_COLUMN,
 } from "./location-finder";
-import { resolveQueries, runContextualQuery } from "./query-resolver";
+import {
+  resolveContextualQlPacksForDatabase,
+  resolveContextualQueries,
+  runContextualQuery,
+} from "./query-resolver";
 import {
   isCanary,
   NO_CACHE_AST_VIEWER,
@@ -35,7 +39,6 @@ import {
 } from "../../config";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { AstBuilder } from "../ast-viewer/ast-builder";
-import { qlpackOfDatabase } from "../../local-queries";
 import { MultiCancellationToken } from "../../common/vscode/multi-cancellation-token";
 
 /**
@@ -248,8 +251,8 @@ export class TemplatePrintAstProvider {
       throw new Error("Can't infer database from the provided source.");
     }
 
-    const qlpacks = await qlpackOfDatabase(this.cli, db);
-    const queries = await resolveQueries(
+    const qlpacks = await resolveContextualQlPacksForDatabase(this.cli, db);
+    const queries = await resolveContextualQueries(
       this.cli,
       qlpacks,
       KeyType.PrintAstQuery,
@@ -336,11 +339,11 @@ export class TemplatePrintCfgProvider {
       throw new Error("Can't infer database from the provided source.");
     }
 
-    const qlpack = await qlpackOfDatabase(this.cli, db);
+    const qlpack = await resolveContextualQlPacksForDatabase(this.cli, db);
     if (!qlpack) {
       throw new Error("Can't infer qlpack from database source archive.");
     }
-    const queries = await resolveQueries(
+    const queries = await resolveContextualQueries(
       this.cli,
       qlpack,
       KeyType.PrintCfgQuery,

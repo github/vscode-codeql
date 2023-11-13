@@ -7,11 +7,13 @@ import { styled } from "styled-components";
 import { MultipleModeledMethodsPanel } from "./MultipleModeledMethodsPanel";
 import { convertToLegacyModeledMethod } from "../../model-editor/shared/modeled-methods-legacy";
 import { QueryLanguage } from "../../common/query-language";
+import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 export type ModeledMethodsPanelProps = {
   language: QueryLanguage;
   method: Method;
   modeledMethods: ModeledMethod[];
+  modelingStatus: ModelingStatus;
   isModelingInProgress: boolean;
   showMultipleModels: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
@@ -25,6 +27,7 @@ export const ModeledMethodsPanel = ({
   language,
   method,
   modeledMethods,
+  modelingStatus,
   isModelingInProgress,
   showMultipleModels,
   onChange,
@@ -42,6 +45,7 @@ export const ModeledMethodsPanel = ({
         language={language}
         method={method}
         modeledMethod={convertToLegacyModeledMethod(modeledMethods)}
+        modelingStatus={modelingStatus}
         isModelingInProgress={isModelingInProgress}
         onChange={handleSingleChange}
       />
@@ -53,6 +57,7 @@ export const ModeledMethodsPanel = ({
       language={language}
       method={method}
       modeledMethods={modeledMethods}
+      modelingStatus={modelingStatus}
       isModelingInProgress={isModelingInProgress}
       onChange={onChange}
     />

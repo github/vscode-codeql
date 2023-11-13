@@ -70,6 +70,13 @@ function canonicalizeModeledMethod(
         kind: modeledMethod.kind,
         provenance: "manual",
       };
+    case "type":
+      return {
+        ...methodSignature,
+        type: "type",
+        relatedTypeName: modeledMethod.relatedTypeName,
+        path: modeledMethod.path,
+      };
     default:
       assertNever(modeledMethod);
   }

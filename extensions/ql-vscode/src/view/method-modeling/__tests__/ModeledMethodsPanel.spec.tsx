@@ -15,6 +15,7 @@ describe(ModeledMethodsPanel.name, () => {
   const language = QueryLanguage.Java;
   const method = createMethod();
   const modeledMethods = [createSinkModeledMethod(), createSinkModeledMethod()];
+  const modelingStatus = "unmodeled";
   const isModelingInProgress = false;
   const onChange = jest.fn();
 
@@ -27,6 +28,7 @@ describe(ModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
         showMultipleModels,
       });
@@ -40,6 +42,7 @@ describe(ModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
         showMultipleModels,
       });
@@ -60,6 +63,7 @@ describe(ModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
         showMultipleModels,
       });
@@ -73,6 +77,7 @@ describe(ModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        modelingStatus,
         onChange,
         showMultipleModels,
       });

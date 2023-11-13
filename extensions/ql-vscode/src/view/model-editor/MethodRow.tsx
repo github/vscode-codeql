@@ -237,6 +237,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     language={viewState.language}
                     method={method}
                     modeledMethod={modeledMethod}
+                    modelingStatus={modelingStatus}
                     onChange={modeledMethodChangedHandlers[index]}
                   />
                 </DataGridCell>
@@ -245,6 +246,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     language={viewState.language}
                     method={method}
                     modeledMethod={modeledMethod}
+                    modelingStatus={modelingStatus}
                     onChange={modeledMethodChangedHandlers[index]}
                   />
                 </DataGridCell>
@@ -253,6 +255,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     language={viewState.language}
                     method={method}
                     modeledMethod={modeledMethod}
+                    modelingStatus={modelingStatus}
                     onChange={modeledMethodChangedHandlers[index]}
                   />
                 </DataGridCell>
@@ -260,6 +263,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   <ModelKindDropdown
                     language={viewState.language}
                     modeledMethod={modeledMethod}
+                    modelingStatus={modelingStatus}
                     onChange={modeledMethodChangedHandlers[index]}
                   />
                 </DataGridCell>

@@ -1,10 +1,12 @@
 import { MethodSignature } from "./method";
+import { ModelingStatus } from "./shared/modeling-status";
 
 export type ModeledMethodType =
   | "none"
   | "source"
   | "sink"
   | "summary"
+  | "type"
   | "neutral";
 
 export type Provenance =
@@ -51,12 +53,19 @@ export interface NeutralModeledMethod extends MethodSignature {
   readonly provenance: Provenance;
 }
 
+export interface TypeModeledMethod extends MethodSignature {
+  readonly type: "type";
+  readonly relatedTypeName: string;
+  readonly path: string;
+}
+
 export type ModeledMethod =
   | NoneModeledMethod
   | SourceModeledMethod
   | SinkModeledMethod
   | SummaryModeledMethod
-  | NeutralModeledMethod;
+  | NeutralModeledMethod
+  | TypeModeledMethod;
 
 export type ModeledMethodKind = string;
 
@@ -99,5 +108,21 @@ export function modeledMethodSupportsProvenance(
     modeledMethod.type === "sink" ||
     modeledMethod.type === "summary" ||
     modeledMethod.type === "neutral"
+  );
+}
+
+export function isModelAccepted(
+  modeledMethod: ModeledMethod | undefined,
+  modelingStatus: ModelingStatus,
+): boolean {
+  if (!modeledMethod) {
+    return true;
+  }
+
+  return (
+    modelingStatus !== "unsaved" ||
+    modeledMethod.type === "none" ||
+    !modeledMethodSupportsProvenance(modeledMethod) ||
+    modeledMethod.provenance !== "ai-generated"
   );
 }
