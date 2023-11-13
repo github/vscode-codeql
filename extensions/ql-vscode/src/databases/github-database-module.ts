@@ -1,0 +1,46 @@
+import { DisposableObject } from "../common/disposable-object";
+import { App } from "../common/app";
+import { findGitHubRepositoryForWorkspace } from "./github-repository-finder";
+import { redactableError } from "../common/errors";
+import { asError } from "../common/helpers-pure";
+
+export class GithubDatabaseModule extends DisposableObject {
+  private constructor(private readonly app: App) {
+    super();
+  }
+
+  public static async initialize(app: App): Promise<GithubDatabaseModule> {
+    const githubDatabaseModule = new GithubDatabaseModule(app);
+    app.subscriptions.push(githubDatabaseModule);
+
+    await githubDatabaseModule.initialize();
+    return githubDatabaseModule;
+  }
+
+  private async initialize(): Promise<void> {
+    void this.promptGitHubRepositoryDownload().catch((e: unknown) => {
+      this.app.telemetry?.sendError(
+        redactableError(
+          asError(e),
+        )`Failed to prompt for GitHub repository download`,
+      );
+    });
+  }
+
+  private async promptGitHubRepositoryDownload(): Promise<void> {
+    const githubRepositoryResult = await findGitHubRepositoryForWorkspace();
+    if (githubRepositoryResult.isFailure) {
+      void this.app.logger.log(
+        `Failed to find GitHub repository for workspace: ${githubRepositoryResult.errors.join(
+          ", ",
+        )}`,
+      );
+      return;
+    }
+
+    const githubRepository = githubRepositoryResult.value;
+    void this.app.logger.log(
+      `Found GitHub repository for workspace: '${githubRepository.owner}/${githubRepository.name}'`,
+    );
+  }
+}
