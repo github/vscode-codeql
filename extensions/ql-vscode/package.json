@@ -380,6 +380,11 @@
             "default": false,
             "description": "Allow databases to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
           },
+          "codeQL.databaseDownload.allowHttp": {
+            "type": "boolean",
+            "markdownDeprecationMessage": "**Deprecated**: Please use `#codeQL.addingDatabases.allowHttp#` instead.",
+            "deprecationMessage": "Deprecated: Please use codeQL.addingDatabases.allowHttp instead."
+          },
           "codeQL.addingDatabases.addDatabaseSourceToWorkspace": {
             "type": "boolean",
             "default": false,
