@@ -48,6 +48,15 @@ interface InProgressMethodsChangedEvent {
   readonly methods: ReadonlySet<string>;
 }
 
+interface RevealInModelEditorEvent {
+  dbUri: string;
+  method: Method;
+}
+
+interface FocusModelEditorEvent {
+  dbUri: string;
+}
+
 export class ModelingEvents extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
   public readonly onDbOpened: AppEvent<DatabaseItem>;
@@ -59,6 +68,8 @@ export class ModelingEvents extends DisposableObject {
   public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
+  public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
+  public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
   private readonly onDbOpenedEventEmitter: AppEventEmitter<DatabaseItem>;
@@ -70,6 +81,8 @@ export class ModelingEvents extends DisposableObject {
   private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
   private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
+  private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
+  private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
 
   constructor(app: App) {
     super();
@@ -126,6 +139,16 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onInProgressMethodsChanged =
       this.onInProgressMethodsChangedEventEmitter.event;
+
+    this.onRevealInModelEditorEventEmitter = this.push(
+      app.createEventEmitter<RevealInModelEditorEvent>(),
+    );
+    this.onRevealInModelEditor = this.onRevealInModelEditorEventEmitter.event;
+
+    this.onFocusModelEditorEventEmitter = this.push(
+      app.createEventEmitter<FocusModelEditorEvent>(),
+    );
+    this.onFocusModelEditor = this.onFocusModelEditorEventEmitter.event;
   }
 
   public fireActiveDbChangedEvent() {
@@ -218,6 +241,19 @@ export class ModelingEvents extends DisposableObject {
     this.onInProgressMethodsChangedEventEmitter.fire({
       dbUri,
       methods,
+    });
+  }
+
+  public fireRevealInModelEditorEvent(dbUri: string, method: Method) {
+    this.onRevealInModelEditorEventEmitter.fire({
+      dbUri,
+      method,
+    });
+  }
+
+  public fireFocusModelEditorEvent(dbUri: string) {
+    this.onFocusModelEditorEventEmitter.fire({
+      dbUri,
     });
   }
 }

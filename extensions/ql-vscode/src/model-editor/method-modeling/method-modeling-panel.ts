@@ -4,7 +4,6 @@ import { DisposableObject } from "../../common/disposable-object";
 import { MethodModelingViewProvider } from "./method-modeling-view-provider";
 import { Method } from "../method";
 import { ModelingStore } from "../modeling-store";
-import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
 import { ModelingEvents } from "../modeling-events";
@@ -16,7 +15,6 @@ export class MethodModelingPanel extends DisposableObject {
     app: App,
     modelingStore: ModelingStore,
     modelingEvents: ModelingEvents,
-    editorViewTracker: ModelEditorViewTracker,
   ) {
     super();
 
@@ -29,7 +27,6 @@ export class MethodModelingPanel extends DisposableObject {
       app,
       modelingStore,
       modelingEvents,
-      editorViewTracker,
       modelConfig,
     );
     this.push(

@@ -10,7 +10,6 @@ import { Method } from "../method";
 import { ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
-import { ModelEditorViewTracker } from "../model-editor-view-tracker";
 import { ModelConfigListener } from "../../config";
 import { DatabaseItem } from "../../databases/local-databases";
 import { ModelingEvents } from "../modeling-events";
@@ -33,7 +32,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     app: App,
     private readonly modelingStore: ModelingStore,
     private readonly modelingEvents: ModelingEvents,
-    private readonly editorViewTracker: ModelEditorViewTracker,
     private readonly modelConfig: ModelConfigListener,
   ) {
     super(app, "method-modeling");
@@ -158,10 +156,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       return;
     }
 
-    const view = this.editorViewTracker.getView(
+    this.modelingEvents.fireRevealInModelEditorEvent(
       this.databaseItem.databaseUri.toString(),
+      method,
     );
-    await view?.revealMethod(method);
   }
 
   private registerToModelingEvents(): void {
