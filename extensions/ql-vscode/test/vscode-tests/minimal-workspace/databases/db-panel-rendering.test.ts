@@ -186,7 +186,7 @@ describe("db panel rendering nodes", () => {
                 dateAdded: 1668428293677,
                 language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db1/",
-                source: {
+                origin: {
                   type: "folder",
                 },
               },
@@ -195,7 +195,7 @@ describe("db panel rendering nodes", () => {
                 dateAdded: 1668428472731,
                 language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db2/",
-                source: {
+                origin: {
                   type: "folder",
                 },
               },
@@ -209,7 +209,7 @@ describe("db panel rendering nodes", () => {
                 dateAdded: 1668428472731,
                 language: "ruby",
                 storagePath: "/path/to/db3/",
-                source: {
+                origin: {
                   type: "folder",
                 },
               },
@@ -247,7 +247,7 @@ describe("db panel rendering nodes", () => {
           language: QueryLanguage.Cpp,
           storagePath: "/path/to/db1/",
           selected: false,
-          source: {
+          origin: {
             type: "folder",
           },
         },
@@ -258,7 +258,7 @@ describe("db panel rendering nodes", () => {
           language: QueryLanguage.Cpp,
           storagePath: "/path/to/db2/",
           selected: false,
-          source: {
+          origin: {
             type: "folder",
           },
         },
@@ -271,7 +271,7 @@ describe("db panel rendering nodes", () => {
           language: "ruby",
           storagePath: "/path/to/db3/",
           selected: false,
-          source: {
+          origin: {
             type: "folder",
           },
         },
@@ -286,7 +286,7 @@ describe("db panel rendering nodes", () => {
             dateAdded: 1668428293677,
             language: "csharp",
             storagePath: "/path/to/db1/",
-            source: {
+            origin: {
               type: "folder",
             },
           },
@@ -295,7 +295,7 @@ describe("db panel rendering nodes", () => {
             dateAdded: 1668428472731,
             language: "go",
             storagePath: "/path/to/db2/",
-            source: {
+            origin: {
               type: "folder",
             },
           },
@@ -330,7 +330,7 @@ describe("db panel rendering nodes", () => {
         language: "csharp",
         storagePath: "/path/to/db1/",
         selected: false,
-        source: {
+        origin: {
           type: "folder",
         },
       });
@@ -341,7 +341,7 @@ describe("db panel rendering nodes", () => {
         language: "go",
         storagePath: "/path/to/db2/",
         selected: false,
-        source: {
+        origin: {
           type: "folder",
         },
       });

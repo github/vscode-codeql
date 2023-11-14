@@ -33,7 +33,7 @@ import { allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
-import { DatabaseSource } from "./local-databases/database-source";
+import { DatabaseOrigin } from "./local-databases/database-origin";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -296,7 +296,7 @@ export async function importArchiveDatabase(
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  * @param nameOverride a name for the database that overrides the default
- * @param source the source of the database
+ * @param origin the origin of the database
  * @param progress callback to send progress messages to
  * @param makeSelected make the new database selected in the databases panel (default: true)
  * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
@@ -307,7 +307,7 @@ async function databaseArchiveFetcher(
   databaseManager: DatabaseManager,
   storagePath: string,
   nameOverride: string | undefined,
-  source: DatabaseSource,
+  origin: DatabaseOrigin,
   progress: ProgressCallback,
   cli?: CodeQLCliServer,
   makeSelected = true,
@@ -352,7 +352,7 @@ async function databaseArchiveFetcher(
 
     const item = await databaseManager.openDatabase(
       Uri.file(dbPath),
-      source,
+      origin,
       makeSelected,
       nameOverride,
       {

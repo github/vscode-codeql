@@ -34,7 +34,7 @@ import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import { LanguageContextStore } from "../../language-context-store";
-import { DatabaseSource } from "./database-source";
+import { DatabaseOrigin } from "./database-origin";
 
 /**
  * The name of the key in the workspaceState dictionary in which we
@@ -132,7 +132,7 @@ export class DatabaseManager extends DisposableObject {
    */
   public async openDatabase(
     uri: vscode.Uri,
-    source: DatabaseSource | undefined,
+    origin: DatabaseOrigin | undefined,
     makeSelected = true,
     displayName?: string,
     {
@@ -142,7 +142,7 @@ export class DatabaseManager extends DisposableObject {
   ): Promise<DatabaseItem> {
     const databaseItem = await this.createDatabaseItem(
       uri,
-      source,
+      origin,
       displayName,
     );
 
@@ -195,7 +195,7 @@ export class DatabaseManager extends DisposableObject {
    */
   private async createDatabaseItem(
     uri: vscode.Uri,
-    source: DatabaseSource | undefined,
+    origin: DatabaseOrigin | undefined,
     displayName: string | undefined,
   ): Promise<DatabaseItemImpl> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
@@ -204,7 +204,7 @@ export class DatabaseManager extends DisposableObject {
       displayName,
       dateAdded: Date.now(),
       language: await this.getPrimaryLanguage(uri.fsPath),
-      source,
+      origin,
     };
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions);
 
@@ -220,7 +220,7 @@ export class DatabaseManager extends DisposableObject {
    */
   public async createOrOpenDatabaseItem(
     uri: vscode.Uri,
-    source: DatabaseSource | undefined,
+    origin: DatabaseOrigin | undefined,
   ): Promise<DatabaseItem> {
     const existingItem = this.findDatabaseItem(uri);
     if (existingItem !== undefined) {
@@ -229,7 +229,7 @@ export class DatabaseManager extends DisposableObject {
     }
 
     // We don't add this to the list automatically, but the user can add it later.
-    return this.createDatabaseItem(uri, source, undefined);
+    return this.createDatabaseItem(uri, origin, undefined);
   }
 
   public async createSkeletonPacks(databaseItem: DatabaseItem) {
@@ -364,7 +364,7 @@ export class DatabaseManager extends DisposableObject {
     let displayName: string | undefined = undefined;
     let dateAdded = undefined;
     let language = undefined;
-    let source = undefined;
+    let origin = undefined;
     if (state.options) {
       if (typeof state.options.displayName === "string") {
         displayName = state.options.displayName;
@@ -373,7 +373,7 @@ export class DatabaseManager extends DisposableObject {
         dateAdded = state.options.dateAdded;
       }
       language = state.options.language;
-      source = state.options.source;
+      origin = state.options.origin;
     }
 
     const dbBaseUri = vscode.Uri.parse(state.uri, true);
@@ -386,7 +386,7 @@ export class DatabaseManager extends DisposableObject {
       displayName,
       dateAdded,
       language,
-      source,
+      origin,
     };
     const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions);
 

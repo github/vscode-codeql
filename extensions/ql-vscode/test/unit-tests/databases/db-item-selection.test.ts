@@ -57,7 +57,7 @@ describe("db item selection", () => {
       dateAdded: 1234,
       language: "javascript",
       storagePath: "/foo/bar",
-      source: {
+      origin: {
         type: "folder",
       },
       selected: true,

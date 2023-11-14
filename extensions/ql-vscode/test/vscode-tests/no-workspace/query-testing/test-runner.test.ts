@@ -41,7 +41,7 @@ describe("test-runner", () => {
     undefined,
     mockedObject<FullDatabaseOptions>({
       displayName: "custom display name",
-      source: { type: "folder" },
+      origin: { type: "folder" },
     }),
   );
   const postTestDatabaseItem = new DatabaseItemImpl(
@@ -49,7 +49,7 @@ describe("test-runner", () => {
     undefined,
     mockedObject<FullDatabaseOptions>({
       displayName: "default name",
-      source: { type: "folder" },
+      origin: { type: "folder" },
     }),
   );
 
@@ -166,7 +166,7 @@ describe("test-runner", () => {
     expect(openDatabaseSpy).toBeCalledTimes(1);
     expect(openDatabaseSpy).toBeCalledWith(
       preTestDatabaseItem.databaseUri,
-      preTestDatabaseItem.source,
+      preTestDatabaseItem.origin,
       false,
     );
 

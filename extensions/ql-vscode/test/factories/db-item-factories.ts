@@ -12,7 +12,7 @@ import {
   RootLocalDbItem,
   RootRemoteDbItem,
 } from "../../src/databases/db-item";
-import { DatabaseSource } from "../../src/databases/local-databases/database-source";
+import { DatabaseOrigin } from "../../src/databases/local-databases/database-origin";
 
 // Root Remote Db Items
 export function createRootRemoteDbItem({
@@ -125,7 +125,7 @@ export function createLocalDatabaseDbItem({
   language = `language${faker.number.int()}`,
   storagePath = `storagePath${faker.number.int()}`,
   selected = false,
-  source = {
+  origin = {
     type: "folder",
   },
 }: {
@@ -134,7 +134,7 @@ export function createLocalDatabaseDbItem({
   language?: string;
   storagePath?: string;
   selected?: boolean;
-  source?: DatabaseSource;
+  origin?: DatabaseOrigin;
 } = {}): LocalDatabaseDbItem {
   return {
     kind: DbItemKind.LocalDatabase,
@@ -143,7 +143,7 @@ export function createLocalDatabaseDbItem({
     dateAdded,
     language,
     storagePath,
-    source,
+    origin,
   };
 }
 

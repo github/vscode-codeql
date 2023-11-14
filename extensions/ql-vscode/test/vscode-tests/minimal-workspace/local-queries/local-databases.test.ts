@@ -597,7 +597,7 @@ describe("local databases", () => {
       const options: FullDatabaseOptions = {
         dateAdded: 123,
         language,
-        source: {
+        origin: {
           type: "folder",
         },
       };
@@ -723,7 +723,7 @@ describe("local databases", () => {
     it("should resolve the database contents", async () => {
       await databaseManager.openDatabase(
         mockDbItem.databaseUri,
-        mockDbItem.source,
+        mockDbItem.origin,
       );
 
       expect(resolveDatabaseContentsSpy).toBeCalledTimes(2);
@@ -732,7 +732,7 @@ describe("local databases", () => {
     it("should set the database as the currently selected one", async () => {
       await databaseManager.openDatabase(
         mockDbItem.databaseUri,
-        mockDbItem.source,
+        mockDbItem.origin,
       );
 
       expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
@@ -741,7 +741,7 @@ describe("local databases", () => {
     it("should add database source archive folder", async () => {
       await databaseManager.openDatabase(
         mockDbItem.databaseUri,
-        mockDbItem.source,
+        mockDbItem.origin,
       );
 
       expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(1);
@@ -758,7 +758,7 @@ describe("local databases", () => {
 
           await databaseManager.openDatabase(
             mockDbItem.databaseUri,
-            mockDbItem.source,
+            mockDbItem.origin,
             makeSelected,
             nameOverride,
             { isTutorialDatabase },
@@ -774,7 +774,7 @@ describe("local databases", () => {
 
           await databaseManager.openDatabase(
             mockDbItem.databaseUri,
-            mockDbItem.source,
+            mockDbItem.origin,
           );
 
           expect(createSkeletonPacksSpy).toBeCalledTimes(1);
@@ -788,7 +788,7 @@ describe("local databases", () => {
 
         await databaseManager.openDatabase(
           mockDbItem.databaseUri,
-          mockDbItem.source,
+          mockDbItem.origin,
         );
         expect(createSkeletonPacksSpy).toBeCalledTimes(0);
       });

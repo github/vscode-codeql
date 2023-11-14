@@ -1,7 +1,7 @@
 // Contains models and consts for the data we want to store in the database config.
 // Changes to these models should be done carefully and account for backwards compatibility of data.
 
-import { DatabaseSource } from "../local-databases/database-source";
+import { DatabaseOrigin } from "../local-databases/database-origin";
 
 export const DB_CONFIG_VERSION = 1;
 
@@ -90,7 +90,7 @@ export interface LocalDatabase {
   name: string;
   dateAdded: number;
   language: string;
-  source: DatabaseSource;
+  origin: DatabaseOrigin;
   storagePath: string;
 }
 

@@ -2,7 +2,7 @@ import vscode from "vscode";
 import * as cli from "../../codeql-cli/cli";
 import { DatabaseContents } from "./database-contents";
 import { DatabaseOptions } from "./database-options";
-import { DatabaseSource } from "./database-source";
+import { DatabaseOrigin } from "./database-origin";
 
 /** An item in the list of available databases */
 export interface DatabaseItem {
@@ -27,9 +27,9 @@ export interface DatabaseItem {
   readonly dateAdded: number | undefined;
 
   /**
-   * The source this database item was added from or undefined if unknown.
+   * The origin this database item was retrieved from or undefined if unknown.
    */
-  readonly source: DatabaseSource | undefined;
+  readonly origin: DatabaseOrigin | undefined;
 
   /** If the database is invalid, describes why. */
   readonly error: Error | undefined;

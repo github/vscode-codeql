@@ -337,7 +337,7 @@ describe("db tree creator", () => {
                 dateAdded: 1668428293677,
                 language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db1/",
-                source: {
+                origin: {
                   type: "folder",
                 },
               },
@@ -346,7 +346,7 @@ describe("db tree creator", () => {
                 dateAdded: 1668428472731,
                 language: "cpp",
                 storagePath: "/path/to/db2/",
-                source: {
+                origin: {
                   type: "folder",
                 },
               },
@@ -360,7 +360,7 @@ describe("db tree creator", () => {
                 dateAdded: 1668428472731,
                 language: "ruby",
                 storagePath: "/path/to/db3/",
-                source: {
+                origin: {
                   type: "folder",
                 },
               },
@@ -389,7 +389,7 @@ describe("db tree creator", () => {
           databaseName: db.name,
           dateAdded: db.dateAdded,
           language: db.language,
-          source: db.source,
+          origin: db.origin,
           storagePath: db.storagePath,
           parentListName: dbConfig.databases.local.lists[0].name,
         })),
@@ -405,7 +405,7 @@ describe("db tree creator", () => {
           databaseName: db.name,
           dateAdded: db.dateAdded,
           language: db.language,
-          source: db.source,
+          origin: db.origin,
           storagePath: db.storagePath,
           parentListName: dbConfig.databases.local.lists[1].name,
         })),
@@ -420,7 +420,7 @@ describe("db tree creator", () => {
             dateAdded: 1668428293677,
             language: "csharp",
             storagePath: "/path/to/db1/",
-            source: {
+            origin: {
               type: "folder",
             },
           },
@@ -429,7 +429,7 @@ describe("db tree creator", () => {
             dateAdded: 1668428472731,
             language: "go",
             storagePath: "/path/to/db2/",
-            source: {
+            origin: {
               type: "folder",
             },
           },
@@ -451,7 +451,7 @@ describe("db tree creator", () => {
         databaseName: dbConfig.databases.local.databases[0].name,
         dateAdded: dbConfig.databases.local.databases[0].dateAdded,
         language: dbConfig.databases.local.databases[0].language,
-        source: dbConfig.databases.local.databases[0].source,
+        origin: dbConfig.databases.local.databases[0].origin,
         storagePath: dbConfig.databases.local.databases[0].storagePath,
       });
       expect(localDatabaseNodes[1]).toEqual({
@@ -460,7 +460,7 @@ describe("db tree creator", () => {
         databaseName: dbConfig.databases.local.databases[1].name,
         dateAdded: dbConfig.databases.local.databases[1].dateAdded,
         language: dbConfig.databases.local.databases[1].language,
-        source: dbConfig.databases.local.databases[1].source,
+        origin: dbConfig.databases.local.databases[1].origin,
         storagePath: dbConfig.databases.local.databases[1].storagePath,
       });
     });

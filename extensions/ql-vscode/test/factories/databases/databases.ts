@@ -11,7 +11,7 @@ export function mockDbOptions(): FullDatabaseOptions {
   return {
     dateAdded: 123,
     language: "",
-    source: {
+    origin: {
       type: "folder",
     },
   };
