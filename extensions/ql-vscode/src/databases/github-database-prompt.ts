@@ -30,20 +30,13 @@ export async function findGitHubDatabasesForRepository(
 }
 
 /**
- * Prompt the user to download a database from GitHub. This is a blocking method, so this should
- * almost never be called with `await`.
+ * Ask whether the user wants to download a database from GitHub.
+ * @return true if the user wants to download a database, false otherwise.
  */
-export async function promptGitHubDatabaseDownload(
-  octokit: Octokit,
-  owner: string,
-  repo: string,
+export async function askForGitHubDatabaseDownload(
   databases: CodeqlDatabase[],
   config: GitHubDatabaseConfig,
-  databaseManager: DatabaseManager,
-  storagePath: string,
-  cliServer: CodeQLCliServer,
-  commandManager: AppCommandManager,
-): Promise<void> {
+): Promise<boolean> {
   const languages = databases.map((database) => database.language);
 
   const databasesMessage =
@@ -57,25 +50,44 @@ export async function promptGitHubDatabaseDownload(
 
   const connectMessage =
     databases.length === 1
-      ? `Connect to GitHub and download the existing database?`
-      : `Connect to GitHub and download any existing databases?`;
+      ? `Download the existing database from GitHub?`
+      : `Download any existing databases from GitHub?`;
 
   const answer = await showNeverAskAgainDialog(
     `${databasesMessage} ${connectMessage}`,
     false,
-    "Connect",
+    "Download",
     "Not now",
     "Never",
   );
 
   if (answer === "Not now" || answer === undefined) {
-    return;
+    return false;
   }
 
   if (answer === "Never") {
     await config.setDownload("never");
-    return;
+    return false;
   }
+
+  return true;
+}
+
+/**
+ * Download a database from GitHub by asking the user for a language and then
+ * downloading the database for that language.
+ */
+export async function downloadDatabaseFromGitHub(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  databases: CodeqlDatabase[],
+  databaseManager: DatabaseManager,
+  storagePath: string,
+  cliServer: CodeQLCliServer,
+  commandManager: AppCommandManager,
+): Promise<void> {
+  const languages = databases.map((database) => database.language);
 
   const language = await promptForLanguage(languages, undefined);
   if (!language) {
