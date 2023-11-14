@@ -3,10 +3,7 @@ import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 import { Octokit } from "@octokit/rest";
 import { showNeverAskAgainDialog } from "../common/vscode/dialog";
 import { getLanguageDisplayName } from "../common/query-language";
-import {
-  downloadGitHubDatabaseFromUrl,
-  promptForLanguage,
-} from "./database-fetcher";
+import { downloadGitHubDatabaseFromUrl } from "./database-fetcher";
 import { withProgress } from "../common/vscode/progress";
 import { DatabaseManager } from "./local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -77,38 +74,46 @@ export async function promptGitHubDatabaseDownload(
     return;
   }
 
-  const language = await promptForLanguage(languages, undefined);
-  if (!language) {
+  const selectedDatabases = await promptForDatabases(databases);
+  if (selectedDatabases.length === 0) {
     return;
   }
 
-  const database = databases.find((database) => database.language === language);
-  if (!database) {
-    return;
-  }
+  await Promise.all(
+    selectedDatabases.map((database) =>
+      withProgress(
+        async (progress) => {
+          await downloadGitHubDatabaseFromUrl(
+            database.url,
+            database.id,
+            database.created_at,
+            database.commit_oid ?? null,
+            owner,
+            repo,
+            octokit,
+            progress,
+            databaseManager,
+            storagePath,
+            cliServer,
+            true,
+            false,
+          );
 
-  await withProgress(async (progress) => {
-    await downloadGitHubDatabaseFromUrl(
-      database.url,
-      database.id,
-      database.created_at,
-      database.commit_oid ?? null,
-      owner,
-      repo,
-      octokit,
-      progress,
-      databaseManager,
-      storagePath,
-      cliServer,
-      true,
-      false,
-    );
-
-    await commandManager.execute("codeQLDatabases.focus");
-    void window.showInformationMessage(
-      `Downloaded ${getLanguageDisplayName(language)} database from GitHub.`,
-    );
-  });
+          await commandManager.execute("codeQLDatabases.focus");
+          void window.showInformationMessage(
+            `Downloaded ${getLanguageDisplayName(
+              database.language,
+            )} database from GitHub.`,
+          );
+        },
+        {
+          title: `Adding ${getLanguageDisplayName(
+            database.language,
+          )} database from GitHub`,
+        },
+      ),
+    ),
+  );
 }
 
 /**
@@ -134,4 +139,35 @@ function joinLanguages(languages: string[]): string {
   }
 
   return result;
+}
+
+async function promptForDatabases(
+  databases: CodeqlDatabase[],
+): Promise<CodeqlDatabase[]> {
+  if (databases.length === 1) {
+    return databases;
+  }
+
+  const items = databases
+    .map((database) => {
+      const bytesToDisplayMB = `${(database.size / (1024 * 1024)).toFixed(
+        1,
+      )} MB`;
+
+      return {
+        label: getLanguageDisplayName(database.language),
+        description: bytesToDisplayMB,
+        database,
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const selectedItems = await window.showQuickPick(items, {
+    title: "Select databases to download",
+    placeHolder: "Databases found in this repository",
+    ignoreFocusOut: true,
+    canPickMany: true,
+  });
+
+  return selectedItems?.map((selectedItem) => selectedItem.database) ?? [];
 }
