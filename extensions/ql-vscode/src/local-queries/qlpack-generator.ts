@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "fs-extra";
+import { mkdir, pathExists, writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { dirname, join } from "path";
 import { Uri } from "vscode";
@@ -76,7 +76,10 @@ export class QlPackGenerator {
   }
 
   private async createWorkspaceFolder() {
-    await mkdir(this.folderUri.fsPath);
+    const folderExists = await pathExists(this.folderUri.fsPath);
+    if (!folderExists) {
+      await mkdir(this.folderUri.fsPath);
+    }
   }
 
   private async createQlPackYaml() {

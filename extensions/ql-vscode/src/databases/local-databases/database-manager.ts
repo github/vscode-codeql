@@ -116,7 +116,7 @@ export class DatabaseManager extends DisposableObject {
       this.languageContext.onLanguageContextChanged(async () => {
         if (
           this.currentDatabaseItem !== undefined &&
-          !this.languageContext.isSelectedLanguage(
+          !this.languageContext.shouldInclude(
             tryGetQueryLanguage(this.currentDatabaseItem.language),
           )
         ) {
