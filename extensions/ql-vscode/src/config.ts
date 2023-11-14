@@ -641,12 +641,21 @@ export function isCodespacesTemplate() {
   return !!CODESPACES_TEMPLATE.getValue<boolean>();
 }
 
-const DATABASE_DOWNLOAD_SETTING = new Setting("databaseDownload", ROOT_SETTING);
+const ADDING_DATABASES_SETTING = new Setting("addingDatabases", ROOT_SETTING);
 
-const ALLOW_HTTP_SETTING = new Setting("allowHttp", DATABASE_DOWNLOAD_SETTING);
+const ALLOW_HTTP_SETTING = new Setting("allowHttp", ADDING_DATABASES_SETTING);
 
 export function allowHttp(): boolean {
   return ALLOW_HTTP_SETTING.getValue<boolean>() || false;
+}
+
+const ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING = new Setting(
+  "addDatabaseSourceToWorkspace",
+  ADDING_DATABASES_SETTING,
+);
+
+export function addDatabaseSourceToWorkspace(): boolean {
+  return ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING.getValue<boolean>() || false;
 }
 
 /**

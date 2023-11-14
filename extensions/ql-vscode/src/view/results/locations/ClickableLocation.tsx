@@ -9,7 +9,6 @@ interface Props {
   loc: ResolvableLocationValue;
   label: string;
   databaseUri: string;
-  title?: string;
   onClick?: () => void;
 }
 
@@ -24,7 +23,6 @@ export function ClickableLocation({
   loc,
   label,
   databaseUri,
-  title,
   onClick: onClick,
 }: Props): JSX.Element {
   const handleClick = useCallback(

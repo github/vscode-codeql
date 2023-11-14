@@ -15,7 +15,6 @@ export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
   "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
 
 export type ModeledMethodDataGridProps = {
-  packageName: string;
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
@@ -27,7 +26,6 @@ export type ModeledMethodDataGridProps = {
 };
 
 export const ModeledMethodDataGrid = ({
-  packageName,
   methods,
   modeledMethodsMap,
   modifiedSignatures,
@@ -81,24 +79,22 @@ export const ModeledMethodDataGrid = ({
               <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
             </DataGridCell>
           )}
-          {methodsWithModelability.map(
-            ({ method, methodCanBeModeled }, index) => {
-              const modeledMethods = modeledMethodsMap[method.signature] ?? [];
-              return (
-                <MethodRow
-                  key={method.signature}
-                  method={method}
-                  methodCanBeModeled={methodCanBeModeled}
-                  modeledMethods={modeledMethods}
-                  methodIsUnsaved={modifiedSignatures.has(method.signature)}
-                  modelingInProgress={inProgressMethods.has(method.signature)}
-                  viewState={viewState}
-                  revealedMethodSignature={revealedMethodSignature}
-                  onChange={onChange}
-                />
-              );
-            },
-          )}
+          {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
+            const modeledMethods = modeledMethodsMap[method.signature] ?? [];
+            return (
+              <MethodRow
+                key={method.signature}
+                method={method}
+                methodCanBeModeled={methodCanBeModeled}
+                modeledMethods={modeledMethods}
+                methodIsUnsaved={modifiedSignatures.has(method.signature)}
+                modelingInProgress={inProgressMethods.has(method.signature)}
+                viewState={viewState}
+                revealedMethodSignature={revealedMethodSignature}
+                onChange={onChange}
+              />
+            );
+          })}
         </>
       )}
       <HiddenMethodsRow

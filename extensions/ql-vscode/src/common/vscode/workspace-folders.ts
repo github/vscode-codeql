@@ -43,7 +43,9 @@ export function getFirstWorkspaceFolder() {
   const workspaceFolders = getOnDiskWorkspaceFolders();
 
   if (!workspaceFolders || workspaceFolders.length === 0) {
-    throw new Error("No workspace folders found");
+    throw new Error(
+      "No workspace folders found. Please open a folder or workspace in VS Code.",
+    );
   }
 
   const firstFolderFsPath = workspaceFolders[0];

@@ -7,6 +7,7 @@ import { QueryRunner } from "../../query-server";
 import * as cli from "../../codeql-cli/cli";
 import { ProgressCallback, withProgress } from "../../common/vscode/progress";
 import {
+  addDatabaseSourceToWorkspace,
   getAutogenerateQlPacks,
   isCodespacesTemplate,
   setAutogenerateQlPacks,
@@ -137,7 +138,7 @@ export class DatabaseManager extends DisposableObject {
     displayName?: string,
     {
       isTutorialDatabase = false,
-      addSourceArchiveFolder = true,
+      addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
     }: OpenDatabaseOptions = {},
   ): Promise<DatabaseItem> {
     const databaseItem = await this.createDatabaseItem(
@@ -164,7 +165,7 @@ export class DatabaseManager extends DisposableObject {
     databaseItem: DatabaseItemImpl,
     makeSelected: boolean,
     isTutorialDatabase?: boolean,
-    addSourceArchiveFolder = true,
+    addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
   ): Promise<DatabaseItem> {
     const existingItem = this.findDatabaseItem(databaseItem.databaseUri);
     if (existingItem !== undefined) {
@@ -274,7 +275,7 @@ export class DatabaseManager extends DisposableObject {
       `We've noticed you don't have a CodeQL pack available to analyze this database. Can we set up a query pack for you?`,
     );
 
-    if (answer === "No") {
+    if (answer === "No" || answer === undefined) {
       return;
     }
 
