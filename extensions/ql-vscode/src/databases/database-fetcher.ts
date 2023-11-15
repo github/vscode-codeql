@@ -204,7 +204,8 @@ export async function downloadGitHubDatabase(
     return;
   }
 
-  const { databaseUrl, name, owner, commitOid } = result;
+  const { databaseUrl, name, owner, databaseId, databaseCreatedAt, commitOid } =
+    result;
 
   /**
    * The 'token' property of the token object returned by `octokit.auth()`.
@@ -229,6 +230,8 @@ export async function downloadGitHubDatabase(
     {
       type: "github",
       repository: nwo,
+      databaseId,
+      databaseCreatedAt,
       commitOid,
     },
     progress,
@@ -550,6 +553,8 @@ export async function convertGithubNwoToDatabaseUrl(
       databaseUrl: string;
       owner: string;
       name: string;
+      databaseId: number;
+      databaseCreatedAt: string;
       commitOid: string | null;
     }
   | undefined
@@ -582,6 +587,8 @@ export async function convertGithubNwoToDatabaseUrl(
       databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
       owner,
       name: repo,
+      databaseId: databaseForLanguage.id,
+      databaseCreatedAt: databaseForLanguage.created_at,
       commitOid: databaseForLanguage.commit_oid,
     };
   } catch (e) {

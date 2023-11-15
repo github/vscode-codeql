@@ -10,6 +10,8 @@ interface DatabaseOriginArchive {
 interface DatabaseOriginGitHub {
   type: "github";
   repository: string;
+  databaseId: number;
+  databaseCreatedAt: string;
   commitOid: string | null;
 }
 
