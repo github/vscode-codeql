@@ -8,7 +8,11 @@ import {
   findDirWithFile,
 } from "../../../../src/databases/database-fetcher";
 import * as Octokit from "@octokit/rest";
-import { mockedQuickPickItem } from "../../utils/mocking.helpers";
+import {
+  mockedObject,
+  mockedOctokitFunction,
+  mockedQuickPickItem,
+} from "../../utils/mocking.helpers";
 
 // These tests make API calls and may need extra time to complete.
 jest.setTimeout(10000);
@@ -18,10 +22,17 @@ describe("database-fetcher", () => {
     let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
 
     const progressSpy = jest.fn();
-    const mockRequest = jest.fn();
-    const octokit: Octokit.Octokit = {
-      request: mockRequest,
-    } as unknown as Octokit.Octokit;
+    const mockListCodeqlDatabases = mockedOctokitFunction<
+      "codeScanning",
+      "listCodeqlDatabases"
+    >();
+    const octokit = mockedObject<Octokit.Octokit>({
+      rest: {
+        codeScanning: {
+          listCodeqlDatabases: mockListCodeqlDatabases,
+        },
+      },
+    });
 
     // We can't make the real octokit request (since we need credentials), so we mock the response.
     const successfullMockApiResponse = {
@@ -72,7 +83,7 @@ describe("database-fetcher", () => {
     });
 
     it("should convert a GitHub nwo to a database url", async () => {
-      mockRequest.mockResolvedValue(successfullMockApiResponse);
+      mockListCodeqlDatabases.mockResolvedValue(successfullMockApiResponse);
       quickPickSpy.mockResolvedValue(
         mockedQuickPickItem({
           label: "JavaScript",
@@ -93,7 +104,7 @@ describe("database-fetcher", () => {
       const { databaseUrl, name, owner } = result;
 
       expect(databaseUrl).toBe(
-        "https://api.github.com/repos/github/codeql/code-scanning/codeql/databases/javascript",
+        "https://api.github.com/repositories/143040428/code-scanning/codeql/databases/javascript",
       );
       expect(name).toBe("codeql");
       expect(owner).toBe("github");
@@ -128,7 +139,7 @@ describe("database-fetcher", () => {
         },
         status: 404,
       };
-      mockRequest.mockResolvedValue(mockApiResponse);
+      mockListCodeqlDatabases.mockResolvedValue(mockApiResponse);
       const githubRepo = "foo/bar-not-real";
       await expect(
         convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy),
@@ -142,7 +153,7 @@ describe("database-fetcher", () => {
         data: [],
       };
 
-      mockRequest.mockResolvedValue(mockApiResponse);
+      mockListCodeqlDatabases.mockResolvedValue(mockApiResponse);
       const githubRepo = "foo/bar-with-no-dbs";
       await expect(
         convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy),
@@ -153,7 +164,7 @@ describe("database-fetcher", () => {
     describe("when language is already provided", () => {
       describe("when language is valid", () => {
         it("should not prompt the user", async () => {
-          mockRequest.mockResolvedValue(successfullMockApiResponse);
+          mockListCodeqlDatabases.mockResolvedValue(successfullMockApiResponse);
           const githubRepo = "github/codeql";
           await convertGithubNwoToDatabaseUrl(
             githubRepo,
@@ -167,7 +178,7 @@ describe("database-fetcher", () => {
 
       describe("when language is invalid", () => {
         it("should prompt for language", async () => {
-          mockRequest.mockResolvedValue(successfullMockApiResponse);
+          mockListCodeqlDatabases.mockResolvedValue(successfullMockApiResponse);
           const githubRepo = "github/codeql";
           await convertGithubNwoToDatabaseUrl(
             githubRepo,
@@ -182,7 +193,7 @@ describe("database-fetcher", () => {
 
     describe("when language is not provided", () => {
       it("should prompt for language", async () => {
-        mockRequest.mockResolvedValue(successfullMockApiResponse);
+        mockListCodeqlDatabases.mockResolvedValue(successfullMockApiResponse);
         const githubRepo = "github/codeql";
         await convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy);
         expect(quickPickSpy).toHaveBeenCalled();

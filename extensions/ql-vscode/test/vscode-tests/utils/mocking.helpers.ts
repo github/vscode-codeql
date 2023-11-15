@@ -1,5 +1,6 @@
 import type { QuickPickItem, window, Uri } from "vscode";
 import { DatabaseItem } from "../../../src/databases/local-databases";
+import * as Octokit from "@octokit/rest";
 
 export type DeepPartial<T> = T extends object
   ? {
@@ -55,6 +56,14 @@ export function mockedObject<T extends object>(
       throw new Error(`Method ${String(prop)} not mocked`);
     },
   });
+}
+
+export function mockedOctokitFunction<
+  Namespace extends keyof Octokit.Octokit["rest"],
+  Name extends keyof Octokit.Octokit["rest"][Namespace],
+>(): Octokit.Octokit["rest"][Namespace][Name] & jest.Mock {
+  const fn = jest.fn();
+  return fn as unknown as Octokit.Octokit["rest"][Namespace][Name] & jest.Mock;
 }
 
 export function mockDatabaseItem(

@@ -562,10 +562,10 @@ export async function convertGithubNwoToDatabaseUrl(
   try {
     const [owner, repo] = nwo.split("/");
 
-    const response = await octokit.request(
-      "GET /repos/:owner/:repo/code-scanning/codeql/databases",
-      { owner, repo },
-    );
+    const response = await octokit.rest.codeScanning.listCodeqlDatabases({
+      owner,
+      repo,
+    });
 
     const languages = response.data.map((db: any) => db.language);
 
@@ -584,12 +584,12 @@ export async function convertGithubNwoToDatabaseUrl(
     }
 
     return {
-      databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
+      databaseUrl: databaseForLanguage.url,
       owner,
       name: repo,
       databaseId: databaseForLanguage.id,
       databaseCreatedAt: databaseForLanguage.created_at,
-      commitOid: databaseForLanguage.commit_oid,
+      commitOid: databaseForLanguage.commit_oid ?? null,
     };
   } catch (e) {
     void extLogger.log(`Error: ${getErrorMessage(e)}`);
