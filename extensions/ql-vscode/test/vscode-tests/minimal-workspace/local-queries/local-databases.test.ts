@@ -597,6 +597,9 @@ describe("local databases", () => {
       const options: FullDatabaseOptions = {
         dateAdded: 123,
         language,
+        origin: {
+          type: "folder",
+        },
       };
       mockDbItem = createMockDB(dir, options);
 
@@ -728,13 +731,19 @@ describe("local databases", () => {
     });
 
     it("should resolve the database contents", async () => {
-      await databaseManager.openDatabase(mockDbItem.databaseUri);
+      await databaseManager.openDatabase(
+        mockDbItem.databaseUri,
+        mockDbItem.origin,
+      );
 
       expect(resolveDatabaseContentsSpy).toBeCalledTimes(2);
     });
 
     it("should set the database as the currently selected one", async () => {
-      await databaseManager.openDatabase(mockDbItem.databaseUri);
+      await databaseManager.openDatabase(
+        mockDbItem.databaseUri,
+        mockDbItem.origin,
+      );
 
       expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
     });
@@ -742,7 +751,10 @@ describe("local databases", () => {
     it("should not add database source archive folder when `codeQL.addingDatabases.addDatabaseSourceToWorkspace` is `false`", async () => {
       jest.spyOn(config, "addDatabaseSourceToWorkspace").mockReturnValue(false);
 
-      await databaseManager.openDatabase(mockDbItem.databaseUri);
+      await databaseManager.openDatabase(
+        mockDbItem.databaseUri,
+        mockDbItem.origin,
+      );
 
       expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(0);
     });
@@ -750,7 +762,10 @@ describe("local databases", () => {
     it("should add database source archive folder when `codeQL.addingDatabases.addDatabaseSourceToWorkspace` is `true`", async () => {
       jest.spyOn(config, "addDatabaseSourceToWorkspace").mockReturnValue(true);
 
-      await databaseManager.openDatabase(mockDbItem.databaseUri);
+      await databaseManager.openDatabase(
+        mockDbItem.databaseUri,
+        mockDbItem.origin,
+      );
 
       expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(1);
     });
@@ -766,6 +781,7 @@ describe("local databases", () => {
 
           await databaseManager.openDatabase(
             mockDbItem.databaseUri,
+            mockDbItem.origin,
             makeSelected,
             nameOverride,
             { isTutorialDatabase },
@@ -779,7 +795,10 @@ describe("local databases", () => {
         it("should create a skeleton QL pack", async () => {
           jest.spyOn(config, "isCodespacesTemplate").mockReturnValue(true);
 
-          await databaseManager.openDatabase(mockDbItem.databaseUri);
+          await databaseManager.openDatabase(
+            mockDbItem.databaseUri,
+            mockDbItem.origin,
+          );
 
           expect(createSkeletonPacksSpy).toBeCalledTimes(1);
         });
@@ -790,7 +809,10 @@ describe("local databases", () => {
       it("should not create a skeleton QL pack", async () => {
         jest.spyOn(config, "isCodespacesTemplate").mockReturnValue(false);
 
-        await databaseManager.openDatabase(mockDbItem.databaseUri);
+        await databaseManager.openDatabase(
+          mockDbItem.databaseUri,
+          mockDbItem.origin,
+        );
         expect(createSkeletonPacksSpy).toBeCalledTimes(0);
       });
     });

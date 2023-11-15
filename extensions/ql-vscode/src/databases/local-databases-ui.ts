@@ -367,6 +367,9 @@ export class DatabaseUI extends DisposableObject {
 
               await this.databaseManager.openDatabase(
                 uri,
+                {
+                  type: "folder",
+                },
                 makeSelected,
                 nameOverride,
                 {
@@ -704,7 +707,9 @@ export class DatabaseUI extends DisposableObject {
               this.queryServer?.cliServer,
             );
           } else {
-            await this.databaseManager.openDatabase(uri);
+            await this.databaseManager.openDatabase(uri, {
+              type: "folder",
+            });
           }
         } catch (e) {
           // rethrow and let this be handled by default error handling.
@@ -819,7 +824,9 @@ export class DatabaseUI extends DisposableObject {
         if (byFolder) {
           const fixedUri = await this.fixDbUri(uri);
           // we are selecting a database folder
-          return await this.databaseManager.openDatabase(fixedUri);
+          return await this.databaseManager.openDatabase(fixedUri, {
+            type: "folder",
+          });
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area
           // before importing.

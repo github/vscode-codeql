@@ -14,6 +14,7 @@ import { isLikelyDatabaseRoot } from "./db-contents-heuristics";
 import { stat } from "fs-extra";
 import { containsPath, pathsEqual } from "../../common/files";
 import { DatabaseContents } from "./database-contents";
+import { DatabaseOrigin } from "./database-origin";
 
 export class DatabaseItemImpl implements DatabaseItem {
   // These are only public in the implementation, they are readonly in the interface
@@ -59,6 +60,10 @@ export class DatabaseItemImpl implements DatabaseItem {
 
   public get dateAdded(): number | undefined {
     return this.options.dateAdded;
+  }
+
+  public get origin(): DatabaseOrigin | undefined {
+    return this.options.origin;
   }
 
   public resolveSourceFile(uriStr: string | undefined): vscode.Uri {

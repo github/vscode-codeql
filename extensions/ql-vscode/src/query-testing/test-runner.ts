@@ -103,6 +103,7 @@ export class TestRunner extends DisposableObject {
         try {
           const reopenedDatabase = await this.databaseManager.openDatabase(
             uri,
+            closedDatabase.origin,
             false,
           );
           await this.databaseManager.renameDatabaseItem(
