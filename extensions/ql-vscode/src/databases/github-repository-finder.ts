@@ -9,22 +9,33 @@ import { ValueResult } from "../common/value-result";
 
 // Based on https://github.com/microsoft/sarif-vscode-extension/blob/a1740e766122c1759d9f39d580c18b82d9e0dea4/src/extension/index.activateGithubAnalyses.ts
 
-async function getGitExtensionAPI(): Promise<GitExtensionAPI | undefined> {
-  const gitExtension =
-    extensions.getExtension<GitExtension>("vscode.git")?.exports;
+async function getGitExtensionAPI(): Promise<
+  ValueResult<GitExtensionAPI, string>
+> {
+  const gitExtension = extensions.getExtension<GitExtension>("vscode.git");
   if (!gitExtension) {
-    return undefined;
+    return ValueResult.fail(["Git extension not found"]);
   }
 
-  const git = gitExtension.getAPI(1);
+  if (!gitExtension.isActive) {
+    await gitExtension.activate();
+  }
+
+  const gitExtensionExports = gitExtension.exports;
+
+  if (!gitExtensionExports.enabled) {
+    return ValueResult.fail(["Git extension is not enabled"]);
+  }
+
+  const git = gitExtensionExports.getAPI(1);
   if (git.state === "initialized") {
-    return git;
+    return ValueResult.ok(git);
   }
 
   return new Promise((resolve) => {
     git.onDidChangeState((state) => {
       if (state === "initialized") {
-        resolve(git);
+        resolve(ValueResult.ok(git));
       }
     });
   });
@@ -118,10 +129,12 @@ function findGitHubRepositoryForRemote(remoteUrl: string):
 export async function findGitHubRepositoryForWorkspace(): Promise<
   ValueResult<{ owner: string; name: string }, string>
 > {
-  const git = await getGitExtensionAPI();
-  if (!git) {
-    return ValueResult.fail(["Git extension is not installed or initialized"]);
+  const gitResult = await getGitExtensionAPI();
+  if (gitResult.isFailure) {
+    return ValueResult.fail(gitResult.errors);
   }
+
+  const git = gitResult.value;
 
   const primaryWorkspaceFolder = getOnDiskWorkspaceFoldersObjects()[0]?.uri;
   if (!primaryWorkspaceFolder) {
