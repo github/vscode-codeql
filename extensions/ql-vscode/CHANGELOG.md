@@ -2,6 +2,11 @@
 
 ## [UNRELEASED]
 
+- Add new CodeQL views for managing databases and queries:
+  1. A queries panel, to create and run queries in one place.
+  2. A language selector, to quickly determine the language compatibility of databases and queries.
+  
+  For more information, see the [documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/analyzing-your-projects/#filtering-databases-and-queries-by-language).
 - When adding a CodeQL database, we no longer add the database source folder to the workspace by default (since this caused bugs in single-folder workspaces). [#3047](https://github.com/github/vscode-codeql/pull/3047)
   - You can manually add individual database source folders to the workspace with the "Add Database Source to Workspace" right-click command in the databases view.
   - To restore the old behavior of adding all database source folders by default, set the `codeQL.addingDatabases.addDatabaseSourceToWorkspace` setting to `true`.

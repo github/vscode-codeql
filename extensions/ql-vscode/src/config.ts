@@ -710,15 +710,6 @@ export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
   );
 }
 
-/**
- * A flag indicating whether to show the queries panel in the QL view container.
- */
-const QUERIES_PANEL = new Setting("queriesPanel", ROOT_SETTING);
-
-export function showQueriesPanel(): boolean {
-  return !!QUERIES_PANEL.getValue<boolean>();
-}
-
 const MODEL_SETTING = new Setting("model", ROOT_SETTING);
 const FLOW_GENERATION = new Setting("flowGeneration", MODEL_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
