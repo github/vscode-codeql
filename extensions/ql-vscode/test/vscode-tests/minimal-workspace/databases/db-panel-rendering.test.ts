@@ -186,12 +186,18 @@ describe("db panel rendering nodes", () => {
                 dateAdded: 1668428293677,
                 language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db1/",
+                origin: {
+                  type: "folder",
+                },
               },
               {
                 name: "db2",
                 dateAdded: 1668428472731,
                 language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db2/",
+                origin: {
+                  type: "folder",
+                },
               },
             ],
           },
@@ -203,6 +209,9 @@ describe("db panel rendering nodes", () => {
                 dateAdded: 1668428472731,
                 language: "ruby",
                 storagePath: "/path/to/db3/",
+                origin: {
+                  type: "folder",
+                },
               },
             ],
           },
@@ -238,6 +247,9 @@ describe("db panel rendering nodes", () => {
           language: QueryLanguage.Cpp,
           storagePath: "/path/to/db1/",
           selected: false,
+          origin: {
+            type: "folder",
+          },
         },
         {
           kind: DbItemKind.LocalDatabase,
@@ -246,6 +258,9 @@ describe("db panel rendering nodes", () => {
           language: QueryLanguage.Cpp,
           storagePath: "/path/to/db2/",
           selected: false,
+          origin: {
+            type: "folder",
+          },
         },
       ]);
       checkLocalListItem(localListItems[1], "my-list-2", [
@@ -256,6 +271,9 @@ describe("db panel rendering nodes", () => {
           language: "ruby",
           storagePath: "/path/to/db3/",
           selected: false,
+          origin: {
+            type: "folder",
+          },
         },
       ]);
     });
@@ -268,12 +286,18 @@ describe("db panel rendering nodes", () => {
             dateAdded: 1668428293677,
             language: "csharp",
             storagePath: "/path/to/db1/",
+            origin: {
+              type: "folder",
+            },
           },
           {
             name: "db2",
             dateAdded: 1668428472731,
             language: "go",
             storagePath: "/path/to/db2/",
+            origin: {
+              type: "folder",
+            },
           },
         ],
       });
@@ -306,6 +330,9 @@ describe("db panel rendering nodes", () => {
         language: "csharp",
         storagePath: "/path/to/db1/",
         selected: false,
+        origin: {
+          type: "folder",
+        },
       });
       checkLocalDatabaseItem(localDatabaseItems[1], {
         kind: DbItemKind.LocalDatabase,
@@ -314,6 +341,9 @@ describe("db panel rendering nodes", () => {
         language: "go",
         storagePath: "/path/to/db2/",
         selected: false,
+        origin: {
+          type: "folder",
+        },
       });
     });
   });

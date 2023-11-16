@@ -641,12 +641,32 @@ export function isCodespacesTemplate() {
   return !!CODESPACES_TEMPLATE.getValue<boolean>();
 }
 
+// Deprecated after v1.9.4. Can be removed in a few versions.
 const DATABASE_DOWNLOAD_SETTING = new Setting("databaseDownload", ROOT_SETTING);
+const DEPRECATED_ALLOW_HTTP_SETTING = new Setting(
+  "allowHttp",
+  DATABASE_DOWNLOAD_SETTING,
+);
 
-const ALLOW_HTTP_SETTING = new Setting("allowHttp", DATABASE_DOWNLOAD_SETTING);
+const ADDING_DATABASES_SETTING = new Setting("addingDatabases", ROOT_SETTING);
+
+const ALLOW_HTTP_SETTING = new Setting("allowHttp", ADDING_DATABASES_SETTING);
 
 export function allowHttp(): boolean {
-  return ALLOW_HTTP_SETTING.getValue<boolean>() || false;
+  return (
+    ALLOW_HTTP_SETTING.getValue<boolean>() ||
+    DEPRECATED_ALLOW_HTTP_SETTING.getValue<boolean>() ||
+    false
+  );
+}
+
+const ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING = new Setting(
+  "addDatabaseSourceToWorkspace",
+  ADDING_DATABASES_SETTING,
+);
+
+export function addDatabaseSourceToWorkspace(): boolean {
+  return ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING.getValue<boolean>() || false;
 }
 
 /**
@@ -688,15 +708,6 @@ export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
     choice,
     ConfigurationTarget.Workspace,
   );
-}
-
-/**
- * A flag indicating whether to show the queries panel in the QL view container.
- */
-const QUERIES_PANEL = new Setting("queriesPanel", ROOT_SETTING);
-
-export function showQueriesPanel(): boolean {
-  return !!QUERIES_PANEL.getValue<boolean>();
 }
 
 const MODEL_SETTING = new Setting("model", ROOT_SETTING);

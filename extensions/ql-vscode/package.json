@@ -374,13 +374,23 @@
       },
       {
         "type": "object",
-        "title": "Downloading databases",
+        "title": "Adding databases",
         "order": 6,
         "properties": {
-          "codeQL.databaseDownload.allowHttp": {
+          "codeQL.addingDatabases.allowHttp": {
             "type": "boolean",
             "default": false,
-            "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+            "description": "Allow databases to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+          },
+          "codeQL.databaseDownload.allowHttp": {
+            "type": "boolean",
+            "markdownDeprecationMessage": "**Deprecated**: Please use `#codeQL.addingDatabases.allowHttp#` instead.",
+            "deprecationMessage": "Deprecated: Please use codeQL.addingDatabases.allowHttp instead."
+          },
+          "codeQL.addingDatabases.addDatabaseSourceToWorkspace": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "When adding a CodeQL database, automatically add the database's source folder as a workspace folder. Warning: enabling this option in a single-folder workspace will cause the workspace to reload as a [multi-root workspace](https://code.visualstudio.com/docs/editor/multi-root-workspaces). This may cause query history and database lists to be reset."
           }
         }
       },
@@ -1679,10 +1689,6 @@
           "when": "config.codeQL.mockGitHubApiServer.enabled && codeQL.mockGitHubApiServer.scenarioLoaded"
         },
         {
-          "command": "codeQL.createQuery",
-          "when": "config.codeQL.codespacesTemplate || config.codeQL.canary && config.codeQL.queriesPanel"
-        },
-        {
           "command": "codeQLTests.acceptOutputContextTestItem",
           "when": "false"
         },
@@ -1766,8 +1772,7 @@
       "ql-container": [
         {
           "id": "codeQLLanguageSelection",
-          "name": "Language",
-          "when": "config.codeQL.canary && config.codeQL.showLanguageFilter"
+          "name": "Language"
         },
         {
           "id": "codeQLDatabases",
@@ -1775,8 +1780,7 @@
         },
         {
           "id": "codeQLQueries",
-          "name": "Queries",
-          "when": "config.codeQL.canary && config.codeQL.queriesPanel"
+          "name": "Queries"
         },
         {
           "id": "codeQLVariantAnalysisRepositories",

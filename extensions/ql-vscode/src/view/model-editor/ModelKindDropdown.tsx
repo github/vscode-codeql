@@ -5,6 +5,7 @@ import {
   ModeledMethodKind,
   modeledMethodSupportsKind,
   isModelAccepted,
+  calculateNewProvenance,
 } from "../../model-editor/modeled-method";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { QueryLanguage } from "../../common/query-language";
@@ -52,6 +53,7 @@ export const ModelKindDropdown = ({
 
       onChange({
         ...modeledMethod,
+        provenance: calculateNewProvenance(modeledMethod),
         kind,
       });
     },

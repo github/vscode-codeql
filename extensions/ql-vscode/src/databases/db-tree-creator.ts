@@ -197,6 +197,7 @@ function createLocalDb(
     databaseName: db.name,
     dateAdded: db.dateAdded,
     language: db.language,
+    origin: db.origin,
     storagePath: db.storagePath,
     selected: !!selected,
     parentListName: listName,

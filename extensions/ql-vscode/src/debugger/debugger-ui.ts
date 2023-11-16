@@ -105,7 +105,9 @@ class QLDebugAdapterTracker
     body: CodeQLProtocol.EvaluationStartedEvent["body"],
   ): Promise<void> {
     const dbUri = Uri.file(this.configuration.database);
-    const dbItem = await this.dbm.createOrOpenDatabaseItem(dbUri);
+    const dbItem = await this.dbm.createOrOpenDatabaseItem(dbUri, {
+      type: "debugger",
+    });
 
     // When cancellation is requested from the query history view, we just stop the debug session.
     const tokenSource = new CancellationTokenSource();

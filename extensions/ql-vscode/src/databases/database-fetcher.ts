@@ -29,10 +29,11 @@ import {
 } from "../common/github-url-identifier-helper";
 import { Credentials } from "../common/authentication";
 import { AppCommandManager } from "../common/commands";
-import { allowHttp } from "../config";
+import { addDatabaseSourceToWorkspace, allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
+import { DatabaseOrigin } from "./local-databases/database-origin";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -62,6 +63,10 @@ export async function promptImportInternetDatabase(
     databaseManager,
     storagePath,
     undefined,
+    {
+      type: "url",
+      url: databaseUrl,
+    },
     progress,
     cli,
   );
@@ -99,7 +104,7 @@ export async function promptImportGithubDatabase(
   cli?: CodeQLCliServer,
   language?: string,
   makeSelected = true,
-  addSourceArchiveFolder = true,
+  addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
 ): Promise<DatabaseItem | undefined> {
   const githubRepo = await askForGitHubRepo(progress);
   if (!githubRepo) {
@@ -178,7 +183,7 @@ export async function downloadGitHubDatabase(
   cli?: CodeQLCliServer,
   language?: string,
   makeSelected = true,
-  addSourceArchiveFolder = true,
+  addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
 ): Promise<DatabaseItem | undefined> {
   const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
   if (!isValidGitHubNwo(nwo)) {
@@ -199,7 +204,8 @@ export async function downloadGitHubDatabase(
     return;
   }
 
-  const { databaseUrl, name, owner } = result;
+  const { databaseUrl, name, owner, databaseId, databaseCreatedAt, commitOid } =
+    result;
 
   /**
    * The 'token' property of the token object returned by `octokit.auth()`.
@@ -221,6 +227,13 @@ export async function downloadGitHubDatabase(
     databaseManager,
     storagePath,
     `${owner}/${name}`,
+    {
+      type: "github",
+      repository: nwo,
+      databaseId,
+      databaseCreatedAt,
+      commitOid,
+    },
     progress,
     cli,
     makeSelected,
@@ -250,6 +263,10 @@ export async function importArchiveDatabase(
       databaseManager,
       storagePath,
       undefined,
+      {
+        type: "archive",
+        path: databaseUrl,
+      },
       progress,
       cli,
     );
@@ -282,6 +299,7 @@ export async function importArchiveDatabase(
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  * @param nameOverride a name for the database that overrides the default
+ * @param origin the origin of the database
  * @param progress callback to send progress messages to
  * @param makeSelected make the new database selected in the databases panel (default: true)
  * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
@@ -292,10 +310,11 @@ async function databaseArchiveFetcher(
   databaseManager: DatabaseManager,
   storagePath: string,
   nameOverride: string | undefined,
+  origin: DatabaseOrigin,
   progress: ProgressCallback,
   cli?: CodeQLCliServer,
   makeSelected = true,
-  addSourceArchiveFolder = true,
+  addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
 ): Promise<DatabaseItem> {
   progress({
     message: "Getting database",
@@ -336,6 +355,7 @@ async function databaseArchiveFetcher(
 
     const item = await databaseManager.openDatabase(
       Uri.file(dbPath),
+      origin,
       makeSelected,
       nameOverride,
       {
@@ -476,7 +496,7 @@ async function checkForFailingResponse(
     return response;
   }
 
-  // An error downloading the database. Attempt to extract the resaon behind it.
+  // An error downloading the database. Attempt to extract the reason behind it.
   const text = await response.text();
   let msg: string;
   try {
@@ -533,16 +553,19 @@ export async function convertGithubNwoToDatabaseUrl(
       databaseUrl: string;
       owner: string;
       name: string;
+      databaseId: number;
+      databaseCreatedAt: string;
+      commitOid: string | null;
     }
   | undefined
 > {
   try {
     const [owner, repo] = nwo.split("/");
 
-    const response = await octokit.request(
-      "GET /repos/:owner/:repo/code-scanning/codeql/databases",
-      { owner, repo },
-    );
+    const response = await octokit.rest.codeScanning.listCodeqlDatabases({
+      owner,
+      repo,
+    });
 
     const languages = response.data.map((db: any) => db.language);
 
@@ -553,10 +576,20 @@ export async function convertGithubNwoToDatabaseUrl(
       }
     }
 
+    const databaseForLanguage = response.data.find(
+      (db: any) => db.language === language,
+    );
+    if (!databaseForLanguage) {
+      throw new Error(`No database found for language '${language}'`);
+    }
+
     return {
-      databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
+      databaseUrl: databaseForLanguage.url,
       owner,
       name: repo,
+      databaseId: databaseForLanguage.id,
+      databaseCreatedAt: databaseForLanguage.created_at,
+      commitOid: databaseForLanguage.commit_oid ?? null,
     };
   } catch (e) {
     void extLogger.log(`Error: ${getErrorMessage(e)}`);
