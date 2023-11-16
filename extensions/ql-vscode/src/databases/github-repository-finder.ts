@@ -39,9 +39,24 @@ async function findRepositoryForWorkspaceFolder(
   );
 }
 
+/**
+ * Finds the primary remote fetch URL for a repository.
+ *
+ * The priority is:
+ * 1. The remote associated with the current branch
+ * 2. The remote named "origin"
+ * 3. The first remote
+ *
+ * If none of these are found, undefined is returned.
+ *
+ * @param repository The repository to find the remote for.
+ */
 async function findRemote(repository: Repository): Promise<string | undefined> {
   // Try to retrieve the remote 5 times with a 5 second delay between each attempt.
-  // This is to account for the case where the Git extension is still initializing.
+  // This is to account for the case where the Git extension has not yet retrieved
+  // the state for all Git repositories.
+  // This can happen on Codespaces where the Git extension is initialized before the
+  // filesystem is ready.
   for (let count = 0; count < 5; count++) {
     const remoteName = repository.state.HEAD?.upstream?.remote ?? "origin";
     const originRemoteUrl = repository.state.remotes.find(
@@ -56,7 +71,7 @@ async function findRemote(repository: Repository): Promise<string | undefined> {
       return firstRemoteUrl;
     }
 
-    // Wait for Git to initialize.
+    // Wait for 5 seconds before trying again.
     await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 
