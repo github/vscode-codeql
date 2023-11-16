@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.10.0 - 16 November 2023
 
 - Add new CodeQL views for managing databases and queries:
