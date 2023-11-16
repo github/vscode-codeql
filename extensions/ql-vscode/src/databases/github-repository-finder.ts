@@ -60,6 +60,9 @@ async function findRepositoryForWorkspaceFolder(
  *
  * If none of these are found, undefined is returned.
  *
+ * This is just a heuristic. We may not find the correct remote in all cases,
+ * for example when the user has defined an alias in their SSH or Git config.
+ *
  * @param repository The repository to find the remote for.
  */
 async function findRemote(repository: Repository): Promise<string | undefined> {
@@ -70,13 +73,25 @@ async function findRemote(repository: Repository): Promise<string | undefined> {
   // filesystem is ready.
   for (let count = 0; count < 5; count++) {
     const remoteName = repository.state.HEAD?.upstream?.remote ?? "origin";
-    const originRemoteUrl = repository.state.remotes.find(
+    const upstreamRemoteUrl = repository.state.remotes.find(
       (remote) => remote.name === remoteName,
     )?.fetchUrl;
-    if (originRemoteUrl) {
-      return originRemoteUrl;
+    if (upstreamRemoteUrl) {
+      return upstreamRemoteUrl;
     }
 
+    if (remoteName !== "origin") {
+      const originRemoteUrl = repository.state.remotes.find(
+        (remote) => remote.name === "origin",
+      )?.fetchUrl;
+
+      if (originRemoteUrl) {
+        return originRemoteUrl;
+      }
+    }
+
+    // Maybe they have a different remote that is not named origin and is not the
+    // upstream of the current branch. If so, just select the first one.
     const firstRemoteUrl = repository.state.remotes[0]?.fetchUrl;
     if (firstRemoteUrl) {
       return firstRemoteUrl;
