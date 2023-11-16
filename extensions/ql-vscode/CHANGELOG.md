@@ -1,10 +1,10 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.10.0 - 16 November 2023
 
 - Add new CodeQL views for managing databases and queries:
-  1. A queries panel, to create and run queries in one place.
-  2. A language selector, to quickly determine the language compatibility of databases and queries.
+  1. A queries panel that shows all queries in your workspace. It allows you to view, create, and run queries in one place.
+  2. A language selector, which allows you to quickly filter databases and queries by language.
   
   For more information, see the [documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/analyzing-your-projects/#filtering-databases-and-queries-by-language).
 - When adding a CodeQL database, we no longer add the database source folder to the workspace by default (since this caused bugs in single-folder workspaces). [#3047](https://github.com/github/vscode-codeql/pull/3047)
