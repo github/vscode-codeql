@@ -31,7 +31,7 @@ export class GithubDatabaseModule extends DisposableObject {
     const githubRepositoryResult = await findGitHubRepositoryForWorkspace();
     if (githubRepositoryResult.isFailure) {
       void this.app.logger.log(
-        `Failed to find GitHub repository for workspace: ${githubRepositoryResult.errors.join(
+        `Did not find a GitHub repository for workspace: ${githubRepositoryResult.errors.join(
           ", ",
         )}`,
       );
