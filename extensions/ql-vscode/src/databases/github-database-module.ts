@@ -19,11 +19,12 @@ export class GithubDatabaseModule extends DisposableObject {
 
   private async initialize(): Promise<void> {
     void this.promptGitHubRepositoryDownload().catch((e: unknown) => {
-      this.app.telemetry?.sendError(
-        redactableError(
-          asError(e),
-        )`Failed to prompt for GitHub repository download`,
-      );
+      const error = redactableError(
+        asError(e),
+      )`Failed to prompt for GitHub repository download`;
+
+      void this.app.logger.log(error.fullMessageWithStack);
+      this.app.telemetry?.sendError(error);
     });
   }
 
