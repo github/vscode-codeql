@@ -25,12 +25,16 @@ describe("findGitHubRepositoryForWorkspace", () => {
           name: "main",
           upstream: {
             name: "origin",
-            remote: "origin",
+            remote: "fork",
           },
         },
         remotes: [
           {
             name: "origin",
+            fetchUrl: "https://github.com/codeql/test-incorrect.git",
+          },
+          {
+            name: "fork",
             fetchUrl: "https://github.com/codeql/test.git",
           },
         ],
@@ -60,7 +64,9 @@ describe("findGitHubRepositoryForWorkspace", () => {
 
     getExtensionSpy.mockReturnValue(
       mockedObject<Extension<GitExtension>>({
+        isActive: true,
         exports: {
+          enabled: true,
           getAPI: getAPISpy,
         },
       }),
@@ -85,8 +91,58 @@ describe("findGitHubRepositoryForWorkspace", () => {
 
     it("returns an error", async () => {
       expect(await findGitHubRepositoryForWorkspace()).toEqual(
-        ValueResult.fail(["Git extension is not installed or initialized"]),
+        ValueResult.fail(["Git extension not found"]),
       );
+    });
+  });
+
+  describe("when the git extension is not activated", () => {
+    const activate = jest.fn();
+
+    beforeEach(() => {
+      getExtensionSpy.mockReturnValue(
+        mockedObject<Extension<GitExtension>>({
+          isActive: false,
+          activate,
+          exports: {
+            enabled: true,
+            getAPI: getAPISpy,
+          },
+        }),
+      );
+    });
+
+    it("returns the GitHub repository name with owner", async () => {
+      expect(await findGitHubRepositoryForWorkspace()).toEqual(
+        ValueResult.ok({
+          owner: "codeql",
+          name: "test",
+        }),
+      );
+
+      expect(activate).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("when the git extension is disabled by the setting", () => {
+    beforeEach(() => {
+      getExtensionSpy.mockReturnValue(
+        mockedObject<Extension<GitExtension>>({
+          isActive: true,
+          exports: {
+            enabled: false,
+            getAPI: getAPISpy,
+          },
+        }),
+      );
+    });
+
+    it("returns an error", async () => {
+      expect(await findGitHubRepositoryForWorkspace()).toEqual(
+        ValueResult.fail(["Git extension is not enabled"]),
+      );
+
+      expect(getAPISpy).not.toHaveBeenCalled();
     });
   });
 
@@ -149,7 +205,48 @@ describe("findGitHubRepositoryForWorkspace", () => {
     });
   });
 
-  describe("when the current branch does not have a remote", () => {
+  describe("when the current branch does not have a remote but origin remote exists", () => {
+    beforeEach(() => {
+      mockGitExtensionAPI = mockedObject<GitExtensionAPI>({
+        state: "initialized",
+        repositories: [
+          {
+            ...repositories[0],
+            state: {
+              ...repositories[0].state,
+              HEAD: {
+                ...repositories[0].state.HEAD,
+                upstream: undefined,
+              },
+              remotes: [
+                {
+                  name: "upstream",
+                  fetchUrl: "https://github.com/github/codeql-incorrect.git",
+                },
+                {
+                  name: "origin",
+                  fetchUrl: "https://github.com/github/codeql.git",
+                },
+              ],
+            },
+          },
+        ],
+      });
+
+      getAPISpy.mockReturnValue(mockGitExtensionAPI);
+    });
+
+    it("returns the GitHub repository name with owner", async () => {
+      expect(await findGitHubRepositoryForWorkspace()).toEqual(
+        ValueResult.ok({
+          owner: "github",
+          name: "codeql",
+        }),
+      );
+    });
+  });
+
+  describe("when the current branch does not have a remote and no origin remote", () => {
     beforeEach(() => {
       mockGitExtensionAPI = mockedObject<GitExtensionAPI>({
         state: "initialized",
@@ -166,6 +263,10 @@ describe("findGitHubRepositoryForWorkspace", () => {
                 {
                   name: "upstream",
                   fetchUrl: "https://github.com/github/codeql.git",
+                },
+                {
+                  name: "fork",
+                  fetchUrl: "https://github.com/github/codeql-incorrect.git",
                 },
               ],
             },
