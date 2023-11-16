@@ -18,6 +18,8 @@ export class GithubDatabaseModule extends DisposableObject {
   }
 
   private async initialize(): Promise<void> {
+    // Start the check and downloading the database asynchronously. We don't want to block on this
+    // in extension activation since this makes network requests and waits for user input.
     void this.promptGitHubRepositoryDownload().catch((e: unknown) => {
       const error = redactableError(
         asError(e),
