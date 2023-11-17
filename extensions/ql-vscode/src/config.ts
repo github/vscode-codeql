@@ -1,19 +1,19 @@
 import { DisposableObject } from "./common/disposable-object";
 import {
-  workspace,
+  ConfigurationChangeEvent,
+  ConfigurationScope,
+  ConfigurationTarget,
   Event,
   EventEmitter,
-  ConfigurationChangeEvent,
-  ConfigurationTarget,
-  ConfigurationScope,
+  workspace,
 } from "vscode";
 import { DistributionManager } from "./codeql-cli/distribution";
 import { extLogger } from "./common/logging/vscode";
 import { ONE_DAY_IN_MS } from "./common/time";
 import {
+  defaultFilterSortState,
   FilterKey,
   SortKey,
-  defaultFilterSortState,
 } from "./variant-analysis/shared/variant-analysis-filter-sort";
 
 export const ALL_SETTINGS: Setting[] = [];
@@ -773,5 +773,54 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
   public get enableRuby(): boolean {
     return !!ENABLE_RUBY.getValue<boolean>();
+  }
+}
+
+const GITHUB_DATABASE_SETTING = new Setting("githubDatabase", ROOT_SETTING);
+
+// Feature flag for the GitHub database downnload.
+const GITHUB_DATABASE_ENABLE = new Setting("enable", GITHUB_DATABASE_SETTING);
+const GITHUB_DATABASE_DOWNLOAD = new Setting(
+  "download",
+  GITHUB_DATABASE_SETTING,
+);
+
+const GitHubDatabaseDownloadValues = ["ask", "never"] as const;
+type GitHubDatabaseDownload = (typeof GitHubDatabaseDownloadValues)[number];
+
+export interface GitHubDatabaseConfig {
+  enable: boolean;
+  download: GitHubDatabaseDownload;
+  setDownload(
+    value: GitHubDatabaseDownload,
+    target?: ConfigurationTarget,
+  ): Promise<void>;
+}
+
+export class GitHubDatabaseConfigListener
+  extends ConfigListener
+  implements GitHubDatabaseConfig
+{
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(
+      [GITHUB_DATABASE_SETTING],
+      e,
+    );
+  }
+
+  public get enable() {
+    return !!GITHUB_DATABASE_ENABLE.getValue<boolean>();
+  }
+
+  public get download(): GitHubDatabaseDownload {
+    const value = GITHUB_DATABASE_DOWNLOAD.getValue<GitHubDatabaseDownload>();
+    return GitHubDatabaseDownloadValues.includes(value) ? value : "ask";
+  }
+
+  public async setDownload(
+    value: GitHubDatabaseDownload,
+    target: ConfigurationTarget = ConfigurationTarget.Workspace,
+  ): Promise<void> {
+    await GITHUB_DATABASE_DOWNLOAD.updateValue(value, target);
   }
 }

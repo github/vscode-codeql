@@ -207,6 +207,38 @@ export async function downloadGitHubDatabase(
   const { databaseUrl, name, owner, databaseId, databaseCreatedAt, commitOid } =
     result;
 
+  return downloadGitHubDatabaseFromUrl(
+    databaseUrl,
+    databaseId,
+    databaseCreatedAt,
+    commitOid,
+    owner,
+    name,
+    octokit,
+    progress,
+    databaseManager,
+    storagePath,
+    cli,
+    makeSelected,
+    addSourceArchiveFolder,
+  );
+}
+
+export async function downloadGitHubDatabaseFromUrl(
+  databaseUrl: string,
+  databaseId: number,
+  databaseCreatedAt: string,
+  commitOid: string | null,
+  owner: string,
+  name: string,
+  octokit: Octokit.Octokit,
+  progress: ProgressCallback,
+  databaseManager: DatabaseManager,
+  storagePath: string,
+  cli?: CodeQLCliServer,
+  makeSelected = true,
+  addSourceArchiveFolder = true,
+): Promise<DatabaseItem | undefined> {
   /**
    * The 'token' property of the token object returned by `octokit.auth()`.
    * The object is undocumented, but looks something like this:
@@ -229,7 +261,7 @@ export async function downloadGitHubDatabase(
     `${owner}/${name}`,
     {
       type: "github",
-      repository: nwo,
+      repository: `${owner}/${name}`,
       databaseId,
       databaseCreatedAt,
       commitOid,
@@ -577,7 +609,7 @@ export async function convertGithubNwoToDatabaseUrl(
     }
 
     const databaseForLanguage = response.data.find(
-      (db: any) => db.language === language,
+      (db) => db.language === language,
     );
     if (!databaseForLanguage) {
       throw new Error(`No database found for language '${language}'`);
@@ -599,9 +631,9 @@ export async function convertGithubNwoToDatabaseUrl(
 
 export async function promptForLanguage(
   languages: string[],
-  progress: ProgressCallback,
+  progress: ProgressCallback | undefined,
 ): Promise<string | undefined> {
-  progress({
+  progress?.({
     message: "Choose language",
     step: 2,
     maxStep: 2,

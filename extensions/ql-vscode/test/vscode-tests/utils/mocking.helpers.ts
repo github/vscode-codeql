@@ -53,6 +53,31 @@ export function mockedObject<T extends object>(
         return undefined;
       }
 
+      // The `$$typeof` is accessed by jest to check if the object is a React element.
+      // We don't want to throw an error when this happens.
+      if (prop === "$$typeof") {
+        return undefined;
+      }
+
+      // The `nodeType` and `tagName` are accessed by jest to check if the object is a DOM node.
+      // We don't want to throw an error when this happens.
+      if (prop === "nodeType" || prop === "tagName") {
+        return undefined;
+      }
+
+      // The `@@__IMMUTABLE_ITERABLE__@@` and variants are accessed by jest to check if the object is an
+      // immutable object (from Immutable.js).
+      // We don't want to throw an error when this happens.
+      if (prop.toString().startsWith("@@__IMMUTABLE_")) {
+        return undefined;
+      }
+
+      // The `Symbol.toStringTag` is accessed by jest.
+      // We don't want to throw an error when this happens.
+      if (prop === Symbol.toStringTag) {
+        return "MockedObject";
+      }
+
       throw new Error(`Method ${String(prop)} not mocked`);
     },
   });
