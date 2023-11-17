@@ -137,6 +137,7 @@ import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
 import { LanguageContextStore } from "./language-context-store";
 import { LanguageSelectionPanel } from "./language-selection-panel/language-selection-panel";
+import { GithubDatabaseModule } from "./databases/github-database-module";
 
 /**
  * extension.ts
@@ -869,6 +870,8 @@ async function activateWithInstalledDistribution(
       createVariantAnalysisContentProvider(variantAnalysisManager),
     ),
   );
+
+  await GithubDatabaseModule.initialize(app);
 
   void extLogger.log("Initializing query history.");
   const queryHistoryDirs: QueryHistoryDirs = {

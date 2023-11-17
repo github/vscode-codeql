@@ -21,7 +21,8 @@
     "Programming Languages"
   ],
   "extensionDependencies": [
-    "hbenl.vscode-test-explorer"
+    "hbenl.vscode-test-explorer",
+    "vscode.git"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -38,7 +39,8 @@
     "onWebviewPanel:resultsView",
     "onWebviewPanel:codeQL.variantAnalysis",
     "onWebviewPanel:codeQL.dataFlowPaths",
-    "onFileSystem:codeql-zip-archive"
+    "onFileSystem:codeql-zip-archive",
+    "workspaceContains:.git"
   ],
   "main": "./out/extension",
   "files": [
