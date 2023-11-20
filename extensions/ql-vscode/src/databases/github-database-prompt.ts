@@ -39,22 +39,17 @@ export async function askForGitHubDatabaseDownload(
 ): Promise<boolean> {
   const languages = databases.map((database) => database.language);
 
-  const databasesMessage =
+  const message =
     databases.length === 1
       ? `This repository has an origin (GitHub) that has a ${getLanguageDisplayName(
           languages[0],
-        )} CodeQL database.`
+        )} CodeQL database. Download the existing database from GitHub?`
       : `This repository has an origin (GitHub) that has ${joinLanguages(
           languages,
-        )} CodeQL databases.`;
-
-  const connectMessage =
-    databases.length === 1
-      ? `Download the existing database from GitHub?`
-      : `Download any existing databases from GitHub?`;
+        )} CodeQL databases. Download any existing databases from GitHub?`;
 
   const answer = await showNeverAskAgainDialog(
-    `${databasesMessage} ${connectMessage}`,
+    message,
     false,
     "Download",
     "Not now",

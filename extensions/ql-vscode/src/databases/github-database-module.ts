@@ -7,8 +7,8 @@ import { asError, getErrorMessage } from "../common/helpers-pure";
 import {
   askForGitHubDatabaseDownload,
   CodeqlDatabase,
-  findGitHubDatabasesForRepository,
   downloadDatabaseFromGitHub,
+  findGitHubDatabasesForRepository,
 } from "./github-database-prompt";
 import { GitHubDatabaseConfig, GitHubDatabaseConfigListener } from "../config";
 import { DatabaseManager } from "./local-databases";
