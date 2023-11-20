@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest";
 import { mockedObject } from "../../utils/mocking.helpers";
 import {
   CodeqlDatabase,
-  promptGitHubDatabaseDownload,
+  promptAndDownloadGitHubDatabase,
 } from "../../../../src/databases/github-database-prompt";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { GitHubDatabaseConfig } from "../../../../src/config";
@@ -12,7 +12,7 @@ import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 import * as databaseFetcher from "../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../src/common/vscode/dialog";
 
-describe("promptGitHubDatabaseDownload", () => {
+describe("promptAndDownloadGitHubDatabase", () => {
   let octokit: Octokit;
   const owner = "github";
   const repo = "codeql";
@@ -65,7 +65,7 @@ describe("promptGitHubDatabaseDownload", () => {
   });
 
   it("downloads the database", async () => {
-    await promptGitHubDatabaseDownload(
+    await promptAndDownloadGitHubDatabase(
       octokit,
       owner,
       repo,
@@ -103,7 +103,7 @@ describe("promptGitHubDatabaseDownload", () => {
     });
 
     it("does not download the database", async () => {
-      await promptGitHubDatabaseDownload(
+      await promptAndDownloadGitHubDatabase(
         octokit,
         owner,
         repo,
@@ -125,7 +125,7 @@ describe("promptGitHubDatabaseDownload", () => {
     });
 
     it("does not download the database", async () => {
-      await promptGitHubDatabaseDownload(
+      await promptAndDownloadGitHubDatabase(
         octokit,
         owner,
         repo,
@@ -147,7 +147,7 @@ describe("promptGitHubDatabaseDownload", () => {
     });
 
     it("does not download the database", async () => {
-      await promptGitHubDatabaseDownload(
+      await promptAndDownloadGitHubDatabase(
         octokit,
         owner,
         repo,
@@ -163,7 +163,7 @@ describe("promptGitHubDatabaseDownload", () => {
     });
 
     it('sets the config to "never"', async () => {
-      await promptGitHubDatabaseDownload(
+      await promptAndDownloadGitHubDatabase(
         octokit,
         owner,
         repo,
@@ -186,7 +186,7 @@ describe("promptGitHubDatabaseDownload", () => {
     });
 
     it("does not download the database", async () => {
-      await promptGitHubDatabaseDownload(
+      await promptAndDownloadGitHubDatabase(
         octokit,
         owner,
         repo,
@@ -229,7 +229,7 @@ describe("promptGitHubDatabaseDownload", () => {
     });
 
     it("downloads the correct database", async () => {
-      await promptGitHubDatabaseDownload(
+      await promptAndDownloadGitHubDatabase(
         octokit,
         owner,
         repo,

@@ -30,10 +30,9 @@ export async function findGitHubDatabasesForRepository(
 }
 
 /**
- * Prompt the user to download a database from GitHub. This is a blocking method, so this should
- * almost never be called with `await`.
+ * Prompt the user to download a database from GitHub and download that database.
  */
-export async function promptGitHubDatabaseDownload(
+export async function promptAndDownloadGitHubDatabase(
   octokit: Octokit,
   owner: string,
   repo: string,

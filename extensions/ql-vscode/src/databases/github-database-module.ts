@@ -6,7 +6,7 @@ import { asError, getErrorMessage } from "../common/helpers-pure";
 import {
   CodeqlDatabase,
   findGitHubDatabasesForRepository,
-  promptGitHubDatabaseDownload,
+  promptAndDownloadGitHubDatabase,
 } from "./github-database-prompt";
 import {
   GitHubDatabaseConfig,
@@ -124,7 +124,7 @@ export class GithubDatabaseModule extends DisposableObject {
       return;
     }
 
-    void promptGitHubDatabaseDownload(
+    await promptAndDownloadGitHubDatabase(
       octokit,
       githubRepository.owner,
       githubRepository.name,
