@@ -871,7 +871,12 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  await GithubDatabaseModule.initialize(app);
+  await GithubDatabaseModule.initialize(
+    app,
+    dbm,
+    getContextStoragePath(ctx),
+    cliServer,
+  );
 
   void extLogger.log("Initializing query history.");
   const queryHistoryDirs: QueryHistoryDirs = {

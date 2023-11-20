@@ -421,8 +421,33 @@
       },
       {
         "type": "object",
-        "title": "Log insights",
+        "title": "GitHub Databases",
         "order": 8,
+        "properties": {
+          "codeQL.githubDatabase.enable": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Enable automatic detection of GitHub databases."
+          },
+          "codeQL.githubDatabase.download": {
+            "type": "string",
+            "default": "ask",
+            "enum": [
+              "ask",
+              "never"
+            ],
+            "enumDescriptions": [
+              "Ask to download a GitHub database when a workspace is opened.",
+              "Never download a GitHub databases when a workspace is opened."
+            ],
+            "description": "Ask to download a GitHub database when a workspace is opened."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Log insights",
+        "order": 9,
         "properties": {
           "codeQL.logInsights.joinOrderWarningThreshold": {
             "type": "number",
@@ -436,7 +461,7 @@
       {
         "type": "object",
         "title": "Telemetry",
-        "order": 9,
+        "order": 10,
         "properties": {
           "codeQL.telemetry.enableTelemetry": {
             "type": "boolean",
