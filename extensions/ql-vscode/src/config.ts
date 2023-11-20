@@ -788,11 +788,21 @@ const GITHUB_DATABASE_DOWNLOAD = new Setting(
 const GitHubDatabaseDownloadValues = ["ask", "never"] as const;
 type GitHubDatabaseDownload = (typeof GitHubDatabaseDownloadValues)[number];
 
+const GITHUB_DATABASE_UPDATE = new Setting("update", GITHUB_DATABASE_SETTING);
+
+const GitHubDatabaseUpdateValues = ["ask", "never"] as const;
+type GitHubDatabaseUpdate = (typeof GitHubDatabaseUpdateValues)[number];
+
 export interface GitHubDatabaseConfig {
   enable: boolean;
   download: GitHubDatabaseDownload;
+  update: GitHubDatabaseUpdate;
   setDownload(
     value: GitHubDatabaseDownload,
+    target?: ConfigurationTarget,
+  ): Promise<void>;
+  setUpdate(
+    value: GitHubDatabaseUpdate,
     target?: ConfigurationTarget,
   ): Promise<void>;
 }
@@ -817,10 +827,22 @@ export class GitHubDatabaseConfigListener
     return GitHubDatabaseDownloadValues.includes(value) ? value : "ask";
   }
 
+  public get update(): GitHubDatabaseUpdate {
+    const value = GITHUB_DATABASE_UPDATE.getValue<GitHubDatabaseUpdate>();
+    return GitHubDatabaseUpdateValues.includes(value) ? value : "ask";
+  }
+
   public async setDownload(
     value: GitHubDatabaseDownload,
     target: ConfigurationTarget = ConfigurationTarget.Workspace,
   ): Promise<void> {
     await GITHUB_DATABASE_DOWNLOAD.updateValue(value, target);
+  }
+
+  public async setUpdate(
+    value: GitHubDatabaseUpdate,
+    target: ConfigurationTarget = ConfigurationTarget.Workspace,
+  ): Promise<void> {
+    await GITHUB_DATABASE_UPDATE.updateValue(value, target);
   }
 }
