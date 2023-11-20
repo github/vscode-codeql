@@ -2,23 +2,97 @@ import { faker } from "@faker-js/faker";
 import { Octokit } from "@octokit/rest";
 import { mockedObject } from "../../utils/mocking.helpers";
 import {
-  CodeqlDatabase,
-  promptAndDownloadGitHubDatabase,
-} from "../../../../src/databases/github-database-prompt";
+  askForGitHubDatabaseDownload,
+  downloadDatabaseFromGitHub,
+} from "../../../../src/databases/github-database-download";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { GitHubDatabaseConfig } from "../../../../src/config";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 import * as databaseFetcher from "../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../src/common/vscode/dialog";
+import { CodeqlDatabase } from "../../../../src/databases/github-database-api";
 
-describe("promptAndDownloadGitHubDatabase", () => {
+describe("askForGitHubDatabaseDownload", () => {
+  const setDownload = jest.fn();
+  let config: GitHubDatabaseConfig;
+
+  const databases = [
+    mockedObject<CodeqlDatabase>({
+      language: "swift",
+      url: faker.internet.url({
+        protocol: "https",
+      }),
+    }),
+  ];
+
+  let showNeverAskAgainDialogSpy: jest.SpiedFunction<
+    typeof dialog.showNeverAskAgainDialog
+  >;
+
+  beforeEach(() => {
+    config = mockedObject<GitHubDatabaseConfig>({
+      setDownload,
+    });
+
+    showNeverAskAgainDialogSpy = jest
+      .spyOn(dialog, "showNeverAskAgainDialog")
+      .mockResolvedValue("Connect");
+  });
+
+  describe("when answering not now to prompt", () => {
+    beforeEach(() => {
+      showNeverAskAgainDialogSpy.mockResolvedValue("Not now");
+    });
+
+    it("returns false", async () => {
+      expect(await askForGitHubDatabaseDownload(databases, config)).toEqual(
+        false,
+      );
+
+      expect(setDownload).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when cancelling prompt", () => {
+    beforeEach(() => {
+      showNeverAskAgainDialogSpy.mockResolvedValue(undefined);
+    });
+
+    it("returns false", async () => {
+      expect(await askForGitHubDatabaseDownload(databases, config)).toEqual(
+        false,
+      );
+
+      expect(setDownload).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when answering never to prompt", () => {
+    beforeEach(() => {
+      showNeverAskAgainDialogSpy.mockResolvedValue("Never");
+    });
+
+    it("returns false", async () => {
+      expect(await askForGitHubDatabaseDownload(databases, config)).toEqual(
+        false,
+      );
+    });
+
+    it("sets the config to never", async () => {
+      await askForGitHubDatabaseDownload(databases, config);
+
+      expect(setDownload).toHaveBeenCalledWith("never");
+    });
+  });
+});
+
+describe("downloadDatabaseFromGitHub", () => {
   let octokit: Octokit;
   const owner = "github";
   const repo = "codeql";
   let databaseManager: DatabaseManager;
-  const setDownload = jest.fn();
-  let config: GitHubDatabaseConfig;
+
   const storagePath = "/a/b/c/d";
   let cliServer: CodeQLCliServer;
   const commandManager = createMockCommandManager();
@@ -35,9 +109,6 @@ describe("promptAndDownloadGitHubDatabase", () => {
     }),
   ];
 
-  let showNeverAskAgainDialogSpy: jest.SpiedFunction<
-    typeof dialog.showNeverAskAgainDialog
-  >;
   let promptForLanguageSpy: jest.SpiedFunction<
     typeof databaseFetcher.promptForLanguage
   >;
@@ -48,14 +119,8 @@ describe("promptAndDownloadGitHubDatabase", () => {
   beforeEach(() => {
     octokit = mockedObject<Octokit>({});
     databaseManager = mockedObject<DatabaseManager>({});
-    config = mockedObject<GitHubDatabaseConfig>({
-      setDownload,
-    });
     cliServer = mockedObject<CodeQLCliServer>({});
 
-    showNeverAskAgainDialogSpy = jest
-      .spyOn(dialog, "showNeverAskAgainDialog")
-      .mockResolvedValue("Connect");
     promptForLanguageSpy = jest
       .spyOn(databaseFetcher, "promptForLanguage")
       .mockResolvedValue(databases[0].language);
@@ -65,12 +130,11 @@ describe("promptAndDownloadGitHubDatabase", () => {
   });
 
   it("downloads the database", async () => {
-    await promptAndDownloadGitHubDatabase(
+    await downloadDatabaseFromGitHub(
       octokit,
       owner,
       repo,
       databases,
-      config,
       databaseManager,
       storagePath,
       cliServer,
@@ -94,90 +158,6 @@ describe("promptAndDownloadGitHubDatabase", () => {
       false,
     );
     expect(promptForLanguageSpy).toHaveBeenCalledWith(["swift"], undefined);
-    expect(config.setDownload).not.toHaveBeenCalled();
-  });
-
-  describe("when answering not now to prompt", () => {
-    beforeEach(() => {
-      showNeverAskAgainDialogSpy.mockResolvedValue("Not now");
-    });
-
-    it("does not download the database", async () => {
-      await promptAndDownloadGitHubDatabase(
-        octokit,
-        owner,
-        repo,
-        databases,
-        config,
-        databaseManager,
-        storagePath,
-        cliServer,
-        commandManager,
-      );
-
-      expect(downloadGitHubDatabaseFromUrlSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("when cancelling prompt", () => {
-    beforeEach(() => {
-      showNeverAskAgainDialogSpy.mockResolvedValue(undefined);
-    });
-
-    it("does not download the database", async () => {
-      await promptAndDownloadGitHubDatabase(
-        octokit,
-        owner,
-        repo,
-        databases,
-        config,
-        databaseManager,
-        storagePath,
-        cliServer,
-        commandManager,
-      );
-
-      expect(downloadGitHubDatabaseFromUrlSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("when answering never to prompt", () => {
-    beforeEach(() => {
-      showNeverAskAgainDialogSpy.mockResolvedValue("Never");
-    });
-
-    it("does not download the database", async () => {
-      await promptAndDownloadGitHubDatabase(
-        octokit,
-        owner,
-        repo,
-        databases,
-        config,
-        databaseManager,
-        storagePath,
-        cliServer,
-        commandManager,
-      );
-
-      expect(downloadGitHubDatabaseFromUrlSpy).not.toHaveBeenCalled();
-    });
-
-    it('sets the config to "never"', async () => {
-      await promptAndDownloadGitHubDatabase(
-        octokit,
-        owner,
-        repo,
-        databases,
-        config,
-        databaseManager,
-        storagePath,
-        cliServer,
-        commandManager,
-      );
-
-      expect(config.setDownload).toHaveBeenCalledTimes(1);
-      expect(config.setDownload).toHaveBeenCalledWith("never");
-    });
   });
 
   describe("when not selecting language", () => {
@@ -186,12 +166,11 @@ describe("promptAndDownloadGitHubDatabase", () => {
     });
 
     it("does not download the database", async () => {
-      await promptAndDownloadGitHubDatabase(
+      await downloadDatabaseFromGitHub(
         octokit,
         owner,
         repo,
         databases,
-        config,
         databaseManager,
         storagePath,
         cliServer,
@@ -229,12 +208,11 @@ describe("promptAndDownloadGitHubDatabase", () => {
     });
 
     it("downloads the correct database", async () => {
-      await promptAndDownloadGitHubDatabase(
+      await downloadDatabaseFromGitHub(
         octokit,
         owner,
         repo,
         databases,
-        config,
         databaseManager,
         storagePath,
         cliServer,
@@ -261,7 +239,6 @@ describe("promptAndDownloadGitHubDatabase", () => {
         ["swift", "go"],
         undefined,
       );
-      expect(config.setDownload).not.toHaveBeenCalled();
     });
   });
 });
