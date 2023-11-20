@@ -1,5 +1,4 @@
 import { window } from "vscode";
-import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 import { Octokit } from "@octokit/rest";
 import { showNeverAskAgainDialog } from "../common/vscode/dialog";
 import { getLanguageDisplayName } from "../common/query-language";
@@ -12,22 +11,7 @@ import { DatabaseManager } from "./local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { AppCommandManager } from "../common/commands";
 import { GitHubDatabaseConfig } from "../config";
-
-export type CodeqlDatabase =
-  RestEndpointMethodTypes["codeScanning"]["listCodeqlDatabases"]["response"]["data"][number];
-
-export async function findGitHubDatabasesForRepository(
-  octokit: Octokit,
-  owner: string,
-  repo: string,
-): Promise<CodeqlDatabase[]> {
-  const response = await octokit.rest.codeScanning.listCodeqlDatabases({
-    owner,
-    repo,
-  });
-
-  return response.data;
-}
+import type { CodeqlDatabase } from "./github-database-api";
 
 /**
  * Ask whether the user wants to download a database from GitHub.

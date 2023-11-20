@@ -3,7 +3,6 @@ import { Octokit } from "@octokit/rest";
 import { mockedObject } from "../../utils/mocking.helpers";
 import {
   askForGitHubDatabaseDownload,
-  CodeqlDatabase,
   downloadDatabaseFromGitHub,
 } from "../../../../src/databases/github-database-download";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
@@ -12,6 +11,7 @@ import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 import * as databaseFetcher from "../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../src/common/vscode/dialog";
+import { CodeqlDatabase } from "../../../../src/databases/github-database-api";
 
 describe("askForGitHubDatabaseDownload", () => {
   const setDownload = jest.fn();

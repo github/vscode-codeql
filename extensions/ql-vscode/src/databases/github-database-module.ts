@@ -6,14 +6,12 @@ import { redactableError } from "../common/errors";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import {
   askForGitHubDatabaseDownload,
-  CodeqlDatabase,
   downloadDatabaseFromGitHub,
-  findGitHubDatabasesForRepository,
 } from "./github-database-download";
 import { GitHubDatabaseConfig, GitHubDatabaseConfigListener } from "../config";
 import { DatabaseManager } from "./local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { showNeverAskAgainDialog } from "../common/vscode/dialog";
+import { listDatabases, ListDatabasesResult } from "./github-database-api";
 
 export class GithubDatabaseModule extends DisposableObject {
   private readonly config: GitHubDatabaseConfig;
@@ -91,38 +89,13 @@ export class GithubDatabaseModule extends DisposableObject {
       return;
     }
 
-    const credentials = this.app.credentials;
-
-    const hasAccessToken = !!(await credentials.getExistingAccessToken());
-
-    // If the user does not have an access token, ask whether they want to connect.
-    if (!hasAccessToken) {
-      const answer = await showNeverAskAgainDialog(
-        "This repository has an origin (GitHub) that may have one or more CodeQL databases. Connect to GitHub and download any existing databases?",
-        false,
-        "Connect",
-        "Not now",
-        "Never",
-      );
-
-      if (answer === "Not now" || answer === undefined) {
-        return;
-      }
-
-      if (answer === "Never") {
-        await this.config.setDownload("never");
-        return;
-      }
-    }
-
-    const octokit = await credentials.getOctokit();
-
-    let databases: CodeqlDatabase[];
+    let result: ListDatabasesResult | undefined;
     try {
-      databases = await findGitHubDatabasesForRepository(
-        octokit,
+      result = await listDatabases(
         githubRepository.owner,
         githubRepository.name,
+        this.app.credentials,
+        this.config,
       );
     } catch (e) {
       this.app.telemetry?.sendError(
@@ -138,10 +111,17 @@ export class GithubDatabaseModule extends DisposableObject {
       return;
     }
 
+    // This means the user didn't want to connect, so we can just return.
+    if (result === undefined) {
+      return;
+    }
+
+    const { databases, promptedForCredentials, octokit } = result;
+
     if (databases.length === 0) {
       // If the user didn't have an access token, they have already been prompted,
       // so we should give feedback.
-      if (!hasAccessToken) {
+      if (promptedForCredentials) {
         void window.showInformationMessage(
           "The GitHub repository does not have any CodeQL databases.",
         );
@@ -151,7 +131,7 @@ export class GithubDatabaseModule extends DisposableObject {
     }
 
     // If the user already had an access token, first ask if they even want to download the DB.
-    if (hasAccessToken) {
+    if (!promptedForCredentials) {
       if (!(await askForGitHubDatabaseDownload(databases, this.config))) {
         return;
       }
