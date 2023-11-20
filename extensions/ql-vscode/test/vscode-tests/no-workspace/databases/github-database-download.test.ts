@@ -5,7 +5,7 @@ import {
   askForGitHubDatabaseDownload,
   CodeqlDatabase,
   downloadDatabaseFromGitHub,
-} from "../../../../src/databases/github-database-prompt";
+} from "../../../../src/databases/github-database-download";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { GitHubDatabaseConfig } from "../../../../src/config";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";

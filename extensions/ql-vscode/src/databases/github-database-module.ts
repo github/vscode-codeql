@@ -9,7 +9,7 @@ import {
   CodeqlDatabase,
   downloadDatabaseFromGitHub,
   findGitHubDatabasesForRepository,
-} from "./github-database-prompt";
+} from "./github-database-download";
 import { GitHubDatabaseConfig, GitHubDatabaseConfigListener } from "../config";
 import { DatabaseManager } from "./local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
