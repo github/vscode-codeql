@@ -45,22 +45,17 @@ export async function promptAndDownloadGitHubDatabase(
 ): Promise<void> {
   const languages = databases.map((database) => database.language);
 
-  const databasesMessage =
+  const message =
     databases.length === 1
       ? `This repository has an origin (GitHub) that has a ${getLanguageDisplayName(
           languages[0],
-        )} CodeQL database.`
+        )} CodeQL database. Connect to GitHub and download the existing database?`
       : `This repository has an origin (GitHub) that has ${joinLanguages(
           languages,
-        )} CodeQL databases.`;
-
-  const connectMessage =
-    databases.length === 1
-      ? `Connect to GitHub and download the existing database?`
-      : `Connect to GitHub and download any existing databases?`;
+        )} CodeQL databases. Connect to GitHub and download any existing databases?`;
 
   const answer = await showNeverAskAgainDialog(
-    `${databasesMessage} ${connectMessage}`,
+    message,
     false,
     "Connect",
     "Not now",
