@@ -635,6 +635,10 @@
         "icon": "$(new-file)"
       },
       {
+        "command": "codeQL.createQueryFromPrompt",
+        "title": "CodeQL: Create query from prompt"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open database configuration file",
         "icon": "$(json)"
@@ -1344,6 +1348,10 @@
         },
         {
           "command": "codeQLQueries.createQuery",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.createQueryFromPrompt",
           "when": "false"
         },
         {
