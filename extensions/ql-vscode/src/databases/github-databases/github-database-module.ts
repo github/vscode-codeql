@@ -1,30 +1,33 @@
 import { window } from "vscode";
-import { DisposableObject } from "../common/disposable-object";
-import { App } from "../common/app";
-import { findGitHubRepositoryForWorkspace } from "./github-repository-finder";
-import { redactableError } from "../common/errors";
-import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
+import { DisposableObject } from "../../common/disposable-object";
+import { App } from "../../common/app";
+import { findGitHubRepositoryForWorkspace } from "../github-repository-finder";
+import { redactableError } from "../../common/errors";
+import {
+  asError,
+  assertNever,
+  getErrorMessage,
+} from "../../common/helpers-pure";
 import {
   askForGitHubDatabaseDownload,
   downloadDatabaseFromGitHub,
-} from "./github-database-download";
-import { GitHubDatabaseConfig, GitHubDatabaseConfigListener } from "../config";
-import { DatabaseManager } from "./local-databases";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+} from "./download";
 import {
-  CodeqlDatabase,
-  listDatabases,
-  ListDatabasesResult,
-} from "./github-database-api";
+  GitHubDatabaseConfig,
+  GitHubDatabaseConfigListener,
+} from "../../config";
+import { DatabaseManager } from "../local-databases";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
+import { CodeqlDatabase, listDatabases, ListDatabasesResult } from "./api";
 import {
   askForGitHubDatabaseUpdate,
   DatabaseUpdate,
   downloadDatabaseUpdateFromGitHub,
   isNewerDatabaseAvailable,
-} from "./github-database-updates";
+} from "./updates";
 import { Octokit } from "@octokit/rest";
 
-export class GithubDatabaseModule extends DisposableObject {
+export class GitHubDatabaseModule extends DisposableObject {
   private readonly config: GitHubDatabaseConfig;
 
   private constructor(
@@ -43,8 +46,8 @@ export class GithubDatabaseModule extends DisposableObject {
     databaseManager: DatabaseManager,
     databaseStoragePath: string,
     cliServer: CodeQLCliServer,
-  ): Promise<GithubDatabaseModule> {
-    const githubDatabaseModule = new GithubDatabaseModule(
+  ): Promise<GitHubDatabaseModule> {
+    const githubDatabaseModule = new GitHubDatabaseModule(
       app,
       databaseManager,
       databaseStoragePath,

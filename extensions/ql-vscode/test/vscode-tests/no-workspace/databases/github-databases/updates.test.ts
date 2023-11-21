@@ -5,20 +5,20 @@ import {
   mockDatabaseItem,
   mockedObject,
   mockedQuickPickItem,
-} from "../../utils/mocking.helpers";
-import { CodeqlDatabase } from "../../../../src/databases/github-database-api";
-import { DatabaseManager } from "../../../../src/databases/local-databases";
-import { GitHubDatabaseConfig } from "../../../../src/config";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import * as databaseFetcher from "../../../../src/databases/database-fetcher";
-import * as dialog from "../../../../src/common/vscode/dialog";
+} from "../../../utils/mocking.helpers";
+import { CodeqlDatabase } from "../../../../../src/databases/github-databases/api";
+import { DatabaseManager } from "../../../../../src/databases/local-databases";
+import { GitHubDatabaseConfig } from "../../../../../src/config";
+import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
+import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
+import * as databaseFetcher from "../../../../../src/databases/database-fetcher";
+import * as dialog from "../../../../../src/common/vscode/dialog";
 import {
   DatabaseUpdate,
   askForGitHubDatabaseUpdate,
   downloadDatabaseUpdateFromGitHub,
   isNewerDatabaseAvailable,
-} from "../../../../src/databases/github-database-updates";
+} from "../../../../../src/databases/github-databases/updates";
 
 describe("isNewerDatabaseAvailable", () => {
   const owner = "github";

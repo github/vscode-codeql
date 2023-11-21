@@ -1,10 +1,10 @@
 import { RequestError } from "@octokit/request-error";
 import { Octokit } from "@octokit/rest";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
-import { showNeverAskAgainDialog } from "../common/vscode/dialog";
-import { GitHubDatabaseConfig } from "../config";
-import { Credentials } from "../common/authentication";
-import { AppOctokit } from "../common/octokit";
+import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
+import { GitHubDatabaseConfig } from "../../config";
+import { Credentials } from "../../common/authentication";
+import { AppOctokit } from "../../common/octokit";
 
 export type CodeqlDatabase =
   RestEndpointMethodTypes["codeScanning"]["listCodeqlDatabases"]["response"]["data"][number];
