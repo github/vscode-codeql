@@ -119,7 +119,7 @@ export class LocalQueries extends DisposableObject {
         return this.getCurrentQuery(true);
       },
       "codeQL.createQuery": this.createSkeletonQuery.bind(this),
-      "codeQL.createQueryFromPrompt": this.createSkeletonQuery.bind(this),
+      "codeQLQuickQuery.createQuery": this.createSkeletonQuery.bind(this),
     };
   }
 

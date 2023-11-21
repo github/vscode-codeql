@@ -41,6 +41,7 @@ describe("commands declared in package.json", () => {
       command.match(/^codeQLLanguageSelection\./) ||
       command.match(/^codeQLDatabases\./) ||
       command.match(/^codeQLQueries\./) ||
+      command.match(/^codeQLQuickQuery\./) ||
       command.match(/^codeQLVariantAnalysisRepositories\./) ||
       command.match(/^codeQLQueryHistory\./) ||
       command.match(/^codeQLAstViewer\./) ||
@@ -114,7 +115,7 @@ describe("commands declared in package.json", () => {
       expect(disabledInPalette.has(command)).toBe(false);
     });
 
-    // Commands in contribContextMenuCmds may reasonbly be enabled or
+    // Commands in contribContextMenuCmds may reasonably be enabled or
     // disabled in the command palette; for example, codeQL.runQuery
     // is available there, since we heuristically figure out which
     // query to run, but codeQL.setCurrentDatabase is not.

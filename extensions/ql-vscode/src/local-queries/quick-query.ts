@@ -96,7 +96,7 @@ export async function displayQuickQuery(
         updateQuickQueryDir(queriesDir, workspaceFolders.length, 0);
       }
       if (quickQueryPrompt === createQueryOption) {
-        await app.queryServerCommands.execute("codeQL.createQueryFromPrompt");
+        await app.queryServerCommands.execute("codeQLQuickQuery.createQuery");
       }
       return;
     }

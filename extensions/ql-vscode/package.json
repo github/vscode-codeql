@@ -635,8 +635,8 @@
         "icon": "$(new-file)"
       },
       {
-        "command": "codeQL.createQueryFromPrompt",
-        "title": "CodeQL: Create query from prompt"
+        "command": "codeQLQuickQuery.createQuery",
+        "title": "Create query from prompt"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
@@ -1351,7 +1351,7 @@
           "when": "false"
         },
         {
-          "command": "codeQL.createQueryFromPrompt",
+          "command": "codeQLQuickQuery.createQuery",
           "when": "false"
         },
         {

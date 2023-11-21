@@ -146,7 +146,7 @@ export type LocalQueryCommands = {
   "codeQL.quickQuery": () => Promise<void>;
   "codeQL.getCurrentQuery": () => Promise<string>;
   "codeQL.createQuery": () => Promise<void>;
-  "codeQL.createQueryFromPrompt": () => Promise<void>;
+  "codeQLQuickQuery.createQuery": () => Promise<void>;
 };
 
 // Debugger commands
