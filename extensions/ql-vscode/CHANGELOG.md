@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add a prompt to the "Quick query" command to encourage users in single-folder workspaces to use "Create query" instead. [#3082](https://github.com/github/vscode-codeql/pull/3082)
+
 ## 1.10.0 - 16 November 2023
 
 - Add new CodeQL views for managing databases and queries:

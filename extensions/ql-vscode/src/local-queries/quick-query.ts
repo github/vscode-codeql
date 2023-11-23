@@ -5,7 +5,6 @@ import { CancellationToken, window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseUI } from "../databases/local-databases-ui";
-import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getInitialQueryContents } from "./query-contents";
 import { getPrimaryDbscheme, getQlPackForDbscheme } from "../databases/qlpack";
 import {
@@ -15,6 +14,7 @@ import {
 import { getErrorMessage } from "../common/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "../common/ql";
 import { App } from "../common/app";
+import { ExtensionApp } from "../common/vscode/vscode-app";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";
@@ -52,7 +52,7 @@ function findExistingQuickQueryEditor() {
  * Show a buffer the user can enter a simple query into.
  */
 export async function displayQuickQuery(
-  app: App,
+  app: ExtensionApp,
   cliServer: CodeQLCliServer,
   databaseUI: DatabaseUI,
   progress: ProgressCallback,
@@ -80,11 +80,23 @@ export async function displayQuickQuery(
     // being undefined) just let the user know that they're in for a
     // restart.
     if (workspace.workspaceFile === undefined) {
-      const makeMultiRoot = await showBinaryChoiceDialog(
-        "Quick query requires multiple folders in the workspace. Reload workspace as multi-folder workspace?",
+      const createQueryOption = 'Run "Create query"';
+      const quickQueryOption = 'Run "Quick query" anyway';
+      const quickQueryPrompt = await Window.showWarningMessage(
+        '"Quick query" requires reloading your workspace as a multi-root workspace, which may cause query history and databases to be lost.',
+        {
+          modal: true,
+          detail:
+            'The "Create query" command does not require reloading the workspace.',
+        },
+        createQueryOption,
+        quickQueryOption,
       );
-      if (makeMultiRoot) {
+      if (quickQueryPrompt === quickQueryOption) {
         updateQuickQueryDir(queriesDir, workspaceFolders.length, 0);
+      }
+      if (quickQueryPrompt === createQueryOption) {
+        await app.queryServerCommands.execute("codeQLQuickQuery.createQuery");
       }
       return;
     }
