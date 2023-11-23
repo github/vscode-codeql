@@ -34,6 +34,11 @@ type DatabaseUpdateStatus =
   | DatabaseUpdateStatusUpToDate
   | DatabaseUpdateStatusNoDatabase;
 
+/**
+ * Check whether a newer database is available for the given repository. Databases are considered updated if:
+ * - They have a different commit OID, or
+ * - They have the same commit OID, but the remote database was created after the local database.
+ */
 export function isNewerDatabaseAvailable(
   databases: CodeqlDatabase[],
   owner: string,
@@ -78,12 +83,16 @@ export function isNewerDatabaseAvailable(
         return null;
       }
 
-      // We only consider databases to be updated if they have a different `commit_oid` than the
-      // one we have stored. If they have the same `commit_oid`, then they are the same database.
-      // This means that older databases which do not have a `commit_oid` (`null`) are always
-      // considered up-to-date.
+      // If they are not equal, we assume that the remote database is newer.
       if (matchingDatabase.commit_oid === origin.commitOid) {
-        return null;
+        const remoteDatabaseCreatedAt = new Date(matchingDatabase.created_at);
+        const localDatabaseCreatedAt = new Date(origin.databaseCreatedAt);
+
+        // If the remote database was created before the local database,
+        // we assume that the local database is newer.
+        if (remoteDatabaseCreatedAt <= localDatabaseCreatedAt) {
+          return null;
+        }
       }
 
       return {
