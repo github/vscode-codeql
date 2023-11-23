@@ -110,7 +110,7 @@ export async function downloadDatabaseFromGitHub(
  *
  * @param languages The languages to join. These should be language identifiers, such as `csharp`.
  */
-function joinLanguages(languages: string[]): string {
+export function joinLanguages(languages: string[]): string {
   const languageDisplayNames = languages
     .map((language) => getLanguageDisplayName(language))
     .sort();
@@ -130,8 +130,17 @@ function joinLanguages(languages: string[]): string {
   return result;
 }
 
-async function promptForDatabases(
+type PromptForDatabasesOptions = {
+  title?: string;
+  placeHolder?: string;
+};
+
+export async function promptForDatabases(
   databases: CodeqlDatabase[],
+  {
+    title = "Select databases to download",
+    placeHolder = "Databases found in this repository",
+  }: PromptForDatabasesOptions = {},
 ): Promise<CodeqlDatabase[]> {
   if (databases.length === 1) {
     return databases;
@@ -152,8 +161,8 @@ async function promptForDatabases(
     .sort((a, b) => a.label.localeCompare(b.label));
 
   const selectedItems = await window.showQuickPick(items, {
-    title: "Select databases to download",
-    placeHolder: "Databases found in this repository",
+    title,
+    placeHolder,
     ignoreFocusOut: true,
     canPickMany: true,
   });

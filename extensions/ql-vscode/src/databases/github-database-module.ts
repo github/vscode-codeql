@@ -3,7 +3,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { App } from "../common/app";
 import { findGitHubRepositoryForWorkspace } from "./github-repository-finder";
 import { redactableError } from "../common/errors";
-import { asError, getErrorMessage } from "../common/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import {
   askForGitHubDatabaseDownload,
   downloadDatabaseFromGitHub,
@@ -11,7 +11,18 @@ import {
 import { GitHubDatabaseConfig, GitHubDatabaseConfigListener } from "../config";
 import { DatabaseManager } from "./local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { listDatabases, ListDatabasesResult } from "./github-database-api";
+import {
+  CodeqlDatabase,
+  listDatabases,
+  ListDatabasesResult,
+} from "./github-database-api";
+import {
+  askForGitHubDatabaseUpdate,
+  DatabaseUpdate,
+  downloadDatabaseUpdateFromGitHub,
+  isNewerDatabaseAvailable,
+} from "./github-database-updates";
+import { Octokit } from "@octokit/rest";
 
 export class GithubDatabaseModule extends DisposableObject {
   private readonly config: GitHubDatabaseConfig;
@@ -79,16 +90,6 @@ export class GithubDatabaseModule extends DisposableObject {
 
     const githubRepository = githubRepositoryResult.value;
 
-    const hasExistingDatabase = this.databaseManager.databaseItems.some(
-      (db) =>
-        db.origin?.type === "github" &&
-        db.origin.repository ===
-          `${githubRepository.owner}/${githubRepository.name}`,
-    );
-    if (hasExistingDatabase) {
-      return;
-    }
-
     let result: ListDatabasesResult | undefined;
     try {
       result = await listDatabases(
@@ -130,6 +131,45 @@ export class GithubDatabaseModule extends DisposableObject {
       return;
     }
 
+    const updateStatus = isNewerDatabaseAvailable(
+      databases,
+      githubRepository.owner,
+      githubRepository.name,
+      this.databaseManager,
+    );
+
+    switch (updateStatus.type) {
+      case "upToDate":
+        return;
+      case "updateAvailable":
+        await this.updateGitHubDatabase(
+          octokit,
+          githubRepository.owner,
+          githubRepository.name,
+          updateStatus.databaseUpdates,
+        );
+        break;
+      case "noDatabase":
+        await this.downloadGitHubDatabase(
+          octokit,
+          githubRepository.owner,
+          githubRepository.name,
+          databases,
+          promptedForCredentials,
+        );
+        break;
+      default:
+        assertNever(updateStatus);
+    }
+  }
+
+  private async downloadGitHubDatabase(
+    octokit: Octokit,
+    owner: string,
+    repo: string,
+    databases: CodeqlDatabase[],
+    promptedForCredentials: boolean,
+  ) {
     // If the user already had an access token, first ask if they even want to download the DB.
     if (!promptedForCredentials) {
       if (!(await askForGitHubDatabaseDownload(databases, this.config))) {
@@ -139,9 +179,35 @@ export class GithubDatabaseModule extends DisposableObject {
 
     await downloadDatabaseFromGitHub(
       octokit,
-      githubRepository.owner,
-      githubRepository.name,
+      owner,
+      repo,
       databases,
+      this.databaseManager,
+      this.databaseStoragePath,
+      this.cliServer,
+      this.app.commands,
+    );
+  }
+
+  private async updateGitHubDatabase(
+    octokit: Octokit,
+    owner: string,
+    repo: string,
+    databaseUpdates: DatabaseUpdate[],
+  ): Promise<void> {
+    if (this.config.update === "never") {
+      return;
+    }
+
+    if (!(await askForGitHubDatabaseUpdate(databaseUpdates, this.config))) {
+      return;
+    }
+
+    await downloadDatabaseUpdateFromGitHub(
+      octokit,
+      owner,
+      repo,
+      databaseUpdates,
       this.databaseManager,
       this.databaseStoragePath,
       this.cliServer,

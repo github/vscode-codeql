@@ -440,6 +440,19 @@
               "Never download a GitHub databases when a workspace is opened."
             ],
             "description": "Ask to download a GitHub database when a workspace is opened."
+          },
+          "codeQL.githubDatabase.update": {
+            "type": "string",
+            "default": "ask",
+            "enum": [
+              "ask",
+              "never"
+            ],
+            "enumDescriptions": [
+              "Ask to download an updated GitHub database when a new version is available.",
+              "Never download an updated GitHub database when a new version is available."
+            ],
+            "description": "Ask to download an updated GitHub database when a new version is available."
           }
         }
       },
