@@ -39,8 +39,7 @@
     "onWebviewPanel:resultsView",
     "onWebviewPanel:codeQL.variantAnalysis",
     "onWebviewPanel:codeQL.dataFlowPaths",
-    "onFileSystem:codeql-zip-archive",
-    "workspaceContains:.git"
+    "onFileSystem:codeql-zip-archive"
   ],
   "main": "./out/extension",
   "files": [
