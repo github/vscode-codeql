@@ -179,10 +179,6 @@ describeWithCodeQL()("Debugger", () => {
   });
 
   it("should pass additionalArgs through to query server", async () => {
-    if (!(await cli.cliConstraints.supportsNewQueryServerForTests())) {
-      // Only works with the new query server.
-      return;
-    }
     await withDebugController(appCommands, async (controller) => {
       await controller.startDebugging(
         {

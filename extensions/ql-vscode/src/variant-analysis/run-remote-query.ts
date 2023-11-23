@@ -105,19 +105,15 @@ async function generateQueryPack(
   await cliServer.clearCache();
 
   let precompilationOpts: string[] = [];
-  if (await cliServer.cliConstraints.supportsQlxRemote()) {
-    if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
-      precompilationOpts = ["--qlx"];
-    } else {
-      const ccache = join(originalPackRoot, ".cache");
-      precompilationOpts = [
-        "--qlx",
-        "--no-default-compilation-cache",
-        `--compilation-cache=${ccache}`,
-      ];
-    }
+  if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
+    precompilationOpts = ["--qlx"];
   } else {
-    precompilationOpts = ["--no-precompile"];
+    const ccache = join(originalPackRoot, ".cache");
+    precompilationOpts = [
+      "--qlx",
+      "--no-default-compilation-cache",
+      `--compilation-cache=${ccache}`,
+    ];
   }
 
   if (await cliServer.useExtensionPacks()) {
@@ -540,7 +536,7 @@ async function getControllerRepoFromApi(
   }
 }
 
-export function removeWorkspaceRefs(qlpack: QlPackFile) {
+function removeWorkspaceRefs(qlpack: QlPackFile) {
   if (!qlpack.dependencies) {
     return;
   }

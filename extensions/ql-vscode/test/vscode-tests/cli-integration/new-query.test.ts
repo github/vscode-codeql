@@ -105,20 +105,12 @@ describeWithCodeQL()("using the new query server", () => {
   let cliServer: cli.CodeQLCliServer;
   let db: string;
 
-  let supportNewQueryServer = true;
-
   beforeAll(async () => {
     const app = createMockApp({});
     const extension = await getActivatedExtension();
     cliServer = extension.cliServer;
 
     cliServer.quiet = true;
-    if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
-      console.log(
-        "Skipping new-query tests: the CLI supports only the legacy query server",
-      );
-      supportNewQueryServer = false;
-    }
     qs = new QueryServerClient(
       app,
       {
@@ -154,18 +146,10 @@ describeWithCodeQL()("using the new query server", () => {
     const parsedResults = new Checkpoint<void>();
 
     it("should register the database", async () => {
-      if (!supportNewQueryServer) {
-        return;
-      }
-
       await qs.sendRequest(messages.registerDatabases, { databases: [db] });
     });
 
     it(`should be able to run query ${queryName}`, async () => {
-      if (!supportNewQueryServer) {
-        return;
-      }
-
       try {
         const params: messages.RunQueryParams = {
           db,
@@ -193,10 +177,6 @@ describeWithCodeQL()("using the new query server", () => {
 
     const actualResultSets: ResultSets = {};
     it(`should be able to parse results of query ${queryName}`, async () => {
-      if (!supportNewQueryServer) {
-        return;
-      }
-
       await evaluationSucceeded.done();
       const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
@@ -211,10 +191,6 @@ describeWithCodeQL()("using the new query server", () => {
     });
 
     it(`should have correct results for query ${queryName}`, async () => {
-      if (!supportNewQueryServer) {
-        return;
-      }
-
       await parsedResults.done();
       expect(actualResultSets).not.toEqual({});
       expect(Object.keys(actualResultSets!).sort()).toEqual(
