@@ -32,18 +32,32 @@ describe("isNewerDatabaseAvailable", () => {
         mockedObject<CodeqlDatabase>({
           language: "java",
           commit_oid: "58e7476df3e464a0c9742b14cd4ca274b0993ebb",
+          created_at: "2023-11-22T09:20:59.185Z",
         }),
         mockedObject<CodeqlDatabase>({
           language: "swift",
           commit_oid: "b81c25c0b73dd3c242068e8ab38bef25563a7c2d",
+          created_at: "2023-11-22T09:21:53.257Z",
         }),
         mockedObject<CodeqlDatabase>({
           language: "javascript",
           commit_oid: "6e93915ff37ff8bcfc552d48f118895d60d0e7cd",
+          created_at: "2023-11-20T09:20:52.185Z",
         }),
         mockedObject<CodeqlDatabase>({
           language: "ql",
           commit_oid: "9448fbfb88cdefe4298cc2e234a5a3c98958cae8",
+          created_at: "2023-11-21T09:20:59.185Z",
+        }),
+        mockedObject<CodeqlDatabase>({
+          language: "ruby",
+          commit_oid: "30220ebe8a36a22c4b6200fd207476d03717be4c",
+          created_at: "2023-11-23T09:20:59.185Z",
+        }),
+        mockedObject<CodeqlDatabase>({
+          language: "csharp",
+          commit_oid: "1dad8b67751834ea61344effacf3ac8a88929289",
+          created_at: "2023-11-20T09:20:59.185Z",
         }),
       ];
 
@@ -56,6 +70,7 @@ describe("isNewerDatabaseAvailable", () => {
               type: "github",
               repository: "github/codeql",
               commitOid: "4487d1da9665231d1a076c60a78523f6275ad70f",
+              databaseCreatedAt: "2023-10-22T09:20:59.185Z",
             },
           }),
           mockDatabaseItem({
@@ -65,6 +80,7 @@ describe("isNewerDatabaseAvailable", () => {
               type: "github",
               repository: "github/codeql",
               commitOid: "2b020927d3c6eb407223a1baa3d6ce3597a3f88d",
+              databaseCreatedAt: "2023-10-22T09:20:59.185Z",
             },
           }),
           mockDatabaseItem({
@@ -74,6 +90,7 @@ describe("isNewerDatabaseAvailable", () => {
               type: "github",
               repository: "github/codeql",
               commitOid: "17663af4e84a3a010fcb3f09cc06049797dfb22a",
+              databaseCreatedAt: "2023-10-22T09:20:59.185Z",
             },
           }),
           mockDatabaseItem({
@@ -82,6 +99,7 @@ describe("isNewerDatabaseAvailable", () => {
             origin: {
               type: "github",
               repository: "github/codeql",
+              databaseCreatedAt: "2023-10-22T09:19:59.185Z",
             },
           }),
           mockDatabaseItem({
@@ -90,6 +108,7 @@ describe("isNewerDatabaseAvailable", () => {
             origin: {
               type: "github",
               repository: "github/codeql",
+              databaseCreatedAt: "2023-10-20T09:20:59.185Z",
             },
           }),
           mockDatabaseItem({
@@ -98,6 +117,27 @@ describe("isNewerDatabaseAvailable", () => {
               type: "github",
               repository: "github/vscode-codeql",
               commitOid: "fb360f9c09ac8c5edb2f18be5de4e80ea4c430d0",
+              databaseCreatedAt: "2023-10-22T09:20:59.185Z",
+            },
+          }),
+          mockDatabaseItem({
+            dateAdded: faker.date.past().getTime(),
+            language: "ruby",
+            origin: {
+              type: "github",
+              repository: "github/codeql",
+              commitOid: "30220ebe8a36a22c4b6200fd207476d03717be4c",
+              databaseCreatedAt: "2023-10-22T09:20:59.185Z",
+            },
+          }),
+          mockDatabaseItem({
+            dateAdded: faker.date.past().getTime(),
+            language: "csharp",
+            origin: {
+              type: "github",
+              repository: "github/codeql",
+              commitOid: "1dad8b67751834ea61344effacf3ac8a88929289",
+              databaseCreatedAt: "2023-11-23T09:20:59.185Z",
             },
           }),
         ],
@@ -110,17 +150,25 @@ describe("isNewerDatabaseAvailable", () => {
       ).toEqual({
         type: "updateAvailable",
         databaseUpdates: [
+          // java: different commit_oid, last dateAdded
           {
             database: databases[0],
             databaseItem: databaseManager.databaseItems[2],
           },
           {
+            // ql: commit_oid on remote, not on local
             database: databases[3],
             databaseItem: databaseManager.databaseItems[4],
           },
           {
+            // swift: different commit_oid
             database: databases[1],
             databaseItem: databaseManager.databaseItems[1],
+          },
+          {
+            // ruby: same commit_oid, newer created_at
+            database: databases[4],
+            databaseItem: databaseManager.databaseItems[6],
           },
         ],
       });
@@ -133,6 +181,7 @@ describe("isNewerDatabaseAvailable", () => {
         mockedObject<CodeqlDatabase>({
           language: "java",
           commit_oid: "17663af4e84a3a010fcb3f09cc06049797dfb22a",
+          created_at: "2023-11-22T09:21:53.257Z",
         }),
       ];
 
@@ -145,6 +194,7 @@ describe("isNewerDatabaseAvailable", () => {
               type: "github",
               repository: "github/codeql",
               commitOid: "17663af4e84a3a010fcb3f09cc06049797dfb22a",
+              databaseCreatedAt: "2023-11-22T09:21:53.257Z",
             },
           }),
           mockDatabaseItem({
@@ -154,6 +204,7 @@ describe("isNewerDatabaseAvailable", () => {
               type: "github",
               repository: "github/codeql",
               commitOid: "4487d1da9665231d1a076c60a78523f6275ad70f",
+              databaseCreatedAt: "2023-10-22T09:20:59.185Z",
             },
           }),
         ],
