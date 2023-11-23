@@ -78,6 +78,10 @@ export function isNewerDatabaseAvailable(
         return null;
       }
 
+      // We only consider databases to be updated if they have a different `commit_oid` than the
+      // one we have stored. If they have the same `commit_oid`, then they are the same database.
+      // This means that older databases which do not have a `commit_oid` (`null`) are always
+      // considered up-to-date.
       if (matchingDatabase.commit_oid === origin.commitOid) {
         return null;
       }
