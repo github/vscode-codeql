@@ -85,8 +85,9 @@ describe("commands declared in package.json", () => {
   });
 
   menus.commandPalette.forEach((commandDecl: CmdDecl) => {
-    if (commandDecl.when === "false")
+    if (commandDecl.when === "false") {
       disabledInPalette.add(commandDecl.command);
+    }
   });
 
   it("should have commands appropriately prefixed", () => {

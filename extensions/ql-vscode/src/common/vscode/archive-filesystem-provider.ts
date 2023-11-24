@@ -130,11 +130,14 @@ export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
     };
   }
   const match = sourceArchiveUriAuthorityPattern.exec(uri.authority);
-  if (match === null) throw new InvalidSourceArchiveUriError(uri);
+  if (match === null) {
+    throw new InvalidSourceArchiveUriError(uri);
+  }
   const zipPathStartIndex = parseInt(match[1]);
   const zipPathEndIndex = parseInt(match[2]);
-  if (isNaN(zipPathStartIndex) || isNaN(zipPathEndIndex))
+  if (isNaN(zipPathStartIndex) || isNaN(zipPathEndIndex)) {
     throw new InvalidSourceArchiveUriError(uri);
+  }
   return {
     pathWithinSourceArchive: uri.path.substring(zipPathEndIndex) || "/",
     sourceArchiveZipPath: uri.path.substring(
@@ -179,8 +182,9 @@ type Archive = {
 };
 
 async function parse_zip(zipPath: string): Promise<Archive> {
-  if (!(await pathExists(zipPath)))
+  if (!(await pathExists(zipPath))) {
     throw vscode.FileSystemError.FileNotFound(zipPath);
+  }
   const archive: Archive = {
     unzipped: await unzipper.Open.file(zipPath),
     dirMap: new Map(),
