@@ -128,6 +128,8 @@ export async function showLocation(location?: Location) {
           // avoid preview mode so editor is sticky and will be added to navigation and search histories.
           preview: false,
           viewColumn: ViewColumn.One,
+          // Keep the focus on the results view so that the user can easily navigate to the next result.
+          preserveFocus: true,
         });
 
   const range = location.range;
