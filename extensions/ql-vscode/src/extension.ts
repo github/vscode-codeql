@@ -137,7 +137,7 @@ import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
 import { LanguageContextStore } from "./language-context-store";
 import { LanguageSelectionPanel } from "./language-selection-panel/language-selection-panel";
-import { GithubDatabaseModule } from "./databases/github-database-module";
+import { GitHubDatabasesModule } from "./databases/github-databases";
 
 /**
  * extension.ts
@@ -871,7 +871,7 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  await GithubDatabaseModule.initialize(
+  await GitHubDatabasesModule.initialize(
     app,
     dbm,
     getContextStoragePath(ctx),

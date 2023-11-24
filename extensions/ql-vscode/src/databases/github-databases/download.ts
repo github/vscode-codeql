@@ -1,14 +1,14 @@
 import { window } from "vscode";
 import { Octokit } from "@octokit/rest";
-import { showNeverAskAgainDialog } from "../common/vscode/dialog";
-import { getLanguageDisplayName } from "../common/query-language";
-import { downloadGitHubDatabaseFromUrl } from "./database-fetcher";
-import { withProgress } from "../common/vscode/progress";
-import { DatabaseManager } from "./local-databases";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { AppCommandManager } from "../common/commands";
-import { GitHubDatabaseConfig } from "../config";
-import type { CodeqlDatabase } from "./github-database-api";
+import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
+import { getLanguageDisplayName } from "../../common/query-language";
+import { downloadGitHubDatabaseFromUrl } from "../database-fetcher";
+import { withProgress } from "../../common/vscode/progress";
+import { DatabaseManager } from "../local-databases";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
+import { AppCommandManager } from "../../common/commands";
+import { GitHubDatabaseConfig } from "../../config";
+import type { CodeqlDatabase } from "./api";
 
 /**
  * Ask whether the user wants to download a database from GitHub.

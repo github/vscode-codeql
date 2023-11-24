@@ -1,17 +1,17 @@
 import {
   mockedObject,
   mockedOctokitFunction,
-} from "../../utils/mocking.helpers";
-import { GitHubDatabaseConfig } from "../../../../src/config";
-import * as dialog from "../../../../src/common/vscode/dialog";
-import { listDatabases } from "../../../../src/databases/github-database-api";
-import { Credentials } from "../../../../src/common/authentication";
+} from "../../../utils/mocking.helpers";
+import { GitHubDatabaseConfig } from "../../../../../src/config";
+import * as dialog from "../../../../../src/common/vscode/dialog";
+import { listDatabases } from "../../../../../src/databases/github-databases/api";
+import { Credentials } from "../../../../../src/common/authentication";
 import * as Octokit from "@octokit/rest";
-import { AppOctokit } from "../../../../src/common/octokit";
+import { AppOctokit } from "../../../../../src/common/octokit";
 import { RequestError } from "@octokit/request-error";
 
 // Mock the AppOctokit constructor to ensure we aren't making any network requests
-jest.mock("../../../../src/common/octokit", () => ({
+jest.mock("../../../../../src/common/octokit", () => ({
   AppOctokit: jest.fn(),
 }));
 const appMockListCodeqlDatabases = mockedOctokitFunction<

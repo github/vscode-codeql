@@ -1,18 +1,21 @@
 import { faker } from "@faker-js/faker";
 import { Octokit } from "@octokit/rest";
 import { QuickPickItem, window } from "vscode";
-import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
+import {
+  mockedObject,
+  mockedQuickPickItem,
+} from "../../../utils/mocking.helpers";
 import {
   askForGitHubDatabaseDownload,
   downloadDatabaseFromGitHub,
-} from "../../../../src/databases/github-database-download";
-import { DatabaseManager } from "../../../../src/databases/local-databases";
-import { GitHubDatabaseConfig } from "../../../../src/config";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import * as databaseFetcher from "../../../../src/databases/database-fetcher";
-import * as dialog from "../../../../src/common/vscode/dialog";
-import { CodeqlDatabase } from "../../../../src/databases/github-database-api";
+} from "../../../../../src/databases/github-databases/download";
+import { DatabaseManager } from "../../../../../src/databases/local-databases";
+import { GitHubDatabaseConfig } from "../../../../../src/config";
+import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
+import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
+import * as databaseFetcher from "../../../../../src/databases/database-fetcher";
+import * as dialog from "../../../../../src/common/vscode/dialog";
+import { CodeqlDatabase } from "../../../../../src/databases/github-databases/api";
 
 describe("askForGitHubDatabaseDownload", () => {
   const setDownload = jest.fn();
