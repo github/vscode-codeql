@@ -15,7 +15,7 @@ import {
   storagePath,
 } from "../../global.helper";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import { ensureDir, remove } from "fs-extra";
+import { remove } from "fs-extra";
 
 /**
  * Run various integration tests for databases
@@ -43,7 +43,6 @@ describe("database-fetcher", () => {
   afterEach(async () => {
     await cleanDatabases(databaseManager);
     await remove(storagePath);
-    await ensureDir(storagePath);
   });
 
   describe("importArchiveDatabase", () => {
