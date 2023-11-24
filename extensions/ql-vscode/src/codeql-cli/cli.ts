@@ -796,6 +796,11 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "tests", "--strict-test-discovery"],
       subcommandArgs,
       "Resolving tests",
+      {
+        // This happens as part of a background process, so we don't want to
+        // spam the log with messages.
+        silent: true,
+      },
     );
   }
 
