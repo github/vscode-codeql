@@ -881,10 +881,9 @@ export class CodeQLCliServer implements Disposable {
     additionalPacks: string[],
     queryPath: string,
   ): Promise<MlModelsInfo> {
-    const args = (await this.cliConstraints.supportsPreciseResolveMlModels())
-      ? // use the dirname of the path so that we can handle query libraries
-        [...this.getAdditionalPacksArg(additionalPacks), dirname(queryPath)]
-      : this.getAdditionalPacksArg(additionalPacks);
+    const args =
+      // use the dirname of the path so that we can handle query libraries
+      [...this.getAdditionalPacksArg(additionalPacks), dirname(queryPath)];
     return await this.runJsonCodeQlCliCommand<MlModelsInfo>(
       ["resolve", "ml-models"],
       args,
@@ -988,9 +987,7 @@ export class CodeQLCliServer implements Disposable {
     const subcommandArgs = [
       "--format=text",
       `--end-summary=${endSummaryPath}`,
-      ...((await this.cliConstraints.supportsSourceMap())
-        ? ["--sourcemap"]
-        : []),
+      "--sourcemap",
       inputPath,
       outputPath,
     ];
@@ -1712,41 +1709,7 @@ export function shouldDebugCliServer() {
 export class CliVersionConstraint {
   // The oldest version of the CLI that we support. This is used to determine
   // whether to show a warning about the CLI being too old on startup.
-  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.9.4");
-
-  /**
-   * CLI version where building QLX packs for remote queries is supported.
-   * (The options were _accepted_ by a few earlier versions, but only from
-   * 2.11.3 will it actually use the existing compilation cache correctly).
-   */
-  public static CLI_VERSION_QLX_REMOTE = new SemVer("2.11.3");
-
-  /**
-   * CLI version where the `resolve ml-models` subcommand was enhanced to work with packaging.
-   */
-  public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer(
-    "2.10.0",
-  );
-
-  /**
-   * CLI version where the `resolve extensions` subcommand exists.
-   */
-  public static CLI_VERSION_WITH_RESOLVE_EXTENSIONS = new SemVer("2.10.2");
-
-  /**
-   * CLI version that supports the `--sourcemap` option for log generation.
-   */
-  public static CLI_VERSION_WITH_SOURCEMAP = new SemVer("2.10.3");
-
-  /**
-   * CLI version that supports the new query server.
-   */
-  public static CLI_VERSION_WITH_NEW_QUERY_SERVER = new SemVer("2.11.1");
-
-  /**
-   * CLI version that supports `${workspace}` references in qlpack.yml files.
-   */
-  public static CLI_VERSION_WITH_WORKSPACE_RFERENCES = new SemVer("2.11.3");
+  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.11.6");
 
   /**
    * CLI version that supports the `--kind` option for the `resolve qlpacks` command.
@@ -1796,48 +1759,9 @@ export class CliVersionConstraint {
     return (await this.cli.getVersion()).compare(v) >= 0;
   }
 
-  async supportsQlxRemote() {
-    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_QLX_REMOTE);
-  }
-
-  async supportsPreciseResolveMlModels() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS,
-    );
-  }
-
-  async supportsResolveExtensions() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS,
-    );
-  }
-
-  async supportsSourceMap() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_SOURCEMAP,
-    );
-  }
-
   async supportsNewQueryServer() {
     // This allows users to explicitly opt-out of the new query server.
-    return (
-      allowCanaryQueryServer() &&
-      this.isVersionAtLeast(
-        CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER,
-      )
-    );
-  }
-
-  async supportsNewQueryServerForTests() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_NEW_QUERY_SERVER,
-    );
-  }
-
-  async supportsWorkspaceReferences() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_WORKSPACE_RFERENCES,
-    );
+    return allowCanaryQueryServer();
   }
 
   async supportsQlpacksKind() {

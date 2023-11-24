@@ -9,12 +9,7 @@ import {
   CliVersionConstraint,
   CodeQLCliServer,
 } from "../../../../src/codeql-cli/cli";
-import {
-  fixWorkspaceReferences,
-  getActivatedExtension,
-  restoreWorkspaceReferences,
-  storagePath,
-} from "../../global.helper";
+import { getActivatedExtension, storagePath } from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import {
   VariantAnalysisStatus,
@@ -70,13 +65,9 @@ describe("Variant Analysis Manager", () => {
       typeof ghApiClient.submitVariantAnalysis
     >;
     let mockApiResponse: VariantAnalysisApiResponse;
-    let originalDeps: Record<string, string> | undefined;
     let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
 
     const baseDir = join(__dirname, "..");
-    const qlpackFileWithWorkspaceRefs = getFile(
-      "data-remote-qlpack/qlpack.yml",
-    ).fsPath;
 
     beforeEach(async () => {
       jest.spyOn(window, "showQuickPick").mockResolvedValueOnce(
@@ -107,19 +98,6 @@ describe("Variant Analysis Manager", () => {
 
       // always run in the vscode-codeql repo
       await setRemoteControllerRepo("github/vscode-codeql");
-
-      // Only new version support `${workspace}` in qlpack.yml
-      originalDeps = await fixWorkspaceReferences(
-        qlpackFileWithWorkspaceRefs,
-        cli,
-      );
-    });
-
-    afterEach(async () => {
-      await restoreWorkspaceReferences(
-        qlpackFileWithWorkspaceRefs,
-        originalDeps,
-      );
     });
 
     it("should run a variant analysis that is part of a qlpack", async () => {
@@ -360,11 +338,9 @@ describe("Variant Analysis Manager", () => {
         expect(packFS.fileExists(file)).toBe(true);
       });
 
-      if (await cli.cliConstraints.supportsQlxRemote()) {
-        qlxFilesThatExist.forEach((file) => {
-          expect(packFS.fileExists(file)).toBe(true);
-        });
-      }
+      qlxFilesThatExist.forEach((file) => {
+        expect(packFS.fileExists(file)).toBe(true);
+      });
       filesThatDoNotExist.forEach((file) => {
         expect(packFS.fileExists(file)).toBe(false);
       });
