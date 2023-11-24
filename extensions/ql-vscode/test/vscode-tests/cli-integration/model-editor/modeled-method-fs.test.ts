@@ -53,20 +53,6 @@ describe("modeled-method-fs", () => {
   let workspacePath: string;
   let cli: CodeQLCliServer;
 
-  beforeAll(async () => {
-    const extension = await getActivatedExtension();
-    cli = extension.cliServer;
-
-    // All transitive dependencies must be available for resolve extensions to succeed.
-    const packUsingExtensionsPath = join(
-      __dirname,
-      "../../..",
-      "data-extensions",
-      "pack-using-extensions",
-    );
-    await cli.packInstall(packUsingExtensionsPath);
-  });
-
   beforeEach(async () => {
     // On windows, make sure to use a temp directory that isn't an alias and therefore won't be canonicalised by CodeQL.
     // See https://github.com/github/vscode-codeql/pull/2605 for more context.
@@ -92,6 +78,15 @@ describe("modeled-method-fs", () => {
 
     const extension = await getActivatedExtension();
     cli = extension.cliServer;
+
+    // All transitive dependencies must be available for resolve extensions to succeed.
+    const packUsingExtensionsPath = join(
+      __dirname,
+      "../../..",
+      "data-extensions",
+      "pack-using-extensions",
+    );
+    await cli.packInstall(packUsingExtensionsPath);
   });
 
   afterEach(() => {

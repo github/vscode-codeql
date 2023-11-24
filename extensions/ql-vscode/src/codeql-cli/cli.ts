@@ -241,15 +241,11 @@ export class CodeQLCliServer implements Disposable {
     if (this.distributionProvider.onDidChangeDistribution) {
       this.distributionProvider.onDidChangeDistribution(() => {
         this.restartCliServer();
-        this._version = undefined;
-        this._supportedLanguages = undefined;
       });
     }
     if (this.cliConfig.onDidChangeConfiguration) {
       this.cliConfig.onDidChangeConfiguration(() => {
         this.restartCliServer();
-        this._version = undefined;
-        this._supportedLanguages = undefined;
       });
     }
   }
@@ -290,6 +286,8 @@ export class CodeQLCliServer implements Disposable {
     const callback = (): void => {
       try {
         this.killProcessIfRunning();
+        this._version = undefined;
+        this._supportedLanguages = undefined;
       } finally {
         this.runNext();
       }
