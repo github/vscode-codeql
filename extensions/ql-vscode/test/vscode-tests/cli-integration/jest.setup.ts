@@ -39,15 +39,11 @@ beforeAll(async () => {
     const cliVersion = await extension.cliServer.getVersion();
 
     if (cliVersion.compare(process.env.CLI_VERSION) !== 0) {
-      // This calls the private `updateConfiguration` method in the `ConfigListener`
       // It seems like the CUSTOM_CODEQL_PATH_SETTING.updateValue() call in
       // `beforeAllAction` doesn't fire the event that the config has changed.
+      // `forceUpdateConfiguration` will fire the event manually.
       // This is a hacky workaround.
-      (
-        extension.distributionManager.config as unknown as {
-          updateConfiguration: () => void;
-        }
-      ).updateConfiguration();
+      extension.distributionManager.config.forceUpdateConfiguration();
     }
   }
 });
