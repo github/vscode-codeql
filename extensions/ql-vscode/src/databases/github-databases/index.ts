@@ -1,1 +1,1 @@
-export * from "./github-database-module";
+export * from "./github-databases-module";

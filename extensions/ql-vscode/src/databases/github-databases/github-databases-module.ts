@@ -27,7 +27,7 @@ import {
 } from "./updates";
 import { Octokit } from "@octokit/rest";
 
-export class GitHubDatabaseModule extends DisposableObject {
+export class GitHubDatabasesModule extends DisposableObject {
   private readonly config: GitHubDatabaseConfig;
 
   private constructor(
@@ -46,17 +46,17 @@ export class GitHubDatabaseModule extends DisposableObject {
     databaseManager: DatabaseManager,
     databaseStoragePath: string,
     cliServer: CodeQLCliServer,
-  ): Promise<GitHubDatabaseModule> {
-    const githubDatabaseModule = new GitHubDatabaseModule(
+  ): Promise<GitHubDatabasesModule> {
+    const githubDatabasesModule = new GitHubDatabasesModule(
       app,
       databaseManager,
       databaseStoragePath,
       cliServer,
     );
-    app.subscriptions.push(githubDatabaseModule);
+    app.subscriptions.push(githubDatabasesModule);
 
-    await githubDatabaseModule.initialize();
-    return githubDatabaseModule;
+    await githubDatabasesModule.initialize();
+    return githubDatabasesModule;
   }
 
   private async initialize(): Promise<void> {
