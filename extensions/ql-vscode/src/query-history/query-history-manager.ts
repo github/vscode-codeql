@@ -556,7 +556,9 @@ export class QueryHistoryManager extends DisposableObject {
           item,
         )}. Are you sure?`,
       );
-      if (!response) return;
+      if (!response) {
+        return;
+      }
     }
 
     this.treeDataProvider.remove(item);
@@ -579,7 +581,9 @@ export class QueryHistoryManager extends DisposableObject {
 
     void showInformationMessageWithAction(message, "Go to workflow run").then(
       async (shouldOpenWorkflowRun) => {
-        if (!shouldOpenWorkflowRun) return;
+        if (!shouldOpenWorkflowRun) {
+          return;
+        }
         await env.openExternal(Uri.parse(workflowRunUrl));
       },
     );

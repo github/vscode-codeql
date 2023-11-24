@@ -9,11 +9,15 @@ export function getSelectedDbItem(dbItems: DbItem[]): DbItem | undefined {
     ) {
       for (const child of dbItem.children) {
         const selectedItem = extractSelected(child);
-        if (selectedItem) return selectedItem;
+        if (selectedItem) {
+          return selectedItem;
+        }
       }
     } else {
       const selectedItem = extractSelected(dbItem);
-      if (selectedItem) return selectedItem;
+      if (selectedItem) {
+        return selectedItem;
+      }
     }
   }
   return undefined;

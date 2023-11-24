@@ -140,10 +140,11 @@ export async function ensureCli(useCli: boolean) {
  */
 function getCliDownloadUrl(assetName: string) {
   if (CLI_VERSION === "nightly") {
-    if (!process.env.NIGHTLY_URL)
+    if (!process.env.NIGHTLY_URL) {
       throw new Error(
         "Nightly CLI was specified but no URL to download it from was given!",
       );
+    }
     return `${process.env.NIGHTLY_URL}/${assetName}`;
   }
   return `https://github.com/github/codeql-cli-binaries/releases/download/${CLI_VERSION}/${assetName}`;

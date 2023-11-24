@@ -10,6 +10,8 @@ interface Props {
  * Designed to fit in with the other types of location components.
  */
 export function NonClickableLocation({ msg, locationHint }: Props) {
-  if (msg === undefined) return null;
+  if (msg === undefined) {
+    return null;
+  }
   return <span title={locationHint}>{msg}</span>;
 }

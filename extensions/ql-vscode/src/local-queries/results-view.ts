@@ -655,8 +655,9 @@ export class ResultsView extends AbstractWebview<
     const schema = resultSetSchemas.find(
       (resultSet) => resultSet.name === selectedTable,
     )!;
-    if (schema === undefined)
+    if (schema === undefined) {
       throw new Error(`Query result set '${selectedTable}' not found.`);
+    }
 
     const pageSize = PAGE_SIZE.getValue<number>();
     const chunk = await this.cliServer.bqrsDecode(
@@ -771,7 +772,9 @@ export class ResultsView extends AbstractWebview<
       );
     }
 
-    if (interp.data.t !== "SarifInterpretationData") return interp;
+    if (interp.data.t !== "SarifInterpretationData") {
+      return interp;
+    }
 
     if (interp.data.runs.length !== 1) {
       void this.logger.log(
@@ -887,7 +890,9 @@ export class ResultsView extends AbstractWebview<
   ): Promise<void> {
     const { data, sourceLocationPrefix } = interpretation;
 
-    if (data.t !== "SarifInterpretationData") return;
+    if (data.t !== "SarifInterpretationData") {
+      return;
+    }
 
     if (!data.runs || !data.runs[0].results) {
       void this.logger.log(

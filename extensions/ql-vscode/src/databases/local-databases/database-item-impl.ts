@@ -197,7 +197,9 @@ export class DatabaseItemImpl implements DatabaseItem {
    * Holds if `uri` belongs to this database's source archive.
    */
   public belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean {
-    if (this.sourceArchive === undefined) return false;
+    if (this.sourceArchive === undefined) {
+      return false;
+    }
     return (
       uri.scheme === zipArchiveScheme &&
       decodeSourceArchiveUri(uri).sourceArchiveZipPath ===

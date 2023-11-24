@@ -107,11 +107,15 @@ export function parseSarifLocation(
   sourceLocationPrefix: string,
 ): ParsedSarifLocation {
   const physicalLocation = loc.physicalLocation;
-  if (physicalLocation === undefined) return { hint: "no physical location" };
-  if (physicalLocation.artifactLocation === undefined)
+  if (physicalLocation === undefined) {
+    return { hint: "no physical location" };
+  }
+  if (physicalLocation.artifactLocation === undefined) {
     return { hint: "no artifact location" };
-  if (physicalLocation.artifactLocation.uri === undefined)
+  }
+  if (physicalLocation.artifactLocation.uri === undefined) {
     return { hint: "artifact location has no uri" };
+  }
   if (isEmptyPath(physicalLocation.artifactLocation.uri)) {
     return { hint: "artifact location has empty uri" };
   }

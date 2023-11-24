@@ -144,7 +144,9 @@ function mockRequestError(status: number, body: any): RequestError {
 // Copied from https://github.com/octokit/request.js/blob/c67f902350384846f88d91196e7066daadc08357/src/fetch-wrapper.ts#L166 to have a
 // somewhat realistic error message
 function toErrorMessage(data: any) {
-  if (typeof data === "string") return data;
+  if (typeof data === "string") {
+    return data;
+  }
 
   if ("message" in data) {
     if (Array.isArray(data.errors)) {

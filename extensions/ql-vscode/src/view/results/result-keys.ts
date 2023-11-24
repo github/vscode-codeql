@@ -54,13 +54,19 @@ export function getPath(
   key: Path | PathNode,
 ): sarif.ThreadFlow | undefined {
   const result = getResult(sarif, key);
-  if (result === undefined) return undefined;
+  if (result === undefined) {
+    return undefined;
+  }
   let index = -1;
-  if (result.codeFlows === undefined) return undefined;
+  if (result.codeFlows === undefined) {
+    return undefined;
+  }
   for (const codeFlows of result.codeFlows) {
     for (const threadFlow of codeFlows.threadFlows) {
       ++index;
-      if (index === key.pathIndex) return threadFlow;
+      if (index === key.pathIndex) {
+        return threadFlow;
+      }
     }
   }
   return undefined;
@@ -74,7 +80,9 @@ export function getPathNode(
   key: PathNode,
 ): sarif.Location | undefined {
   const path = getPath(sarif, key);
-  if (path === undefined) return undefined;
+  if (path === undefined) {
+    return undefined;
+  }
   return path.locations[key.pathNodeIndex]?.location;
 }
 
@@ -85,7 +93,9 @@ export function equalsNotUndefined(
   key1: Partial<PathNode> | undefined,
   key2: Partial<PathNode> | undefined,
 ): boolean {
-  if (key1 === undefined || key2 === undefined) return false;
+  if (key1 === undefined || key2 === undefined) {
+    return false;
+  }
   return (
     key1.resultIndex === key2.resultIndex &&
     key1.pathIndex === key2.pathIndex &&
@@ -99,7 +109,9 @@ export function equalsNotUndefined(
  * Path nodes indices are relative to this flattened list.
  */
 export function getAllPaths(result: sarif.Result): sarif.ThreadFlow[] {
-  if (result.codeFlows === undefined) return [];
+  if (result.codeFlows === undefined) {
+    return [];
+  }
   const paths = [];
   for (const codeFlow of result.codeFlows) {
     for (const threadFlow of codeFlow.threadFlows) {

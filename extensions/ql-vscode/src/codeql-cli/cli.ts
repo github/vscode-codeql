@@ -635,9 +635,10 @@ export class CodeQLCliServer implements Disposable {
     } = {},
   ): Promise<OutputType> {
     let args: string[] = [];
-    if (addFormat)
+    if (addFormat) {
       // Add format argument first, in case commandArgs contains positional parameters.
       args = args.concat(["--format", "json"]);
+    }
     args = args.concat(commandArgs);
     const result = await this.runCodeQlCliCommand(command, args, description, {
       progressReporter,
@@ -939,8 +940,12 @@ export class CodeQLCliServer implements Disposable {
     name?: string,
   ): Promise<string> {
     const subcommandArgs = [];
-    if (target) subcommandArgs.push("--target", target);
-    if (name) subcommandArgs.push("--name", name);
+    if (target) {
+      subcommandArgs.push("--target", target);
+    }
+    if (name) {
+      subcommandArgs.push("--name", name);
+    }
     subcommandArgs.push(archivePath);
 
     return await this.runCodeQlCliCommand(
@@ -961,7 +966,9 @@ export class CodeQLCliServer implements Disposable {
     outputDirectory?: string,
   ): Promise<string> {
     const subcommandArgs = ["--format=markdown"];
-    if (outputDirectory) subcommandArgs.push("--output", outputDirectory);
+    if (outputDirectory) {
+      subcommandArgs.push("--output", outputDirectory);
+    }
     subcommandArgs.push(pathToQhelp);
 
     return await this.runCodeQlCliCommand(
@@ -1609,16 +1616,19 @@ export function spawnServer(
   });
   // Set up event listeners.
   child.on("close", async (code, signal) => {
-    if (code !== null)
+    if (code !== null) {
       void logger.log(`Child process exited with code ${code}`);
-    if (signal)
+    }
+    if (signal) {
       void logger.log(
         `Child process exited due to receipt of signal ${signal}`,
       );
+    }
     // If the process exited abnormally, log the last stdout message,
     // It may be from the jvm.
-    if (code !== 0 && lastStdout !== undefined)
+    if (code !== 0 && lastStdout !== undefined) {
       void logger.log(`Last stdout was "${lastStdout.toString()}"`);
+    }
   });
   child.stderr!.on("data", stderrListener);
   if (stdoutListener !== undefined) {
