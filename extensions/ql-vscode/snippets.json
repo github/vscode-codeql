@@ -30,34 +30,34 @@
   "Dataflow Tracking Class": {
     "prefix": "dataflowtracking",
     "body": [
-      "class $1 extends DataFlow::Configuration {",
-      "\t$1() { this = \"$1\" }",
-      "\t",
-      "\toverride predicate isSource(DataFlow::Node node) {",
+      "module $1 implements DataFlow::ConfigSig {",
+      "\tpredicate isSource(DataFlow::Node node) {",
       "\t\t${2:none()}",
       "\t}",
-      "\t",
-      "\toverride predicate isSink(DataFlow::Node node) {",
+      "",
+      "\tpredicate isSink(DataFlow::Node node) {",
       "\t\t${3:none()}",
       "\t}",
-      "}"
+      "}",
+      "",
+      "module ${4:Flow} = DataFlow::Global<$1>;"
     ],
     "description": "Boilerplate for a dataflow tracking class"
   },
   "Taint Tracking Class": {
     "prefix": "tainttracking",
     "body": [
-      "class $1 extends TaintTracking::Configuration {",
-      "\t$1() { this = \"$1\" }",
-      "\t",
-      "\toverride predicate isSource(DataFlow::Node node) {",
+      "module $1 implements DataFlow::ConfigSig {",
+      "\tpredicate isSource(DataFlow::Node node) {",
       "\t\t${2:none()}",
       "\t}",
-      "\t",
-      "\toverride predicate isSink(DataFlow::Node node) {",
+      "",
+      "\tpredicate isSink(DataFlow::Node node) {",
       "\t\t${3:none()}",
       "\t}",
-      "}"
+      "}",
+      "",
+      "module ${4:Flow} = TaintTracking::Global<$1>;"
     ],
     "description": "Boilerplate for a taint tracking class"
   },
