@@ -8,7 +8,6 @@ import {
 } from "../../../common/interface-types";
 import * as fs from "fs-extra";
 import { resolve } from "path";
-import { ColumnKindCode } from "../../../common/bqrs-cli-types";
 import { postMessage } from "../../common/post-message";
 import { ColumnKind } from "../../../common/raw-result-types";
 
@@ -65,16 +64,6 @@ describe(ResultsApp.name, () => {
         resultSetNames: ["#select"],
         resultSet: {
           t: "InterpretedResultSet",
-          schema: {
-            name: "#select",
-            rows: 1,
-            columns: [
-              {
-                name: "Path",
-                kind: ColumnKindCode.STRING,
-              },
-            ],
-          },
           name: "#select",
           interpretation,
         },

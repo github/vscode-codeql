@@ -1,5 +1,4 @@
 import * as sarif from "sarif";
-import { ResultSetSchema } from "../common/bqrs-cli-types";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
@@ -42,7 +41,6 @@ type RawTableResultSet = {
 
 export type InterpretedResultSet<T> = {
   t: "InterpretedResultSet";
-  readonly schema: ResultSetSchema;
   name: string;
   interpretation: InterpretationT<T>;
 };

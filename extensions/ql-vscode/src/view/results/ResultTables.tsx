@@ -75,15 +75,6 @@ function getResultSets(
     const tableName = getInterpretedTableName(interpretation);
     resultSets.push({
       t: "InterpretedResultSet",
-      // FIXME: The values of version, columns, tupleCount are
-      // unused stubs because a InterpretedResultSet schema isn't used the
-      // same way as a RawResultSet. Probably should pull `name` field
-      // out.
-      schema: {
-        name: tableName,
-        rows: 1,
-        columns: [],
-      },
       name: tableName,
       interpretation,
     });
@@ -276,7 +267,7 @@ function getResultSetName(resultSet: ResultSet): string {
     case "RawResultSet":
       return resultSet.resultSet.name;
     case "InterpretedResultSet":
-      return resultSet.schema.name;
+      return resultSet.name;
     default:
       assertNever(resultSet);
   }
