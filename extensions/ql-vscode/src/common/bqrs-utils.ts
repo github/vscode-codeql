@@ -1,10 +1,5 @@
 import { createRemoteFileRef } from "../common/location-link-utils";
 import { isUrlValueResolvable, UrlValue } from "./raw-result-types";
-import {
-  LineColumnLocation,
-  UrlValue as BqrsUrlValue,
-  WholeFileLocation,
-} from "./bqrs-cli-types";
 
 /**
  * Checks whether the file path is empty. If so, we do not want to render this location
@@ -12,27 +7,6 @@ import {
  */
 export function isEmptyPath(uriStr: string) {
   return !uriStr || uriStr === "file:/";
-}
-
-export function isLineColumnLoc(loc: BqrsUrlValue): loc is LineColumnLocation {
-  return (
-    typeof loc !== "string" &&
-    !isEmptyPath(loc.uri) &&
-    "startLine" in loc &&
-    "startColumn" in loc &&
-    "endLine" in loc &&
-    "endColumn" in loc
-  );
-}
-
-export function isWholeFileLoc(loc: BqrsUrlValue): loc is WholeFileLocation {
-  return (
-    typeof loc !== "string" && !isEmptyPath(loc.uri) && !isLineColumnLoc(loc)
-  );
-}
-
-export function isStringLoc(loc: BqrsUrlValue): loc is string {
-  return typeof loc === "string";
 }
 
 export function tryGetRemoteLocation(

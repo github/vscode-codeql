@@ -35,7 +35,7 @@ export const SELECT_TABLE_NAME = "#select";
 export const ALERTS_TABLE_NAME = "alerts";
 export const GRAPH_TABLE_NAME = "graph";
 
-export type RawTableResultSet = {
+type RawTableResultSet = {
   t: "RawResultSet";
   resultSet: RawResultSet;
 };

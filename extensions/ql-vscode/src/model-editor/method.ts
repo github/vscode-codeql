@@ -1,7 +1,7 @@
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import { UrlValueResolvable } from "../common/raw-result-types";
 
-export type Call = {
+type Call = {
   readonly label: string;
   readonly url: Readonly<UrlValueResolvable>;
 };

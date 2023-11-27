@@ -21,7 +21,7 @@ export type ColumnKind =
   | typeof ColumnKindCode.DATE
   | typeof ColumnKindCode.ENTITY;
 
-export interface Column {
+interface Column {
   name?: string;
   kind: ColumnKind;
 }
@@ -77,18 +77,11 @@ export interface WholeFileLocation {
   endColumn: never;
 }
 
-export type ResolvableLocationValue = WholeFileLocation | LineColumnLocation;
+type ResolvableLocationValue = WholeFileLocation | LineColumnLocation;
 
 export type UrlValue = ResolvableLocationValue | string;
 
 export type CellValue = EntityValue | number | string | boolean;
-
-export type ResultRow = CellValue[];
-
-export interface RawResultSet {
-  readonly schema: ResultSetSchema;
-  readonly rows: readonly ResultRow[];
-}
 
 export type BqrsKind =
   | "String"

@@ -12,7 +12,7 @@ export type Column = {
   kind: ColumnKind;
 };
 
-export type UrlValueString = {
+type UrlValueString = {
   type: "string";
   value: string;
 };
@@ -51,22 +51,22 @@ export type EntityValue = {
   id?: number;
 };
 
-export type CellValueEntity = {
+type CellValueEntity = {
   type: "entity";
   value: EntityValue;
 };
 
-export type CellValueNumber = {
+type CellValueNumber = {
   type: "number";
   value: number;
 };
 
-export type CellValueString = {
+type CellValueString = {
   type: "string";
   value: string;
 };
 
-export type CellValueBoolean = {
+type CellValueBoolean = {
   type: "boolean";
   value: boolean;
 };
