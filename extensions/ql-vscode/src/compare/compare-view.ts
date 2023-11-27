@@ -22,7 +22,7 @@ import {
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { App } from "../common/app";
-import { bqrsToResultSet } from "../common/bqrs-result";
+import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
 import { RawResultSet } from "../common/raw-result-types";
 
 interface ComparePair {

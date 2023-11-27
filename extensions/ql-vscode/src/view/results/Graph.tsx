@@ -3,7 +3,7 @@ import { select } from "d3";
 import { jumpToLocation } from "./result-table-utils";
 import { graphviz, GraphvizOptions } from "d3-graphviz";
 import { useCallback, useEffect } from "react";
-import { mapUrlValue } from "../../common/bqrs-result";
+import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
 import { isUrlValueResolvable } from "../../common/raw-result-types";
 
 type GraphProps = {

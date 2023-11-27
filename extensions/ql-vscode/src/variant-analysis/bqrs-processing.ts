@@ -3,7 +3,7 @@ import { Logger } from "../common/logging";
 import { AnalysisRawResults } from "./shared/analysis-result";
 import { MAX_RAW_RESULTS } from "./shared/result-limits";
 import { SELECT_TABLE_NAME } from "../common/interface-types";
-import { bqrsToResultSet } from "../common/bqrs-result";
+import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
 
 export async function extractRawResults(
   cliServer: CodeQLCliServer,

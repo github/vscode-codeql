@@ -1,4 +1,4 @@
-import { mapUrlValue } from "../../../src/common/bqrs-result";
+import { mapUrlValue } from "../../../src/common/bqrs-raw-results-mapper";
 
 describe("mapUrlValue", () => {
   it("should detect Windows whole-file locations", () => {

@@ -60,7 +60,7 @@ import {
   shownLocationLineDecoration,
   jumpToLocation,
 } from "../databases/local-databases/locations";
-import { bqrsToResultSet } from "../common/bqrs-result";
+import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
 import {
   AbstractWebview,
   WebviewPanelConfig,

@@ -6,7 +6,7 @@ import { Mode } from "./shared/mode";
 import { ApplicationModeTuple, FrameworkModeTuple } from "./queries/query";
 import { QueryLanguage } from "../common/query-language";
 import { getModelsAsDataLanguage } from "./languages";
-import { mapUrlValue } from "../common/bqrs-result";
+import { mapUrlValue } from "../common/bqrs-raw-results-mapper";
 import { isUrlValueResolvable } from "../common/raw-result-types";
 
 export function decodeBqrsToMethods(

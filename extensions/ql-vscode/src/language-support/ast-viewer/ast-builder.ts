@@ -9,7 +9,7 @@ import { ChildAstItem, AstItem } from "./ast-viewer";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { fileRangeFromURI } from "../contextual/file-range-from-uri";
-import { mapUrlValue } from "../../common/bqrs-result";
+import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
 
 /**
  * A class that wraps a tree of QL results from a query that
