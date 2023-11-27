@@ -34,12 +34,12 @@
       "\tpredicate isSource(DataFlow::Node node) {",
       "\t\t${2:none()}",
       "\t}",
-      "\t",
+      "",
       "\tpredicate isSink(DataFlow::Node node) {",
       "\t\t${3:none()}",
       "\t}",
       "}",
-      "\t",
+      "",
       "module ${4:Flow} = DataFlow::Global<$1>;"
     ],
     "description": "Boilerplate for a dataflow tracking class"
@@ -51,12 +51,12 @@
       "\tpredicate isSource(DataFlow::Node node) {",
       "\t\t${2:none()}",
       "\t}",
-      "\t",
+      "",
       "\tpredicate isSink(DataFlow::Node node) {",
       "\t\t${3:none()}",
       "\t}",
       "}",
-      "\t",
+      "",
       "module ${4:Flow} = TaintTracking::Global<$1>;"
     ],
     "description": "Boilerplate for a taint tracking class"
