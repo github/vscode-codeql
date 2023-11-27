@@ -9,6 +9,7 @@ import { ChildAstItem, AstItem } from "./ast-viewer";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { fileRangeFromURI } from "../contextual/file-range-from-uri";
+import { mapUrlValue } from "../../common/bqrs-result";
 
 /**
  * A class that wraps a tree of QL results from a query that
@@ -106,7 +107,7 @@ export class AstBuilder {
           const item = {
             id,
             label,
-            location: entity.url,
+            location: entity.url ? mapUrlValue(entity.url) : undefined,
             fileLocation: fileRangeFromURI(entity.url, this.db),
             children: [] as ChildAstItem[],
             order: Number.MAX_SAFE_INTEGER,
