@@ -10,7 +10,7 @@ import { extLogger } from "../common/logging/vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
-import { BQRSInfo } from "../common/bqrs-cli-types";
+import { BqrsInfo } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -232,7 +232,7 @@ export class CompareView extends AbstractWebview<
   }
 
   private async getResultSet(
-    bqrsInfo: BQRSInfo,
+    bqrsInfo: BqrsInfo,
     resultSetName: string,
     resultsPath: string,
   ): Promise<RawResultSet> {

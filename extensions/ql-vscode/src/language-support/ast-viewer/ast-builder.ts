@@ -2,7 +2,7 @@ import { CodeQLCliServer } from "../../codeql-cli/cli";
 import {
   DecodedBqrsChunk,
   BqrsId,
-  EntityValue,
+  BqrsEntityValue,
 } from "../../common/bqrs-cli-types";
 import { DatabaseItem } from "../../databases/local-databases";
 import { ChildAstItem, AstItem } from "./ast-viewer";
@@ -56,8 +56,8 @@ export class AstBuilder {
     // Build up the parent-child relationships
     edgeTuples.tuples.forEach((tuple) => {
       const [source, target, tupleType, value] = tuple as [
-        EntityValue,
-        EntityValue,
+        BqrsEntityValue,
+        BqrsEntityValue,
         string,
         string,
       ];
@@ -91,7 +91,11 @@ export class AstBuilder {
 
     // populate parents and children
     nodeTuples.tuples.forEach((tuple) => {
-      const [entity, tupleType, value] = tuple as [EntityValue, string, string];
+      const [entity, tupleType, value] = tuple as [
+        BqrsEntityValue,
+        string,
+        string,
+      ];
       const id = entity.id!;
 
       switch (tupleType) {

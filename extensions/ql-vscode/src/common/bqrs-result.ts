@@ -1,13 +1,13 @@
 import {
-  CellValue as BqrsCellValue,
-  ColumnKind as BqrsColumnKind,
-  ColumnKindCode,
+  BqrsCellValue as BqrsCellValue,
+  BqrsColumnKind as BqrsColumnKind,
+  BqrsColumnKindCode,
   DecodedBqrsChunk,
-  EntityValue as BqrsEntityValue,
-  LineColumnLocation,
-  ResultSetSchema,
-  UrlValue as BqrsUrlValue,
-  WholeFileLocation,
+  BqrsEntityValue as BqrsEntityValue,
+  BqrsLineColumnLocation,
+  BqrsResultSetSchema,
+  BqrsUrlValue as BqrsUrlValue,
+  BqrsWholeFileLocation,
 } from "./bqrs-cli-types";
 import {
   CellValue,
@@ -23,7 +23,7 @@ import { assertNever } from "./helpers-pure";
 import { isEmptyPath } from "./bqrs-utils";
 
 export function bqrsToResultSet(
-  schema: ResultSetSchema,
+  schema: BqrsResultSetSchema,
   chunk: DecodedBqrsChunk,
 ): RawResultSet {
   const name = schema.name;
@@ -52,17 +52,17 @@ export function bqrsToResultSet(
 
 function mapColumnKind(kind: BqrsColumnKind): ColumnKind {
   switch (kind) {
-    case ColumnKindCode.STRING:
+    case BqrsColumnKindCode.STRING:
       return ColumnKind.String;
-    case ColumnKindCode.FLOAT:
+    case BqrsColumnKindCode.FLOAT:
       return ColumnKind.Float;
-    case ColumnKindCode.INTEGER:
+    case BqrsColumnKindCode.INTEGER:
       return ColumnKind.Integer;
-    case ColumnKindCode.BOOLEAN:
+    case BqrsColumnKindCode.BOOLEAN:
       return ColumnKind.Boolean;
-    case ColumnKindCode.DATE:
+    case BqrsColumnKindCode.DATE:
       return ColumnKind.Date;
-    case ColumnKindCode.ENTITY:
+    case BqrsColumnKindCode.ENTITY:
       return ColumnKind.Entity;
     default:
       assertNever(kind);
@@ -136,7 +136,7 @@ export function mapUrlValue(urlValue: BqrsUrlValue): UrlValue | undefined {
   return undefined;
 }
 
-function isLineColumnLoc(loc: BqrsUrlValue): loc is LineColumnLocation {
+function isLineColumnLoc(loc: BqrsUrlValue): loc is BqrsLineColumnLocation {
   return (
     typeof loc !== "string" &&
     !isEmptyPath(loc.uri) &&
@@ -147,7 +147,7 @@ function isLineColumnLoc(loc: BqrsUrlValue): loc is LineColumnLocation {
   );
 }
 
-function isWholeFileLoc(loc: BqrsUrlValue): loc is WholeFileLocation {
+function isWholeFileLoc(loc: BqrsUrlValue): loc is BqrsWholeFileLocation {
   return (
     typeof loc !== "string" && !isEmptyPath(loc.uri) && !isLineColumnLoc(loc)
   );

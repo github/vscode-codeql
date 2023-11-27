@@ -1,4 +1,4 @@
-import { DecodedBqrsChunk, EntityValue } from "../common/bqrs-cli-types";
+import { DecodedBqrsChunk, BqrsEntityValue } from "../common/bqrs-cli-types";
 import { CallClassification, Method, Usage } from "./method";
 import { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
@@ -19,7 +19,7 @@ export function decodeBqrsToMethods(
   const definition = getModelsAsDataLanguage(language);
 
   chunk?.tuples.forEach((tuple) => {
-    let usageEntityValue: EntityValue;
+    let usageEntityValue: BqrsEntityValue;
     let packageName: string;
     let typeName: string;
     let methodName: string;

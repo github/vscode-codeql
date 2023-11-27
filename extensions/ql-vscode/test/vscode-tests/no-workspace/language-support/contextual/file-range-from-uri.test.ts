@@ -2,8 +2,8 @@ import { Uri, Range } from "vscode";
 
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
-  WholeFileLocation,
-  LineColumnLocation,
+  BqrsWholeFileLocation,
+  BqrsLineColumnLocation,
 } from "../../../../../src/common/bqrs-cli-types";
 import { mockDatabaseItem } from "../../../utils/mocking.helpers";
 import { fileRangeFromURI } from "../../../../../src/language-support";
@@ -24,7 +24,7 @@ describe("fileRangeFromURI", () => {
           startColumn: 2,
           endLine: 3,
           endColumn: 4,
-        } as LineColumnLocation,
+        } as BqrsLineColumnLocation,
         createMockDatabaseItem(),
       ),
     ).toBeUndefined();
@@ -39,7 +39,7 @@ describe("fileRangeFromURI", () => {
           startColumn: 2,
           endLine: 3,
           endColumn: 4,
-        } as LineColumnLocation,
+        } as BqrsLineColumnLocation,
         createMockDatabaseItem(),
       ),
     ).toBeUndefined();
@@ -54,7 +54,7 @@ describe("fileRangeFromURI", () => {
           startColumn: 2,
           endLine: 3,
           endColumn: 4,
-        } as LineColumnLocation,
+        } as BqrsLineColumnLocation,
         createMockDatabaseItem(),
       ),
     ).toBeUndefined();
@@ -65,7 +65,7 @@ describe("fileRangeFromURI", () => {
       fileRangeFromURI(
         {
           uri: "file:///hucairz",
-        } as WholeFileLocation,
+        } as BqrsWholeFileLocation,
         createMockDatabaseItem(),
       ),
     ).toEqual({
@@ -83,7 +83,7 @@ describe("fileRangeFromURI", () => {
           startColumn: 2,
           endLine: 3,
           endColumn: 4,
-        } as LineColumnLocation,
+        } as BqrsLineColumnLocation,
         createMockDatabaseItem(),
       ),
     ).toEqual({

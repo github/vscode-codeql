@@ -73,7 +73,7 @@ import { ResultsViewCommands } from "../common/commands";
 import { App } from "../common/app";
 import { Disposable } from "../common/disposable-object";
 import { RawResultSet } from "../common/raw-result-types";
-import { ResultSetSchema } from "../common/bqrs-cli-types";
+import { BqrsResultSetSchema } from "../common/bqrs-cli-types";
 
 /**
  * results-view.ts
@@ -599,7 +599,7 @@ export class ResultsView extends AbstractWebview<
   private async getResultSetSchemas(
     completedQuery: CompletedQueryInfo,
     selectedTable = "",
-  ): Promise<ResultSetSchema[]> {
+  ): Promise<BqrsResultSetSchema[]> {
     const resultsPath = completedQuery.getResultsPath(selectedTable);
     const schemas = await this.cliServer.bqrsInfo(
       resultsPath,

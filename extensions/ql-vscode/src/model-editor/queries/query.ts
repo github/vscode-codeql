@@ -1,6 +1,6 @@
 import { CallClassification } from "../method";
 import { ModeledMethodType } from "../modeled-method";
-import { EntityValue } from "../../common/bqrs-cli-types";
+import { BqrsEntityValue } from "../../common/bqrs-cli-types";
 
 export type Query = {
   /**
@@ -40,7 +40,7 @@ export type Query = {
 };
 
 export type ApplicationModeTuple = [
-  EntityValue,
+  BqrsEntityValue,
   string,
   string,
   string,
@@ -53,7 +53,7 @@ export type ApplicationModeTuple = [
 ];
 
 export type FrameworkModeTuple = [
-  EntityValue,
+  BqrsEntityValue,
   string,
   string,
   string,
