@@ -21,7 +21,7 @@ export type BqrsColumnKind =
   | typeof BqrsColumnKindCode.DATE
   | typeof BqrsColumnKindCode.ENTITY;
 
-interface BqrsSchemaColumn {
+export interface BqrsSchemaColumn {
   name?: string;
   kind: BqrsColumnKind;
 }

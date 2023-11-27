@@ -8,6 +8,7 @@ import {
   BqrsResultSetSchema,
   BqrsUrlValue as BqrsUrlValue,
   BqrsWholeFileLocation,
+  BqrsSchemaColumn,
 } from "./bqrs-cli-types";
 import {
   CellValue,
@@ -28,26 +29,37 @@ export function bqrsToResultSet(
 ): RawResultSet {
   const name = schema.name;
   const totalRowCount = schema.rows;
-  const nextPageOffset = chunk.next;
 
-  const columns = schema.columns.map(
-    (column): Column => ({
-      kind: mapColumnKind(column.kind),
-      name: column.name,
-    }),
-  );
+  const columns = schema.columns.map(mapColumn);
 
   const rows = chunk.tuples.map(
     (tuple): Row => tuple.map((cell): CellValue => mapCellValue(cell)),
   );
 
-  return {
+  const resultSet: RawResultSet = {
     name,
     totalRowCount,
     columns,
     rows,
-    nextPageOffset,
   };
+
+  if (chunk.next) {
+    resultSet.nextPageOffset = chunk.next;
+  }
+
+  return resultSet;
+}
+
+function mapColumn(column: BqrsSchemaColumn): Column {
+  const result: Column = {
+    kind: mapColumnKind(column.kind),
+  };
+
+  if (column.name) {
+    result.name = column.name;
+  }
+
+  return result;
 }
 
 function mapColumnKind(kind: BqrsColumnKind): ColumnKind {
@@ -95,11 +107,19 @@ function mapCellValue(cellValue: BqrsCellValue): CellValue {
 }
 
 function mapEntityValue(cellValue: BqrsEntityValue): EntityValue {
-  return {
-    url: cellValue.url === undefined ? undefined : mapUrlValue(cellValue.url),
-    label: cellValue.label,
-    id: cellValue.id,
-  };
+  const result: EntityValue = {};
+
+  if (cellValue.id) {
+    result.id = cellValue.id;
+  }
+  if (cellValue.label) {
+    result.label = cellValue.label;
+  }
+  if (cellValue.url) {
+    result.url = mapUrlValue(cellValue.url);
+  }
+
+  return result;
 }
 
 export function mapUrlValue(urlValue: BqrsUrlValue): UrlValue | undefined {
