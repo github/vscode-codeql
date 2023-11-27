@@ -33,17 +33,6 @@ export interface ResultSetSchema {
   pagination?: PaginationInfo;
 }
 
-export function getResultSetSchema(
-  resultSetName: string,
-  resultSets: BQRSInfo,
-): ResultSetSchema | undefined {
-  for (const schema of resultSets["result-sets"]) {
-    if (schema.name === resultSetName) {
-      return schema;
-    }
-  }
-  return undefined;
-}
 interface PaginationInfo {
   "step-size": number;
   offsets: number[];

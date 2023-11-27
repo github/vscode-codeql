@@ -5,7 +5,6 @@ import {
 import {
   ColumnKindCode,
   EntityValue,
-  getResultSetSchema,
   ResultSetSchema,
 } from "../../common/bqrs-cli-types";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
@@ -99,7 +98,9 @@ async function getLinksFromResults(
   const localLinks: FullLocationLink[] = [];
   const bqrsPath = outputDir.bqrsPath;
   const info = await cli.bqrsInfo(bqrsPath);
-  const selectInfo = getResultSetSchema(SELECT_QUERY_NAME, info);
+  const selectInfo = info["result-sets"].find(
+    (schema) => schema.name === SELECT_QUERY_NAME,
+  );
   if (isValidSelect(selectInfo)) {
     // TODO: Page this
     const allTuples = await cli.bqrsDecode(bqrsPath, SELECT_QUERY_NAME);
