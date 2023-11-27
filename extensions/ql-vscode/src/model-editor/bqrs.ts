@@ -1,11 +1,13 @@
-import { DecodedBqrsChunk } from "../common/bqrs-cli-types";
-import { Call, CallClassification, Method } from "./method";
+import { DecodedBqrsChunk, EntityValue } from "../common/bqrs-cli-types";
+import { CallClassification, Method, Usage } from "./method";
 import { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
 import { Mode } from "./shared/mode";
 import { ApplicationModeTuple, FrameworkModeTuple } from "./queries/query";
 import { QueryLanguage } from "../common/query-language";
 import { getModelsAsDataLanguage } from "./languages";
+import { mapUrlValue } from "../common/bqrs-result";
+import { isUrlValueResolvable } from "../common/raw-result-types";
 
 export function decodeBqrsToMethods(
   chunk: DecodedBqrsChunk,
@@ -17,7 +19,7 @@ export function decodeBqrsToMethods(
   const definition = getModelsAsDataLanguage(language);
 
   chunk?.tuples.forEach((tuple) => {
-    let usage: Call;
+    let usageEntityValue: EntityValue;
     let packageName: string;
     let typeName: string;
     let methodName: string;
@@ -30,7 +32,7 @@ export function decodeBqrsToMethods(
 
     if (mode === Mode.Application) {
       [
-        usage,
+        usageEntityValue,
         packageName,
         typeName,
         methodName,
@@ -43,7 +45,7 @@ export function decodeBqrsToMethods(
       ] = tuple as ApplicationModeTuple;
     } else {
       [
-        usage,
+        usageEntityValue,
         packageName,
         typeName,
         methodName,
@@ -97,11 +99,25 @@ export function decodeBqrsToMethods(
       });
     }
 
+    if (usageEntityValue.url === undefined) {
+      return;
+    }
+
+    const usageUrl = mapUrlValue(usageEntityValue.url);
+    if (!usageUrl || !isUrlValueResolvable(usageUrl)) {
+      return;
+    }
+
+    if (!usageEntityValue.label) {
+      return;
+    }
+
     const method = methodsByApiName.get(signature)!;
-    const usages = [
+    const usages: Usage[] = [
       ...method.usages,
       {
-        ...usage,
+        label: usageEntityValue.label,
+        url: usageUrl,
         classification,
       },
     ];

@@ -1,8 +1,5 @@
 import * as sarif from "sarif";
-import {
-  ResultSetSchema,
-  ResolvableLocationValue,
-} from "../common/bqrs-cli-types";
+import { ResultSetSchema } from "../common/bqrs-cli-types";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
@@ -215,7 +212,7 @@ export type FromResultsViewMsg =
  */
 interface ViewSourceFileMsg {
   t: "viewSourceFile";
-  loc: ResolvableLocationValue | UrlValueResolvable;
+  loc: UrlValueResolvable;
   databaseUri: string;
 }
 

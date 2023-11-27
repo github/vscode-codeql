@@ -102,7 +102,7 @@ function mapEntityValue(cellValue: BqrsEntityValue): EntityValue {
   };
 }
 
-function mapUrlValue(urlValue: BqrsUrlValue): UrlValue | undefined {
+export function mapUrlValue(urlValue: BqrsUrlValue): UrlValue | undefined {
   if (typeof urlValue === "string") {
     const location = tryGetLocationFromString(urlValue);
     if (location !== undefined) {

@@ -9,15 +9,10 @@ import {
   window as Window,
   workspace,
 } from "vscode";
-import {
-  ResolvableLocationValue,
-  UrlValue as BqrsUrlValue,
-} from "../../common/bqrs-cli-types";
 import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import { Logger } from "../../common/logging";
 import { DatabaseItem } from "./database-item";
 import { DatabaseManager } from "./database-manager";
-import { tryGetResolvableLocation } from "../../common/bqrs-utils";
 import {
   UrlValueLineColumnLocation,
   UrlValueResolvable,
@@ -74,20 +69,6 @@ function resolveWholeFileLocation(
   return new Location(databaseItem.resolveSourceFile(loc.uri), range);
 }
 
-function isUrlValueResolvable(
-  loc: BqrsUrlValue | UrlValueResolvable | undefined,
-): loc is UrlValueResolvable {
-  if (!loc) {
-    return false;
-  }
-
-  if (typeof loc !== "object") {
-    return false;
-  }
-
-  return "type" in loc;
-}
-
 /**
  * Try to resolve the specified CodeQL location to a URI into the source archive. If no exact location
  * can be resolved, returns `undefined`.
@@ -95,28 +76,25 @@ function isUrlValueResolvable(
  * @param databaseItem Database in which to resolve the file location.
  */
 export function tryResolveLocation(
-  loc: BqrsUrlValue | UrlValueResolvable | undefined,
+  loc: UrlValueResolvable | undefined,
   databaseItem: DatabaseItem,
 ): Location | undefined {
-  const resolvableLoc = isUrlValueResolvable(loc)
-    ? loc
-    : tryGetResolvableLocation(loc);
-  if (!resolvableLoc) {
+  if (!loc) {
     return;
   }
 
-  switch (resolvableLoc.type) {
+  switch (loc.type) {
     case "wholeFileLocation":
-      return resolveWholeFileLocation(resolvableLoc, databaseItem);
+      return resolveWholeFileLocation(loc, databaseItem);
     case "lineColumnLocation":
-      return resolveFivePartLocation(resolvableLoc, databaseItem);
+      return resolveFivePartLocation(loc, databaseItem);
     default:
-      assertNever(resolvableLoc);
+      assertNever(loc);
   }
 }
 
 export async function showResolvableLocation(
-  loc: ResolvableLocationValue | UrlValueResolvable,
+  loc: UrlValueResolvable,
   databaseItem: DatabaseItem,
   logger: Logger,
 ): Promise<void> {
@@ -174,7 +152,7 @@ export async function showLocation(location?: Location) {
 
 export async function jumpToLocation(
   databaseUri: string,
-  loc: ResolvableLocationValue | UrlValueResolvable,
+  loc: UrlValueResolvable,
   databaseManager: DatabaseManager,
   logger: Logger,
 ) {

@@ -63,6 +63,7 @@ const method: Method = {
     {
       label: "open(...)",
       url: {
+        type: "lineColumnLocation",
         uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
         startLine: 14,
         startColumn: 24,
@@ -74,6 +75,7 @@ const method: Method = {
     {
       label: "open(...)",
       url: {
+        type: "lineColumnLocation",
         uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
         startLine: 25,
         startColumn: 24,

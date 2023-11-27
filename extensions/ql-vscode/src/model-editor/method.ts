@@ -1,9 +1,9 @@
-import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
+import { UrlValueResolvable } from "../common/raw-result-types";
 
 export type Call = {
   readonly label: string;
-  readonly url: Readonly<ResolvableLocationValue>;
+  readonly url: Readonly<UrlValueResolvable>;
 };
 
 export enum CallClassification {
