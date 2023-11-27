@@ -10,11 +10,7 @@ import { extLogger } from "../common/logging/vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
-import {
-  transformBqrsResultSet,
-  RawResultSet,
-  BQRSInfo,
-} from "../common/bqrs-cli-types";
+import { BQRSInfo } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -26,6 +22,8 @@ import {
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { App } from "../common/app";
+import { bqrsToResultSet } from "../common/bqrs-result";
+import { RawResultSet } from "../common/raw-result-types";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -93,7 +91,7 @@ export class CompareView extends AbstractWebview<
             time: to.startTime,
           },
         },
-        columns: fromResultSet.schema.columns,
+        columns: fromResultSet.columns,
         commonResultSetNames,
         currentResultSetName,
         rows,
@@ -245,7 +243,7 @@ export class CompareView extends AbstractWebview<
       throw new Error(`Schema ${resultSetName} not found.`);
     }
     const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
-    return transformBqrsResultSet(schema, chunk);
+    return bqrsToResultSet(schema, chunk);
   }
 
   private compareResults(

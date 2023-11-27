@@ -1,9 +1,6 @@
 import * as sarif from "sarif";
 import {
-  RawResultSet,
-  ResultRow,
   ResultSetSchema,
-  Column,
   ResolvableLocationValue,
 } from "../common/bqrs-cli-types";
 import {
@@ -25,7 +22,12 @@ import {
 } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 import { QueryLanguage } from "./query-language";
-import { UrlValueResolvable } from "./raw-result-types";
+import {
+  Column,
+  RawResultSet,
+  Row,
+  UrlValueResolvable,
+} from "./raw-result-types";
 
 /**
  * This module contains types and code that are shared between
@@ -36,7 +38,11 @@ export const SELECT_TABLE_NAME = "#select";
 export const ALERTS_TABLE_NAME = "alerts";
 export const GRAPH_TABLE_NAME = "graph";
 
-export type RawTableResultSet = { t: "RawResultSet" } & RawResultSet;
+export type RawTableResultSet = {
+  t: "RawResultSet";
+  resultSet: RawResultSet;
+};
+
 export type InterpretedResultSet<T> = {
   t: "InterpretedResultSet";
   readonly schema: ResultSetSchema;
@@ -372,8 +378,8 @@ export interface SetComparisonsMessage {
  * (or added) in the comparison.
  */
 export type QueryCompareResult = {
-  from: ResultRow[];
-  to: ResultRow[];
+  from: Row[];
+  to: Row[];
 };
 
 /**

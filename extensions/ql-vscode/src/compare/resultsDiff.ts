@@ -1,5 +1,5 @@
-import { RawResultSet } from "../common/bqrs-cli-types";
 import { QueryCompareResult } from "../common/interface-types";
+import { RawResultSet } from "../common/raw-result-types";
 
 /**
  * Compare the rows of two queries. Use deep equality to determine if
@@ -23,7 +23,7 @@ export default function resultsDiff(
   fromResults: RawResultSet,
   toResults: RawResultSet,
 ): QueryCompareResult {
-  if (fromResults.schema.columns.length !== toResults.schema.columns.length) {
+  if (fromResults.columns.length !== toResults.columns.length) {
     throw new Error("CodeQL Compare: Columns do not match.");
   }
 

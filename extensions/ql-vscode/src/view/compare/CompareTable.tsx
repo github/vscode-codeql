@@ -3,12 +3,12 @@ import * as React from "react";
 import { SetComparisonsMessage } from "../../common/interface-types";
 import RawTableHeader from "../results/RawTableHeader";
 import { className } from "../results/result-table-utils";
-import { ResultRow } from "../../common/bqrs-cli-types";
 import RawTableRow from "../results/RawTableRow";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import TextButton from "../common/TextButton";
 import { styled } from "styled-components";
+import { Row } from "../../common/raw-result-types";
 
 interface Props {
   comparison: SetComparisonsMessage;
@@ -31,7 +31,7 @@ export default function CompareTable(props: Props) {
     });
   }
 
-  function createRows(rows: ResultRow[], databaseUri: string) {
+  function createRows(rows: Row[], databaseUri: string) {
     return (
       <tbody>
         {rows.map((row, rowIndex) => (

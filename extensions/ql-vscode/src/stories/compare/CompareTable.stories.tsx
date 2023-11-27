@@ -5,6 +5,7 @@ import { Meta, StoryFn } from "@storybook/react";
 import CompareTableComponent from "../../view/compare/CompareTable";
 
 import "../../view/results/resultsView.css";
+import { ColumnKind } from "../../common/raw-result-types";
 
 export default {
   title: "Compare/Compare Table",
@@ -32,8 +33,8 @@ CompareTable.args = {
       },
     },
     columns: [
-      { name: "a", kind: "e" },
-      { name: "b", kind: "e" },
+      { name: "a", kind: ColumnKind.Entity },
+      { name: "b", kind: ColumnKind.Entity },
     ],
     commonResultSetNames: ["edges", "nodes", "subpaths", "#select"],
     currentResultSetName: "edges",
@@ -42,23 +43,31 @@ CompareTable.args = {
       to: [
         [
           {
-            label: "url : String",
-            url: {
-              uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-              startLine: 22,
-              startColumn: 27,
-              endLine: 22,
-              endColumn: 57,
+            type: "entity",
+            value: {
+              label: "url : String",
+              url: {
+                type: "lineColumnLocation",
+                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+                startLine: 22,
+                startColumn: 27,
+                endLine: 22,
+                endColumn: 57,
+              },
             },
           },
           {
-            label: "url",
-            url: {
-              uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-              startLine: 23,
-              startColumn: 33,
-              endLine: 23,
-              endColumn: 35,
+            type: "entity",
+            value: {
+              label: "url",
+              url: {
+                type: "lineColumnLocation",
+                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+                startLine: 23,
+                startColumn: 33,
+                endLine: 23,
+                endColumn: 35,
+              },
             },
           },
         ],

@@ -22,6 +22,7 @@ import { ResultTablesHeader } from "./ResultTablesHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ResultCount } from "./ResultCount";
 import { ProblemsViewCheckbox } from "./ProblemsViewCheckbox";
+import { assertNever } from "../../common/helpers-pure";
 
 /**
  * Properties for the `ResultTables` component.
@@ -149,7 +150,7 @@ export function ResultTables(props: ResultTablesProps) {
     const resultSetExists =
       parsedResultSets.resultSetNames.some((v) => selectedTable === v) ||
       getResultSets(rawResultSets, interpretation).some(
-        (v) => selectedTable === v.schema.name,
+        (v) => selectedTable === getResultSetName(v),
       );
 
     // If the selected result set does not exist, select the default result set.
@@ -207,11 +208,14 @@ export function ResultTables(props: ResultTablesProps) {
 
   const resultSet = useMemo(
     () =>
-      resultSets.find((resultSet) => resultSet.schema.name === selectedTable),
+      resultSets.find(
+        (resultSet) => selectedTable === getResultSetName(resultSet),
+      ),
     [resultSets, selectedTable],
   );
   const nonemptyRawResults = resultSets.some(
-    (resultSet) => resultSet.t === "RawResultSet" && resultSet.rows.length > 0,
+    (resultSet) =>
+      resultSet.t === "RawResultSet" && resultSet.resultSet.rows.length > 0,
   );
 
   const resultSetOptions = resultSetNames.map((name) => (
@@ -219,6 +223,9 @@ export function ResultTables(props: ResultTablesProps) {
       {name}
     </option>
   ));
+
+  const resultSetName = resultSet ? getResultSetName(resultSet) : undefined;
+
   return (
     <div>
       <ResultTablesHeader {...props} selectedTable={selectedTable} />
@@ -239,13 +246,13 @@ export function ResultTables(props: ResultTablesProps) {
           </span>
         ) : null}
       </div>
-      {resultSet && (
+      {resultSet && resultSetName && (
         <ResultTable
-          key={resultSet.schema.name}
+          key={resultSetName}
           resultSet={resultSet}
           databaseUri={database.databaseUri}
           resultsPath={resultsPath}
-          sortState={sortStates.get(resultSet.schema.name)}
+          sortState={sortStates.get(resultSetName)}
           nonemptyRawResults={nonemptyRawResults}
           showRawResults={() => {
             setSelectedTable(SELECT_TABLE_NAME);
@@ -260,6 +267,17 @@ export function ResultTables(props: ResultTablesProps) {
 
 function getDefaultResultSet(resultSets: readonly ResultSet[]): string {
   return getDefaultResultSetName(
-    resultSets.map((resultSet) => resultSet.schema.name),
+    resultSets.map((resultSet) => getResultSetName(resultSet)),
   );
+}
+
+function getResultSetName(resultSet: ResultSet): string {
+  switch (resultSet.t) {
+    case "RawResultSet":
+      return resultSet.resultSet.name;
+    case "InterpretedResultSet":
+      return resultSet.schema.name;
+    default:
+      assertNever(resultSet);
+  }
 }
