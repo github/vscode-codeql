@@ -117,6 +117,7 @@ describe("parsing sarif", () => {
         },
       };
       expect(parseSarifLocation(location, "prefix")).toEqual({
+        type: "wholeFileLocation",
         uri: "file:/prefix/abc?x=test",
         userVisibleFile: "abc?x=test",
       });
@@ -131,6 +132,7 @@ describe("parsing sarif", () => {
         },
       };
       expect(parseSarifLocation(location, "prefix")).toEqual({
+        type: "wholeFileLocation",
         uri: "file:/abc%3Fx%3Dtest",
         userVisibleFile: "/abc?x=test",
       });
@@ -151,6 +153,7 @@ describe("parsing sarif", () => {
         },
       };
       expect(parseSarifLocation(location, "prefix")).toEqual({
+        type: "lineColumnLocation",
         uri: "file:abc%3Fx%3Dtest",
         userVisibleFile: "abc?x=test",
         startLine: 1,
