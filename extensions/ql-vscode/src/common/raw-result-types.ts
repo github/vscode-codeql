@@ -31,10 +31,19 @@ export type UrlValueLineColumnLocation = {
   endColumn: number;
 };
 
-export type UrlValue =
-  | UrlValueString
+export type UrlValueResolvable =
   | UrlValueWholeFileLocation
   | UrlValueLineColumnLocation;
+
+export function isUrlValueResolvable(
+  value: UrlValue,
+): value is UrlValueResolvable {
+  return (
+    value.type === "wholeFileLocation" || value.type === "lineColumnLocation"
+  );
+}
+
+export type UrlValue = UrlValueString | UrlValueResolvable;
 
 export type EntityValue = {
   url?: UrlValue;
@@ -68,14 +77,14 @@ export type CellValue =
   | CellValueString
   | CellValueBoolean;
 
-export type Tuple = CellValue[];
+export type Row = CellValue[];
 
 export type RawResultSet = {
   name: string;
-  rows: number;
+  totalRowCount: number;
 
   columns: Column[];
-  tuples: Tuple[];
+  rows: Row[];
 
   nextPageOffset?: number;
 };

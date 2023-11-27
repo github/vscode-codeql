@@ -7,6 +7,7 @@ import {
 } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
+import { UrlValueResolvable } from "../../common/raw-result-types";
 
 export interface ResultTableProps {
   resultSet: ResultSet;
@@ -40,7 +41,7 @@ const oddRowClassName = "vscode-codeql__result-table-row--odd";
 export const selectedRowClassName = "vscode-codeql__result-table-row--selected";
 
 export function jumpToLocation(
-  loc: ResolvableLocationValue,
+  loc: ResolvableLocationValue | UrlValueResolvable,
   databaseUri: string,
 ): void {
   vscode.postMessage({

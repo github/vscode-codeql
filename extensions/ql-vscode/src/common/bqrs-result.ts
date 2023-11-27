@@ -4,8 +4,10 @@ import {
   ColumnKindCode,
   DecodedBqrsChunk,
   EntityValue as BqrsEntityValue,
+  LineColumnLocation,
   ResultSetSchema,
   UrlValue as BqrsUrlValue,
+  WholeFileLocation,
 } from "./bqrs-cli-types";
 import {
   CellValue,
@@ -13,17 +15,19 @@ import {
   ColumnKind,
   EntityValue,
   RawResultSet,
-  Tuple,
+  Row,
   UrlValue,
+  UrlValueResolvable,
 } from "./raw-result-types";
 import { assertNever } from "./helpers-pure";
+import { isEmptyPath } from "./bqrs-utils";
 
 export function bqrsToResultSet(
   schema: ResultSetSchema,
   chunk: DecodedBqrsChunk,
 ): RawResultSet {
   const name = schema.name;
-  const rows = schema.rows;
+  const totalRowCount = schema.rows;
   const nextPageOffset = chunk.next;
 
   const columns = schema.columns.map(
@@ -33,15 +37,15 @@ export function bqrsToResultSet(
     }),
   );
 
-  const tuples = chunk.tuples.map(
-    (tuple): Tuple => tuple.map((cell): CellValue => mapCellValue(cell)),
+  const rows = chunk.tuples.map(
+    (tuple): Row => tuple.map((cell): CellValue => mapCellValue(cell)),
   );
 
   return {
     name,
-    rows,
+    totalRowCount,
     columns,
-    tuples,
+    rows,
     nextPageOffset,
   };
 }
@@ -98,15 +102,27 @@ function mapEntityValue(cellValue: BqrsEntityValue): EntityValue {
   };
 }
 
-function mapUrlValue(urlValue: BqrsUrlValue): UrlValue {
+function mapUrlValue(urlValue: BqrsUrlValue): UrlValue | undefined {
   if (typeof urlValue === "string") {
+    const location = tryGetLocationFromString(urlValue);
+    if (location !== undefined) {
+      return location;
+    }
+
     return {
       type: "string",
       value: urlValue,
     };
   }
 
-  if (urlValue.startLine) {
+  if (isWholeFileLoc(urlValue)) {
+    return {
+      type: "wholeFileLocation",
+      uri: urlValue.uri,
+    };
+  }
+
+  if (isLineColumnLoc(urlValue)) {
     return {
       type: "lineColumnLocation",
       uri: urlValue.uri,
@@ -117,8 +133,64 @@ function mapUrlValue(urlValue: BqrsUrlValue): UrlValue {
     };
   }
 
-  return {
-    type: "wholeFileLocation",
-    uri: urlValue.uri,
-  };
+  return undefined;
+}
+
+function isLineColumnLoc(loc: BqrsUrlValue): loc is LineColumnLocation {
+  return (
+    typeof loc !== "string" &&
+    !isEmptyPath(loc.uri) &&
+    "startLine" in loc &&
+    "startColumn" in loc &&
+    "endLine" in loc &&
+    "endColumn" in loc
+  );
+}
+
+function isWholeFileLoc(loc: BqrsUrlValue): loc is WholeFileLocation {
+  return (
+    typeof loc !== "string" && !isEmptyPath(loc.uri) && !isLineColumnLoc(loc)
+  );
+}
+
+/**
+ * The CodeQL filesystem libraries use this pattern in `getURL()` predicates
+ * to describe the location of an entire filesystem resource.
+ * Such locations appear as `StringLocation`s instead of `FivePartLocation`s.
+ *
+ * Folder resources also get similar URLs, but with the `folder` scheme.
+ * They are deliberately ignored here, since there is no suitable location to show the user.
+ */
+const FILE_LOCATION_REGEX = /file:\/\/(.+):([0-9]+):([0-9]+):([0-9]+):([0-9]+)/;
+
+function tryGetLocationFromString(loc: string): UrlValueResolvable | undefined {
+  const matches = FILE_LOCATION_REGEX.exec(loc);
+  if (matches && matches.length > 1 && matches[1]) {
+    if (isWholeFileMatch(matches)) {
+      return {
+        type: "wholeFileLocation",
+        uri: matches[1],
+      };
+    } else {
+      return {
+        type: "lineColumnLocation",
+        uri: matches[1],
+        startLine: Number(matches[2]),
+        startColumn: Number(matches[3]),
+        endLine: Number(matches[4]),
+        endColumn: Number(matches[5]),
+      };
+    }
+  }
+
+  return undefined;
+}
+
+function isWholeFileMatch(matches: RegExpExecArray): boolean {
+  return (
+    matches[2] === "0" &&
+    matches[3] === "0" &&
+    matches[4] === "0" &&
+    matches[5] === "0"
+  );
 }

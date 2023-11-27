@@ -25,6 +25,7 @@ import {
 } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 import { QueryLanguage } from "./query-language";
+import { UrlValueResolvable } from "./raw-result-types";
 
 /**
  * This module contains types and code that are shared between
@@ -208,7 +209,7 @@ export type FromResultsViewMsg =
  */
 interface ViewSourceFileMsg {
   t: "viewSourceFile";
-  loc: ResolvableLocationValue;
+  loc: ResolvableLocationValue | UrlValueResolvable;
   databaseUri: string;
 }
 
