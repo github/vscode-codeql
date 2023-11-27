@@ -13,7 +13,7 @@ export namespace ColumnKindCode {
   export const ENTITY = "e";
 }
 
-type ColumnKind =
+export type ColumnKind =
   | typeof ColumnKindCode.FLOAT
   | typeof ColumnKindCode.INTEGER
   | typeof ColumnKindCode.STRING
