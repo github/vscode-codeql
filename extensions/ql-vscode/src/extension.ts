@@ -13,7 +13,7 @@ import {
   workspace,
 } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { arch, platform, homedir } from "os";
+import { arch, homedir, platform } from "os";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
@@ -35,13 +35,13 @@ import {
 } from "./config";
 import {
   AstViewer,
-  install,
+  createIDEServer,
   getQueryEditorCommands,
+  install,
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
-  createIDEServer,
 } from "./language-support";
 import { DatabaseManager } from "./databases/local-databases";
 import { DatabaseUI } from "./databases/local-databases-ui";
@@ -68,15 +68,15 @@ import {
   getErrorStack,
 } from "./common/helpers-pure";
 import {
-  ResultsView,
-  WebviewReveal,
   LocalQueries,
   QuickEvalCodeLensProvider,
+  ResultsView,
+  WebviewReveal,
 } from "./local-queries";
 import {
   BaseLogger,
-  showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "./common/logging";
@@ -88,10 +88,6 @@ import {
 } from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
-import {
-  LegacyQueryRunner,
-  QueryServerClient as LegacyQueryServerClient,
-} from "./query-server/legacy";
 import { QLTestAdapterFactory } from "./query-testing/test-adapter";
 import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
@@ -1242,29 +1238,17 @@ async function createQueryServer(
       { title: "CodeQL query server", location: ProgressLocation.Window },
       task,
     );
-  if (await cliServer.cliConstraints.supportsNewQueryServer()) {
-    const qs = new QueryServerClient(
-      app,
-      qlConfigurationListener,
-      cliServer,
-      qsOpts,
-      progressCallback,
-    );
-    ctx.subscriptions.push(qs);
-    await qs.startQueryServer();
-    return new NewQueryRunner(qs);
-  } else {
-    const qs = new LegacyQueryServerClient(
-      app,
-      qlConfigurationListener,
-      cliServer,
-      qsOpts,
-      progressCallback,
-    );
-    ctx.subscriptions.push(qs);
-    await qs.startQueryServer();
-    return new LegacyQueryRunner(qs);
-  }
+
+  const qs = new QueryServerClient(
+    app,
+    qlConfigurationListener,
+    cliServer,
+    qsOpts,
+    progressCallback,
+  );
+  ctx.subscriptions.push(qs);
+  await qs.startQueryServer();
+  return new NewQueryRunner(qs);
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {

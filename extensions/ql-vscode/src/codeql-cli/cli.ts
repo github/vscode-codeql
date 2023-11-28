@@ -2,7 +2,7 @@ import { EOL } from "os";
 import { spawn } from "child-process-promise";
 import * as child_process from "child_process";
 import { readFile } from "fs-extra";
-import { dirname, join, delimiter } from "path";
+import { delimiter, dirname, join } from "path";
 import * as sarif from "sarif";
 import { SemVer } from "semver";
 import { Readable } from "stream";
@@ -15,7 +15,7 @@ import {
   DecodedBqrs,
   DecodedBqrsChunk,
 } from "../common/bqrs-cli-types";
-import { allowCanaryQueryServer, CliConfig } from "../config";
+import { CliConfig } from "../config";
 import {
   DistributionProvider,
   FindDistributionResultKind,
@@ -1770,11 +1770,6 @@ export class CliVersionConstraint {
 
   private async isVersionAtLeast(v: SemVer) {
     return (await this.cli.getVersion()).compare(v) >= 0;
-  }
-
-  async supportsNewQueryServer() {
-    // This allows users to explicitly opt-out of the new query server.
-    return allowCanaryQueryServer();
   }
 
   async supportsQlpacksKind() {

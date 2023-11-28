@@ -2,27 +2,19 @@ import { join } from "path";
 import { readFileSync } from "fs-extra";
 import { Uri } from "vscode";
 
-import {
-  Severity,
-  compileQuery,
-  registerDatabases,
-  deregisterDatabases,
-} from "../../../src/query-server/legacy-messages";
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/tmp-dir";
 import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
-import {
-  QueryInProgress,
-  compileQuery as compileQueryLegacy,
-} from "../../../src/query-server/legacy/run-queries";
-import {
-  LegacyQueryRunner,
-  QueryServerClient,
-} from "../../../src/query-server/legacy";
 import { DatabaseItem } from "../../../src/databases/local-databases";
 import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
 import { BqrsKind } from "../../../src/common/bqrs-cli-types";
+import { NewQueryRunner, QueryServerClient } from "../../../src/query-server";
+import { QueryEvaluationInfo } from "../../../src/run-queries-shared";
+import {
+  deregisterDatabases,
+  registerDatabases,
+} from "../../../src/query-server/new-messages";
 
 describe("run-queries", () => {
   let isCanarySpy: jest.SpiedFunction<typeof config.isCanary>;
@@ -33,45 +25,45 @@ describe("run-queries", () => {
 
   it("should create a QueryEvaluationInfo", () => {
     const saveDir = "query-save-dir";
-    const info = createMockQueryInfo(true, saveDir);
+    const queryEvalInfo = createMockQueryEvaluationInfo(true, saveDir);
 
-    expect(info.queryEvalInfo.dilPath).toBe(join(saveDir, "results.dil"));
-    expect(info.queryEvalInfo.resultsPaths.resultsPath).toBe(
+    expect(queryEvalInfo.dilPath).toBe(join(saveDir, "results.dil"));
+    expect(queryEvalInfo.resultsPaths.resultsPath).toBe(
       join(saveDir, "results.bqrs"),
     );
-    expect(info.queryEvalInfo.resultsPaths.interpretedResultsPath).toBe(
+    expect(queryEvalInfo.resultsPaths.interpretedResultsPath).toBe(
       join(saveDir, "interpretedResults.sarif"),
     );
-    expect(info.dbItemPath).toBe(Uri.file("/abc").fsPath);
+    expect(queryEvalInfo.dbItemPath).toBe(Uri.file("/abc").fsPath);
   });
 
   it("should check if interpreted results can be created", async () => {
-    const info = createMockQueryInfo(true);
+    const queryEvalInfo = createMockQueryEvaluationInfo(true);
 
     // "1"
-    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(true);
+    expect(queryEvalInfo.canHaveInterpretedResults()).toBe(true);
 
-    (info.queryEvalInfo as any).databaseHasMetadataFile = false;
+    (queryEvalInfo as any).databaseHasMetadataFile = false;
     // "2"
-    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
+    expect(queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
-    (info.queryEvalInfo as any).databaseHasMetadataFile = true;
-    info.metadata!.kind = undefined;
+    (queryEvalInfo as any).databaseHasMetadataFile = true;
+    queryEvalInfo.metadata!.kind = undefined;
     // "3"
-    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
+    expect(queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
-    info.metadata!.kind = "table";
+    queryEvalInfo.metadata!.kind = "table";
     // "4"
-    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
+    expect(queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
     // Graphs are not interpreted unless canary is set
-    info.metadata!.kind = "graph";
+    queryEvalInfo.metadata!.kind = "graph";
     // "5"
-    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(false);
+    expect(queryEvalInfo.canHaveInterpretedResults()).toBe(false);
 
     isCanarySpy.mockReturnValueOnce(true);
     // "6"
-    expect(info.queryEvalInfo.canHaveInterpretedResults()).toBe(true);
+    expect(queryEvalInfo.canHaveInterpretedResults()).toBe(true);
   });
 
   [SELECT_QUERY_NAME, "other"].forEach((resultSetName) => {
@@ -102,11 +94,8 @@ describe("run-queries", () => {
           },
         ],
       });
-      const info = createMockQueryInfo();
-      const promise = info.queryEvalInfo.exportCsvResults(
-        cliServer,
-        csvLocation,
-      );
+      const queryEvalInfo = createMockQueryEvaluationInfo();
+      const promise = queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
       const result = await promise;
       expect(result).toBe(true);
@@ -145,8 +134,8 @@ describe("run-queries", () => {
         },
       ],
     });
-    const info = createMockQueryInfo();
-    const promise = info.queryEvalInfo.exportCsvResults(cliServer, csvLocation);
+    const queryEvalInfo = createMockQueryEvaluationInfo();
+    const promise = queryEvalInfo.exportCsvResults(cliServer, csvLocation);
 
     const result = await promise;
     expect(result).toBe(true);
@@ -169,69 +158,15 @@ describe("run-queries", () => {
     const cliServer = createMockCliServer({
       bqrsInfo: [{ "result-sets": [] }],
     });
-    const info = createMockQueryInfo();
-    const result = await info.queryEvalInfo.exportCsvResults(
-      cliServer,
-      csvLocation,
-    );
+    const queryEvalInfo = createMockQueryEvaluationInfo();
+    const result = await queryEvalInfo.exportCsvResults(cliServer, csvLocation);
     expect(result).toBe(false);
-  });
-
-  describe("compile", () => {
-    it("should compile", async () => {
-      const info = createMockQueryInfo();
-      const qs = createMockQueryServerClient();
-      const mockProgress = "progress-monitor";
-      const mockCancel = "cancel-token";
-      const mockQlProgram = {
-        dbschemePath: "",
-        libraryPath: [],
-        queryPath: "",
-      };
-
-      const results = await compileQueryLegacy(
-        qs as any,
-        mockQlProgram,
-        undefined,
-        info.queryEvalInfo,
-        mockProgress as any,
-        mockCancel as any,
-        qs.logger,
-      );
-      expect(results).toEqual([{ message: "err", severity: Severity.ERROR }]);
-
-      expect(qs.sendRequest).toHaveBeenCalledTimes(1);
-      expect(qs.sendRequest).toHaveBeenCalledWith(
-        compileQuery,
-        {
-          compilationOptions: {
-            computeNoLocationUrls: true,
-            failOnWarnings: false,
-            fastCompilation: false,
-            includeDilInQlo: true,
-            localChecking: false,
-            noComputeGetUrl: false,
-            noComputeToString: false,
-            computeDefaultStrings: true,
-            emitDebugInfo: true,
-          },
-          extraOptions: {
-            timeoutSecs: 5,
-          },
-          queryToCheck: mockQlProgram,
-          resultPath: info.queryEvalInfo.compileQueryPath,
-          target: { query: {} },
-        },
-        mockCancel,
-        mockProgress,
-      );
-    });
   });
 
   describe("register", () => {
     it("should register", async () => {
       const qs = createMockQueryServerClient();
-      const runner = new LegacyQueryRunner(qs);
+      const runner = new NewQueryRunner(qs);
       const datasetUri = Uri.file("dataset-uri");
 
       const dbItem: DatabaseItem = {
@@ -244,18 +179,13 @@ describe("run-queries", () => {
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
       expect(qs.sendRequest).toHaveBeenCalledWith(registerDatabases, {
-        databases: [
-          {
-            dbDir: datasetUri.fsPath,
-            workingSet: "default",
-          },
-        ],
+        databases: [datasetUri.fsPath],
       });
     });
 
     it("should deregister", async () => {
       const qs = createMockQueryServerClient();
-      const runner = new LegacyQueryRunner(qs);
+      const runner = new NewQueryRunner(qs);
       const datasetUri = Uri.file("dataset-uri");
 
       const dbItem: DatabaseItem = {
@@ -268,26 +198,20 @@ describe("run-queries", () => {
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
       expect(qs.sendRequest).toHaveBeenCalledWith(deregisterDatabases, {
-        databases: [
-          {
-            dbDir: datasetUri.fsPath,
-            workingSet: "default",
-          },
-        ],
+        databases: [datasetUri.fsPath],
       });
     });
   });
 
   let queryNum = 0;
-  function createMockQueryInfo(
+  function createMockQueryEvaluationInfo(
     databaseHasMetadataFile = true,
     saveDir = `save-dir${queryNum++}`,
   ) {
-    return new QueryInProgress(
+    return new QueryEvaluationInfo(
       saveDir,
       Uri.parse("file:///abc").fsPath,
       databaseHasMetadataFile,
-      "my-scheme", // queryDbscheme,
       undefined,
       {
         kind: "problem",
@@ -302,12 +226,7 @@ describe("run-queries", () => {
       config: {
         timeoutSecs: 5,
       },
-      sendRequest: jest.fn().mockResolvedValue({
-        messages: [
-          { message: "err", severity: Severity.ERROR },
-          { message: "warn", severity: Severity.WARNING },
-        ],
-      }),
+      sendRequest: jest.fn().mockResolvedValue({}),
       logger: {
         log: jest.fn(),
       },
