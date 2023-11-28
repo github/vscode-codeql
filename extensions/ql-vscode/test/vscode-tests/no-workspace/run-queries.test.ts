@@ -6,8 +6,11 @@ import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/tmp-dir";
 import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
-import { DatabaseItem } from "../../../src/databases/local-databases";
-import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
+import {
+  DeepPartial,
+  mockDatabaseItem,
+  mockedObject,
+} from "../utils/mocking.helpers";
 import { BqrsKind } from "../../../src/common/bqrs-cli-types";
 import { NewQueryRunner, QueryServerClient } from "../../../src/query-server";
 import { QueryEvaluationInfo } from "../../../src/run-queries-shared";
@@ -167,38 +170,42 @@ describe("run-queries", () => {
     it("should register", async () => {
       const qs = createMockQueryServerClient();
       const runner = new NewQueryRunner(qs);
+      const databaseUri = Uri.file("database-uri");
       const datasetUri = Uri.file("dataset-uri");
 
-      const dbItem: DatabaseItem = {
+      const dbItem = mockDatabaseItem({
+        databaseUri,
         contents: {
           datasetUri,
         },
-      } as any;
+      });
 
       await runner.registerDatabase(dbItem);
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
       expect(qs.sendRequest).toHaveBeenCalledWith(registerDatabases, {
-        databases: [datasetUri.fsPath],
+        databases: [databaseUri.fsPath],
       });
     });
 
     it("should deregister", async () => {
       const qs = createMockQueryServerClient();
       const runner = new NewQueryRunner(qs);
+      const databaseUri = Uri.file("database-uri");
       const datasetUri = Uri.file("dataset-uri");
 
-      const dbItem: DatabaseItem = {
+      const dbItem = mockDatabaseItem({
+        databaseUri,
         contents: {
           datasetUri,
         },
-      } as any;
+      });
 
       await runner.deregisterDatabase(dbItem);
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
       expect(qs.sendRequest).toHaveBeenCalledWith(deregisterDatabases, {
-        databases: [datasetUri.fsPath],
+        databases: [databaseUri.fsPath],
       });
     });
   });
