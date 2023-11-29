@@ -1,5 +1,11 @@
 import { parseAccessPathTokens } from "../view/common/SuggestBox/access-path";
 import type { AccessPathOption, AccessPathSuggestionRow } from "./suggestions";
+import { AccessPathSuggestionDefinitionType } from "./suggestions";
+
+const CodiconSymbols: Record<AccessPathSuggestionDefinitionType, string> = {
+  [AccessPathSuggestionDefinitionType.Parameter]: "symbol-parameter",
+  [AccessPathSuggestionDefinitionType.Return]: "symbol-method",
+};
 
 /**
  * Parses the query results from a parsed array of rows to a list of options per method signature.
@@ -54,7 +60,7 @@ function parseQueryResultsForPath(
       label: lastToken.text,
       value,
       details,
-      icon: `symbol-${definitionType.toLowerCase()}`,
+      icon: CodiconSymbols[definitionType],
       followup: [],
     };
 
