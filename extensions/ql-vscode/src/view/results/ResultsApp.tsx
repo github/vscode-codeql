@@ -13,6 +13,7 @@ import {
   ParsedResultSets,
   NavigateMsg,
   ResultSet,
+  MadFileLocation,
 } from "../../common/interface-types";
 import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./ResultTables";
@@ -41,6 +42,7 @@ interface ResultsInfo {
   metadata?: QueryMetadata;
   queryName: string;
   queryPath: string;
+  madData: Map<string, MadFileLocation[]>;
 }
 
 interface Results {
@@ -154,6 +156,7 @@ export function ResultsApp() {
             metadata: msg.metadata,
             queryName: msg.queryName,
             queryPath: msg.queryPath,
+            madData: msg.madData,
           });
 
           break;
@@ -191,6 +194,7 @@ export function ResultsApp() {
             metadata: msg.metadata,
             queryName: msg.queryName,
             queryPath: msg.queryPath,
+            madData: msg.madData,
           });
           break;
         }

@@ -196,7 +196,7 @@ function validateExtensionPack(
   return true;
 }
 
-async function readExtensionPack(
+export async function readExtensionPack(
   path: string,
   language: string,
 ): Promise<ExtensionPack> {

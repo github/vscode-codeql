@@ -299,7 +299,9 @@ export function createFilenameForPackage(
   return `${prefix}${packageName}${suffix}.yml`;
 }
 
-function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
+export function validateModelExtensionFile(
+  data: unknown,
+): data is ModelExtensionFile {
   modelExtensionFileSchemaValidate(data);
 
   if (modelExtensionFileSchemaValidate.errors) {

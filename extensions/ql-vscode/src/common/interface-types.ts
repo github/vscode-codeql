@@ -104,6 +104,11 @@ export interface SortedResultSetInfo {
 
 export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
 
+export type MadFileLocation = {
+  path: string;
+  line: number;
+};
+
 /**
  * A message to indicate that the results are being updated.
  *
@@ -127,6 +132,7 @@ interface SetStateMsg {
   metadata?: QueryMetadata;
   queryName: string;
   queryPath: string;
+  madData: Map<string, MadFileLocation[]>;
   /**
    * Whether to keep displaying the old results while rendering the new results.
    *
@@ -157,6 +163,7 @@ interface ShowInterpretedPageMsg {
   resultSetNames: string[];
   queryName: string;
   queryPath: string;
+  madData: Map<string, MadFileLocation[]>;
 }
 
 export const enum NavigationDirection {

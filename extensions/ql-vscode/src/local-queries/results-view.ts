@@ -9,6 +9,7 @@ import {
   window as Window,
   env,
   WebviewPanel,
+  workspace,
 } from "vscode";
 import * as cli from "../codeql-cli/cli";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -22,6 +23,7 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
+  hashMad,
 } from "../common/helpers-pure";
 import {
   FromResultsViewMsg,
@@ -39,6 +41,7 @@ import {
   NavigationDirection,
   getDefaultResultSetName,
   ParsedResultSets,
+  MadFileLocation,
 } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
@@ -76,6 +79,9 @@ import { redactableError } from "../common/errors";
 import { ResultsViewCommands } from "../common/commands";
 import { App } from "../common/app";
 import { Disposable } from "../common/disposable-object";
+import { readFile } from "fs-extra";
+import { validateModelExtensionFile } from "../model-editor/yaml";
+import { load as loadYaml } from "js-yaml";
 
 /**
  * results-view.ts
@@ -538,6 +544,8 @@ export class ResultsView extends AbstractWebview<
       resultSetNames,
     };
 
+    const madData = await readAllMads();
+
     await this.postMessage({
       t: "setState",
       interpretation: interpretationPage,
@@ -553,6 +561,7 @@ export class ResultsView extends AbstractWebview<
       metadata: fullQuery.completedQuery.query.metadata,
       queryName: this.labelProvider.getLabel(fullQuery),
       queryPath: fullQuery.initialInfo.queryPath,
+      madData,
     });
   }
 
@@ -584,6 +593,8 @@ export class ResultsView extends AbstractWebview<
     );
     const resultSetNames = resultSetSchemas.map((schema) => schema.name);
 
+    const madData = await readAllMads();
+
     await this.postMessage({
       t: "showInterpretedPage",
       interpretation: this.getPageOfInterpretedResults(pageNumber),
@@ -595,6 +606,7 @@ export class ResultsView extends AbstractWebview<
       numPages: numInterpretedPages(this._interpretation),
       queryName: this.labelProvider.getLabel(this._displayedQuery),
       queryPath: this._displayedQuery.initialInfo.queryPath,
+      madData,
     });
   }
 
@@ -680,6 +692,8 @@ export class ResultsView extends AbstractWebview<
       resultSetNames,
     };
 
+    const madData = await readAllMads();
+
     await this.postMessage({
       t: "setState",
       interpretation: this._interpretation,
@@ -695,6 +709,7 @@ export class ResultsView extends AbstractWebview<
       metadata: results.completedQuery.query.metadata,
       queryName: this.labelProvider.getLabel(results),
       queryPath: results.initialInfo.queryPath,
+      madData,
     });
   }
 
@@ -1007,4 +1022,59 @@ export class ResultsView extends AbstractWebview<
     this.disposableEventListeners.forEach((d) => d.dispose());
     this.disposableEventListeners = [];
   }
+}
+
+async function readAllMads(): Promise<Map<string, MadFileLocation[]>> {
+  // THIS ENTIRE FUNCTION IS A HACK
+  const madHashes = new Map<string, MadFileLocation[]>();
+  // Iterate over all yml files
+  void extLogger.log(`[MAD] Finding all yml files`);
+  const limit = 10000;
+  const ymlFiles = await workspace.findFiles("**/*yml", undefined, limit);
+  void extLogger.log(`[MAD] Found ${ymlFiles.length} yml files`);
+  // Warn if we go to the limit
+  if (ymlFiles.length === limit) {
+    void extLogger.log(
+      `[MAD] Warning: found ${limit} yml files, may have missed some`,
+    );
+  }
+  for (const ymlFile of ymlFiles) {
+    const yaml = await readFile(ymlFile.fsPath, "utf8");
+    let data;
+    try {
+      data = loadYaml(yaml, {
+        filename: ymlFile.fsPath,
+      });
+      if (!validateModelExtensionFile(data)) {
+        continue;
+      }
+    } catch (e) {
+      continue;
+    }
+    // TODO: how do we get linenumbers?
+    for (const extension of data.extensions) {
+      // We only consider java for now
+      if (extension.addsTo.pack !== "codeql/java-all") {
+        continue;
+      }
+      // Hash the values
+      void extLogger.log(`[MAD] Processing ${ymlFile.fsPath}...`);
+
+      for (const row of extension.data) {
+        const hash = hashMad(row);
+
+        // TODO: there could be multiple values for the same hash, this picks the latest
+        madHashes.set(hash, [
+          {
+            path: ymlFile.fsPath,
+            line: 1,
+          },
+        ]);
+      }
+    }
+  }
+
+  void extLogger.log(`[MAD] Found ${madHashes.size} MAD hashes`);
+
+  return madHashes;
 }
