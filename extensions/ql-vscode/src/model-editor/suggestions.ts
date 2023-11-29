@@ -1,6 +1,7 @@
 import type { MethodSignature } from "./method";
 
 export enum AccessPathSuggestionDefinitionType {
+  Class = "class",
   Parameter = "parameter",
   Return = "return",
 }
