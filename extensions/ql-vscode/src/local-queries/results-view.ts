@@ -730,6 +730,7 @@ export class ResultsView extends AbstractWebview<
         sourceInfo,
       );
 
+      void extLogger.log(`**SARIF: ${JSON.stringify(sarif, null, 2)}.`);
       sarif.runs.forEach((run) => {
         if (run.results) {
           sortInterpretedResults(run.results, sortState);

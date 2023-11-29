@@ -48,6 +48,7 @@ export function AlertTablePathNodeRow(props: Props) {
   const isSelected = Keys.equalsNotUndefined(selectedItem, pathNodeKey);
   const stepIndex = pathNodeIndex + 1; // Convert to 1-based
   const zebraIndex = resultIndex + stepIndex;
+  const madHash = step.properties ? step.properties["mad.hash"] : undefined;
   return (
     <tr
       ref={isSelected ? selectedItemRef : undefined}
@@ -90,6 +91,17 @@ export function AlertTablePathNodeRow(props: Props) {
       >
         {step.location && (
           <SarifLocation
+            loc={step.location}
+            sourceLocationPrefix={sourceLocationPrefix}
+            databaseUri={databaseUri}
+            onClick={handleSarifLocationClicked}
+          />
+        )}
+      </td>
+      <td {...selectableZebraStripe(isSelected, zebraIndex)}>
+        {madHash && (
+          <SarifLocation
+            text={madHash}
             loc={step.location}
             sourceLocationPrefix={sourceLocationPrefix}
             databaseUri={databaseUri}
