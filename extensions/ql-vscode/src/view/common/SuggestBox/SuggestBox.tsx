@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import {
   autoUpdate,
   flip,
@@ -17,9 +17,10 @@ import { css, styled } from "styled-components";
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import { SuggestBoxItem } from "./SuggestBoxItem";
 import { useOpenKey } from "./useOpenKey";
-import { findMatchingOptions, suggestedOptions } from "./suggestions";
+import { findMatchingOptions } from "./suggestions";
 import { LabelText } from "./LabelText";
 import { validateAccessPath } from "./access-path";
+import type { AccessPathOption } from "../../../model-editor/suggestions";
 
 const Input = styled(VSCodeTextField)<{ $error: boolean }>`
   width: 430px;
@@ -59,9 +60,24 @@ const NoSuggestionsText = styled.div`
   padding-left: 22px;
 `;
 
-export const SuggestBox = () => {
+type Props = {
+  value?: string;
+  onChange: (value: string) => void;
+  options: AccessPathOption[];
+
+  disabled?: boolean;
+
+  "aria-label"?: string;
+};
+
+export const SuggestBox = ({
+  value = "",
+  onChange,
+  options,
+  disabled,
+  "aria-label": ariaLabel,
+}: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const listRef = useRef<Array<HTMLElement | null>>([]);
@@ -102,49 +118,57 @@ export const SuggestBox = () => {
     [focus, role, dismiss, openKey, listNav],
   );
 
-  const handleInput = useCallback((event: FormEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value;
-    setInputValue(value);
-    setIsOpen(true);
-    setActiveIndex(0);
-  }, []);
-
-  const suggestionItems = useMemo(() => {
-    return findMatchingOptions(suggestedOptions, inputValue);
-  }, [inputValue]);
-
-  const diagnostics = useMemo(
-    () => validateAccessPath(inputValue),
-    [inputValue],
+  const handleInput = useCallback(
+    (event: FormEvent<HTMLInputElement>) => {
+      const value = event.currentTarget.value;
+      onChange(value);
+      setIsOpen(true);
+      setActiveIndex(0);
+    },
+    [onChange],
   );
 
+  const suggestionItems = useMemo(() => {
+    return findMatchingOptions(options, value);
+  }, [options, value]);
+
+  const diagnostics = useMemo(() => validateAccessPath(value), [value]);
+
   const hasSyntaxError = diagnostics.length > 0;
+
+  useEffect(() => {
+    if (disabled) {
+      setIsOpen(false);
+    }
+  }, [disabled]);
 
   return (
     <>
       <Input
         {...getReferenceProps({
           ref: refs.setReference,
-          value: inputValue,
+          value,
           onInput: handleInput,
           "aria-autocomplete": "list",
+          "aria-label": ariaLabel,
           onKeyDown: (event) => {
             if (
               event.key === "Enter" &&
               activeIndex != null &&
               suggestionItems[activeIndex]
             ) {
-              setInputValue(suggestionItems[activeIndex].value);
+              onChange(suggestionItems[activeIndex].value);
               setActiveIndex(null);
               setIsOpen(false);
             }
           },
+          disabled,
         })}
         $error={hasSyntaxError}
       />
       {isOpen && (
         <FloatingPortal>
-          {inputValue && suggestionItems.length === 0 && (
+          {value && suggestionItems.length === 0 && (
             <NoSuggestionsContainer
               {...getFloatingProps({
                 ref: refs.setFloating,
@@ -175,7 +199,7 @@ export const SuggestBox = () => {
                         listRef.current[index] = node;
                       },
                       onClick() {
-                        setInputValue(item.value);
+                        onChange(item.value);
                         setIsOpen(false);
 
                         refs.domReference.current?.focus();
@@ -183,9 +207,7 @@ export const SuggestBox = () => {
                     })}
                     active={activeIndex === index}
                     icon={item.icon}
-                    labelText={
-                      <LabelText item={item} inputValue={inputValue} />
-                    }
+                    labelText={<LabelText item={item} inputValue={value} />}
                     detailsText={item.details}
                   />
                 ))}

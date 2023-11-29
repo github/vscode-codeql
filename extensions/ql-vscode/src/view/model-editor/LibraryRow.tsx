@@ -13,6 +13,7 @@ import {
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -75,6 +76,7 @@ export type LibraryRowProps = {
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
+  accessPathSuggestions?: AccessPathSuggestionOptions;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
@@ -96,6 +98,7 @@ export const LibraryRow = ({
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
+  accessPathSuggestions,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -232,6 +235,7 @@ export const LibraryRow = ({
             viewState={viewState}
             hideModeledMethods={hideModeledMethods}
             revealedMethodSignature={revealedMethodSignature}
+            accessPathSuggestions={accessPathSuggestions}
             onChange={onChange}
           />
           <SectionDivider />

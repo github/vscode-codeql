@@ -1,51 +1,17 @@
 import type { ModelsAsDataLanguage } from "../models-as-data";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { Mode } from "../../shared/mode";
+import {
+  parseRubyAccessPath,
+  parseRubyMethodFromPath,
+  rubyMethodPath,
+  rubyMethodSignature,
+  rubyPath,
+} from "./access-paths";
 import { parseGenerateModelResults } from "./generate";
+import { parseAccessPathSuggestionsResults } from "./suggestions";
 import type { MethodArgument } from "../../method";
 import { getArgumentsList } from "../../method";
-
-function parseRubyMethodFromPath(path: string): string {
-  const match = path.match(/Method\[([^\]]+)].*/);
-  if (match) {
-    return match[1];
-  } else {
-    return "";
-  }
-}
-
-function parseRubyAccessPath(path: string): {
-  methodName: string;
-  path: string;
-} {
-  const match = path.match(/Method\[([^\]]+)]\.(.*)/);
-  if (match) {
-    return { methodName: match[1], path: match[2] };
-  } else {
-    return { methodName: "", path: "" };
-  }
-}
-
-function rubyMethodSignature(typeName: string, methodName: string) {
-  return `${typeName}#${methodName}`;
-}
-
-function rubyMethodPath(methodName: string) {
-  if (methodName === "") {
-    return "";
-  }
-
-  return `Method[${methodName}]`;
-}
-
-function rubyPath(methodName: string, path: string) {
-  const methodPath = rubyMethodPath(methodName);
-  if (methodPath === "") {
-    return path;
-  }
-
-  return `${methodPath}.${path}`;
-}
 
 export const ruby: ModelsAsDataLanguage = {
   availableModes: [Mode.Framework],
@@ -202,6 +168,9 @@ export const ruby: ModelsAsDataLanguage = {
       "query path": "queries/modeling/GenerateModel.ql",
     },
     parseResults: parseGenerateModelResults,
+  },
+  accessPathSuggestions: {
+    parseResults: parseAccessPathSuggestionsResults,
   },
   getArgumentOptions: (method) => {
     const argumentsList = getArgumentsList(method.methodParameters).map(
