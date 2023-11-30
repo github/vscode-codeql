@@ -111,6 +111,7 @@ export type MadFileLocation = {
   line: number;
   column: number;
   length: number;
+  extensible: string;
 };
 
 export type MadMap = Record<string, MadFileLocation[]>;

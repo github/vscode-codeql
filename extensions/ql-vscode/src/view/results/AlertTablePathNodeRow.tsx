@@ -2,15 +2,10 @@ import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
-import { selectableZebraStripe, openFileLocation } from "./result-table-utils";
+import { selectableZebraStripe } from "./result-table-utils";
 import { useCallback, useMemo } from "react";
 import { MadFileLocation } from "../../common/interface-types";
-import { styled } from "styled-components";
-import TextButton from "../common/TextButton";
-
-const Link = styled(TextButton)`
-  text-decoration: none;
-`;
+import { AlertTableMadLink } from "./AlertTableMadLink";
 
 interface Props {
   step: Sarif.ThreadFlowLocation;
@@ -59,19 +54,6 @@ export function AlertTablePathNodeRow(props: Props) {
   const zebraIndex = resultIndex + stepIndex;
 
   const madLocations = findLocations(step, madData);
-  // TODO: how to display multiple locations?
-  const madLocation = madLocations ? madLocations[0] : undefined;
-  const handleMadClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!madLocation) {
-        return;
-      }
-      openFileLocation(madLocation);
-    },
-    [madLocation],
-  );
 
   return (
     <tr
@@ -123,9 +105,9 @@ export function AlertTablePathNodeRow(props: Props) {
         )}
       </td>
       <td {...selectableZebraStripe(isSelected, zebraIndex)}>
-        {madLocation && (
-          <Link onClick={handleMadClick}>MAD:{madLocation.line}</Link>
-        )}
+        {madLocations.map((madLocation, i) => (
+          <AlertTableMadLink key={i} madLocation={madLocation} />
+        ))}
       </td>
     </tr>
   );

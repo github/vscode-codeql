@@ -1095,6 +1095,7 @@ async function readAllMads(): Promise<MadMap> {
             line: lineNumber + 1,
             column: 1,
             length: 1,
+            extensible: extension.addsTo.extensible,
           },
         ];
       }
