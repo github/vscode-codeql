@@ -1,8 +1,19 @@
 import type { MethodSignature } from "./method";
 
 export enum AccessPathSuggestionDefinitionType {
+  Array = "array",
   Class = "class",
+  Enum = "enum",
+  EnumMember = "enum-member",
+  Field = "field",
+  Interface = "interface",
+  Key = "key",
+  Method = "method",
+  Misc = "misc",
+  Namespace = "namespace",
   Parameter = "parameter",
+  Property = "property",
+  Structure = "structure",
   Return = "return",
 }
 

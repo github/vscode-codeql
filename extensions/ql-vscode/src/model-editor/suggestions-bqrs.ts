@@ -3,7 +3,19 @@ import type { AccessPathOption, AccessPathSuggestionRow } from "./suggestions";
 import { AccessPathSuggestionDefinitionType } from "./suggestions";
 
 const CodiconSymbols: Record<AccessPathSuggestionDefinitionType, string> = {
+  [AccessPathSuggestionDefinitionType.Array]: "symbol-array",
+  [AccessPathSuggestionDefinitionType.Class]: "symbol-class",
+  [AccessPathSuggestionDefinitionType.Enum]: "symbol-enum",
+  [AccessPathSuggestionDefinitionType.EnumMember]: "symbol-enum-member",
+  [AccessPathSuggestionDefinitionType.Field]: "symbol-field",
+  [AccessPathSuggestionDefinitionType.Interface]: "symbol-interface",
+  [AccessPathSuggestionDefinitionType.Key]: "symbol-key",
+  [AccessPathSuggestionDefinitionType.Method]: "symbol-method",
+  [AccessPathSuggestionDefinitionType.Misc]: "symbol-misc",
+  [AccessPathSuggestionDefinitionType.Namespace]: "symbol-namespace",
   [AccessPathSuggestionDefinitionType.Parameter]: "symbol-parameter",
+  [AccessPathSuggestionDefinitionType.Property]: "symbol-property",
+  [AccessPathSuggestionDefinitionType.Structure]: "symbol-structure",
   [AccessPathSuggestionDefinitionType.Return]: "symbol-method",
 };
 
