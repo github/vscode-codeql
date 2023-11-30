@@ -2,9 +2,15 @@ import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
-import { selectableZebraStripe } from "./result-table-utils";
+import { selectableZebraStripe, openFile } from "./result-table-utils";
 import { useCallback, useMemo } from "react";
 import { MadFileLocation } from "../../common/interface-types";
+import { styled } from "styled-components";
+import TextButton from "../common/TextButton";
+
+const Link = styled(TextButton)`
+  text-decoration: none;
+`;
 
 interface Props {
   step: Sarif.ThreadFlowLocation;
@@ -55,6 +61,18 @@ export function AlertTablePathNodeRow(props: Props) {
   const madLocations = madData[madHash];
   // TODO: how to display multiple locations?
   const madLocation = madLocations ? madLocations[0] : undefined;
+  const handleMadClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!madLocation) {
+        return;
+      }
+      openFile(madLocation?.path);
+    },
+    [madLocation],
+  );
+
   return (
     <tr
       ref={isSelected ? selectedItemRef : undefined}
@@ -105,7 +123,7 @@ export function AlertTablePathNodeRow(props: Props) {
         )}
       </td>
       <td {...selectableZebraStripe(isSelected, zebraIndex)}>
-        {JSON.stringify(madLocation, null, 2)}
+        {madLocation && <Link onClick={handleMadClick}>MAD</Link>}
       </td>
     </tr>
   );
