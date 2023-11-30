@@ -1063,13 +1063,21 @@ async function readAllMads(): Promise<MadMap> {
       continue;
     }
 
-    const lineToKey = (line: string) => {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith("- ")) {
-        return undefined;
+    let isJava = false;
+    // Check whether the language is java
+    for (const extension of data.extensions) {
+      // We only consider java for now
+      if (extension.addsTo.pack === "codeql/java-all") {
+        isJava = true;
+        break;
       }
-      return dump(loadYaml(trimmed));
-    };
+    }
+    if (!isJava) {
+      continue;
+    }
+
+    void extLogger.log(`[MAD] Processing ${ymlFile.fsPath}...`);
+
     const linesToNumbers: Record<string, number> = Object.fromEntries(
       yaml
         .split("\n")
@@ -1079,19 +1087,15 @@ async function readAllMads(): Promise<MadMap> {
         .filter(([k, _v]) => k !== undefined),
     );
 
-    // TODO: how do we get linenumbers?
     for (const extension of data.extensions) {
-      // We only consider java for now
-      if (extension.addsTo.pack !== "codeql/java-all") {
-        continue;
-      }
       // Hash the values
-      void extLogger.log(`[MAD] Processing ${ymlFile.fsPath}...`);
-
       for (const row of extension.data) {
+        if (extension.addsTo.pack !== "codeql/java-all") {
+          continue;
+        }
         const hash = hashMad(row);
 
-        const lineNumber = linesToNumbers[lineToKey(dump(row))!];
+        const lineNumber = linesToNumbers[dump(row).toLowerCase()];
 
         // TODO: there could be multiple values for the same hash, this picks the latest
         madHashes[hash] = [
@@ -1114,4 +1118,13 @@ async function readAllMads(): Promise<MadMap> {
   );
 
   return madHashes;
+}
+
+function lineToKey(line: string) {
+  const trimmed = line.trim();
+  if (!trimmed.startsWith("- [")) {
+    return undefined;
+  }
+  const evenMoreTrimmed = trimmed.slice(2);
+  return dump(loadYaml(evenMoreTrimmed)).toLowerCase();
 }
