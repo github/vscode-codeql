@@ -20,6 +20,7 @@ interface Props {
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   madData: Record<string, MadFileLocation[]>;
+  secondStep: Sarif.ThreadFlowLocation | undefined;
 }
 
 export function AlertTablePathNodeRow(props: Props) {
@@ -34,6 +35,7 @@ export function AlertTablePathNodeRow(props: Props) {
     sourceLocationPrefix,
     updateSelectionCallback,
     madData,
+    secondStep,
   } = props;
 
   const pathNodeKey: Keys.PathNode = useMemo(
@@ -54,6 +56,12 @@ export function AlertTablePathNodeRow(props: Props) {
   const zebraIndex = resultIndex + stepIndex;
 
   const madLocations = findLocations(step, madData);
+  const modifiedMadLocations = filterLocations(
+    madLocations,
+    stepIndex,
+    secondStep,
+    madData,
+  );
 
   return (
     <tr
@@ -105,7 +113,7 @@ export function AlertTablePathNodeRow(props: Props) {
         )}
       </td>
       <td {...selectableZebraStripe(isSelected, zebraIndex)}>
-        {madLocations.map((madLocation, i) => (
+        {modifiedMadLocations.map((madLocation, i) => (
           <AlertTableMadLink key={i} madLocation={madLocation} />
         ))}
       </td>
@@ -134,4 +142,32 @@ function findLocations(
   }
 
   return locations;
+}
+
+function filterLocations(
+  locations: MadFileLocation[],
+  stepIndex: number,
+  secondStep: Sarif.ThreadFlowLocation | undefined,
+  madData: Record<string, MadFileLocation[]>,
+): MadFileLocation[] {
+  const results: MadFileLocation[] = [];
+
+  for (const loc of locations) {
+    if (loc.extensible === "sourceModel") {
+      continue;
+    }
+    results.push(loc);
+  }
+
+  if (stepIndex === 1 && secondStep) {
+    const secondLocations = findLocations(secondStep, madData);
+    for (const loc of secondLocations) {
+      if (loc.extensible !== "sourceModel") {
+        continue;
+      }
+      results.push(loc);
+    }
+  }
+
+  return results;
 }

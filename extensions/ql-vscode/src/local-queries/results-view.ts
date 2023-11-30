@@ -1096,9 +1096,6 @@ async function readAllMads(): Promise<MadMap> {
         const hash = hashMad(row);
 
         const lineNumber = linesToNumbers[dump(row).toLowerCase()];
-
-        // TODO: there could be multiple values for the same hash, this picks the latest
-
         let existing = madHashes[hash];
         if (!existing) {
           existing = [];

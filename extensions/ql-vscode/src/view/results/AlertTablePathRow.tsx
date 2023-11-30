@@ -48,6 +48,9 @@ export function AlertTablePathRow(props: Props) {
     selectedItem,
   );
 
+  const secondLocation =
+    path.locations.length > 1 ? path.locations[1] : undefined;
+
   return (
     <>
       <tr
@@ -72,6 +75,7 @@ export function AlertTablePathRow(props: Props) {
             {...props}
             step={step}
             pathNodeIndex={pathNodeIndex}
+            secondStep={secondLocation}
           />
         ))}
     </>
