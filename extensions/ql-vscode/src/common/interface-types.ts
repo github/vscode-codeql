@@ -213,7 +213,8 @@ export type FromResultsViewMsg =
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
   | ChangePage
-  | OpenFileMsg;
+  | OpenFileMsg
+  | OpenFileLocationMsg;
 
 /**
  * Message from the results view to open a database source
@@ -232,6 +233,11 @@ interface OpenFileMsg {
   t: "openFile";
   /* Full path to the file to open. */
   filePath: string;
+}
+
+interface OpenFileLocationMsg {
+  t: "openFileLocation";
+  location: MadFileLocation;
 }
 
 /**

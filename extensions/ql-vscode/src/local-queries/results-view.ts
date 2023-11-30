@@ -10,6 +10,8 @@ import {
   env,
   WebviewPanel,
   workspace,
+  Location,
+  Position,
 } from "vscode";
 import * as cli from "../codeql-cli/cli";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -62,6 +64,7 @@ import {
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
+  showLocation,
 } from "../databases/local-databases/locations";
 import {
   RawResultSet,
@@ -273,6 +276,14 @@ export class ResultsView extends AbstractWebview<
   protected async onMessage(msg: FromResultsViewMsg): Promise<void> {
     try {
       switch (msg.t) {
+        case "openFileLocation": {
+          const loc = new Location(
+            Uri.file(msg.location.path),
+            new Position(msg.location.line - 1, msg.location.column),
+          );
+          await showLocation(loc);
+          break;
+        }
         case "viewLoaded":
           this.onWebViewLoaded();
           break;
@@ -1051,6 +1062,9 @@ async function readAllMads(): Promise<MadMap> {
     } catch (e) {
       continue;
     }
+
+    const lines = yaml.split("\n");
+
     // TODO: how do we get linenumbers?
     for (const extension of data.extensions) {
       // We only consider java for now
@@ -1063,12 +1077,16 @@ async function readAllMads(): Promise<MadMap> {
       for (const row of extension.data) {
         const hash = hashMad(row);
 
+        const lineNumber = lines.findIndex((line) =>
+          row.every((value) => line.includes(value.toString())),
+        );
+
         // TODO: there could be multiple values for the same hash, this picks the latest
         madHashes[hash] = [
           {
             row,
             path: ymlFile.fsPath,
-            line: 1,
+            line: lineNumber + 1,
             column: 1,
             length: 1,
           },

@@ -59,6 +59,13 @@ export function openFile(filePath: string): void {
   });
 }
 
+export function openFileLocation(location: MadFileLocation): void {
+  vscode.postMessage({
+    t: "openFileLocation",
+    location,
+  });
+}
+
 /**
  * Returns the attributes for a zebra-striped table row at position `index`.
  */

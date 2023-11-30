@@ -2,7 +2,7 @@ import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
-import { selectableZebraStripe, openFile } from "./result-table-utils";
+import { selectableZebraStripe, openFileLocation } from "./result-table-utils";
 import { useCallback, useMemo } from "react";
 import { MadFileLocation } from "../../common/interface-types";
 import { styled } from "styled-components";
@@ -68,7 +68,7 @@ export function AlertTablePathNodeRow(props: Props) {
       if (!madLocation) {
         return;
       }
-      openFile(madLocation?.path);
+      openFileLocation(madLocation);
     },
     [madLocation],
   );
@@ -123,7 +123,9 @@ export function AlertTablePathNodeRow(props: Props) {
         )}
       </td>
       <td {...selectableZebraStripe(isSelected, zebraIndex)}>
-        {madLocation && <Link onClick={handleMadClick}>MAD</Link>}
+        {madLocation && (
+          <Link onClick={handleMadClick}>MAD:{madLocation.line}</Link>
+        )}
       </td>
     </tr>
   );
