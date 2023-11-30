@@ -1098,16 +1098,20 @@ async function readAllMads(): Promise<MadMap> {
         const lineNumber = linesToNumbers[dump(row).toLowerCase()];
 
         // TODO: there could be multiple values for the same hash, this picks the latest
-        madHashes[hash] = [
-          {
-            row,
-            path: ymlFile.fsPath,
-            line: lineNumber + 1,
-            column: 1,
-            length: 1,
-            extensible: extension.addsTo.extensible,
-          },
-        ];
+
+        let existing = madHashes[hash];
+        if (!existing) {
+          existing = [];
+        }
+        existing.push({
+          row,
+          path: ymlFile.fsPath,
+          line: lineNumber + 1,
+          column: 1,
+          length: 1,
+          extensible: extension.addsTo.extensible,
+        });
+        madHashes[hash] = existing;
       }
     }
   }
