@@ -5,6 +5,7 @@ import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { filterFlowModelQueries, parseFlowModelResults } from "./generate";
 import type { MethodArgument } from "../../method";
 import { getArgumentsList } from "../../method";
+import { parseAccessPathSuggestionsResults } from "./suggestions";
 
 function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
@@ -146,6 +147,9 @@ export const staticLanguage: ModelsAsDataLanguage = {
     },
     filterQueries: filterFlowModelQueries,
     parseResults: parseFlowModelResults,
+  },
+  accessPathSuggestions: {
+    parseResults: parseAccessPathSuggestionsResults,
   },
   getArgumentOptions: (method) => {
     const argumentsList = getArgumentsList(method.methodParameters).map(

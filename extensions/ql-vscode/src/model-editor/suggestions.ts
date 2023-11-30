@@ -41,3 +41,11 @@ export type AccessPathSuggestionOptions = {
   input: Record<string, AccessPathOption[]>;
   output: Record<string, AccessPathOption[]>;
 };
+
+export function isDefinitionType(
+  value: string,
+): value is AccessPathSuggestionDefinitionType {
+  return Object.values(AccessPathSuggestionDefinitionType).includes(
+    value as AccessPathSuggestionDefinitionType,
+  );
+}
