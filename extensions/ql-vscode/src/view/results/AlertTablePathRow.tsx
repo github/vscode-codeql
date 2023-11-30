@@ -20,7 +20,7 @@ interface Props {
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
-  madData: Map<string, MadFileLocation[]>;
+  madData: Record<string, MadFileLocation[]>;
 }
 
 export function AlertTablePathRow(props: Props) {

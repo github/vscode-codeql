@@ -57,8 +57,8 @@ export function AlertTablePathNodeRow(props: Props) {
   const isSelected = Keys.equalsNotUndefined(selectedItem, pathNodeKey);
   const stepIndex = pathNodeIndex + 1; // Convert to 1-based
   const zebraIndex = resultIndex + stepIndex;
-  const madHash = step.properties ? step.properties["mad.hash"] : undefined;
-  const madLocations = madData[madHash];
+
+  const madLocations = findLocations(step, madData);
   // TODO: how to display multiple locations?
   const madLocation = madLocations ? madLocations[0] : undefined;
   const handleMadClick = useCallback(
@@ -129,4 +129,27 @@ export function AlertTablePathNodeRow(props: Props) {
       </td>
     </tr>
   );
+}
+
+function findLocations(
+  flow: Sarif.ThreadFlowLocation,
+  madData: Record<string, MadFileLocation[]>,
+): MadFileLocation[] {
+  const madHash = flow.properties && flow.properties["mad.hash"];
+  if (!madHash) {
+    return [];
+  }
+  const locations: MadFileLocation[] = [];
+
+  for (const value of madHash.split(",")) {
+    if (!value) {
+      continue;
+    }
+    const madLocations = madData[value];
+    if (madLocations) {
+      locations.push(...madLocations);
+    }
+  }
+
+  return locations;
 }
