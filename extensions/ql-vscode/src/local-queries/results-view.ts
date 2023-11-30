@@ -84,7 +84,7 @@ import { App } from "../common/app";
 import { Disposable } from "../common/disposable-object";
 import { readFile } from "fs-extra";
 import { validateModelExtensionFile } from "../model-editor/yaml";
-import { load as loadYaml } from "js-yaml";
+import { dump, load as loadYaml } from "js-yaml";
 
 /**
  * results-view.ts
@@ -1063,7 +1063,21 @@ async function readAllMads(): Promise<MadMap> {
       continue;
     }
 
-    const lines = yaml.split("\n");
+    const lineToKey = (line: string) => {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("- ")) {
+        return undefined;
+      }
+      return dump(loadYaml(trimmed));
+    };
+    const linesToNumbers: Record<string, number> = Object.fromEntries(
+      yaml
+        .split("\n")
+        .map((line, index) => {
+          return [lineToKey(line), index];
+        })
+        .filter(([k, _v]) => k !== undefined),
+    );
 
     // TODO: how do we get linenumbers?
     for (const extension of data.extensions) {
@@ -1077,15 +1091,7 @@ async function readAllMads(): Promise<MadMap> {
       for (const row of extension.data) {
         const hash = hashMad(row);
 
-        const lineNumber = lines.findIndex((line) =>
-          row.every((value) => {
-            if (typeof value === "boolean") {
-              return true;
-            } else {
-              return line.includes(value.toString());
-            }
-          }),
-        );
+        const lineNumber = linesToNumbers[lineToKey(dump(row))!];
 
         // TODO: there could be multiple values for the same hash, this picks the latest
         madHashes[hash] = [
