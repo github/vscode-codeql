@@ -1078,7 +1078,13 @@ async function readAllMads(): Promise<MadMap> {
         const hash = hashMad(row);
 
         const lineNumber = lines.findIndex((line) =>
-          row.every((value) => line.includes(value.toString())),
+          row.every((value) => {
+            if (typeof value === "boolean") {
+              return true;
+            } else {
+              return line.includes(value.toString());
+            }
+          }),
         );
 
         // TODO: there could be multiple values for the same hash, this picks the latest
