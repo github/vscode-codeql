@@ -4,6 +4,7 @@ import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
 import { useCallback, useMemo } from "react";
+import { MadFileLocation } from "../../common/interface-types";
 
 interface Props {
   step: Sarif.ThreadFlowLocation;
@@ -17,6 +18,7 @@ interface Props {
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
+  madData: Record<string, MadFileLocation[]>;
 }
 
 export function AlertTablePathNodeRow(props: Props) {
@@ -30,6 +32,7 @@ export function AlertTablePathNodeRow(props: Props) {
     databaseUri,
     sourceLocationPrefix,
     updateSelectionCallback,
+    madData,
   } = props;
 
   const pathNodeKey: Keys.PathNode = useMemo(
@@ -49,6 +52,9 @@ export function AlertTablePathNodeRow(props: Props) {
   const stepIndex = pathNodeIndex + 1; // Convert to 1-based
   const zebraIndex = resultIndex + stepIndex;
   const madHash = step.properties ? step.properties["mad.hash"] : undefined;
+  const madLocations = madData[madHash];
+  // TODO: how to display multiple locations?
+  const madLocation = madLocations ? madLocations[0] : undefined;
   return (
     <tr
       ref={isSelected ? selectedItemRef : undefined}
@@ -99,15 +105,7 @@ export function AlertTablePathNodeRow(props: Props) {
         )}
       </td>
       <td {...selectableZebraStripe(isSelected, zebraIndex)}>
-        {madHash && (
-          <SarifLocation
-            text={madHash}
-            loc={step.location}
-            sourceLocationPrefix={sourceLocationPrefix}
-            databaseUri={databaseUri}
-            onClick={handleSarifLocationClicked}
-          />
-        )}
+        {JSON.stringify(madLocation, null, 2)}
       </td>
     </tr>
   );

@@ -27,7 +27,7 @@ type AlertTableProps = ResultTableProps & {
 };
 
 export function AlertTable(props: AlertTableProps) {
-  const { databaseUri, resultSet } = props;
+  const { databaseUri, resultSet, madData } = props;
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set<string>());
   const [selectedItem, setSelectedItem] = useState<Keys.ResultKey | undefined>(
@@ -204,6 +204,7 @@ export function AlertTable(props: AlertTableProps) {
               sourceLocationPrefix={sourceLocationPrefix}
               updateSelectionCallback={updateSelectionCallback}
               toggleExpanded={toggle}
+              madData={madData}
             />
           ),
         )}

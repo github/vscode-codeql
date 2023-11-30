@@ -41,7 +41,7 @@ import {
   NavigationDirection,
   getDefaultResultSetName,
   ParsedResultSets,
-  MadFileLocation,
+  MadMap,
 } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
@@ -1024,9 +1024,9 @@ export class ResultsView extends AbstractWebview<
   }
 }
 
-async function readAllMads(): Promise<Map<string, MadFileLocation[]>> {
+async function readAllMads(): Promise<MadMap> {
   // THIS ENTIRE FUNCTION IS A HACK
-  const madHashes = new Map<string, MadFileLocation[]>();
+  const madHashes: MadMap = {};
   // Iterate over all yml files
   void extLogger.log(`[MAD] Finding all yml files`);
   const limit = 10000;
@@ -1064,17 +1064,23 @@ async function readAllMads(): Promise<Map<string, MadFileLocation[]>> {
         const hash = hashMad(row);
 
         // TODO: there could be multiple values for the same hash, this picks the latest
-        madHashes.set(hash, [
+        madHashes[hash] = [
           {
+            row,
             path: ymlFile.fsPath,
             line: 1,
+            column: 1,
+            length: 1,
           },
-        ]);
+        ];
       }
     }
   }
 
   void extLogger.log(`[MAD] Found ${madHashes.size} MAD hashes`);
+  void extLogger.log(
+    `[MAD] Get ${JSON.stringify(madHashes["-1030485963"], null, 2)}`,
+  );
 
   return madHashes;
 }

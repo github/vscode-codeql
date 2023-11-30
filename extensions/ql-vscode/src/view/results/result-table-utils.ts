@@ -4,6 +4,7 @@ import {
   QueryMetadata,
   SortDirection,
   ResultSet,
+  MadFileLocation,
 } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
@@ -15,6 +16,7 @@ export interface ResultTableProps {
   resultsPath: string | undefined;
   sortState?: RawResultsSortState;
   offset: number;
+  madData: Record<string, MadFileLocation[]>;
 
   /**
    * Holds if there are any raw results. When that is the case, we

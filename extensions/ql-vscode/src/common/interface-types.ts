@@ -25,6 +25,7 @@ import {
 } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 import { QueryLanguage } from "./query-language";
+import { DataRow } from "../model-editor/model-extension-file";
 
 /**
  * This module contains types and code that are shared between
@@ -105,9 +106,14 @@ export interface SortedResultSetInfo {
 export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
 
 export type MadFileLocation = {
+  row: DataRow;
   path: string;
   line: number;
+  column: number;
+  length: number;
 };
+
+export type MadMap = Record<string, MadFileLocation[]>;
 
 /**
  * A message to indicate that the results are being updated.
@@ -132,7 +138,7 @@ interface SetStateMsg {
   metadata?: QueryMetadata;
   queryName: string;
   queryPath: string;
-  madData: Map<string, MadFileLocation[]>;
+  madData: MadMap;
   /**
    * Whether to keep displaying the old results while rendering the new results.
    *
@@ -163,7 +169,7 @@ interface ShowInterpretedPageMsg {
   resultSetNames: string[];
   queryName: string;
   queryPath: string;
-  madData: Map<string, MadFileLocation[]>;
+  madData: MadMap;
 }
 
 export const enum NavigationDirection {

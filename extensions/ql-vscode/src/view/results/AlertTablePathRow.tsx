@@ -5,6 +5,7 @@ import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { useCallback, useMemo } from "react";
+import { MadFileLocation } from "../../common/interface-types";
 
 interface Props {
   path: Sarif.ThreadFlow;
@@ -19,6 +20,7 @@ interface Props {
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
+  madData: Map<string, MadFileLocation[]>;
 }
 
 export function AlertTablePathRow(props: Props) {

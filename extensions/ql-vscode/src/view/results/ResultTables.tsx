@@ -13,6 +13,7 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg,
+  MadFileLocation,
 } from "../../common/interface-types";
 import { tableHeaderClassName } from "./result-table-utils";
 import { vscode } from "../vscode-api";
@@ -39,6 +40,7 @@ interface ResultTablesProps {
   isLoadingNewResults: boolean;
   queryName: string;
   queryPath: string;
+  madData: Record<string, MadFileLocation[]>;
 }
 
 const UPDATING_RESULTS_TEXT_CLASS_NAME =
@@ -105,6 +107,7 @@ export function ResultTables(props: ResultTablesProps) {
     origResultsPaths,
     isLoadingNewResults,
     sortStates,
+    madData,
   } = props;
 
   const [selectedTable, setSelectedTable] = useState(
@@ -219,6 +222,7 @@ export function ResultTables(props: ResultTablesProps) {
       {name}
     </option>
   ));
+
   return (
     <div>
       <ResultTablesHeader {...props} selectedTable={selectedTable} />
@@ -252,6 +256,7 @@ export function ResultTables(props: ResultTablesProps) {
             sendTelemetry("local-results-show-raw-results");
           }}
           offset={offset}
+          madData={madData}
         />
       )}
     </div>

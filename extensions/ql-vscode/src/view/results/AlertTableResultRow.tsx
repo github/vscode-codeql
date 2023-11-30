@@ -8,6 +8,7 @@ import { useCallback, useMemo } from "react";
 import { SarifLocation } from "./locations/SarifLocation";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { AlertTablePathRow } from "./AlertTablePathRow";
+import { MadFileLocation } from "../../common/interface-types";
 
 interface Props {
   result: Sarif.Result;
@@ -21,6 +22,7 @@ interface Props {
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
+  madData: Map<string, MadFileLocation[]>;
 }
 
 export function AlertTableResultRow(props: Props) {

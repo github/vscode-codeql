@@ -42,7 +42,7 @@ interface ResultsInfo {
   metadata?: QueryMetadata;
   queryName: string;
   queryPath: string;
-  madData: Map<string, MadFileLocation[]>;
+  madData: Record<string, MadFileLocation[]>;
 }
 
 interface Results {
@@ -144,6 +144,7 @@ export function ResultsApp() {
     (msg: IntoResultsViewMsg): void => {
       switch (msg.t) {
         case "setState":
+          alert(`madData.size1: ${msg.madData.size}`);
           updateStateWithNewResultsInfo({
             resultsPath: msg.resultsPath,
             parsedResultSets: msg.parsedResultSets,
@@ -156,11 +157,12 @@ export function ResultsApp() {
             metadata: msg.metadata,
             queryName: msg.queryName,
             queryPath: msg.queryPath,
-            madData: msg.madData,
+            madData: Object.fromEntries(Object.entries(msg.madData)),
           });
 
           break;
         case "showInterpretedPage": {
+          alert(`madData.size2: ${msg.madData.size}`);
           const tableName =
             msg.interpretation.data.t === "GraphInterpretationData"
               ? GRAPH_TABLE_NAME
@@ -274,6 +276,7 @@ export function ResultsApp() {
         }
         queryName={displayedResults.resultsInfo.queryName}
         queryPath={displayedResults.resultsInfo.queryPath}
+        madData={displayedResults.resultsInfo.madData}
       />
     );
   } else {
