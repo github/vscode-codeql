@@ -15,6 +15,7 @@ export enum AccessPathSuggestionDefinitionType {
   Property = "property",
   Structure = "structure",
   Return = "return",
+  Variable = "variable",
 }
 
 export type AccessPathSuggestionRow = {

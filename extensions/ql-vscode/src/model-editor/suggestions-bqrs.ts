@@ -17,6 +17,7 @@ const CodiconSymbols: Record<AccessPathSuggestionDefinitionType, string> = {
   [AccessPathSuggestionDefinitionType.Property]: "symbol-property",
   [AccessPathSuggestionDefinitionType.Structure]: "symbol-structure",
   [AccessPathSuggestionDefinitionType.Return]: "symbol-method",
+  [AccessPathSuggestionDefinitionType.Variable]: "symbol-variable",
 };
 
 /**
