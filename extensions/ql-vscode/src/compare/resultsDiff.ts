@@ -1,5 +1,5 @@
 import { RawResultSet } from "../common/bqrs-cli-types";
-import { QueryCompareResult } from "../common/interface-types";
+import { RawQueryCompareResult } from "../common/interface-types";
 
 /**
  * Compare the rows of two queries. Use deep equality to determine if
@@ -22,7 +22,7 @@ import { QueryCompareResult } from "../common/interface-types";
 export default function resultsDiff(
   fromResults: RawResultSet,
   toResults: RawResultSet,
-): QueryCompareResult {
+): RawQueryCompareResult {
   if (fromResults.schema.columns.length !== toResults.schema.columns.length) {
     throw new Error("CodeQL Compare: Columns do not match.");
   }
@@ -35,7 +35,9 @@ export default function resultsDiff(
     throw new Error("CodeQL Compare: Target query has no results.");
   }
 
-  const results = {
+  const results: RawQueryCompareResult = {
+    type: "raw",
+    columns: fromResults.schema.columns,
     from: arrayDiff(fromResults.rows, toResults.rows),
     to: arrayDiff(toResults.rows, fromResults.rows),
   };
