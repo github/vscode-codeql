@@ -1,5 +1,7 @@
 import * as legacyMessages from "./legacy-messages";
 
+// Used for formatting the result of a legacy query which might still be in the
+// user's query history.
 export function formatLegacyMessage(result: legacyMessages.EvaluationResult) {
   switch (result.resultType) {
     case legacyMessages.QueryResultType.CANCELLATION:
