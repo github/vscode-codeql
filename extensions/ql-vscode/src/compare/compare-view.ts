@@ -26,6 +26,7 @@ import {
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { App } from "../common/app";
+import { findResultSetNames } from "./result-set-names";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -170,53 +171,33 @@ export class CompareView extends AbstractWebview<
     to: CompletedLocalQueryInfo,
     selectedResultSetName: string | undefined,
   ): Promise<[string[], string, RawResultSet, RawResultSet]> {
-    const fromSchemas = await this.cliServer.bqrsInfo(
-      from.completedQuery.query.resultsPaths.resultsPath,
-    );
-    const toSchemas = await this.cliServer.bqrsInfo(
-      to.completedQuery.query.resultsPaths.resultsPath,
-    );
-    const fromSchemaNames = fromSchemas["result-sets"].map(
-      (schema) => schema.name,
-    );
-    const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
-    const commonResultSetNames = fromSchemaNames.filter((name) =>
-      toSchemaNames.includes(name),
-    );
-
-    // Fall back on the default result set names if there are no common ones.
-    const defaultFromResultSetName = fromSchemaNames.find((name) =>
-      name.startsWith("#"),
-    );
-    const defaultToResultSetName = toSchemaNames.find((name) =>
-      name.startsWith("#"),
+    const {
+      commonResultSetNames,
+      currentResultSetDisplayName,
+      fromSchemas,
+      fromResultSetName,
+      toSchemas,
+      toResultSetName,
+    } = await findResultSetNames(
+      this.cliServer,
+      from,
+      to,
+      selectedResultSetName,
     );
 
-    if (
-      commonResultSetNames.length === 0 &&
-      !(defaultFromResultSetName || defaultToResultSetName)
-    ) {
-      throw new Error(
-        "No common result sets found between the two queries. Please check that the queries are compatible.",
-      );
-    }
-
-    const currentResultSetName =
-      selectedResultSetName || commonResultSetNames[0];
     const fromResultSet = await this.getResultSet(
       fromSchemas,
-      currentResultSetName || defaultFromResultSetName!,
+      fromResultSetName,
       from.completedQuery.query.resultsPaths.resultsPath,
     );
     const toResultSet = await this.getResultSet(
       toSchemas,
-      currentResultSetName || defaultToResultSetName!,
+      toResultSetName,
       to.completedQuery.query.resultsPaths.resultsPath,
     );
     return [
       commonResultSetNames,
-      currentResultSetName ||
-        `${defaultFromResultSetName} <-> ${defaultToResultSetName}`,
+      currentResultSetDisplayName,
       fromResultSet,
       toResultSet,
     ];
