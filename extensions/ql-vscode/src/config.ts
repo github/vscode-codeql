@@ -461,20 +461,6 @@ export function isCanary() {
   return !!CANARY_FEATURES.getValue<boolean>();
 }
 
-/**
- * Enables the experimental query server
- */
-export const CANARY_QUERY_SERVER = new Setting(
-  "canaryQueryServer",
-  ROOT_SETTING,
-);
-
-// The default value for this setting is now `true`
-export function allowCanaryQueryServer() {
-  const value = CANARY_QUERY_SERVER.getValue<boolean>();
-  return value === undefined ? true : !!value;
-}
-
 const LOG_INSIGHTS_SETTING = new Setting("logInsights", ROOT_SETTING);
 export const JOIN_ORDER_WARNING_THRESHOLD = new Setting(
   "joinOrderWarningThreshold",

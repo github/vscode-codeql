@@ -22,8 +22,8 @@ import {
   QueryOutputDir,
   QueryWithResults,
 } from "./run-queries-shared";
-import { formatLegacyMessage } from "./query-server/legacy";
 import { sarifParser } from "./common/sarif-parser";
+import { formatLegacyMessage } from "./query-server/format-legacy-message";
 
 /**
  * query-results.ts

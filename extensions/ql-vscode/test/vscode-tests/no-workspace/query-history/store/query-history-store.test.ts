@@ -9,6 +9,7 @@ import {
   InitialQueryInfo,
 } from "../../../../../src/query-results";
 import {
+  QueryEvaluationInfo,
   QueryOutputDir,
   QueryWithResults,
 } from "../../../../../src/run-queries-shared";
@@ -16,7 +17,6 @@ import { DatabaseInfo } from "../../../../../src/common/interface-types";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
 import { QueryResultType } from "../../../../../src/query-server/legacy-messages";
-import { QueryInProgress } from "../../../../../src/query-server/legacy";
 import { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
 import { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
@@ -42,34 +42,16 @@ describe("write and read", () => {
 
     infoSuccessRaw = createMockFullQueryInfo(
       "a",
-      createMockQueryWithResults(
-        `${queryPath}-a`,
-        false,
-        false,
-        "/a/b/c/a",
-        false,
-      ),
+      createMockQueryWithResults(`${queryPath}-a`, false, "/a/b/c/a"),
     );
     infoSuccessInterpreted = createMockFullQueryInfo(
       "b",
-      createMockQueryWithResults(
-        `${queryPath}-b`,
-        true,
-        true,
-        "/a/b/c/b",
-        false,
-      ),
+      createMockQueryWithResults(`${queryPath}-b`, true, "/a/b/c/b"),
     );
     infoEarlyFailure = createMockFullQueryInfo("c", undefined, true);
     infoLateFailure = createMockFullQueryInfo(
       "d",
-      createMockQueryWithResults(
-        `${queryPath}-c`,
-        false,
-        false,
-        "/a/b/c/d",
-        false,
-      ),
+      createMockQueryWithResults(`${queryPath}-c`, false, "/a/b/c/d"),
     );
     infoInProgress = createMockFullQueryInfo("e");
 
@@ -138,13 +120,7 @@ describe("write and read", () => {
 
     const queryItem = createMockFullQueryInfo(
       "a",
-      createMockQueryWithResults(
-        `${queryPath}-a`,
-        false,
-        false,
-        "/a/b/c/a",
-        false,
-      ),
+      createMockQueryWithResults(`${queryPath}-a`, false, "/a/b/c/a"),
       false,
       null,
     );
@@ -277,20 +253,17 @@ describe("write and read", () => {
   function createMockQueryWithResults(
     queryPath: string,
     didRunSuccessfully = true,
-    hasInterpretedResults = true,
     dbPath = "/a/b/c",
-    includeSpies = true,
   ): QueryWithResults {
     // pretend that the results path exists
     const resultsPath = join(queryPath, "results.bqrs");
     mkdirpSync(queryPath);
     writeFileSync(resultsPath, "", "utf8");
 
-    const query = new QueryInProgress(
+    const queryEvalInfo = new QueryEvaluationInfo(
       queryPath,
       Uri.file(dbPath).fsPath,
       true,
-      "queryDbscheme",
       undefined,
       {
         name: "vwx",
@@ -298,7 +271,7 @@ describe("write and read", () => {
     );
 
     const result: QueryWithResults = {
-      query: query.queryEvalInfo,
+      query: queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
       result: {
@@ -308,11 +281,6 @@ describe("write and read", () => {
         resultType: QueryResultType.SUCCESS,
       },
     };
-
-    if (includeSpies) {
-      (query as any).hasInterpretedResults = () =>
-        Promise.resolve(hasInterpretedResults);
-    }
 
     return result;
   }
