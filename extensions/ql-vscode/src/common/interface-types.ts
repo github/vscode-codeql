@@ -3,8 +3,8 @@ import {
   RawResultSet,
   ResultRow,
   ResultSetSchema,
-  Column,
   ResolvableLocationValue,
+  BqrsColumn,
 } from "../common/bqrs-cli-types";
 import {
   VariantAnalysis,
@@ -353,7 +353,7 @@ export interface SetComparisonsMessage {
       time: string;
     };
   };
-  readonly columns: readonly Column[];
+  readonly columns: readonly BqrsColumn[];
   readonly commonResultSetNames: string[];
   readonly currentResultSetName: string;
   readonly rows: QueryCompareResult | undefined;

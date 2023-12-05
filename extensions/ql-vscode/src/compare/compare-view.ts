@@ -2,19 +2,15 @@ import { ViewColumn } from "vscode";
 
 import {
   FromCompareViewMessage,
-  ToCompareViewMessage,
   QueryCompareResult,
+  ToCompareViewMessage,
 } from "../common/interface-types";
 import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
-import {
-  transformBqrsResultSet,
-  RawResultSet,
-  BQRSInfo,
-} from "../common/bqrs-cli-types";
+import { BQRSInfo, DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -122,7 +118,7 @@ export class CompareView extends AbstractWebview<
             time: to.startTime,
           },
         },
-        columns: fromResultSet.schema.columns,
+        columns: fromResultSet.columns,
         commonResultSetNames,
         currentResultSetName,
         rows,
@@ -197,7 +193,7 @@ export class CompareView extends AbstractWebview<
   private async findCommonResultSetNames(
     { from, fromSchemas, to, toSchemas }: ComparePair,
     selectedResultSetName: string | undefined,
-  ): Promise<[string[], string, RawResultSet, RawResultSet]> {
+  ): Promise<[string[], string, DecodedBqrsChunk, DecodedBqrsChunk]> {
     const {
       commonResultSetNames,
       currentResultSetDisplayName,
@@ -231,20 +227,19 @@ export class CompareView extends AbstractWebview<
     bqrsInfo: BQRSInfo,
     resultSetName: string,
     resultsPath: string,
-  ): Promise<RawResultSet> {
+  ): Promise<DecodedBqrsChunk> {
     const schema = bqrsInfo["result-sets"].find(
       (schema) => schema.name === resultSetName,
     );
     if (!schema) {
       throw new Error(`Schema ${resultSetName} not found.`);
     }
-    const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
-    return transformBqrsResultSet(schema, chunk);
+    return await this.cliServer.bqrsDecode(resultsPath, resultSetName);
   }
 
   private compareResults(
-    fromResults: RawResultSet,
-    toResults: RawResultSet,
+    fromResults: DecodedBqrsChunk,
+    toResults: DecodedBqrsChunk,
   ): QueryCompareResult {
     // Only compare columns that have the same name
     return resultsDiff(fromResults, toResults);

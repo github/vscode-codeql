@@ -6,10 +6,11 @@ import {
   SortDirection,
 } from "../../common/interface-types";
 import { nextSortDirection } from "./result-table-utils";
-import { Column } from "../../common/bqrs-cli-types";
 
 interface Props {
-  readonly columns: readonly Column[];
+  readonly columns: ReadonlyArray<{
+    name?: string;
+  }>;
   readonly schemaName: string;
   readonly sortState?: RawResultsSortState;
   readonly preventSort?: boolean;
