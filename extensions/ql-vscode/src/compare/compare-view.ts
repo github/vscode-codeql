@@ -58,6 +58,17 @@ export class CompareView extends AbstractWebview<
     selectedResultSetName?: string,
   ) {
     this.comparePair = { from, to };
+
+    await this.showResultsInternal(selectedResultSetName);
+  }
+
+  private async showResultsInternal(selectedResultSetName?: string) {
+    if (!this.comparePair) {
+      return;
+    }
+
+    const { from, to } = this.comparePair;
+
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
@@ -204,14 +215,7 @@ export class CompareView extends AbstractWebview<
   }
 
   private async changeTable(newResultSetName: string) {
-    if (!this.comparePair?.from || !this.comparePair.to) {
-      return;
-    }
-    await this.showResults(
-      this.comparePair.from,
-      this.comparePair.to,
-      newResultSetName,
-    );
+    await this.showResultsInternal(newResultSetName);
   }
 
   private async getResultSet(
