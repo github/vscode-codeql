@@ -1,4 +1,4 @@
-import { RawResultSet } from "../common/bqrs-cli-types";
+import { DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import { QueryCompareResult } from "../common/interface-types";
 
 /**
@@ -20,29 +20,29 @@ import { QueryCompareResult } from "../common/interface-types";
  *  3. If the queries are 100% disjoint
  */
 export default function resultsDiff(
-  fromResults: RawResultSet,
-  toResults: RawResultSet,
+  fromResults: DecodedBqrsChunk,
+  toResults: DecodedBqrsChunk,
 ): QueryCompareResult {
-  if (fromResults.schema.columns.length !== toResults.schema.columns.length) {
+  if (fromResults.columns.length !== toResults.columns.length) {
     throw new Error("CodeQL Compare: Columns do not match.");
   }
 
-  if (!fromResults.rows.length) {
+  if (!fromResults.tuples.length) {
     throw new Error("CodeQL Compare: Source query has no results.");
   }
 
-  if (!toResults.rows.length) {
+  if (!toResults.tuples.length) {
     throw new Error("CodeQL Compare: Target query has no results.");
   }
 
   const results = {
-    from: arrayDiff(fromResults.rows, toResults.rows),
-    to: arrayDiff(toResults.rows, fromResults.rows),
+    from: arrayDiff(fromResults.tuples, toResults.tuples),
+    to: arrayDiff(toResults.tuples, fromResults.tuples),
   };
 
   if (
-    fromResults.rows.length === results.from.length &&
-    toResults.rows.length === results.to.length
+    fromResults.tuples.length === results.from.length &&
+    toResults.tuples.length === results.to.length
   ) {
     throw new Error("CodeQL Compare: No overlap between the selected queries.");
   }

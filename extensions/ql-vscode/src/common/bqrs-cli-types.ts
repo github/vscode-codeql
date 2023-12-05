@@ -21,7 +21,7 @@ type ColumnKind =
   | typeof ColumnKindCode.DATE
   | typeof ColumnKindCode.ENTITY;
 
-export interface Column {
+interface Column {
   name?: string;
   kind: ColumnKind;
 }
@@ -112,7 +112,7 @@ export type BqrsKind =
   | "Date"
   | "Entity";
 
-interface BqrsColumn {
+export interface BqrsColumn {
   name?: string;
   kind: BqrsKind;
 }
