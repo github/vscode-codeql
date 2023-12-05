@@ -88,7 +88,7 @@ export class CompareView extends AbstractWebview<
       currentResultSetDisplayName,
       fromResultSet,
       toResultSet,
-    } = await this.findCommonResultSetNames(
+    } = await this.findResultSetsToCompare(
       this.comparePair,
       selectedResultSetName,
     );
@@ -190,7 +190,7 @@ export class CompareView extends AbstractWebview<
     }
   }
 
-  private async findCommonResultSetNames(
+  private async findResultSetsToCompare(
     { from, fromSchemas, to, toSchemas }: ComparePair,
     selectedResultSetName: string | undefined,
   ) {
