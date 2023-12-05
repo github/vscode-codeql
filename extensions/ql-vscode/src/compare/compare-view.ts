@@ -83,16 +83,16 @@ export class CompareView extends AbstractWebview<
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
-    const [
+    const {
       commonResultSetNames,
-      currentResultSetName,
+      currentResultSetDisplayName,
       fromResultSet,
       toResultSet,
-    ] = await this.findCommonResultSetNames(
+    } = await this.findCommonResultSetNames(
       this.comparePair,
       selectedResultSetName,
     );
-    if (currentResultSetName) {
+    if (currentResultSetDisplayName) {
       let rows: QueryCompareResult | undefined;
       let message: string | undefined;
       try {
@@ -120,7 +120,7 @@ export class CompareView extends AbstractWebview<
         },
         columns: fromResultSet.columns,
         commonResultSetNames,
-        currentResultSetName,
+        currentResultSetName: currentResultSetDisplayName,
         rows,
         message,
         databaseUri: to.initialInfo.databaseInfo.databaseUri,
@@ -193,7 +193,7 @@ export class CompareView extends AbstractWebview<
   private async findCommonResultSetNames(
     { from, fromSchemas, to, toSchemas }: ComparePair,
     selectedResultSetName: string | undefined,
-  ): Promise<[string[], string, DecodedBqrsChunk, DecodedBqrsChunk]> {
+  ) {
     const {
       commonResultSetNames,
       currentResultSetDisplayName,
@@ -211,12 +211,12 @@ export class CompareView extends AbstractWebview<
       toResultSetName,
       to.completedQuery.query.resultsPaths.resultsPath,
     );
-    return [
+    return {
       commonResultSetNames,
       currentResultSetDisplayName,
       fromResultSet,
       toResultSet,
-    ];
+    };
   }
 
   private async changeTable(newResultSetName: string) {
