@@ -22,7 +22,7 @@ const OpenButton = styled(TextButton)`
 
 export default function CompareTable(props: Props) {
   const comparison = props.comparison;
-  const rows = props.comparison.rows!;
+  const result = props.comparison.result!;
 
   async function openQuery(kind: "from" | "to") {
     vscode.postMessage({
@@ -69,8 +69,8 @@ export default function CompareTable(props: Props) {
           <td>{comparison.stats.toQuery?.time}</td>
         </tr>
         <tr>
-          <th>{rows.from.length} rows removed</th>
-          <th>{rows.to.length} rows added</th>
+          <th>{result.from.length} rows removed</th>
+          <th>{result.to.length} rows added</th>
         </tr>
       </thead>
       <tbody>
@@ -78,21 +78,21 @@ export default function CompareTable(props: Props) {
           <td>
             <table className={className}>
               <RawTableHeader
-                columns={comparison.columns}
+                columns={result.columns}
                 schemaName={comparison.currentResultSetName}
                 preventSort={true}
               />
-              {createRows(rows.from, comparison.databaseUri)}
+              {createRows(result.from, comparison.databaseUri)}
             </table>
           </td>
           <td>
             <table className={className}>
               <RawTableHeader
-                columns={comparison.columns}
+                columns={result.columns}
                 schemaName={comparison.currentResultSetName}
                 preventSort={true}
               />
-              {createRows(rows.to, comparison.databaseUri)}
+              {createRows(result.to, comparison.databaseUri)}
             </table>
           </td>
         </tr>
