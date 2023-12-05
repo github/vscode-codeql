@@ -30,7 +30,9 @@ import { findResultSetNames } from "./result-set-names";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
+  fromSchemas: BQRSInfo;
   to: CompletedLocalQueryInfo;
+  toSchemas: BQRSInfo;
 }
 
 export class CompareView extends AbstractWebview<
@@ -57,7 +59,19 @@ export class CompareView extends AbstractWebview<
     to: CompletedLocalQueryInfo,
     selectedResultSetName?: string,
   ) {
-    this.comparePair = { from, to };
+    const fromSchemas = await this.cliServer.bqrsInfo(
+      from.completedQuery.query.resultsPaths.resultsPath,
+    );
+    const toSchemas = await this.cliServer.bqrsInfo(
+      to.completedQuery.query.resultsPaths.resultsPath,
+    );
+
+    this.comparePair = {
+      from,
+      fromSchemas,
+      to,
+      toSchemas,
+    };
 
     await this.showResultsInternal(selectedResultSetName);
   }
@@ -78,7 +92,10 @@ export class CompareView extends AbstractWebview<
       currentResultSetName,
       fromResultSet,
       toResultSet,
-    ] = await this.findCommonResultSetNames(from, to, selectedResultSetName);
+    ] = await this.findCommonResultSetNames(
+      this.comparePair,
+      selectedResultSetName,
+    );
     if (currentResultSetName) {
       let rows: QueryCompareResult | undefined;
       let message: string | undefined;
@@ -178,23 +195,15 @@ export class CompareView extends AbstractWebview<
   }
 
   private async findCommonResultSetNames(
-    from: CompletedLocalQueryInfo,
-    to: CompletedLocalQueryInfo,
+    { from, fromSchemas, to, toSchemas }: ComparePair,
     selectedResultSetName: string | undefined,
   ): Promise<[string[], string, RawResultSet, RawResultSet]> {
     const {
       commonResultSetNames,
       currentResultSetDisplayName,
-      fromSchemas,
       fromResultSetName,
-      toSchemas,
       toResultSetName,
-    } = await findResultSetNames(
-      this.cliServer,
-      from,
-      to,
-      selectedResultSetName,
-    );
+    } = await findResultSetNames(fromSchemas, toSchemas, selectedResultSetName);
 
     const fromResultSet = await this.getResultSet(
       fromSchemas,

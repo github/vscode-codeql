@@ -1,18 +1,10 @@
-import { CompletedLocalQueryInfo } from "../query-results";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { BQRSInfo } from "../common/bqrs-cli-types";
 
 export async function findResultSetNames(
-  cliServer: CodeQLCliServer,
-  from: CompletedLocalQueryInfo,
-  to: CompletedLocalQueryInfo,
+  fromSchemas: BQRSInfo,
+  toSchemas: BQRSInfo,
   selectedResultSetName: string | undefined,
 ) {
-  const fromSchemas = await cliServer.bqrsInfo(
-    from.completedQuery.query.resultsPaths.resultsPath,
-  );
-  const toSchemas = await cliServer.bqrsInfo(
-    to.completedQuery.query.resultsPaths.resultsPath,
-  );
   const fromSchemaNames = fromSchemas["result-sets"].map(
     (schema) => schema.name,
   );
@@ -47,9 +39,7 @@ export async function findResultSetNames(
     currentResultSetDisplayName:
       currentResultSetName ||
       `${defaultFromResultSetName} <-> ${defaultToResultSetName}`,
-    fromSchemas,
     fromResultSetName,
-    toSchemas,
     toResultSetName,
   };
 }
