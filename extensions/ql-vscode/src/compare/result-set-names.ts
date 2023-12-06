@@ -68,6 +68,7 @@ export async function findResultSetNames(
   const toResultSetName = currentResultSetName || defaultToResultSetName!;
 
   return {
+    currentResultSetName,
     currentResultSetDisplayName:
       currentResultSetName ||
       `${defaultFromResultSetName} <-> ${defaultToResultSetName}`,

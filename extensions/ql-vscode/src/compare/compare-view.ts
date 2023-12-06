@@ -1,7 +1,10 @@
 import { ViewColumn } from "vscode";
 
 import {
+  ALERTS_TABLE_NAME,
   FromCompareViewMessage,
+  InterpretedQueryCompareResult,
+  QueryCompareResult,
   RawQueryCompareResult,
   ToCompareViewMessage,
 } from "../common/interface-types";
@@ -25,11 +28,12 @@ import { App } from "../common/app";
 import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
 import { RawResultSet } from "../common/raw-result-types";
 import {
+  CompareQueryInfo,
   findCommonResultSetNames,
   findResultSetNames,
-  CompareQueryInfo,
   getResultSetNames,
 } from "./result-set-names";
+import { compareInterpretedResults } from "./interpreted-results";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -146,20 +150,28 @@ export class CompareView extends AbstractWebview<
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
-    const { currentResultSetDisplayName, fromResultSetName, toResultSetName } =
-      await this.findResultSetsToCompare(
-        this.comparePair,
-        selectedResultSetName,
-      );
+    const {
+      currentResultSetName,
+      currentResultSetDisplayName,
+      fromResultSetName,
+      toResultSetName,
+    } = await this.findResultSetsToCompare(
+      this.comparePair,
+      selectedResultSetName,
+    );
     if (currentResultSetDisplayName) {
-      let result: RawQueryCompareResult | undefined;
+      let result: QueryCompareResult | undefined;
       let message: string | undefined;
       try {
-        result = await this.compareResults(
-          this.comparePair,
-          fromResultSetName,
-          toResultSetName,
-        );
+        if (currentResultSetName === ALERTS_TABLE_NAME) {
+          result = await this.compareInterpretedResults(this.comparePair);
+        } else {
+          result = await this.compareResults(
+            this.comparePair,
+            fromResultSetName,
+            toResultSetName,
+          );
+        }
       } catch (e) {
         message = getErrorMessage(e);
       }
@@ -239,15 +251,21 @@ export class CompareView extends AbstractWebview<
     { fromInfo, toInfo, commonResultSetNames }: ComparePair,
     selectedResultSetName: string | undefined,
   ) {
-    const { currentResultSetDisplayName, fromResultSetName, toResultSetName } =
-      await findResultSetNames(
-        fromInfo,
-        toInfo,
-        commonResultSetNames,
-        selectedResultSetName,
-      );
+    const {
+      currentResultSetName,
+      currentResultSetDisplayName,
+      fromResultSetName,
+      toResultSetName,
+    } = await findResultSetNames(
+      fromInfo,
+      toInfo,
+      commonResultSetNames,
+      selectedResultSetName,
+    );
 
     return {
+      commonResultSetNames,
+      currentResultSetName,
       currentResultSetDisplayName,
       fromResultSetName,
       toResultSetName,
@@ -290,6 +308,18 @@ export class CompareView extends AbstractWebview<
     );
 
     return resultsDiff(fromResultSet, toResultSet);
+  }
+
+  private async compareInterpretedResults({
+    from,
+    to,
+  }: ComparePair): Promise<InterpretedQueryCompareResult> {
+    return compareInterpretedResults(
+      this.databaseManager,
+      this.cliServer,
+      from,
+      to,
+    );
   }
 
   private async openQuery(kind: "from" | "to") {
