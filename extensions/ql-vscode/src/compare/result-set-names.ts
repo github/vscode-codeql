@@ -1,4 +1,5 @@
 import { BQRSInfo } from "../common/bqrs-cli-types";
+import { getDefaultResultSetName } from "../common/interface-types";
 
 export async function findResultSetNames(
   fromSchemas: BQRSInfo,
@@ -30,7 +31,8 @@ export async function findResultSetNames(
     );
   }
 
-  const currentResultSetName = selectedResultSetName || commonResultSetNames[0];
+  const currentResultSetName =
+    selectedResultSetName ?? getDefaultResultSetName(commonResultSetNames);
   const fromResultSetName = currentResultSetName || defaultFromResultSetName!;
   const toResultSetName = currentResultSetName || defaultToResultSetName!;
 
