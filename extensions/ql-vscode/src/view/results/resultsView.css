@@ -144,12 +144,3 @@ td.vscode-codeql__path-index-cell {
 .vscode-codeql__location-cell {
   text-align: right !important;
 }
-
-.octicon {
-  fill: var(--vscode-editor-foreground);
-  margin-top: 0.25em;
-}
-
-.octicon-light {
-  opacity: 0.6;
-}
