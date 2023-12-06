@@ -153,12 +153,6 @@ td.vscode-codeql__path-index-cell {
   bottom: 0;
 }
 
-.vscode-codeql__title {
-  /* Something that isn't a link, but which has a title attribute */
-  text-decoration-line: underline;
-  text-decoration-style: dotted;
-}
-
 .octicon {
   fill: var(--vscode-editor-foreground);
   margin-top: 0.25em;
