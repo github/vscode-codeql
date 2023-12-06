@@ -5,6 +5,7 @@ import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { useCallback, useMemo } from "react";
+import { VerticalRule } from "../common/VerticalRule";
 
 interface Props {
   path: Sarif.ThreadFlow;
@@ -53,7 +54,7 @@ export function AlertTablePathRow(props: Props) {
         {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)}
       >
         <td className="vscode-codeql__icon-cell">
-          <span className="vscode-codeql__vertical-rule"></span>
+          <VerticalRule />
         </td>
         <AlertTableDropdownIndicatorCell
           expanded={currentPathExpanded}

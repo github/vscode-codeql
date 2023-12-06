@@ -4,6 +4,7 @@ import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
 import { useCallback, useMemo } from "react";
+import { VerticalRule } from "../common/VerticalRule";
 
 interface Props {
   step: Sarif.ThreadFlowLocation;
@@ -54,10 +55,10 @@ export function AlertTablePathNodeRow(props: Props) {
       className={isSelected ? "vscode-codeql__selected-path-node" : undefined}
     >
       <td className="vscode-codeql__icon-cell">
-        <span className="vscode-codeql__vertical-rule"></span>
+        <VerticalRule />
       </td>
       <td className="vscode-codeql__icon-cell">
-        <span className="vscode-codeql__vertical-rule"></span>
+        <VerticalRule />
       </td>
       <td
         {...selectableZebraStripe(
