@@ -1,14 +1,11 @@
 import * as React from "react";
 
 import { SetComparisonsMessage } from "../../common/interface-types";
-import RawTableHeader from "../results/RawTableHeader";
 import { className } from "../results/result-table-utils";
-import { ResultRow } from "../../common/bqrs-cli-types";
-import RawTableRow from "../results/RawTableRow";
 import { vscode } from "../vscode-api";
-import { sendTelemetry } from "../common/telemetry";
 import TextButton from "../common/TextButton";
 import { styled } from "styled-components";
+import { RawCompareResultTable } from "./RawCompareResultTable";
 
 interface Props {
   comparison: SetComparisonsMessage;
@@ -29,24 +26,6 @@ export default function CompareTable(props: Props) {
       t: "openQuery",
       kind,
     });
-  }
-
-  function createRows(rows: ResultRow[], databaseUri: string) {
-    return (
-      <tbody>
-        {rows.map((row, rowIndex) => (
-          <RawTableRow
-            key={rowIndex}
-            rowIndex={rowIndex}
-            row={row}
-            databaseUri={databaseUri}
-            onSelected={() => {
-              sendTelemetry("comapre-view-result-clicked");
-            }}
-          />
-        ))}
-      </tbody>
-    );
   }
 
   return (
@@ -76,24 +55,22 @@ export default function CompareTable(props: Props) {
       <tbody>
         <tr>
           <td>
-            <table className={className}>
-              <RawTableHeader
-                columns={result.columns}
-                schemaName={comparison.currentResultSetName}
-                preventSort={true}
-              />
-              {createRows(result.from, comparison.databaseUri)}
-            </table>
+            <RawCompareResultTable
+              columns={result.columns}
+              schemaName={comparison.currentResultSetName}
+              rows={result.from}
+              databaseUri={comparison.databaseUri}
+              className={className}
+            />
           </td>
           <td>
-            <table className={className}>
-              <RawTableHeader
-                columns={result.columns}
-                schemaName={comparison.currentResultSetName}
-                preventSort={true}
-              />
-              {createRows(result.to, comparison.databaseUri)}
-            </table>
+            <RawCompareResultTable
+              columns={result.columns}
+              schemaName={comparison.currentResultSetName}
+              rows={result.to}
+              databaseUri={comparison.databaseUri}
+              className={className}
+            />
           </td>
         </tr>
       </tbody>
