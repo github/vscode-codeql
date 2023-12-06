@@ -17,6 +17,15 @@ const OpenButton = styled(TextButton)`
   padding: 0;
 `;
 
+const Table = styled.table`
+  margin: 20px 0;
+  width: 100%;
+
+  & > tbody {
+    vertical-align: top;
+  }
+`;
+
 export default function CompareTable(props: Props) {
   const comparison = props.comparison;
   const result = props.comparison.result!;
@@ -29,7 +38,7 @@ export default function CompareTable(props: Props) {
   }
 
   return (
-    <table className="vscode-codeql__compare-body">
+    <Table>
       <thead>
         <tr>
           <td>
@@ -74,6 +83,6 @@ export default function CompareTable(props: Props) {
           </td>
         </tr>
       </tbody>
-    </table>
+    </Table>
   );
 }

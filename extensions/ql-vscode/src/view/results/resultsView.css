@@ -168,27 +168,6 @@ td.vscode-codeql__path-index-cell {
   opacity: 0.6;
 }
 
-.vscode-codeql__compare-header {
-  display: flex;
-}
-
-.vscode-codeql__compare-header-item {
-  margin: 0 1.5rem;
-}
-
-.vscode-codeql__compare-message {
-  padding: 1.5rem;
-}
-
-.vscode-codeql__compare-body {
-  margin: 20px 0;
-  width: 100%;
-}
-
-.vscode-codeql__compare-body > tbody {
-  vertical-align: top;
-}
-
 .vscode-codeql__empty-query-message {
   height: 300px;
   display: flex;
