@@ -6,6 +6,7 @@
 - Remove support for CodeQL CLI versions older than 2.11.6. [#3087](https://github.com/github/vscode-codeql/pull/3087)
 - Preserve focus on results viewer when showing a location in a file. [#3088](https://github.com/github/vscode-codeql/pull/3088)
 - The `dataflowtracking` and `tainttracking` snippets expand to the new module-based interface. [#3091](https://github.com/github/vscode-codeql/pull/3091)
+- The compare view will now show a loading message while the results are loading. [#3107](https://github.com/github/vscode-codeql/pull/3107)
 
 ## 1.10.0 - 16 November 2023
 

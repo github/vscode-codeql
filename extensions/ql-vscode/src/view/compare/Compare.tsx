@@ -11,23 +11,14 @@ import CompareTable from "./CompareTable";
 
 import "../results/resultsView.css";
 
-const emptyComparison: SetComparisonsMessage = {
-  t: "setComparisons",
-  stats: {},
-  result: undefined,
-  commonResultSetNames: [],
-  currentResultSetName: "",
-  databaseUri: "",
-  message: "Empty comparison",
-};
-
 export function Compare(_: Record<string, never>): JSX.Element {
-  const [comparison, setComparison] =
-    useState<SetComparisonsMessage>(emptyComparison);
+  const [comparison, setComparison] = useState<SetComparisonsMessage | null>(
+    null,
+  );
 
-  const message = comparison.message || "Empty comparison";
+  const message = comparison?.message || "Empty comparison";
   const hasRows =
-    comparison.result &&
+    comparison?.result &&
     (comparison.result.to.length || comparison.result.from.length);
 
   useEffect(() => {
@@ -50,6 +41,7 @@ export function Compare(_: Record<string, never>): JSX.Element {
       window.removeEventListener("message", listener);
     };
   }, []);
+
   if (!comparison) {
     return <div>Waiting for results to load.</div>;
   }
