@@ -27,13 +27,15 @@ import { RawResultSet } from "../common/raw-result-types";
 import {
   findCommonResultSetNames,
   findResultSetNames,
+  CompareQueryInfo,
+  getResultSetNames,
 } from "./result-set-names";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
-  fromSchemas: BqrsInfo;
+  fromInfo: CompareQueryInfo;
   to: CompletedLocalQueryInfo;
-  toSchemas: BqrsInfo;
+  toInfo: CompareQueryInfo;
 
   commonResultSetNames: readonly string[];
 }
@@ -69,16 +71,41 @@ export class CompareView extends AbstractWebview<
       to.completedQuery.query.resultsPaths.resultsPath,
     );
 
-    const commonResultSetNames = await findCommonResultSetNames(
-      fromSchemas,
-      toSchemas,
+    const [fromSchemaNames, toSchemaNames] = await Promise.all([
+      getResultSetNames(
+        fromSchemas,
+        from.completedQuery.query.metadata,
+        from.completedQuery.query.resultsPaths.interpretedResultsPath,
+      ),
+      getResultSetNames(
+        toSchemas,
+        to.completedQuery.query.metadata,
+        to.completedQuery.query.resultsPaths.interpretedResultsPath,
+      ),
+    ]);
+
+    const commonResultSetNames = findCommonResultSetNames(
+      fromSchemaNames,
+      toSchemaNames,
     );
 
     this.comparePair = {
       from,
-      fromSchemas,
+      fromInfo: {
+        schemas: fromSchemas,
+        schemaNames: fromSchemaNames,
+        metadata: from.completedQuery.query.metadata,
+        interpretedResultsPath:
+          from.completedQuery.query.resultsPaths.interpretedResultsPath,
+      },
       to,
-      toSchemas,
+      toInfo: {
+        schemas: toSchemas,
+        schemaNames: toSchemaNames,
+        metadata: to.completedQuery.query.metadata,
+        interpretedResultsPath:
+          to.completedQuery.query.resultsPaths.interpretedResultsPath,
+      },
       commonResultSetNames,
     };
 
@@ -205,24 +232,24 @@ export class CompareView extends AbstractWebview<
   }
 
   private async findResultSetsToCompare(
-    { from, fromSchemas, to, toSchemas, commonResultSetNames }: ComparePair,
+    { from, fromInfo, to, toInfo, commonResultSetNames }: ComparePair,
     selectedResultSetName: string | undefined,
   ) {
     const { currentResultSetDisplayName, fromResultSetName, toResultSetName } =
       await findResultSetNames(
-        fromSchemas,
-        toSchemas,
+        fromInfo,
+        toInfo,
         commonResultSetNames,
         selectedResultSetName,
       );
 
     const fromResultSet = await this.getResultSet(
-      fromSchemas,
+      fromInfo.schemas,
       fromResultSetName,
       from.completedQuery.query.resultsPaths.resultsPath,
     );
     const toResultSet = await this.getResultSet(
-      toSchemas,
+      toInfo.schemas,
       toResultSetName,
       to.completedQuery.query.resultsPaths.resultsPath,
     );
