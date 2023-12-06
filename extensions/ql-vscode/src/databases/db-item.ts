@@ -13,11 +13,6 @@ export enum DbItemKind {
   RemoteRepo = "RemoteRepo",
 }
 
-export enum DbListKind {
-  Local = "Local",
-  Remote = "Remote",
-}
-
 export interface RootLocalDbItem {
   kind: DbItemKind.RootLocal;
   expanded: boolean;
@@ -106,16 +101,6 @@ export function isRemoteOwnerDbItem(
 
 export function isRemoteRepoDbItem(dbItem: DbItem): dbItem is RemoteRepoDbItem {
   return dbItem.kind === DbItemKind.RemoteRepo;
-}
-
-export function isLocalListDbItem(dbItem: DbItem): dbItem is LocalListDbItem {
-  return dbItem.kind === DbItemKind.LocalList;
-}
-
-export function isLocalDatabaseDbItem(
-  dbItem: DbItem,
-): dbItem is LocalDatabaseDbItem {
-  return dbItem.kind === DbItemKind.LocalDatabase;
 }
 
 type SelectableDbItem = RemoteDbItem | LocalDbItem;

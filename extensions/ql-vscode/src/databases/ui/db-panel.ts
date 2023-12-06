@@ -17,12 +17,7 @@ import {
   isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
 import { DisposableObject } from "../../common/disposable-object";
-import {
-  DbItem,
-  DbItemKind,
-  DbListKind,
-  RemoteUserDefinedListDbItem,
-} from "../db-item";
+import { DbItem, DbItemKind, RemoteUserDefinedListDbItem } from "../db-item";
 import { getDbItemName } from "../db-item-naming";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
@@ -217,8 +212,6 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewList(): Promise<void> {
-    const listKind = DbListKind.Remote;
-
     const listName = await window.showInputBox({
       prompt: "Enter a name for the new list",
       placeHolder: "example-list",
@@ -227,7 +220,7 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    if (this.dbManager.doesListExist(listKind, listName)) {
+    if (this.dbManager.doesListExist(listName)) {
       void showAndLogErrorMessage(
         this.app.logger,
         `The list '${listName}' already exists`,
@@ -235,7 +228,7 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    await this.dbManager.addNewList(listKind, listName);
+    await this.dbManager.addNewList(listName);
   }
 
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {
@@ -286,7 +279,7 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    if (this.dbManager.doesListExist(DbListKind.Remote, newName)) {
+    if (this.dbManager.doesListExist(newName)) {
       void showAndLogErrorMessage(
         this.app.logger,
         `The list '${newName}' already exists`,
