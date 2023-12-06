@@ -145,14 +145,6 @@ td.vscode-codeql__path-index-cell {
   text-align: right !important;
 }
 
-.vscode-codeql__vertical-rule {
-  border-left: 1px solid var(--vscode-dropdown-border);
-  height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-}
-
 .octicon {
   fill: var(--vscode-editor-foreground);
   margin-top: 0.25em;
