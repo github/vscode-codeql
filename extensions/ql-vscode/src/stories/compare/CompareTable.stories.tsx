@@ -31,13 +31,13 @@ CompareTable.args = {
         time: "8/16/2023, 3:07:21 PM",
       },
     },
-    columns: [
-      { name: "a", kind: "Entity" },
-      { name: "b", kind: "Entity" },
-    ],
     commonResultSetNames: ["edges", "nodes", "subpaths", "#select"],
     currentResultSetName: "edges",
-    rows: {
+    result: {
+      columns: [
+        { name: "a", kind: "Entity" },
+        { name: "b", kind: "Entity" },
+      ],
       from: [],
       to: [
         [

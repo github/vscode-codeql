@@ -14,8 +14,7 @@ import "../results/resultsView.css";
 const emptyComparison: SetComparisonsMessage = {
   t: "setComparisons",
   stats: {},
-  rows: undefined,
-  columns: [],
+  result: undefined,
   commonResultSetNames: [],
   currentResultSetName: "",
   databaseUri: "",
@@ -28,8 +27,8 @@ export function Compare(_: Record<string, never>): JSX.Element {
 
   const message = comparison.message || "Empty comparison";
   const hasRows =
-    comparison.rows &&
-    (comparison.rows.to.length || comparison.rows.from.length);
+    comparison.result &&
+    (comparison.result.to.length || comparison.result.from.length);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {

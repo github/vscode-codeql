@@ -353,10 +353,9 @@ export interface SetComparisonsMessage {
       time: string;
     };
   };
-  readonly columns: readonly BqrsColumn[];
   readonly commonResultSetNames: string[];
   readonly currentResultSetName: string;
-  readonly rows: QueryCompareResult | undefined;
+  readonly result: RawQueryCompareResult | undefined;
   readonly message: string | undefined;
   readonly databaseUri: string;
 }
@@ -370,7 +369,8 @@ export interface SetComparisonsMessage {
  * If an array element is null, that means that the element was removed
  * (or added) in the comparison.
  */
-export type QueryCompareResult = {
+export type RawQueryCompareResult = {
+  columns: readonly BqrsColumn[];
   from: ResultRow[];
   to: ResultRow[];
 };

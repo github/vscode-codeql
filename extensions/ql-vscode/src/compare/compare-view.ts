@@ -2,7 +2,7 @@ import { ViewColumn } from "vscode";
 
 import {
   FromCompareViewMessage,
-  QueryCompareResult,
+  RawQueryCompareResult,
   ToCompareViewMessage,
 } from "../common/interface-types";
 import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
@@ -93,10 +93,10 @@ export class CompareView extends AbstractWebview<
       selectedResultSetName,
     );
     if (currentResultSetDisplayName) {
-      let rows: QueryCompareResult | undefined;
+      let result: RawQueryCompareResult | undefined;
       let message: string | undefined;
       try {
-        rows = this.compareResults(fromResultSet, toResultSet);
+        result = this.compareResults(fromResultSet, toResultSet);
       } catch (e) {
         message = getErrorMessage(e);
       }
@@ -118,10 +118,9 @@ export class CompareView extends AbstractWebview<
             time: to.startTime,
           },
         },
-        columns: fromResultSet.columns,
+        result,
         commonResultSetNames,
         currentResultSetName: currentResultSetDisplayName,
-        rows,
         message,
         databaseUri: to.initialInfo.databaseInfo.databaseUri,
       });
@@ -240,7 +239,7 @@ export class CompareView extends AbstractWebview<
   private compareResults(
     fromResults: DecodedBqrsChunk,
     toResults: DecodedBqrsChunk,
-  ): QueryCompareResult {
+  ): RawQueryCompareResult {
     // Only compare columns that have the same name
     return resultsDiff(fromResults, toResults);
   }
