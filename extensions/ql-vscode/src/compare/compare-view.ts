@@ -80,6 +80,10 @@ export class CompareView extends AbstractWebview<
       commonResultSetNames,
     };
 
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
+    await this.waitForPanelLoaded();
+
     await this.postMessage({
       t: "setComparisonQueryInfo",
       stats: {
