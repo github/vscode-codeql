@@ -1,6 +1,9 @@
 import * as React from "react";
 
-import { SetComparisonsMessage } from "../../common/interface-types";
+import {
+  SetComparisonQueryInfoMessage,
+  SetComparisonsMessage,
+} from "../../common/interface-types";
 import { className } from "../results/result-table-utils";
 import { vscode } from "../vscode-api";
 import TextButton from "../common/TextButton";
@@ -8,6 +11,7 @@ import { styled } from "styled-components";
 import { RawCompareResultTable } from "./RawCompareResultTable";
 
 interface Props {
+  queryInfo: SetComparisonQueryInfoMessage;
   comparison: SetComparisonsMessage;
 }
 
@@ -26,9 +30,8 @@ const Table = styled.table`
   }
 `;
 
-export default function CompareTable(props: Props) {
-  const comparison = props.comparison;
-  const result = props.comparison.result!;
+export default function CompareTable({ queryInfo, comparison }: Props) {
+  const result = comparison.result!;
 
   async function openQuery(kind: "from" | "to") {
     vscode.postMessage({
@@ -43,18 +46,18 @@ export default function CompareTable(props: Props) {
         <tr>
           <td>
             <OpenButton onClick={() => openQuery("from")}>
-              {comparison.stats.fromQuery?.name}
+              {queryInfo.stats.fromQuery?.name}
             </OpenButton>
           </td>
           <td>
             <OpenButton onClick={() => openQuery("to")}>
-              {comparison.stats.toQuery?.name}
+              {queryInfo.stats.toQuery?.name}
             </OpenButton>
           </td>
         </tr>
         <tr>
-          <td>{comparison.stats.fromQuery?.time}</td>
-          <td>{comparison.stats.toQuery?.time}</td>
+          <td>{queryInfo.stats.fromQuery?.time}</td>
+          <td>{queryInfo.stats.toQuery?.time}</td>
         </tr>
         <tr>
           <th>{result.from.length} rows removed</th>
@@ -68,7 +71,7 @@ export default function CompareTable(props: Props) {
               columns={result.columns}
               schemaName={comparison.currentResultSetName}
               rows={result.from}
-              databaseUri={comparison.databaseUri}
+              databaseUri={queryInfo.databaseUri}
               className={className}
             />
           </td>
@@ -77,7 +80,7 @@ export default function CompareTable(props: Props) {
               columns={result.columns}
               schemaName={comparison.currentResultSetName}
               rows={result.to}
-              databaseUri={comparison.databaseUri}
+              databaseUri={queryInfo.databaseUri}
               className={className}
             />
           </td>

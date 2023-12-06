@@ -5,12 +5,14 @@ import { styled } from "styled-components";
 import {
   ToCompareViewMessage,
   SetComparisonsMessage,
+  SetComparisonQueryInfoMessage,
 } from "../../common/interface-types";
 import CompareSelector from "./CompareSelector";
 import { vscode } from "../vscode-api";
 import CompareTable from "./CompareTable";
 
 import "../results/resultsView.css";
+import { assertNever } from "../../common/helpers-pure";
 
 const Header = styled.div`
   display: flex;
@@ -25,6 +27,8 @@ const Message = styled.div`
 `;
 
 export function Compare(_: Record<string, never>): JSX.Element {
+  const [queryInfo, setQueryInfo] =
+    useState<SetComparisonQueryInfoMessage | null>(null);
   const [comparison, setComparison] = useState<SetComparisonsMessage | null>(
     null,
   );
@@ -39,8 +43,14 @@ export function Compare(_: Record<string, never>): JSX.Element {
       if (evt.origin === window.origin) {
         const msg: ToCompareViewMessage = evt.data;
         switch (msg.t) {
+          case "setComparisonQueryInfo":
+            setQueryInfo(msg);
+            break;
           case "setComparisons":
             setComparison(msg);
+            break;
+          default:
+            assertNever(msg);
         }
       } else {
         // sanitize origin
@@ -55,7 +65,7 @@ export function Compare(_: Record<string, never>): JSX.Element {
     };
   }, []);
 
-  if (!comparison) {
+  if (!queryInfo || !comparison) {
     return <div>Waiting for results to load.</div>;
   }
 
@@ -73,7 +83,10 @@ export function Compare(_: Record<string, never>): JSX.Element {
           />
         </Header>
         {hasRows ? (
-          <CompareTable comparison={comparison}></CompareTable>
+          <CompareTable
+            queryInfo={queryInfo}
+            comparison={comparison}
+          ></CompareTable>
         ) : (
           <Message>{message}</Message>
         )}

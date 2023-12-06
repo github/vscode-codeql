@@ -334,13 +334,15 @@ interface ChangeCompareMessage {
   newResultSetName: string;
 }
 
-export type ToCompareViewMessage = SetComparisonsMessage;
+export type ToCompareViewMessage =
+  | SetComparisonQueryInfoMessage
+  | SetComparisonsMessage;
 
 /**
- * Message to the compare view that specifies the query results to compare.
+ * Message to the compare view that sets the metadata of the compared queries.
  */
-export interface SetComparisonsMessage {
-  readonly t: "setComparisons";
+export interface SetComparisonQueryInfoMessage {
+  readonly t: "setComparisonQueryInfo";
   readonly stats: {
     fromQuery?: {
       name: string;
@@ -353,11 +355,18 @@ export interface SetComparisonsMessage {
       time: string;
     };
   };
+  readonly databaseUri: string;
+}
+
+/**
+ * Message to the compare view that specifies the query results to compare.
+ */
+export interface SetComparisonsMessage {
+  readonly t: "setComparisons";
   readonly commonResultSetNames: string[];
   readonly currentResultSetName: string;
   readonly result: RawQueryCompareResult | undefined;
   readonly message: string | undefined;
-  readonly databaseUri: string;
 }
 
 /**

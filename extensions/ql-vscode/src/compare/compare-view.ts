@@ -69,6 +69,26 @@ export class CompareView extends AbstractWebview<
       toSchemas,
     };
 
+    await this.postMessage({
+      t: "setComparisonQueryInfo",
+      stats: {
+        fromQuery: {
+          // since we split the description into several rows
+          // only run interpolation if the label is user-defined
+          // otherwise we will wind up with duplicated rows
+          name: this.labelProvider.getShortLabel(from),
+          status: from.completedQuery.statusString,
+          time: from.startTime,
+        },
+        toQuery: {
+          name: this.labelProvider.getShortLabel(to),
+          status: to.completedQuery.statusString,
+          time: to.startTime,
+        },
+      },
+      databaseUri: to.initialInfo.databaseInfo.databaseUri,
+    });
+
     await this.showResultsInternal(selectedResultSetName);
   }
 
@@ -76,8 +96,6 @@ export class CompareView extends AbstractWebview<
     if (!this.comparePair) {
       return;
     }
-
-    const { from, to } = this.comparePair;
 
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
@@ -103,26 +121,10 @@ export class CompareView extends AbstractWebview<
 
       await this.postMessage({
         t: "setComparisons",
-        stats: {
-          fromQuery: {
-            // since we split the description into several rows
-            // only run interpolation if the label is user-defined
-            // otherwise we will wind up with duplicated rows
-            name: this.labelProvider.getShortLabel(from),
-            status: from.completedQuery.statusString,
-            time: from.startTime,
-          },
-          toQuery: {
-            name: this.labelProvider.getShortLabel(to),
-            status: to.completedQuery.statusString,
-            time: to.startTime,
-          },
-        },
         result,
         commonResultSetNames,
         currentResultSetName: currentResultSetDisplayName,
         message,
-        databaseUri: to.initialInfo.databaseInfo.databaseUri,
       });
     }
   }
