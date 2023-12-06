@@ -35,7 +35,8 @@ export default function resultsDiff(
     throw new Error("CodeQL Compare: Target query has no results.");
   }
 
-  const results = {
+  const results: RawQueryCompareResult = {
+    type: "raw",
     columns: fromResults.columns,
     from: arrayDiff(fromResults.tuples, toResults.tuples),
     to: arrayDiff(toResults.tuples, fromResults.tuples),

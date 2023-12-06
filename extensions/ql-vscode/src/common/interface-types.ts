@@ -355,24 +355,33 @@ export interface SetComparisonsMessage {
   };
   readonly commonResultSetNames: string[];
   readonly currentResultSetName: string;
-  readonly result: RawQueryCompareResult | undefined;
+  readonly result: QueryCompareResult | undefined;
   readonly message: string | undefined;
   readonly databaseUri: string;
 }
 
+type QueryCompareResult = RawQueryCompareResult | InterpretedQueryCompareResult;
+
 /**
  * from is the set of rows that have changes in the "from" query.
  * to is the set of rows that have changes in the "to" query.
- * They are in the same order, so element 1 in "from" corresponds to
- * element 1 in "to".
- *
- * If an array element is null, that means that the element was removed
- * (or added) in the comparison.
  */
 export type RawQueryCompareResult = {
+  type: "raw";
   columns: readonly BqrsColumn[];
   from: ResultRow[];
   to: ResultRow[];
+};
+
+/**
+ * from is the set of results that have changes in the "from" query.
+ * to is the set of results that have changes in the "to" query.
+ */
+type InterpretedQueryCompareResult = {
+  type: "interpreted";
+  sourceLocationPrefix: string;
+  from: sarif.Result[];
+  to: sarif.Result[];
 };
 
 /**

@@ -64,22 +64,26 @@ export default function CompareTable(props: Props) {
       <tbody>
         <tr>
           <td>
-            <RawCompareResultTable
-              columns={result.columns}
-              schemaName={comparison.currentResultSetName}
-              rows={result.from}
-              databaseUri={comparison.databaseUri}
-              className={className}
-            />
+            {result.type === "raw" && (
+              <RawCompareResultTable
+                columns={result.columns}
+                schemaName={comparison.currentResultSetName}
+                rows={result.from}
+                databaseUri={comparison.databaseUri}
+                className={className}
+              />
+            )}
           </td>
           <td>
-            <RawCompareResultTable
-              columns={result.columns}
-              schemaName={comparison.currentResultSetName}
-              rows={result.to}
-              databaseUri={comparison.databaseUri}
-              className={className}
-            />
+            {result.type === "raw" && (
+              <RawCompareResultTable
+                columns={result.columns}
+                schemaName={comparison.currentResultSetName}
+                rows={result.to}
+                databaseUri={comparison.databaseUri}
+                className={className}
+              />
+            )}
           </td>
         </tr>
       </tbody>
