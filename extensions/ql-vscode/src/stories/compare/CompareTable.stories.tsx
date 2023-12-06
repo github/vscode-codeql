@@ -32,10 +32,10 @@ CompareTable.args = {
       },
     },
     databaseUri: "file:///java",
+    commonResultSetNames: ["edges", "nodes", "subpaths", "#select"],
   },
   comparison: {
     t: "setComparisons",
-    commonResultSetNames: ["edges", "nodes", "subpaths", "#select"],
     currentResultSetName: "edges",
     result: {
       columns: [

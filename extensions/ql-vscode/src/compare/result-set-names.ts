@@ -1,17 +1,27 @@
 import { BQRSInfo } from "../common/bqrs-cli-types";
 
+export async function findCommonResultSetNames(
+  fromSchemas: BQRSInfo,
+  toSchemas: BQRSInfo,
+): Promise<string[]> {
+  const fromSchemaNames = fromSchemas["result-sets"].map(
+    (schema) => schema.name,
+  );
+  const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
+
+  return fromSchemaNames.filter((name) => toSchemaNames.includes(name));
+}
+
 export async function findResultSetNames(
   fromSchemas: BQRSInfo,
   toSchemas: BQRSInfo,
+  commonResultSetNames: readonly string[],
   selectedResultSetName: string | undefined,
 ) {
   const fromSchemaNames = fromSchemas["result-sets"].map(
     (schema) => schema.name,
   );
   const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
-  const commonResultSetNames = fromSchemaNames.filter((name) =>
-    toSchemaNames.includes(name),
-  );
 
   // Fall back on the default result set names if there are no common ones.
   const defaultFromResultSetName = fromSchemaNames.find((name) =>
@@ -35,7 +45,6 @@ export async function findResultSetNames(
   const toResultSetName = currentResultSetName || defaultToResultSetName!;
 
   return {
-    commonResultSetNames,
     currentResultSetDisplayName:
       currentResultSetName ||
       `${defaultFromResultSetName} <-> ${defaultToResultSetName}`,

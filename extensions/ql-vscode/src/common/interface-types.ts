@@ -356,6 +356,7 @@ export interface SetComparisonQueryInfoMessage {
     };
   };
   readonly databaseUri: string;
+  readonly commonResultSetNames: string[];
 }
 
 /**
@@ -363,7 +364,6 @@ export interface SetComparisonQueryInfoMessage {
  */
 export interface SetComparisonsMessage {
   readonly t: "setComparisons";
-  readonly commonResultSetNames: string[];
   readonly currentResultSetName: string;
   readonly result: RawQueryCompareResult | undefined;
   readonly message: string | undefined;

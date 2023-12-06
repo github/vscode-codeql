@@ -75,7 +75,7 @@ export function Compare(_: Record<string, never>): JSX.Element {
         <Header>
           <HeaderTitle>Comparing:</HeaderTitle>
           <CompareSelector
-            availableResultSets={comparison.commonResultSetNames}
+            availableResultSets={queryInfo.commonResultSetNames}
             currentResultSetName={comparison.currentResultSetName}
             updateResultSet={(newResultSetName: string) =>
               vscode.postMessage({ t: "changeCompare", newResultSetName })
