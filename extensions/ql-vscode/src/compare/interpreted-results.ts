@@ -25,20 +25,6 @@ export async function compareInterpretedResults(
   fromQuery: CompletedLocalQueryInfo,
   toQuery: CompletedLocalQueryInfo,
 ): Promise<InterpretedQueryCompareResult> {
-  const fromResultSet = await getInterpretedResults(
-    fromQuery.completedQuery.query.resultsPaths.interpretedResultsPath,
-  );
-
-  const toResultSet = await getInterpretedResults(
-    toQuery.completedQuery.query.resultsPaths.interpretedResultsPath,
-  );
-
-  if (!fromResultSet || !toResultSet) {
-    throw new Error(
-      "Could not find interpreted results for one or both queries.",
-    );
-  }
-
   const database = databaseManager.findDatabaseItem(
     Uri.parse(toQuery.initialInfo.databaseInfo.databaseUri),
   );
@@ -48,9 +34,21 @@ export async function compareInterpretedResults(
     );
   }
 
-  const sourceLocationPrefix = await database.getSourceLocationPrefix(
-    cliServer,
-  );
+  const [fromResultSet, toResultSet, sourceLocationPrefix] = await Promise.all([
+    getInterpretedResults(
+      fromQuery.completedQuery.query.resultsPaths.interpretedResultsPath,
+    ),
+    getInterpretedResults(
+      toQuery.completedQuery.query.resultsPaths.interpretedResultsPath,
+    ),
+    database.getSourceLocationPrefix(cliServer),
+  ]);
+
+  if (!fromResultSet || !toResultSet) {
+    throw new Error(
+      "Could not find interpreted results for one or both queries.",
+    );
+  }
 
   const fromResults = fromResultSet.runs[0].results;
   const toResults = toResultSet.runs[0].results;

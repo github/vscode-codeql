@@ -68,12 +68,12 @@ export class CompareView extends AbstractWebview<
     to: CompletedLocalQueryInfo,
     selectedResultSetName?: string,
   ) {
-    const fromSchemas = await this.cliServer.bqrsInfo(
-      from.completedQuery.query.resultsPaths.resultsPath,
-    );
-    const toSchemas = await this.cliServer.bqrsInfo(
-      to.completedQuery.query.resultsPaths.resultsPath,
-    );
+    const [fromSchemas, toSchemas] = await Promise.all([
+      this.cliServer.bqrsInfo(
+        from.completedQuery.query.resultsPaths.resultsPath,
+      ),
+      this.cliServer.bqrsInfo(to.completedQuery.query.resultsPaths.resultsPath),
+    ]);
 
     const [fromSchemaNames, toSchemaNames] = await Promise.all([
       getResultSetNames(
@@ -296,16 +296,18 @@ export class CompareView extends AbstractWebview<
     fromResultSetName: string,
     toResultSetName: string,
   ): Promise<RawQueryCompareResult> {
-    const fromResultSet = await this.getResultSet(
-      fromInfo.schemas,
-      fromResultSetName,
-      from.completedQuery.query.resultsPaths.resultsPath,
-    );
-    const toResultSet = await this.getResultSet(
-      toInfo.schemas,
-      toResultSetName,
-      to.completedQuery.query.resultsPaths.resultsPath,
-    );
+    const [fromResultSet, toResultSet] = await Promise.all([
+      this.getResultSet(
+        fromInfo.schemas,
+        fromResultSetName,
+        from.completedQuery.query.resultsPaths.resultsPath,
+      ),
+      this.getResultSet(
+        toInfo.schemas,
+        toResultSetName,
+        to.completedQuery.query.resultsPaths.resultsPath,
+      ),
+    ]);
 
     return resultsDiff(fromResultSet, toResultSet);
   }
