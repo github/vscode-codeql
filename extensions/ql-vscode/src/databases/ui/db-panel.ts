@@ -21,8 +21,6 @@ import {
   DbItem,
   DbItemKind,
   DbListKind,
-  LocalDatabaseDbItem,
-  LocalListDbItem,
   RemoteUserDefinedListDbItem,
 } from "../db-item";
 import { getDbItemName } from "../db-item-naming";
@@ -40,10 +38,6 @@ import { showAndLogErrorMessage } from "../../common/logging";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
-}
-
-export interface AddListQuickPickItem extends QuickPickItem {
-  databaseKind: DbListKind;
 }
 
 interface CodeSearchQuickPickItem extends QuickPickItem {
@@ -277,57 +271,11 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    switch (dbItem.kind) {
-      case DbItemKind.LocalList:
-        await this.renameLocalListItem(dbItem, newName);
-        break;
-      case DbItemKind.LocalDatabase:
-        await this.renameLocalDatabaseItem(dbItem, newName);
-        break;
-      case DbItemKind.RemoteUserDefinedList:
-        await this.renameVariantAnalysisUserDefinedListItem(dbItem, newName);
-        break;
-      default:
-        throw Error(`Action not allowed for the '${dbItem.kind}' db item kind`);
+    if (dbItem.kind === DbItemKind.RemoteUserDefinedList) {
+      await this.renameVariantAnalysisUserDefinedListItem(dbItem, newName);
+    } else {
+      throw Error(`Action not allowed for the '${dbItem.kind}' db item kind`);
     }
-  }
-
-  private async renameLocalListItem(
-    dbItem: LocalListDbItem,
-    newName: string,
-  ): Promise<void> {
-    if (dbItem.listName === newName) {
-      return;
-    }
-
-    if (this.dbManager.doesListExist(DbListKind.Local, newName)) {
-      void showAndLogErrorMessage(
-        this.app.logger,
-        `The list '${newName}' already exists`,
-      );
-      return;
-    }
-
-    await this.dbManager.renameList(dbItem, newName);
-  }
-
-  private async renameLocalDatabaseItem(
-    dbItem: LocalDatabaseDbItem,
-    newName: string,
-  ): Promise<void> {
-    if (dbItem.databaseName === newName) {
-      return;
-    }
-
-    if (this.dbManager.doesLocalDbExist(newName, dbItem.parentListName)) {
-      void showAndLogErrorMessage(
-        this.app.logger,
-        `The database '${newName}' already exists`,
-      );
-      return;
-    }
-
-    await this.dbManager.renameLocalDb(dbItem, newName);
   }
 
   private async renameVariantAnalysisUserDefinedListItem(
