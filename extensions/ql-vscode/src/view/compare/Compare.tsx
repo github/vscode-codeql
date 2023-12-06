@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
+import { styled } from "styled-components";
 
 import {
   ToCompareViewMessage,
@@ -20,6 +21,18 @@ const emptyComparison: SetComparisonsMessage = {
   databaseUri: "",
   message: "Empty comparison",
 };
+
+const Header = styled.div`
+  display: flex;
+`;
+
+const HeaderTitle = styled.div`
+  margin: 0 1.5rem;
+`;
+
+const Message = styled.div`
+  padding: 1.5rem;
+`;
 
 export function Compare(_: Record<string, never>): JSX.Element {
   const [comparison, setComparison] =
@@ -57,8 +70,8 @@ export function Compare(_: Record<string, never>): JSX.Element {
   try {
     return (
       <>
-        <div className="vscode-codeql__compare-header">
-          <div className="vscode-codeql__compare-header-item">Comparing:</div>
+        <Header>
+          <HeaderTitle>Comparing:</HeaderTitle>
           <CompareSelector
             availableResultSets={comparison.commonResultSetNames}
             currentResultSetName={comparison.currentResultSetName}
@@ -66,11 +79,11 @@ export function Compare(_: Record<string, never>): JSX.Element {
               vscode.postMessage({ t: "changeCompare", newResultSetName })
             }
           />
-        </div>
+        </Header>
         {hasRows ? (
           <CompareTable comparison={comparison}></CompareTable>
         ) : (
-          <div className="vscode-codeql__compare-message">{message}</div>
+          <Message>{message}</Message>
         )}
       </>
     );
