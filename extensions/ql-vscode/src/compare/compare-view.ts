@@ -22,13 +22,18 @@ import {
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { App } from "../common/app";
-import { findResultSetNames } from "./result-set-names";
+import {
+  findCommonResultSetNames,
+  findResultSetNames,
+} from "./result-set-names";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
   fromSchemas: BQRSInfo;
   to: CompletedLocalQueryInfo;
   toSchemas: BQRSInfo;
+
+  commonResultSetNames: readonly string[];
 }
 
 export class CompareView extends AbstractWebview<
@@ -62,12 +67,43 @@ export class CompareView extends AbstractWebview<
       to.completedQuery.query.resultsPaths.resultsPath,
     );
 
+    const commonResultSetNames = await findCommonResultSetNames(
+      fromSchemas,
+      toSchemas,
+    );
+
     this.comparePair = {
       from,
       fromSchemas,
       to,
       toSchemas,
+      commonResultSetNames,
     };
+
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
+    await this.waitForPanelLoaded();
+
+    await this.postMessage({
+      t: "setComparisonQueryInfo",
+      stats: {
+        fromQuery: {
+          // since we split the description into several rows
+          // only run interpolation if the label is user-defined
+          // otherwise we will wind up with duplicated rows
+          name: this.labelProvider.getShortLabel(from),
+          status: from.completedQuery.statusString,
+          time: from.startTime,
+        },
+        toQuery: {
+          name: this.labelProvider.getShortLabel(to),
+          status: to.completedQuery.statusString,
+          time: to.startTime,
+        },
+      },
+      databaseUri: to.initialInfo.databaseInfo.databaseUri,
+      commonResultSetNames,
+    });
 
     await this.showResultsInternal(selectedResultSetName);
   }
@@ -77,21 +113,15 @@ export class CompareView extends AbstractWebview<
       return;
     }
 
-    const { from, to } = this.comparePair;
-
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
-    const {
-      commonResultSetNames,
-      currentResultSetDisplayName,
-      fromResultSet,
-      toResultSet,
-    } = await this.findResultSetsToCompare(
-      this.comparePair,
-      selectedResultSetName,
-    );
+    const { currentResultSetDisplayName, fromResultSet, toResultSet } =
+      await this.findResultSetsToCompare(
+        this.comparePair,
+        selectedResultSetName,
+      );
     if (currentResultSetDisplayName) {
       let result: RawQueryCompareResult | undefined;
       let message: string | undefined;
@@ -103,26 +133,9 @@ export class CompareView extends AbstractWebview<
 
       await this.postMessage({
         t: "setComparisons",
-        stats: {
-          fromQuery: {
-            // since we split the description into several rows
-            // only run interpolation if the label is user-defined
-            // otherwise we will wind up with duplicated rows
-            name: this.labelProvider.getShortLabel(from),
-            status: from.completedQuery.statusString,
-            time: from.startTime,
-          },
-          toQuery: {
-            name: this.labelProvider.getShortLabel(to),
-            status: to.completedQuery.statusString,
-            time: to.startTime,
-          },
-        },
         result,
-        commonResultSetNames,
         currentResultSetName: currentResultSetDisplayName,
         message,
-        databaseUri: to.initialInfo.databaseInfo.databaseUri,
       });
     }
   }
@@ -190,15 +203,16 @@ export class CompareView extends AbstractWebview<
   }
 
   private async findResultSetsToCompare(
-    { from, fromSchemas, to, toSchemas }: ComparePair,
+    { from, fromSchemas, to, toSchemas, commonResultSetNames }: ComparePair,
     selectedResultSetName: string | undefined,
   ) {
-    const {
-      commonResultSetNames,
-      currentResultSetDisplayName,
-      fromResultSetName,
-      toResultSetName,
-    } = await findResultSetNames(fromSchemas, toSchemas, selectedResultSetName);
+    const { currentResultSetDisplayName, fromResultSetName, toResultSetName } =
+      await findResultSetNames(
+        fromSchemas,
+        toSchemas,
+        commonResultSetNames,
+        selectedResultSetName,
+      );
 
     const fromResultSet = await this.getResultSet(
       fromSchemas,
@@ -211,7 +225,6 @@ export class CompareView extends AbstractWebview<
       to.completedQuery.query.resultsPaths.resultsPath,
     );
     return {
-      commonResultSetNames,
       currentResultSetDisplayName,
       fromResultSet,
       toResultSet,

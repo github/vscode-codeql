@@ -17,8 +17,8 @@ const Template: StoryFn<typeof CompareTableComponent> = (args) => (
 
 export const CompareTable = Template.bind({});
 CompareTable.args = {
-  comparison: {
-    t: "setComparisons",
+  queryInfo: {
+    t: "setComparisonQueryInfo",
     stats: {
       fromQuery: {
         name: "Query built from user-controlled sources",
@@ -31,7 +31,11 @@ CompareTable.args = {
         time: "8/16/2023, 3:07:21 PM",
       },
     },
+    databaseUri: "file:///java",
     commonResultSetNames: ["edges", "nodes", "subpaths", "#select"],
+  },
+  comparison: {
+    t: "setComparisons",
     currentResultSetName: "edges",
     result: {
       kind: "raw",
@@ -66,6 +70,5 @@ CompareTable.args = {
       ],
     },
     message: undefined,
-    databaseUri: "file:///java",
   },
 };
