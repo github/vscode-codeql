@@ -64,7 +64,7 @@ export default function CompareTable(props: Props) {
       <tbody>
         <tr>
           <td>
-            {result.type === "raw" && (
+            {result.kind === "raw" && (
               <RawCompareResultTable
                 columns={result.columns}
                 schemaName={comparison.currentResultSetName}
@@ -75,7 +75,7 @@ export default function CompareTable(props: Props) {
             )}
           </td>
           <td>
-            {result.type === "raw" && (
+            {result.kind === "raw" && (
               <RawCompareResultTable
                 columns={result.columns}
                 schemaName={comparison.currentResultSetName}

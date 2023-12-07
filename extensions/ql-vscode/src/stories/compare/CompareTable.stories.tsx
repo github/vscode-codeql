@@ -34,7 +34,7 @@ CompareTable.args = {
     commonResultSetNames: ["edges", "nodes", "subpaths", "#select"],
     currentResultSetName: "edges",
     result: {
-      type: "raw",
+      kind: "raw",
       columns: [
         { name: "a", kind: "Entity" },
         { name: "b", kind: "Entity" },

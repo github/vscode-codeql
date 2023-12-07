@@ -367,7 +367,7 @@ type QueryCompareResult = RawQueryCompareResult | InterpretedQueryCompareResult;
  * to is the set of rows that have changes in the "to" query.
  */
 export type RawQueryCompareResult = {
-  type: "raw";
+  kind: "raw";
   columns: readonly BqrsColumn[];
   from: ResultRow[];
   to: ResultRow[];
@@ -378,7 +378,7 @@ export type RawQueryCompareResult = {
  * to is the set of results that have changes in the "to" query.
  */
 type InterpretedQueryCompareResult = {
-  type: "interpreted";
+  kind: "interpreted";
   sourceLocationPrefix: string;
   from: sarif.Result[];
   to: sarif.Result[];

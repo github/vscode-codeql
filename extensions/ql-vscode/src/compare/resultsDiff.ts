@@ -36,7 +36,7 @@ export default function resultsDiff(
   }
 
   const results: RawQueryCompareResult = {
-    type: "raw",
+    kind: "raw",
     columns: fromResults.columns,
     from: arrayDiff(fromResults.tuples, toResults.tuples),
     to: arrayDiff(toResults.tuples, fromResults.tuples),
