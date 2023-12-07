@@ -38,6 +38,7 @@ CompareTable.args = {
     t: "setComparisons",
     currentResultSetName: "edges",
     result: {
+      kind: "raw",
       columns: [
         { name: "a", kind: "Entity" },
         { name: "b", kind: "Entity" },
