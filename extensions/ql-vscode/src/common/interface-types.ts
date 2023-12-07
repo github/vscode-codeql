@@ -36,7 +36,7 @@ export const ALERTS_TABLE_NAME = "alerts";
 export const GRAPH_TABLE_NAME = "graph";
 
 export type RawTableResultSet = { t: "RawResultSet" } & RawResultSet;
-export type InterpretedResultSet<T> = {
+type InterpretedResultSet<T> = {
   t: "InterpretedResultSet";
   readonly schema: ResultSetSchema;
   name: string;
