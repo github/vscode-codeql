@@ -19,13 +19,6 @@ if (process.env.CI) {
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
 export async function beforeAllAction() {
-  // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
-  await testConfigBeforeEachAction();
-  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
-    process.env.CLI_PATH,
-    ConfigurationTarget.Workspace,
-  );
-
   // Create the temp directory to be used as extension local storage.
   const dir = tmp.dirSync();
   let storagePath = realpathSync(dir.name);

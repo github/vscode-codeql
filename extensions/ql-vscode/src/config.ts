@@ -265,7 +265,10 @@ export class DistributionConfigListener
   implements DistributionConfig
 {
   public get customCodeQlPath(): string | undefined {
-    return CUSTOM_CODEQL_PATH_SETTING.getValue() || undefined;
+    const testCliPath =
+      isIntegrationTestMode() &&
+      process.env.VSCODE_CODEQL_TESTING_CODEQL_CLI_TEST_PATH;
+    return CUSTOM_CODEQL_PATH_SETTING.getValue() || testCliPath || undefined;
   }
 
   public get includePrerelease(): boolean {
