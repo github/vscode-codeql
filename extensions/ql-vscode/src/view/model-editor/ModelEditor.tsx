@@ -27,14 +27,18 @@ const LoadingContainer = styled.div`
   font-weight: 600;
 `;
 
-const ModelEditorContainer = styled.div`
-  margin-top: 1rem;
-`;
+const ModelEditorContainer = styled.div``;
 
 const HeaderContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: end;
+  background-color: var(--vscode-editorGutter-background);
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 `;
 
 const HeaderColumn = styled.div`
@@ -67,7 +71,7 @@ const EditorContainer = styled.div`
 const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.4em;
-  margin-bottom: 1rem;
+  margin-top: 1rem;
 `;
 
 type Props = {
