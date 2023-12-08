@@ -300,6 +300,25 @@ export function ModelEditor({
               </LinkIconButton>
             )}
           </HeaderRow>
+          <HeaderRow>
+            <ButtonsContainer>
+              <VSCodeButton
+                onClick={onSaveAllClick}
+                disabled={modifiedSignatures.size === 0}
+              >
+                Save all
+              </VSCodeButton>
+              <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+                Refresh
+              </VSCodeButton>
+              {viewState.showGenerateButton &&
+                viewState.mode === Mode.Framework && (
+                  <VSCodeButton onClick={onGenerateFromSourceClick}>
+                    Generate
+                  </VSCodeButton>
+                )}
+            </ButtonsContainer>
+          </HeaderRow>
         </HeaderColumn>
         <HeaderSpacer />
         <HeaderColumn>
@@ -313,23 +332,6 @@ export function ModelEditor({
       </HeaderContainer>
 
       <EditorContainer>
-        <ButtonsContainer>
-          <VSCodeButton
-            onClick={onSaveAllClick}
-            disabled={modifiedSignatures.size === 0}
-          >
-            Save all
-          </VSCodeButton>
-          <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
-            Refresh
-          </VSCodeButton>
-          {viewState.showGenerateButton &&
-            viewState.mode === Mode.Framework && (
-              <VSCodeButton onClick={onGenerateFromSourceClick}>
-                Generate
-              </VSCodeButton>
-            )}
-        </ButtonsContainer>
         <ModeledMethodsList
           methods={methods}
           modeledMethodsMap={modeledMethods}
