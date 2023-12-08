@@ -7,13 +7,8 @@ import {
   SelectedDbItemKind,
 } from "../../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import { createDbConfig } from "../../../factories/db-config-factories";
 import {
-  createDbConfig,
-  createLocalDbConfigItem,
-} from "../../../factories/db-config-factories";
-import {
-  createLocalDatabaseDbItem,
-  createLocalListDbItem,
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteUserDefinedListDbItem,
@@ -55,8 +50,6 @@ describe("db config store", () => {
       expect(config.databases.variantAnalysis.repositoryLists).toHaveLength(0);
       expect(config.databases.variantAnalysis.owners).toHaveLength(0);
       expect(config.databases.variantAnalysis.repositories).toHaveLength(0);
-      expect(config.databases.local.lists).toHaveLength(0);
-      expect(config.databases.local.databases).toHaveLength(0);
       expect(config.selected).toEqual({
         kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
         listName: "top_10",
@@ -302,26 +295,6 @@ describe("db config store", () => {
       configStore.dispose();
     });
 
-    it.skip("should add a local list", async () => {
-      // Initial set up
-      const dbConfig = createDbConfig();
-
-      const configStore = await initializeConfig(dbConfig, configPath, app);
-
-      // Add
-      await configStore.addLocalList("list1");
-
-      // Read the config file
-      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
-
-      // Check that the config file has been updated
-      const updatedLocalDbs = updatedDbConfig.databases.local;
-      expect(updatedLocalDbs.lists).toHaveLength(1);
-      expect(updatedLocalDbs.lists[0].name).toEqual("list1");
-
-      configStore.dispose();
-    });
-
     it("should add a remote list", async () => {
       // Initial set up
       const dbConfig = createDbConfig();
@@ -395,95 +368,6 @@ describe("db config store", () => {
         kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: "owner/repo2",
         listName: "listRenamed",
-      });
-
-      configStore.dispose();
-    });
-
-    it.skip("should allow renaming a local list", async () => {
-      // Initial set up
-      const dbConfig = createDbConfig({
-        localLists: [
-          {
-            name: "list1",
-            databases: [
-              createLocalDbConfigItem(),
-              createLocalDbConfigItem(),
-              createLocalDbConfigItem(),
-            ],
-          },
-        ],
-        selected: {
-          kind: SelectedDbItemKind.LocalUserDefinedList,
-          listName: "list1",
-        },
-      });
-
-      const configStore = await initializeConfig(dbConfig, configPath, app);
-
-      // Rename
-      const currentDbItem = createLocalListDbItem({
-        listName: "list1",
-      });
-      await configStore.renameLocalList(currentDbItem, "listRenamed");
-
-      // Read the config file
-      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
-
-      // Check that the config file has been updated
-      const updatedLocalDbs = updatedDbConfig.databases.local;
-      expect(updatedLocalDbs.lists).toHaveLength(1);
-      expect(updatedLocalDbs.lists[0].name).toEqual("listRenamed");
-
-      expect(updatedDbConfig.selected).toEqual({
-        kind: SelectedDbItemKind.LocalUserDefinedList,
-        listName: "listRenamed",
-      });
-
-      configStore.dispose();
-    });
-
-    it.skip("should allow renaming of a local db", async () => {
-      // Initial set up
-      const dbConfig = createDbConfig({
-        localLists: [
-          {
-            name: "list1",
-            databases: [
-              createLocalDbConfigItem({ name: "db1" }),
-              createLocalDbConfigItem({ name: "db2" }),
-              createLocalDbConfigItem({ name: "db3" }),
-            ],
-          },
-        ],
-        selected: {
-          kind: SelectedDbItemKind.LocalDatabase,
-          databaseName: "db1",
-          listName: "list1",
-        },
-      });
-
-      const configStore = await initializeConfig(dbConfig, configPath, app);
-
-      // Rename
-      const currentDbItem = createLocalDatabaseDbItem({
-        databaseName: "db1",
-      });
-      await configStore.renameLocalDb(currentDbItem, "dbRenamed", "list1");
-
-      // Read the config file
-      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
-
-      // Check that the config file has been updated
-      const updatedLocalDbs = updatedDbConfig.databases.local;
-      expect(updatedLocalDbs.lists).toHaveLength(1);
-      expect(updatedLocalDbs.lists[0].name).toEqual("list1");
-      expect(updatedLocalDbs.lists[0].databases.length).toEqual(3);
-      expect(updatedLocalDbs.lists[0].databases[0].name).toEqual("dbRenamed");
-      expect(updatedDbConfig.selected).toEqual({
-        kind: SelectedDbItemKind.LocalDatabase,
-        databaseName: "dbRenamed",
-        listName: "list1",
       });
 
       configStore.dispose();
@@ -753,28 +637,6 @@ describe("db config store", () => {
       configStore.dispose();
     });
 
-    it.skip("should return true if a local db and local list exists", async () => {
-      // Initial set up
-      const dbConfig = createDbConfig({
-        localLists: [
-          {
-            name: "list1",
-            databases: [createLocalDbConfigItem({ name: "db1" })],
-          },
-        ],
-      });
-
-      const configStore = await initializeConfig(dbConfig, configPath, app);
-
-      // Check
-      const doesDbExist = configStore.doesLocalDbExist("db1", "list1");
-      expect(doesDbExist).toEqual(true);
-      const doesListExist = configStore.doesLocalListExist("list1");
-      expect(doesListExist).toEqual(true);
-
-      configStore.dispose();
-    });
-
     it("should return false if items do not exist", async () => {
       // Initial set up
       const dbConfig = createDbConfig({});
@@ -782,10 +644,6 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
-      const doesLocalDbExist = configStore.doesLocalDbExist("db1", "list1");
-      expect(doesLocalDbExist).toEqual(false);
-      const doesLocalListExist = configStore.doesLocalListExist("list1");
-      expect(doesLocalListExist).toEqual(false);
       const doesRemoteDbExist = configStore.doesRemoteDbExist("db1", "list1");
       expect(doesRemoteDbExist).toEqual(false);
       const doesRemoteListExist = configStore.doesRemoteListExist("list1");
@@ -802,10 +660,6 @@ describe("db config store", () => {
     configPath: string,
     app: App,
   ): Promise<DbConfigStore> {
-    if (dbConfig && dbConfig.databases && dbConfig.databases.local) {
-      delete (dbConfig.databases as any).local;
-    }
-    // const config = clearLocalDbs(dbConfig);
     await writeJSON(configPath, dbConfig);
     const configStore = new DbConfigStore(app, false);
     await configStore.initialize();
