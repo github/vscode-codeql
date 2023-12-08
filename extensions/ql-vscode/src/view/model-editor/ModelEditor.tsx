@@ -33,7 +33,7 @@ const HeaderContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: end;
-  background-color: var(--vscode-editorGutter-background);
+  background-color: var(--vscode-editor-background);
   position: sticky;
   z-index: 1;
   top: 0;
