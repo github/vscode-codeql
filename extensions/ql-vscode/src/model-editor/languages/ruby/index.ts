@@ -29,6 +29,23 @@ function rubyMethodSignature(typeName: string, methodName: string) {
   return `${typeName}#${methodName}`;
 }
 
+function rubyMethodPath(methodName: string) {
+  if (methodName === "") {
+    return "";
+  }
+
+  return `Method[${methodName}]`;
+}
+
+function rubyPath(methodName: string, path: string) {
+  const methodPath = rubyMethodPath(methodName);
+  if (methodPath === "") {
+    return path;
+  }
+
+  return `${methodPath}.${path}`;
+}
+
 export const ruby: ModelsAsDataLanguage = {
   availableModes: [Mode.Framework],
   createMethodSignature: ({ typeName, methodName }) =>
@@ -42,7 +59,7 @@ export const ruby: ModelsAsDataLanguage = {
       // );
       generateMethodDefinition: (method) => [
         method.typeName,
-        `Method[${method.methodName}].${method.output}`,
+        rubyPath(method.methodName, method.output),
         method.kind,
       ],
       readModeledMethod: (row) => {
@@ -71,8 +88,11 @@ export const ruby: ModelsAsDataLanguage = {
       //   string type, string path, string kind
       // );
       generateMethodDefinition: (method) => {
-        const path = `Method[${method.methodName}].${method.input}`;
-        return [method.typeName, path, method.kind];
+        return [
+          method.typeName,
+          rubyPath(method.methodName, method.input),
+          method.kind,
+        ];
       },
       readModeledMethod: (row) => {
         const typeName = row[0] as string;
@@ -101,7 +121,7 @@ export const ruby: ModelsAsDataLanguage = {
       // );
       generateMethodDefinition: (method) => [
         method.typeName,
-        `Method[${method.methodName}]`,
+        rubyMethodPath(method.methodName),
         method.input,
         method.output,
         method.kind,
@@ -131,7 +151,7 @@ export const ruby: ModelsAsDataLanguage = {
       // );
       generateMethodDefinition: (method) => [
         method.typeName,
-        `Method[${method.methodName}]`,
+        rubyMethodPath(method.methodName),
         method.kind,
       ],
       readModeledMethod: (row) => {
@@ -157,7 +177,7 @@ export const ruby: ModelsAsDataLanguage = {
       generateMethodDefinition: (method) => [
         method.relatedTypeName,
         method.typeName,
-        `Method[${method.methodName}].${method.path}`,
+        rubyPath(method.methodName, method.path),
       ],
       readModeledMethod: (row) => {
         const typeName = row[1] as string;
