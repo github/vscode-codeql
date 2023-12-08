@@ -9,9 +9,15 @@ export const fetchExternalApisQuery: Query = {
  * @tags modeleditor endpoints application-mode
  */
 
-import ruby
+import codeql.ruby.AST
 
-select "todo", "todo", "todo", "todo", "todo", false, "todo", "todo", "todo", "todo"
+// This query is empty as Application Mode is not yet supported for Ruby.
+from
+  Call usage, string package, string type, string name, string parameters, boolean supported,
+  string namespace, string version, string supportedType, string classification
+where none()
+select usage, package, namespace, type, name, parameters, supported, namespace, version,
+  supportedType, classification
 `,
   frameworkModeQuery: `/**
  * @name Fetch endpoints for use in the model editor (framework mode)
@@ -22,34 +28,14 @@ select "todo", "todo", "todo", "todo", "todo", false, "todo", "todo", "todo", "t
  */
 
 import ruby
-import FrameworkModeEndpointsQuery
 import ModelEditor
 
-from PublicEndpointFromSource endpoint, boolean supported, string type
-where
-  supported = isSupported(endpoint) and
-  type = supportedType(endpoint)
+from PublicEndpointFromSource endpoint
 select endpoint, endpoint.getNamespace(), endpoint.getTypeName(), endpoint.getName(),
-  endpoint.getParameterTypes(), supported, endpoint.getFile().getBaseName(), type
+  endpoint.getParameterTypes(), endpoint.getSupportedStatus(), endpoint.getFile().getBaseName(),
+  endpoint.getSupportedType()
 `,
   dependencies: {
-    "FrameworkModeEndpointsQuery.qll": `private import ruby
-private import ModelEditor
-private import modeling.internal.Util as Util
-
-/**
- * A class of effectively public callables from source code.
- */
-class PublicEndpointFromSource extends Endpoint {
-  PublicEndpointFromSource() {
-    this.getFile() instanceof Util::RelevantFile
-  }
-
-  override predicate isSource() { this instanceof SourceCallable }
-
-  override predicate isSink() { this instanceof SinkCallable }
-}
-`,
     "ModelEditor.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
 
 private import ruby
@@ -57,22 +43,31 @@ private import codeql.ruby.dataflow.FlowSummary
 private import codeql.ruby.dataflow.internal.DataFlowPrivate
 private import codeql.ruby.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
 private import codeql.ruby.dataflow.internal.FlowSummaryImplSpecific
-private import modeling.internal.Util as Util
-private import modeling.internal.Types
 private import codeql.ruby.frameworks.core.Gem
+private import codeql.ruby.frameworks.data.ModelsAsData
+private import codeql.ruby.frameworks.data.internal.ApiGraphModelsExtensions
+private import queries.modeling.internal.Util as Util
 
 /** Holds if the given callable is not worth supporting. */
 private predicate isUninteresting(DataFlow::MethodNode c) {
-  c.getLocation().getFile().getRelativePath().regexpMatch(".*(test|spec).*")
+  c.getLocation().getFile() instanceof TestFile
+}
+
+private predicate gemFileStep(Gem::GemSpec gem, Folder folder, int n) {
+  n = 0 and folder.getAFile() = gem.(File)
+  or
+  exists(Folder parent, int m |
+    gemFileStep(gem, parent, m) and
+    parent.getAFolder() = folder and
+    n = m + 1
+  )
 }
 
 /**
  * A callable method or accessor from either the Ruby Standard Library, a 3rd party library, or from the source.
  */
 class Endpoint extends DataFlow::MethodNode {
-  Endpoint() {
-    this.isPublic() and not isUninteresting(this)
-  }
+  Endpoint() { this.isPublic() and not isUninteresting(this) }
 
   File getFile() { result = this.getLocation().getFile() }
 
@@ -83,9 +78,13 @@ class Endpoint extends DataFlow::MethodNode {
    */
   bindingset[this]
   string getNamespace() {
-    // Return the name of any gemspec file in the database.
-    // TODO: make this work for projects with multiple gems (and hence multiple gemspec files)
-    result = any(Gem::GemSpec g).getName()
+    exists(Folder folder | folder = this.getFile().getParentContainer() |
+      // The nearest gemspec to this endpoint, if one exists
+      result = min(Gem::GemSpec g, int n | gemFileStep(g, folder, n) | g order by n).getName()
+      or
+      not gemFileStep(_, folder, _) and
+      result = ""
+    )
   }
 
   /**
@@ -93,9 +92,12 @@ class Endpoint extends DataFlow::MethodNode {
    */
   bindingset[this]
   string getTypeName() {
-    // result = nestedName(this.getDeclaringType().getUnboundDeclaration())
-    // result = any(DataFlow::ClassNode c | Types::methodReturnsType(this, c) | c).getQualifiedName()
-    result = Util::getAnAccessPathPrefixWithoutSuffix(this)
+    result =
+      any(DataFlow::ModuleNode m | m.getOwnInstanceMethod(this.getMethodName()) = this)
+          .getQualifiedName() or
+    result =
+      any(DataFlow::ModuleNode m | m.getOwnSingletonMethod(this.getMethodName()) = this)
+            .getQualifiedName() + "!"
   }
 
   /**
@@ -103,24 +105,26 @@ class Endpoint extends DataFlow::MethodNode {
    */
   bindingset[this]
   string getParameterTypes() {
-    // For now, return the names of postional parameters. We don't always have type information, so we can't return type names.
-    // We don't yet handle keyword params, splat params or block params.
-    // result = "(" + parameterQualifiedTypeNamesToString(this) + ")"
+    // For now, return the names of postional and keyword parameters. We don't always have type information, so we can't return type names.
+    // We don't yet handle splat params or block params.
     result =
       "(" +
-        concat(DataFlow::ParameterNode p, int i |
-          p = this.asCallable().getParameter(i)
+        concat(string key, string value |
+          value = any(int i | i.toString() = key | this.asCallable().getParameter(i)).getName()
+          or
+          exists(DataFlow::ParameterNode param |
+            param = this.asCallable().getKeywordParameter(key)
+          |
+            value = key + ":"
+          )
         |
-          p.getName(), "," order by i
+          value, "," order by key
         ) + ")"
   }
 
   /** Holds if this API has a supported summary. */
   pragma[nomagic]
-  predicate hasSummary() {
-    // this instanceof SummarizedCallable
-    none()
-  }
+  predicate hasSummary() { none() }
 
   /** Holds if this API is a known source. */
   pragma[nomagic]
@@ -132,10 +136,7 @@ class Endpoint extends DataFlow::MethodNode {
 
   /** Holds if this API is a known neutral. */
   pragma[nomagic]
-  predicate isNeutral() {
-    // this instanceof FlowSummaryImpl::Public::NeutralCallable
-    none()
-  }
+  predicate isNeutral() { none() }
 
   /**
    * Holds if this API is supported by existing CodeQL libraries, that is, it is either a
@@ -144,261 +145,207 @@ class Endpoint extends DataFlow::MethodNode {
   predicate isSupported() {
     this.hasSummary() or this.isSource() or this.isSink() or this.isNeutral()
   }
-}
 
-boolean isSupported(Endpoint endpoint) {
-  if endpoint.isSupported() then result = true else result = false
-}
+  boolean getSupportedStatus() { if this.isSupported() then result = true else result = false }
 
-string supportedType(Endpoint endpoint) {
-  endpoint.isSink() and result = "sink"
-  or
-  endpoint.isSource() and result = "source"
-  or
-  endpoint.hasSummary() and result = "summary"
-  or
-  endpoint.isNeutral() and result = "neutral"
-  or
-  not endpoint.isSupported() and result = ""
+  string getSupportedType() {
+    this.isSink() and result = "sink"
+    or
+    this.isSource() and result = "source"
+    or
+    this.hasSummary() and result = "summary"
+    or
+    this.isNeutral() and result = "neutral"
+    or
+    not this.isSupported() and result = ""
+  }
 }
 
 string methodClassification(Call method) {
+  method.getFile() instanceof TestFile and result = "test"
+  or
+  not method.getFile() instanceof TestFile and
   result = "source"
+}
+
+class TestFile extends File {
+  TestFile() {
+    this.getRelativePath().regexpMatch(".*(test|spec).+") and
+    not this.getAbsolutePath().matches("%/ql/test/%") // allows our test cases to work
+  }
 }
 
 /**
  * A callable where there exists a MaD sink model that applies to it.
  */
-class SinkCallable extends DataFlow::CallableNode {
-  SinkCallable() { sinkElement(this.asExpr().getExpr(), _, _, _) }
+class SinkCallable extends DataFlow::MethodNode {
+  SinkCallable() {
+    exists(string type, string path, string method |
+      method = path.regexpCapture("(Method\\\\[[^\\\\]]+\\\\]).*", 1) and
+      Util::pathToMethod(this, type, method) and
+      sinkModel(type, path, _)
+    )
+  }
 }
 
 /**
  * A callable where there exists a MaD source model that applies to it.
  */
 class SourceCallable extends DataFlow::CallableNode {
-  SourceCallable() { sourceElement(this.asExpr().getExpr(), _, _, _) }
-}`,
-    "modeling/internal/Util.qll": `private import ruby
-
-// \`SomeClass#initialize\` methods are usually called indirectly via
-// \`SomeClass.new\`, so we need to account for this when generating access paths
-private string getNormalizedMethodName(DataFlow::MethodNode methodNode) {
-  exists(string actualMethodName | actualMethodName = methodNode.getMethodName() |
-    if actualMethodName = "initialize" then result = "new" else result = actualMethodName
-  )
+  SourceCallable() {
+    exists(string type, string path, string method |
+      method = path.regexpCapture("(Method\\\\[[^\\\\]]+\\\\]).*", 1) and
+      Util::pathToMethod(this, type, method) and
+      sourceModel(type, path, _)
+    )
+  }
 }
 
-private string getAccessPathSuffix(Ast::MethodBase method) {
-  if method instanceof Ast::SingletonMethod or method.getName() = "initialize"
-  then result = "!"
-  else result = ""
-}
+/**
+ * A class of effectively public callables from source code.
+ */
+class PublicEndpointFromSource extends Endpoint {
+  override predicate isSource() { this instanceof SourceCallable }
 
-string getAnAccessPathPrefix(DataFlow::MethodNode methodNode) {
-  result =
-    getAnAccessPathPrefixWithoutSuffix(methodNode) +
-      getAccessPathSuffix(methodNode.asExpr().getExpr())
+  override predicate isSink() { this instanceof SinkCallable }
 }
+`,
+    "queries/modeling/internal/Util.qll": `/**
+ * Contains utility methods and classes to assist with generating data extensions models.
+ */
 
-string getAnAccessPathPrefixWithoutSuffix(DataFlow::MethodNode methodNode) {
-  result =
-    methodNode
-        .asExpr()
-        .getExpr()
-        .getEnclosingModule()
-        .(Ast::ConstantWriteAccess)
-        .getAQualifiedName()
-}
+private import ruby
+private import codeql.ruby.ApiGraphs
 
+/**
+ * A file that is relevant in the context of library modeling.
+ *
+ * In practice, this means a file that is not part of test code.
+ */
 class RelevantFile extends File {
   RelevantFile() { not this.getRelativePath().regexpMatch(".*/?test(case)?s?/.*") }
 }
 
-string getMethodPath(DataFlow::MethodNode methodNode) {
-  result = "Method[" + getNormalizedMethodName(methodNode) + "]"
-}
-
-private string getParameterPath(DataFlow::ParameterNode paramNode) {
-  exists(Ast::Parameter param, string paramSpec |
-    param = paramNode.asParameter() and
-    (
-      paramSpec = param.getPosition().toString()
-      or
-      paramSpec = param.(Ast::KeywordParameter).getName() + ":"
-      or
-      param instanceof Ast::BlockParameter and
-      paramSpec = "block"
+/**
+ * Gets an access path of an argument corresponding to the given \`paramNode\`.
+ */
+string getArgumentPath(DataFlow::ParameterNode paramNode) {
+  paramNode.getLocation().getFile() instanceof RelevantFile and
+  exists(string paramSpecifier |
+    exists(Ast::Parameter param |
+      param = paramNode.asParameter() and
+      (
+        paramSpecifier = param.getPosition().toString()
+        or
+        paramSpecifier = param.(Ast::KeywordParameter).getName() + ":"
+        or
+        param instanceof Ast::BlockParameter and
+        paramSpecifier = "block"
+      )
     )
+    or
+    paramNode instanceof DataFlow::SelfParameterNode and paramSpecifier = "self"
   |
-    result = "Parameter[" + paramSpec + "]"
+    result = "Argument[" + paramSpecifier + "]"
   )
 }
 
-string getMethodParameterPath(DataFlow::MethodNode methodNode, DataFlow::ParameterNode paramNode) {
-  result = getMethodPath(methodNode) + "." + getParameterPath(paramNode)
+/**
+ * Holds if \`(type,path)\` evaluates to the given method, when evalauted from a client of the current library.
+ */
+predicate pathToMethod(DataFlow::MethodNode method, string type, string path) {
+  method.getLocation().getFile() instanceof RelevantFile and
+  exists(DataFlow::ModuleNode mod, string methodName |
+    method = mod.getOwnInstanceMethod(methodName) and
+    if methodName = "initialize"
+    then (
+      type = mod.getQualifiedName() + "!" and
+      path = "Method[new]"
+    ) else (
+      type = mod.getQualifiedName() and
+      path = "Method[" + methodName + "]"
+    )
+    or
+    method = mod.getOwnSingletonMethod(methodName) and
+    type = mod.getQualifiedName() + "!" and
+    path = "Method[" + methodName + "]"
+  )
 }
-`,
-    "modeling/internal/Types.qll": `private import ruby
-private import codeql.ruby.ApiGraphs
-private import Util as Util
 
-module Types {
-  private module Config implements DataFlow::ConfigSig {
-    predicate isSource(DataFlow::Node source) {
-      // TODO: construction of type values not using a "new" call
-      source.(DataFlow::CallNode).getMethodName() = "new"
-    }
-
-    predicate isSink(DataFlow::Node sink) { sink = any(DataFlow::MethodNode m).getAReturnNode() }
-  }
-
-  private import DataFlow::Global<Config>
-
-  predicate methodReturnsType(DataFlow::MethodNode methodNode, DataFlow::ClassNode classNode) {
-    // ignore cases of initializing instance of self
-    not methodNode.getMethodName() = "initialize" and
-    exists(DataFlow::CallNode initCall |
-      flow(initCall, methodNode.getAReturnNode()) and
-      classNode.getAnImmediateReference().getAMethodCall() = initCall and
-      // constructed object does not have a type declared in test code
-      /*
-       * TODO: this may be too restrictive, e.g.
-       * - if a type is declared in both production and test code
-       * - if a built-in type is extended in test code
-       */
-
-      forall(Ast::ModuleBase classDecl | classDecl = classNode.getADeclaration() |
-        classDecl.getLocation().getFile() instanceof Util::RelevantFile
-      )
-    )
-  }
-
-  // \`exprNode\` is an instance of \`classNode\`
-  private predicate exprHasType(DataFlow::ExprNode exprNode, DataFlow::ClassNode classNode) {
-    exists(DataFlow::MethodNode methodNode, DataFlow::CallNode callNode |
-      methodReturnsType(methodNode, classNode) and
-      callNode.getATarget() = methodNode
-    |
-      exprNode.getALocalSource() = callNode
-    )
-    or
-    exists(DataFlow::MethodNode containingMethod |
-      classNode.getInstanceMethod(containingMethod.getMethodName()) = containingMethod
-    |
-      exprNode.getALocalSource() = containingMethod.getSelfParameter()
-    )
-  }
-
-  // extensible predicate typeModel(string type1, string type2, string path);
-  // the method node in type2 constructs an instance of classNode
-  private predicate typeModelReturns(string type1, string type2, string path) {
-    exists(DataFlow::MethodNode methodNode, DataFlow::ClassNode classNode |
-      methodNode.getLocation().getFile() instanceof Util::RelevantFile and
-      methodReturnsType(methodNode, classNode)
-    |
-      type1 = classNode.getQualifiedName() and
-      type2 = Util::getAnAccessPathPrefix(methodNode) and
-      path = Util::getMethodPath(methodNode) + ".ReturnValue"
-    )
-  }
-
-  predicate methodTakesParameterOfType(
-    DataFlow::MethodNode methodNode, DataFlow::ClassNode classNode,
-    DataFlow::ParameterNode parameterNode
-  ) {
-    exists(DataFlow::CallNode callToMethodNode, DataFlow::LocalSourceNode argumentNode |
-      callToMethodNode.getATarget() = methodNode and
-      // positional parameter
-      exists(int paramIndex |
-        argumentNode.flowsTo(callToMethodNode.getArgument(paramIndex)) and
-        parameterNode = methodNode.getParameter(paramIndex)
-      )
-      or
-      // keyword parameter
-      exists(string kwName |
-        argumentNode.flowsTo(callToMethodNode.getKeywordArgument(kwName)) and
-        parameterNode = methodNode.getKeywordParameter(kwName)
-      )
-      or
-      // block parameter
-      argumentNode.flowsTo(callToMethodNode.getBlock()) and
-      parameterNode = methodNode.getBlockParameter()
-    |
-      // parameter directly from new call
-      argumentNode.(DataFlow::CallNode).getMethodName() = "new" and
-      classNode.getAnImmediateReference().getAMethodCall() = argumentNode
-      or
-      // parameter from indirect new call
-      exists(DataFlow::ExprNode argExpr |
-        exprHasType(argExpr, classNode) and
-        argumentNode.(DataFlow::CallNode).getATarget() = argExpr
-      )
-    )
-  }
-
-  private predicate typeModelParameters(string type1, string type2, string path) {
-    exists(
-      DataFlow::MethodNode methodNode, DataFlow::ClassNode classNode,
-      DataFlow::ParameterNode parameterNode
-    |
-      methodNode.getLocation().getFile() instanceof Util::RelevantFile and
-      methodTakesParameterOfType(methodNode, classNode, parameterNode)
-    |
-      type1 = classNode.getQualifiedName() and
-      type2 = Util::getAnAccessPathPrefix(methodNode) and
-      path = Util::getMethodParameterPath(methodNode, parameterNode)
-    )
-  }
-
-  // TODO: non-positional params for block arg parameters
-  private predicate methodYieldsType(
-    DataFlow::CallableNode callableNode, int argIdx, DataFlow::ClassNode classNode
-  ) {
-    exprHasType(callableNode.getABlockCall().getArgument(argIdx), classNode)
-  }
-
-  /*
-   * e.g. for
-   * \`\`\`rb
-   * class Foo
-   *  def initialize
-   *    // do some stuff...
-   *    if block_given?
-   *      yield self
-   *    end
-   *  end
-   *
-   *  def do_something
-   *    // do something else
-   *  end
-   * end
-   *
-   * Foo.new do |foo| foo.do_something end
-   * \`\`\`
-   *
-   * the parameter foo to the block is an instance of Foo.
-   */
-
-  private predicate typeModelBlockArgumentParameters(string type1, string type2, string path) {
-    exists(DataFlow::MethodNode methodNode, DataFlow::ClassNode classNode, int argIdx |
-      methodNode.getLocation().getFile() instanceof Util::RelevantFile and
-      methodYieldsType(methodNode, argIdx, classNode)
-    |
-      type1 = classNode.getQualifiedName() and
-      type2 = Util::getAnAccessPathPrefix(methodNode) and
-      path = Util::getMethodPath(methodNode) + ".Argument[block].Parameter[" + argIdx + "]"
-    )
-  }
-
-  predicate typeModel(string type1, string type2, string path) {
-    typeModelReturns(type1, type2, path)
-    or
-    typeModelParameters(type1, type2, path)
-    or
-    typeModelBlockArgumentParameters(type1, type2, path)
-  }
+/**
+ * Gets any parameter to \`methodNode\`. This may be a positional, keyword,
+ * block, or self parameter.
+ */
+DataFlow::ParameterNode getAnyParameter(DataFlow::MethodNode methodNode) {
+  result =
+    [
+      methodNode.getParameter(_), methodNode.getKeywordParameter(_), methodNode.getBlockParameter(),
+      methodNode.getSelfParameter()
+    ]
 }
-`,
+
+private predicate pathToNodeBase(API::Node node, string type, string path, boolean isOutput) {
+  exists(DataFlow::MethodNode method, string prevPath | pathToMethod(method, type, prevPath) |
+    isOutput = true and
+    node = method.getAReturnNode().backtrack() and
+    path = prevPath + ".ReturnValue" and
+    not method.getMethodName() = "initialize" // ignore return value of initialize method
+    or
+    isOutput = false and
+    exists(DataFlow::ParameterNode paramNode |
+      paramNode = getAnyParameter(method) and
+      node = paramNode.track()
+    |
+      path = prevPath + "." + getArgumentPath(paramNode)
+    )
+  )
+}
+
+private predicate pathToNodeRec(
+  API::Node node, string type, string path, boolean isOutput, int pathLength
+) {
+  pathLength < 8 and
+  (
+    pathToNodeBase(node, type, path, isOutput) and
+    pathLength = 1
+    or
+    exists(API::Node prevNode, string prevPath, boolean prevIsOutput, int prevPathLength |
+      pathToNodeRec(prevNode, type, prevPath, prevIsOutput, prevPathLength) and
+      pathLength = prevPathLength + 1
+    |
+      node = prevNode.getAnElement() and
+      path = prevPath + ".Element" and
+      isOutput = prevIsOutput
+      or
+      node = prevNode.getReturn() and
+      path = prevPath + ".ReturnValue" and
+      isOutput = prevIsOutput
+      or
+      prevIsOutput = false and
+      isOutput = true and
+      (
+        exists(int n |
+          node = prevNode.getParameter(n) and
+          path = prevPath + ".Parameter[" + n + "]"
+        )
+        or
+        exists(string name |
+          node = prevNode.getKeywordParameter(name) and
+          path = prevPath + ".Parameter[" + name + ":]"
+        )
+        or
+        node = prevNode.getBlock() and
+        path = prevPath + ".Parameter[block]"
+      )
+    )
+  )
+}
+
+/**
+ * Holds if \`(type,path)\` evaluates to a value corresponding to \`node\`, when evaluated from a client of the current library.
+ */
+predicate pathToNode(API::Node node, string type, string path, boolean isOutput) {
+  pathToNodeRec(node, type, path, isOutput, _)
+}`,
   },
 };
