@@ -13,5 +13,6 @@ export function NonClickableLocation({ msg, locationHint }: Props) {
   if (msg === undefined) {
     return null;
   }
+  // eslint-disable-next-line github/a11y-no-title-attribute
   return <span title={locationHint}>{msg}</span>;
 }
