@@ -51,6 +51,16 @@ const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
 const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
 
 /**
+ * Owner name of the nightly version of the extension-managed distribution on GitHub.
+ */
+const NIGHTLY_DISTRIBUTION_OWNER_NAME = "dsp-testing";
+
+/**
+ * Repository name of the nightly version of the extension-managed distribution on GitHub.
+ */
+const NIGHTLY_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-nightlies";
+
+/**
  * Range of versions of the CLI that are compatible with the extension.
  *
  * This applies to both extension-managed and CLI distributions.
@@ -476,17 +486,31 @@ class ExtensionSpecificDistributionManager {
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
-    const ownerName = this.config.ownerName
-      ? this.config.ownerName
-      : DEFAULT_DISTRIBUTION_OWNER_NAME;
-    const repositoryName = this.config.repositoryName
-      ? this.config.repositoryName
-      : DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
     return new ReleasesApiConsumer(
-      ownerName,
-      repositoryName,
+      this.distributionOwnerName(),
+      this.distributionRepositoryName(),
       this.config.personalAccessToken,
     );
+  }
+
+  private distributionOwnerName(): string {
+    if (this.config.ownerName) {
+      return this.config.ownerName;
+    } else if (this.config.channel === "nightly") {
+      return NIGHTLY_DISTRIBUTION_OWNER_NAME;
+    } else {
+      return DEFAULT_DISTRIBUTION_OWNER_NAME;
+    }
+  }
+
+  private distributionRepositoryName(): string {
+    if (this.config.repositoryName) {
+      return this.config.repositoryName;
+    } else if (this.config.channel === "nightly") {
+      return NIGHTLY_DISTRIBUTION_REPOSITORY_NAME;
+    } else {
+      return DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
+    }
   }
 
   private async bumpDistributionFolderIndex(): Promise<void> {

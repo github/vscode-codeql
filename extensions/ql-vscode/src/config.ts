@@ -95,6 +95,7 @@ const PERSONAL_ACCESS_TOKEN_SETTING = new Setting(
   "personalAccessToken",
   DISTRIBUTION_SETTING,
 );
+const CLI_CHANNEL_SETTING = new Setting("channel", DISTRIBUTION_SETTING);
 
 // Query History configuration
 const QUERY_HISTORY_SETTING = new Setting("queryHistory", ROOT_SETTING);
@@ -111,6 +112,8 @@ const DISTRIBUTION_CHANGE_SETTINGS = [
   PERSONAL_ACCESS_TOKEN_SETTING,
 ];
 
+export type CLIChannel = "released" | "nightly";
+
 export interface DistributionConfig {
   readonly customCodeQlPath?: string;
   updateCustomCodeQlPath: (newPath: string | undefined) => Promise<void>;
@@ -118,6 +121,7 @@ export interface DistributionConfig {
   personalAccessToken?: string;
   ownerName?: string;
   repositoryName?: string;
+  channel: CLIChannel;
   onDidChangeConfiguration?: Event<void>;
 
   /**
@@ -281,6 +285,12 @@ export class DistributionConfigListener
       newPath,
       ConfigurationTarget.Global,
     );
+  }
+
+  public get channel(): CLIChannel {
+    return CLI_CHANNEL_SETTING.getValue() === "nightly"
+      ? "nightly"
+      : "released";
   }
 
   public forceUpdateConfiguration() {
