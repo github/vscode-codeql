@@ -37,45 +37,49 @@ function makeKey(
   return `${queryCausingWork}:${predicate}${suffix ? ` ${suffix}` : ""}`;
 }
 
-const DEPENDENT_PREDICATES_REGEXP = (() => {
+function getDependentPredicates(operations: string[]): I.List<string> {
+  const id = String.raw`[0-9a-zA-Z:#_\./]+`;
+  const idWithAngleBrackets = String.raw`[0-9a-zA-Z:#_<>\./]+`;
+  const quotedId = String.raw`\`[^\`\r\n]*\``;
   const regexps = [
     // SCAN id
-    String.raw`SCAN\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s`,
+    String.raw`SCAN\s+(${id}|${quotedId})\s`,
     // JOIN id WITH id
-    String.raw`JOIN\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s+WITH\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s`,
+    String.raw`JOIN\s+(${id}|${quotedId})\s+WITH\s+(${id}|${quotedId})\s`,
+    // JOIN WITH id
+    String.raw`JOIN\s+WITH\s+(${id}|${quotedId})\s`,
     // AGGREGATE id, id
-    String.raw`AGGREGATE\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s*,\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)`,
+    String.raw`AGGREGATE\s+(${id}|${quotedId})\s*,\s+(${id}|${quotedId})`,
     // id AND NOT id
-    String.raw`([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s+AND\s+NOT\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)`,
+    String.raw`(${id}|${quotedId})\s+AND\s+NOT\s+(${id}|${quotedId})`,
+    // AND NOT id
+    String.raw`AND\s+NOT\s+(${id}|${quotedId})`,
     // INVOKE HIGHER-ORDER RELATION rel ON <id, ..., id>
-    String.raw`INVOKE\s+HIGHER-ORDER\s+RELATION\s[^\s]+\sON\s+<([0-9a-zA-Z:#_<>]+|\`[^\`\r\n]*\`)((?:,[0-9a-zA-Z:#_<>]+|,\`[^\`\r\n]*\`)*)>`,
+    String.raw`INVOKE\s+HIGHER-ORDER\s+RELATION\s[^\s]+\sON\s+<(${idWithAngleBrackets}|${quotedId})((?:,${idWithAngleBrackets}|,${quotedId})*)>`,
     // SELECT id
-    String.raw`SELECT\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)`,
+    String.raw`SELECT\s+(${id}|${quotedId})`,
     // REWRITE id WITH
-    String.raw`REWRITE\s+([0-9a-zA-Z:#_]+|\`[^\`\r\n]*\`)\s+WITH\s`,
+    String.raw`REWRITE\s+(${id}|${quotedId})\s+WITH\s`,
+    // id UNION id UNION ... UNION id
+    String.raw`(${id}|${quotedId})((?:\s+UNION\s+${id}|${quotedId})+)`,
   ];
-  return new RegExp(
-    `${String.raw`\{[0-9]+\}\s+[0-9a-zA-Z]+\s=\s(?:` + regexps.join("|")})`,
+  const r = new RegExp(
+    `${
+      String.raw`\{[0-9]+\}\s+(?:[0-9a-zA-Z]+\s=|\|)\s(?:` + regexps.join("|")
+    })`,
   );
-})();
-
-function getDependentPredicates(operations: string[]): I.List<string> {
   return I.List(operations).flatMap((operation) => {
-    const matches = DEPENDENT_PREDICATES_REGEXP.exec(operation.trim());
-    if (matches !== null) {
-      return I.List(matches)
-        .rest() // Skip the first group as it's just the entire string
-        .filter((x) => !!x && !x.match("r[0-9]+|PRIMITIVE")) // Only keep the references to predicates.
-        .flatMap((x) => x.split(",")) // Group 2 in the INVOKE HIGHER_ORDER RELATION case is a comma-separated list of identifiers.
-        .filter((x) => !!x) // Remove empty strings
-        .map((x) =>
-          x.startsWith("`") && x.endsWith("`")
-            ? x.substring(1, x.length - 1)
-            : x,
-        ); // Remove quotes from quoted identifiers
-    } else {
-      return I.List();
-    }
+    const matches = r.exec(operation.trim()) || [];
+    return I.List(matches)
+      .rest() // Skip the first group as it's just the entire string
+      .filter((x) => !!x)
+      .flatMap((x) => x.split(",")) // Group 2 in the INVOKE HIGHER_ORDER RELATION case is a comma-separated list of identifiers.
+      .flatMap((x) => x.split(" UNION ")) // Split n-ary unions into individual arguments.
+      .filter((x) => !x.match("r[0-9]+|PRIMITIVE")) // Only keep the references to predicates.
+      .filter((x) => !!x) // Remove empty strings
+      .map((x) =>
+        x.startsWith("`") && x.endsWith("`") ? x.substring(1, x.length - 1) : x,
+      ); // Remove quotes from quoted identifiers
   });
 }
 
