@@ -232,14 +232,14 @@ export function parseHighlightedLine(
   const highlightStartColumn = isSingleLineHighlight
     ? highlightedRegion.startColumn
     : isFirstHighlightedLine
-    ? highlightedRegion.startColumn
-    : 0;
+      ? highlightedRegion.startColumn
+      : 0;
 
   const highlightEndColumn = isSingleLineHighlight
     ? highlightedRegion.endColumn
     : isLastHighlightedLine
-    ? highlightedRegion.endColumn
-    : line.length + 1;
+      ? highlightedRegion.endColumn
+      : line.length + 1;
 
   const plainSection1 = line.substring(0, highlightStartColumn - 1);
   const highlightedSection = line.substring(

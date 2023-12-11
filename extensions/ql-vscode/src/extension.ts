@@ -542,8 +542,8 @@ async function installOrUpdateDistribution(
   const messageText = willUpdateCodeQl
     ? "Updating CodeQL CLI"
     : codeQlInstalled
-    ? "Checking for updates to CodeQL CLI"
-    : "Installing CodeQL CLI";
+      ? "Checking for updates to CodeQL CLI"
+      : "Installing CodeQL CLI";
 
   try {
     await installOrUpdateDistributionWithProgressTitle(
@@ -564,8 +564,8 @@ async function installOrUpdateDistribution(
       willUpdateCodeQl
         ? "update"
         : codeQlInstalled
-        ? "check for updates to"
-        : "install"
+          ? "check for updates to"
+          : "install"
     } CodeQL CLI`;
 
     if (e instanceof GithubRateLimitedError) {
