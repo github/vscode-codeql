@@ -269,7 +269,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                 </DataGridCell>
                 {viewState.showMultipleModels && (
                   <DataGridCell>
-                    {index === modeledMethods.length - 1 ? (
+                    {index === 0 ? (
                       <CodiconRow
                         appearance="icon"
                         aria-label="Add new model"

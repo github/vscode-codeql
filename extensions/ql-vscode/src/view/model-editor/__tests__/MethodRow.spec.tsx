@@ -350,7 +350,7 @@ describe(MethodRow.name, () => {
     expect(removeButton?.getElementsByTagName("input")[0]).toBeEnabled();
   });
 
-  it("shows add model button on last row and remove model button on all other rows", async () => {
+  it("shows add model button on first row and remove model button on all other rows", async () => {
     render({
       modeledMethods: [
         { ...modeledMethod, type: "source" },
@@ -401,7 +401,7 @@ describe(MethodRow.name, () => {
     ]);
   });
 
-  it("can delete the first modeled method", async () => {
+  it("cannot delete the first modeled method (but delete second instead)", async () => {
     render({
       modeledMethods: [
         { ...modeledMethod, type: "source" },
@@ -420,7 +420,7 @@ describe(MethodRow.name, () => {
 
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(method.signature, [
-      { ...modeledMethod, type: "sink" },
+      { ...modeledMethod, type: "source" },
       { ...modeledMethod, type: "none" },
       { ...modeledMethod, type: "summary" },
     ]);
@@ -441,7 +441,7 @@ describe(MethodRow.name, () => {
     });
 
     onChange.mockReset();
-    await userEvent.click(screen.getAllByLabelText("Remove model")[2]);
+    await userEvent.click(screen.getAllByLabelText("Remove model")[1]);
 
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(method.signature, [
