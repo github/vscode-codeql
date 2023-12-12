@@ -109,3 +109,40 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           npm run test:cli-integration
+
+  report-failure:
+    name: Report failure on the default branch
+    runs-on: ubuntu-latest
+    needs: [cli-test]
+    if: failure() && github.ref == 'refs/heads/main'
+    permissions:
+      issues: write
+    steps:
+      - name: Create GitHub issue
+        run: |
+          # Set -eu so that we fail if the gh command fails.
+          set -eu
+
+          # Try to find an existing open issue if there is one
+          ISSUE="$(gh issue list --repo "$GITHUB_REPOSITORY" --label "cli-test-failure" --state "open" --limit 1 --json number -q '.[0].number')"
+
+          if [[ -n "$ISSUE" ]]; then
+            echo "Found open issue number $ISSUE ($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/issues/$ISSUE)"
+          else
+            echo "Did not find an open tracking issue. Creating one."
+
+            ISSUE_BODY="issue-body.md"
+            printf "CLI tests have failed on the default branch.\n\n@github/code-scanning-secexp-reviewers" > "$ISSUE_BODY"
+
+            ISSUE="$(gh issue create --repo "$GITHUB_REPOSITORY" --label "cli-test-failure" --title "CLI test failure" --body-file "$ISSUE_BODY")"
+            # `gh issue create` returns the full issue URL, not just the number.
+            echo "Created issue with URL $ISSUE"
+          fi
+
+          COMMENT_FILE="comment.md"
+          RUN_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          printf 'CLI test [%s](%s) failed on ref `%s`' "$RUN_ID" "$RUN_URL" "$RUN_REF" > "$COMMENT_FILE"
+
+          # `gh issue create` returns an issue URL, and `gh issue list | cut -f 1` returns an issue number.
+          # Both are accepted here.
+          gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" --body-file "$COMMENT_FILE"
