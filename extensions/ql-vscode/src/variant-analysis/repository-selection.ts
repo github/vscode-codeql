@@ -18,10 +18,6 @@ export async function getRepositorySelection(
   const selectedDbItem = dbManager.getSelectedDbItem();
   if (selectedDbItem) {
     switch (selectedDbItem.kind) {
-      case DbItemKind.LocalDatabase || DbItemKind.LocalList:
-        throw new UserCancellationException(
-          "Local databases and lists are not supported yet.",
-        );
       case DbItemKind.RemoteSystemDefinedList:
         return { repositoryLists: [selectedDbItem.listName] };
       case DbItemKind.RemoteUserDefinedList:

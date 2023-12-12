@@ -336,13 +336,15 @@ interface ChangeCompareMessage {
   newResultSetName: string;
 }
 
-export type ToCompareViewMessage = SetComparisonsMessage;
+export type ToCompareViewMessage =
+  | SetComparisonQueryInfoMessage
+  | SetComparisonsMessage;
 
 /**
- * Message to the compare view that specifies the query results to compare.
+ * Message to the compare view that sets the metadata of the compared queries.
  */
-export interface SetComparisonsMessage {
-  readonly t: "setComparisons";
+export interface SetComparisonQueryInfoMessage {
+  readonly t: "setComparisonQueryInfo";
   readonly stats: {
     fromQuery?: {
       name: string;
@@ -355,26 +357,42 @@ export interface SetComparisonsMessage {
       time: string;
     };
   };
-  readonly columns: readonly Column[];
-  readonly commonResultSetNames: string[];
-  readonly currentResultSetName: string;
-  readonly rows: QueryCompareResult | undefined;
-  readonly message: string | undefined;
   readonly databaseUri: string;
+  readonly commonResultSetNames: string[];
 }
+
+/**
+ * Message to the compare view that specifies the query results to compare.
+ */
+export interface SetComparisonsMessage {
+  readonly t: "setComparisons";
+  readonly currentResultSetName: string;
+  readonly result: QueryCompareResult | undefined;
+  readonly message: string | undefined;
+}
+
+type QueryCompareResult = RawQueryCompareResult | InterpretedQueryCompareResult;
 
 /**
  * from is the set of rows that have changes in the "from" query.
  * to is the set of rows that have changes in the "to" query.
- * They are in the same order, so element 1 in "from" corresponds to
- * element 1 in "to".
- *
- * If an array element is null, that means that the element was removed
- * (or added) in the comparison.
  */
-export type QueryCompareResult = {
+export type RawQueryCompareResult = {
+  kind: "raw";
+  columns: readonly Column[];
   from: Row[];
   to: Row[];
+};
+
+/**
+ * from is the set of results that have changes in the "from" query.
+ * to is the set of results that have changes in the "to" query.
+ */
+type InterpretedQueryCompareResult = {
+  kind: "interpreted";
+  sourceLocationPrefix: string;
+  from: sarif.Result[];
+  to: sarif.Result[];
 };
 
 /**

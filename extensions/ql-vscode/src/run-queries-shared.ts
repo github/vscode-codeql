@@ -220,17 +220,10 @@ export class QueryEvaluationInfo extends QueryOutputDir {
     }
     const compiledQuery = this.compileQueryPath;
     if (!(await pathExists(compiledQuery))) {
-      if (await cliServer.cliConstraints.supportsNewQueryServer()) {
-        // This could be from the new query server
-        // in which case we expect the qlo to be missing so we should ignore it
-        throw new Error(
-          `DIL was not found. Expected location: '${this.dilPath}'`,
-        );
-      } else {
-        throw new Error(
-          `Cannot create DIL because compiled query is missing. ${compiledQuery}`,
-        );
-      }
+      // We expect the qlo to be missing so we should ignore it
+      throw new Error(
+        `DIL was not found. Expected location: '${this.dilPath}'`,
+      );
     }
 
     await cliServer.generateDil(compiledQuery, this.dilPath);

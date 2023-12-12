@@ -13,6 +13,7 @@ import {
   interpretResultsSarif,
 } from "../../../src/query-results";
 import {
+  QueryEvaluationInfo,
   QueryOutputDir,
   QueryWithResults,
 } from "../../../src/run-queries-shared";
@@ -25,15 +26,12 @@ import { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/tmp-dir";
 import {
-  formatLegacyMessage,
-  QueryInProgress,
-} from "../../../src/query-server/legacy/run-queries";
-import {
   EvaluationResult,
   QueryResultType,
 } from "../../../src/query-server/legacy-messages";
 import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";
+import { formatLegacyMessage } from "../../../src/query-server/format-legacy-message";
 
 describe("query-results", () => {
   let queryPath: string;
@@ -452,20 +450,17 @@ describe("query-results", () => {
   function createMockQueryWithResults(
     queryPath: string,
     didRunSuccessfully = true,
-    hasInterpretedResults = true,
     dbPath = "/a/b/c",
-    includeSpies = true,
   ): QueryWithResults {
     // pretend that the results path exists
     const resultsPath = join(queryPath, "results.bqrs");
     mkdirpSync(queryPath);
     writeFileSync(resultsPath, "", "utf8");
 
-    const query = new QueryInProgress(
+    const queryEvalInfo = new QueryEvaluationInfo(
       queryPath,
       Uri.file(dbPath).fsPath,
       true,
-      "queryDbscheme",
       undefined,
       {
         name: "vwx",
@@ -473,7 +468,7 @@ describe("query-results", () => {
     );
 
     const result: QueryWithResults = {
-      query: query.queryEvalInfo,
+      query: queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
       result: {
@@ -483,11 +478,6 @@ describe("query-results", () => {
         resultType: QueryResultType.SUCCESS,
       },
     };
-
-    if (includeSpies) {
-      (query as any).hasInterpretedResults = () =>
-        Promise.resolve(hasInterpretedResults);
-    }
 
     return result;
   }

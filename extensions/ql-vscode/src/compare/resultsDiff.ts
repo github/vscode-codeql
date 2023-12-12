@@ -1,4 +1,4 @@
-import { QueryCompareResult } from "../common/interface-types";
+import { RawQueryCompareResult } from "../common/interface-types";
 import { RawResultSet } from "../common/raw-result-types";
 
 /**
@@ -22,7 +22,7 @@ import { RawResultSet } from "../common/raw-result-types";
 export default function resultsDiff(
   fromResults: RawResultSet,
   toResults: RawResultSet,
-): QueryCompareResult {
+): RawQueryCompareResult {
   if (fromResults.columns.length !== toResults.columns.length) {
     throw new Error("CodeQL Compare: Columns do not match.");
   }
@@ -35,7 +35,9 @@ export default function resultsDiff(
     throw new Error("CodeQL Compare: Target query has no results.");
   }
 
-  const results = {
+  const results: RawQueryCompareResult = {
+    kind: "raw",
+    columns: fromResults.columns,
     from: arrayDiff(fromResults.rows, toResults.rows),
     to: arrayDiff(toResults.rows, fromResults.rows),
   };

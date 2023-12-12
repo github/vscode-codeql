@@ -7,11 +7,27 @@ const Name = styled.span`
   word-break: break-all;
 `;
 
+const TypeMethodName = (method: Method) => {
+  if (!method.typeName) {
+    return <>{method.methodName}</>;
+  }
+
+  if (!method.methodName) {
+    return <>{method.typeName}</>;
+  }
+
+  return (
+    <>
+      {method.typeName}.{method.methodName}
+    </>
+  );
+};
+
 export const MethodName = (method: Method): JSX.Element => {
   return (
     <Name>
       {method.packageName && <>{method.packageName}.</>}
-      {method.typeName}.{method.methodName}
+      <TypeMethodName {...method} />
       {method.methodParameters}
     </Name>
   );

@@ -1,16 +1,17 @@
 import * as React from "react";
 
-import { SetComparisonsMessage } from "../../common/interface-types";
-import RawTableHeader from "../results/RawTableHeader";
+import {
+  SetComparisonQueryInfoMessage,
+  SetComparisonsMessage,
+} from "../../common/interface-types";
 import { className } from "../results/result-table-utils";
-import RawTableRow from "../results/RawTableRow";
 import { vscode } from "../vscode-api";
-import { sendTelemetry } from "../common/telemetry";
 import TextButton from "../common/TextButton";
 import { styled } from "styled-components";
-import { Row } from "../../common/raw-result-types";
+import { RawCompareResultTable } from "./RawCompareResultTable";
 
 interface Props {
+  queryInfo: SetComparisonQueryInfoMessage;
   comparison: SetComparisonsMessage;
 }
 
@@ -20,9 +21,17 @@ const OpenButton = styled(TextButton)`
   padding: 0;
 `;
 
-export default function CompareTable(props: Props) {
-  const comparison = props.comparison;
-  const rows = props.comparison.rows!;
+const Table = styled.table`
+  margin: 20px 0;
+  width: 100%;
+
+  & > tbody {
+    vertical-align: top;
+  }
+`;
+
+export default function CompareTable({ queryInfo, comparison }: Props) {
+  const result = comparison.result!;
 
   async function openQuery(kind: "from" | "to") {
     vscode.postMessage({
@@ -31,72 +40,56 @@ export default function CompareTable(props: Props) {
     });
   }
 
-  function createRows(rows: Row[], databaseUri: string) {
-    return (
-      <tbody>
-        {rows.map((row, rowIndex) => (
-          <RawTableRow
-            key={rowIndex}
-            rowIndex={rowIndex}
-            row={row}
-            databaseUri={databaseUri}
-            onSelected={() => {
-              sendTelemetry("comapre-view-result-clicked");
-            }}
-          />
-        ))}
-      </tbody>
-    );
-  }
-
   return (
-    <table className="vscode-codeql__compare-body">
+    <Table>
       <thead>
         <tr>
           <td>
             <OpenButton onClick={() => openQuery("from")}>
-              {comparison.stats.fromQuery?.name}
+              {queryInfo.stats.fromQuery?.name}
             </OpenButton>
           </td>
           <td>
             <OpenButton onClick={() => openQuery("to")}>
-              {comparison.stats.toQuery?.name}
+              {queryInfo.stats.toQuery?.name}
             </OpenButton>
           </td>
         </tr>
         <tr>
-          <td>{comparison.stats.fromQuery?.time}</td>
-          <td>{comparison.stats.toQuery?.time}</td>
+          <td>{queryInfo.stats.fromQuery?.time}</td>
+          <td>{queryInfo.stats.toQuery?.time}</td>
         </tr>
         <tr>
-          <th>{rows.from.length} rows removed</th>
-          <th>{rows.to.length} rows added</th>
+          <th>{result.from.length} rows removed</th>
+          <th>{result.to.length} rows added</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>
-            <table className={className}>
-              <RawTableHeader
-                columns={comparison.columns}
+            {result.kind === "raw" && (
+              <RawCompareResultTable
+                columns={result.columns}
                 schemaName={comparison.currentResultSetName}
-                preventSort={true}
+                rows={result.from}
+                databaseUri={queryInfo.databaseUri}
+                className={className}
               />
-              {createRows(rows.from, comparison.databaseUri)}
-            </table>
+            )}
           </td>
           <td>
-            <table className={className}>
-              <RawTableHeader
-                columns={comparison.columns}
+            {result.kind === "raw" && (
+              <RawCompareResultTable
+                columns={result.columns}
                 schemaName={comparison.currentResultSetName}
-                preventSort={true}
+                rows={result.to}
+                databaseUri={queryInfo.databaseUri}
+                className={className}
               />
-              {createRows(rows.to, comparison.databaseUri)}
-            </table>
+            )}
           </td>
         </tr>
       </tbody>
-    </table>
+    </Table>
   );
 }

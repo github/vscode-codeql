@@ -3,13 +3,10 @@ import {
   getGitHubUrl,
 } from "../../../../src/databases/ui/db-tree-view-item-action";
 import {
-  createLocalDatabaseDbItem,
-  createLocalListDbItem,
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteSystemDefinedListDbItem,
   createRemoteUserDefinedListDbItem,
-  createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../../factories/db-item-factories";
 
@@ -20,30 +17,6 @@ describe("getDbItemActions", () => {
     const actions = getDbItemActions(dbItem);
 
     expect(actions).toEqual([]);
-  });
-
-  it("should return an empty array for root local node", () => {
-    const dbItem = createRootLocalDbItem();
-
-    const actions = getDbItemActions(dbItem);
-
-    expect(actions).toEqual([]);
-  });
-
-  it("should set canBeSelected, canBeRemoved and canBeRenamed for local user defined db list", () => {
-    const dbItem = createLocalListDbItem();
-
-    const actions = getDbItemActions(dbItem);
-
-    expect(actions).toEqual(["canBeSelected", "canBeRemoved", "canBeRenamed"]);
-  });
-
-  it("should set canBeSelected, canBeRemoved and canBeRenamed for local db", () => {
-    const dbItem = createLocalDatabaseDbItem();
-
-    const actions = getDbItemActions(dbItem);
-
-    expect(actions).toEqual(["canBeSelected", "canBeRemoved", "canBeRenamed"]);
   });
 
   it("should set canBeSelected for remote system defined db list", () => {
@@ -141,20 +114,6 @@ describe("getGitHubUrl", () => {
     const dbItem0 = createRootRemoteDbItem();
     const dbItem1 = createRemoteSystemDefinedListDbItem();
     const dbItem2 = createRemoteUserDefinedListDbItem();
-
-    const actualUrl0 = getGitHubUrl(dbItem0);
-    const actualUrl1 = getGitHubUrl(dbItem1);
-    const actualUrl2 = getGitHubUrl(dbItem2);
-
-    expect(actualUrl0).toBeUndefined();
-    expect(actualUrl1).toBeUndefined();
-    expect(actualUrl2).toBeUndefined();
-  });
-
-  it("should return undefined for local db items", () => {
-    const dbItem0 = createRootLocalDbItem();
-    const dbItem1 = createLocalDatabaseDbItem();
-    const dbItem2 = createLocalListDbItem();
 
     const actualUrl0 = getGitHubUrl(dbItem0);
     const actualUrl1 = getGitHubUrl(dbItem1);

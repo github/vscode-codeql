@@ -170,6 +170,8 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 
 Note that this test requires the feature flag: `codeQL.model.llmGeneration`
 
+A package that the AI normally gives models for is `javax.servlet-api` from the `jhy/jsoup` repository.
+
 1. Click "Model with AI".
    - Check that rows change to "Thinking".
    - Check that results come back and rows get filled out.

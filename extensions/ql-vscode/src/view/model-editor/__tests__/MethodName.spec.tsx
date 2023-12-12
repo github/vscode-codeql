@@ -24,4 +24,48 @@ describe(MethodName.name, () => {
     const name = `${method.typeName}.${method.methodName}${method.methodParameters}`;
     expect(screen.getByText(name)).toBeInTheDocument();
   });
+
+  it("renders method name without method name but with parameters", () => {
+    const method = createMethod({
+      packageName: "",
+      methodName: "",
+    });
+    render(method);
+
+    const name = `${method.typeName}${method.methodParameters}`;
+    expect(screen.getByText(name)).toBeInTheDocument();
+  });
+
+  it("renders method name without method name and parameters", () => {
+    const method = createMethod({
+      packageName: "",
+      methodName: "",
+      methodParameters: "",
+    });
+    render(method);
+
+    const name = `${method.typeName}`;
+    expect(screen.getByText(name)).toBeInTheDocument();
+  });
+
+  it("renders method name without package and type name", () => {
+    const method = createMethod({
+      packageName: "",
+      typeName: "",
+    });
+    render(method);
+
+    const name = `${method.methodName}${method.methodParameters}`;
+    expect(screen.getByText(name)).toBeInTheDocument();
+  });
+
+  it("renders method name without type name", () => {
+    const method = createMethod({
+      typeName: "",
+    });
+    render(method);
+
+    const name = `${method.packageName}.${method.methodName}${method.methodParameters}`;
+    expect(screen.getByText(name)).toBeInTheDocument();
+  });
 });

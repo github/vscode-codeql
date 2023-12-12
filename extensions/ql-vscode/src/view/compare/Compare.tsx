@@ -1,43 +1,56 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
+import { styled } from "styled-components";
 
 import {
   ToCompareViewMessage,
   SetComparisonsMessage,
+  SetComparisonQueryInfoMessage,
 } from "../../common/interface-types";
 import CompareSelector from "./CompareSelector";
 import { vscode } from "../vscode-api";
 import CompareTable from "./CompareTable";
 
 import "../results/resultsView.css";
+import { assertNever } from "../../common/helpers-pure";
 
-const emptyComparison: SetComparisonsMessage = {
-  t: "setComparisons",
-  stats: {},
-  rows: undefined,
-  columns: [],
-  commonResultSetNames: [],
-  currentResultSetName: "",
-  databaseUri: "",
-  message: "Empty comparison",
-};
+const Header = styled.div`
+  display: flex;
+`;
+
+const HeaderTitle = styled.div`
+  margin: 0 1.5rem;
+`;
+
+const Message = styled.div`
+  padding: 1.5rem;
+`;
 
 export function Compare(_: Record<string, never>): JSX.Element {
-  const [comparison, setComparison] =
-    useState<SetComparisonsMessage>(emptyComparison);
+  const [queryInfo, setQueryInfo] =
+    useState<SetComparisonQueryInfoMessage | null>(null);
+  const [comparison, setComparison] = useState<SetComparisonsMessage | null>(
+    null,
+  );
 
-  const message = comparison.message || "Empty comparison";
+  const message = comparison?.message || "Empty comparison";
   const hasRows =
-    comparison.rows &&
-    (comparison.rows.to.length || comparison.rows.from.length);
+    comparison?.result &&
+    (comparison.result.to.length || comparison.result.from.length);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
         const msg: ToCompareViewMessage = evt.data;
         switch (msg.t) {
+          case "setComparisonQueryInfo":
+            setQueryInfo(msg);
+            break;
           case "setComparisons":
             setComparison(msg);
+            break;
+          default:
+            assertNever(msg);
         }
       } else {
         // sanitize origin
@@ -51,27 +64,31 @@ export function Compare(_: Record<string, never>): JSX.Element {
       window.removeEventListener("message", listener);
     };
   }, []);
-  if (!comparison) {
+
+  if (!queryInfo || !comparison) {
     return <div>Waiting for results to load.</div>;
   }
 
   try {
     return (
       <>
-        <div className="vscode-codeql__compare-header">
-          <div className="vscode-codeql__compare-header-item">Comparing:</div>
+        <Header>
+          <HeaderTitle>Comparing:</HeaderTitle>
           <CompareSelector
-            availableResultSets={comparison.commonResultSetNames}
+            availableResultSets={queryInfo.commonResultSetNames}
             currentResultSetName={comparison.currentResultSetName}
             updateResultSet={(newResultSetName: string) =>
               vscode.postMessage({ t: "changeCompare", newResultSetName })
             }
           />
-        </div>
+        </Header>
         {hasRows ? (
-          <CompareTable comparison={comparison}></CompareTable>
+          <CompareTable
+            queryInfo={queryInfo}
+            comparison={comparison}
+          ></CompareTable>
         ) : (
-          <div className="vscode-codeql__compare-message">{message}</div>
+          <Message>{message}</Message>
         )}
       </>
     );
