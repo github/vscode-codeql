@@ -726,7 +726,6 @@ export interface ModelConfig {
   flowGeneration: boolean;
   llmGeneration: boolean;
   getExtensionsDirectory(languageId: string): string | undefined;
-  showMultipleModels: boolean;
   enableRuby: boolean;
 }
 
@@ -763,10 +762,6 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
     return EXTENSIONS_DIRECTORY.getValue<string>({
       languageId,
     });
-  }
-
-  public get showMultipleModels(): boolean {
-    return true;
   }
 
   public get enableRuby(): boolean {

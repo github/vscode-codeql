@@ -48,7 +48,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       t: "setMethodModelingPanelViewState",
       viewState: {
         language: this.language,
-        showMultipleModels: this.modelConfig.showMultipleModels,
+        showMultipleModels: true,
       },
     });
   }
