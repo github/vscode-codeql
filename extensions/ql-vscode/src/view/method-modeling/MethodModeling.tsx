@@ -55,7 +55,6 @@ export type MethodModelingProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
   isModelingInProgress: boolean;
-  showMultipleModels?: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
@@ -65,7 +64,6 @@ export const MethodModeling = ({
   modeledMethods,
   method,
   isModelingInProgress,
-  showMultipleModels = false,
   onChange,
 }: MethodModelingProps): JSX.Element => {
   return (
@@ -83,7 +81,6 @@ export const MethodModeling = ({
         language={language}
         method={method}
         modeledMethods={modeledMethods}
-        showMultipleModels={showMultipleModels}
         isModelingInProgress={isModelingInProgress}
         modelingStatus={modelingStatus}
         onChange={onChange}

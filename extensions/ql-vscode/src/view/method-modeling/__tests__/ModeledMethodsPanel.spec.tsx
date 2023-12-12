@@ -19,72 +19,31 @@ describe(ModeledMethodsPanel.name, () => {
   const isModelingInProgress = false;
   const onChange = jest.fn();
 
-  describe("when show multiple models is disabled", () => {
-    const showMultipleModels = false;
-
-    it("renders the method modeling inputs", () => {
-      render({
-        language,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        modelingStatus,
-        onChange,
-        showMultipleModels,
-      });
-
-      expect(screen.getAllByRole("combobox")).toHaveLength(4);
+  it("renders the method modeling inputs once", () => {
+    render({
+      language,
+      method,
+      modeledMethods,
+      isModelingInProgress,
+      modelingStatus,
+      onChange,
     });
 
-    it("does not render the pagination", () => {
-      render({
-        language,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        modelingStatus,
-        onChange,
-        showMultipleModels,
-      });
-
-      expect(
-        screen.queryByLabelText("Previous modeling"),
-      ).not.toBeInTheDocument();
-      expect(screen.queryByLabelText("Next modeling")).not.toBeInTheDocument();
-    });
+    expect(screen.getAllByRole("combobox")).toHaveLength(4);
   });
 
-  describe("when show multiple models is enabled", () => {
-    const showMultipleModels = true;
-
-    it("renders the method modeling inputs once", () => {
-      render({
-        language,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        modelingStatus,
-        onChange,
-        showMultipleModels,
-      });
-
-      expect(screen.getAllByRole("combobox")).toHaveLength(4);
+  it("renders the pagination", () => {
+    render({
+      language,
+      method,
+      modeledMethods,
+      isModelingInProgress,
+      modelingStatus,
+      onChange,
     });
 
-    it("renders the pagination", () => {
-      render({
-        language,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        modelingStatus,
-        onChange,
-        showMultipleModels,
-      });
-
-      expect(screen.getByLabelText("Previous modeling")).toBeInTheDocument();
-      expect(screen.getByLabelText("Next modeling")).toBeInTheDocument();
-      expect(screen.getByText("1/2")).toBeInTheDocument();
-    });
+    expect(screen.getByLabelText("Previous modeling")).toBeInTheDocument();
+    expect(screen.getByLabelText("Next modeling")).toBeInTheDocument();
+    expect(screen.getByText("1/2")).toBeInTheDocument();
   });
 });
