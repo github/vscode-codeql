@@ -1,5 +1,4 @@
-import { CUSTOM_CODEQL_PATH_SETTING } from "../../src/config";
-import { ConfigurationTarget, env } from "vscode";
+import { env } from "vscode";
 import { beforeEachAction as testConfigBeforeEachAction } from "./test-config";
 import * as tmp from "tmp";
 import { realpathSync } from "fs-extra";
@@ -39,11 +38,6 @@ export async function beforeEachAction() {
   jest.spyOn(env, "openExternal").mockResolvedValue(false);
 
   await testConfigBeforeEachAction();
-
-  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
-    process.env.CLI_PATH,
-    ConfigurationTarget.Workspace,
-  );
 }
 
 export async function afterAllAction() {

@@ -7,7 +7,7 @@ import {
 } from "../jest.activated-extension.setup";
 import { createWriteStream, existsSync, mkdirpSync } from "fs-extra";
 import { dirname } from "path";
-import { DB_URL, dbLoc, getActivatedExtension } from "../global.helper";
+import { DB_URL, dbLoc } from "../global.helper";
 import fetch from "node-fetch";
 
 beforeAll(async () => {
@@ -31,21 +31,6 @@ beforeAll(async () => {
   }
 
   await beforeAllAction();
-
-  // Activate the extension
-  const extension = await getActivatedExtension();
-
-  if (process.env.CLI_VERSION && process.env.CLI_VERSION !== "nightly") {
-    const cliVersion = await extension.cliServer.getVersion();
-
-    if (cliVersion.compare(process.env.CLI_VERSION) !== 0) {
-      // It seems like the CUSTOM_CODEQL_PATH_SETTING.updateValue() call in
-      // `beforeAllAction` doesn't fire the event that the config has changed.
-      // `forceUpdateConfiguration` will fire the event manually.
-      // This is a hacky workaround.
-      extension.distributionManager.config.forceUpdateConfiguration();
-    }
-  }
 });
 
 beforeEach(async () => {
