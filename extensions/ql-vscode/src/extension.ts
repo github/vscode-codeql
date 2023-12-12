@@ -1086,23 +1086,27 @@ async function activateWithInstalledDistribution(
   // Jump-to-definition and find-references
   void extLogger.log("Registering jump-to-definition handlers.");
 
-  languages.registerDefinitionProvider(
-    { scheme: zipArchiveScheme },
-    new TemplateQueryDefinitionProvider(
-      cliServer,
-      qs,
-      dbm,
-      contextualQueryStorageDir,
+  ctx.subscriptions.push(
+    languages.registerDefinitionProvider(
+      { scheme: zipArchiveScheme },
+      new TemplateQueryDefinitionProvider(
+        cliServer,
+        qs,
+        dbm,
+        contextualQueryStorageDir,
+      ),
     ),
   );
 
-  languages.registerReferenceProvider(
-    { scheme: zipArchiveScheme },
-    new TemplateQueryReferenceProvider(
-      cliServer,
-      qs,
-      dbm,
-      contextualQueryStorageDir,
+  ctx.subscriptions.push(
+    languages.registerReferenceProvider(
+      { scheme: zipArchiveScheme },
+      new TemplateQueryReferenceProvider(
+        cliServer,
+        qs,
+        dbm,
+        contextualQueryStorageDir,
+      ),
     ),
   );
 
