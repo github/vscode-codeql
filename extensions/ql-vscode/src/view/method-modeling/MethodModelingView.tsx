@@ -110,7 +110,7 @@ export function MethodModelingView({ initialViewState }: Props): JSX.Element {
       method={method}
       modeledMethods={modeledMethods}
       isModelingInProgress={isModelingInProgress}
-      showMultipleModels={viewState?.showMultipleModels}
+      showMultipleModels={true}
       onChange={onChange}
     />
   );
