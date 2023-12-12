@@ -7,7 +7,7 @@ import { MethodName } from "../model-editor/MethodName";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { ReviewInEditorButton } from "./ReviewInEditorButton";
-import { ModeledMethodsPanel } from "./ModeledMethodsPanel";
+import { MultipleModeledMethodsPanel } from "./MultipleModeledMethodsPanel";
 import { QueryLanguage } from "../../common/query-language";
 
 const Container = styled.div`
@@ -77,7 +77,7 @@ export const MethodModeling = ({
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodName {...method} />
       </DependencyContainer>
-      <ModeledMethodsPanel
+      <MultipleModeledMethodsPanel
         language={language}
         method={method}
         modeledMethods={modeledMethods}
