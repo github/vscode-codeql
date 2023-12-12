@@ -766,7 +766,7 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
   }
 
   public get showMultipleModels(): boolean {
-    return isCanary();
+    return true;
   }
 
   public get enableRuby(): boolean {
