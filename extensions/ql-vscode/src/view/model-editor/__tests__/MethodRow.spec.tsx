@@ -7,7 +7,7 @@ import {
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { MethodRow, MethodRowProps } from "../MethodRow";
 import { ModeledMethod } from "../../../model-editor/modeled-method";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(MethodRow.name, () => {

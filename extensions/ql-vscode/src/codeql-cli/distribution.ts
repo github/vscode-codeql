@@ -195,9 +195,8 @@ export class DistributionManager implements DistributionProvider {
 
     if (process.env.PATH) {
       for (const searchDirectory of process.env.PATH.split(delimiter)) {
-        const expectedLauncherPath = await getExecutableFromDirectory(
-          searchDirectory,
-        );
+        const expectedLauncherPath =
+          await getExecutableFromDirectory(searchDirectory);
         if (expectedLauncherPath) {
           return {
             codeQlPath: expectedLauncherPath,

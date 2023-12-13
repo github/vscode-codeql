@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Codicon } from "./Codicon";
-import classNames from "classnames";
+import * as classNames from "classnames";
 
 type Props = {
   label?: string;

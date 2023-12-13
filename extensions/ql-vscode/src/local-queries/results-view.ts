@@ -104,9 +104,9 @@ function sortInterpretedResults(
           a.message.text === undefined
             ? 0
             : b.message.text === undefined
-            ? 0
-            : multiplier *
-              a.message.text?.localeCompare(b.message.text, env.language),
+              ? 0
+              : multiplier *
+                a.message.text?.localeCompare(b.message.text, env.language),
         );
         break;
       default:
