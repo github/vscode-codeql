@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Avoid showing a popup when hovering over source elements in database source files. [#3125](https://github.com/github/vscode-codeql/pull/3125)
+
 ## 1.11.0 - 13 December 2023
 
 - Add a new method modeling panel to classify methods as sources/sinks/summaries while in the context of the source code. [#3128](https://github.com/github/vscode-codeql/pull/3128)
@@ -19,7 +21,7 @@
 - Add new CodeQL views for managing databases and queries:
   1. A queries panel that shows all queries in your workspace. It allows you to view, create, and run queries in one place.
   2. A language selector, which allows you to quickly filter databases and queries by language.
-  
+
   For more information, see the [documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/analyzing-your-projects/#filtering-databases-and-queries-by-language).
 - When adding a CodeQL database, we no longer add the database source folder to the workspace by default (since this caused bugs in single-folder workspaces). [#3047](https://github.com/github/vscode-codeql/pull/3047)
   - You can manually add individual database source folders to the workspace with the "Add Database Source to Workspace" right-click command in the databases view.
