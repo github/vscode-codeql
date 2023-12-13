@@ -1999,7 +1999,7 @@
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
-    "@typescript-eslint/parser": "^6.2.1",
+    "@typescript-eslint/parser": "^6.14.0",
     "@vscode/test-electron": "^2.2.0",
     "@vscode/vsce": "^2.19.0",
     "ansi-colors": "^4.1.1",
