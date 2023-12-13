@@ -95,6 +95,10 @@ export function ModelEditor({
     new Set(),
   );
 
+  const [selectedSignatures, setSelectedSignatures] = useState<Set<string>>(
+    new Set(),
+  );
+
   const [inProgressMethods, setInProgressMethods] = useState<Set<string>>(
     new Set(),
   );
@@ -187,6 +191,19 @@ export function ModelEditor({
       });
     },
     [],
+  );
+
+  const onMethodClick = useCallback(
+    (methodSignature: string) => {
+      const newSelectedSignatures = new Set(selectedSignatures);
+      if (selectedSignatures.has(methodSignature)) {
+        newSelectedSignatures.delete(methodSignature);
+      } else {
+        newSelectedSignatures.add(methodSignature);
+      }
+      setSelectedSignatures(newSelectedSignatures);
+    },
+    [selectedSignatures],
   );
 
   const onRefreshClick = useCallback(() => {
@@ -339,11 +356,13 @@ export function ModelEditor({
           methods={methods}
           modeledMethodsMap={modeledMethods}
           modifiedSignatures={modifiedSignatures}
+          selectedSignatures={selectedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
+          onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
           onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}

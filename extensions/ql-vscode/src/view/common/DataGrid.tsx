@@ -37,7 +37,10 @@ export function DataGrid({ gridTemplateColumns, children }: DataGridProps) {
   );
 }
 
-const StyledDataGridRow = styled.div<{ $focused?: boolean }>`
+const StyledDataGridRow = styled.div<{
+  $focused?: boolean;
+  $selected?: boolean;
+}>`
   display: contents;
 
   &:hover > * {
@@ -47,15 +50,20 @@ const StyledDataGridRow = styled.div<{ $focused?: boolean }>`
   & > * {
     // Use !important to override the background color set by the hover state
     background-color: ${(props) =>
+      // TODO: Use different colors for selected and focused
       props.$focused
         ? "var(--vscode-editor-selectionBackground) !important"
-        : "inherit"};
+        : props.$selected
+          ? "var(--vscode-editor-selectionBackground) !important"
+          : "inherit"};
   }
 `;
 
 interface DataGridRowProps {
   focused?: boolean;
+  selected?: boolean;
   children: ReactNode;
+  onClick?: () => void;
   "data-testid"?: string;
 }
 
@@ -69,10 +77,22 @@ interface DataGridRowProps {
  */
 export const DataGridRow = forwardRef(
   (
-    { focused, children, "data-testid": testId }: DataGridRowProps,
+    {
+      focused,
+      selected,
+      children,
+      "data-testid": testId,
+      onClick,
+    }: DataGridRowProps,
     ref?: React.Ref<HTMLElement | undefined>,
   ) => (
-    <StyledDataGridRow $focused={focused} ref={ref} data-testid={testId}>
+    <StyledDataGridRow
+      $focused={focused}
+      $selected={selected}
+      ref={ref}
+      data-testid={testId}
+      onClick={onClick}
+    >
       {children}
     </StyledDataGridRow>
   ),

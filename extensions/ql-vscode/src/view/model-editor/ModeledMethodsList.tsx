@@ -13,11 +13,13 @@ export type ModeledMethodsListProps = {
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
+  selectedSignatures: Set<string>;
   inProgressMethods: Set<string>;
   revealedMethodSignature: string | null;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
+  onMethodClick: (methodSignature: string) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     packageName: string,
@@ -36,11 +38,13 @@ export const ModeledMethodsList = ({
   methods,
   modeledMethodsMap,
   modifiedSignatures,
+  selectedSignatures,
   inProgressMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
   onChange,
+  onMethodClick,
   onSaveModelClick,
   onGenerateFromLlmClick,
   onStopGenerateFromLlmClick,
@@ -82,11 +86,13 @@ export const ModeledMethodsList = ({
           methods={grouped[libraryName]}
           modeledMethodsMap={modeledMethodsMap}
           modifiedSignatures={modifiedSignatures}
+          selectedSignatures={selectedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
+          onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
           onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
