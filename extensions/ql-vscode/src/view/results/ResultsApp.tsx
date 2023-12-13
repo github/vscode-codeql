@@ -174,11 +174,6 @@ export function ResultsApp() {
               resultSet: {
                 t: "InterpretedResultSet",
                 name: tableName,
-                schema: {
-                  name: tableName,
-                  rows: 1,
-                  columns: [],
-                },
                 interpretation: msg.interpretation,
               },
               selectedTable: tableName,

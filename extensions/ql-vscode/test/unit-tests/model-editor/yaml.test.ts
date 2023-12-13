@@ -95,6 +95,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -106,6 +107,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -130,6 +132,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -141,6 +144,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -165,6 +169,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "new Sql2o(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 10,
                 startColumn: 33,
@@ -190,6 +195,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "run(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/Sql2oExampleApplication.java",
                 startLine: 9,
                 startColumn: 9,
@@ -213,6 +219,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "println(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 29,
                 startColumn: 9,
@@ -335,6 +342,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -346,6 +354,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -370,6 +379,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -381,6 +391,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -405,6 +416,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "new Sql2o(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 10,
                 startColumn: 33,
@@ -430,6 +442,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "run(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/Sql2oExampleApplication.java",
                 startLine: 9,
                 startColumn: 9,
@@ -453,6 +466,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             {
               label: "println(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 29,
                 startColumn: 9,
@@ -621,6 +635,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -632,6 +647,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -655,6 +671,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -666,6 +683,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -689,6 +707,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "new Sql2o(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 10,
                 startColumn: 33,
@@ -775,6 +794,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -786,6 +806,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "createQuery(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -809,6 +830,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 15,
                 startColumn: 13,
@@ -820,6 +842,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "executeScalar(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 26,
                 startColumn: 13,
@@ -843,6 +866,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             {
               label: "new Sql2o(...)",
               url: {
+                type: "lineColumnLocation",
                 uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                 startLine: 10,
                 startColumn: 33,

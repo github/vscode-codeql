@@ -8,7 +8,7 @@ export function ResultTable(props: ResultTableProps) {
   const { resultSet } = props;
   switch (resultSet.t) {
     case "RawResultSet":
-      return <RawTable {...props} resultSet={resultSet} />;
+      return <RawTable {...props} resultSet={resultSet.resultSet} />;
     case "InterpretedResultSet": {
       const data = resultSet.interpretation.data;
       switch (data.t) {

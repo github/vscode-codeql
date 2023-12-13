@@ -195,10 +195,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "sink" },
         { ...modeledMethod, type: "summary" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
@@ -208,24 +204,6 @@ describe(MethodRow.name, () => {
     expect(kindInputs[2]).toHaveValue("summary");
   });
 
-  it("renders only first model when showMultipleModels feature flag is disabled", () => {
-    render({
-      modeledMethods: [
-        { ...modeledMethod, type: "source" },
-        { ...modeledMethod, type: "sink" },
-        { ...modeledMethod, type: "summary" },
-      ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: false,
-      },
-    });
-
-    const kindInputs = screen.getAllByRole("combobox", { name: "Model type" });
-    expect(kindInputs.length).toBe(1);
-    expect(kindInputs[0]).toHaveValue("source");
-  });
-
   it("can update fields when there are multiple models", async () => {
     render({
       modeledMethods: [
@@ -233,10 +211,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "sink", kind: "code-injection" },
         { ...modeledMethod, type: "summary" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     onChange.mockReset();
@@ -268,26 +242,9 @@ describe(MethodRow.name, () => {
     expect(screen.getByText("Method already modeled")).toBeInTheDocument();
   });
 
-  it("doesn't show add/remove buttons when multiple methods feature flag is disabled", async () => {
-    render({
-      modeledMethods: [modeledMethod],
-      viewState: {
-        ...viewState,
-        showMultipleModels: false,
-      },
-    });
-
-    expect(screen.queryByLabelText("Add new model")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
-  });
-
   it("shows disabled button add new model when there are no modeled methods", async () => {
     render({
       modeledMethods: [],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     const addButton = screen.queryByLabelText("Add new model");
@@ -300,10 +257,6 @@ describe(MethodRow.name, () => {
   it("disabled button to add new model when there is one unmodeled method", async () => {
     render({
       modeledMethods: [{ ...modeledMethod, type: "none" }],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     const addButton = screen.queryByLabelText("Add new model");
@@ -316,10 +269,6 @@ describe(MethodRow.name, () => {
   it("enabled button to add new model when there is one modeled method", async () => {
     render({
       modeledMethods: [modeledMethod],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     const addButton = screen.queryByLabelText("Add new model");
@@ -335,10 +284,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "source" },
         { ...modeledMethod, type: "none" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     const addButton = screen.queryByLabelText("Add new model");
@@ -350,7 +295,7 @@ describe(MethodRow.name, () => {
     expect(removeButton?.getElementsByTagName("input")[0]).toBeEnabled();
   });
 
-  it("shows add model button on last row and remove model button on all other rows", async () => {
+  it("shows add model button on first row and remove model button on all other rows", async () => {
     render({
       modeledMethods: [
         { ...modeledMethod, type: "source" },
@@ -358,10 +303,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "summary" },
         { ...modeledMethod, type: "none" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     const addButtons = screen.queryAllByLabelText("Add new model");
@@ -378,10 +319,6 @@ describe(MethodRow.name, () => {
   it("can add a new model", async () => {
     render({
       modeledMethods: [modeledMethod],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     onChange.mockReset();
@@ -401,7 +338,7 @@ describe(MethodRow.name, () => {
     ]);
   });
 
-  it("can delete the first modeled method", async () => {
+  it("cannot delete the first modeled method (but delete second instead)", async () => {
     render({
       modeledMethods: [
         { ...modeledMethod, type: "source" },
@@ -409,10 +346,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "none" },
         { ...modeledMethod, type: "summary" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     onChange.mockReset();
@@ -420,7 +353,7 @@ describe(MethodRow.name, () => {
 
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(method.signature, [
-      { ...modeledMethod, type: "sink" },
+      { ...modeledMethod, type: "source" },
       { ...modeledMethod, type: "none" },
       { ...modeledMethod, type: "summary" },
     ]);
@@ -434,14 +367,10 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "none" },
         { ...modeledMethod, type: "summary" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     onChange.mockReset();
-    await userEvent.click(screen.getAllByLabelText("Remove model")[2]);
+    await userEvent.click(screen.getAllByLabelText("Remove model")[1]);
 
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(method.signature, [
@@ -457,10 +386,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "source" },
         { ...modeledMethod, type: "sink" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -472,10 +397,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "source" },
         { ...modeledMethod, type: "source" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
@@ -494,10 +415,6 @@ describe(MethodRow.name, () => {
         { ...modeledMethod, type: "source" },
         { ...modeledMethod, type: "neutral", kind: "source" },
       ],
-      viewState: {
-        ...viewState,
-        showMultipleModels: true,
-      },
     });
 
     expect(screen.getAllByRole("alert").length).toBe(2);

@@ -9,20 +9,15 @@ import {
   window as Window,
   workspace,
 } from "vscode";
-import {
-  LineColumnLocation,
-  ResolvableLocationValue,
-  UrlValue,
-  WholeFileLocation,
-} from "../../common/bqrs-cli-types";
-import {
-  isLineColumnLoc,
-  tryGetResolvableLocation,
-} from "../../common/bqrs-utils";
-import { getErrorMessage } from "../../common/helpers-pure";
+import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import { Logger } from "../../common/logging";
 import { DatabaseItem } from "./database-item";
 import { DatabaseManager } from "./database-manager";
+import {
+  UrlValueLineColumnLocation,
+  UrlValueResolvable,
+  UrlValueWholeFileLocation,
+} from "../../common/raw-result-types";
 
 const findMatchBackground = new ThemeColor("editor.findMatchBackground");
 const findRangeHighlightBackground = new ThemeColor(
@@ -45,7 +40,7 @@ export const shownLocationLineDecoration =
  * @param databaseItem Database in which to resolve the file location.
  */
 function resolveFivePartLocation(
-  loc: LineColumnLocation,
+  loc: UrlValueLineColumnLocation,
   databaseItem: DatabaseItem,
 ): Location {
   // `Range` is a half-open interval, and is zero-based. CodeQL locations are closed intervals, and
@@ -66,7 +61,7 @@ function resolveFivePartLocation(
  * @param databaseItem Database in which to resolve the filesystem resource location.
  */
 function resolveWholeFileLocation(
-  loc: WholeFileLocation,
+  loc: UrlValueWholeFileLocation,
   databaseItem: DatabaseItem,
 ): Location {
   // A location corresponding to the start of the file.
@@ -81,21 +76,25 @@ function resolveWholeFileLocation(
  * @param databaseItem Database in which to resolve the file location.
  */
 export function tryResolveLocation(
-  loc: UrlValue | undefined,
+  loc: UrlValueResolvable | undefined,
   databaseItem: DatabaseItem,
 ): Location | undefined {
-  const resolvableLoc = tryGetResolvableLocation(loc);
-  if (!resolvableLoc || typeof resolvableLoc === "string") {
+  if (!loc) {
     return;
-  } else if (isLineColumnLoc(resolvableLoc)) {
-    return resolveFivePartLocation(resolvableLoc, databaseItem);
-  } else {
-    return resolveWholeFileLocation(resolvableLoc, databaseItem);
+  }
+
+  switch (loc.type) {
+    case "wholeFileLocation":
+      return resolveWholeFileLocation(loc, databaseItem);
+    case "lineColumnLocation":
+      return resolveFivePartLocation(loc, databaseItem);
+    default:
+      assertNever(loc);
   }
 }
 
 export async function showResolvableLocation(
-  loc: ResolvableLocationValue,
+  loc: UrlValueResolvable,
   databaseItem: DatabaseItem,
   logger: Logger,
 ): Promise<void> {
@@ -153,7 +152,7 @@ export async function showLocation(location?: Location) {
 
 export async function jumpToLocation(
   databaseUri: string,
-  loc: ResolvableLocationValue,
+  loc: UrlValueResolvable,
   databaseManager: DatabaseManager,
   logger: Logger,
 ) {

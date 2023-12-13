@@ -385,7 +385,6 @@ export class ModelEditorView extends AbstractWebview<
         language: this.language,
         showGenerateButton,
         showLlmButton,
-        showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,

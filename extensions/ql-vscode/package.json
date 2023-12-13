@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.10.1",
+  "version": "1.11.1",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -1840,15 +1840,14 @@
         {
           "id": "codeQLMethodModeling",
           "type": "webview",
-          "name": "CodeQL Method Modeling",
-          "when": "config.codeQL.canary"
+          "name": "CodeQL Method Modeling"
         }
       ],
       "codeql-methods-usage": [
         {
           "id": "codeQLMethodsUsage",
           "name": "CodeQL Methods Usage",
-          "when": "config.codeQL.canary && codeql.modelEditorOpen"
+          "when": "codeql.modelEditorOpen"
         }
       ]
     },

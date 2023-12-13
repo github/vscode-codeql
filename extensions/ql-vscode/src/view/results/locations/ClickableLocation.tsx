@@ -1,12 +1,12 @@
 import * as React from "react";
 import { useCallback } from "react";
-import { ResolvableLocationValue } from "../../../common/bqrs-cli-types";
 import { jumpToLocation } from "../result-table-utils";
 import TextButton from "../../common/TextButton";
 import { styled } from "styled-components";
+import { UrlValueResolvable } from "../../../common/raw-result-types";
 
 interface Props {
-  loc: ResolvableLocationValue;
+  loc: UrlValueResolvable;
   label: string;
   databaseUri: string;
   onClick?: () => void;
