@@ -215,6 +215,7 @@ export class VariantAnalysisManager
       base64Pack,
       repoSelection,
       queryFile,
+      querySuite,
       queryMetadata,
       controllerRepo,
       queryStartTime,
@@ -250,6 +251,7 @@ export class VariantAnalysisManager
         text: queryText,
         kind: queryMetadata?.kind,
       },
+      querySuite,
       databases: {
         repositories: repoSelection.repositories,
         repositoryLists: repoSelection.repositoryLists,

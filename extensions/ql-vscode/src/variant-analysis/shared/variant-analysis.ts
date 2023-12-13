@@ -12,6 +12,12 @@ export interface VariantAnalysis {
     text: string;
     kind?: string;
   };
+  querySuite?: {
+    // Or description?
+    name: string;
+    filePath: string;
+    language: QueryLanguage;
+  };
   databases: {
     repositories?: string[];
     repositoryLists?: string[];
@@ -140,6 +146,15 @@ export interface VariantAnalysisSubmission {
     language: QueryLanguage;
     text: string;
     kind?: string;
+
+    // Base64 encoded query pack.
+    pack: string;
+  };
+  querySuite?: {
+    // Or description?
+    name: string;
+    filePath: string;
+    language: QueryLanguage;
 
     // Base64 encoded query pack.
     pack: string;

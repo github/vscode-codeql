@@ -1401,7 +1401,7 @@
         },
         {
           "command": "codeQL.runVariantAnalysis",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "(editorLangId == ql && resourceExtname == .ql) || resourceExtname == .qls"
         },
         {
           "command": "codeQL.runVariantAnalysisContextEditor",

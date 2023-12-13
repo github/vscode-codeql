@@ -34,10 +34,11 @@ import {
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
 } from "../common/ql";
-import { QueryLanguage } from "../common/query-language";
+import { QueryLanguage, dbSchemeToLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 import { QlPackFile } from "../packaging/qlpack-file";
+import { EOL } from "os";
 
 /**
  * Well-known names for the query pack used by the server.
@@ -47,6 +48,103 @@ const QUERY_PACK_NAME = "codeql-remote/query";
 interface GeneratedQueryPack {
   base64Pack: string;
   language: string;
+}
+
+async function generateQueryPackForSuite(
+  cliServer: cli.CodeQLCliServer,
+  querySuiteFile: string,
+  queryPackDir: string,
+): Promise<GeneratedQueryPack> {
+  // Copy every ql file in the suite to the query pack directory.
+
+  const originalPackRoot = await findPackRoot(querySuiteFile);
+  const workspaceFolders = getOnDiskWorkspaceFolders();
+
+  const language = await determinePackLanguage(cliServer, queryPackDir);
+  if (!language) {
+    throw Error("Could not determine query pack language");
+  }
+
+  // get list of queries in the suite
+  const queries = await cliServer.resolveQueries(querySuiteFile);
+
+  await copyExistingQueryPack(
+    cliServer,
+    originalPackRoot,
+    queries,
+    queryPackDir,
+  );
+
+  // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
+  await cliServer.clearCache();
+
+  let precompilationOpts: string[] = [];
+  if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
+    precompilationOpts = ["--qlx"];
+  } else {
+    const ccache = join(originalPackRoot, ".cache");
+    precompilationOpts = [
+      "--qlx",
+      "--no-default-compilation-cache",
+      `--compilation-cache=${ccache}`,
+    ];
+  }
+
+  if (await cliServer.useExtensionPacks()) {
+    await injectExtensionPacks(cliServer, queryPackDir, workspaceFolders);
+  }
+
+  await cliServer.packInstall(queryPackDir, {
+    workspaceFolders,
+  });
+
+  // Clear the CLI cache so that the most recent qlpack lock file is used.
+  await cliServer.clearCache();
+
+  const bundlePath = await getPackedBundlePath(queryPackDir);
+  void extLogger.log(
+    `Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`,
+  );
+  await cliServer.packBundle(
+    queryPackDir,
+    workspaceFolders,
+    bundlePath,
+    precompilationOpts,
+  );
+  const base64Pack = (await readFile(bundlePath)).toString("base64");
+  return {
+    base64Pack,
+    language,
+  };
+}
+
+async function determinePackLanguage(
+  cliServer: cli.CodeQLCliServer,
+  path: string,
+): Promise<QueryLanguage | undefined> {
+  let packInfo: cli.QuerySetup | undefined = undefined;
+  try {
+    packInfo = await cliServer.resolveLibraryPath(
+      getOnDiskWorkspaceFolders(),
+      path,
+      true,
+    );
+  } catch (err) {
+    void extLogger.log(
+      `Query pack discovery failed to determine language for query pack: ${path}${EOL}Reason: ${getErrorMessage(
+        err,
+      )}`,
+    );
+  }
+
+  void extLogger.log(`Query pack discovery found: ${JSON.stringify(packInfo)}`);
+  if (packInfo?.dbscheme === undefined) {
+    // TODO: Fix this.
+    return QueryLanguage.Java;
+    // return undefined;
+  }
+  const dbscheme = basename(packInfo.dbscheme);
+  return dbSchemeToLanguage[dbscheme];
 }
 
 /**
@@ -77,9 +175,8 @@ async function generateQueryPack(
     await copyExistingQueryPack(
       cliServer,
       originalPackRoot,
-      queryFile,
+      [queryFile],
       queryPackDir,
-      packRelativePath,
     );
 
     language = await findLanguage(cliServer, Uri.file(targetQueryFileName));
@@ -94,7 +191,7 @@ async function generateQueryPack(
       queryPackDir,
       targetQueryFileName,
       language,
-      packRelativePath,
+      originalPackRoot,
     );
   }
   if (!language) {
@@ -149,7 +246,7 @@ async function createNewQueryPack(
   queryPackDir: string,
   targetQueryFileName: string,
   language: string | undefined,
-  packRelativePath: string,
+  originalPackRoot: string,
 ) {
   void extLogger.log(`Copying ${queryFile} to ${queryPackDir}`);
   await copy(queryFile, targetQueryFileName);
@@ -160,7 +257,7 @@ async function createNewQueryPack(
     dependencies: {
       [`codeql/${language}-all`]: "*",
     },
-    defaultSuite: generateDefaultSuite(packRelativePath),
+    defaultSuite: generateDefaultSuite(originalPackRoot, [queryFile]),
   };
   await writeFile(
     join(queryPackDir, FALLBACK_QLPACK_FILENAME),
@@ -171,9 +268,8 @@ async function createNewQueryPack(
 async function copyExistingQueryPack(
   cliServer: cli.CodeQLCliServer,
   originalPackRoot: string,
-  queryFile: string,
+  queryFiles: string[],
   queryPackDir: string,
-  packRelativePath: string,
 ) {
   const toCopy = await cliServer.packPacklist(originalPackRoot, false);
 
@@ -196,7 +292,7 @@ async function copyExistingQueryPack(
   [
     // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.
     ...QLPACK_LOCK_FILENAMES.map((f) => join(originalPackRoot, f)),
-    queryFile,
+    ...queryFiles,
   ].forEach((absolutePath) => {
     if (absolutePath) {
       toCopy.push(absolutePath);
@@ -221,7 +317,7 @@ async function copyExistingQueryPack(
 
   void extLogger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
 
-  await fixPackFile(queryPackDir, packRelativePath);
+  await fixPackFile(queryPackDir, originalPackRoot, queryFiles);
 }
 
 async function findPackRoot(queryFile: string): Promise<string> {
@@ -267,6 +363,12 @@ interface PreparedRemoteQuery {
   base64Pack: string;
   repoSelection: RepositorySelection;
   queryFile: string;
+  querySuite?: {
+    name: string;
+    filePath: string;
+    language: QueryLanguage;
+    pack: string;
+  };
   queryMetadata: QueryMetadata | undefined;
   controllerRepo: Repository;
   queryStartTime: number;
@@ -281,78 +383,163 @@ export async function prepareRemoteQueryRun(
   token: CancellationToken,
   dbManager: DbManager,
 ): Promise<PreparedRemoteQuery> {
-  if (!uri?.fsPath.endsWith(".ql")) {
-    throw new UserCancellationException("Not a CodeQL query file.");
+  if (!uri?.fsPath.endsWith(".ql") && !uri?.fsPath.endsWith(".qls")) {
+    throw new UserCancellationException(
+      "Not a CodeQL query or query suite file.",
+    );
   }
 
-  const queryFile = uri.fsPath;
+  if (uri.fsPath.endsWith(".ql")) {
+    const queryFile = uri.fsPath;
 
-  progress({
-    maxStep: 4,
-    step: 1,
-    message: "Determining query target language",
-  });
+    progress({
+      maxStep: 4,
+      step: 1,
+      message: "Determining query target language",
+    });
 
-  const repoSelection = await getRepositorySelection(dbManager);
-  if (!isValidSelection(repoSelection)) {
-    throw new UserCancellationException("No repositories to query.");
+    const repoSelection = await getRepositorySelection(dbManager);
+    if (!isValidSelection(repoSelection)) {
+      throw new UserCancellationException("No repositories to query.");
+    }
+
+    progress({
+      maxStep: 4,
+      step: 2,
+      message: "Determining controller repo",
+    });
+
+    const controllerRepo = await getControllerRepo(credentials);
+
+    progress({
+      maxStep: 4,
+      step: 3,
+      message: "Bundling the query pack",
+    });
+
+    if (token.isCancellationRequested) {
+      throw new UserCancellationException("Cancelled");
+    }
+
+    const { remoteQueryDir, queryPackDir } =
+      await createRemoteQueriesTempDirectory();
+
+    let pack: GeneratedQueryPack;
+
+    try {
+      pack = await generateQueryPack(cliServer, queryFile, queryPackDir);
+    } finally {
+      await remoteQueryDir.cleanup();
+    }
+
+    const { base64Pack, language } = pack;
+
+    if (token.isCancellationRequested) {
+      throw new UserCancellationException("Cancelled");
+    }
+
+    progress({
+      maxStep: 4,
+      step: 4,
+      message: "Sending request",
+    });
+
+    const actionBranch = getActionBranch();
+    const queryStartTime = Date.now();
+    const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
+
+    return {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      queryFile,
+      queryMetadata,
+      controllerRepo,
+      queryStartTime,
+      language,
+    };
+  } else {
+    // Query suite path
+    const querySuiteFile = uri.fsPath;
+
+    progress({
+      maxStep: 4,
+      step: 1,
+      message: "Determining repositories",
+    });
+
+    const repoSelection = await getRepositorySelection(dbManager);
+    if (!isValidSelection(repoSelection)) {
+      throw new UserCancellationException("No repositories to query.");
+    }
+
+    progress({
+      maxStep: 4,
+      step: 2,
+      message: "Determining controller repo",
+    });
+
+    const controllerRepo = await getControllerRepo(credentials);
+
+    progress({
+      maxStep: 4,
+      step: 3,
+      message: "Bundling the query pack",
+    });
+
+    if (token.isCancellationRequested) {
+      throw new UserCancellationException("Cancelled");
+    }
+
+    const { remoteQueryDir, queryPackDir } =
+      await createRemoteQueriesTempDirectory();
+
+    let pack: GeneratedQueryPack;
+
+    try {
+      pack = await generateQueryPackForSuite(
+        cliServer,
+        querySuiteFile,
+        queryPackDir,
+      );
+    } finally {
+      await remoteQueryDir.cleanup();
+    }
+
+    const { base64Pack, language } = pack;
+
+    if (token.isCancellationRequested) {
+      throw new UserCancellationException("Cancelled");
+    }
+
+    progress({
+      maxStep: 4,
+      step: 4,
+      message: "Sending request",
+    });
+
+    const actionBranch = getActionBranch();
+    const queryStartTime = Date.now();
+    const querySuite = {
+      name: "Query suite name",
+      language: language as QueryLanguage,
+      filePath: querySuiteFile,
+      pack: base64Pack,
+    };
+
+    return {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      // This is just to satisfy types
+      queryFile: querySuiteFile,
+      querySuite,
+      queryMetadata: undefined,
+      controllerRepo,
+      queryStartTime,
+      language,
+    };
   }
-
-  progress({
-    maxStep: 4,
-    step: 2,
-    message: "Determining controller repo",
-  });
-
-  const controllerRepo = await getControllerRepo(credentials);
-
-  progress({
-    maxStep: 4,
-    step: 3,
-    message: "Bundling the query pack",
-  });
-
-  if (token.isCancellationRequested) {
-    throw new UserCancellationException("Cancelled");
-  }
-
-  const { remoteQueryDir, queryPackDir } =
-    await createRemoteQueriesTempDirectory();
-
-  let pack: GeneratedQueryPack;
-
-  try {
-    pack = await generateQueryPack(cliServer, queryFile, queryPackDir);
-  } finally {
-    await remoteQueryDir.cleanup();
-  }
-
-  const { base64Pack, language } = pack;
-
-  if (token.isCancellationRequested) {
-    throw new UserCancellationException("Cancelled");
-  }
-
-  progress({
-    maxStep: 4,
-    step: 4,
-    message: "Sending request",
-  });
-
-  const actionBranch = getActionBranch();
-  const queryStartTime = Date.now();
-  const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
-
-  return {
-    actionBranch,
-    base64Pack,
-    repoSelection,
-    queryFile,
-    queryMetadata,
-    controllerRepo,
-    queryStartTime,
-    language,
-  };
 }
 
 /**
@@ -371,7 +558,8 @@ export async function prepareRemoteQueryRun(
  */
 async function fixPackFile(
   queryPackDir: string,
-  packRelativePath: string,
+  originalPackRoot: string,
+  queryFiles: string[],
 ): Promise<void> {
   const packPath = await getQlPackPath(queryPackDir);
 
@@ -385,7 +573,7 @@ async function fixPackFile(
   }
   const qlpack = load(await readFile(packPath, "utf8")) as QlPackFile;
 
-  updateDefaultSuite(qlpack, packRelativePath);
+  updateDefaultSuite(qlpack, originalPackRoot, queryFiles);
   removeWorkspaceRefs(qlpack);
 
   await writeFile(packPath, dump(qlpack));
@@ -434,19 +622,23 @@ async function injectExtensionPacks(
   await cliServer.clearCache();
 }
 
-function updateDefaultSuite(qlpack: QlPackFile, packRelativePath: string) {
+function updateDefaultSuite(
+  qlpack: QlPackFile,
+  originalPackRoot: string,
+  queryFiles: string[],
+) {
   delete qlpack.defaultSuiteFile;
-  qlpack.defaultSuite = generateDefaultSuite(packRelativePath);
+  qlpack.defaultSuite = generateDefaultSuite(originalPackRoot, queryFiles);
 }
 
-function generateDefaultSuite(packRelativePath: string) {
+function generateDefaultSuite(originalPackRoot: string, queryFiles: string[]) {
   return [
     {
       description: "Query suite for variant analysis",
     },
-    {
-      query: packRelativePath.replace(/\\/g, "/"),
-    },
+    ...queryFiles.map((query) => ({
+      query: relative(originalPackRoot, query).replace(/\\/g, "/"),
+    })),
   ];
 }
 
