@@ -215,15 +215,27 @@ export function ModelEditor({
   const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
+      methodSignatures:
+        selectedSignatures.size === 0
+          ? undefined
+          : Array.from(selectedSignatures),
     });
-  }, []);
+  }, [selectedSignatures]);
 
-  const onSaveModelClick = useCallback((methodSignatures: string[]) => {
-    vscode.postMessage({
-      t: "saveModeledMethods",
-      methodSignatures,
-    });
-  }, []);
+  const onSaveModelClick = useCallback(
+    (methodSignatures: string[]) => {
+      vscode.postMessage({
+        t: "saveModeledMethods",
+        methodSignatures:
+          selectedSignatures.size === 0
+            ? methodSignatures
+            : methodSignatures.filter((signature) =>
+                selectedSignatures.has(signature),
+              ),
+      });
+    },
+    [selectedSignatures],
+  );
 
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
@@ -326,7 +338,7 @@ export function ModelEditor({
                 onClick={onSaveAllClick}
                 disabled={modifiedSignatures.size === 0}
               >
-                Save all
+                {selectedSignatures.size === 0 ? "Save all" : "Save selected"}
               </VSCodeButton>
               <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
                 Refresh
