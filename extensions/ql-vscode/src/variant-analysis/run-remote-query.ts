@@ -279,9 +279,8 @@ async function copyExistingQueryPack(
   if (
     await cliServer.cliConstraints.supportsGenerateExtensiblePredicateMetadata()
   ) {
-    const metadata = await cliServer.generateExtensiblePredicateMetadata(
-      originalPackRoot,
-    );
+    const metadata =
+      await cliServer.generateExtensiblePredicateMetadata(originalPackRoot);
     metadata.extensible_predicates.forEach((predicate) => {
       if (predicate.path.endsWith(".ql")) {
         toCopy.push(join(originalPackRoot, predicate.path));

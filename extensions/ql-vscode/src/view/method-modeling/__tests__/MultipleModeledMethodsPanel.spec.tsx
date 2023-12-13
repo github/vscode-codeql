@@ -10,7 +10,7 @@ import {
   MultipleModeledMethodsPanel,
   MultipleModeledMethodsPanelProps,
 } from "../MultipleModeledMethodsPanel";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 import { ModeledMethod } from "../../../model-editor/modeled-method";
 import { QueryLanguage } from "../../../common/query-language";
 

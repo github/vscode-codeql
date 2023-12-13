@@ -2,8 +2,11 @@
 
 ## [UNRELEASED]
 
+## 1.11.0 - 13 December 2023
+
 - Add a new method modeling panel to classify methods as sources/sinks/summaries while in the context of the source code. [#3128](https://github.com/github/vscode-codeql/pull/3128)
 - Adds the ability to add multiple classifications per method in the CodeQL Model Editor. [#3128](https://github.com/github/vscode-codeql/pull/3128)
+- Switch add and delete button positions in the CodeQL Model Editor. [#3123](https://github.com/github/vscode-codeql/pull/3123)
 - Add a prompt to the "Quick query" command to encourage users in single-folder workspaces to use "Create query" instead. [#3082](https://github.com/github/vscode-codeql/pull/3082)
 - Remove support for CodeQL CLI versions older than 2.11.6. [#3087](https://github.com/github/vscode-codeql/pull/3087)
 - Preserve focus on results viewer when showing a location in a file. [#3088](https://github.com/github/vscode-codeql/pull/3088)

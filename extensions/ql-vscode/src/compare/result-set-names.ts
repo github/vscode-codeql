@@ -1,9 +1,9 @@
-import { BQRSInfo } from "../common/bqrs-cli-types";
+import { BqrsInfo } from "../common/bqrs-cli-types";
 import { getDefaultResultSetName } from "../common/interface-types";
 
 export async function findCommonResultSetNames(
-  fromSchemas: BQRSInfo,
-  toSchemas: BQRSInfo,
+  fromSchemas: BqrsInfo,
+  toSchemas: BqrsInfo,
 ): Promise<string[]> {
   const fromSchemaNames = fromSchemas["result-sets"].map(
     (schema) => schema.name,
@@ -14,8 +14,8 @@ export async function findCommonResultSetNames(
 }
 
 export async function findResultSetNames(
-  fromSchemas: BQRSInfo,
-  toSchemas: BQRSInfo,
+  fromSchemas: BqrsInfo,
+  toSchemas: BqrsInfo,
   commonResultSetNames: readonly string[],
   selectedResultSetName: string | undefined,
 ) {

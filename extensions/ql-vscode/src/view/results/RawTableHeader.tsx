@@ -6,11 +6,10 @@ import {
   SortDirection,
 } from "../../common/interface-types";
 import { nextSortDirection } from "./result-table-utils";
+import { Column } from "../../common/raw-result-types";
 
 interface Props {
-  readonly columns: ReadonlyArray<{
-    name?: string;
-  }>;
+  readonly columns: readonly Column[];
   readonly schemaName: string;
   readonly sortState?: RawResultsSortState;
   readonly preventSort?: boolean;

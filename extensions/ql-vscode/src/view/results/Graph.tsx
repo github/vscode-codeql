@@ -2,8 +2,9 @@ import * as React from "react";
 import { select } from "d3";
 import { jumpToLocation } from "./result-table-utils";
 import { graphviz, GraphvizOptions } from "d3-graphviz";
-import { tryGetLocationFromString } from "../../common/bqrs-utils";
 import { useCallback, useEffect } from "react";
+import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
+import { isUrlValueResolvable } from "../../common/raw-result-types";
 
 type GraphProps = {
   graphData: string;
@@ -42,8 +43,8 @@ export function Graph({ graphData, databaseUri }: GraphProps) {
       .attributer(function (d) {
         if (d.tag === "a") {
           const url = d.attributes["xlink:href"] || d.attributes["href"];
-          const loc = tryGetLocationFromString(url);
-          if (loc !== undefined) {
+          const loc = mapUrlValue(url);
+          if (loc !== undefined && isUrlValueResolvable(loc)) {
             d.attributes["xlink:href"] = "#";
             d.attributes["href"] = "#";
             loc.uri = `file://${loc.uri}`;

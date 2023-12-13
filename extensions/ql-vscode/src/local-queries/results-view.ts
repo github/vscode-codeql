@@ -60,11 +60,7 @@ import {
   shownLocationLineDecoration,
   jumpToLocation,
 } from "../databases/local-databases/locations";
-import {
-  RawResultSet,
-  transformBqrsResultSet,
-  ResultSetSchema,
-} from "../common/bqrs-cli-types";
+import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -76,6 +72,8 @@ import { redactableError } from "../common/errors";
 import { ResultsViewCommands } from "../common/commands";
 import { App } from "../common/app";
 import { Disposable } from "../common/disposable-object";
+import { RawResultSet } from "../common/raw-result-types";
+import { BqrsResultSetSchema } from "../common/bqrs-cli-types";
 
 /**
  * results-view.ts
@@ -106,9 +104,9 @@ function sortInterpretedResults(
           a.message.text === undefined
             ? 0
             : b.message.text === undefined
-            ? 0
-            : multiplier *
-              a.message.text?.localeCompare(b.message.text, env.language),
+              ? 0
+              : multiplier *
+                a.message.text?.localeCompare(b.message.text, env.language),
         );
         break;
       default:
@@ -136,7 +134,7 @@ function numPagesOfResultSet(
   const n =
     interpretation?.data.t === "GraphInterpretationData"
       ? interpretation.data.dot.length
-      : resultSet.schema.rows;
+      : resultSet.totalRowCount;
 
   return Math.ceil(n / pageSize);
 }
@@ -524,16 +522,16 @@ export class ResultsView extends AbstractWebview<
       offset: schema.pagination?.offsets[0],
       pageSize,
     });
-    const resultSet = transformBqrsResultSet(schema, chunk);
+    const resultSet = bqrsToResultSet(schema, chunk);
     fullQuery.completedQuery.setResultCount(
-      interpretationPage?.numTotalResults || resultSet.schema.rows,
+      interpretationPage?.numTotalResults || resultSet.totalRowCount,
     );
     const parsedResultSets: ParsedResultSets = {
       pageNumber: 0,
       pageSize,
       numPages: numPagesOfResultSet(resultSet, this._interpretation),
       numInterpretedPages: numInterpretedPages(this._interpretation),
-      resultSet: { ...resultSet, t: "RawResultSet" },
+      resultSet: { t: "RawResultSet", resultSet },
       selectedTable: undefined,
       resultSetNames,
     };
@@ -601,7 +599,7 @@ export class ResultsView extends AbstractWebview<
   private async getResultSetSchemas(
     completedQuery: CompletedQueryInfo,
     selectedTable = "",
-  ): Promise<ResultSetSchema[]> {
+  ): Promise<BqrsResultSetSchema[]> {
     const resultsPath = completedQuery.getResultsPath(selectedTable);
     const schemas = await this.cliServer.bqrsInfo(
       resultsPath,
@@ -668,12 +666,12 @@ export class ResultsView extends AbstractWebview<
         pageSize,
       },
     );
-    const resultSet = transformBqrsResultSet(schema, chunk);
+    const resultSet = bqrsToResultSet(schema, chunk);
 
     const parsedResultSets: ParsedResultSets = {
       pageNumber,
       pageSize,
-      resultSet: { t: "RawResultSet", ...resultSet },
+      resultSet: { t: "RawResultSet", resultSet },
       numPages: numPagesOfResultSet(resultSet),
       numInterpretedPages: numInterpretedPages(this._interpretation),
       selectedTable,

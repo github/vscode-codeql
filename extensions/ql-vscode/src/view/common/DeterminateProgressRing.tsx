@@ -39,7 +39,7 @@ export const DeterminateProgressRing = ({ percent }: Props) => (
     aria-valuemax={100}
     aria-valuenow={percent}
   >
-    <svg className="progress" viewBox="0 0 16 16">
+    <svg className="progress" viewBox="0 0 16 16" role="presentation">
       <Background cx="8px" cy="8px" r="7px" />
       <Determinate
         style={{

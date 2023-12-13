@@ -111,6 +111,7 @@ ModelEditor.args = {
         {
           label: "println(...)",
           url: {
+            type: "lineColumnLocation",
             uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
             startLine: 29,
             startColumn: 9,
@@ -122,6 +123,7 @@ ModelEditor.args = {
         {
           label: "println(...)",
           url: {
+            type: "lineColumnLocation",
             uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/test/java/org/example/HelloControllerTest.java",
             startLine: 29,
             startColumn: 9,
