@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.11.0 - 13 December 2023
 
 - Add a new method modeling panel to classify methods as sources/sinks/summaries while in the context of the source code. [#3128](https://github.com/github/vscode-codeql/pull/3128)
