@@ -30,7 +30,6 @@ ModelEditor.args = {
     },
     showGenerateButton: true,
     showLlmButton: true,
-    showMultipleModels: true,
   }),
   initialMethods: [
     {

@@ -6,10 +6,7 @@ import { Meta, StoryFn } from "@storybook/react";
 import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
 import { CallClassification, Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
-import {
-  MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS,
-  SINGLE_MODEL_GRID_TEMPLATE_COLUMNS,
-} from "../../view/model-editor/ModeledMethodDataGrid";
+import { MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS } from "../../view/model-editor/ModeledMethodDataGrid";
 import { DataGrid } from "../../view/common/DataGrid";
 import { createMockModelEditorViewState } from "../../../test/factories/model-editor/view-state";
 
@@ -35,12 +32,8 @@ const Template: StoryFn<typeof MethodRowComponent> = (args) => {
     [args],
   );
 
-  const gridTemplateColumns = args.viewState?.showMultipleModels
-    ? MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS
-    : SINGLE_MODEL_GRID_TEMPLATE_COLUMNS;
-
   return (
-    <DataGrid gridTemplateColumns={gridTemplateColumns}>
+    <DataGrid gridTemplateColumns={MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS}>
       <MethodRowComponent
         {...args}
         modeledMethods={modeledMethods}
@@ -100,7 +93,6 @@ const modeledMethod: ModeledMethod = {
 const viewState = createMockModelEditorViewState({
   showGenerateButton: true,
   showLlmButton: true,
-  showMultipleModels: true,
 });
 
 export const Unmodeled = Template.bind({});

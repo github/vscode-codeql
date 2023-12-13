@@ -7,7 +7,6 @@ export interface ModelEditorViewState {
   language: QueryLanguage;
   showGenerateButton: boolean;
   showLlmButton: boolean;
-  showMultipleModels: boolean;
   mode: Mode;
   showModeSwitchButton: boolean;
   sourceArchiveAvailable: boolean;
@@ -15,5 +14,4 @@ export interface ModelEditorViewState {
 
 export interface MethodModelingPanelViewState {
   language: QueryLanguage | undefined;
-  showMultipleModels: boolean;
 }
