@@ -1,9 +1,9 @@
 import {
-  Usage,
-  Method,
   CallClassification,
+  Method,
+  Usage,
 } from "../../../src/model-editor/method";
-import { ResolvableLocationValue } from "../../../src/common/bqrs-cli-types";
+import { UrlValueResolvable } from "../../../src/common/raw-result-types";
 
 export function createMethod(data: Partial<Method> = {}): Method {
   return {
@@ -24,11 +24,13 @@ export function createMethod(data: Partial<Method> = {}): Method {
 export function createUsage({
   classification = CallClassification.Unknown,
   label = "test",
-  url = {} as ResolvableLocationValue,
+  url = {
+    type: "wholeFileLocation",
+  } as UrlValueResolvable,
 }: {
   classification?: CallClassification;
   label?: string;
-  url?: ResolvableLocationValue;
+  url?: UrlValueResolvable;
 } = {}): Usage {
   return {
     classification,

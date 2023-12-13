@@ -19,7 +19,6 @@ export const WithoutCodeFlows = Template.bind({});
 WithoutCodeFlows.args = {
   resultSet: {
     t: "InterpretedResultSet",
-    schema: { name: "alerts", rows: 1, columns: [] },
     name: "alerts",
     interpretation: {
       data: {
@@ -335,7 +334,6 @@ export const WithCodeFlows = Template.bind({});
 WithCodeFlows.args = {
   resultSet: {
     t: "InterpretedResultSet",
-    schema: { name: "alerts", rows: 1, columns: [] },
     name: "alerts",
     interpretation: {
       data: {

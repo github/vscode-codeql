@@ -9,6 +9,7 @@ import {
   AnalyzedRepoItemContentProps,
 } from "../AnalyzedRepoItemContent";
 import { ResultFormat } from "../../../variant-analysis/shared/variant-analysis-result-format";
+import { ColumnKind } from "../../../common/raw-result-types";
 
 describe(AnalyzedRepoItemContent.name, () => {
   const render = (props: Partial<AnalyzedRepoItemContentProps> = {}) => {
@@ -64,40 +65,49 @@ describe(AnalyzedRepoItemContent.name, () => {
     render({
       status: VariantAnalysisRepoStatus.Succeeded,
       rawResults: {
-        schema: {
+        resultSet: {
           name: "#select",
-          rows: 1,
+          totalRowCount: 2,
           columns: [
             {
-              kind: "i",
+              kind: ColumnKind.Integer,
             },
             {
-              kind: "s",
+              kind: ColumnKind.String,
             },
             {
-              kind: "b",
+              kind: ColumnKind.Boolean,
             },
           ],
-        },
-        resultSet: {
-          schema: {
-            name: "#select",
-            rows: 1,
-            columns: [
+          rows: [
+            [
               {
-                kind: "i",
+                type: "number",
+                value: 60688,
               },
               {
-                kind: "s",
+                type: "string",
+                value: "foo",
               },
               {
-                kind: "b",
+                type: "boolean",
+                value: true,
               },
             ],
-          },
-          rows: [
-            [60688, "foo", true],
-            [5, "bar", false],
+            [
+              {
+                type: "number",
+                value: 5,
+              },
+              {
+                type: "string",
+                value: "bar",
+              },
+              {
+                type: "boolean",
+                value: false,
+              },
+            ],
           ],
         },
         fileLinkPrefix:

@@ -1,6 +1,6 @@
 import * as Sarif from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
-import { ResolvableLocationValue } from "../common/bqrs-cli-types";
+import { UrlValueResolvable } from "./raw-result-types";
 import { isEmptyPath } from "./bqrs-utils";
 
 export interface SarifLink {
@@ -16,7 +16,7 @@ interface NoLocation {
 }
 
 type ParsedSarifLocation =
-  | (ResolvableLocationValue & {
+  | (UrlValueResolvable & {
       userVisibleFile: string;
     })
   // Resolvable locations have a `uri` field, but it will sometimes include
@@ -137,6 +137,7 @@ export function parseSarifLocation(
     // If the region property is absent, the physicalLocation object refers to the entire file.
     // Source: https://docs.oasis-open.org/sarif/sarif/v2.1.0/cs01/sarif-v2.1.0-cs01.html#_Toc16012638.
     return {
+      type: "wholeFileLocation",
       uri: effectiveLocation,
       userVisibleFile,
     } as ParsedSarifLocation;
@@ -144,6 +145,7 @@ export function parseSarifLocation(
     const region = parseSarifRegion(physicalLocation.region);
 
     return {
+      type: "lineColumnLocation",
       uri: effectiveLocation,
       userVisibleFile,
       ...region,

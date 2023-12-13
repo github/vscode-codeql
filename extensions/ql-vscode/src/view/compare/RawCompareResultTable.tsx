@@ -1,13 +1,13 @@
 import * as React from "react";
-import { ResultRow } from "../../common/bqrs-cli-types";
 import { sendTelemetry } from "../common/telemetry";
+import { Column, Row } from "../../common/raw-result-types";
 import RawTableHeader from "../results/RawTableHeader";
 import RawTableRow from "../results/RawTableRow";
 
 interface Props {
-  columns: ReadonlyArray<{ name?: string }>;
+  columns: readonly Column[];
   schemaName: string;
-  rows: ResultRow[];
+  rows: Row[];
   databaseUri: string;
 
   className?: string;

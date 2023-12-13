@@ -10,7 +10,7 @@ import { extLogger } from "../common/logging/vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
-import { BQRSInfo, DecodedBqrsChunk } from "../common/bqrs-cli-types";
+import { BqrsInfo } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -22,6 +22,8 @@ import {
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { App } from "../common/app";
+import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
+import { RawResultSet } from "../common/raw-result-types";
 import {
   findCommonResultSetNames,
   findResultSetNames,
@@ -29,9 +31,9 @@ import {
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
-  fromSchemas: BQRSInfo;
+  fromSchemas: BqrsInfo;
   to: CompletedLocalQueryInfo;
-  toSchemas: BQRSInfo;
+  toSchemas: BqrsInfo;
 
   commonResultSetNames: readonly string[];
 }
@@ -236,22 +238,23 @@ export class CompareView extends AbstractWebview<
   }
 
   private async getResultSet(
-    bqrsInfo: BQRSInfo,
+    bqrsInfo: BqrsInfo,
     resultSetName: string,
     resultsPath: string,
-  ): Promise<DecodedBqrsChunk> {
+  ): Promise<RawResultSet> {
     const schema = bqrsInfo["result-sets"].find(
       (schema) => schema.name === resultSetName,
     );
     if (!schema) {
       throw new Error(`Schema ${resultSetName} not found.`);
     }
-    return await this.cliServer.bqrsDecode(resultsPath, resultSetName);
+    const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
+    return bqrsToResultSet(schema, chunk);
   }
 
   private compareResults(
-    fromResults: DecodedBqrsChunk,
-    toResults: DecodedBqrsChunk,
+    fromResults: RawResultSet,
+    toResults: RawResultSet,
   ): RawQueryCompareResult {
     // Only compare columns that have the same name
     return resultsDiff(fromResults, toResults);
