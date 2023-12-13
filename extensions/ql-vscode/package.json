@@ -1942,7 +1942,7 @@
     "tmp-promise": "^3.0.2",
     "tree-kill": "^1.2.2",
     "unzipper": "^0.10.5",
-    "vscode-extension-telemetry": "^0.1.6",
+    "vscode-extension-telemetry": "^0.4.5",
     "vscode-jsonrpc": "^8.0.2",
     "vscode-languageclient": "^8.0.2",
     "vscode-test-adapter-api": "^1.7.0",
