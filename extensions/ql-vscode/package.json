@@ -1847,7 +1847,7 @@
         {
           "id": "codeQLMethodsUsage",
           "name": "CodeQL Methods Usage",
-          "when": "config.codeQL.canary && codeql.modelEditorOpen"
+          "when": "codeql.modelEditorOpen"
         }
       ]
     },
