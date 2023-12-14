@@ -35,6 +35,7 @@ const config = {
   extensionTestsEnv: {
     ...baseConfig.extensionTestsEnv,
     INTEGRATION_TEST_MODE: "true",
+    VSCODE_CODEQL_TESTING_CODEQL_CLI_TEST_PATH: process.env.CLI_PATH,
   },
   retries: 3,
 };

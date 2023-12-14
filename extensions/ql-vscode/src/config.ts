@@ -119,14 +119,6 @@ export interface DistributionConfig {
   ownerName?: string;
   repositoryName?: string;
   onDidChangeConfiguration?: Event<void>;
-
-  /**
-   * This forces an update of the distribution, even if the settings haven't changed.
-   *
-   * This should only be used when the distribution has been updated outside of the extension
-   * and only in tests. It should not be called in production code.
-   */
-  forceUpdateConfiguration(): void;
 }
 
 // Query server configuration
@@ -265,7 +257,10 @@ export class DistributionConfigListener
   implements DistributionConfig
 {
   public get customCodeQlPath(): string | undefined {
-    return CUSTOM_CODEQL_PATH_SETTING.getValue() || undefined;
+    const testCliPath =
+      isIntegrationTestMode() &&
+      process.env.VSCODE_CODEQL_TESTING_CODEQL_CLI_TEST_PATH;
+    return CUSTOM_CODEQL_PATH_SETTING.getValue() || testCliPath || undefined;
   }
 
   public get includePrerelease(): boolean {
@@ -281,10 +276,6 @@ export class DistributionConfigListener
       newPath,
       ConfigurationTarget.Global,
     );
-  }
-
-  public forceUpdateConfiguration() {
-    this._onDidChangeConfiguration.fire(undefined);
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
