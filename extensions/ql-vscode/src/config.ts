@@ -712,12 +712,17 @@ const LLM_GENERATION_DEV_ENDPOINT = new Setting(
 );
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 const ENABLE_RUBY = new Setting("enableRuby", MODEL_SETTING);
+const ENABLE_CONSISTENCY_CHECK = new Setting(
+  "enableConsistencyCheck",
+  MODEL_SETTING,
+);
 
 export interface ModelConfig {
   flowGeneration: boolean;
   llmGeneration: boolean;
   getExtensionsDirectory(languageId: string): string | undefined;
   enableRuby: boolean;
+  enableConsistencyCheck: boolean;
 }
 
 export class ModelConfigListener extends ConfigListener implements ModelConfig {
@@ -757,6 +762,10 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
   public get enableRuby(): boolean {
     return !!ENABLE_RUBY.getValue<boolean>();
+  }
+
+  public get enableConsistencyCheck(): boolean {
+    return !!ENABLE_CONSISTENCY_CHECK.getValue<boolean>();
   }
 }
 
