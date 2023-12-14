@@ -762,8 +762,6 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
 const GITHUB_DATABASE_SETTING = new Setting("githubDatabase", ROOT_SETTING);
 
-// Feature flag for the GitHub database downnload.
-const GITHUB_DATABASE_ENABLE = new Setting("enable", GITHUB_DATABASE_SETTING);
 const GITHUB_DATABASE_DOWNLOAD = new Setting(
   "download",
   GITHUB_DATABASE_SETTING,
@@ -778,7 +776,6 @@ const GitHubDatabaseUpdateValues = ["ask", "never"] as const;
 type GitHubDatabaseUpdate = (typeof GitHubDatabaseUpdateValues)[number];
 
 export interface GitHubDatabaseConfig {
-  enable: boolean;
   download: GitHubDatabaseDownload;
   update: GitHubDatabaseUpdate;
   setDownload(
@@ -800,10 +797,6 @@ export class GitHubDatabaseConfigListener
       [GITHUB_DATABASE_SETTING],
       e,
     );
-  }
-
-  public get enable() {
-    return !!GITHUB_DATABASE_ENABLE.getValue<boolean>();
   }
 
   public get download(): GitHubDatabaseDownload {
