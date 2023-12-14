@@ -40,20 +40,20 @@ export type ResultKey = Result | Path | PathNode;
  * Looks up a specific result in a result set.
  */
 export function getResult(
-  sarif: sarif.Log,
+  results: sarif.Result[],
   key: Result | Path | PathNode,
 ): sarif.Result | undefined {
-  return sarif.runs[0]?.results?.[key.resultIndex];
+  return results[key.resultIndex];
 }
 
 /**
  * Looks up a specific path in a result set.
  */
 export function getPath(
-  sarif: sarif.Log,
+  results: sarif.Result[],
   key: Path | PathNode,
 ): sarif.ThreadFlow | undefined {
-  const result = getResult(sarif, key);
+  const result = getResult(results, key);
   if (result === undefined) {
     return undefined;
   }
@@ -76,10 +76,10 @@ export function getPath(
  * Looks up a specific path node in a result set.
  */
 export function getPathNode(
-  sarif: sarif.Log,
+  results: sarif.Result[],
   key: PathNode,
 ): sarif.Location | undefined {
-  const path = getPath(sarif, key);
+  const path = getPath(results, key);
   if (path === undefined) {
     return undefined;
   }

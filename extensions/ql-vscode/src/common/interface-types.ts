@@ -39,7 +39,7 @@ type RawTableResultSet = {
   resultSet: RawResultSet;
 };
 
-export type InterpretedResultSet<T> = {
+type InterpretedResultSet<T> = {
   t: "InterpretedResultSet";
   name: string;
   interpretation: InterpretationT<T>;

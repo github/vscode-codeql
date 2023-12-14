@@ -9,6 +9,7 @@ import { vscode } from "../vscode-api";
 import TextButton from "../common/TextButton";
 import { styled } from "styled-components";
 import { RawCompareResultTable } from "./RawCompareResultTable";
+import { InterpretedCompareResultTable } from "./InterpretedCompareResultTable";
 
 interface Props {
   queryInfo: SetComparisonQueryInfoMessage;
@@ -76,6 +77,13 @@ export default function CompareTable({ queryInfo, comparison }: Props) {
                 className={className}
               />
             )}
+            {result.kind === "interpreted" && (
+              <InterpretedCompareResultTable
+                results={result.from}
+                databaseUri={queryInfo.databaseUri}
+                sourceLocationPrefix={result.sourceLocationPrefix}
+              />
+            )}
           </td>
           <td>
             {result.kind === "raw" && (
@@ -85,6 +93,13 @@ export default function CompareTable({ queryInfo, comparison }: Props) {
                 rows={result.to}
                 databaseUri={queryInfo.databaseUri}
                 className={className}
+              />
+            )}
+            {result.kind === "interpreted" && (
+              <InterpretedCompareResultTable
+                results={result.to}
+                databaseUri={queryInfo.databaseUri}
+                sourceLocationPrefix={result.sourceLocationPrefix}
               />
             )}
           </td>
