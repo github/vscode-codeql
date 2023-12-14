@@ -60,10 +60,6 @@ export class GitHubDatabasesModule extends DisposableObject {
   }
 
   private async initialize(): Promise<void> {
-    if (!this.config.enable) {
-      return;
-    }
-
     // Start the check and downloading the database asynchronously. We don't want to block on this
     // in extension activation since this makes network requests and waits for user input.
     void this.promptGitHubRepositoryDownload().catch((e: unknown) => {
