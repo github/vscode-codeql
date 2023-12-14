@@ -1,4 +1,7 @@
 {
+  "ul-style": {
+    "style": "dash"
+  },
   "MD013": false,
   "MD041": false
 }

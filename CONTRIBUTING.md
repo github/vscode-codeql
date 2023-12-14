@@ -22,12 +22,12 @@ Please note that this project is released with a [Contributor Code of Conduct][c
 
 Here are a few things you can do that will increase the likelihood of your pull request being accepted:
 
-* Follow the [style guide][style].
-* Write tests:
-  * [Tests that don't require the VS Code API are located here](extensions/ql-vscode/test).
-  * [Integration tests that do require the VS Code API are located here](extensions/ql-vscode/src/vscode-tests).
-* Keep your change as focused as possible. If there are multiple changes you would like to make that are not dependent upon each other, consider submitting them as separate pull requests.
-* Write a [good commit message](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+- Follow the [style guide][style].
+- Write tests:
+  - [Tests that don't require the VS Code API are located here](extensions/ql-vscode/test).
+  - [Integration tests that do require the VS Code API are located here](extensions/ql-vscode/src/vscode-tests).
+- Keep your change as focused as possible. If there are multiple changes you would like to make that are not dependent upon each other, consider submitting them as separate pull requests.
+- Write a [good commit message](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
 
 ## Setting up a local build
 
@@ -99,6 +99,6 @@ More information about Storybook can be found inside the **Overview** page once 
 
 ## Resources
 
-* [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
-* [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
-* [GitHub Help](https://help.github.com)
+- [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
+- [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
+- [GitHub Help](https://help.github.com)
