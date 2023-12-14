@@ -12,319 +12,458 @@
     "artifactSizeInBytes": 3567,
     "interpretedResults": [],
     "rawResults": {
-      "schema": {
+      "resultSet": {
         "name": "#select",
-        "rows": 22,
+        "totalRowCount": 22,
         "columns": [
           {
             "name": "c",
-            "kind": "e"
+            "kind": "entity"
           },
           {
-            "kind": "i"
+            "kind": "integer"
           }
-        ]
-      },
-      "resultSet": {
-        "schema": {
-          "name": "#select",
-          "rows": 22,
-          "columns": [
-            {
-              "name": "c",
-              "kind": "e"
-            },
-            {
-              "kind": "i"
-            }
-          ]
-        },
+        ],
         "rows": [
           [
             {
-              "label": "functio ... ght);\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/Expressions/examples/CompareIdenticalValues.js",
-                "startLine": 8,
-                "startColumn": 32,
-                "endLine": 13,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... ght);\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/Expressions/examples/CompareIdenticalValues.js",
+                  "startLine": 8,
+                  "startColumn": 32,
+                  "endLine": 13,
+                  "endColumn": 1
+                }
               }
             },
-            6
+            {
+              "type": "number",
+              "value": 6
+            }
           ],
           [
             {
-              "label": "functio ... i-1);\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/LanguageFeatures/examples/ArgumentsCallerCallee.js",
-                "startLine": 1,
-                "startColumn": 2,
-                "endLine": 5,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... i-1);\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/LanguageFeatures/examples/ArgumentsCallerCallee.js",
+                  "startLine": 1,
+                  "startColumn": 2,
+                  "endLine": 5,
+                  "endColumn": 1
+                }
               }
             },
-            5
+            {
+              "type": "number",
+              "value": 5
+            }
           ],
           [
             {
-              "label": "functio ... i-1);\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/LanguageFeatures/examples/ArgumentsCallerCalleeGood.js",
-                "startLine": 1,
-                "startColumn": 2,
-                "endLine": 5,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... i-1);\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/LanguageFeatures/examples/ArgumentsCallerCalleeGood.js",
+                  "startLine": 1,
+                  "startColumn": 2,
+                  "endLine": 5,
+                  "endColumn": 1
+                }
               }
             },
-            5
+            {
+              "type": "number",
+              "value": 5
+            }
           ],
           [
             {
-              "label": "functio ... n -1;\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/Statements/examples/UselessComparisonTest.js",
-                "startLine": 1,
-                "startColumn": 1,
-                "endLine": 12,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... n -1;\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/src/Statements/examples/UselessComparisonTest.js",
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 12,
+                  "endColumn": 1
+                }
               }
             },
-            12
+            {
+              "type": "number",
+              "value": 12
+            }
           ],
           [
             {
-              "label": "functio ... false\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/constants.js",
-                "startLine": 1,
-                "startColumn": 1,
-                "endLine": 8,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... false\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/constants.js",
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 8,
+                  "endColumn": 1
+                }
               }
             },
-            8
+            {
+              "type": "number",
+              "value": 8
+            }
           ],
           [
             {
-              "label": "functio ...  \\n  }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/loop.js",
-                "startLine": 1,
-                "startColumn": 1,
-                "endLine": 12,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ...  \\n  }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/loop.js",
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 12,
+                  "endColumn": 1
+                }
               }
             },
-            12
+            {
+              "type": "number",
+              "value": 12
+            }
           ],
           [
             {
-              "label": "functio ... e\\n  }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/loop.js",
-                "startLine": 14,
-                "startColumn": 1,
-                "endLine": 22,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... e\\n  }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/loop.js",
+                  "startLine": 14,
+                  "startColumn": 1,
+                  "endLine": 22,
+                  "endColumn": 1
+                }
               }
             },
-            9
+            {
+              "type": "number",
+              "value": 9
+            }
           ],
           [
             {
-              "label": "functio ... K\\n  }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/loop.js",
-                "startLine": 24,
-                "startColumn": 1,
-                "endLine": 40,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... K\\n  }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/loop.js",
+                  "startLine": 24,
+                  "startColumn": 1,
+                  "endLine": 40,
+                  "endColumn": 1
+                }
               }
             },
-            17
+            {
+              "type": "number",
+              "value": 17
+            }
           ],
           [
             {
-              "label": "functio ... e\\n  }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/plus.js",
-                "startLine": 1,
-                "startColumn": 1,
-                "endLine": 17,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... e\\n  }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/plus.js",
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 17,
+                  "endColumn": 1
+                }
               }
             },
-            17
+            {
+              "type": "number",
+              "value": 17
+            }
           ],
           [
             {
-              "label": "functio ... alse \\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/plus.js",
-                "startLine": 19,
-                "startColumn": 1,
-                "endLine": 28,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... alse \\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/plus.js",
+                  "startLine": 19,
+                  "startColumn": 1,
+                  "endLine": 28,
+                  "endColumn": 1
+                }
               }
             },
-            10
+            {
+              "type": "number",
+              "value": 10
+            }
           ],
           [
             {
-              "label": "functio ...  true\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/plus.js",
-                "startLine": 30,
-                "startColumn": 1,
-                "endLine": 33,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ...  true\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/plus.js",
+                  "startLine": 30,
+                  "startColumn": 1,
+                  "endLine": 33,
+                  "endColumn": 1
+                }
               }
             },
-            4
+            {
+              "type": "number",
+              "value": 4
+            }
           ],
           [
             {
-              "label": "functio ... K\\n  }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
-                "startLine": 1,
-                "startColumn": 1,
-                "endLine": 15,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... K\\n  }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 15,
+                  "endColumn": 1
+                }
               }
             },
-            15
+            {
+              "type": "number",
+              "value": 15
+            }
           ],
           [
             {
-              "label": "functio ... e\\n  }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
-                "startLine": 17,
-                "startColumn": 1,
-                "endLine": 31,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... e\\n  }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
+                  "startLine": 17,
+                  "startColumn": 1,
+                  "endLine": 31,
+                  "endColumn": 1
+                }
               }
             },
-            15
+            {
+              "type": "number",
+              "value": 15
+            }
           ],
           [
             {
-              "label": "functio ... false\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
-                "startLine": 33,
-                "startColumn": 1,
-                "endLine": 41,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... false\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
+                  "startLine": 33,
+                  "startColumn": 1,
+                  "endLine": 41,
+                  "endColumn": 1
+                }
               }
             },
-            9
+            {
+              "type": "number",
+              "value": 9
+            }
           ],
           [
             {
-              "label": "functio ... e\\n  }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
-                "startLine": 43,
-                "startColumn": 1,
-                "endLine": 52,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... e\\n  }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/library-tests/RangeAnalysis/tst.js",
+                  "startLine": 43,
+                  "startColumn": 1,
+                  "endLine": 52,
+                  "endColumn": 1
+                }
               }
             },
-            10
+            {
+              "type": "number",
+              "value": 10
+            }
           ],
           [
             {
-              "label": "functio ... ght);\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Expressions/CompareIdenticalValues/tst.js",
-                "startLine": 8,
-                "startColumn": 32,
-                "endLine": 13,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... ght);\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Expressions/CompareIdenticalValues/tst.js",
+                  "startLine": 8,
+                  "startColumn": 32,
+                  "endLine": 13,
+                  "endColumn": 1
+                }
               }
             },
-            6
+            {
+              "type": "number",
+              "value": 6
+            }
           ],
           [
             {
-              "label": "functio ... i-1);\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/LanguageFeatures/ArgumentsCallerCallee/tst.js",
-                "startLine": 1,
-                "startColumn": 2,
-                "endLine": 5,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... i-1);\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/LanguageFeatures/ArgumentsCallerCallee/tst.js",
+                  "startLine": 1,
+                  "startColumn": 2,
+                  "endLine": 5,
+                  "endColumn": 1
+                }
               }
             },
-            5
+            {
+              "type": "number",
+              "value": 5
+            }
           ],
           [
             {
-              "label": "functio ...     }\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Security/CWE-834/LoopBoundInjectionExitBad.js",
-                "startLine": 17,
-                "startColumn": 1,
-                "endLine": 29,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ...     }\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Security/CWE-834/LoopBoundInjectionExitBad.js",
+                  "startLine": 17,
+                  "startColumn": 1,
+                  "endLine": 29,
+                  "endColumn": 1
+                }
               }
             },
-            13
+            {
+              "type": "number",
+              "value": 13
+            }
           ],
           [
             {
-              "label": "functio ...  true\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/constant.js",
-                "startLine": 1,
-                "startColumn": 1,
-                "endLine": 4,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ...  true\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/constant.js",
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 4,
+                  "endColumn": 1
+                }
               }
             },
-            4
+            {
+              "type": "number",
+              "value": 4
+            }
           ],
           [
             {
-              "label": "functio ... n -1;\\n}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/example.js",
-                "startLine": 1,
-                "startColumn": 1,
-                "endLine": 12,
-                "endColumn": 1
+              "type": "entity",
+              "value": {
+                "label": "functio ... n -1;\\n}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/example.js",
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 12,
+                  "endColumn": 1
+                }
               }
             },
-            12
+            {
+              "type": "number",
+              "value": 12
+            }
           ],
           [
             {
-              "label": "functio ... turn; }",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js",
-                "startLine": 8,
-                "startColumn": 3,
-                "endLine": 8,
-                "endColumn": 43
+              "type": "entity",
+              "value": {
+                "label": "functio ... turn; }",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js",
+                  "startLine": 8,
+                  "startColumn": 3,
+                  "endLine": 8,
+                  "endColumn": 43
+                }
               }
             },
-            1
+            {
+              "type": "number",
+              "value": 1
+            }
           ],
           [
             {
-              "label": "| functio ... i+1); |}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js",
-                "startLine": 9,
-                "startColumn": 3,
-                "endLine": 9,
-                "endColumn": 52
+              "type": "entity",
+              "value": {
+                "label": "| functio ... i+1); |}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/javascript/ql/test/query-tests/Statements/UselessComparisonTest/tst.js",
+                  "startLine": 9,
+                  "startColumn": 3,
+                  "endLine": 9,
+                  "endColumn": 52
+                }
               }
             },
-            1
+            {
+              "type": "number",
+              "value": 1
+            }
           ]
         ]
       },
@@ -345,59 +484,58 @@
     "artifactSizeInBytes": 1133,
     "interpretedResults": [],
     "rawResults": {
-      "schema": {
+      "resultSet": {
         "name": "#select",
-        "rows": 2,
+        "totalRowCount": 2,
         "columns": [
           {
             "name": "c",
-            "kind": "e"
+            "kind": "entity"
           },
           {
-            "kind": "i"
+            "kind": "integer"
           }
-        ]
-      },
-      "resultSet": {
-        "schema": {
-          "name": "#select",
-          "rows": 2,
-          "columns": [
-            {
-              "name": "c",
-              "kind": "e"
-            },
-            {
-              "kind": "i"
-            }
-          ]
-        },
+        ],
         "rows": [
           [
             {
-              "label": "functio ... rn H|0}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/packages/logic-solver/minisat.js",
-                "startLine": 7,
-                "startColumn": 91430,
-                "endLine": 7,
-                "endColumn": 105027
+              "type": "entity",
+              "value": {
+                "label": "functio ... rn H|0}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/packages/logic-solver/minisat.js",
+                  "startLine": 7,
+                  "startColumn": 91430,
+                  "endLine": 7,
+                  "endColumn": 105027
+                }
               }
             },
-            1
+            {
+              "type": "number",
+              "value": 1
+            }
           ],
           [
             {
-              "label": "functio ... ext;\\n\\t}",
-              "url": {
-                "uri": "file:/home/runner/work/bulk-builder/bulk-builder/packages/sha/sha256.js",
-                "startLine": 94,
-                "startColumn": 2,
-                "endLine": 124,
-                "endColumn": 2
+              "type": "entity",
+              "value": {
+                "label": "functio ... ext;\\n\\t}",
+                "url": {
+                  "type": "lineColumnLocation",
+                  "uri": "file:/home/runner/work/bulk-builder/bulk-builder/packages/sha/sha256.js",
+                  "startLine": 94,
+                  "startColumn": 2,
+                  "endLine": 124,
+                  "endColumn": 2
+                }
               }
             },
-            31
+            {
+              "type": "number",
+              "value": 31
+            }
           ]
         ]
       },

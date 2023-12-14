@@ -8,8 +8,8 @@ import {
 } from "../../../common/interface-types";
 import * as fs from "fs-extra";
 import { resolve } from "path";
-import { ColumnKindCode } from "../../../common/bqrs-cli-types";
 import { postMessage } from "../../common/post-message";
+import { ColumnKind } from "../../../common/raw-result-types";
 
 const exampleSarif = fs.readJSONSync(
   resolve(__dirname, "../../../../test/data/sarif/validSarif.sarif"),
@@ -64,16 +64,6 @@ describe(ResultsApp.name, () => {
         resultSetNames: ["#select"],
         resultSet: {
           t: "InterpretedResultSet",
-          schema: {
-            name: "#select",
-            rows: 1,
-            columns: [
-              {
-                name: "Path",
-                kind: ColumnKindCode.STRING,
-              },
-            ],
-          },
           name: "#select",
           interpretation,
         },
@@ -120,13 +110,19 @@ describe(ResultsApp.name, () => {
         numPages: 1,
         numInterpretedPages: 0,
         resultSet: {
-          schema: {
+          resultSet: {
             name: "#select",
-            rows: 1,
-            columns: [{ kind: "s" }],
-            pagination: { "step-size": 200, offsets: [13] },
+            totalRowCount: 1,
+            columns: [{ kind: ColumnKind.String }],
+            rows: [
+              [
+                {
+                  type: "string",
+                  value: "foobar1",
+                },
+              ],
+            ],
           },
-          rows: [["foobar1"]],
           t: "RawResultSet",
         },
         resultSetNames: ["#select"],
@@ -158,13 +154,19 @@ describe(ResultsApp.name, () => {
         numPages: 1,
         numInterpretedPages: 0,
         resultSet: {
-          schema: {
+          resultSet: {
             name: "#Quick_evaluation_of_expression",
-            rows: 1,
-            columns: [{ name: "#expr_result", kind: "s" }],
-            pagination: { "step-size": 200, offsets: [49] },
+            totalRowCount: 1,
+            columns: [{ name: "#expr_result", kind: ColumnKind.String }],
+            rows: [
+              [
+                {
+                  type: "string",
+                  value: "foobar2",
+                },
+              ],
+            ],
           },
-          rows: [["foobar2"]],
           t: "RawResultSet",
         },
         resultSetNames: ["#Quick_evaluation_of_expression"],

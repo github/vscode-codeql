@@ -180,9 +180,8 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repositoryFullName,
     );
 
-    const repoTask: VariantAnalysisRepositoryTask = await readRepoTask(
-      storageDirectory,
-    );
+    const repoTask: VariantAnalysisRepositoryTask =
+      await readRepoTask(storageDirectory);
 
     if (!repoTask.databaseCommitSha || !repoTask.sourceLocationPrefix) {
       throw new Error("Missing database commit SHA");

@@ -507,9 +507,8 @@ export class SkeletonQueryWizard {
   ): Promise<DatabaseItem | undefined> {
     const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[language];
 
-    const dbItems = await SkeletonQueryWizard.sortDatabaseItemsByDateAdded(
-      databaseItems,
-    );
+    const dbItems =
+      await SkeletonQueryWizard.sortDatabaseItemsByDateAdded(databaseItems);
 
     const defaultDatabaseItem = await SkeletonQueryWizard.findDatabaseItemByNwo(
       language,

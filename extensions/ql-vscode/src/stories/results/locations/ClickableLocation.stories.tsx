@@ -18,6 +18,7 @@ const Template: StoryFn<typeof ClickableLocationComponent> = (args) => (
 export const ClickableLocation = Template.bind({});
 ClickableLocation.args = {
   loc: {
+    type: "lineColumnLocation",
     uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
     startLine: 22,
     startColumn: 27,

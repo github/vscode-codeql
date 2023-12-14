@@ -1,12 +1,5 @@
 import * as sarif from "sarif";
 import {
-  RawResultSet,
-  ResultRow,
-  ResultSetSchema,
-  ResolvableLocationValue,
-  BqrsColumn,
-} from "../common/bqrs-cli-types";
-import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
@@ -25,6 +18,12 @@ import {
 } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 import { QueryLanguage } from "./query-language";
+import {
+  Column,
+  RawResultSet,
+  Row,
+  UrlValueResolvable,
+} from "./raw-result-types";
 
 /**
  * This module contains types and code that are shared between
@@ -35,10 +34,13 @@ export const SELECT_TABLE_NAME = "#select";
 export const ALERTS_TABLE_NAME = "alerts";
 export const GRAPH_TABLE_NAME = "graph";
 
-export type RawTableResultSet = { t: "RawResultSet" } & RawResultSet;
+type RawTableResultSet = {
+  t: "RawResultSet";
+  resultSet: RawResultSet;
+};
+
 type InterpretedResultSet<T> = {
   t: "InterpretedResultSet";
-  readonly schema: ResultSetSchema;
   name: string;
   interpretation: InterpretationT<T>;
 };
@@ -208,7 +210,7 @@ export type FromResultsViewMsg =
  */
 interface ViewSourceFileMsg {
   t: "viewSourceFile";
-  loc: ResolvableLocationValue;
+  loc: UrlValueResolvable;
   databaseUri: string;
 }
 
@@ -377,9 +379,9 @@ type QueryCompareResult = RawQueryCompareResult | InterpretedQueryCompareResult;
  */
 export type RawQueryCompareResult = {
   kind: "raw";
-  columns: readonly BqrsColumn[];
-  from: ResultRow[];
-  to: ResultRow[];
+  columns: readonly Column[];
+  from: Row[];
+  to: Row[];
 };
 
 /**

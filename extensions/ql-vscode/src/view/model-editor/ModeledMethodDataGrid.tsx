@@ -9,8 +9,6 @@ import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
 import { DataGrid, DataGridCell } from "../common/DataGrid";
 
-export const SINGLE_MODEL_GRID_TEMPLATE_COLUMNS =
-  "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
 export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
   "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
 
@@ -61,12 +59,8 @@ export const ModeledMethodDataGrid = ({
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
 
-  const gridTemplateColumns = viewState.showMultipleModels
-    ? MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS
-    : SINGLE_MODEL_GRID_TEMPLATE_COLUMNS;
-
   return (
-    <DataGrid gridTemplateColumns={gridTemplateColumns}>
+    <DataGrid gridTemplateColumns={MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS}>
       {someMethodsAreVisible && (
         <>
           <DataGridCell rowType="header">API or method</DataGridCell>
@@ -74,11 +68,9 @@ export const ModeledMethodDataGrid = ({
           <DataGridCell rowType="header">Input</DataGridCell>
           <DataGridCell rowType="header">Output</DataGridCell>
           <DataGridCell rowType="header">Kind</DataGridCell>
-          {viewState.showMultipleModels && (
-            <DataGridCell rowType="header">
-              <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
-            </DataGridCell>
-          )}
+          <DataGridCell rowType="header">
+            <ScreenReaderOnly>Add or remove models</ScreenReaderOnly>
+          </DataGridCell>
           {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
             const modeledMethods = modeledMethodsMap[method.signature] ?? [];
             return (
@@ -100,7 +92,6 @@ export const ModeledMethodDataGrid = ({
       <HiddenMethodsRow
         numHiddenMethods={numHiddenMethods}
         someMethodsAreVisible={someMethodsAreVisible}
-        viewState={viewState}
       />
     </DataGrid>
   );

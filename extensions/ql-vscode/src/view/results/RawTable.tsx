@@ -6,21 +6,22 @@ import {
   RawResultsSortState,
   NavigateMsg,
   NavigationDirection,
-  RawTableResultSet,
 } from "../../common/interface-types";
 import RawTableHeader from "./RawTableHeader";
 import RawTableRow from "./RawTableRow";
-import { ResultRow } from "../../common/bqrs-cli-types";
 import { onNavigation } from "./ResultsApp";
-import { tryGetResolvableLocation } from "../../common/bqrs-utils";
 import { sendTelemetry } from "../common/telemetry";
 import { assertNever } from "../../common/helpers-pure";
 import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
 import { useScrollIntoView } from "./useScrollIntoView";
+import {
+  isUrlValueResolvable,
+  RawResultSet,
+} from "../../common/raw-result-types";
 
 type RawTableProps = {
   databaseUri: string;
-  resultSet: RawTableResultSet;
+  resultSet: RawResultSet;
   sortState?: RawResultsSortState;
   offset: number;
 };
@@ -67,11 +68,12 @@ export function RawTable({
           return prevSelectedItem;
         }
         const cellData = rowData[nextColumn];
-        if (cellData != null && typeof cellData === "object") {
-          const location = tryGetResolvableLocation(cellData.url);
-          if (location !== undefined) {
-            jumpToLocation(location, databaseUri);
-          }
+        if (
+          cellData?.type === "entity" &&
+          cellData.value.url &&
+          isUrlValueResolvable(cellData.value.url)
+        ) {
+          jumpToLocation(cellData.value.url, databaseUri);
         }
         return { row: nextRow, column: nextColumn };
       });
@@ -126,7 +128,7 @@ export function RawTable({
     return <EmptyQueryResultsMessage />;
   }
 
-  const tableRows = dataRows.map((row: ResultRow, rowIndex: number) => (
+  const tableRows = dataRows.map((row, rowIndex) => (
     <RawTableRow
       key={rowIndex}
       rowIndex={rowIndex + offset}
@@ -159,8 +161,8 @@ export function RawTable({
   return (
     <table className={className}>
       <RawTableHeader
-        columns={resultSet.schema.columns}
-        schemaName={resultSet.schema.name}
+        columns={resultSet.columns}
+        schemaName={resultSet.name}
         sortState={sortState}
       />
       <tbody>{tableRows}</tbody>

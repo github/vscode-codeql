@@ -5,7 +5,7 @@ import {
   VariantAnalysisStats,
   VariantAnalysisStatsProps,
 } from "../VariantAnalysisStats";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 
 describe(VariantAnalysisStats.name, () => {
   const onViewLogsClick = jest.fn();

@@ -136,8 +136,8 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
     }, [focusedIndex]);
 
     const modeledMethods = useMemo(
-      () => modeledMethodsToDisplay(modeledMethodsProp, method, viewState),
-      [modeledMethodsProp, method, viewState],
+      () => modeledMethodsToDisplay(modeledMethodsProp, method),
+      [modeledMethodsProp, method],
     );
 
     const validationErrors = useMemo(
@@ -219,13 +219,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <DataGridCell>
               <InProgressDropdown />
             </DataGridCell>
-            {viewState.showMultipleModels && (
-              <DataGridCell>
-                <CodiconRow appearance="icon" disabled={true}>
-                  <Codicon name="add" label="Add new model" />
-                </CodiconRow>
-              </DataGridCell>
-            )}
+            <DataGridCell>
+              <CodiconRow appearance="icon" disabled={true}>
+                <Codicon name="add" label="Add new model" />
+              </CodiconRow>
+            </DataGridCell>
           </>
         )}
         {!props.modelingInProgress && (
@@ -267,28 +265,26 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     onChange={modeledMethodChangedHandlers[index]}
                   />
                 </DataGridCell>
-                {viewState.showMultipleModels && (
-                  <DataGridCell>
-                    {index === modeledMethods.length - 1 ? (
-                      <CodiconRow
-                        appearance="icon"
-                        aria-label="Add new model"
-                        onClick={handleAddModelClick}
-                        disabled={addModelButtonDisabled}
-                      >
-                        <Codicon name="add" />
-                      </CodiconRow>
-                    ) : (
-                      <CodiconRow
-                        appearance="icon"
-                        aria-label="Remove model"
-                        onClick={removeModelClickedHandlers[index]}
-                      >
-                        <Codicon name="trash" />
-                      </CodiconRow>
-                    )}
-                  </DataGridCell>
-                )}
+                <DataGridCell>
+                  {index === 0 ? (
+                    <CodiconRow
+                      appearance="icon"
+                      aria-label="Add new model"
+                      onClick={handleAddModelClick}
+                      disabled={addModelButtonDisabled}
+                    >
+                      <Codicon name="add" />
+                    </CodiconRow>
+                  ) : (
+                    <CodiconRow
+                      appearance="icon"
+                      aria-label="Remove model"
+                      onClick={removeModelClickedHandlers[index]}
+                    >
+                      <Codicon name="trash" />
+                    </CodiconRow>
+                  )}
+                </DataGridCell>
               </DataGridRow>
             ))}
             {validationErrors.map((error, index) => (
@@ -336,9 +332,7 @@ const UnmodelableMethodRow = forwardRef<
           <ViewLink onClick={jumpToMethod}>View</ViewLink>
         </ApiOrMethodRow>
       </DataGridCell>
-      <DataGridCell gridColumn={`span ${viewState.showMultipleModels ? 5 : 4}`}>
-        Method already modeled
-      </DataGridCell>
+      <DataGridCell gridColumn="span 5">Method already modeled</DataGridCell>
     </DataGridRow>
   );
 });
@@ -354,15 +348,10 @@ function sendJumpToMethodMessage(method: Method) {
 function modeledMethodsToDisplay(
   modeledMethods: ModeledMethod[],
   method: Method,
-  viewState: ModelEditorViewState,
 ): ModeledMethod[] {
   if (modeledMethods.length === 0) {
     return [createEmptyModeledMethod("none", method)];
   }
 
-  if (viewState.showMultipleModels) {
-    return modeledMethods;
-  } else {
-    return modeledMethods.slice(0, 1);
-  }
+  return modeledMethods;
 }

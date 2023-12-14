@@ -125,8 +125,7 @@ export const AnalyzedRepoItemContent = ({
       {rawResults && chosenResultFormat === ResultFormat.RawResults && (
         <RawResultsContainer>
           <RawResultsTable
-            schema={rawResults.schema}
-            results={rawResults.resultSet}
+            resultSet={rawResults.resultSet}
             fileLinkPrefix={rawResults.fileLinkPrefix}
             sourceLocationPrefix={rawResults.sourceLocationPrefix}
           />

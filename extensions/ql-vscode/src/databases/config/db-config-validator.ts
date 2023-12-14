@@ -1,7 +1,7 @@
 import { readJsonSync } from "fs-extra";
 import { resolve } from "path";
 import Ajv, { ValidateFunction } from "ajv";
-import { clearLocalDbConfig, DbConfig } from "./db-config";
+import { DbConfig } from "./db-config";
 import { findDuplicateStrings } from "../../common/text-utils";
 import {
   DbConfigValidationError,
@@ -19,8 +19,6 @@ export class DbConfigValidator {
   }
 
   public validate(dbConfig: DbConfig): DbConfigValidationError[] {
-    const localDbs = clearLocalDbConfig(dbConfig);
-
     this.validateSchemaFn(dbConfig);
 
     if (this.validateSchemaFn.errors) {
@@ -28,13 +26,6 @@ export class DbConfigValidator {
         kind: DbConfigValidationErrorKind.InvalidConfig,
         message: `${error.instancePath} ${error.message}`,
       }));
-    }
-
-    // Add any local db config back so that we have a config
-    // object that respects its type and validation can happen
-    // as normal.
-    if (localDbs) {
-      dbConfig.databases.local = localDbs;
     }
 
     return [
@@ -55,14 +46,6 @@ export class DbConfigValidator {
       )}`,
     });
 
-    const duplicateLocalDbLists = findDuplicateStrings(
-      dbConfig.databases.local.lists.map((n) => n.name),
-    );
-
-    if (duplicateLocalDbLists.length > 0) {
-      errors.push(buildError(duplicateLocalDbLists));
-    }
-
     const duplicateRemoteDbLists = findDuplicateStrings(
       dbConfig.databases.variantAnalysis.repositoryLists.map((n) => n.name),
     );
@@ -80,14 +63,6 @@ export class DbConfigValidator {
       kind: DbConfigValidationErrorKind.DuplicateNames,
       message: `There are databases with the same name: ${dups.join(", ")}`,
     });
-
-    const duplicateLocalDbs = findDuplicateStrings(
-      dbConfig.databases.local.databases.map((d) => d.name),
-    );
-
-    if (duplicateLocalDbs.length > 0) {
-      errors.push(buildError(duplicateLocalDbs));
-    }
 
     const duplicateRemoteDbs = findDuplicateStrings(
       dbConfig.databases.variantAnalysis.repositories,
@@ -110,13 +85,6 @@ export class DbConfigValidator {
         ", ",
       )}`,
     });
-
-    for (const list of dbConfig.databases.local.lists) {
-      const dups = findDuplicateStrings(list.databases.map((d) => d.name));
-      if (dups.length > 0) {
-        errors.push(buildError(list.name, dups));
-      }
-    }
 
     for (const list of dbConfig.databases.variantAnalysis.repositoryLists) {
       const dups = findDuplicateStrings(list.repositories);

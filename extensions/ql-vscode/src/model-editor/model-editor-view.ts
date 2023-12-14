@@ -385,7 +385,6 @@ export class ModelEditorView extends AbstractWebview<
         language: this.language,
         showGenerateButton,
         showLlmButton,
-        showMultipleModels: this.modelConfig.showMultipleModels,
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
@@ -482,9 +481,8 @@ export class ModelEditorView extends AbstractWebview<
         // In application mode, we need the database of a specific library to generate
         // the modeled methods. In framework mode, we'll use the current database.
         if (mode === Mode.Application) {
-          addedDatabase = await this.promptChooseNewOrExistingDatabase(
-            progress,
-          );
+          addedDatabase =
+            await this.promptChooseNewOrExistingDatabase(progress);
           if (!addedDatabase) {
             return;
           }
@@ -562,9 +560,8 @@ export class ModelEditorView extends AbstractWebview<
 
   private async modelDependency(): Promise<void> {
     return withProgress(async (progress, token) => {
-      const addedDatabase = await this.promptChooseNewOrExistingDatabase(
-        progress,
-      );
+      const addedDatabase =
+        await this.promptChooseNewOrExistingDatabase(progress);
       if (!addedDatabase || token.isCancellationRequested) {
         return;
       }

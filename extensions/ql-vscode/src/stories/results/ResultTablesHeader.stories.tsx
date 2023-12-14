@@ -28,16 +28,6 @@ ResultTablesHeader.args = {
     resultSetNames: ["#select", "alerts"],
     resultSet: {
       t: "InterpretedResultSet",
-      schema: {
-        name: "#select",
-        rows: 15,
-        columns: [
-          {
-            name: "x",
-            kind: "s",
-          },
-        ],
-      },
       name: "#select",
       interpretation: {
         sourceLocationPrefix: "/home/bulk-builder/bulk-builder",

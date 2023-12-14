@@ -349,6 +349,7 @@ describe("MethodsUsageDataProvider", () => {
                 label: "test",
                 classification: CallClassification.Source,
                 url: {
+                  type: "lineColumnLocation",
                   uri: "a/b/",
                   startLine: 1,
                   startColumn: 1,
@@ -371,6 +372,7 @@ describe("MethodsUsageDataProvider", () => {
                 label: "test",
                 classification: CallClassification.Source,
                 url: {
+                  type: "lineColumnLocation",
                   uri: "a/b/",
                   startLine: 1,
                   startColumn: 1,
@@ -382,6 +384,7 @@ describe("MethodsUsageDataProvider", () => {
                 label: "test",
                 classification: CallClassification.Source,
                 url: {
+                  type: "lineColumnLocation",
                   uri: "a/b/",
                   startLine: 1,
                   startColumn: 1,

@@ -9,7 +9,7 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../../../variant-analysis/shared/variant-analysis";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 import { RepoRow, RepoRowProps } from "../RepoRow";
 import { createMockRepositoryWithMetadata } from "../../../../test/factories/variant-analysis/shared/repository";
 
