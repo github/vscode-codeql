@@ -1914,7 +1914,7 @@
   "dependencies": {
     "@octokit/plugin-retry": "^6.0.1",
     "@octokit/rest": "^20.0.2",
-    "@vscode/codicons": "^0.0.31",
+    "@vscode/codicons": "^0.0.35",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.59.0",
     "@vscode/webview-ui-toolkit": "^1.0.1",
