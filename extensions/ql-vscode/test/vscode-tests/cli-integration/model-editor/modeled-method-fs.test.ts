@@ -1,5 +1,4 @@
 import { Uri, workspace } from "vscode";
-import * as tmp from "tmp";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension } from "../../global.helper";
 import { mkdirSync, writeFileSync } from "fs";
@@ -10,7 +9,9 @@ import {
 import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { join } from "path";
 import { extLogger } from "../../../../src/common/logging/vscode";
-import { homedir } from "os";
+import { homedir, tmpdir } from "os";
+import { mkdir, rm } from "fs-extra";
+import { nanoid } from "nanoid";
 import { QueryLanguage } from "../../../../src/common/query-language";
 
 const dummyExtensionPackContents = `
@@ -49,22 +50,23 @@ extensions:
 
 describe("modeled-method-fs", () => {
   let tmpDir: string;
-  let tmpDirRemoveCallback: (() => void) | undefined;
+  let tmpDirRemoveCallback: (() => Promise<void>) | undefined;
   let workspacePath: string;
   let cli: CodeQLCliServer;
 
   beforeEach(async () => {
     // On windows, make sure to use a temp directory that isn't an alias and therefore won't be canonicalised by CodeQL.
+    // The tmp package doesn't support this, so we have to do it manually.
     // See https://github.com/github/vscode-codeql/pull/2605 for more context.
-    const t = tmp.dirSync({
-      dir:
-        process.platform === "win32"
-          ? join(homedir(), "AppData", "Local", "Temp")
-          : undefined,
-      unsafeCleanup: true,
-    });
-    tmpDir = t.name;
-    tmpDirRemoveCallback = t.removeCallback;
+    const systemTmpDir =
+      process.platform === "win32"
+        ? join(homedir(), "AppData", "Local", "Temp")
+        : tmpdir();
+    tmpDir = join(systemTmpDir, `codeql-vscode-test-${nanoid(8)}`);
+    await mkdir(tmpDir, { recursive: true });
+    tmpDirRemoveCallback = async () => {
+      await rm(tmpDir, { recursive: true });
+    };
 
     const workspaceFolder = {
       uri: Uri.file(join(tmpDir, "workspace")),
@@ -90,8 +92,8 @@ describe("modeled-method-fs", () => {
     await cli.packInstall(packUsingExtensionsPath);
   });
 
-  afterEach(() => {
-    tmpDirRemoveCallback?.();
+  afterEach(async () => {
+    await tmpDirRemoveCallback?.();
   });
 
   function writeExtensionPackFiles(
