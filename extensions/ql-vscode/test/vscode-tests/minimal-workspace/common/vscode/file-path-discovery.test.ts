@@ -83,7 +83,9 @@ describe("FilePathDiscovery", () => {
   let discovery: TestFilePathDiscovery;
 
   beforeEach(() => {
-    const t = tmp.dirSync();
+    const t = tmp.dirSync({
+      unsafeCleanup: true,
+    });
     tmpDir = normalizePath(t.name);
     tmpDirRemoveCallback = t.removeCallback;
 

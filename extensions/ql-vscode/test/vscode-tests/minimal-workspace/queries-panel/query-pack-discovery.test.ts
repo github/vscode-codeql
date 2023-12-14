@@ -18,7 +18,9 @@ describe("Query pack discovery", () => {
   let discovery: QueryPackDiscovery;
 
   beforeEach(() => {
-    const t = tmp.dirSync();
+    const t = tmp.dirSync({
+      unsafeCleanup: true,
+    });
     tmpDir = t.name;
     tmpDirRemoveCallback = t.removeCallback;
 

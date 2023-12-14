@@ -1938,7 +1938,7 @@
     "source-map-support": "^0.5.21",
     "stream-json": "^1.7.3",
     "styled-components": "^6.0.2",
-    "tmp": "^0.1.0",
+    "tmp": "^0.2.1",
     "tmp-promise": "^3.0.2",
     "tree-kill": "^1.2.2",
     "unzipper": "^0.10.5",

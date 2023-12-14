@@ -19,7 +19,9 @@ let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
 export async function beforeAllAction() {
   // Create the temp directory to be used as extension local storage.
-  const dir = tmp.dirSync();
+  const dir = tmp.dirSync({
+    unsafeCleanup: true,
+  });
   let storagePath = realpathSync(dir.name);
   if (storagePath.substring(0, 2).match(/[A-Z]:/)) {
     storagePath =

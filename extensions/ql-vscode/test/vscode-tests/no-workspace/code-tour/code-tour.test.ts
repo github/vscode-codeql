@@ -14,7 +14,9 @@ describe("prepareCodeTour", () => {
   >;
 
   beforeEach(() => {
-    dir = tmp.dirSync();
+    dir = tmp.dirSync({
+      unsafeCleanup: true,
+    });
 
     const mockWorkspaceFolders = [
       {
