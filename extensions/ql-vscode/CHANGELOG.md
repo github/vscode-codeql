@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Avoid showing a popup when hovering over source elements in database source files. [#3125](https://github.com/github/vscode-codeql/pull/3125)
+- Add comparison of alerts when comparing query results. This allows viewing path explanations for differences in alerts. [#3113](https://github.com/github/vscode-codeql/pull/3113)
 
 ## 1.11.0 - 13 December 2023
 
