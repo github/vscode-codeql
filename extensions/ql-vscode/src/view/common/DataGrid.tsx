@@ -50,9 +50,8 @@ const StyledDataGridRow = styled.div<{
   & > * {
     // Use !important to override the background color set by the hover state
     background-color: ${(props) =>
-      // TODO: Use different colors for selected and focused
       props.$focused
-        ? "var(--vscode-editor-selectionBackground) !important"
+        ? "var(--vscode-editor-findMatchHighlightBackground) !important"
         : props.$selected
           ? "var(--vscode-editor-selectionBackground) !important"
           : "inherit"};
