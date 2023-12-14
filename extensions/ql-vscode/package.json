@@ -2008,7 +2008,7 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.8.1",
     "del": "^6.0.0",
-    "esbuild": "^0.15.15",
+    "esbuild": "^0.19.9",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-etc": "^2.0.2",
