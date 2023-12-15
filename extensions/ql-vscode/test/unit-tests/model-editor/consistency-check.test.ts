@@ -52,7 +52,6 @@ describe("checkConsistency", () => {
     expect(notifier.inconsistentSupported).toHaveBeenCalledWith(
       "Microsoft.CodeAnalysis.CSharp.SyntaxFactory.SeparatedList`1(System.Collections.Generic.IEnumerable<TNode>)",
       true,
-      false,
     );
     expect(notifier.missingMethod).not.toHaveBeenCalled();
   });

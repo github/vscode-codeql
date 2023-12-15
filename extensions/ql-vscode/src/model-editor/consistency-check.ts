@@ -4,11 +4,7 @@ import { BaseLogger } from "../common/logging";
 
 interface Notifier {
   missingMethod(signature: string): void;
-  inconsistentSupported(
-    signature: string,
-    expectedSupported: boolean,
-    actualSupported: boolean,
-  ): void;
+  inconsistentSupported(signature: string, expectedSupported: boolean): void;
 }
 
 export function checkConsistency(
@@ -48,11 +44,7 @@ function checkMethodConsistency(
   );
 
   if (method.supported !== expectSupported) {
-    notifier.inconsistentSupported(
-      method.signature,
-      expectSupported,
-      method.supported,
-    );
+    notifier.inconsistentSupported(method.signature, expectSupported);
   }
 }
 
@@ -65,13 +57,13 @@ export class DefaultNotifier implements Notifier {
     );
   }
 
-  inconsistentSupported(
-    signature: string,
-    expectedSupported: boolean,
-    actualSupported: boolean,
-  ) {
+  inconsistentSupported(signature: string, expectedSupported: boolean) {
+    const expectedMessage = expectedSupported
+      ? `Expected method to be supported, but it is not.`
+      : `Expected method to not be supported, but it is.`;
+
     void this.logger.log(
-      `Model editor query consistency check: Inconsistent supported flag for method ${signature}. Expected supported: ${expectedSupported}, actual supported: ${actualSupported}.`,
+      `Model editor query consistency check: Inconsistent supported flag for method ${signature}. ${expectedMessage}`,
     );
   }
 }
