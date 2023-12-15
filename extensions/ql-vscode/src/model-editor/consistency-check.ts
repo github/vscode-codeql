@@ -42,7 +42,10 @@ function checkMethodConsistency(
   modeledMethods: readonly ModeledMethod[],
   notifier: Notifier,
 ) {
-  const expectSupported = modeledMethods.some((m) => m.type !== "none");
+  // Type models are currently not shown as `supported` since they do not give any model information.
+  const expectSupported = modeledMethods.some(
+    (m) => m.type !== "none" && m.type !== "type",
+  );
 
   if (method.supported !== expectSupported) {
     notifier.inconsistentSupported(
