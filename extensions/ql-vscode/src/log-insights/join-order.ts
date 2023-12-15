@@ -1,4 +1,3 @@
-import * as I from "immutable";
 import {
   EvaluationLogProblemReporter,
   EvaluationLogScanner,
@@ -37,7 +36,7 @@ function makeKey(
   return `${queryCausingWork}:${predicate}${suffix ? ` ${suffix}` : ""}`;
 }
 
-function getDependentPredicates(operations: string[]): I.List<string> {
+function getDependentPredicates(operations: string[]): string[] {
   const id = String.raw`[0-9a-zA-Z:#_\./]+`;
   const idWithAngleBrackets = String.raw`[0-9a-zA-Z:#_<>\./]+`;
   const quotedId = String.raw`\`[^\`\r\n]*\``;
@@ -68,10 +67,10 @@ function getDependentPredicates(operations: string[]): I.List<string> {
       String.raw`\{[0-9]+\}\s+(?:[0-9a-zA-Z]+\s=|\|)\s(?:` + regexps.join("|")
     })`,
   );
-  return I.List(operations).flatMap((operation) => {
+  return operations.flatMap((operation) => {
     const matches = r.exec(operation.trim()) || [];
-    return I.List(matches)
-      .rest() // Skip the first group as it's just the entire string
+    return matches
+      .slice(1) // Skip the first group as it's just the entire string
       .filter((x) => !!x)
       .flatMap((x) => x.split(",")) // Group 2 in the INVOKE HIGHER_ORDER RELATION case is a comma-separated list of identifiers.
       .flatMap((x) => x.split(" UNION ")) // Split n-ary unions into individual arguments.
@@ -152,7 +151,7 @@ function computeJoinOrderBadness(
 interface Bucket {
   tupleCounts: Int32Array;
   resultSize: number;
-  dependentPredicateSizes: I.Map<string, number>;
+  dependentPredicateSizes: Map<string, number>;
 }
 
 class JoinOrderScanner implements EvaluationLogScanner {
@@ -407,12 +406,12 @@ class JoinOrderScanner implements EvaluationLogScanner {
     const dependentPredicates = getDependentPredicates(
       inLayerEvent.ra[raReference],
     );
-    let dependentPredicateSizes: I.Map<string, number>;
+    let dependentPredicateSizes: Map<string, number>;
     // We treat the base case as a non-recursive pipeline. In that case, the dependent predicates are
     // the dependencies of the base case and the cur_deltas.
     if (raReference === "base") {
-      dependentPredicateSizes = I.Map(
-        dependentPredicates.map((pred): [string, number] => {
+      dependentPredicateSizes = dependentPredicates
+        .map((pred): [string, number] => {
           // A base case cannot contain a `prev_delta`, but it can contain a `cur_delta`.
           let size = 0;
           if (pred.endsWith("#cur_delta")) {
@@ -426,28 +425,27 @@ class JoinOrderScanner implements EvaluationLogScanner {
             size = this.predicateSizes.get(hash)!;
           }
           return [pred, size];
-        }),
-      );
+        })
+        .reduce((acc, [pred, size]) => acc.set(pred, size), new Map());
     } else {
       // It's a non-base case in a recursive pipeline. In that case, the dependent predicates are
       // only the prev_deltas.
-      dependentPredicateSizes = I.Map(
-        dependentPredicates
-          .flatMap((pred) => {
-            // If it's actually a prev_delta
-            if (pred.endsWith("#prev_delta")) {
-              // Return the predicate without the #prev_delta suffix.
-              return [pred.slice(0, -"#prev_delta".length)];
-            } else {
-              // Not a recursive delta. Skip it.
-              return [];
-            }
-          })
-          .map((prev): [string, number] => {
-            const size = this.prevDeltaSizes(event, prev, iteration);
-            return [prev, size];
-          }),
-      );
+      dependentPredicateSizes = dependentPredicates
+        .flatMap((pred) => {
+          // If it's actually a prev_delta
+          if (pred.endsWith("#prev_delta")) {
+            // Return the predicate without the #prev_delta suffix.
+            return [pred.slice(0, -"#prev_delta".length)];
+          } else {
+            // Not a recursive delta. Skip it.
+            return [];
+          }
+        })
+        .map((prev): [string, number] => {
+          const size = this.prevDeltaSizes(event, prev, iteration);
+          return [prev, size];
+        })
+        .reduce((acc, [pred, size]) => acc.set(pred, size), new Map());
     }
 
     const deltaSize = inLayerEvent.deltaSizes[iteration];
@@ -475,7 +473,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         orderTobucket.set(raReference, {
           tupleCounts: new Int32Array(0),
           resultSize: 0,
-          dependentPredicateSizes: I.Map(),
+          dependentPredicateSizes: new Map(),
         });
       }
 
@@ -494,12 +492,18 @@ class JoinOrderScanner implements EvaluationLogScanner {
         this.problemReporter,
       );
       const resultSize = bucket.resultSize + deltaSize;
+
       // Pointwise sum the deltas.
-      const newDependentPredicateSizes =
-        bucket.dependentPredicateSizes.mergeWith(
-          (oldSize, newSize) => oldSize + newSize,
-          dependentPredicateSizes,
+      const newDependentPredicateSizes = new Map<string, number>(
+        bucket.dependentPredicateSizes,
+      );
+      for (const [pred, size] of dependentPredicateSizes) {
+        newDependentPredicateSizes.set(
+          pred,
+          (newDependentPredicateSizes.get(pred) ?? 0) + size,
         );
+      }
+
       orderTobucket.set(raReference, {
         tupleCounts: newTupleCounts,
         resultSize,
