@@ -103,10 +103,6 @@ export class ModelEditorModule extends DisposableObject {
 
     this.push(
       this.modelingEvents.onMethodsChanged((event) => {
-        if (!this.modelConfig.enableConsistencyCheck) {
-          return;
-        }
-
         const modeledMethods = this.modelingStore.getModeledMethods(
           event.databaseItem,
         );
