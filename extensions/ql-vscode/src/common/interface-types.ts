@@ -371,7 +371,9 @@ export interface SetComparisonsMessage {
   readonly message: string | undefined;
 }
 
-type QueryCompareResult = RawQueryCompareResult | InterpretedQueryCompareResult;
+export type QueryCompareResult =
+  | RawQueryCompareResult
+  | InterpretedQueryCompareResult;
 
 /**
  * from is the set of rows that have changes in the "from" query.
@@ -388,7 +390,7 @@ export type RawQueryCompareResult = {
  * from is the set of results that have changes in the "from" query.
  * to is the set of results that have changes in the "to" query.
  */
-type InterpretedQueryCompareResult = {
+export type InterpretedQueryCompareResult = {
   kind: "interpreted";
   sourceLocationPrefix: string;
   from: sarif.Result[];
