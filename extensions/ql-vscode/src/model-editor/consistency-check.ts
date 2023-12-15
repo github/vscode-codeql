@@ -58,7 +58,7 @@ export class DefaultNotifier implements Notifier {
 
   missingMethod(signature: string) {
     void this.logger.log(
-      `Consistency check: Missing method ${signature} for method that is modeled`,
+      `Model editor query consistency check: Missing method ${signature} for method that is modeled.`,
     );
   }
 
@@ -68,7 +68,7 @@ export class DefaultNotifier implements Notifier {
     actualSupported: boolean,
   ) {
     void this.logger.log(
-      `Consistency check: Inconsistent supported flag for method ${signature}. Expected supported: ${expectedSupported}, actual supported: ${actualSupported}`,
+      `Model editor query consistency check: Inconsistent supported flag for method ${signature}. Expected supported: ${expectedSupported}, actual supported: ${actualSupported}.`,
     );
   }
 }
