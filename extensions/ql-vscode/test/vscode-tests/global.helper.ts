@@ -28,7 +28,7 @@ export let storagePath: string;
  */
 export async function ensureTestDatabase(
   databaseManager: DatabaseManager,
-  cli: CodeQLCliServer | undefined,
+  cli: CodeQLCliServer,
 ): Promise<DatabaseItem> {
   // Add a database, but make sure the database manager is empty first
   await cleanDatabases(databaseManager);

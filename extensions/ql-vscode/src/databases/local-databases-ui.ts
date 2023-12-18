@@ -233,7 +233,7 @@ export class DatabaseUI extends DisposableObject {
     private app: App,
     private databaseManager: DatabaseManager,
     languageContext: LanguageContextStore,
-    private readonly queryServer: QueryRunner | undefined,
+    private readonly queryServer: QueryRunner,
     private readonly storagePath: string,
     readonly extensionPath: string,
   ) {
@@ -402,10 +402,7 @@ export class DatabaseUI extends DisposableObject {
         workspace.workspaceFolders[0].uri.fsPath,
         "tutorial-queries",
       );
-      const cli = this.queryServer?.cliServer;
-      if (!cli) {
-        throw new Error("No CLI server found");
-      }
+      const cli = this.queryServer.cliServer;
       await cli.packInstall(tutorialQueriesPath);
     }
   }
@@ -528,7 +525,7 @@ export class DatabaseUI extends DisposableObject {
           this.databaseManager,
           this.storagePath,
           progress,
-          this.queryServer?.cliServer,
+          this.queryServer.cliServer,
         );
       },
       {
@@ -548,7 +545,7 @@ export class DatabaseUI extends DisposableObject {
           this.storagePath,
           credentials,
           progress,
-          this.queryServer?.cliServer,
+          this.queryServer.cliServer,
         );
       },
       {
@@ -704,7 +701,7 @@ export class DatabaseUI extends DisposableObject {
               this.databaseManager,
               this.storagePath,
               progress,
-              this.queryServer?.cliServer,
+              this.queryServer.cliServer,
             );
           } else {
             await this.databaseManager.openDatabase(uri, {
@@ -836,7 +833,7 @@ export class DatabaseUI extends DisposableObject {
             this.databaseManager,
             this.storagePath,
             progress,
-            this.queryServer?.cliServer,
+            this.queryServer.cliServer,
           );
         }
       },
