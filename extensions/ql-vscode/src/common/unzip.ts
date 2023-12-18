@@ -1,8 +1,10 @@
 import { Entry as ZipEntry, open, Options as ZipOptions, ZipFile } from "yauzl";
 import { Readable } from "stream";
+import { availableParallelism } from "os";
 import { dirname, join } from "path";
 import { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
+import PQueue from "p-queue";
 
 // We can't use promisify because it picks up the wrong overload.
 export function openZip(
@@ -115,32 +117,38 @@ export async function unzipToDirectory(
   try {
     const entries = await readZipEntries(zipFile);
 
-    for (const entry of entries) {
-      const path = join(destinationPath, entry.fileName);
+    const queue = new PQueue({
+      concurrency: availableParallelism(),
+    });
 
-      if (/\/$/.test(entry.fileName)) {
-        // Directory file names end with '/'
+    await queue.addAll(
+      entries.map((entry) => async () => {
+        const path = join(destinationPath, entry.fileName);
 
-        await ensureDir(path);
-      } else {
-        // Ensure the directory exists
-        await ensureDir(dirname(path));
+        if (/\/$/.test(entry.fileName)) {
+          // Directory file names end with '/'
 
-        const readable = await openZipReadStream(zipFile, entry);
+          await ensureDir(path);
+        } else {
+          // Ensure the directory exists
+          await ensureDir(dirname(path));
 
-        let mode: number | undefined = entry.externalFileAttributes >>> 16;
-        if (mode <= 0) {
-          mode = undefined;
+          const readable = await openZipReadStream(zipFile, entry);
+
+          let mode: number | undefined = entry.externalFileAttributes >>> 16;
+          if (mode <= 0) {
+            mode = undefined;
+          }
+
+          const writeStream = createWriteStream(path, {
+            autoClose: true,
+            mode,
+          });
+
+          await copyStream(readable, writeStream);
         }
-
-        const writeStream = createWriteStream(path, {
-          autoClose: true,
-          mode,
-        });
-
-        await copyStream(readable, writeStream);
-      }
-    }
+      }),
+    );
   } finally {
     zipFile.close();
   }
