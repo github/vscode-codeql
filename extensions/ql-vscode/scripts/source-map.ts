@@ -20,7 +20,7 @@ import { spawnSync } from "child_process";
 import { basename, resolve } from "path";
 import { pathExists, readJSON } from "fs-extra";
 import { RawSourceMap, SourceMapConsumer } from "source-map";
-import { Open } from "unzipper";
+import { unzipToDirectory } from "../src/common/unzip";
 
 if (process.argv.length !== 4) {
   console.error(
@@ -78,10 +78,10 @@ async function extractSourceMap() {
         releaseAssetsDirectory,
       ]);
 
-      const file = await Open.file(
+      await unzipToDirectory(
         resolve(releaseAssetsDirectory, sourcemapAsset.name),
+        sourceMapsDirectory,
       );
-      await file.extract({ path: sourceMapsDirectory });
     } else {
       const workflowRuns = runGhJSON<WorkflowRunListItem[]>([
         "run",
