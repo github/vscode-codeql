@@ -86,37 +86,6 @@ export async function openZipBuffer(
   });
 }
 
-async function readNextEntry(zipFile: ZipFile): Promise<ZipEntry | null> {
-  return new Promise((resolve, reject) => {
-    zipFile.readEntry();
-
-    let off: () => void = () => {};
-
-    const entryListener = (entry: ZipEntry) => {
-      resolve(entry);
-      off();
-    };
-    const endListener = () => {
-      resolve(null);
-      off();
-    };
-    const errorListener = (err: Error) => {
-      reject(err);
-      off();
-    };
-
-    off = () => {
-      zipFile.off("entry", entryListener);
-      zipFile.off("end", endListener);
-      zipFile.off("error", errorListener);
-    };
-
-    zipFile.on("entry", entryListener);
-    zipFile.on("end", endListener);
-    zipFile.on("error", errorListener);
-  });
-}
-
 async function copyStream(
   readable: Readable,
   writeStream: WriteStream,
@@ -138,41 +107,41 @@ export async function unzipToDirectory(
   destinationPath: string,
 ): Promise<void> {
   const zipFile = await openZip(archivePath, {
-    autoClose: true,
+    autoClose: false,
     strictFileNames: true,
     lazyEntries: true,
   });
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const entry = await readNextEntry(zipFile);
-    if (entry === null) {
-      break;
-    }
+  try {
+    const entries = await readZipEntries(zipFile);
 
-    const path = join(destinationPath, entry.fileName);
+    for (const entry of entries) {
+      const path = join(destinationPath, entry.fileName);
 
-    if (/\/$/.test(entry.fileName)) {
-      // Directory file names end with '/'
+      if (/\/$/.test(entry.fileName)) {
+        // Directory file names end with '/'
 
-      await ensureDir(path);
-    } else {
-      // Ensure the directory exists
-      await ensureDir(dirname(path));
+        await ensureDir(path);
+      } else {
+        // Ensure the directory exists
+        await ensureDir(dirname(path));
 
-      const readable = await openZipReadStream(zipFile, entry);
+        const readable = await openZipReadStream(zipFile, entry);
 
-      let mode: number | undefined = entry.externalFileAttributes >>> 16;
-      if (mode <= 0) {
-        mode = undefined;
+        let mode: number | undefined = entry.externalFileAttributes >>> 16;
+        if (mode <= 0) {
+          mode = undefined;
+        }
+
+        const writeStream = createWriteStream(path, {
+          autoClose: true,
+          mode,
+        });
+
+        await copyStream(readable, writeStream);
       }
-
-      const writeStream = createWriteStream(path, {
-        autoClose: true,
-        mode,
-      });
-
-      await copyStream(readable, writeStream);
     }
+  } finally {
+    zipFile.close();
   }
 }
