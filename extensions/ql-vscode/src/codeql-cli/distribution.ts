@@ -26,6 +26,7 @@ import {
   showAndLogWarningMessage,
 } from "../common/logging";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
+import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 
 /**
  * distribution.ts
@@ -423,6 +424,12 @@ class ExtensionSpecificDistributionManager {
       await unzipToDirectoryConcurrently(
         archivePath,
         this.getDistributionStoragePath(),
+        progressCallback
+          ? reportUnzipProgress(
+              `Extracting CodeQL CLI ${release.name}…`,
+              progressCallback,
+            )
+          : undefined,
       );
     } finally {
       await remove(tmpDirectory);
