@@ -28,23 +28,35 @@ export async function unzipToDirectoryConcurrently(
       0,
     );
 
+    const reportProgress = () => {
+      progress?.({
+        filesExtracted,
+        totalFiles,
+        bytesExtracted,
+        totalBytes,
+      });
+    };
+
     await queue.addAll(
       entries.map((entry) => async () => {
-        const entryBytesExtracted = await unzipFile(
+        let entryBytesExtracted = 0;
+
+        const totalEntryBytesExtracted = await unzipFile(
           zipFile,
           entry,
           destinationPath,
+          (thisBytesExtracted) => {
+            entryBytesExtracted += thisBytesExtracted;
+            bytesExtracted += thisBytesExtracted;
+            reportProgress();
+          },
         );
 
-        bytesExtracted += entryBytesExtracted;
+        // Should be 0, but just in case.
+        bytesExtracted += -entryBytesExtracted + totalEntryBytesExtracted;
 
         filesExtracted++;
-        progress?.({
-          filesExtracted,
-          totalFiles,
-          bytesExtracted,
-          totalBytes,
-        });
+        reportProgress();
       }),
     );
   } finally {
