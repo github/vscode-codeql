@@ -104,9 +104,20 @@ async function copyStream(
   });
 }
 
+type Progress = {
+  filesExtracted: number;
+  totalFiles: number;
+
+  bytesExtracted: number;
+  totalBytes: number;
+};
+
+type ProgressCallback = (progress: Progress) => void;
+
 export async function unzipToDirectory(
   archivePath: string,
   destinationPath: string,
+  progress?: ProgressCallback,
 ): Promise<void> {
   const zipFile = await openZip(archivePath, {
     autoClose: false,
@@ -120,6 +131,14 @@ export async function unzipToDirectory(
     const queue = new PQueue({
       concurrency: availableParallelism(),
     });
+
+    let filesExtracted = 0;
+    const totalFiles = entries.length;
+    let bytesExtracted = 0;
+    const totalBytes = entries.reduce(
+      (total, entry) => total + entry.uncompressedSize,
+      0,
+    );
 
     await queue.addAll(
       entries.map((entry) => async () => {
@@ -146,7 +165,17 @@ export async function unzipToDirectory(
           });
 
           await copyStream(readable, writeStream);
+
+          bytesExtracted += entry.uncompressedSize;
         }
+
+        filesExtracted++;
+        progress?.({
+          filesExtracted,
+          totalFiles,
+          bytesExtracted,
+          totalBytes,
+        });
       }),
     );
   } finally {
