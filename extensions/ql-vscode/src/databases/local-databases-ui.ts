@@ -233,7 +233,7 @@ export class DatabaseUI extends DisposableObject {
     private app: App,
     private databaseManager: DatabaseManager,
     languageContext: LanguageContextStore,
-    private readonly queryServer: QueryRunner | undefined,
+    private readonly queryServer: QueryRunner,
     private readonly storagePath: string,
     readonly extensionPath: string,
   ) {
