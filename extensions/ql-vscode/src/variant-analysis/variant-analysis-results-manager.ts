@@ -16,7 +16,7 @@ import {
 } from "./shared/variant-analysis";
 import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { EventEmitter } from "vscode";
-import { unzipFile } from "../common/zip";
+import { unzipToDirectory } from "../common/unzip";
 import { readRepoTask, writeRepoTask } from "./repo-tasks-store";
 
 type CacheKey = `${number}/${string}`;
@@ -106,7 +106,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
 
-    await unzipFile(zipFilePath, unzippedFilesDirectory);
+    await unzipToDirectory(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({
       variantAnalysisId,

@@ -54,8 +54,8 @@ describe(VariantAnalysisResultsManager.name, () => {
     });
 
     afterEach(async () => {
-      if (fs.existsSync(variantAnalysisStoragePath)) {
-        fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+      if (await fs.pathExists(variantAnalysisStoragePath)) {
+        await fs.remove(variantAnalysisStoragePath);
       }
     });
 
