@@ -1,5 +1,8 @@
 import { Entry as ZipEntry, open, Options as ZipOptions, ZipFile } from "yauzl";
 import { Readable } from "stream";
+import { dirname, join } from "path";
+import { WriteStream } from "fs";
+import { createWriteStream, ensureDir } from "fs-extra";
 
 // We can't use promisify because it picks up the wrong overload.
 export function openZip(
@@ -81,4 +84,95 @@ export async function openZipBuffer(
       resolve(Buffer.concat(chunks));
     });
   });
+}
+
+async function readNextEntry(zipFile: ZipFile): Promise<ZipEntry | null> {
+  return new Promise((resolve, reject) => {
+    zipFile.readEntry();
+
+    let off: () => void = () => {};
+
+    const entryListener = (entry: ZipEntry) => {
+      resolve(entry);
+      off();
+    };
+    const endListener = () => {
+      resolve(null);
+      off();
+    };
+    const errorListener = (err: Error) => {
+      reject(err);
+      off();
+    };
+
+    off = () => {
+      zipFile.off("entry", entryListener);
+      zipFile.off("end", endListener);
+      zipFile.off("error", errorListener);
+    };
+
+    zipFile.on("entry", entryListener);
+    zipFile.on("end", endListener);
+    zipFile.on("error", errorListener);
+  });
+}
+
+async function copyStream(
+  readable: Readable,
+  writeStream: WriteStream,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    readable.on("error", (err) => {
+      reject(err);
+    });
+    readable.on("end", () => {
+      resolve();
+    });
+
+    readable.pipe(writeStream);
+  });
+}
+
+export async function unzipToDirectory(
+  archivePath: string,
+  destinationPath: string,
+): Promise<void> {
+  const zipFile = await openZip(archivePath, {
+    autoClose: true,
+    strictFileNames: true,
+    lazyEntries: true,
+  });
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const entry = await readNextEntry(zipFile);
+    if (entry === null) {
+      break;
+    }
+
+    const path = join(destinationPath, entry.fileName);
+
+    if (/\/$/.test(entry.fileName)) {
+      // Directory file names end with '/'
+
+      await ensureDir(path);
+    } else {
+      // Ensure the directory exists
+      await ensureDir(dirname(path));
+
+      const readable = await openZipReadStream(zipFile, entry);
+
+      let mode: number | undefined = entry.externalFileAttributes >>> 16;
+      if (mode <= 0) {
+        mode = undefined;
+      }
+
+      const writeStream = createWriteStream(path, {
+        autoClose: true,
+        mode,
+      });
+
+      await copyStream(readable, writeStream);
+    }
+  }
 }

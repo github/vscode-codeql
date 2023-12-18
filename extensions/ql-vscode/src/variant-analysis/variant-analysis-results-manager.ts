@@ -6,6 +6,7 @@ import { join } from "path";
 import { Logger } from "../common/logging";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../common/sarif-parser";
+import { unzipToDirectory } from "../common/unzip";
 import { extractAnalysisAlerts } from "./sarif-processing";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extractRawResults } from "./bqrs-processing";
@@ -16,7 +17,6 @@ import {
 } from "./shared/variant-analysis";
 import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { EventEmitter } from "vscode";
-import { unzipFile } from "../common/zip";
 import { readRepoTask, writeRepoTask } from "./repo-tasks-store";
 
 type CacheKey = `${number}/${string}`;
@@ -106,7 +106,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
 
-    await unzipFile(zipFilePath, unzippedFilesDirectory);
+    await unzipToDirectory(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({
       variantAnalysisId,
