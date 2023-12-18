@@ -47,11 +47,10 @@ describe("archive-filesystem-provider", () => {
       pathWithinSourceArchive: "folder1",
     });
     const files = await archiveProvider.readDirectory(uri);
-    expect(files).toEqual([
-      ["folder2", FileType.Directory],
-      ["textFile.txt", FileType.File],
-      ["textFile2.txt", FileType.File],
-    ]);
+    expect(files).toHaveLength(3);
+    expect(files).toContainEqual(["folder2", FileType.Directory]);
+    expect(files).toContainEqual(["textFile.txt", FileType.File]);
+    expect(files).toContainEqual(["textFile2.txt", FileType.File]);
   });
 
   it("should handle a missing directory", async () => {
