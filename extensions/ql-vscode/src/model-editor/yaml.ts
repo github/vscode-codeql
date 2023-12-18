@@ -230,10 +230,6 @@ function createDataExtensionYamlsByGrouping(
       methodsByCanonicalFilename[canonicalFilename][method.signature] = [
         ...newMethods,
       ];
-
-      if (!(canonicalFilename in actualFilenameByCanonicalFilename)) {
-        actualFilenameByCanonicalFilename[canonicalFilename] = filename;
-      }
     }
   }
 
