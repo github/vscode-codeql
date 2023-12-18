@@ -36,6 +36,7 @@ import { unzipToDirectory } from "../../src/common/unzip";
 
 const _1MB = 1024 * 1024;
 const _10MB = _1MB * 10;
+const _100MB = _10MB * 10;
 
 // CLI version to test. Use the latest supported version by default.
 // And be sure to update the env if it is not otherwise set.
@@ -88,36 +89,7 @@ export async function ensureCli(useCli: boolean) {
         `CLI version ${CLI_VERSION} zip file not found. Downloading from '${url}' into '${downloadedFilePath}'.`,
       );
 
-      const assetStream = await fetch(url);
-      const contentLength = Number(
-        assetStream.headers.get("content-length") || 0,
-      );
-      console.log("Total content size", Math.round(contentLength / _1MB), "MB");
-      const archiveFile = createWriteStream(downloadedFilePath);
-      const body = assetStream.body;
-      await new Promise<void>((resolve, reject) => {
-        let numBytesDownloaded = 0;
-        let lastMessage = 0;
-        body.on("data", (data) => {
-          numBytesDownloaded += data.length;
-          if (numBytesDownloaded - lastMessage > _10MB) {
-            console.log(
-              "Downloaded",
-              Math.round(numBytesDownloaded / _1MB),
-              "MB",
-            );
-            lastMessage = numBytesDownloaded;
-          }
-          archiveFile.write(data);
-        });
-        body.on("finish", () => {
-          archiveFile.end(() => {
-            console.log("Finished download into", downloadedFilePath);
-            resolve();
-          });
-        });
-        body.on("error", reject);
-      });
+      await downloadWithProgress(url, downloadedFilePath);
     } else {
       console.log(
         `CLI version ${CLI_VERSION} zip file found at '${downloadedFilePath}'.`,
@@ -126,13 +98,69 @@ export async function ensureCli(useCli: boolean) {
 
     console.log(`Unzipping into '${unzipDir}'`);
     mkdirpSync(unzipDir);
-    await unzipToDirectory(downloadedFilePath, unzipDir);
+    await unzipWithProgress(downloadedFilePath, unzipDir);
     console.log("Done.");
   } catch (e) {
     console.error("Failed to download CLI.");
     console.error(e);
     process.exit(-1);
   }
+}
+
+async function downloadWithProgress(
+  url: string,
+  filePath: string,
+): Promise<void> {
+  const assetStream = await fetch(url);
+  const contentLength = Number(assetStream.headers.get("content-length") || 0);
+  console.log("Total content size", Math.round(contentLength / _1MB), "MB");
+  const archiveFile = createWriteStream(filePath);
+  const body = assetStream.body;
+  await new Promise<void>((resolve, reject) => {
+    let numBytesDownloaded = 0;
+    let lastMessage = 0;
+    body.on("data", (data) => {
+      numBytesDownloaded += data.length;
+      if (numBytesDownloaded - lastMessage > _10MB) {
+        console.log("Downloaded", Math.round(numBytesDownloaded / _1MB), "MB");
+        lastMessage = numBytesDownloaded;
+      }
+      archiveFile.write(data);
+    });
+    body.on("finish", () => {
+      archiveFile.end(() => {
+        console.log("Finished download into", filePath);
+        resolve();
+      });
+    });
+    body.on("error", reject);
+  });
+}
+
+async function unzipWithProgress(
+  filePath: string,
+  unzipDir: string,
+): Promise<void> {
+  let lastMessage = 0;
+
+  await unzipToDirectory(
+    filePath,
+    unzipDir,
+    ({ bytesExtracted, totalBytes }) => {
+      if (bytesExtracted - lastMessage > _100MB) {
+        console.log(
+          "Extracted",
+          Math.round(bytesExtracted / _1MB),
+          "MB/",
+          Math.round(totalBytes / _1MB),
+          "MB",
+        );
+        lastMessage = bytesExtracted;
+      }
+    },
+  );
+
+  console.log("Finished unzipping into", unzipDir);
 }
 
 /**
