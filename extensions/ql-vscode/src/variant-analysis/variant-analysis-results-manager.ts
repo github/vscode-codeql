@@ -6,7 +6,7 @@ import { join } from "path";
 import { Logger } from "../common/logging";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../common/sarif-parser";
-import { unzipToDirectory } from "../common/unzip";
+import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { extractAnalysisAlerts } from "./sarif-processing";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extractRawResults } from "./bqrs-processing";
@@ -106,7 +106,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
 
-    await unzipToDirectory(zipFilePath, unzippedFilesDirectory);
+    await unzipToDirectoryConcurrently(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({
       variantAnalysisId,

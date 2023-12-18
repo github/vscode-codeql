@@ -6,7 +6,7 @@ import {
 } from "../../src/common/distribution";
 import fetch from "node-fetch";
 import supportedCliVersions from "../../supported_cli_versions.json";
-import { unzipToDirectory } from "../../src/common/unzip";
+import { unzipToDirectorySequential } from "../../src/common/unzip";
 
 /**
  * This module ensures that the proper CLI is available for tests of the extension.
@@ -143,7 +143,7 @@ async function unzipWithProgress(
 ): Promise<void> {
   let lastMessage = 0;
 
-  await unzipToDirectory(
+  await unzipToDirectorySequential(
     filePath,
     unzipDir,
     ({ bytesExtracted, totalBytes }) => {
@@ -151,7 +151,7 @@ async function unzipWithProgress(
         console.log(
           "Extracted",
           Math.round(bytesExtracted / _1MB),
-          "MB/",
+          "MB /",
           Math.round(totalBytes / _1MB),
           "MB",
         );

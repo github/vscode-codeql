@@ -1,10 +1,8 @@
 import { Entry as ZipEntry, open, Options as ZipOptions, ZipFile } from "yauzl";
 import { Readable } from "stream";
-import { availableParallelism } from "os";
 import { dirname, join } from "path";
 import { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
-import PQueue from "p-queue";
 
 // We can't use promisify because it picks up the wrong overload.
 export function openZip(
@@ -104,7 +102,7 @@ async function copyStream(
   });
 }
 
-type Progress = {
+export type Progress = {
   filesExtracted: number;
   totalFiles: number;
 
@@ -112,9 +110,61 @@ type Progress = {
   totalBytes: number;
 };
 
-type ProgressCallback = (progress: Progress) => void;
+export type ProgressCallback = (progress: Progress) => void;
 
-export async function unzipToDirectory(
+/**
+ * Unzips a single file from a zip archive.
+ *
+ * @param zipFile
+ * @param entry
+ * @param rootDestinationPath
+ * @return The number of bytes extracted.
+ */
+export async function unzipFile(
+  zipFile: ZipFile,
+  entry: ZipEntry,
+  rootDestinationPath: string,
+): Promise<number> {
+  const path = join(rootDestinationPath, entry.fileName);
+
+  if (/\/$/.test(entry.fileName)) {
+    // Directory file names end with '/'
+
+    await ensureDir(path);
+
+    return 0;
+  } else {
+    // Ensure the directory exists
+    await ensureDir(dirname(path));
+
+    const readable = await openZipReadStream(zipFile, entry);
+
+    let mode: number | undefined = entry.externalFileAttributes >>> 16;
+    if (mode <= 0) {
+      mode = undefined;
+    }
+
+    const writeStream = createWriteStream(path, {
+      autoClose: true,
+      mode,
+    });
+
+    await copyStream(readable, writeStream);
+
+    return entry.uncompressedSize;
+  }
+}
+
+/**
+ * Sequentially unzips all files from a zip archive. Please use
+ * `unzipToDirectoryConcurrently` if you can. This function is only
+ * provided because Jest cannot import `p-queue`.
+ *
+ * @param archivePath
+ * @param destinationPath
+ * @param progress
+ */
+export async function unzipToDirectorySequential(
   archivePath: string,
   destinationPath: string,
   progress?: ProgressCallback,
@@ -128,10 +178,6 @@ export async function unzipToDirectory(
   try {
     const entries = await readZipEntries(zipFile);
 
-    const queue = new PQueue({
-      concurrency: availableParallelism(),
-    });
-
     let filesExtracted = 0;
     const totalFiles = entries.length;
     let bytesExtracted = 0;
@@ -140,44 +186,23 @@ export async function unzipToDirectory(
       0,
     );
 
-    await queue.addAll(
-      entries.map((entry) => async () => {
-        const path = join(destinationPath, entry.fileName);
+    for (const entry of entries) {
+      const entryBytesExtracted = await unzipFile(
+        zipFile,
+        entry,
+        destinationPath,
+      );
 
-        if (/\/$/.test(entry.fileName)) {
-          // Directory file names end with '/'
+      bytesExtracted += entryBytesExtracted;
 
-          await ensureDir(path);
-        } else {
-          // Ensure the directory exists
-          await ensureDir(dirname(path));
-
-          const readable = await openZipReadStream(zipFile, entry);
-
-          let mode: number | undefined = entry.externalFileAttributes >>> 16;
-          if (mode <= 0) {
-            mode = undefined;
-          }
-
-          const writeStream = createWriteStream(path, {
-            autoClose: true,
-            mode,
-          });
-
-          await copyStream(readable, writeStream);
-
-          bytesExtracted += entry.uncompressedSize;
-        }
-
-        filesExtracted++;
-        progress?.({
-          filesExtracted,
-          totalFiles,
-          bytesExtracted,
-          totalBytes,
-        });
-      }),
-    );
+      filesExtracted++;
+      progress?.({
+        filesExtracted,
+        totalFiles,
+        bytesExtracted,
+        totalBytes,
+      });
+    }
   } finally {
     zipFile.close();
   }

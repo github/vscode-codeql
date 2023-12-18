@@ -20,7 +20,7 @@ import { spawnSync } from "child_process";
 import { basename, resolve } from "path";
 import { pathExists, readJSON } from "fs-extra";
 import { RawSourceMap, SourceMapConsumer } from "source-map";
-import { unzipToDirectory } from "../src/common/unzip";
+import { unzipToDirectoryConcurrently } from "../src/common/unzip-concurrently";
 
 if (process.argv.length !== 4) {
   console.error(
@@ -78,7 +78,7 @@ async function extractSourceMap() {
         releaseAssetsDirectory,
       ]);
 
-      await unzipToDirectory(
+      await unzipToDirectoryConcurrently(
         resolve(releaseAssetsDirectory, sourcemapAsset.name),
         sourceMapsDirectory,
       );
