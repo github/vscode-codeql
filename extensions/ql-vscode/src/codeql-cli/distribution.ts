@@ -15,7 +15,6 @@ import {
 import {
   codeQlLauncherName,
   deprecatedCodeQlLauncherName,
-  extractZipArchive,
   getRequiredAssetName,
 } from "../common/distribution";
 import {
@@ -26,6 +25,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
+import { unzipToDirectory } from "../common/unzip";
 
 /**
  * distribution.ts
@@ -420,7 +420,7 @@ class ExtensionSpecificDistributionManager {
       void extLogger.log(
         `Extracting CodeQL CLI to ${this.getDistributionStoragePath()}`,
       );
-      await extractZipArchive(archivePath, this.getDistributionStoragePath());
+      await unzipToDirectory(archivePath, this.getDistributionStoragePath());
     } finally {
       await remove(tmpDirectory);
     }
