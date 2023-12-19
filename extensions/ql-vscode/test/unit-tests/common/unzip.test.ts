@@ -1,12 +1,7 @@
 import { createHash } from "crypto";
+import { open } from "fs/promises";
 import { join, relative, resolve, sep } from "path";
-import {
-  createReadStream,
-  pathExists,
-  readdir,
-  readFile,
-  stat,
-} from "fs-extra";
+import { pathExists, readdir } from "fs-extra";
 import { dir, DirectoryResult } from "tmp-promise";
 import {
   excludeDirectories,
@@ -169,34 +164,26 @@ async function expectFile(
     contents?: string;
   },
 ) {
-  const stats = await stat(filePath);
+  const file = await open(filePath, "r");
+
+  const stats = await file.stat();
   expect(stats.mode).toEqual(expectedMode);
 
+  const contents = await file.readFile();
+
   if (expectedHash) {
-    const hash = await computeHash(filePath);
+    const hash = await computeHash(contents);
     expect(hash).toEqual(expectedHash);
   }
 
   if (expectedContents) {
-    const contents = await readFile(filePath);
     expect(contents.toString("utf-8")).toEqual(expectedContents);
   }
 }
 
-async function computeHash(filePath: string) {
-  const input = createReadStream(filePath);
+async function computeHash(contents: Buffer) {
   const hash = createHash("sha256");
-
-  input.pipe(hash);
-
-  await new Promise((resolve, reject) => {
-    input.on("error", (err) => {
-      reject(err);
-    });
-    input.on("end", () => {
-      resolve(undefined);
-    });
-  });
+  hash.update(contents);
 
   return hash.digest("hex");
 }
