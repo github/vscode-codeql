@@ -1,7 +1,13 @@
 import { pathExists } from "fs-extra";
-import * as unzipper from "unzipper";
+import { Entry as ZipEntry, ZipFile } from "yauzl";
 import * as vscode from "vscode";
 import { extLogger } from "../logging/vscode";
+import {
+  excludeDirectories,
+  openZip,
+  openZipBuffer,
+  readZipEntries,
+} from "../unzip";
 
 // All path operations in this file must be on paths *within* the zip
 // archive.
@@ -177,7 +183,8 @@ function ensureDir(map: DirectoryHierarchyMap, dir: string) {
 }
 
 type Archive = {
-  unzipped: unzipper.CentralDirectory;
+  zipFile: ZipFile;
+  entries: ZipEntry[];
   dirMap: DirectoryHierarchyMap;
 };
 
@@ -185,12 +192,22 @@ async function parse_zip(zipPath: string): Promise<Archive> {
   if (!(await pathExists(zipPath))) {
     throw vscode.FileSystemError.FileNotFound(zipPath);
   }
+  const zipFile = await openZip(zipPath, {
+    lazyEntries: true,
+    autoClose: false,
+    strictFileNames: true,
+  });
+
+  const entries = excludeDirectories(await readZipEntries(zipFile));
+
   const archive: Archive = {
-    unzipped: await unzipper.Open.file(zipPath),
+    zipFile,
+    entries,
     dirMap: new Map(),
   };
-  archive.unzipped.files.forEach((f) => {
-    ensureFile(archive.dirMap, path.resolve("/", f.path));
+
+  entries.forEach((f) => {
+    ensureFile(archive.dirMap, path.resolve("/", f.fileName));
   });
   return archive;
 }
@@ -276,22 +293,16 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     // use '/' as path separator throughout
     const reqPath = ref.pathWithinSourceArchive;
 
-    const file = archive.unzipped.files.find((f) => {
-      const absolutePath = path.resolve("/", f.path);
+    const file = archive.entries.find((f) => {
+      const absolutePath = path.resolve("/", f.fileName);
       return (
         absolutePath === reqPath ||
         absolutePath === path.join("/src_archive", reqPath)
       );
     });
     if (file !== undefined) {
-      if (file.type === "File") {
-        return new File(reqPath, await file.buffer());
-      } else {
-        // file.type === 'Directory'
-        // I haven't observed this case in practice. Could it happen
-        // with a zip file that contains empty directories?
-        return new Directory(reqPath);
-      }
+      const buffer = await openZipBuffer(archive.zipFile, file);
+      return new File(reqPath, buffer);
     }
     if (archive.dirMap.has(reqPath)) {
       return new Directory(reqPath);
