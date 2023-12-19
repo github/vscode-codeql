@@ -1,5 +1,5 @@
 import { Entry as ZipEntry, open, Options as ZipOptions, ZipFile } from "yauzl";
-import { Readable } from "stream";
+import { Readable, Transform } from "stream";
 import { dirname, join } from "path";
 import { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
@@ -84,6 +84,7 @@ export async function openZipBuffer(
 async function copyStream(
   readable: Readable,
   writeStream: WriteStream,
+  bytesExtractedCallback?: (bytesExtracted: number) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     readable.on("error", (err) => {
@@ -93,7 +94,17 @@ async function copyStream(
       resolve();
     });
 
-    readable.pipe(writeStream);
+    readable
+      .pipe(
+        new Transform({
+          transform(chunk, _encoding, callback) {
+            bytesExtractedCallback?.(chunk.length);
+            this.push(chunk);
+            callback();
+          },
+        }),
+      )
+      .pipe(writeStream);
   });
 }
 
@@ -113,12 +124,14 @@ export type UnzipProgressCallback = (progress: UnzipProgress) => void;
  * @param zipFile
  * @param entry
  * @param rootDestinationPath
+ * @param bytesExtractedCallback Called when bytes are extracted.
  * @return The number of bytes extracted.
  */
 async function unzipFile(
   zipFile: ZipFile,
   entry: ZipEntry,
   rootDestinationPath: string,
+  bytesExtractedCallback?: (bytesExtracted: number) => void,
 ): Promise<number> {
   const path = join(rootDestinationPath, entry.fileName);
 
@@ -144,7 +157,7 @@ async function unzipFile(
       mode,
     });
 
-    await copyStream(readable, writeStream);
+    await copyStream(readable, writeStream, bytesExtractedCallback);
 
     return entry.uncompressedSize;
   }
@@ -194,13 +207,21 @@ export async function unzipToDirectory(
 
     await taskRunner(
       entries.map((entry) => async () => {
+        let entryBytesExtracted = 0;
+
         const totalEntryBytesExtracted = await unzipFile(
           zipFile,
           entry,
           destinationPath,
+          (thisBytesExtracted) => {
+            entryBytesExtracted += thisBytesExtracted;
+            bytesExtracted += thisBytesExtracted;
+            reportProgress();
+          },
         );
 
-        bytesExtracted += totalEntryBytesExtracted;
+        // Should be 0, but just in case.
+        bytesExtracted += -entryBytesExtracted + totalEntryBytesExtracted;
 
         filesExtracted++;
         reportProgress();
