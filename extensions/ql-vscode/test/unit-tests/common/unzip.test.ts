@@ -166,8 +166,11 @@ async function expectFile(
 ) {
   const file = await open(filePath, "r");
 
-  const stats = await file.stat();
-  expect(stats.mode).toEqual(expectedMode);
+  // Windows doesn't really support file modes
+  if (process.platform !== "win32") {
+    const stats = await file.stat();
+    expect(stats.mode).toEqual(expectedMode);
+  }
 
   const contents = await file.readFile();
 
