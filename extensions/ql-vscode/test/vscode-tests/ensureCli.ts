@@ -88,36 +88,7 @@ export async function ensureCli(useCli: boolean) {
         `CLI version ${CLI_VERSION} zip file not found. Downloading from '${url}' into '${downloadedFilePath}'.`,
       );
 
-      const assetStream = await fetch(url);
-      const contentLength = Number(
-        assetStream.headers.get("content-length") || 0,
-      );
-      console.log("Total content size", Math.round(contentLength / _1MB), "MB");
-      const archiveFile = createWriteStream(downloadedFilePath);
-      const body = assetStream.body;
-      await new Promise<void>((resolve, reject) => {
-        let numBytesDownloaded = 0;
-        let lastMessage = 0;
-        body.on("data", (data) => {
-          numBytesDownloaded += data.length;
-          if (numBytesDownloaded - lastMessage > _10MB) {
-            console.log(
-              "Downloaded",
-              Math.round(numBytesDownloaded / _1MB),
-              "MB",
-            );
-            lastMessage = numBytesDownloaded;
-          }
-          archiveFile.write(data);
-        });
-        body.on("finish", () => {
-          archiveFile.end(() => {
-            console.log("Finished download into", downloadedFilePath);
-            resolve();
-          });
-        });
-        body.on("error", reject);
-      });
+      await downloadWithProgress(url, downloadedFilePath);
     } else {
       console.log(
         `CLI version ${CLI_VERSION} zip file found at '${downloadedFilePath}'.`,
@@ -133,6 +104,33 @@ export async function ensureCli(useCli: boolean) {
     console.error(e);
     process.exit(-1);
   }
+}
+
+async function downloadWithProgress(url: string, filePath: string) {
+  const assetStream = await fetch(url);
+  const contentLength = Number(assetStream.headers.get("content-length") || 0);
+  console.log("Total content size", Math.round(contentLength / _1MB), "MB");
+  const archiveFile = createWriteStream(filePath);
+  const body = assetStream.body;
+  await new Promise<void>((resolve, reject) => {
+    let numBytesDownloaded = 0;
+    let lastMessage = 0;
+    body.on("data", (data) => {
+      numBytesDownloaded += data.length;
+      if (numBytesDownloaded - lastMessage > _10MB) {
+        console.log("Downloaded", Math.round(numBytesDownloaded / _1MB), "MB");
+        lastMessage = numBytesDownloaded;
+      }
+      archiveFile.write(data);
+    });
+    body.on("finish", () => {
+      archiveFile.end(() => {
+        console.log("Finished download into", filePath);
+        resolve();
+      });
+    });
+    body.on("error", reject);
+  });
 }
 
 /**
