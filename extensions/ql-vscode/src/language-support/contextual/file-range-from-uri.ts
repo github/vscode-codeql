@@ -1,11 +1,14 @@
 import * as vscode from "vscode";
 
-import { UrlValue, LineColumnLocation } from "../../common/bqrs-cli-types";
+import {
+  BqrsUrlValue,
+  BqrsLineColumnLocation,
+} from "../../common/bqrs-cli-types";
 import { isEmptyPath } from "../../common/bqrs-utils";
 import { DatabaseItem } from "../../databases/local-databases";
 
 export function fileRangeFromURI(
-  uri: UrlValue | undefined,
+  uri: BqrsUrlValue | undefined,
   db: DatabaseItem,
 ): vscode.Location | undefined {
   if (!uri || typeof uri === "string") {
@@ -13,7 +16,7 @@ export function fileRangeFromURI(
   } else if ("startOffset" in uri) {
     return undefined;
   } else {
-    const loc = uri as LineColumnLocation;
+    const loc = uri as BqrsLineColumnLocation;
     if (isEmptyPath(loc.uri)) {
       return undefined;
     }

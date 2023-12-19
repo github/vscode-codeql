@@ -2,13 +2,14 @@ import { CodeQLCliServer } from "../../codeql-cli/cli";
 import {
   DecodedBqrsChunk,
   BqrsId,
-  EntityValue,
+  BqrsEntityValue,
 } from "../../common/bqrs-cli-types";
 import { DatabaseItem } from "../../databases/local-databases";
 import { ChildAstItem, AstItem } from "./ast-viewer";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { fileRangeFromURI } from "../contextual/file-range-from-uri";
+import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
 
 /**
  * A class that wraps a tree of QL results from a query that
@@ -55,8 +56,8 @@ export class AstBuilder {
     // Build up the parent-child relationships
     edgeTuples.tuples.forEach((tuple) => {
       const [source, target, tupleType, value] = tuple as [
-        EntityValue,
-        EntityValue,
+        BqrsEntityValue,
+        BqrsEntityValue,
         string,
         string,
       ];
@@ -90,7 +91,11 @@ export class AstBuilder {
 
     // populate parents and children
     nodeTuples.tuples.forEach((tuple) => {
-      const [entity, tupleType, value] = tuple as [EntityValue, string, string];
+      const [entity, tupleType, value] = tuple as [
+        BqrsEntityValue,
+        string,
+        string,
+      ];
       const id = entity.id!;
 
       switch (tupleType) {
@@ -106,7 +111,7 @@ export class AstBuilder {
           const item = {
             id,
             label,
-            location: entity.url,
+            location: entity.url ? mapUrlValue(entity.url) : undefined,
             fileLocation: fileRangeFromURI(entity.url, this.db),
             children: [] as ChildAstItem[],
             order: Number.MAX_SAFE_INTEGER,

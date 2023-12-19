@@ -9,7 +9,7 @@ interface Props {
 function getResultCount(resultSet: ResultSet): number {
   switch (resultSet.t) {
     case "RawResultSet":
-      return resultSet.schema.rows;
+      return resultSet.resultSet.totalRowCount;
     case "InterpretedResultSet":
       return resultSet.interpretation.numTotalResults;
   }

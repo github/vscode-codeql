@@ -239,8 +239,8 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     const state = event.pass
       ? "passed"
       : event.messages?.length
-      ? "errored"
-      : "failed";
+        ? "errored"
+        : "failed";
     let message: string | undefined;
     if (event.failureDescription || event.diff?.length) {
       message =

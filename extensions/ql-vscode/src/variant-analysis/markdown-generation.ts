@@ -1,4 +1,3 @@
-import { CellValue } from "../common/bqrs-cli-types";
 import { tryGetRemoteLocation } from "../common/bqrs-utils";
 import { createRemoteFileRef } from "../common/location-link-utils";
 import {
@@ -19,6 +18,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
 import type { RepositoryWithMetadata } from "./shared/repository";
+import { CellValue } from "../common/raw-result-types";
 
 type MarkdownLinkType = "local" | "gist";
 
@@ -298,9 +298,9 @@ function generateMarkdownForRawResults(
   analysisRawResults: AnalysisRawResults,
 ): string[] {
   const tableRows: string[] = [];
-  const columnCount = analysisRawResults.schema.columns.length;
+  const columnCount = analysisRawResults.resultSet.columns.length;
   // Table headers are the column names if they exist, and empty otherwise
-  const headers = analysisRawResults.schema.columns.map(
+  const headers = analysisRawResults.resultSet.columns.map(
     (column) => column.name || "",
   );
   const tableHeader = `| ${headers.join(" | ")} |`;
@@ -327,23 +327,25 @@ function generateMarkdownForRawTableCell(
   sourceLocationPrefix: string,
 ) {
   let cellValue: string;
-  switch (typeof value) {
+  switch (value.type) {
     case "string":
     case "number":
     case "boolean":
-      cellValue = `\`${convertNonPrintableChars(value.toString())}\``;
+      cellValue = `\`${convertNonPrintableChars(value.value.toString())}\``;
       break;
-    case "object":
+    case "entity":
       {
         const url = tryGetRemoteLocation(
-          value.url,
+          value.value.url,
           fileLinkPrefix,
           sourceLocationPrefix,
         );
         if (url) {
-          cellValue = `[\`${convertNonPrintableChars(value.label)}\`](${url})`;
+          cellValue = `[\`${convertNonPrintableChars(
+            value.value.label,
+          )}\`](${url})`;
         } else {
-          cellValue = `\`${convertNonPrintableChars(value.label)}\``;
+          cellValue = `\`${convertNonPrintableChars(value.value.label)}\``;
         }
       }
       break;

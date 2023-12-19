@@ -1,11 +1,11 @@
 import * as React from "react";
-import { ResultRow } from "../../common/bqrs-cli-types";
 import { selectedRowClassName, zebraStripe } from "./result-table-utils";
 import RawTableValue from "./RawTableValue";
+import { Row } from "../../common/raw-result-types";
 
 interface Props {
   rowIndex: number;
-  row: ResultRow;
+  row: Row;
   databaseUri: string;
   className?: string;
   selectedColumn?: number;

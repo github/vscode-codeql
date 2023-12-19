@@ -19,7 +19,7 @@ import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "./language-support";
 import { DatabaseManager } from "./databases/local-databases";
-import { DecodedBqrsChunk, EntityValue } from "./common/bqrs-cli-types";
+import { DecodedBqrsChunk, BqrsEntityValue } from "./common/bqrs-cli-types";
 import { BaseLogger, showAndLogWarningMessage } from "./common/logging";
 import { extLogger } from "./common/logging/vscode";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
@@ -287,7 +287,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
                   typeof v === "string" ? v.replaceAll('"', '""') : v
                 }"`;
               } else if (chunk.columns[i].kind === "Entity") {
-                return (v as EntityValue).label;
+                return (v as BqrsEntityValue).label;
               } else {
                 return v;
               }

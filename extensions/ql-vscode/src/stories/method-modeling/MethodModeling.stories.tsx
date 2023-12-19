@@ -47,26 +47,16 @@ MethodSaved.args = {
   modelingStatus: "saved",
 };
 
-export const MultipleModelingsUnmodeled = Template.bind({});
-MultipleModelingsUnmodeled.args = {
-  language,
-  method,
-  modeledMethods: [],
-  modelingStatus: "saved",
-  showMultipleModels: true,
-};
-
-export const MultipleModelingsModeledSingle = Template.bind({});
-MultipleModelingsModeledSingle.args = {
+export const ModeledSingle = Template.bind({});
+ModeledSingle.args = {
   language,
   method,
   modeledMethods: [createSinkModeledMethod(method)],
   modelingStatus: "saved",
-  showMultipleModels: true,
 };
 
-export const MultipleModelingsModeledMultiple = Template.bind({});
-MultipleModelingsModeledMultiple.args = {
+export const ModeledMultiple = Template.bind({});
+ModeledMultiple.args = {
   language,
   method,
   modeledMethods: [
@@ -79,11 +69,10 @@ MultipleModelingsModeledMultiple.args = {
     }),
   ],
   modelingStatus: "saved",
-  showMultipleModels: true,
 };
 
-export const MultipleModelingsValidationFailedNeutral = Template.bind({});
-MultipleModelingsValidationFailedNeutral.args = {
+export const ValidationFailedNeutral = Template.bind({});
+ValidationFailedNeutral.args = {
   language,
   method,
   modeledMethods: [
@@ -91,11 +80,10 @@ MultipleModelingsValidationFailedNeutral.args = {
     createNeutralModeledMethod(method),
   ],
   modelingStatus: "unsaved",
-  showMultipleModels: true,
 };
 
-export const MultipleModelingsValidationFailedDuplicate = Template.bind({});
-MultipleModelingsValidationFailedDuplicate.args = {
+export const ValidationFailedDuplicate = Template.bind({});
+ValidationFailedDuplicate.args = {
   language,
   method,
   modeledMethods: [
@@ -108,5 +96,4 @@ MultipleModelingsValidationFailedDuplicate.args = {
     createSinkModeledMethod(method),
   ],
   modelingStatus: "unsaved",
-  showMultipleModels: true,
 };

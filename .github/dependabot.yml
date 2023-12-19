@@ -7,9 +7,6 @@ updates:
       day: "thursday" # Thursday is arbitrary
     labels:
       - "Update dependencies"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -17,6 +14,3 @@ updates:
       day: "thursday" # Thursday is arbitrary
     labels:
       - "Update dependencies"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]

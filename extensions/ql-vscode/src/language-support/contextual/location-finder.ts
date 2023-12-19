@@ -3,10 +3,9 @@ import {
   encodeArchiveBasePath,
 } from "../../common/vscode/archive-filesystem-provider";
 import {
-  ColumnKindCode,
-  EntityValue,
-  getResultSetSchema,
-  ResultSetSchema,
+  BqrsColumnKindCode,
+  BqrsEntityValue,
+  BqrsResultSetSchema,
 } from "../../common/bqrs-cli-types";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseItem, DatabaseManager } from "../../databases/local-databases";
@@ -99,12 +98,14 @@ async function getLinksFromResults(
   const localLinks: FullLocationLink[] = [];
   const bqrsPath = outputDir.bqrsPath;
   const info = await cli.bqrsInfo(bqrsPath);
-  const selectInfo = getResultSetSchema(SELECT_QUERY_NAME, info);
+  const selectInfo = info["result-sets"].find(
+    (schema) => schema.name === SELECT_QUERY_NAME,
+  );
   if (isValidSelect(selectInfo)) {
     // TODO: Page this
     const allTuples = await cli.bqrsDecode(bqrsPath, SELECT_QUERY_NAME);
     for (const tuple of allTuples.tuples) {
-      const [src, dest] = tuple as [EntityValue, EntityValue];
+      const [src, dest] = tuple as [BqrsEntityValue, BqrsEntityValue];
       const srcFile = src.url && fileRangeFromURI(src.url, db);
       const destFile = dest.url && fileRangeFromURI(dest.url, db);
       if (
@@ -130,12 +131,12 @@ function createTemplates(path: string): Record<string, string> {
   };
 }
 
-function isValidSelect(selectInfo: ResultSetSchema | undefined) {
+function isValidSelect(selectInfo: BqrsResultSetSchema | undefined) {
   return (
     selectInfo &&
     selectInfo.columns.length === 3 &&
-    selectInfo.columns[0].kind === ColumnKindCode.ENTITY &&
-    selectInfo.columns[1].kind === ColumnKindCode.ENTITY &&
-    selectInfo.columns[2].kind === ColumnKindCode.STRING
+    selectInfo.columns[0].kind === BqrsColumnKindCode.ENTITY &&
+    selectInfo.columns[1].kind === BqrsColumnKindCode.ENTITY &&
+    selectInfo.columns[2].kind === BqrsColumnKindCode.STRING
   );
 }

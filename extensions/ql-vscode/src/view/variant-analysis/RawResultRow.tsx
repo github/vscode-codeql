@@ -1,7 +1,7 @@
 import * as React from "react";
 import { styled } from "styled-components";
 
-import { CellValue } from "../../common/bqrs-cli-types";
+import { Row } from "../../common/raw-result-types";
 import { RawResultCell } from "./RawResultCell";
 
 const StyledRow = styled.div`
@@ -14,7 +14,7 @@ const StyledRow = styled.div`
 `;
 
 type RowProps = {
-  row: CellValue[];
+  row: Row;
   fileLinkPrefix: string;
   sourceLocationPrefix: string;
 };

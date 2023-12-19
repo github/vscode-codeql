@@ -11,7 +11,6 @@ export function createMockModelEditorViewState(
     mode: Mode.Application,
     showGenerateButton: false,
     showLlmButton: false,
-    showMultipleModels: false,
     showModeSwitchButton: true,
     extensionPack: createMockExtensionPack(),
     sourceArchiveAvailable: true,

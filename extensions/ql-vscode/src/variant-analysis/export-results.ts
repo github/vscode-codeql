@@ -45,9 +45,8 @@ export async function exportVariantAnalysisResults(
 ): Promise<void> {
   await withProgress(
     async (progress: ProgressCallback, token: CancellationToken) => {
-      const variantAnalysis = await variantAnalysisManager.getVariantAnalysis(
-        variantAnalysisId,
-      );
+      const variantAnalysis =
+        await variantAnalysisManager.getVariantAnalysis(variantAnalysisId);
       if (!variantAnalysis) {
         void extLogger.log(
           `Could not find variant analysis with id ${variantAnalysisId}`,
@@ -61,9 +60,8 @@ export async function exportVariantAnalysisResults(
         throw new UserCancellationException("Cancelled");
       }
 
-      const repoStates = await variantAnalysisManager.getRepoStates(
-        variantAnalysisId,
-      );
+      const repoStates =
+        await variantAnalysisManager.getRepoStates(variantAnalysisId);
 
       void extLogger.log(
         `Exporting variant analysis results for variant analysis with id ${variantAnalysis.id}`,

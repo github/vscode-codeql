@@ -424,9 +424,8 @@ export class DatabaseManager extends DisposableObject {
             step: ++step,
           });
 
-          const databaseItem = await this.createDatabaseItemFromPersistedState(
-            database,
-          );
+          const databaseItem =
+            await this.createDatabaseItemFromPersistedState(database);
           try {
             await this.refreshDatabase(databaseItem);
             await this.registerDatabase(databaseItem);

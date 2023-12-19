@@ -162,8 +162,8 @@ export class ExtensionTelemetryListener
     const status = !error
       ? CommandCompletion.Success
       : error instanceof UserCancellationException
-      ? CommandCompletion.Cancelled
-      : CommandCompletion.Failed;
+        ? CommandCompletion.Cancelled
+        : CommandCompletion.Failed;
 
     this.reporter.sendTelemetryEvent(
       "command-usage",

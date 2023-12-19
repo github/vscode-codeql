@@ -1,7 +1,6 @@
-import { RawResultSet, ResultSetSchema } from "../../common/bqrs-cli-types";
+import { RawResultSet } from "../../common/raw-result-types";
 
 export interface AnalysisRawResults {
-  schema: ResultSetSchema;
   resultSet: RawResultSet;
   fileLinkPrefix: string;
   sourceLocationPrefix: string;

@@ -181,14 +181,23 @@ function createDataExtensionYamlsByGrouping(
   >,
   createFilename: (method: Method) => string,
 ): Record<string, string> {
-  const methodsByFilename: Record<string, Record<string, ModeledMethod[]>> = {};
+  const actualFilenameByCanonicalFilename: Record<string, string> = {};
+
+  const methodsByCanonicalFilename: Record<
+    string,
+    Record<string, ModeledMethod[]>
+  > = {};
 
   // We only want to generate a yaml file when it's a known external API usage
   // and there are new modeled methods for it. This avoids us overwriting other
   // files that may contain data we don't know about.
   for (const method of methods) {
     if (method.signature in newModeledMethods) {
-      methodsByFilename[createFilename(method)] = {};
+      const filename = createFilename(method);
+      const canonicalFilename = canonicalizeFilename(filename);
+
+      methodsByCanonicalFilename[canonicalFilename] = {};
+      actualFilenameByCanonicalFilename[canonicalFilename] = filename;
     }
   }
 
@@ -196,10 +205,16 @@ function createDataExtensionYamlsByGrouping(
   for (const [filename, methodsBySignature] of Object.entries(
     existingModeledMethods,
   )) {
-    if (filename in methodsByFilename) {
+    const canonicalFilename = canonicalizeFilename(filename);
+
+    if (canonicalFilename in methodsByCanonicalFilename) {
       for (const [signature, methods] of Object.entries(methodsBySignature)) {
-        methodsByFilename[filename][signature] = [...methods];
+        methodsByCanonicalFilename[canonicalFilename][signature] = [...methods];
       }
+
+      // Ensure that if a file exists on disk, we use the same capitalization
+      // as the original file.
+      actualFilenameByCanonicalFilename[canonicalFilename] = filename;
     }
   }
 
@@ -209,19 +224,25 @@ function createDataExtensionYamlsByGrouping(
     const newMethods = newModeledMethods[method.signature];
     if (newMethods) {
       const filename = createFilename(method);
+      const canonicalFilename = canonicalizeFilename(filename);
 
       // Override any existing modeled methods with the new ones.
-      methodsByFilename[filename][method.signature] = [...newMethods];
+      methodsByCanonicalFilename[canonicalFilename][method.signature] = [
+        ...newMethods,
+      ];
     }
   }
 
   const result: Record<string, string> = {};
 
-  for (const [filename, methods] of Object.entries(methodsByFilename)) {
-    result[filename] = createDataExtensionYaml(
-      language,
-      Object.values(methods).flatMap((methods) => methods),
-    );
+  for (const [canonicalFilename, methods] of Object.entries(
+    methodsByCanonicalFilename,
+  )) {
+    result[actualFilenameByCanonicalFilename[canonicalFilename]] =
+      createDataExtensionYaml(
+        language,
+        Object.values(methods).flatMap((methods) => methods),
+      );
   }
 
   return result;
@@ -297,6 +318,13 @@ export function createFilenameForPackage(
   // We want to place these into `models/com.google.common.io.model.yml` and
   // `models/System.Net.Http.Headers.model.yml` respectively.
   return `${prefix}${packageName}${suffix}.yml`;
+}
+
+function canonicalizeFilename(filename: string) {
+  // We want to canonicalize filenames so that they are always in the same format
+  // for comparison purposes. This is important because we want to avoid overwriting
+  // data extension YAML files on case-insensitive file systems.
+  return filename.toLowerCase();
 }
 
 function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {

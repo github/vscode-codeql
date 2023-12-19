@@ -1,11 +1,10 @@
 {
   "extends": "../tsconfig.json",
   "include": ["**/*.ts", "../src/**/*.ts", "**/.eslintrc.js", "**/*.config.js"],
-  "exclude": [],
+  "exclude": ["../src/view/**/*.ts"],
   "compilerOptions": {
     "noEmit": true,
     "resolveJsonModule": true,
-    "rootDir": "..",
-    "jsx": "react"
+    "rootDir": ".."
   }
 }

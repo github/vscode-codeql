@@ -255,6 +255,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "println(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 29,
                   startColumn: 9,
@@ -280,6 +281,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "run(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/Sql2oExampleApplication.java",
                   startLine: 9,
                   startColumn: 9,
@@ -304,6 +306,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "createQuery(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 15,
                   startColumn: 13,
@@ -315,6 +318,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "createQuery(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 26,
                   startColumn: 13,
@@ -339,6 +343,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "executeScalar(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 15,
                   startColumn: 13,
@@ -350,6 +355,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "executeScalar(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 26,
                   startColumn: 13,
@@ -374,6 +380,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "open(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 14,
                   startColumn: 24,
@@ -385,6 +392,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "open(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 25,
                   startColumn: 24,
@@ -409,6 +417,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "new Sql2o(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 10,
                   startColumn: 33,
@@ -433,6 +442,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "new Sql2o(...)",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 23,
                   startColumn: 23,
@@ -519,6 +529,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "connect",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 22,
                   startColumn: 19,
@@ -543,6 +554,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "index",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
                   startLine: 13,
                   startColumn: 19,
@@ -617,6 +629,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "call to method GetMethodInfo",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/bulk-builder/bulk-builder/src/Moq/ActionObserver.cs",
                   startLine: 74,
                   startColumn: 40,
@@ -684,6 +697,7 @@ describe("decodeBqrsToMethods", () => {
               {
                 label: "Validate",
                 url: {
+                  type: "lineColumnLocation",
                   uri: "file:/home/runner/work/bulk-builder/bulk-builder/src/Moq/Times.cs",
                   startLine: 369,
                   startColumn: 21,

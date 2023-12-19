@@ -1,6 +1,5 @@
 import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
-import { Open } from "unzipper";
 import { Uri, window, InputBoxOptions } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
@@ -46,7 +45,7 @@ export async function promptImportInternetDatabase(
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
   const databaseUrl = await window.showInputBox({
     prompt: "Enter URL of zipfile of database to download",
@@ -101,7 +100,7 @@ export async function promptImportGithubDatabase(
   storagePath: string,
   credentials: Credentials | undefined,
   progress: ProgressCallback,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
   language?: string,
   makeSelected = true,
   addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
@@ -180,7 +179,7 @@ export async function downloadGitHubDatabase(
   storagePath: string,
   credentials: Credentials | undefined,
   progress: ProgressCallback,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
   language?: string,
   makeSelected = true,
   addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
@@ -235,7 +234,7 @@ export async function downloadGitHubDatabaseFromUrl(
   progress: ProgressCallback,
   databaseManager: DatabaseManager,
   storagePath: string,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
   makeSelected = true,
   addSourceArchiveFolder = true,
 ): Promise<DatabaseItem | undefined> {
@@ -279,6 +278,7 @@ export async function downloadGitHubDatabaseFromUrl(
  * @param databaseUrl the file url of the archive to import
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
+ * @param cli the CodeQL CLI server
  */
 export async function importArchiveDatabase(
   commandManager: AppCommandManager,
@@ -286,7 +286,7 @@ export async function importArchiveDatabase(
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
   try {
     const item = await databaseArchiveFetcher(
@@ -333,6 +333,7 @@ export async function importArchiveDatabase(
  * @param nameOverride a name for the database that overrides the default
  * @param origin the origin of the database
  * @param progress callback to send progress messages to
+ * @param cli the CodeQL CLI server
  * @param makeSelected make the new database selected in the databases panel (default: true)
  * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
  */
@@ -344,7 +345,7 @@ async function databaseArchiveFetcher(
   nameOverride: string | undefined,
   origin: DatabaseOrigin,
   progress: ProgressCallback,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
   makeSelected = true,
   addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
 ): Promise<DatabaseItem> {
@@ -443,34 +444,24 @@ function validateUrl(databaseUrl: string) {
 async function readAndUnzip(
   zipUrl: string,
   unzipPath: string,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
   progress?: ProgressCallback,
 ) {
-  // TODO: Providing progress as the file is unzipped is currently blocked
-  // on https://github.com/ZJONSSON/node-unzipper/issues/222
   const zipFile = Uri.parse(zipUrl).fsPath;
   progress?.({
     maxStep: 10,
     step: 9,
     message: `Unzipping into ${basename(unzipPath)}`,
   });
-  if (cli) {
-    // Use the `database unbundle` command if the installed cli version supports it
-    await cli.databaseUnbundle(zipFile, unzipPath);
-  } else {
-    // Must get the zip central directory since streaming the
-    // zip contents may not have correct local file headers.
-    // Instead, we can only rely on the central directory.
-    const directory = await Open.file(zipFile);
-    await directory.extract({ path: unzipPath });
-  }
+
+  await cli.databaseUnbundle(zipFile, unzipPath);
 }
 
 async function fetchAndUnzip(
   databaseUrl: string,
   requestHeaders: { [key: string]: string },
   unzipPath: string,
-  cli?: CodeQLCliServer,
+  cli: CodeQLCliServer,
   progress?: ProgressCallback,
 ) {
   // Although it is possible to download and stream directly to an unzipped directory,

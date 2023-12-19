@@ -1,34 +1,34 @@
 import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
-import {
-  className,
-  ResultTableProps,
-  jumpToLocation,
-} from "./result-table-utils";
+import { className, jumpToLocation } from "./result-table-utils";
 import { onNavigation } from "./ResultsApp";
-import {
-  InterpretedResultSet,
-  NavigateMsg,
-  NavigationDirection,
-  SarifInterpretationData,
-} from "../../common/interface-types";
+import { NavigateMsg, NavigationDirection } from "../../common/interface-types";
 import { parseSarifLocation, isNoLocation } from "../../common/sarif-utils";
 import { sendTelemetry } from "../common/telemetry";
-import { AlertTableHeader } from "./AlertTableHeader";
-import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTableResultRow } from "./AlertTableResultRow";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useScrollIntoView } from "./useScrollIntoView";
 
-type AlertTableProps = ResultTableProps & {
-  resultSet: InterpretedResultSet<SarifInterpretationData>;
+type Props = {
+  results: Sarif.Result[];
+  databaseUri: string;
+  sourceLocationPrefix: string;
+  numTruncatedResults?: number;
+
+  header: ReactNode;
+  noResults?: ReactNode;
 };
 
-export function AlertTable(props: AlertTableProps) {
-  const { databaseUri, resultSet } = props;
-
+export function AlertTable({
+  results,
+  databaseUri,
+  sourceLocationPrefix,
+  numTruncatedResults,
+  header,
+  noResults,
+}: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set<string>());
   const [selectedItem, setSelectedItem] = useState<Keys.ResultKey | undefined>(
     undefined,
@@ -108,22 +108,21 @@ export function AlertTable(props: AlertTableProps) {
   const handleNavigationEvent = useCallback(
     (event: NavigateMsg) => {
       const key = getNewSelection(selectedItem, event.direction);
-      const data = resultSet.interpretation.data;
 
       // Check if the selected node actually exists (bounds check) and get its location if relevant
       let jumpLocation: Sarif.Location | undefined;
       if (key.pathNodeIndex !== undefined) {
-        jumpLocation = Keys.getPathNode(data, key);
+        jumpLocation = Keys.getPathNode(results, key);
         if (jumpLocation === undefined) {
           return; // Result does not exist
         }
       } else if (key.pathIndex !== undefined) {
-        if (Keys.getPath(data, key) === undefined) {
+        if (Keys.getPath(results, key) === undefined) {
           return; // Path does not exist
         }
         jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
       } else {
-        jumpLocation = Keys.getResult(data, key)?.locations?.[0];
+        jumpLocation = Keys.getResult(results, key)?.locations?.[0];
         if (jumpLocation === undefined) {
           return; // Path step does not exist.
         }
@@ -131,7 +130,7 @@ export function AlertTable(props: AlertTableProps) {
       if (jumpLocation !== undefined) {
         const parsedLocation = parseSarifLocation(
           jumpLocation,
-          resultSet.interpretation.sourceLocationPrefix,
+          sourceLocationPrefix,
         );
         if (!isNoLocation(parsedLocation)) {
           jumpToLocation(parsedLocation, databaseUri);
@@ -162,7 +161,7 @@ export function AlertTable(props: AlertTableProps) {
       setExpanded(newExpanded);
       setSelectedItem(key);
     },
-    [databaseUri, expanded, resultSet, selectedItem],
+    [databaseUri, expanded, results, sourceLocationPrefix, selectedItem],
   );
 
   useEffect(() => {
@@ -172,9 +171,6 @@ export function AlertTable(props: AlertTableProps) {
     };
   }, [handleNavigationEvent]);
 
-  const { numTruncatedResults, sourceLocationPrefix } =
-    resultSet.interpretation;
-
   const updateSelectionCallback = useCallback(
     (resultKey: Keys.PathNode | Keys.Result | undefined) => {
       setSelectedItem(resultKey);
@@ -183,31 +179,33 @@ export function AlertTable(props: AlertTableProps) {
     [],
   );
 
-  if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
-    return <AlertTableNoResults {...props} />;
+  if (!results?.length) {
+    return <>{noResults}</>;
   }
 
   return (
     <table className={className}>
-      <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
+      {header}
       <tbody>
-        {resultSet.interpretation.data.runs[0].results.map(
-          (result, resultIndex) => (
-            <AlertTableResultRow
-              key={resultIndex}
-              result={result}
-              resultIndex={resultIndex}
-              expanded={expanded}
-              selectedItem={selectedItem}
-              selectedItemRef={selectedItemRef}
-              databaseUri={databaseUri}
-              sourceLocationPrefix={sourceLocationPrefix}
-              updateSelectionCallback={updateSelectionCallback}
-              toggleExpanded={toggle}
-            />
-          ),
-        )}
-        <AlertTableTruncatedMessage numTruncatedResults={numTruncatedResults} />
+        {results.map((result, resultIndex) => (
+          <AlertTableResultRow
+            key={resultIndex}
+            result={result}
+            resultIndex={resultIndex}
+            expanded={expanded}
+            selectedItem={selectedItem}
+            selectedItemRef={selectedItemRef}
+            databaseUri={databaseUri}
+            sourceLocationPrefix={sourceLocationPrefix}
+            updateSelectionCallback={updateSelectionCallback}
+            toggleExpanded={toggle}
+          />
+        ))}
+        {numTruncatedResults ? (
+          <AlertTableTruncatedMessage
+            numTruncatedResults={numTruncatedResults}
+          />
+        ) : undefined}
       </tbody>
     </table>
   );

@@ -36,6 +36,7 @@ describe("database-fetcher", () => {
 
     const extension = await getActivatedExtension();
     databaseManager = extension.databaseManager;
+    cli = extension.cliServer;
 
     await cleanDatabases(databaseManager);
   });

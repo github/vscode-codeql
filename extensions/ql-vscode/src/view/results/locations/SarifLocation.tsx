@@ -1,6 +1,5 @@
 import * as React from "react";
 import * as Sarif from "sarif";
-import { isLineColumnLoc, isWholeFileLoc } from "../../../common/bqrs-utils";
 import { parseSarifLocation } from "../../../common/sarif-utils";
 import { basename } from "../../../common/path";
 import { useMemo } from "react";
@@ -35,7 +34,7 @@ export function SarifLocation({
     return <Location label={text || "[no location]"} title={parsedLoc?.hint} />;
   }
 
-  if (isWholeFileLoc(parsedLoc)) {
+  if (parsedLoc.type === "wholeFileLocation") {
     return (
       <Location
         loc={parsedLoc}
@@ -47,7 +46,7 @@ export function SarifLocation({
     );
   }
 
-  if (isLineColumnLoc(parsedLoc)) {
+  if (parsedLoc.type === "lineColumnLocation") {
     return (
       <Location
         loc={parsedLoc}

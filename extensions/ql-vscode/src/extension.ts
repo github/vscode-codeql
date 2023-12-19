@@ -542,8 +542,8 @@ async function installOrUpdateDistribution(
   const messageText = willUpdateCodeQl
     ? "Updating CodeQL CLI"
     : codeQlInstalled
-    ? "Checking for updates to CodeQL CLI"
-    : "Installing CodeQL CLI";
+      ? "Checking for updates to CodeQL CLI"
+      : "Installing CodeQL CLI";
 
   try {
     await installOrUpdateDistributionWithProgressTitle(
@@ -564,8 +564,8 @@ async function installOrUpdateDistribution(
       willUpdateCodeQl
         ? "update"
         : codeQlInstalled
-        ? "check for updates to"
-        : "install"
+          ? "check for updates to"
+          : "install"
     } CodeQL CLI`;
 
     if (e instanceof GithubRateLimitedError) {
@@ -1086,23 +1086,27 @@ async function activateWithInstalledDistribution(
   // Jump-to-definition and find-references
   void extLogger.log("Registering jump-to-definition handlers.");
 
-  languages.registerDefinitionProvider(
-    { scheme: zipArchiveScheme },
-    new TemplateQueryDefinitionProvider(
-      cliServer,
-      qs,
-      dbm,
-      contextualQueryStorageDir,
+  ctx.subscriptions.push(
+    languages.registerDefinitionProvider(
+      { scheme: zipArchiveScheme },
+      new TemplateQueryDefinitionProvider(
+        cliServer,
+        qs,
+        dbm,
+        contextualQueryStorageDir,
+      ),
     ),
   );
 
-  languages.registerReferenceProvider(
-    { scheme: zipArchiveScheme },
-    new TemplateQueryReferenceProvider(
-      cliServer,
-      qs,
-      dbm,
-      contextualQueryStorageDir,
+  ctx.subscriptions.push(
+    languages.registerReferenceProvider(
+      { scheme: zipArchiveScheme },
+      new TemplateQueryReferenceProvider(
+        cliServer,
+        qs,
+        dbm,
+        contextualQueryStorageDir,
+      ),
     ),
   );
 

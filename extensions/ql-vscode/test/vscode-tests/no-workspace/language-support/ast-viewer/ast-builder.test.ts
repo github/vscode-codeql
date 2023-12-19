@@ -85,6 +85,7 @@ describe("AstBuilder", () => {
       id: 26359,
       label: "params",
       location: {
+        type: "lineColumnLocation",
         endColumn: 22,
         endLine: 19,
         startColumn: 5,
@@ -115,6 +116,7 @@ describe("AstBuilder", () => {
       id: 26367,
       label: "body: [Block] { ... }",
       location: {
+        type: "lineColumnLocation",
         endColumn: 1,
         endLine: 22,
         startColumn: 1,
@@ -178,6 +180,7 @@ const expectedRoots = [
     label: "[TopLevelFunction] int disable_interrupts()",
     fileLocation: undefined,
     location: {
+      type: "lineColumnLocation",
       uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       startLine: 19,
       startColumn: 5,
@@ -192,6 +195,7 @@ const expectedRoots = [
     label: "[TopLevelFunction] void enable_interrupts()",
     fileLocation: undefined,
     location: {
+      type: "lineColumnLocation",
       uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       startLine: 15,
       startColumn: 6,
@@ -206,6 +210,7 @@ const expectedRoots = [
     label: "[TopLevelFunction] int interrupt_init()",
     fileLocation: undefined,
     location: {
+      type: "lineColumnLocation",
       uri: "file:/opt/src/arch/sandbox/lib/interrupts.c",
       startLine: 10,
       startColumn: 5,
