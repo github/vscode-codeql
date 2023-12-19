@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { join, relative, resolve } from "path";
+import { join, relative, resolve, sep } from "path";
 import {
   createReadStream,
   pathExists,
@@ -115,7 +115,9 @@ describe("unzipToDirectory", () => {
     }
 
     expect(
-      allFiles.map((filePath) => relative(tmpDir.path, filePath)).sort(),
+      allFiles
+        .map((filePath) => relative(tmpDir.path, filePath).split(sep).join("/"))
+        .sort(),
     ).toEqual([
       "directory",
       "directory/file.txt",
