@@ -109,7 +109,7 @@ async function copyStream(
  * @param entry
  * @param rootDestinationPath
  */
-export async function unzipFile(
+async function unzipFile(
   zipFile: ZipFile,
   entry: ZipEntry,
   rootDestinationPath: string,
@@ -141,6 +141,37 @@ export async function unzipFile(
 }
 
 /**
+ * Unzips all files from a zip archive. Please use
+ * `unzipToDirectoryConcurrently` or `unzipToDirectorySequentially` instead
+ * of this function.
+ *
+ * @param archivePath
+ * @param destinationPath
+ * @param taskRunner A function that runs the tasks (either sequentially or concurrently).
+ */
+export async function unzipToDirectory(
+  archivePath: string,
+  destinationPath: string,
+  taskRunner: (tasks: Array<() => Promise<void>>) => Promise<void>,
+): Promise<void> {
+  const zipFile = await openZip(archivePath, {
+    autoClose: false,
+    strictFileNames: true,
+    lazyEntries: true,
+  });
+
+  try {
+    const entries = await readZipEntries(zipFile);
+
+    await taskRunner(
+      entries.map((entry) => () => unzipFile(zipFile, entry, destinationPath)),
+    );
+  } finally {
+    zipFile.close();
+  }
+}
+
+/**
  * Sequentially unzips all files from a zip archive. Please use
  * `unzipToDirectoryConcurrently` if you can. This function is only
  * provided because Jest cannot import `p-queue`.
@@ -152,19 +183,9 @@ export async function unzipToDirectorySequentially(
   archivePath: string,
   destinationPath: string,
 ): Promise<void> {
-  const zipFile = await openZip(archivePath, {
-    autoClose: false,
-    strictFileNames: true,
-    lazyEntries: true,
-  });
-
-  try {
-    const entries = await readZipEntries(zipFile);
-
-    for (const entry of entries) {
-      await unzipFile(zipFile, entry, destinationPath);
+  return unzipToDirectory(archivePath, destinationPath, async (tasks) => {
+    for (const task of tasks) {
+      await task();
     }
-  } finally {
-    zipFile.close();
-  }
+  });
 }
