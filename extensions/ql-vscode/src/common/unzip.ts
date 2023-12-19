@@ -5,7 +5,10 @@ import { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
 
 // We can't use promisify because it picks up the wrong overload.
-function openZip(path: string, options: ZipOptions = {}): Promise<ZipFile> {
+export function openZip(
+  path: string,
+  options: ZipOptions = {},
+): Promise<ZipFile> {
   return new Promise((resolve, reject) => {
     open(path, options, (err, zipFile) => {
       if (err) {
@@ -18,7 +21,11 @@ function openZip(path: string, options: ZipOptions = {}): Promise<ZipFile> {
   });
 }
 
-function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
+export function excludeDirectories(entries: ZipEntry[]): ZipEntry[] {
+  return entries.filter((entry) => !/\/$/.test(entry.fileName));
+}
+
+export function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
   return new Promise((resolve, reject) => {
     const files: ZipEntry[] = [];
 
@@ -56,6 +63,25 @@ function openZipReadStream(
       }
 
       resolve(readStream);
+    });
+  });
+}
+
+export async function openZipBuffer(
+  zipFile: ZipFile,
+  entry: ZipEntry,
+): Promise<Buffer> {
+  const readable = await openZipReadStream(zipFile, entry);
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    readable.on("data", (chunk) => {
+      chunks.push(chunk);
+    });
+    readable.on("error", (err) => {
+      reject(err);
+    });
+    readable.on("end", () => {
+      resolve(Buffer.concat(chunks));
     });
   });
 }
