@@ -51,7 +51,7 @@ export function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
   });
 }
 
-export function openZipReadStream(
+function openZipReadStream(
   zipFile: ZipFile,
   entry: ZipEntry,
 ): Promise<Readable> {
@@ -86,7 +86,7 @@ export async function openZipBuffer(
   });
 }
 
-export async function copyStream(
+async function copyStream(
   readable: Readable,
   writeStream: WriteStream,
 ): Promise<void> {
@@ -100,6 +100,44 @@ export async function copyStream(
 
     readable.pipe(writeStream);
   });
+}
+
+/**
+ * Unzips a single file from a zip archive.
+ *
+ * @param zipFile
+ * @param entry
+ * @param rootDestinationPath
+ */
+export async function unzipFile(
+  zipFile: ZipFile,
+  entry: ZipEntry,
+  rootDestinationPath: string,
+): Promise<void> {
+  const path = join(rootDestinationPath, entry.fileName);
+
+  if (/\/$/.test(entry.fileName)) {
+    // Directory file names end with '/'
+
+    await ensureDir(path);
+  } else {
+    // Ensure the directory exists
+    await ensureDir(dirname(path));
+
+    const readable = await openZipReadStream(zipFile, entry);
+
+    let mode: number | undefined = entry.externalFileAttributes >>> 16;
+    if (mode <= 0) {
+      mode = undefined;
+    }
+
+    const writeStream = createWriteStream(path, {
+      autoClose: true,
+      mode,
+    });
+
+    await copyStream(readable, writeStream);
+  }
 }
 
 /**
@@ -124,30 +162,7 @@ export async function unzipToDirectorySequentially(
     const entries = await readZipEntries(zipFile);
 
     for (const entry of entries) {
-      const path = join(destinationPath, entry.fileName);
-
-      if (/\/$/.test(entry.fileName)) {
-        // Directory file names end with '/'
-
-        await ensureDir(path);
-      } else {
-        // Ensure the directory exists
-        await ensureDir(dirname(path));
-
-        const readable = await openZipReadStream(zipFile, entry);
-
-        let mode: number | undefined = entry.externalFileAttributes >>> 16;
-        if (mode <= 0) {
-          mode = undefined;
-        }
-
-        const writeStream = createWriteStream(path, {
-          autoClose: true,
-          mode,
-        });
-
-        await copyStream(readable, writeStream);
-      }
+      await unzipFile(zipFile, entry, destinationPath);
     }
   } finally {
     zipFile.close();
