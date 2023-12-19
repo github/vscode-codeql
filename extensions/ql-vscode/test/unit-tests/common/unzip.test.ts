@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { open } from "fs/promises";
 import { join, relative, resolve, sep } from "path";
-import { pathExists, readdir } from "fs-extra";
+import { chmod, pathExists, readdir } from "fs-extra";
 import { dir, DirectoryResult } from "tmp-promise";
 import {
   excludeDirectories,
@@ -98,6 +98,10 @@ describe("unzipToDirectory", () => {
   });
 
   afterEach(async () => {
+    for await (const file of walkDirectory(tmpDir.path)) {
+      await chmod(file, 0o777);
+    }
+
     await tmpDir?.cleanup();
   });
 
