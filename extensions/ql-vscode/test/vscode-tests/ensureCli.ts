@@ -36,6 +36,7 @@ import supportedCliVersions from "../../supported_cli_versions.json";
 
 const _1MB = 1024 * 1024;
 const _10MB = _1MB * 10;
+const _100MB = _10MB * 10;
 
 // CLI version to test. Use the latest supported version by default.
 // And be sure to update the env if it is not otherwise set.
@@ -97,7 +98,7 @@ export async function ensureCli(useCli: boolean) {
 
     console.log(`Unzipping into '${unzipDir}'`);
     mkdirpSync(unzipDir);
-    await unzipToDirectorySequentially(downloadedFilePath, unzipDir);
+    await unzipWithProgress(downloadedFilePath, unzipDir);
     console.log("Done.");
   } catch (e) {
     console.error("Failed to download CLI.");
@@ -131,6 +132,32 @@ async function downloadWithProgress(url: string, filePath: string) {
     });
     body.on("error", reject);
   });
+}
+
+async function unzipWithProgress(
+  filePath: string,
+  unzipDir: string,
+): Promise<void> {
+  let lastMessage = 0;
+
+  await unzipToDirectorySequentially(
+    filePath,
+    unzipDir,
+    ({ bytesExtracted, totalBytes }) => {
+      if (bytesExtracted - lastMessage > _100MB) {
+        console.log(
+          "Extracted",
+          Math.round(bytesExtracted / _1MB),
+          "MB /",
+          Math.round(totalBytes / _1MB),
+          "MB",
+        );
+        lastMessage = bytesExtracted;
+      }
+    },
+  );
+
+  console.log("Finished unzipping into", unzipDir);
 }
 
 /**
