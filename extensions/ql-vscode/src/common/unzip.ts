@@ -110,7 +110,7 @@ export async function copyStream(
  * @param archivePath
  * @param destinationPath
  */
-export async function unzipToDirectory(
+export async function unzipToDirectorySequentially(
   archivePath: string,
   destinationPath: string,
 ): Promise<void> {

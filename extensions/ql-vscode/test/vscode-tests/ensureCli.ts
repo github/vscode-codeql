@@ -4,7 +4,7 @@ import {
   getRequiredAssetName,
   codeQlLauncherName,
 } from "../../src/common/distribution";
-import { unzipToDirectory } from "../../src/common/unzip";
+import { unzipToDirectorySequentially } from "../../src/common/unzip";
 import fetch from "node-fetch";
 import supportedCliVersions from "../../supported_cli_versions.json";
 
@@ -126,7 +126,7 @@ export async function ensureCli(useCli: boolean) {
 
     console.log(`Unzipping into '${unzipDir}'`);
     mkdirpSync(unzipDir);
-    await unzipToDirectory(downloadedFilePath, unzipDir);
+    await unzipToDirectorySequentially(downloadedFilePath, unzipDir);
     console.log("Done.");
   } catch (e) {
     console.error("Failed to download CLI.");
