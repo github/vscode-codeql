@@ -51,7 +51,7 @@ export function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
   });
 }
 
-function openZipReadStream(
+export function openZipReadStream(
   zipFile: ZipFile,
   entry: ZipEntry,
 ): Promise<Readable> {
@@ -86,7 +86,7 @@ export async function openZipBuffer(
   });
 }
 
-async function copyStream(
+export async function copyStream(
   readable: Readable,
   writeStream: WriteStream,
 ): Promise<void> {
@@ -102,6 +102,14 @@ async function copyStream(
   });
 }
 
+/**
+ * Sequentially unzips all files from a zip archive. Please use
+ * `unzipToDirectoryConcurrently` if you can. This function is only
+ * provided because Jest cannot import `p-queue`.
+ *
+ * @param archivePath
+ * @param destinationPath
+ */
 export async function unzipToDirectory(
   archivePath: string,
   destinationPath: string,
