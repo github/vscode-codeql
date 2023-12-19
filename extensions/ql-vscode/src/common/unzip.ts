@@ -100,6 +100,9 @@ async function copyStream(
 type UnzipProgress = {
   filesExtracted: number;
   totalFiles: number;
+
+  bytesExtracted: number;
+  totalBytes: number;
 };
 
 export type UnzipProgressCallback = (progress: UnzipProgress) => void;
@@ -110,18 +113,21 @@ export type UnzipProgressCallback = (progress: UnzipProgress) => void;
  * @param zipFile
  * @param entry
  * @param rootDestinationPath
+ * @return The number of bytes extracted.
  */
 async function unzipFile(
   zipFile: ZipFile,
   entry: ZipEntry,
   rootDestinationPath: string,
-): Promise<void> {
+): Promise<number> {
   const path = join(rootDestinationPath, entry.fileName);
 
   if (/\/$/.test(entry.fileName)) {
     // Directory file names end with '/'
 
     await ensureDir(path);
+
+    return 0;
   } else {
     // Ensure the directory exists
     await ensureDir(dirname(path));
@@ -139,6 +145,8 @@ async function unzipFile(
     });
 
     await copyStream(readable, writeStream);
+
+    return entry.uncompressedSize;
   }
 }
 
@@ -169,17 +177,30 @@ export async function unzipToDirectory(
 
     let filesExtracted = 0;
     const totalFiles = entries.length;
+    let bytesExtracted = 0;
+    const totalBytes = entries.reduce(
+      (total, entry) => total + entry.uncompressedSize,
+      0,
+    );
 
     const reportProgress = () => {
       progress?.({
         filesExtracted,
         totalFiles,
+        bytesExtracted,
+        totalBytes,
       });
     };
 
     await taskRunner(
       entries.map((entry) => async () => {
-        await unzipFile(zipFile, entry, destinationPath);
+        const totalEntryBytesExtracted = await unzipFile(
+          zipFile,
+          entry,
+          destinationPath,
+        );
+
+        bytesExtracted += totalEntryBytesExtracted;
 
         filesExtracted++;
         reportProgress();
