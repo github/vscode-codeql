@@ -4,13 +4,10 @@ import {
   flattenDbItems,
 } from "../../../src/databases/db-item";
 import {
-  createLocalDatabaseDbItem,
-  createLocalListDbItem,
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteSystemDefinedListDbItem,
   createRemoteUserDefinedListDbItem,
-  createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
 
@@ -40,22 +37,11 @@ describe("DbItem", () => {
             createRemoteRepoDbItem({ repoFullName: "owner3/repo3" }),
           ],
         }),
-        createRootLocalDbItem({
-          children: [
-            createLocalListDbItem({
-              listName: "local-list1",
-              databases: [
-                createLocalDatabaseDbItem({ databaseName: "local-db1" }),
-              ],
-            }),
-            createLocalDatabaseDbItem({ databaseName: "local-db2" }),
-          ],
-        }),
       ];
 
       const flattenedItems = flattenDbItems(dbItems);
 
-      expect(flattenedItems.length).toEqual(15);
+      expect(flattenedItems.length).toEqual(11);
       checkRootRemoteExists(flattenedItems);
       checkSystemDefinedListExists(flattenedItems, "top10");
       checkSystemDefinedListExists(flattenedItems, "top100");
@@ -66,10 +52,6 @@ describe("DbItem", () => {
       checkRemoteRepoExists(flattenedItems, "owner2/repo2");
       checkRemoteOwnerExists(flattenedItems, "owner1");
       checkRemoteRepoExists(flattenedItems, "owner3/repo3");
-      checkRootLocalExists(flattenedItems);
-      checkLocalListExists(flattenedItems, "local-list1");
-      checkLocalDbExists(flattenedItems, "local-db1");
-      checkLocalDbExists(flattenedItems, "local-db2");
     });
 
     function checkRootRemoteExists(items: DbItem[]): void {
@@ -112,31 +94,6 @@ describe("DbItem", () => {
         items.find(
           (item) =>
             item.kind === DbItemKind.RemoteRepo && item.repoFullName === name,
-        ),
-      ).toBeDefined();
-    }
-
-    function checkRootLocalExists(items: DbItem[]): void {
-      expect(
-        items.find((item) => item.kind === DbItemKind.RootLocal),
-      ).toBeDefined();
-    }
-
-    function checkLocalListExists(items: DbItem[], name: string): void {
-      expect(
-        items.find(
-          (item) =>
-            item.kind === DbItemKind.LocalList && item.listName === name,
-        ),
-      ).toBeDefined();
-    }
-
-    function checkLocalDbExists(items: DbItem[], name: string): void {
-      expect(
-        items.find(
-          (item) =>
-            item.kind === DbItemKind.LocalDatabase &&
-            item.databaseName === name,
         ),
       ).toBeDefined();
     }

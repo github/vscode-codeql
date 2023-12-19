@@ -11,7 +11,7 @@ import { promisify } from "util";
 import { CancellationToken, Disposable, Uri } from "vscode";
 
 import {
-  BQRSInfo,
+  BqrsInfo,
   DecodedBqrs,
   DecodedBqrsChunk,
 } from "../common/bqrs-cli-types";
@@ -928,11 +928,11 @@ export class CodeQLCliServer implements Disposable {
    * @param bqrsPath The path to the bqrs.
    * @param pageSize The page size to precompute offsets into the binary file for.
    */
-  async bqrsInfo(bqrsPath: string, pageSize?: number): Promise<BQRSInfo> {
+  async bqrsInfo(bqrsPath: string, pageSize?: number): Promise<BqrsInfo> {
     const subcommandArgs = (
       pageSize ? ["--paginate-rows", pageSize.toString()] : []
     ).concat(bqrsPath);
-    return await this.runJsonCodeQlCliCommand<BQRSInfo>(
+    return await this.runJsonCodeQlCliCommand<BqrsInfo>(
       ["bqrs", "info"],
       subcommandArgs,
       "Reading bqrs header",

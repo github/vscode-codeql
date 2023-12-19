@@ -3,14 +3,7 @@ import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DisposableObject } from "../common/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
-import {
-  DbItem,
-  DbItemKind,
-  DbListKind,
-  LocalDatabaseDbItem,
-  LocalListDbItem,
-  RemoteUserDefinedListDbItem,
-} from "./db-item";
+import { DbItem, RemoteUserDefinedListDbItem } from "./db-item";
 import {
   updateExpandedItem,
   replaceExpandedItem,
@@ -116,31 +109,15 @@ export class DbManager extends DisposableObject {
     await this.dbConfigStore.addRemoteOwner(owner);
   }
 
-  public async addNewList(
-    listKind: DbListKind,
-    listName: string,
-  ): Promise<void> {
-    switch (listKind) {
-      case DbListKind.Local:
-        await this.dbConfigStore.addLocalList(listName);
-        break;
-      case DbListKind.Remote:
-        await this.dbConfigStore.addRemoteList(listName);
-        break;
-      default:
-        throw Error(`Unknown list kind '${listKind}'`);
-    }
+  public async addNewList(listName: string): Promise<void> {
+    await this.dbConfigStore.addRemoteList(listName);
   }
 
   public async renameList(
-    currentDbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
+    currentDbItem: RemoteUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
-    if (currentDbItem.kind === DbItemKind.LocalList) {
-      await this.dbConfigStore.renameLocalList(currentDbItem, newName);
-    } else if (currentDbItem.kind === DbItemKind.RemoteUserDefinedList) {
-      await this.dbConfigStore.renameRemoteList(currentDbItem, newName);
-    }
+    await this.dbConfigStore.renameRemoteList(currentDbItem, newName);
 
     const newDbItem = { ...currentDbItem, listName: newName };
     const newExpandedItems = replaceExpandedItem(
@@ -152,26 +129,8 @@ export class DbManager extends DisposableObject {
     await this.setExpandedItems(newExpandedItems);
   }
 
-  public async renameLocalDb(
-    currentDbItem: LocalDatabaseDbItem,
-    newName: string,
-  ): Promise<void> {
-    await this.dbConfigStore.renameLocalDb(
-      currentDbItem,
-      newName,
-      currentDbItem.parentListName,
-    );
-  }
-
-  public doesListExist(listKind: DbListKind, listName: string): boolean {
-    switch (listKind) {
-      case DbListKind.Local:
-        return this.dbConfigStore.doesLocalListExist(listName);
-      case DbListKind.Remote:
-        return this.dbConfigStore.doesRemoteListExist(listName);
-      default:
-        throw Error(`Unknown list kind '${listKind}'`);
-    }
+  public doesListExist(listName: string): boolean {
+    return this.dbConfigStore.doesRemoteListExist(listName);
   }
 
   public doesRemoteOwnerExist(owner: string): boolean {
@@ -180,10 +139,6 @@ export class DbManager extends DisposableObject {
 
   public doesRemoteRepoExist(nwo: string, listName?: string): boolean {
     return this.dbConfigStore.doesRemoteDbExist(nwo, listName);
-  }
-
-  public doesLocalDbExist(dbName: string, listName?: string): boolean {
-    return this.dbConfigStore.doesLocalDbExist(dbName, listName);
   }
 
   private getExpandedItems(): ExpandedDbItem[] {

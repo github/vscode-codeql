@@ -4,7 +4,7 @@
  * the "for the sake of extensibility" comment in messages.ts.
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace ColumnKindCode {
+export namespace BqrsColumnKindCode {
   export const FLOAT = "f";
   export const INTEGER = "i";
   export const STRING = "s";
@@ -13,55 +13,44 @@ export namespace ColumnKindCode {
   export const ENTITY = "e";
 }
 
-type ColumnKind =
-  | typeof ColumnKindCode.FLOAT
-  | typeof ColumnKindCode.INTEGER
-  | typeof ColumnKindCode.STRING
-  | typeof ColumnKindCode.BOOLEAN
-  | typeof ColumnKindCode.DATE
-  | typeof ColumnKindCode.ENTITY;
+export type BqrsColumnKind =
+  | typeof BqrsColumnKindCode.FLOAT
+  | typeof BqrsColumnKindCode.INTEGER
+  | typeof BqrsColumnKindCode.STRING
+  | typeof BqrsColumnKindCode.BOOLEAN
+  | typeof BqrsColumnKindCode.DATE
+  | typeof BqrsColumnKindCode.ENTITY;
 
-interface Column {
+export interface BqrsSchemaColumn {
   name?: string;
-  kind: ColumnKind;
+  kind: BqrsColumnKind;
 }
 
-export interface ResultSetSchema {
+export interface BqrsResultSetSchema {
   name: string;
   rows: number;
-  columns: Column[];
-  pagination?: PaginationInfo;
+  columns: BqrsSchemaColumn[];
+  pagination?: BqrsPaginationInfo;
 }
 
-export function getResultSetSchema(
-  resultSetName: string,
-  resultSets: BQRSInfo,
-): ResultSetSchema | undefined {
-  for (const schema of resultSets["result-sets"]) {
-    if (schema.name === resultSetName) {
-      return schema;
-    }
-  }
-  return undefined;
-}
-interface PaginationInfo {
+interface BqrsPaginationInfo {
   "step-size": number;
   offsets: number[];
 }
 
-export interface BQRSInfo {
-  "result-sets": ResultSetSchema[];
+export interface BqrsInfo {
+  "result-sets": BqrsResultSetSchema[];
 }
 
 export type BqrsId = number;
 
-export interface EntityValue {
-  url?: UrlValue;
+export interface BqrsEntityValue {
+  url?: BqrsUrlValue;
   label?: string;
   id?: BqrsId;
 }
 
-export interface LineColumnLocation {
+export interface BqrsLineColumnLocation {
   uri: string;
   startLine: number;
   startColumn: number;
@@ -69,7 +58,7 @@ export interface LineColumnLocation {
   endColumn: number;
 }
 
-export interface WholeFileLocation {
+export interface BqrsWholeFileLocation {
   uri: string;
   startLine: never;
   startColumn: never;
@@ -77,47 +66,28 @@ export interface WholeFileLocation {
   endColumn: never;
 }
 
-export type ResolvableLocationValue = WholeFileLocation | LineColumnLocation;
+export type BqrsUrlValue =
+  | BqrsWholeFileLocation
+  | BqrsLineColumnLocation
+  | string;
 
-export type UrlValue = ResolvableLocationValue | string;
-
-export type CellValue = EntityValue | number | string | boolean;
-
-export type ResultRow = CellValue[];
-
-export interface RawResultSet {
-  readonly schema: ResultSetSchema;
-  readonly rows: readonly ResultRow[];
-}
-
-// TODO: This function is not necessary. It generates a tuple that is slightly easier
-// to handle than the ResultSetSchema and DecodedBqrsChunk. But perhaps it is unnecessary
-// boilerplate.
-export function transformBqrsResultSet(
-  schema: ResultSetSchema,
-  page: DecodedBqrsChunk,
-): RawResultSet {
-  return {
-    schema,
-    rows: Array.from(page.tuples),
-  };
-}
+export type BqrsCellValue = BqrsEntityValue | number | string | boolean;
 
 export type BqrsKind =
   | "String"
   | "Float"
   | "Integer"
-  | "String"
   | "Boolean"
   | "Date"
   | "Entity";
 
-export interface BqrsColumn {
+interface BqrsColumn {
   name?: string;
   kind: BqrsKind;
 }
+
 export interface DecodedBqrsChunk {
-  tuples: CellValue[][];
+  tuples: BqrsCellValue[][];
   next?: number;
   columns: BqrsColumn[];
 }

@@ -2,7 +2,7 @@ import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { LibraryRow, LibraryRowProps } from "../LibraryRow";
-import userEvent from "@testing-library/user-event";
+import { userEvent } from "@testing-library/user-event";
 import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(LibraryRow.name, () => {

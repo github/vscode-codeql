@@ -19,6 +19,7 @@ import { assertNever } from "../../common/helpers-pure";
 import { ModeledMethod } from "../modeled-method";
 import { groupMethods, sortGroupNames, sortMethods } from "../shared/sorting";
 import { INITIAL_MODE, Mode } from "../shared/mode";
+import { UrlValueResolvable } from "../../common/raw-result-types";
 
 export class MethodsUsageDataProvider
   extends DisposableObject
@@ -99,11 +100,16 @@ export class MethodsUsageDataProvider
     } else {
       const { method, usage } = item;
 
+      const description =
+        usage.url.type === "wholeFileLocation"
+          ? this.relativePathWithinDatabase(usage.url.uri)
+          : `${this.relativePathWithinDatabase(usage.url.uri)} [${
+              usage.url.startLine
+            }, ${usage.url.endLine}]`;
+
       return {
         label: usage.label,
-        description: `${this.relativePathWithinDatabase(usage.url.uri)} [${
-          usage.url.startLine
-        }, ${usage.url.endLine}]`,
+        description,
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
@@ -211,12 +217,33 @@ function usagesAreEqual(u1: Usage, u2: Usage): boolean {
   return (
     u1.label === u2.label &&
     u1.classification === u2.classification &&
-    u1.url.uri === u2.url.uri &&
-    u1.url.startLine === u2.url.startLine &&
-    u1.url.startColumn === u2.url.startColumn &&
-    u1.url.endLine === u2.url.endLine &&
-    u1.url.endColumn === u2.url.endColumn
+    urlValueResolvablesAreEqual(u1.url, u2.url)
   );
+}
+
+function urlValueResolvablesAreEqual(
+  u1: UrlValueResolvable,
+  u2: UrlValueResolvable,
+): boolean {
+  if (u1.type !== u2.type) {
+    return false;
+  }
+
+  if (u1.type === "wholeFileLocation" && u2.type === "wholeFileLocation") {
+    return u1.uri === u2.uri;
+  }
+
+  if (u1.type === "lineColumnLocation" && u2.type === "lineColumnLocation") {
+    return (
+      u1.uri === u2.uri &&
+      u1.startLine === u2.startLine &&
+      u1.startColumn === u2.startColumn &&
+      u1.endLine === u2.endLine &&
+      u1.endColumn === u2.endColumn
+    );
+  }
+
+  return false;
 }
 
 function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {

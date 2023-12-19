@@ -1,5 +1,4 @@
-import { CUSTOM_CODEQL_PATH_SETTING } from "../../src/config";
-import { ConfigurationTarget, env } from "vscode";
+import { env } from "vscode";
 import { beforeEachAction as testConfigBeforeEachAction } from "./test-config";
 import * as tmp from "tmp";
 import { realpathSync } from "fs-extra";
@@ -19,15 +18,10 @@ if (process.env.CI) {
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
 export async function beforeAllAction() {
-  // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
-  await testConfigBeforeEachAction();
-  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
-    process.env.CLI_PATH,
-    ConfigurationTarget.Workspace,
-  );
-
   // Create the temp directory to be used as extension local storage.
-  const dir = tmp.dirSync();
+  const dir = tmp.dirSync({
+    unsafeCleanup: true,
+  });
   let storagePath = realpathSync(dir.name);
   if (storagePath.substring(0, 2).match(/[A-Z]:/)) {
     storagePath =
@@ -46,11 +40,6 @@ export async function beforeEachAction() {
   jest.spyOn(env, "openExternal").mockResolvedValue(false);
 
   await testConfigBeforeEachAction();
-
-  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
-    process.env.CLI_PATH,
-    ConfigurationTarget.Workspace,
-  );
 }
 
 export async function afterAllAction() {

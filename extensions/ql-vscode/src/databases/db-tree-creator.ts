@@ -1,19 +1,14 @@
 import {
   DbConfig,
-  LocalDatabase,
-  LocalList,
   RemoteRepositoryList,
   SelectedDbItemKind,
 } from "./config/db-config";
 import {
   DbItemKind,
-  LocalDatabaseDbItem,
-  LocalListDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
   RemoteUserDefinedListDbItem,
-  RootLocalDbItem,
   RootRemoteDbItem,
 } from "./db-item";
 import { ExpandedDbItem, ExpandedDbItemKind } from "./db-item-expansion";
@@ -51,28 +46,6 @@ export function createRemoteTree(
       ...userDefinedRepoLists,
       ...repos,
     ],
-    expanded: !!expanded,
-  };
-}
-
-export function createLocalTree(
-  dbConfig: DbConfig,
-  expandedItems: ExpandedDbItem[],
-): RootLocalDbItem {
-  const localLists = dbConfig.databases.local.lists.map((l) =>
-    createLocalList(l, dbConfig, expandedItems),
-  );
-  const localDbs = dbConfig.databases.local.databases.map((l) =>
-    createLocalDb(l, dbConfig),
-  );
-
-  const expanded = expandedItems.some(
-    (e) => e.kind === ExpandedDbItemKind.RootLocal,
-  );
-
-  return {
-    kind: DbItemKind.RootLocal,
-    children: [...localLists, ...localDbs],
     expanded: !!expanded,
   };
 }
@@ -151,54 +124,6 @@ function createRepoItem(
   return {
     kind: DbItemKind.RemoteRepo,
     repoFullName: repo,
-    selected: !!selected,
-    parentListName: listName,
-  };
-}
-
-function createLocalList(
-  list: LocalList,
-  dbConfig: DbConfig,
-  expandedItems: ExpandedDbItem[],
-): LocalListDbItem {
-  const selected =
-    dbConfig.selected &&
-    dbConfig.selected.kind === SelectedDbItemKind.LocalUserDefinedList &&
-    dbConfig.selected.listName === list.name;
-
-  const expanded = expandedItems.some(
-    (e) =>
-      e.kind === ExpandedDbItemKind.LocalUserDefinedList &&
-      e.listName === list.name,
-  );
-
-  return {
-    kind: DbItemKind.LocalList,
-    listName: list.name,
-    databases: list.databases.map((d) => createLocalDb(d, dbConfig, list.name)),
-    selected: !!selected,
-    expanded: !!expanded,
-  };
-}
-
-function createLocalDb(
-  db: LocalDatabase,
-  dbConfig: DbConfig,
-  listName?: string,
-): LocalDatabaseDbItem {
-  const selected =
-    dbConfig.selected &&
-    dbConfig.selected.kind === SelectedDbItemKind.LocalDatabase &&
-    dbConfig.selected.databaseName === db.name &&
-    dbConfig.selected.listName === listName;
-
-  return {
-    kind: DbItemKind.LocalDatabase,
-    databaseName: db.name,
-    dateAdded: db.dateAdded,
-    language: db.language,
-    origin: db.origin,
-    storagePath: db.storagePath,
     selected: !!selected,
     parentListName: listName,
   };

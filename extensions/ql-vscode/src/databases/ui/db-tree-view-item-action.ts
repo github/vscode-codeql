@@ -29,18 +29,12 @@ export function getDbItemActions(dbItem: DbItem): DbTreeViewItemAction[] {
 }
 
 const dbItemKindsThatCanBeRemoved = [
-  DbItemKind.LocalList,
   DbItemKind.RemoteUserDefinedList,
-  DbItemKind.LocalDatabase,
   DbItemKind.RemoteRepo,
   DbItemKind.RemoteOwner,
 ];
 
-const dbItemKindsThatCanBeRenamed = [
-  DbItemKind.LocalList,
-  DbItemKind.RemoteUserDefinedList,
-  DbItemKind.LocalDatabase,
-];
+const dbItemKindsThatCanBeRenamed = [DbItemKind.RemoteUserDefinedList];
 
 const dbItemKindsThatCanBeOpenedOnGitHub = [
   DbItemKind.RemoteOwner,

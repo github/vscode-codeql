@@ -216,7 +216,6 @@ LibraryRow.args = {
   viewState: createMockModelEditorViewState({
     showGenerateButton: true,
     showLlmButton: true,
-    showMultipleModels: true,
   }),
   hideModeledMethods: false,
 };

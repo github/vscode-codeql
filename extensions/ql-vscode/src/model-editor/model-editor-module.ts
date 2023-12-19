@@ -24,6 +24,7 @@ import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage } from "./languages";
 import { INITIAL_MODE } from "./shared/mode";
 import { isSupportedLanguage } from "./supported-languages";
+import { DefaultNotifier, checkConsistency } from "./consistency-check";
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
@@ -97,6 +98,20 @@ export class ModelEditorModule extends DisposableObject {
     this.push(
       this.modelingEvents.onSelectedMethodChanged(async (event) => {
         await this.showMethod(event.databaseItem, event.method, event.usage);
+      }),
+    );
+
+    this.push(
+      this.modelingEvents.onMethodsChanged((event) => {
+        const modeledMethods = this.modelingStore.getModeledMethods(
+          event.databaseItem,
+        );
+
+        checkConsistency(
+          event.methods,
+          modeledMethods,
+          new DefaultNotifier(this.app.logger),
+        );
       }),
     );
   }

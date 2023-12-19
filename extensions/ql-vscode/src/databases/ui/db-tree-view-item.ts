@@ -2,13 +2,10 @@ import * as vscode from "vscode";
 import {
   DbItem,
   isSelectableDbItem,
-  LocalDatabaseDbItem,
-  LocalListDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
   RemoteUserDefinedListDbItem,
-  RootLocalDbItem,
   RootRemoteDbItem,
 } from "../db-item";
 import { getDbItemActions } from "./db-tree-view-item-action";
@@ -74,7 +71,7 @@ export function createDbTreeViewItemError(
 }
 
 export function createDbTreeViewItemRoot(
-  dbItem: RootLocalDbItem | RootRemoteDbItem,
+  dbItem: RootRemoteDbItem,
   label: string,
   tooltip: string,
   children: DbTreeViewItem[],
@@ -105,7 +102,7 @@ export function createDbTreeViewItemSystemDefinedList(
 }
 
 export function createDbTreeViewItemUserDefinedList(
-  dbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
+  dbItem: RemoteUserDefinedListDbItem,
   listName: string,
   children: DbTreeViewItem[],
 ): DbTreeViewItem {
@@ -142,21 +139,6 @@ export function createDbTreeViewItemRepo(
     new vscode.ThemeIcon("cloud"),
     repoName,
     undefined,
-    vscode.TreeItemCollapsibleState.None,
-    [],
-  );
-}
-
-export function createDbTreeViewItemLocalDatabase(
-  dbItem: LocalDatabaseDbItem,
-  databaseName: string,
-  language: string,
-): DbTreeViewItem {
-  return new DbTreeViewItem(
-    dbItem,
-    new vscode.ThemeIcon("database"),
-    databaseName,
-    `Language: ${language}`,
     vscode.TreeItemCollapsibleState.None,
     [],
   );

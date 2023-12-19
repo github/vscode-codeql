@@ -45,18 +45,18 @@ select the **Dark+** theme. You can use **Preferences: Color Theme** in the *Com
 4. Select **Developer: Open WebView Developer Tools**
 5. Now, you will need to find the `<html>` element in the lowest-level `<iframe>`. See the image below:
 
-   <img src={iframeImage} />
+   <img src={iframeImage} alt="The iframe element showing in the VS Code webview developer tools element inspector" />
 
 6. Once you have selected the `<html>` element as in the image above, click on **Show All Properties (... more)** (see image below). This will
 expand all CSS variables.
 
-   <img src={stylesImage} />
+   <img src={stylesImage} alt="The styles tab of the VS Code webview developer tools element inspector" />
 
 7. Copy all variables to the `src/stories/vscode-theme-dark.css` file.
 8. Now, select the `<body>` element which is a direct child of the `<html>` element.
 9. This time, you do not need to copy the variables. Instead, copy the styles on the `<body>` element to the `src/stories/vscode-theme-dark.css` file.
 See the image below for which styles need to be copied.
 
-<img src={bodyImage} />
+<img src={bodyImage} alt="The styles on the body element showing in the VS Code webview developer tools element inspector" />
 
 The same process can also be followed for updating the `src/stories/vscode-theme-light.css` file, but make sure to select the **Light+** theme.

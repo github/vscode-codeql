@@ -10,7 +10,9 @@ describe("getInitialQueryContents", () => {
   let language: QueryLanguage;
 
   beforeEach(() => {
-    dir = tmp.dirSync();
+    dir = tmp.dirSync({
+      unsafeCleanup: true,
+    });
     language = QueryLanguage.Cpp;
 
     const contents = dump({

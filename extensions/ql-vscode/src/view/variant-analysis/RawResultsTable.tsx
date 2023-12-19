@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import { styled } from "styled-components";
-import { RawResultSet, ResultSetSchema } from "../../common/bqrs-cli-types";
 import TextButton from "../common/TextButton";
 import { useTelemetryOnChange } from "../common/telemetry";
+import { RawResultSet } from "../../common/raw-result-types";
 import { RawResultRow } from "./RawResultRow";
 
 const numOfResultsInContractedMode = 5;
@@ -26,8 +26,7 @@ const TableContainer = styled.div<TableContainerProps>`
 `;
 
 type RawResultsTableProps = {
-  schema: ResultSetSchema;
-  results: RawResultSet;
+  resultSet: RawResultSet;
   fileLinkPrefix: string;
   sourceLocationPrefix: string;
 };
@@ -35,8 +34,7 @@ type RawResultsTableProps = {
 const filterTableExpandedTelemetry = (v: boolean) => v;
 
 const RawResultsTable = ({
-  schema,
-  results,
+  resultSet,
   fileLinkPrefix,
   sourceLocationPrefix,
 }: RawResultsTableProps) => {
@@ -45,14 +43,14 @@ const RawResultsTable = ({
     filterTelemetryOnValue: filterTableExpandedTelemetry,
   });
   const numOfResultsToShow = tableExpanded
-    ? results.rows.length
+    ? resultSet.rows.length
     : numOfResultsInContractedMode;
-  const showButton = results.rows.length > numOfResultsInContractedMode;
+  const showButton = resultSet.rows.length > numOfResultsInContractedMode;
 
   return (
     <>
-      <TableContainer $columnCount={schema.columns.length}>
-        {results.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
+      <TableContainer $columnCount={resultSet.columns.length}>
+        {resultSet.rows.slice(0, numOfResultsToShow).map((row, rowIndex) => (
           <RawResultRow
             key={rowIndex}
             row={row}

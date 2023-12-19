@@ -6,9 +6,7 @@ import {
   cleanNonExistentExpandedItems,
 } from "../../../src/databases/db-item-expansion";
 import {
-  createLocalListDbItem,
   createRemoteUserDefinedListDbItem,
-  createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
 
@@ -120,10 +118,6 @@ describe("db item expansion", () => {
           kind: ExpandedDbItemKind.RemoteUserDefinedList,
           listName: "list2",
         },
-        {
-          kind: ExpandedDbItemKind.LocalUserDefinedList,
-          listName: "list1",
-        },
       ];
 
       const currentDbItem = createRemoteUserDefinedListDbItem({
@@ -153,10 +147,6 @@ describe("db item expansion", () => {
           kind: ExpandedDbItemKind.RemoteUserDefinedList,
           listName: "list2",
         },
-        {
-          kind: ExpandedDbItemKind.LocalUserDefinedList,
-          listName: "list1",
-        },
       ]);
     });
   });
@@ -175,10 +165,6 @@ describe("db item expansion", () => {
           kind: ExpandedDbItemKind.RemoteUserDefinedList,
           listName: "list2",
         },
-        {
-          kind: ExpandedDbItemKind.LocalUserDefinedList,
-          listName: "list1",
-        },
       ];
 
       const dbItems = [
@@ -186,13 +172,6 @@ describe("db item expansion", () => {
           children: [
             createRemoteUserDefinedListDbItem({
               listName: "list2",
-            }),
-          ],
-        }),
-        createRootLocalDbItem({
-          children: [
-            createLocalListDbItem({
-              listName: "list1",
             }),
           ],
         }),
@@ -210,10 +189,6 @@ describe("db item expansion", () => {
         {
           kind: ExpandedDbItemKind.RemoteUserDefinedList,
           listName: "list2",
-        },
-        {
-          kind: ExpandedDbItemKind.LocalUserDefinedList,
-          listName: "list1",
         },
       ]);
     });

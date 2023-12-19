@@ -9,6 +9,7 @@ import { Mode } from "./shared/mode";
 interface MethodsChangedEvent {
   readonly methods: readonly Method[];
   readonly dbUri: string;
+  readonly databaseItem: DatabaseItem;
   readonly isActiveDb: boolean;
 }
 
@@ -166,10 +167,12 @@ export class ModelingEvents extends DisposableObject {
   public fireMethodsChangedEvent(
     methods: Method[],
     dbUri: string,
+    databaseItem: DatabaseItem,
     isActiveDb: boolean,
   ) {
     this.onMethodsChangedEventEmitter.fire({
       methods,
+      databaseItem,
       dbUri,
       isActiveDb,
     });

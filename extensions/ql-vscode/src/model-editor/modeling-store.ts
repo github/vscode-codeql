@@ -155,6 +155,7 @@ export class ModelingStore extends DisposableObject {
     this.modelingEvents.fireMethodsChangedEvent(
       methods,
       dbUri,
+      dbItem,
       dbUri === this.activeDb,
     );
   }

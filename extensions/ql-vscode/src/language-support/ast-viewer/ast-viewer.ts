@@ -16,20 +16,20 @@ import {
 import { basename } from "path";
 
 import { DatabaseItem } from "../../databases/local-databases";
-import { UrlValue, BqrsId } from "../../common/bqrs-cli-types";
+import { BqrsId } from "../../common/bqrs-cli-types";
 import { showLocation } from "../../databases/local-databases/locations";
-import {
-  isStringLoc,
-  isWholeFileLoc,
-  isLineColumnLoc,
-} from "../../common/bqrs-utils";
 import { DisposableObject } from "../../common/disposable-object";
-import { asError, getErrorMessage } from "../../common/helpers-pure";
+import {
+  asError,
+  assertNever,
+  getErrorMessage,
+} from "../../common/helpers-pure";
 import { redactableError } from "../../common/errors";
 import { AstViewerCommands } from "../../common/commands";
 import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { telemetryListener } from "../../common/vscode/telemetry";
+import { UrlValue } from "../../common/raw-result-types";
 
 export interface AstItem {
   id: BqrsId;
@@ -90,15 +90,18 @@ class AstViewerDataProvider
 
   private extractLineInfo(loc?: UrlValue) {
     if (!loc) {
-      return "";
-    } else if (isStringLoc(loc)) {
-      return loc;
-    } else if (isWholeFileLoc(loc)) {
-      return loc.uri;
-    } else if (isLineColumnLoc(loc)) {
-      return loc.startLine;
-    } else {
-      return "";
+      return;
+    }
+
+    switch (loc.type) {
+      case "string":
+        return loc.value;
+      case "wholeFileLocation":
+        return loc.uri;
+      case "lineColumnLocation":
+        return loc.startLine;
+      default:
+        assertNever(loc);
     }
   }
 }

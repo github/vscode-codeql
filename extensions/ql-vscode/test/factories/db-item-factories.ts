@@ -1,18 +1,13 @@
 import { faker } from "@faker-js/faker";
 import {
   DbItemKind,
-  LocalDatabaseDbItem,
-  LocalDbItem,
-  LocalListDbItem,
   RemoteDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
   RemoteUserDefinedListDbItem,
-  RootLocalDbItem,
   RootRemoteDbItem,
 } from "../../src/databases/db-item";
-import { DatabaseOrigin } from "../../src/databases/local-databases/database-origin";
 
 // Root Remote Db Items
 export function createRootRemoteDbItem({
@@ -101,68 +96,5 @@ export function createRemoteUserDefinedListDbItem({
     selected,
     listName,
     repos,
-  };
-}
-
-// Root Local Db Items
-export function createRootLocalDbItem({
-  children = [],
-  expanded = false,
-}: {
-  children?: LocalDbItem[];
-  expanded?: boolean;
-} = {}): RootLocalDbItem {
-  return {
-    kind: DbItemKind.RootLocal,
-    children,
-    expanded,
-  };
-}
-
-export function createLocalDatabaseDbItem({
-  databaseName = `database${faker.number.int()}`,
-  dateAdded = faker.date.past().getTime(),
-  language = `language${faker.number.int()}`,
-  storagePath = `storagePath${faker.number.int()}`,
-  selected = false,
-  origin = {
-    type: "folder",
-  },
-}: {
-  databaseName?: string;
-  dateAdded?: number;
-  language?: string;
-  storagePath?: string;
-  selected?: boolean;
-  origin?: DatabaseOrigin;
-} = {}): LocalDatabaseDbItem {
-  return {
-    kind: DbItemKind.LocalDatabase,
-    selected,
-    databaseName,
-    dateAdded,
-    language,
-    storagePath,
-    origin,
-  };
-}
-
-export function createLocalListDbItem({
-  listName = `top_${faker.number.int()}`,
-  selected = false,
-  expanded = false,
-  databases = [],
-}: {
-  listName?: string;
-  databases?: LocalDatabaseDbItem[];
-  selected?: boolean;
-  expanded?: boolean;
-} = {}): LocalListDbItem {
-  return {
-    kind: DbItemKind.LocalList,
-    selected,
-    expanded,
-    databases,
-    listName,
   };
 }

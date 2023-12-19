@@ -14,6 +14,7 @@ import {
 } from "../../variant-analysis/shared/variant-analysis";
 import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
+import { ColumnKind } from "../../common/raw-result-types";
 
 export default {
   title: "Variant Analysis/Variant Analysis",
@@ -207,26 +208,22 @@ const repoResults: VariantAnalysisScannedRepositoryResult[] = [
     variantAnalysisId: 1,
     repositoryId: 1,
     rawResults: {
-      schema: {
+      resultSet: {
         name: "#select",
-        rows: 1,
+        totalRowCount: 1,
         columns: [
           {
-            kind: "i",
+            kind: ColumnKind.Integer,
           },
         ],
-      },
-      resultSet: {
-        schema: {
-          name: "#select",
-          rows: 1,
-          columns: [
+        rows: [
+          [
             {
-              kind: "i",
+              type: "number",
+              value: 60688,
             },
           ],
-        },
-        rows: [[60688]],
+        ],
       },
       fileLinkPrefix:
         "https://github.com/octodemo/hello-world-1/blob/59a2a6c7d9dde7a6ecb77c2f7e8197d6925c143b",

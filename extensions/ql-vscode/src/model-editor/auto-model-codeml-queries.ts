@@ -85,9 +85,8 @@ export async function runAutoModelQueries({
   // CodeQL needs to have access to the database to be able to retrieve the
   // snippets from it. The source location prefix is used to determine the
   // base path of the database.
-  const sourceLocationPrefix = await databaseItem.getSourceLocationPrefix(
-    cliServer,
-  );
+  const sourceLocationPrefix =
+    await databaseItem.getSourceLocationPrefix(cliServer);
   const sourceArchiveUri = databaseItem.sourceArchive;
   const sourceInfo =
     sourceArchiveUri === undefined

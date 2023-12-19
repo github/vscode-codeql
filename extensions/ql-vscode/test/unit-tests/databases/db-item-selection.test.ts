@@ -1,13 +1,10 @@
 import { DbItem, DbItemKind } from "../../../src/databases/db-item";
 import { getSelectedDbItem } from "../../../src/databases/db-item-selection";
 import {
-  createLocalDatabaseDbItem,
-  createLocalListDbItem,
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteSystemDefinedListDbItem,
   createRemoteUserDefinedListDbItem,
-  createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
 
@@ -21,47 +18,9 @@ describe("db item selection", () => {
           createRemoteUserDefinedListDbItem(),
         ],
       }),
-      createRootLocalDbItem({
-        children: [createLocalListDbItem(), createLocalDatabaseDbItem()],
-      }),
     ];
 
     expect(getSelectedDbItem(dbItems)).toBeUndefined();
-  });
-
-  it("should return correct local database item from DbItem list", () => {
-    const dbItems: DbItem[] = [
-      createRootLocalDbItem({
-        children: [
-          createLocalDatabaseDbItem({
-            databaseName: "db2",
-            dateAdded: 1234,
-            language: "javascript",
-            storagePath: "/foo/bar",
-            selected: true,
-          }),
-          createLocalListDbItem({
-            databases: [
-              createLocalDatabaseDbItem(),
-              createLocalDatabaseDbItem(),
-            ],
-          }),
-        ],
-        expanded: false,
-      }),
-    ];
-
-    expect(getSelectedDbItem(dbItems)).toEqual({
-      kind: DbItemKind.LocalDatabase,
-      databaseName: "db2",
-      dateAdded: 1234,
-      language: "javascript",
-      storagePath: "/foo/bar",
-      origin: {
-        type: "folder",
-      },
-      selected: true,
-    });
   });
 
   it("should return correct remote database list item from DbItem list", () => {

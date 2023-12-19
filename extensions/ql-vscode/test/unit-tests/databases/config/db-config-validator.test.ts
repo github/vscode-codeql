@@ -5,10 +5,7 @@ import {
 } from "../../../../src/databases/config/db-config";
 import { DbConfigValidator } from "../../../../src/databases/config/db-config-validator";
 import { DbConfigValidationErrorKind } from "../../../../src/databases/db-validation-errors";
-import {
-  createDbConfig,
-  createLocalDbConfigItem,
-} from "../../../factories/db-config-factories";
+import { createDbConfig } from "../../../factories/db-config-factories";
 
 describe("db config validation", () => {
   const extensionPath = join(__dirname, "../../../..");
@@ -102,71 +99,6 @@ describe("db config validation", () => {
       kind: DbConfigValidationErrorKind.DuplicateNames,
       message:
         "There are databases with the same name in the repoList1 list: owner1/repo2",
-    });
-  });
-
-  it("should return error when there are multiple local db lists with the same name", async () => {
-    const dbConfig = createDbConfig({
-      localLists: [
-        {
-          name: "dbList1",
-          databases: [createLocalDbConfigItem()],
-        },
-        {
-          name: "dbList1",
-          databases: [createLocalDbConfigItem()],
-        },
-      ],
-    });
-
-    const validationOutput = configValidator.validate(dbConfig);
-
-    expect(validationOutput).toHaveLength(1);
-    expect(validationOutput[0]).toEqual({
-      kind: DbConfigValidationErrorKind.DuplicateNames,
-      message: "There are database lists with the same name: dbList1",
-    });
-  });
-
-  it("should return error when there are multiple local dbs with the same name", async () => {
-    const dbConfig = createDbConfig({
-      localDbs: [
-        createLocalDbConfigItem({ name: "db1" }),
-        createLocalDbConfigItem({ name: "db2" }),
-        createLocalDbConfigItem({ name: "db1" }),
-      ],
-    });
-
-    const validationOutput = configValidator.validate(dbConfig);
-
-    expect(validationOutput).toHaveLength(1);
-    expect(validationOutput[0]).toEqual({
-      kind: DbConfigValidationErrorKind.DuplicateNames,
-      message: "There are databases with the same name: db1",
-    });
-  });
-
-  it("should return error when there are multiple local dbs with the same name in the same list", async () => {
-    const dbConfig = createDbConfig({
-      localLists: [
-        {
-          name: "dbList1",
-          databases: [
-            createLocalDbConfigItem({ name: "db1" }),
-            createLocalDbConfigItem({ name: "db2" }),
-            createLocalDbConfigItem({ name: "db1" }),
-          ],
-        },
-      ],
-    });
-
-    const validationOutput = configValidator.validate(dbConfig);
-
-    expect(validationOutput).toHaveLength(1);
-    expect(validationOutput[0]).toEqual({
-      kind: DbConfigValidationErrorKind.DuplicateNames,
-      message:
-        "There are databases with the same name in the dbList1 list: db1",
     });
   });
 });

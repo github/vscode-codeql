@@ -1,9 +1,9 @@
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { Logger } from "../common/logging";
-import { transformBqrsResultSet } from "../common/bqrs-cli-types";
 import { AnalysisRawResults } from "./shared/analysis-result";
 import { MAX_RAW_RESULTS } from "./shared/result-limits";
 import { SELECT_TABLE_NAME } from "../common/interface-types";
+import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
 
 export async function extractRawResults(
   cliServer: CodeQLCliServer,
@@ -34,9 +34,9 @@ export async function extractRawResults(
     pageSize: MAX_RAW_RESULTS,
   });
 
-  const resultSet = transformBqrsResultSet(schema, chunk);
+  const resultSet = bqrsToResultSet(schema, chunk);
 
   const capped = !!chunk.next;
 
-  return { schema, resultSet, fileLinkPrefix, sourceLocationPrefix, capped };
+  return { resultSet, fileLinkPrefix, sourceLocationPrefix, capped };
 }

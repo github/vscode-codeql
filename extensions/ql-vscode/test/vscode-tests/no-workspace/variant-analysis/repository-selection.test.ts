@@ -15,16 +15,6 @@ describe("repository selection", () => {
     );
   });
 
-  it("should log error when local database item is selected", async () => {
-    const dbManager = setUpDbManager({
-      kind: DbItemKind.LocalDatabase,
-    } as DbItem);
-
-    await expect(getRepositorySelection(dbManager)).rejects.toThrow(
-      "Local databases and lists are not supported yet.",
-    );
-  });
-
   it("should log an error when an empty remote user defined list is selected", async () => {
     const dbManager = setUpDbManager({
       kind: DbItemKind.RemoteUserDefinedList,

@@ -6,11 +6,7 @@ import {
   DbConfig,
   SelectedDbItemKind,
 } from "../../../../src/databases/config/db-config";
-import {
-  AddListQuickPickItem,
-  RemoteDatabaseQuickPickItem,
-} from "../../../../src/databases/ui/db-panel";
-import { DbListKind } from "../../../../src/databases/db-item";
+import { RemoteDatabaseQuickPickItem } from "../../../../src/databases/ui/db-panel";
 import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases/ui/db-tree-view-item";
 import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
@@ -55,22 +51,6 @@ describe("Db panel UI commands", () => {
     expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
       "my-list-1",
     );
-  });
-
-  it.skip("should add new local db list", async () => {
-    // Add db list
-    jest.spyOn(window, "showQuickPick").mockResolvedValue({
-      databaseKind: DbListKind.Local,
-    } as AddListQuickPickItem);
-    jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
-    await commandManager.execute(
-      "codeQLVariantAnalysisRepositories.addNewList",
-    );
-
-    // Check db config
-    const dbConfig: DbConfig = await readJson(dbConfigFilePath);
-    expect(dbConfig.databases.local.lists).toHaveLength(1);
-    expect(dbConfig.databases.local.lists[0].name).toBe("my-list-1");
   });
 
   it("should add new remote repository", async () => {
