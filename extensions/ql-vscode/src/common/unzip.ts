@@ -97,6 +97,13 @@ async function copyStream(
   });
 }
 
+type UnzipProgress = {
+  filesExtracted: number;
+  totalFiles: number;
+};
+
+export type UnzipProgressCallback = (progress: UnzipProgress) => void;
+
 /**
  * Unzips a single file from a zip archive.
  *
@@ -143,10 +150,12 @@ async function unzipFile(
  * @param archivePath
  * @param destinationPath
  * @param taskRunner A function that runs the tasks (either sequentially or concurrently).
+ * @param progress
  */
 export async function unzipToDirectory(
   archivePath: string,
   destinationPath: string,
+  progress: UnzipProgressCallback | undefined,
   taskRunner: (tasks: Array<() => Promise<void>>) => Promise<void>,
 ): Promise<void> {
   const zipFile = await openZip(archivePath, {
@@ -158,8 +167,23 @@ export async function unzipToDirectory(
   try {
     const entries = await readZipEntries(zipFile);
 
+    let filesExtracted = 0;
+    const totalFiles = entries.length;
+
+    const reportProgress = () => {
+      progress?.({
+        filesExtracted,
+        totalFiles,
+      });
+    };
+
     await taskRunner(
-      entries.map((entry) => () => unzipFile(zipFile, entry, destinationPath)),
+      entries.map((entry) => async () => {
+        await unzipFile(zipFile, entry, destinationPath);
+
+        filesExtracted++;
+        reportProgress();
+      }),
     );
   } finally {
     zipFile.close();
@@ -173,14 +197,21 @@ export async function unzipToDirectory(
  *
  * @param archivePath
  * @param destinationPath
+ * @param progress
  */
 export async function unzipToDirectorySequentially(
   archivePath: string,
   destinationPath: string,
+  progress?: UnzipProgressCallback,
 ): Promise<void> {
-  return unzipToDirectory(archivePath, destinationPath, async (tasks) => {
-    for (const task of tasks) {
-      await task();
-    }
-  });
+  return unzipToDirectory(
+    archivePath,
+    destinationPath,
+    progress,
+    async (tasks) => {
+      for (const task of tasks) {
+        await task();
+      }
+    },
+  );
 }
