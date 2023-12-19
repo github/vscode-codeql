@@ -1,10 +1,21 @@
-import { resolve } from "path";
+import { createHash } from "crypto";
+import { join, relative, resolve } from "path";
+import {
+  createReadStream,
+  pathExists,
+  readdir,
+  readFile,
+  stat,
+} from "fs-extra";
+import { dir, DirectoryResult } from "tmp-promise";
 import {
   excludeDirectories,
   openZip,
   openZipBuffer,
   readZipEntries,
+  unzipToDirectory,
 } from "../../../src/common/unzip";
+import { walkDirectory } from "../../../src/common/files";
 
 const zipPath = resolve(__dirname, "../data/unzip/test-zip.zip");
 
@@ -81,3 +92,109 @@ describe("openZipBuffer", () => {
     expect(buffer.toString("utf8")).toEqual("I am a file\n\n");
   });
 });
+
+describe("unzipToDirectory", () => {
+  let tmpDir: DirectoryResult;
+
+  beforeEach(async () => {
+    tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+  });
+
+  afterEach(async () => {
+    await tmpDir?.cleanup();
+  });
+
+  it("extracts all files", async () => {
+    await unzipToDirectory(zipPath, tmpDir.path);
+
+    const allFiles = [];
+    for await (const file of walkDirectory(tmpDir.path, true)) {
+      allFiles.push(file);
+    }
+
+    expect(
+      allFiles.map((filePath) => relative(tmpDir.path, filePath)).sort(),
+    ).toEqual([
+      "directory",
+      "directory/file.txt",
+      "directory/file2.txt",
+      "directory2",
+      "directory2/file.txt",
+      "empty-directory",
+      "tools",
+      "tools/osx64",
+      "tools/osx64/java-aarch64",
+      "tools/osx64/java-aarch64/bin",
+      "tools/osx64/java-aarch64/bin/java",
+    ]);
+
+    await expectFile(join(tmpDir.path, "directory", "file.txt"), {
+      mode: 0o100644,
+      contents: "I am a file\n\n",
+    });
+    await expectFile(join(tmpDir.path, "directory", "file2.txt"), {
+      mode: 0o100644,
+      contents: "I am another file\n\n",
+    });
+    await expectFile(join(tmpDir.path, "directory2", "file.txt"), {
+      mode: 0o100600,
+      contents: "I am secret\n",
+    });
+    await expectFile(
+      join(tmpDir.path, "tools", "osx64", "java-aarch64", "bin", "java"),
+      {
+        mode: 0o100755,
+        hash: "68b832b5c0397c5baddbbb0a76cf5407b7ea5eee8f84f9ab9488f04a52e529eb",
+      },
+    );
+
+    expect(await pathExists(join(tmpDir.path, "empty-directory"))).toBe(true);
+    expect(await readdir(join(tmpDir.path, "empty-directory"))).toEqual([]);
+  });
+});
+
+async function expectFile(
+  filePath: string,
+  {
+    mode: expectedMode,
+    hash: expectedHash,
+    contents: expectedContents,
+  }: {
+    mode: number;
+    hash?: string;
+    contents?: string;
+  },
+) {
+  const stats = await stat(filePath);
+  expect(stats.mode).toEqual(expectedMode);
+
+  if (expectedHash) {
+    const hash = await computeHash(filePath);
+    expect(hash).toEqual(expectedHash);
+  }
+
+  if (expectedContents) {
+    const contents = await readFile(filePath);
+    expect(contents.toString("utf-8")).toEqual(expectedContents);
+  }
+}
+
+async function computeHash(filePath: string) {
+  const input = createReadStream(filePath);
+  const hash = createHash("sha256");
+
+  input.pipe(hash);
+
+  await new Promise((resolve, reject) => {
+    input.on("error", (err) => {
+      reject(err);
+    });
+    input.on("end", () => {
+      resolve(undefined);
+    });
+  });
+
+  return hash.digest("hex");
+}
