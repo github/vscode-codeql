@@ -453,9 +453,18 @@ class ExtensionSpecificDistributionManager {
     void extLogger.log(
       `Searching for latest release including ${requiredAssetName}.`,
     );
+
+    const versionRange = this.usingNightlyReleases()
+      ? undefined
+      : this.versionRange;
+    const orderBySemver = !this.usingNightlyReleases();
+    const includePrerelease =
+      this.usingNightlyReleases() || this.config.includePrerelease;
+
     return this.createReleasesApiConsumer().getLatestRelease(
-      this.versionRange,
-      this.config.includePrerelease,
+      versionRange,
+      orderBySemver,
+      includePrerelease,
       (release) => {
         // v2.12.3 was released with a bug that causes the extension to fail
         // so we force the extension to ignore it.
@@ -510,6 +519,14 @@ class ExtensionSpecificDistributionManager {
     } else {
       return DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
     }
+  }
+
+  private usingNightlyReleases(): boolean {
+    return (
+      !this.config.ownerName &&
+      !this.config.repositoryName &&
+      this.config.channel === "nightly"
+    );
   }
 
   private async bumpDistributionFolderIndex(): Promise<void> {
@@ -584,7 +601,8 @@ export class ReleasesApiConsumer {
   }
 
   public async getLatestRelease(
-    versionRange: semver.Range,
+    versionRange: semver.Range | undefined,
+    orderBySemver = true,
     includePrerelease = false,
     additionalCompatibilityCheck?: (release: GithubRelease) => boolean,
   ): Promise<Release> {
@@ -597,12 +615,14 @@ export class ReleasesApiConsumer {
         return false;
       }
 
-      const version = semver.parse(release.tag_name);
-      if (
-        version === null ||
-        !semver.satisfies(version, versionRange, { includePrerelease })
-      ) {
-        return false;
+      if (versionRange !== undefined) {
+        const version = semver.parse(release.tag_name);
+        if (
+          version === null ||
+          !semver.satisfies(version, versionRange, { includePrerelease })
+        ) {
+          return false;
+        }
       }
 
       return (
@@ -611,10 +631,9 @@ export class ReleasesApiConsumer {
     });
     // Tag names must all be parsable to semvers due to the previous filtering step.
     const latestRelease = compatibleReleases.sort((a, b) => {
-      const versionComparison = semver.compare(
-        semver.parse(b.tag_name)!,
-        semver.parse(a.tag_name)!,
-      );
+      const versionComparison = orderBySemver
+        ? semver.compare(semver.parse(b.tag_name)!, semver.parse(a.tag_name)!)
+        : b.id - a.id;
       if (versionComparison !== 0) {
         return versionComparison;
       }
