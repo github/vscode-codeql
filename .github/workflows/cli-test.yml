@@ -116,7 +116,10 @@ jobs:
     needs: [cli-test]
     if: failure() && github.ref == 'refs/heads/main'
     permissions:
+      contents: read
       issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Create GitHub issue
         run: |
@@ -141,7 +144,7 @@ jobs:
 
           COMMENT_FILE="comment.md"
           RUN_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
-          printf 'CLI test [%s](%s) failed on ref `%s`' "$RUN_ID" "$RUN_URL" "$RUN_REF" > "$COMMENT_FILE"
+          printf 'CLI test [%s](%s) failed on ref `%s`' "$GITHUB_RUN_ID" "$RUN_URL" "$GITHUB_REF" > "$COMMENT_FILE"
 
           # `gh issue create` returns an issue URL, and `gh issue list | cut -f 1` returns an issue number.
           # Both are accepted here.
