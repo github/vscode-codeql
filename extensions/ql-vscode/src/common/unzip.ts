@@ -205,6 +205,8 @@ export async function unzipToDirectory(
       });
     };
 
+    reportProgress();
+
     await taskRunner(
       entries.map((entry) => async () => {
         let entryBytesExtracted = 0;

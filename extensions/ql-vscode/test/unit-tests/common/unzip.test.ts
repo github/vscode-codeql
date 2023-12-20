@@ -164,6 +164,75 @@ describe.each([
     expect(await pathExists(join(tmpDir.path, "empty-directory"))).toBe(true);
     expect(await readdir(join(tmpDir.path, "empty-directory"))).toEqual([]);
   });
+
+  describe("with reported progress", () => {
+    const progressCallback = jest.fn();
+
+    beforeEach(async () => {
+      progressCallback.mockReset();
+
+      await unzipToDirectory(zipPath, tmpDir.path, progressCallback);
+    });
+
+    it("has at least as many progress callbacks as files", () => {
+      expect(progressCallback.mock.calls.length).toBeGreaterThanOrEqual(11);
+    });
+
+    it("has an incrementing files extracted value", () => {
+      let previousValue = 0;
+      for (const call of progressCallback.mock.calls.values()) {
+        const [{ filesExtracted }] = call;
+        expect(filesExtracted).toBeGreaterThanOrEqual(previousValue);
+        previousValue = filesExtracted;
+      }
+    });
+
+    it("has an incrementing bytes extracted value", () => {
+      let previousValue = 0;
+      for (const call of progressCallback.mock.calls.values()) {
+        const [{ bytesExtracted }] = call;
+        expect(bytesExtracted).toBeGreaterThanOrEqual(previousValue);
+        previousValue = bytesExtracted;
+      }
+    });
+
+    it("always increments either bytes or files extracted", () => {
+      let previousBytesExtracted = 0;
+      let previousFilesExtracted = 0;
+
+      for (const [index, call] of progressCallback.mock.calls.entries()) {
+        if (index === 0) {
+          // The first call is always 0, 0
+          continue;
+        }
+
+        const [{ bytesExtracted, filesExtracted }] = call;
+        expect(bytesExtracted + filesExtracted).toBeGreaterThan(
+          previousBytesExtracted + previousFilesExtracted,
+        );
+        previousBytesExtracted = bytesExtracted;
+        previousFilesExtracted = filesExtracted;
+      }
+    });
+
+    it("has a first call with the correct values", () => {
+      expect(progressCallback).toHaveBeenNthCalledWith(1, {
+        bytesExtracted: 0,
+        totalBytes: 87,
+        filesExtracted: 0,
+        totalFiles: 11,
+      });
+    });
+
+    it("has a last call with the correct values", () => {
+      expect(progressCallback).toHaveBeenLastCalledWith({
+        bytesExtracted: 87,
+        totalBytes: 87,
+        filesExtracted: 11,
+        totalFiles: 11,
+      });
+    });
+  });
 });
 
 async function expectFile(
