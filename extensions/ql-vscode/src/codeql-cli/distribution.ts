@@ -523,9 +523,8 @@ class ExtensionSpecificDistributionManager {
 
   private get usingNightlyReleases(): boolean {
     return (
-      !this.config.ownerName &&
-      !this.config.repositoryName &&
-      this.config.channel === "nightly"
+      this.distributionOwnerName === NIGHTLY_DISTRIBUTION_OWNER_NAME &&
+      this.distributionRepositoryName === NIGHTLY_DISTRIBUTION_REPOSITORY_NAME
     );
   }
 
