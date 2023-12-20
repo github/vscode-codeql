@@ -112,7 +112,7 @@ const DISTRIBUTION_CHANGE_SETTINGS = [
   PERSONAL_ACCESS_TOKEN_SETTING,
 ];
 
-export type CLIChannel = "released" | "nightly";
+export type CLIChannel = "stable" | "nightly";
 
 export interface DistributionConfig {
   readonly customCodeQlPath?: string;
@@ -283,9 +283,7 @@ export class DistributionConfigListener
   }
 
   public get channel(): CLIChannel {
-    return CLI_CHANNEL_SETTING.getValue() === "nightly"
-      ? "nightly"
-      : "released";
+    return CLI_CHANNEL_SETTING.getValue() === "nightly" ? "nightly" : "stable";
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
