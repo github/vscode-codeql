@@ -25,7 +25,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
-import { unzipToDirectory } from "../common/unzip";
+import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 
 /**
  * distribution.ts
@@ -420,7 +420,10 @@ class ExtensionSpecificDistributionManager {
       void extLogger.log(
         `Extracting CodeQL CLI to ${this.getDistributionStoragePath()}`,
       );
-      await unzipToDirectory(archivePath, this.getDistributionStoragePath());
+      await unzipToDirectoryConcurrently(
+        archivePath,
+        this.getDistributionStoragePath(),
+      );
     } finally {
       await remove(tmpDirectory);
     }

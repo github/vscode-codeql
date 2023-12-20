@@ -8,9 +8,10 @@ import {
   openZip,
   openZipBuffer,
   readZipEntries,
-  unzipToDirectory,
+  unzipToDirectorySequentially,
 } from "../../../src/common/unzip";
 import { walkDirectory } from "../../../src/common/files";
+import { unzipToDirectoryConcurrently } from "../../../src/common/unzip-concurrently";
 
 const zipPath = resolve(__dirname, "../data/unzip/test-zip.zip");
 
@@ -88,7 +89,16 @@ describe("openZipBuffer", () => {
   });
 });
 
-describe("unzipToDirectory", () => {
+describe.each([
+  {
+    name: "unzipToDirectorySequentially",
+    unzipToDirectory: unzipToDirectorySequentially,
+  },
+  {
+    name: "unzipToDirectoryConcurrently",
+    unzipToDirectory: unzipToDirectoryConcurrently,
+  },
+])("$name", ({ unzipToDirectory }) => {
   let tmpDir: DirectoryResult;
 
   beforeEach(async () => {
@@ -186,6 +196,8 @@ async function expectFile(
   if (expectedContents) {
     expect(contents.toString("utf-8")).toEqual(expectedContents);
   }
+
+  await file.close();
 }
 
 async function computeHash(contents: Buffer) {

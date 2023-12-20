@@ -97,9 +97,57 @@ async function copyStream(
   });
 }
 
+/**
+ * Unzips a single file from a zip archive.
+ *
+ * @param zipFile
+ * @param entry
+ * @param rootDestinationPath
+ */
+async function unzipFile(
+  zipFile: ZipFile,
+  entry: ZipEntry,
+  rootDestinationPath: string,
+): Promise<void> {
+  const path = join(rootDestinationPath, entry.fileName);
+
+  if (/\/$/.test(entry.fileName)) {
+    // Directory file names end with '/'
+
+    await ensureDir(path);
+  } else {
+    // Ensure the directory exists
+    await ensureDir(dirname(path));
+
+    const readable = await openZipReadStream(zipFile, entry);
+
+    let mode: number | undefined = entry.externalFileAttributes >>> 16;
+    if (mode <= 0) {
+      mode = undefined;
+    }
+
+    const writeStream = createWriteStream(path, {
+      autoClose: true,
+      mode,
+    });
+
+    await copyStream(readable, writeStream);
+  }
+}
+
+/**
+ * Unzips all files from a zip archive. Please use
+ * `unzipToDirectoryConcurrently` or `unzipToDirectorySequentially` instead
+ * of this function.
+ *
+ * @param archivePath
+ * @param destinationPath
+ * @param taskRunner A function that runs the tasks (either sequentially or concurrently).
+ */
 export async function unzipToDirectory(
   archivePath: string,
   destinationPath: string,
+  taskRunner: (tasks: Array<() => Promise<void>>) => Promise<void>,
 ): Promise<void> {
   const zipFile = await openZip(archivePath, {
     autoClose: false,
@@ -110,33 +158,29 @@ export async function unzipToDirectory(
   try {
     const entries = await readZipEntries(zipFile);
 
-    for (const entry of entries) {
-      const path = join(destinationPath, entry.fileName);
-
-      if (/\/$/.test(entry.fileName)) {
-        // Directory file names end with '/'
-
-        await ensureDir(path);
-      } else {
-        // Ensure the directory exists
-        await ensureDir(dirname(path));
-
-        const readable = await openZipReadStream(zipFile, entry);
-
-        let mode: number | undefined = entry.externalFileAttributes >>> 16;
-        if (mode <= 0) {
-          mode = undefined;
-        }
-
-        const writeStream = createWriteStream(path, {
-          autoClose: true,
-          mode,
-        });
-
-        await copyStream(readable, writeStream);
-      }
-    }
+    await taskRunner(
+      entries.map((entry) => () => unzipFile(zipFile, entry, destinationPath)),
+    );
   } finally {
     zipFile.close();
   }
+}
+
+/**
+ * Sequentially unzips all files from a zip archive. Please use
+ * `unzipToDirectoryConcurrently` if you can. This function is only
+ * provided because Jest cannot import `p-queue`.
+ *
+ * @param archivePath
+ * @param destinationPath
+ */
+export async function unzipToDirectorySequentially(
+  archivePath: string,
+  destinationPath: string,
+): Promise<void> {
+  return unzipToDirectory(archivePath, destinationPath, async (tasks) => {
+    for (const task of tasks) {
+      await task();
+    }
+  });
 }
