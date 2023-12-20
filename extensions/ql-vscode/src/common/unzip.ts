@@ -31,12 +31,7 @@ export function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
 
     zipFile.readEntry();
     zipFile.on("entry", (entry: ZipEntry) => {
-      if (/\/$/.test(entry.fileName)) {
-        // Directory file names end with '/'
-        // We don't need to do anything for directories.
-      } else {
-        files.push(entry);
-      }
+      files.push(entry);
 
       zipFile.readEntry();
     });
