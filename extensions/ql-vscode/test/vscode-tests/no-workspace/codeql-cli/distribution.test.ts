@@ -128,6 +128,7 @@ describe("Releases API consumer", () => {
       const latestRelease = await consumer.getLatestRelease(
         new Range("2.*.*"),
         true,
+        true,
         (release) =>
           release.assets.some((asset) => asset.name === "exampleAsset.txt"),
       );
@@ -138,7 +139,7 @@ describe("Releases API consumer", () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       await expect(
-        consumer.getLatestRelease(new Range("2.*.*"), true, (release) =>
+        consumer.getLatestRelease(new Range("2.*.*"), true, true, (release) =>
           release.assets.some(
             (asset) => asset.name === "otherExampleAsset.txt",
           ),
@@ -151,6 +152,7 @@ describe("Releases API consumer", () => {
 
       const latestRelease = await consumer.getLatestRelease(
         unconstrainedVersionRange,
+        true,
         true,
       );
       expect(latestRelease.id).toBe(5);
