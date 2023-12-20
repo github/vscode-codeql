@@ -18,7 +18,7 @@ describe("local-databases-ui", () => {
   describe("fixDbUri", () => {
     const fixDbUri = (DatabaseUI.prototype as any).fixDbUri;
     it("should choose current directory normally", async () => {
-      const dir = dirSync().name;
+      const dir = dirSync({ unsafeCleanup: true }).name;
       const uri = await fixDbUri(Uri.file(dir));
       expect(uri.toString()).toBe(Uri.file(dir).toString());
     });
@@ -30,7 +30,7 @@ describe("local-databases-ui", () => {
     });
 
     it("should choose parent directory when db-* is selected", async () => {
-      const dir = dirSync().name;
+      const dir = dirSync({ unsafeCleanup: true }).name;
       const dbDir = join(dir, "db-javascript");
       await mkdirs(dbDir);
 
@@ -39,7 +39,7 @@ describe("local-databases-ui", () => {
     });
 
     it("should choose parent's parent directory when file selected is in db-*", async () => {
-      const dir = dirSync().name;
+      const dir = dirSync({ unsafeCleanup: true }).name;
       const dbDir = join(dir, "db-javascript");
       const file = join(dbDir, "nested");
       await mkdirs(dbDir);
@@ -51,7 +51,7 @@ describe("local-databases-ui", () => {
 
     it("should handle a parent whose name is db-*", async () => {
       // fixes https://github.com/github/vscode-codeql/issues/482
-      const dir = dirSync().name;
+      const dir = dirSync({ unsafeCleanup: true }).name;
       const parentDir = join(dir, "db-hucairz");
       const dbDir = join(parentDir, "db-javascript");
       const file = join(dbDir, "nested");
@@ -64,7 +64,7 @@ describe("local-databases-ui", () => {
   });
 
   it("should delete orphaned databases", async () => {
-    const storageDir = dirSync().name;
+    const storageDir = dirSync({ unsafeCleanup: true }).name;
     const db1 = createDatabase(storageDir, "db1-imported", QueryLanguage.Cpp);
     const db2 = createDatabase(
       storageDir,

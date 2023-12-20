@@ -6,8 +6,9 @@ import {
   createFilenameForPackage,
   loadDataExtensionYaml,
 } from "../../../src/model-editor/yaml";
-import { CallClassification } from "../../../src/model-editor/method";
+import { CallClassification, Method } from "../../../src/model-editor/method";
 import { QueryLanguage } from "../../../src/common/query-language";
+import { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {
@@ -978,6 +979,132 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
     data:
       - ["org.sql2o","Query","executeScalar","(Class)","summary","manual"]
 `,
+    });
+  });
+
+  describe("with same package names but different capitalizations", () => {
+    const methods: Method[] = [
+      {
+        library: "HostTestAppDbContext",
+        signature:
+          "Volo.Abp.TestApp.MongoDb.HostTestAppDbContext#get_FifthDbContextDummyEntity()",
+        packageName: "Volo.Abp.TestApp.MongoDb",
+        typeName: "HostTestAppDbContext",
+        methodName: "get_FifthDbContextDummyEntity",
+        methodParameters: "()",
+        supported: false,
+        supportedType: "none",
+        usages: [],
+      },
+      {
+        library: "CityRepository",
+        signature:
+          "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)",
+        packageName: "Volo.Abp.TestApp.MongoDB",
+        typeName: "CityRepository",
+        methodName: "FindByNameAsync",
+        methodParameters: "(System.String)",
+        supported: false,
+        supportedType: "none",
+        usages: [],
+      },
+    ];
+    const newModeledMethods: Record<string, ModeledMethod[]> = {
+      "Volo.Abp.TestApp.MongoDb.HostTestAppDbContext#get_FifthDbContextDummyEntity()":
+        [
+          {
+            type: "sink",
+            input: "Argument[0]",
+            kind: "sql",
+            provenance: "df-generated",
+            signature:
+              "Volo.Abp.TestApp.MongoDb.HostTestAppDbContext#get_FifthDbContextDummyEntity()",
+            packageName: "Volo.Abp.TestApp.MongoDb",
+            typeName: "HostTestAppDbContext",
+            methodName: "get_FifthDbContextDummyEntity",
+            methodParameters: "()",
+          },
+        ],
+      "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)":
+        [
+          {
+            type: "neutral",
+            kind: "summary",
+            provenance: "df-generated",
+            signature:
+              "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)",
+            packageName: "Volo.Abp.TestApp.MongoDB",
+            typeName: "CityRepository",
+            methodName: "FindByNameAsync",
+            methodParameters: "(System.String)",
+          },
+        ],
+    };
+    const modelYaml = `extensions:
+  - addsTo:
+      pack: codeql/csharp-all
+      extensible: sourceModel
+    data: []
+
+  - addsTo:
+      pack: codeql/csharp-all
+      extensible: sinkModel
+    data:
+      - ["Volo.Abp.TestApp.MongoDb","HostTestAppDbContext",true,"get_FifthDbContextDummyEntity","()","","Argument[0]","sql","df-generated"]
+
+  - addsTo:
+      pack: codeql/csharp-all
+      extensible: summaryModel
+    data: []
+
+  - addsTo:
+      pack: codeql/csharp-all
+      extensible: neutralModel
+    data:
+      - ["Volo.Abp.TestApp.MongoDB","CityRepository","FindByNameAsync","(System.String)","summary","df-generated"]
+`;
+
+    it("creates the correct YAML files when there are existing modeled methods", () => {
+      const yaml = createDataExtensionYamlsForFrameworkMode(
+        QueryLanguage.CSharp,
+        methods,
+        newModeledMethods,
+        {},
+      );
+
+      expect(yaml).toEqual({
+        "models/Volo.Abp.TestApp.MongoDB.model.yml": modelYaml,
+      });
+    });
+
+    it("creates the correct YAML files when there are existing modeled methods", () => {
+      const yaml = createDataExtensionYamlsForFrameworkMode(
+        QueryLanguage.CSharp,
+        methods,
+        newModeledMethods,
+        {
+          "models/Volo.Abp.TestApp.mongodb.model.yml": {
+            "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)":
+              [
+                {
+                  type: "neutral",
+                  kind: "summary",
+                  provenance: "manual",
+                  signature:
+                    "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)",
+                  packageName: "Volo.Abp.TestApp.MongoDB",
+                  typeName: "CityRepository",
+                  methodName: "FindByNameAsync",
+                  methodParameters: "(System.String)",
+                },
+              ],
+          },
+        },
+      );
+
+      expect(yaml).toEqual({
+        "models/Volo.Abp.TestApp.mongodb.model.yml": modelYaml,
+      });
     });
   });
 });

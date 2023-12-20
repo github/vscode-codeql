@@ -2,9 +2,9 @@ import { existsSync, createWriteStream, mkdirpSync } from "fs-extra";
 import { normalize, join } from "path";
 import {
   getRequiredAssetName,
-  extractZipArchive,
   codeQlLauncherName,
 } from "../../src/common/distribution";
+import { unzipToDirectorySequentially } from "../../src/common/unzip";
 import fetch from "node-fetch";
 import supportedCliVersions from "../../supported_cli_versions.json";
 
@@ -126,7 +126,7 @@ export async function ensureCli(useCli: boolean) {
 
     console.log(`Unzipping into '${unzipDir}'`);
     mkdirpSync(unzipDir);
-    await extractZipArchive(downloadedFilePath, unzipDir);
+    await unzipToDirectorySequentially(downloadedFilePath, unzipDir);
     console.log("Done.");
   } catch (e) {
     console.error("Failed to download CLI.");

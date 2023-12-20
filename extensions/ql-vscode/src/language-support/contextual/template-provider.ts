@@ -88,25 +88,18 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
     uriString: string,
     token: CancellationToken,
   ): Promise<LocationLink[]> {
-    return withProgress(
-      async (progress, tokenInner) => {
-        const multiToken = new MultiCancellationToken(token, tokenInner);
-        return getLocationsForUriString(
-          this.cli,
-          this.qs,
-          this.dbm,
-          uriString,
-          KeyType.DefinitionQuery,
-          this.queryStorageDir,
-          progress,
-          multiToken,
-          (src, _dest) => src === uriString,
-        );
-      },
-      {
-        cancellable: true,
-        title: "Finding definitions",
-      },
+    // Do not create a multitoken here. There will be no popup and users cannot click on anything to cancel this operation.
+    // This is because finding definitions can be triggered by a hover, which should not have a popup.
+    return getLocationsForUriString(
+      this.cli,
+      this.qs,
+      this.dbm,
+      uriString,
+      KeyType.DefinitionQuery,
+      this.queryStorageDir,
+      () => {}, // noop
+      token,
+      (src, _dest) => src === uriString,
     );
   }
 }
@@ -161,6 +154,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     uriString: string,
     token: CancellationToken,
   ): Promise<FullLocationLink[]> {
+    // Create a multitoken here. There will be a popup and users can click on it to cancel this operation.
     return withProgress(
       async (progress, tokenInner) => {
         const multiToken = new MultiCancellationToken(token, tokenInner);

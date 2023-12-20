@@ -1,28 +1,49 @@
+import { pathExists } from "fs-extra";
 import { BqrsInfo } from "../common/bqrs-cli-types";
-import { getDefaultResultSetName } from "../common/interface-types";
+import {
+  ALERTS_TABLE_NAME,
+  getDefaultResultSetName,
+  QueryMetadata,
+} from "../common/interface-types";
 
-export async function findCommonResultSetNames(
-  fromSchemas: BqrsInfo,
-  toSchemas: BqrsInfo,
+export async function getResultSetNames(
+  schemas: BqrsInfo,
+  metadata: QueryMetadata | undefined,
+  interpretedResultsPath: string | undefined,
 ): Promise<string[]> {
-  const fromSchemaNames = fromSchemas["result-sets"].map(
-    (schema) => schema.name,
-  );
-  const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
+  const schemaNames = schemas["result-sets"].map((schema) => schema.name);
 
+  if (metadata?.kind !== "graph" && interpretedResultsPath) {
+    if (await pathExists(interpretedResultsPath)) {
+      schemaNames.push(ALERTS_TABLE_NAME);
+    }
+  }
+
+  return schemaNames;
+}
+
+export function findCommonResultSetNames(
+  fromSchemaNames: string[],
+  toSchemaNames: string[],
+): string[] {
   return fromSchemaNames.filter((name) => toSchemaNames.includes(name));
 }
 
+export type CompareQueryInfo = {
+  schemas: BqrsInfo;
+  schemaNames: string[];
+  metadata: QueryMetadata | undefined;
+  interpretedResultsPath: string;
+};
+
 export async function findResultSetNames(
-  fromSchemas: BqrsInfo,
-  toSchemas: BqrsInfo,
+  from: CompareQueryInfo,
+  to: CompareQueryInfo,
   commonResultSetNames: readonly string[],
   selectedResultSetName: string | undefined,
 ) {
-  const fromSchemaNames = fromSchemas["result-sets"].map(
-    (schema) => schema.name,
-  );
-  const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
+  const fromSchemaNames = from.schemaNames;
+  const toSchemaNames = to.schemaNames;
 
   // Fall back on the default result set names if there are no common ones.
   const defaultFromResultSetName = fromSchemaNames.find((name) =>
@@ -47,6 +68,7 @@ export async function findResultSetNames(
   const toResultSetName = currentResultSetName || defaultToResultSetName!;
 
   return {
+    currentResultSetName,
     currentResultSetDisplayName:
       currentResultSetName ||
       `${defaultFromResultSetName} <-> ${defaultToResultSetName}`,

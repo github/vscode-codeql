@@ -135,7 +135,7 @@ describeWithCodeQL()("using the new query server", () => {
     // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
     const dbItem = await ensureTestDatabase(
       extension.databaseManager,
-      undefined,
+      cliServer,
     );
     db = dbItem.databaseUri.fsPath;
   });
