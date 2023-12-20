@@ -454,12 +454,12 @@ class ExtensionSpecificDistributionManager {
       `Searching for latest release including ${requiredAssetName}.`,
     );
 
-    const versionRange = this.usingNightlyReleases()
+    const versionRange = this.usingNightlyReleases
       ? undefined
       : this.versionRange;
-    const orderBySemver = !this.usingNightlyReleases();
+    const orderBySemver = !this.usingNightlyReleases;
     const includePrerelease =
-      this.usingNightlyReleases() || this.config.includePrerelease;
+      this.usingNightlyReleases || this.config.includePrerelease;
 
     return this.createReleasesApiConsumer().getLatestRelease(
       versionRange,
@@ -495,13 +495,13 @@ class ExtensionSpecificDistributionManager {
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
     return new ReleasesApiConsumer(
-      this.distributionOwnerName(),
-      this.distributionRepositoryName(),
+      this.distributionOwnerName,
+      this.distributionRepositoryName,
       this.config.personalAccessToken,
     );
   }
 
-  private distributionOwnerName(): string {
+  private get distributionOwnerName(): string {
     if (this.config.ownerName) {
       return this.config.ownerName;
     } else if (this.config.channel === "nightly") {
@@ -511,7 +511,7 @@ class ExtensionSpecificDistributionManager {
     }
   }
 
-  private distributionRepositoryName(): string {
+  private get distributionRepositoryName(): string {
     if (this.config.repositoryName) {
       return this.config.repositoryName;
     } else if (this.config.channel === "nightly") {
@@ -521,7 +521,7 @@ class ExtensionSpecificDistributionManager {
     }
   }
 
-  private usingNightlyReleases(): boolean {
+  private get usingNightlyReleases(): boolean {
     return (
       !this.config.ownerName &&
       !this.config.repositoryName &&
