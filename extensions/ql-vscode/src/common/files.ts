@@ -91,18 +91,23 @@ export async function readDirFullPaths(path: string): Promise<string[]> {
  * Symbolic links are ignored.
  *
  * @param dir the directory to walk
+ * @param includeDirectories whether to include directories in the results
  *
  * @return An iterator of the full path to all files recursively found in the directory.
  */
 export async function* walkDirectory(
   dir: string,
+  includeDirectories = false,
 ): AsyncIterableIterator<string> {
   const seenFiles = new Set<string>();
   for await (const d of await opendir(dir)) {
     const entry = join(dir, d.name);
     seenFiles.add(entry);
     if (d.isDirectory()) {
-      yield* walkDirectory(entry);
+      if (includeDirectories) {
+        yield entry;
+      }
+      yield* walkDirectory(entry, includeDirectories);
     } else if (d.isFile()) {
       yield entry;
     }
