@@ -1,5 +1,5 @@
 import * as tmp from "tmp";
-import * as fs from "fs-extra";
+import { ensureDir, ensureFile, pathExists, writeFile } from "fs-extra";
 import { join } from "path";
 import { ExtensionContext, Uri, workspace } from "vscode";
 
@@ -216,7 +216,7 @@ describe("local databases", () => {
 
     it("should remove a database item", async () => {
       const mockDbItem = createMockDB(dir);
-      await fs.ensureDir(mockDbItem.databaseUri.fsPath);
+      await ensureDir(mockDbItem.databaseUri.fsPath);
 
       // pretend that this item is the first workspace folder in the list
       jest
@@ -235,14 +235,14 @@ describe("local databases", () => {
       expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
 
       // should also delete the db contents
-      await expect(fs.pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
+      await expect(pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
         false,
       );
     });
 
     it("should remove a database item outside of the extension controlled area", async () => {
       const mockDbItem = createMockDB(dir);
-      await fs.ensureDir(mockDbItem.databaseUri.fsPath);
+      await ensureDir(mockDbItem.databaseUri.fsPath);
 
       // pretend that this item is the first workspace folder in the list
       jest
@@ -263,7 +263,7 @@ describe("local databases", () => {
       expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
 
       // should NOT delete the db contents
-      await expect(fs.pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
+      await expect(pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
         true,
       );
     });
@@ -432,11 +432,11 @@ describe("local databases", () => {
 
     beforeEach(async () => {
       directoryPath = join(dir.name, "dir");
-      await fs.ensureDir(directoryPath);
+      await ensureDir(directoryPath);
       projectPath = join(directoryPath, "dir.testproj");
-      await fs.writeFile(projectPath, "");
+      await writeFile(projectPath, "");
       qlFilePath = join(directoryPath, "test.ql");
-      await fs.writeFile(qlFilePath, "");
+      await writeFile(qlFilePath, "");
     });
 
     it("should return true for testproj database in test directory", async () => {
@@ -463,7 +463,7 @@ describe("local databases", () => {
 
     it("should return false for non-testproj database in test directory", async () => {
       const anotherProjectPath = join(directoryPath, "dir.proj");
-      await fs.writeFile(anotherProjectPath, "");
+      await writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
         dir,
@@ -476,9 +476,9 @@ describe("local databases", () => {
 
     it("should return false for testproj database outside test directory", async () => {
       const anotherProjectDir = join(dir.name, "other");
-      await fs.ensureDir(anotherProjectDir);
+      await ensureDir(anotherProjectDir);
       const anotherProjectPath = join(anotherProjectDir, "other.testproj");
-      await fs.writeFile(anotherProjectPath, "");
+      await writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
         dir,
@@ -524,7 +524,7 @@ describe("local databases", () => {
 
     it("should return false for non-testproj database for test file", async () => {
       const anotherProjectPath = join(directoryPath, "dir.proj");
-      await fs.writeFile(anotherProjectPath, "");
+      await writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
         dir,
@@ -537,7 +537,7 @@ describe("local databases", () => {
 
     it("should return false for testproj database not matching test file", async () => {
       const otherTestFile = join(dir.name, "test.ql");
-      await fs.writeFile(otherTestFile, "");
+      await writeFile(otherTestFile, "");
 
       const db = createMockDB(
         dir,
@@ -553,24 +553,24 @@ describe("local databases", () => {
     ["src", "output/src_archive"].forEach((name) => {
       it(`should find source folder in ${name}`, async () => {
         const uri = Uri.file(join(dir.name, name));
-        fs.createFileSync(join(uri.fsPath, "hucairz.txt"));
+        await ensureFile(join(uri.fsPath, "hucairz.txt"));
         const srcUri = await findSourceArchive(dir.name);
         expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
 
       it(`should find source archive in ${name}.zip`, async () => {
         const uri = Uri.file(join(dir.name, `${name}.zip`));
-        fs.createFileSync(uri.fsPath);
+        await ensureFile(uri.fsPath);
         const srcUri = await findSourceArchive(dir.name);
         expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
 
       it(`should prioritize ${name}.zip over ${name}`, async () => {
         const uri = Uri.file(join(dir.name, `${name}.zip`));
-        fs.createFileSync(uri.fsPath);
+        await ensureFile(uri.fsPath);
 
         const uriFolder = Uri.file(join(dir.name, name));
-        fs.createFileSync(join(uriFolder.fsPath, "hucairz.txt"));
+        await ensureFile(join(uriFolder.fsPath, "hucairz.txt"));
 
         const srcUri = await findSourceArchive(dir.name);
         expect(srcUri!.fsPath).toBe(uri.fsPath);
@@ -579,9 +579,9 @@ describe("local databases", () => {
 
     it("should prioritize src over output/src_archive", async () => {
       const uriSrc = Uri.file(join(dir.name, "src.zip"));
-      fs.createFileSync(uriSrc.fsPath);
+      await ensureFile(uriSrc.fsPath);
       const uriSrcArchive = Uri.file(join(dir.name, "src.zip"));
-      fs.createFileSync(uriSrcArchive.fsPath);
+      await ensureFile(uriSrcArchive.fsPath);
 
       const resultUri = await findSourceArchive(dir.name);
       expect(resultUri!.fsPath).toBe(uriSrc.fsPath);
@@ -679,8 +679,8 @@ describe("local databases", () => {
     });
 
     describe("when the QL pack already exists", () => {
-      beforeEach(() => {
-        fs.mkdirSync(join(dir.name, `codeql-custom-queries-${language}`));
+      beforeEach(async () => {
+        await ensureDir(join(dir.name, `codeql-custom-queries-${language}`));
       });
 
       it("should exit early", async () => {

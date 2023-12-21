@@ -1,4 +1,4 @@
-import webpack from "webpack";
+import { Configuration, Stats, webpack } from "webpack";
 import { config } from "./webpack.config";
 
 export function compileView(cb: (err?: Error) => void) {
@@ -18,11 +18,11 @@ export function watchView(cb: (err?: Error) => void) {
 }
 
 function doWebpack(
-  internalConfig: webpack.Configuration,
+  internalConfig: Configuration,
   failOnError: boolean,
   cb: (err?: Error) => void,
 ) {
-  const resultCb = (error: Error | undefined, stats?: webpack.Stats) => {
+  const resultCb = (error: Error | undefined, stats?: Stats) => {
     if (error) {
       cb(error);
     }

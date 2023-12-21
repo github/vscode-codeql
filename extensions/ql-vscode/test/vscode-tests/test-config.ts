@@ -177,6 +177,7 @@ const packageConfiguration: PackageConfiguration =
     return properties;
   })();
 
+// eslint-disable-next-line import/no-mutable-exports
 export let vscodeGetConfigurationMock: jest.SpiedFunction<
   typeof workspace.getConfiguration
 >;

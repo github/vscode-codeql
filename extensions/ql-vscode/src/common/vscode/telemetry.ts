@@ -275,6 +275,7 @@ export class ExtensionTelemetryListener
 /**
  * The global Telemetry instance
  */
+// eslint-disable-next-line import/no-mutable-exports
 export let telemetryListener: ExtensionTelemetryListener | undefined;
 
 export async function initializeTelemetry(

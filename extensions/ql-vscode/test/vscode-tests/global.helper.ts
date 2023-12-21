@@ -21,6 +21,7 @@ export const dbLoc = join(
   realpathSync(join(__dirname, "../../../")),
   "build/tests/db.zip",
 );
+// eslint-disable-next-line import/no-mutable-exports
 export let storagePath: string;
 
 /**

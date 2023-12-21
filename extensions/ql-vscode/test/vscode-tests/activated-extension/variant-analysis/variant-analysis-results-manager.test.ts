@@ -1,5 +1,5 @@
 import { extLogger } from "../../../../src/common/logging/vscode";
-import * as fs from "fs-extra";
+import { readFile, pathExists, remove, outputJson, readJson } from "fs-extra";
 import { join, resolve } from "path";
 import { Readable } from "stream";
 import * as fetchModule from "node-fetch";
@@ -54,8 +54,8 @@ describe(VariantAnalysisResultsManager.name, () => {
     });
 
     afterEach(async () => {
-      if (await fs.pathExists(variantAnalysisStoragePath)) {
-        await fs.remove(variantAnalysisStoragePath);
+      if (await pathExists(variantAnalysisStoragePath)) {
+        await remove(variantAnalysisStoragePath);
       }
     });
 
@@ -97,7 +97,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           __dirname,
           "data/variant-analysis-results.zip",
         );
-        fileContents = fs.readFileSync(sourceFilePath);
+        fileContents = await readFile(sourceFilePath);
 
         getVariantAnalysisRepoResultStub = jest
           .spyOn(fetchModule, "default")
@@ -128,9 +128,9 @@ describe(VariantAnalysisResultsManager.name, () => {
           () => Promise.resolve(),
         );
 
-        expect(fs.existsSync(`${repoTaskStorageDirectory}/results.zip`)).toBe(
-          true,
-        );
+        expect(
+          await pathExists(`${repoTaskStorageDirectory}/results.zip`),
+        ).toBe(true);
       });
 
       it("should unzip the results in a `results/` folder", async () => {
@@ -142,7 +142,7 @@ describe(VariantAnalysisResultsManager.name, () => {
         );
 
         expect(
-          fs.existsSync(`${repoTaskStorageDirectory}/results/results.sarif`),
+          await pathExists(`${repoTaskStorageDirectory}/results/results.sarif`),
         ).toBe(true);
       });
 
@@ -237,8 +237,8 @@ describe(VariantAnalysisResultsManager.name, () => {
     });
 
     afterEach(async () => {
-      if (await fs.pathExists(variantAnalysisStoragePath)) {
-        await fs.remove(variantAnalysisStoragePath);
+      if (await pathExists(variantAnalysisStoragePath)) {
+        await remove(variantAnalysisStoragePath);
       }
     });
 
@@ -256,7 +256,7 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     describe("when the repo task has been written to disk", () => {
       beforeEach(async () => {
-        await fs.outputJson(
+        await outputJson(
           join(repoTaskStorageDirectory, "repo_task.json"),
           dummyRepoTask,
         );
@@ -276,9 +276,9 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       describe("when the SARIF results are downloaded", () => {
         beforeEach(async () => {
-          await fs.outputJson(
+          await outputJson(
             join(repoTaskStorageDirectory, "results/results.sarif"),
-            await fs.readJson(
+            await readJson(
               resolve(__dirname, "../../../data/sarif/validSarif.sarif"),
             ),
           );
@@ -313,7 +313,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           onResultLoadedSpy.mockClear();
 
           // Delete the directory so it can't read from disk
-          await fs.remove(variantAnalysisStoragePath);
+          await remove(variantAnalysisStoragePath);
 
           await expect(
             variantAnalysisResultsManager.loadResults(
@@ -343,7 +343,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           );
 
           // Delete the directory so it can't read from disk
-          await fs.remove(variantAnalysisStoragePath);
+          await remove(variantAnalysisStoragePath);
 
           await expect(
             variantAnalysisResultsManager.loadResults(
@@ -365,7 +365,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           );
 
           // Delete the directory so it can't read from disk
-          await fs.remove(variantAnalysisStoragePath);
+          await remove(variantAnalysisStoragePath);
 
           await expect(
             variantAnalysisResultsManager.loadResults(

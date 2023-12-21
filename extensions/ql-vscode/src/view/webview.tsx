@@ -27,7 +27,7 @@ const render = () => {
 
   // It's a lot harder to use dynamic imports since those don't import the CSS
   // and require a less strict CSP policy
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require
   const view: WebviewDefinition = require(`./${viewName}/index.tsx`).default;
 
   const root = createRoot(element);
