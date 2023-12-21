@@ -799,11 +799,7 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(databaseUI);
 
-  const queriesModule = QueriesModule.initialize(
-    app,
-    languageContext,
-    cliServer,
-  );
+  const queriesModule = QueriesModule.initialize(app, languageContext);
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();

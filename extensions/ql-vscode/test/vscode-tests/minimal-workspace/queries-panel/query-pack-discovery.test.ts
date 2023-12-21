@@ -2,9 +2,8 @@ import { Uri, workspace } from "vscode";
 import { QueryPackDiscovery } from "../../../../src/queries-panel/query-pack-discovery";
 import * as tmp from "tmp";
 import { dirname, join } from "path";
-import { CodeQLCliServer, QuerySetup } from "../../../../src/codeql-cli/cli";
-import { mockedObject } from "../../utils/mocking.helpers";
-import { mkdirSync, writeFileSync } from "fs";
+import { ensureDir, writeJSON } from "fs-extra";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("Query pack discovery", () => {
   let tmpDir: string;
@@ -12,9 +11,6 @@ describe("Query pack discovery", () => {
 
   let workspacePath: string;
 
-  let resolveLibraryPath: jest.SpiedFunction<
-    typeof CodeQLCliServer.prototype.resolveLibraryPath
-  >;
   let discovery: QueryPackDiscovery;
 
   beforeEach(() => {
@@ -34,15 +30,7 @@ describe("Query pack discovery", () => {
       .spyOn(workspace, "workspaceFolders", "get")
       .mockReturnValue([workspaceFolder]);
 
-    const mockResolveLibraryPathValue: QuerySetup = {
-      libraryPath: [],
-      dbscheme: "/ql/java/ql/lib/config/semmlecode.dbscheme",
-    };
-    resolveLibraryPath = jest
-      .fn()
-      .mockResolvedValue(mockResolveLibraryPathValue);
-    const mockCliServer = mockedObject<CodeQLCliServer>({ resolveLibraryPath });
-    discovery = new QueryPackDiscovery(mockCliServer);
+    discovery = new QueryPackDiscovery();
   });
 
   afterEach(() => {
@@ -60,7 +48,7 @@ describe("Query pack discovery", () => {
     });
 
     it("locates a query pack in the same directory", async () => {
-      makeTestFile(join(workspacePath, "qlpack.yml"));
+      await makeTestFile(join(workspacePath, "qlpack.yml"));
 
       await discovery.initialRefresh();
 
@@ -70,7 +58,7 @@ describe("Query pack discovery", () => {
     });
 
     it("locates a query pack using the old pack name", async () => {
-      makeTestFile(join(workspacePath, "codeql-pack.yml"));
+      await makeTestFile(join(workspacePath, "codeql-pack.yml"));
 
       await discovery.initialRefresh();
 
@@ -80,7 +68,7 @@ describe("Query pack discovery", () => {
     });
 
     it("locates a query pack in a higher directory", async () => {
-      makeTestFile(join(workspacePath, "qlpack.yml"));
+      await makeTestFile(join(workspacePath, "qlpack.yml"));
 
       await discovery.initialRefresh();
 
@@ -92,7 +80,7 @@ describe("Query pack discovery", () => {
     });
 
     it("doesn't recognise a query pack in a sibling directory", async () => {
-      makeTestFile(join(workspacePath, "foo", "qlpack.yml"));
+      await makeTestFile(join(workspacePath, "foo", "qlpack.yml"));
 
       await discovery.initialRefresh();
 
@@ -109,24 +97,11 @@ describe("Query pack discovery", () => {
     });
 
     it("query packs override those from parent directories", async () => {
-      makeTestFile(join(workspacePath, "qlpack.yml"));
-      makeTestFile(join(workspacePath, "foo", "qlpack.yml"));
-
-      resolveLibraryPath.mockImplementation(async (_workspaces, queryPath) => {
-        if (queryPath === join(workspacePath, "qlpack.yml")) {
-          return {
-            libraryPath: [],
-            dbscheme: "/ql/java/ql/lib/config/semmlecode.dbscheme",
-          };
-        }
-        if (queryPath === join(workspacePath, "foo", "qlpack.yml")) {
-          return {
-            libraryPath: [],
-            dbscheme: "/ql/cpp/ql/lib/semmlecode.cpp.dbscheme",
-          };
-        }
-        throw new Error(`Unknown query pack: ${queryPath}`);
-      });
+      await makeTestFile(join(workspacePath, "qlpack.yml"), QueryLanguage.Java);
+      await makeTestFile(
+        join(workspacePath, "foo", "qlpack.yml"),
+        QueryLanguage.Cpp,
+      );
 
       await discovery.initialRefresh();
 
@@ -141,24 +116,11 @@ describe("Query pack discovery", () => {
     });
 
     it("prefers a query pack called qlpack.yml", async () => {
-      makeTestFile(join(workspacePath, "qlpack.yml"));
-      makeTestFile(join(workspacePath, "codeql-pack.yml"));
-
-      resolveLibraryPath.mockImplementation(async (_workspaces, queryPath) => {
-        if (queryPath === join(workspacePath, "qlpack.yml")) {
-          return {
-            libraryPath: [],
-            dbscheme: "/ql/cpp/ql/lib/semmlecode.cpp.dbscheme",
-          };
-        }
-        if (queryPath === join(workspacePath, "codeql-pack.yml")) {
-          return {
-            libraryPath: [],
-            dbscheme: "/ql/java/ql/lib/config/semmlecode.dbscheme",
-          };
-        }
-        throw new Error(`Unknown query pack: ${queryPath}`);
-      });
+      await makeTestFile(join(workspacePath, "qlpack.yml"), QueryLanguage.Cpp);
+      await makeTestFile(
+        join(workspacePath, "codeql-pack.yml"),
+        QueryLanguage.Java,
+      );
 
       await discovery.initialRefresh();
 
@@ -169,7 +131,14 @@ describe("Query pack discovery", () => {
   });
 });
 
-function makeTestFile(path: string) {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, "");
+async function makeTestFile(
+  path: string,
+  language: QueryLanguage = QueryLanguage.Java,
+) {
+  await ensureDir(dirname(path));
+  await writeJSON(path, {
+    dependencies: {
+      [`codeql/${language}-all`]: "*",
+    },
+  });
 }

@@ -1,14 +1,12 @@
 import { basename, dirname } from "path";
-import { CodeQLCliServer, QuerySetup } from "../codeql-cli/cli";
 import { Event } from "vscode";
-import { QueryLanguage, dbSchemeToLanguage } from "../common/query-language";
+import { QueryLanguage } from "../common/query-language";
 import { FALLBACK_QLPACK_FILENAME, QLPACK_FILENAMES } from "../common/ql";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
-import { getErrorMessage } from "../common/helpers-pure";
-import { extLogger } from "../common/logging/vscode";
-import { EOL } from "os";
 import { containsPath } from "../common/files";
-import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
+import { load } from "js-yaml";
+import { readFile } from "fs-extra";
+import { QlPackFile } from "../packaging/qlpack-file";
 
 interface QueryPack {
   path: string;
@@ -19,7 +17,7 @@ interface QueryPack {
  * Discovers all query packs in the workspace.
  */
 export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
-  constructor(private readonly cliServer: CodeQLCliServer) {
+  constructor() {
     super("Query Pack Discovery", `**/{${QLPACK_FILENAMES.join(",")}}`);
   }
 
@@ -71,32 +69,32 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
   }
 
   protected async getDataForPath(path: string): Promise<QueryPack> {
-    const language = await this.determinePackLanguage(path);
+    let language: QueryLanguage | undefined;
+    try {
+      language = await this.determinePackLanguage(path);
+    } catch (e) {
+      language = undefined;
+    }
     return { path, language };
   }
 
   private async determinePackLanguage(
     path: string,
   ): Promise<QueryLanguage | undefined> {
-    let packInfo: QuerySetup | undefined = undefined;
-    try {
-      packInfo = await this.cliServer.resolveLibraryPath(
-        getOnDiskWorkspaceFolders(),
-        path,
-        true,
-      );
-    } catch (err) {
-      void extLogger.log(
-        `Query pack discovery failed to determine language for query pack: ${path}${EOL}Reason: ${getErrorMessage(
-          err,
-        )}`,
-      );
+    const qlPack = load(await readFile(path, "utf8")) as QlPackFile | undefined;
+    const dependencies = qlPack?.dependencies;
+    if (!dependencies || typeof dependencies !== "object") {
+      return;
     }
-    if (packInfo?.dbscheme === undefined) {
+
+    const matchingLanguages = Object.values(QueryLanguage).filter(
+      (language) => `codeql/${language}-all` in dependencies,
+    );
+    if (matchingLanguages.length !== 1) {
       return undefined;
     }
-    const dbscheme = basename(packInfo.dbscheme);
-    return dbSchemeToLanguage[dbscheme];
+
+    return matchingLanguages[0];
   }
 
   protected pathIsRelevant(path: string): boolean {

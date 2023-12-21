@@ -1,4 +1,3 @@
-import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger } from "../common/logging/vscode";
 import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
@@ -26,23 +25,18 @@ export class QueriesModule extends DisposableObject {
   public static initialize(
     app: App,
     languageContext: LanguageContextStore,
-    cliServer: CodeQLCliServer,
   ): QueriesModule {
     const queriesModule = new QueriesModule(app);
     app.subscriptions.push(queriesModule);
 
-    queriesModule.initialize(app, languageContext, cliServer);
+    queriesModule.initialize(app, languageContext);
     return queriesModule;
   }
 
-  private initialize(
-    app: App,
-    langauageContext: LanguageContextStore,
-    cliServer: CodeQLCliServer,
-  ): void {
+  private initialize(app: App, langauageContext: LanguageContextStore): void {
     void extLogger.log("Initializing queries panel.");
 
-    const queryPackDiscovery = new QueryPackDiscovery(cliServer);
+    const queryPackDiscovery = new QueryPackDiscovery();
     this.push(queryPackDiscovery);
     void queryPackDiscovery.initialRefresh();
 
