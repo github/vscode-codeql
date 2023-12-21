@@ -12,10 +12,7 @@ import {
   askForGitHubDatabaseDownload,
   downloadDatabaseFromGitHub,
 } from "./download";
-import {
-  GitHubDatabaseConfig,
-  GitHubDatabaseConfigListener,
-} from "../../config";
+import { GitHubDatabaseConfig } from "../../config";
 import { DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { CodeqlDatabase, listDatabases, ListDatabasesResult } from "./api";
@@ -28,17 +25,18 @@ import {
 import { Octokit } from "@octokit/rest";
 
 export class GitHubDatabasesModule extends DisposableObject {
-  private readonly config: GitHubDatabaseConfig;
-
-  private constructor(
+  /**
+   * This constructor is public only for testing purposes. Please use the `initialize` method
+   * instead.
+   */
+  constructor(
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseStoragePath: string,
     private readonly cliServer: CodeQLCliServer,
+    private readonly config: GitHubDatabaseConfig,
   ) {
     super();
-
-    this.config = this.push(new GitHubDatabaseConfigListener());
   }
 
   public static async initialize(
@@ -46,12 +44,14 @@ export class GitHubDatabasesModule extends DisposableObject {
     databaseManager: DatabaseManager,
     databaseStoragePath: string,
     cliServer: CodeQLCliServer,
+    config: GitHubDatabaseConfig,
   ): Promise<GitHubDatabasesModule> {
     const githubDatabasesModule = new GitHubDatabasesModule(
       app,
       databaseManager,
       databaseStoragePath,
       cliServer,
+      config,
     );
     app.subscriptions.push(githubDatabasesModule);
 
@@ -72,7 +72,10 @@ export class GitHubDatabasesModule extends DisposableObject {
     });
   }
 
-  private async promptGitHubRepositoryDownload(): Promise<void> {
+  /**
+   * This method is public only for testing purposes.
+   */
+  public async promptGitHubRepositoryDownload(): Promise<void> {
     if (this.config.download === "never") {
       return;
     }

@@ -28,6 +28,7 @@ import { CliVersionConstraint, CodeQLCliServer } from "./codeql-cli/cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
+  GitHubDatabaseConfigListener,
   isCanary,
   joinOrderWarningThreshold,
   QueryHistoryConfigListener,
@@ -867,11 +868,14 @@ async function activateWithInstalledDistribution(
     ),
   );
 
+  const githubDatabaseConfigListener = new GitHubDatabaseConfigListener();
+
   await GitHubDatabasesModule.initialize(
     app,
     dbm,
     getContextStoragePath(ctx),
     cliServer,
+    githubDatabaseConfigListener,
   );
 
   void extLogger.log("Initializing query history.");
