@@ -31,6 +31,15 @@ export class QLTestDiscovery extends Discovery {
     super("QL Test Discovery", extLogger);
 
     this.push(this.watcher.onDidChange(this.handleDidChange, this));
+
+    // Watch for changes to any `.ql` or `.qlref` file in any of the QL packs that contain tests.
+    this.watcher.addWatch(
+      new RelativePattern(this.workspaceFolder.uri.fsPath, "**/*.{ql,qlref}"),
+    );
+    // need to explicitly watch for changes to directories themselves.
+    this.watcher.addWatch(
+      new RelativePattern(this.workspaceFolder.uri.fsPath, "**/"),
+    );
   }
 
   /**
@@ -56,15 +65,6 @@ export class QLTestDiscovery extends Discovery {
   protected async discover() {
     this._testDirectory = await this.discoverTests();
 
-    this.watcher.clear();
-    // Watch for changes to any `.ql` or `.qlref` file in any of the QL packs that contain tests.
-    this.watcher.addWatch(
-      new RelativePattern(this.workspaceFolder.uri.fsPath, "**/*.{ql,qlref}"),
-    );
-    // need to explicitly watch for changes to directories themselves.
-    this.watcher.addWatch(
-      new RelativePattern(this.workspaceFolder.uri.fsPath, "**/"),
-    );
     this._onDidChangeTests.fire(undefined);
   }
 
