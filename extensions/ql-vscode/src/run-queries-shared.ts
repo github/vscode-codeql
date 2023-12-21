@@ -367,8 +367,8 @@ export class QueryEvaluationInfo extends QueryOutputDir {
 export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
   readonly logFileLocation?: string;
-  readonly successful?: boolean;
-  readonly message?: string;
+  readonly successful: boolean;
+  readonly message: string;
 }
 
 /**

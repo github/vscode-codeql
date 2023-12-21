@@ -53,8 +53,8 @@ export class CompletedQueryInfo implements QueryWithResults {
   constructor(
     public readonly query: QueryEvaluationInfo,
     public readonly logFileLocation: string | undefined,
-    public readonly successful: boolean | undefined,
-    public readonly message: string | undefined,
+    public readonly successful: boolean,
+    public readonly message: string,
     /**
      * How we're currently sorting alerts. This is not mere interface
      * state due to truncation; on re-sort, we want to read in the file
@@ -76,11 +76,7 @@ export class CompletedQueryInfo implements QueryWithResults {
   }
 
   get statusString(): string {
-    if (this.message) {
-      return this.message;
-    } else {
-      throw new Error("No status available");
-    }
+    return this.message;
   }
 
   getResultsPath(selectedTable: string, useSorted = true): string {

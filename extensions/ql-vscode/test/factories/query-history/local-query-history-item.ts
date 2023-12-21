@@ -93,5 +93,8 @@ export function createMockQueryWithResults({
       metadata,
     } as unknown as QueryEvaluationInfo,
     successful: didRunSuccessfully,
+    message: didRunSuccessfully
+      ? "finished in 0 seconds"
+      : "compilation failed: unknown error",
   };
 }
