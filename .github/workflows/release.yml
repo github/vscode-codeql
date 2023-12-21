@@ -128,7 +128,7 @@ jobs:
       VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vscode-codeql-extension
 
@@ -145,7 +145,7 @@ jobs:
       OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: vscode-codeql-extension
 
