@@ -4,6 +4,7 @@ import {
   ProgressOptions as VSCodeProgressOptions,
   window as Window,
 } from "vscode";
+import { readableBytesMb } from "../bytes";
 
 export class UserCancellationException extends Error {
   /**
@@ -125,15 +126,13 @@ export function reportStreamProgress(
 ) {
   if (progress && totalNumBytes) {
     let numBytesDownloaded = 0;
-    const bytesToDisplayMB = (numBytes: number): string =>
-      `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
     const updateProgress = () => {
       progress({
         step: numBytesDownloaded,
         maxStep: totalNumBytes,
-        message: `${messagePrefix} [${bytesToDisplayMB(
+        message: `${messagePrefix} [${readableBytesMb(
           numBytesDownloaded,
-        )} of ${bytesToDisplayMB(totalNumBytes)}]`,
+        )} of ${readableBytesMb(totalNumBytes)}]`,
       });
     };
 

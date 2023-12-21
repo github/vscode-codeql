@@ -1,5 +1,5 @@
 import { Entry as ZipEntry, open, Options as ZipOptions, ZipFile } from "yauzl";
-import { Readable } from "stream";
+import { Readable, Transform } from "stream";
 import { dirname, join } from "path";
 import { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
@@ -23,6 +23,10 @@ export function openZip(
 
 export function excludeDirectories(entries: ZipEntry[]): ZipEntry[] {
   return entries.filter((entry) => !/\/$/.test(entry.fileName));
+}
+
+function calculateTotalUncompressedByteSize(entries: ZipEntry[]): number {
+  return entries.reduce((total, entry) => total + entry.uncompressedSize, 0);
 }
 
 export function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
@@ -84,6 +88,7 @@ export async function openZipBuffer(
 async function copyStream(
   readable: Readable,
   writeStream: WriteStream,
+  bytesExtractedCallback?: (bytesExtracted: number) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     readable.on("error", (err) => {
@@ -93,9 +98,29 @@ async function copyStream(
       resolve();
     });
 
-    readable.pipe(writeStream);
+    readable
+      .pipe(
+        new Transform({
+          transform(chunk, _encoding, callback) {
+            bytesExtractedCallback?.(chunk.length);
+            this.push(chunk);
+            callback();
+          },
+        }),
+      )
+      .pipe(writeStream);
   });
 }
+
+type UnzipProgress = {
+  filesExtracted: number;
+  totalFiles: number;
+
+  bytesExtracted: number;
+  totalBytes: number;
+};
+
+export type UnzipProgressCallback = (progress: UnzipProgress) => void;
 
 /**
  * Unzips a single file from a zip archive.
@@ -103,18 +128,23 @@ async function copyStream(
  * @param zipFile
  * @param entry
  * @param rootDestinationPath
+ * @param bytesExtractedCallback Called when bytes are extracted.
+ * @return The number of bytes extracted.
  */
 async function unzipFile(
   zipFile: ZipFile,
   entry: ZipEntry,
   rootDestinationPath: string,
-): Promise<void> {
+  bytesExtractedCallback?: (bytesExtracted: number) => void,
+): Promise<number> {
   const path = join(rootDestinationPath, entry.fileName);
 
   if (/\/$/.test(entry.fileName)) {
     // Directory file names end with '/'
 
     await ensureDir(path);
+
+    return 0;
   } else {
     // Ensure the directory exists
     await ensureDir(dirname(path));
@@ -131,7 +161,9 @@ async function unzipFile(
       mode,
     });
 
-    await copyStream(readable, writeStream);
+    await copyStream(readable, writeStream, bytesExtractedCallback);
+
+    return entry.uncompressedSize;
   }
 }
 
@@ -143,10 +175,12 @@ async function unzipFile(
  * @param archivePath
  * @param destinationPath
  * @param taskRunner A function that runs the tasks (either sequentially or concurrently).
+ * @param progress
  */
 export async function unzipToDirectory(
   archivePath: string,
   destinationPath: string,
+  progress: UnzipProgressCallback | undefined,
   taskRunner: (tasks: Array<() => Promise<void>>) => Promise<void>,
 ): Promise<void> {
   const zipFile = await openZip(archivePath, {
@@ -158,8 +192,43 @@ export async function unzipToDirectory(
   try {
     const entries = await readZipEntries(zipFile);
 
+    let filesExtracted = 0;
+    const totalFiles = entries.length;
+    let bytesExtracted = 0;
+    const totalBytes = calculateTotalUncompressedByteSize(entries);
+
+    const reportProgress = () => {
+      progress?.({
+        filesExtracted,
+        totalFiles,
+        bytesExtracted,
+        totalBytes,
+      });
+    };
+
+    reportProgress();
+
     await taskRunner(
-      entries.map((entry) => () => unzipFile(zipFile, entry, destinationPath)),
+      entries.map((entry) => async () => {
+        let entryBytesExtracted = 0;
+
+        const totalEntryBytesExtracted = await unzipFile(
+          zipFile,
+          entry,
+          destinationPath,
+          (thisBytesExtracted) => {
+            entryBytesExtracted += thisBytesExtracted;
+            bytesExtracted += thisBytesExtracted;
+            reportProgress();
+          },
+        );
+
+        // Should be 0, but just in case.
+        bytesExtracted += -entryBytesExtracted + totalEntryBytesExtracted;
+
+        filesExtracted++;
+        reportProgress();
+      }),
     );
   } finally {
     zipFile.close();
@@ -173,14 +242,21 @@ export async function unzipToDirectory(
  *
  * @param archivePath
  * @param destinationPath
+ * @param progress
  */
 export async function unzipToDirectorySequentially(
   archivePath: string,
   destinationPath: string,
+  progress?: UnzipProgressCallback,
 ): Promise<void> {
-  return unzipToDirectory(archivePath, destinationPath, async (tasks) => {
-    for (const task of tasks) {
-      await task();
-    }
-  });
+  return unzipToDirectory(
+    archivePath,
+    destinationPath,
+    progress,
+    async (tasks) => {
+      for (const task of tasks) {
+        await task();
+      }
+    },
+  );
 }
