@@ -185,6 +185,24 @@ Note that this test requires the feature flag: `codeQL.model.flowGeneration`
 2. Click "Generate".
    - Check that rows are filled out.
 
+### GitHub database download
+
+#### Test case 1: Download a database
+
+Open a clone of the [`github/codeql`](https://github.com/github/codeql) repository as a folder.
+
+1. Wait a few seconds until the CodeQL extension is fully initialized.
+   - Check that the following prompt appears:
+
+     ![database-download-prompt](images/github-database-download-prompt.png)
+
+   - If the prompt does not appear, ensure that the `codeQL.githubDatabase.download` setting is not set in workspace or user settings.
+
+2. Click "Download".
+3. Select the "C#" and "JavaScript" databases.
+   - Check that there are separate notifications for both downloads.
+   - Check that both databases are added when the downloads are complete.
+
 ### General
 
 #### Test case 1: Change to a different colour theme
