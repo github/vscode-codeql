@@ -129,7 +129,7 @@ import { ModelEditorModule } from "./model-editor/model-editor-module";
 import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
-import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
+import { QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
 import { LanguageContextStore } from "./language-context-store";
@@ -1256,7 +1256,7 @@ async function createQueryServer(
   );
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();
-  return new NewQueryRunner(qs);
+  return new QueryRunner(qs);
 }
 
 function getContextStoragePath(ctx: ExtensionContext) {

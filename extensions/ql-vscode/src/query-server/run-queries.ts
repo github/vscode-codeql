@@ -4,7 +4,7 @@ import * as messages from "./new-messages";
 import { QueryOutputDir } from "../run-queries-shared";
 import * as qsClient from "./query-server-client";
 import { CoreQueryResults, CoreQueryTarget } from "./query-runner";
-import { Logger } from "../common/logging";
+import { BaseLogger } from "../common/logging";
 
 /**
  * run-queries.ts
@@ -32,7 +32,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   progress: ProgressCallback,
   token: CancellationToken,
   templates: Record<string, string> | undefined,
-  logger: Logger,
+  logger: BaseLogger,
 ): Promise<CoreQueryResults> {
   const target =
     query.quickEvalPosition !== undefined
