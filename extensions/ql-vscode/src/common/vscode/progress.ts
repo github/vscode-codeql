@@ -4,6 +4,7 @@ import {
   ProgressOptions as VSCodeProgressOptions,
   window as Window,
 } from "vscode";
+import { readableBytesMb } from "../bytes";
 
 export class UserCancellationException extends Error {
   /**
@@ -106,10 +107,6 @@ export function withInheritedProgress<R>(
   } else {
     return withProgress(task, options);
   }
-}
-
-export function readableBytesMb(numBytes: number): string {
-  return `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 /**
