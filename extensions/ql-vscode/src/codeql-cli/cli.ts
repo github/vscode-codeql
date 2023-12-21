@@ -30,11 +30,11 @@ import { walkDirectory } from "../common/files";
 import { QueryMetadata, SortDirection } from "../common/interface-types";
 import { BaseLogger, Logger } from "../common/logging";
 import { ProgressReporter } from "../common/logging/vscode";
-import { CompilationMessage } from "../query-server/legacy-messages";
 import { sarifParser } from "../common/sarif-parser";
 import { App } from "../common/app";
 import { QueryLanguage } from "../common/query-language";
 import { LINE_ENDINGS, splitStreamAtSeparators } from "../common/split-stream";
+import { Position } from "../query-server/new-messages";
 
 /**
  * The version of the SARIF format that we are using.
@@ -158,6 +158,24 @@ export type ResolvedQueries = string[];
  * The expected output of `codeql resolve tests`.
  */
 export type ResolvedTests = string[];
+
+/**
+ * A compilation message for a test message (either an error or a warning)
+ */
+export interface CompilationMessage {
+  /**
+   * The text of the message
+   */
+  message: string;
+  /**
+   * The source position associated with the message
+   */
+  position: Position;
+  /**
+   * The severity of the message
+   */
+  severity: number;
+}
 
 /**
  * Event fired by `codeql test run`.
