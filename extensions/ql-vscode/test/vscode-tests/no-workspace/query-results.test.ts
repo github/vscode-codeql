@@ -471,12 +471,6 @@ describe("query-results", () => {
       query: queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
-      result: {
-        evaluationTime: 1,
-        queryId: 0,
-        runId: 0,
-        resultType: QueryResultType.SUCCESS,
-      },
     };
 
     return result;

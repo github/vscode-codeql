@@ -1,7 +1,6 @@
 import { CancellationTokenSource, env } from "vscode";
 
 import * as messages from "./query-server/messages-shared";
-import * as legacyMessages from "./query-server/legacy-messages";
 import * as cli from "./codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { basename } from "path";
@@ -23,7 +22,6 @@ import {
   QueryWithResults,
 } from "./run-queries-shared";
 import { sarifParser } from "./common/sarif-parser";
-import { formatLegacyMessage } from "./query-server/format-legacy-message";
 
 /**
  * query-results.ts
@@ -54,11 +52,6 @@ export interface InitialQueryInfo {
 export class CompletedQueryInfo implements QueryWithResults {
   constructor(
     public readonly query: QueryEvaluationInfo,
-
-    /**
-     * The legacy result. This is only set when loading from the query history.
-     */
-    public readonly result: legacyMessages.EvaluationResult,
     public readonly logFileLocation: string | undefined,
     public readonly successful: boolean | undefined,
     public readonly message: string | undefined,
@@ -85,8 +78,6 @@ export class CompletedQueryInfo implements QueryWithResults {
   get statusString(): string {
     if (this.message) {
       return this.message;
-    } else if (this.result) {
-      return formatLegacyMessage(this.result);
     } else {
       throw new Error("No status available");
     }
@@ -291,7 +282,6 @@ export class LocalQueryInfo {
   completeThisQuery(info: QueryWithResults): void {
     this.completedQuery = new CompletedQueryInfo(
       info.query,
-      info.result,
       info.query.logPath,
       info.successful,
       info.message,

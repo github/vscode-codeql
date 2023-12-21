@@ -6,7 +6,6 @@ import {
   QueryWithResults,
 } from "../../../src/run-queries-shared";
 import { CancellationTokenSource } from "vscode";
-import { QueryResultType } from "../../../src/query-server/legacy-messages";
 import { QueryMetadata } from "../../../src/common/interface-types";
 import { QueryLanguage } from "../../../src/common/query-language";
 
@@ -94,11 +93,5 @@ export function createMockQueryWithResults({
       metadata,
     } as unknown as QueryEvaluationInfo,
     successful: didRunSuccessfully,
-    result: {
-      evaluationTime: 1,
-      queryId: 0,
-      runId: 0,
-      resultType: QueryResultType.SUCCESS,
-    },
   };
 }

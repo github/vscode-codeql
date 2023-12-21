@@ -178,15 +178,6 @@ export class LocalQueryRun {
     const successful = results.resultType === QueryResultType.SUCCESS;
     return {
       query,
-      result: {
-        evaluationTime: results.evaluationTime,
-        queryId: 0,
-        resultType: successful
-          ? QueryResultType.SUCCESS
-          : QueryResultType.OTHER_ERROR,
-        runId: 0,
-        message,
-      },
       message,
       successful,
     };
