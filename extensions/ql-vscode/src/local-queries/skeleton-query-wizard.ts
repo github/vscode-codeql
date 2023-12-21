@@ -28,7 +28,7 @@ import {
   isCodespacesTemplate,
   setQlPackLocation,
 } from "../config";
-import { lstat, pathExists, readFile } from "fs-extra";
+import { lstat, pathExists } from "fs-extra";
 import { askForLanguage } from "../codeql-cli/query-language";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
 import { redactableError } from "../common/errors";
@@ -36,8 +36,7 @@ import { App } from "../common/app";
 import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { containsPath, pathsEqual } from "../common/files";
 import { getQlPackPath } from "../common/ql";
-import { load } from "js-yaml";
-import { QlPackFile } from "../packaging/qlpack-file";
+import { getQlPackLanguage } from "../common/qlpack-language";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -253,24 +252,12 @@ export class SkeletonQueryWizard {
       return undefined;
     }
 
-    const qlPack = load(await readFile(qlPackPath, "utf8")) as
-      | QlPackFile
-      | undefined;
-    const dependencies = qlPack?.dependencies;
-    if (!dependencies || typeof dependencies !== "object") {
-      return;
+    const language = await getQlPackLanguage(qlPackPath);
+    if (language) {
+      this.qlPackStoragePath = matchingQueryPackPath;
     }
 
-    const matchingLanguages = Object.values(QueryLanguage).filter(
-      (language) => `codeql/${language}-all` in dependencies,
-    );
-    if (matchingLanguages.length !== 1) {
-      return undefined;
-    }
-
-    this.qlPackStoragePath = matchingQueryPackPath;
-
-    return matchingLanguages[0];
+    return language;
   }
 
   private async chooseLanguage() {

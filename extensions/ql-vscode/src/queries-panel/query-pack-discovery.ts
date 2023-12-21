@@ -4,9 +4,7 @@ import { QueryLanguage } from "../common/query-language";
 import { FALLBACK_QLPACK_FILENAME, QLPACK_FILENAMES } from "../common/ql";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { containsPath } from "../common/files";
-import { load } from "js-yaml";
-import { readFile } from "fs-extra";
-import { QlPackFile } from "../packaging/qlpack-file";
+import { getQlPackLanguage } from "../common/qlpack-language";
 
 interface QueryPack {
   path: string;
@@ -71,30 +69,11 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
   protected async getDataForPath(path: string): Promise<QueryPack> {
     let language: QueryLanguage | undefined;
     try {
-      language = await this.determinePackLanguage(path);
+      language = await getQlPackLanguage(path);
     } catch (e) {
       language = undefined;
     }
     return { path, language };
-  }
-
-  private async determinePackLanguage(
-    path: string,
-  ): Promise<QueryLanguage | undefined> {
-    const qlPack = load(await readFile(path, "utf8")) as QlPackFile | undefined;
-    const dependencies = qlPack?.dependencies;
-    if (!dependencies || typeof dependencies !== "object") {
-      return;
-    }
-
-    const matchingLanguages = Object.values(QueryLanguage).filter(
-      (language) => `codeql/${language}-all` in dependencies,
-    );
-    if (matchingLanguages.length !== 1) {
-      return undefined;
-    }
-
-    return matchingLanguages[0];
   }
 
   protected pathIsRelevant(path: string): boolean {
