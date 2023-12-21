@@ -75,10 +75,6 @@ export class CompletedQueryInfo implements QueryWithResults {
     this.resultCount = value;
   }
 
-  get statusString(): string {
-    return this.message;
-  }
-
   getResultsPath(selectedTable: string, useSorted = true): string {
     if (!useSorted) {
       return this.query.resultsPaths.resultsPath;
