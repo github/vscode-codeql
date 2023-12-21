@@ -721,29 +721,6 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
-   * Resolve the library path and dbscheme for a query.
-   * @param workspaces The current open workspaces
-   * @param queryPath The path to the query
-   */
-  async resolveLibraryPath(
-    workspaces: string[],
-    queryPath: string,
-    silent = false,
-  ): Promise<QuerySetup> {
-    const subcommandArgs = [
-      "--query",
-      queryPath,
-      ...this.getAdditionalPacksArg(workspaces),
-    ];
-    return await this.runJsonCodeQlCliCommand<QuerySetup>(
-      ["resolve", "library-path"],
-      subcommandArgs,
-      "Resolving library paths",
-      { silent },
-    );
-  }
-
-  /**
    * Resolves the language for a query.
    * @param queryUri The URI of the query
    */
