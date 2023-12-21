@@ -424,11 +424,6 @@
         "title": "GitHub Databases",
         "order": 8,
         "properties": {
-          "codeQL.githubDatabase.enable": {
-            "type": "boolean",
-            "default": false,
-            "markdownDescription": "Enable automatic detection of GitHub databases."
-          },
           "codeQL.githubDatabase.download": {
             "type": "string",
             "default": "ask",
