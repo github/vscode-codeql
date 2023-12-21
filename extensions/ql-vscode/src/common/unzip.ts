@@ -25,6 +25,10 @@ export function excludeDirectories(entries: ZipEntry[]): ZipEntry[] {
   return entries.filter((entry) => !/\/$/.test(entry.fileName));
 }
 
+function calculateTotalUncompressedByteSize(entries: ZipEntry[]): number {
+  return entries.reduce((total, entry) => total + entry.uncompressedSize, 0);
+}
+
 export function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
   return new Promise((resolve, reject) => {
     const files: ZipEntry[] = [];
@@ -191,10 +195,7 @@ export async function unzipToDirectory(
     let filesExtracted = 0;
     const totalFiles = entries.length;
     let bytesExtracted = 0;
-    const totalBytes = entries.reduce(
-      (total, entry) => total + entry.uncompressedSize,
-      0,
-    );
+    const totalBytes = calculateTotalUncompressedByteSize(entries);
 
     const reportProgress = () => {
       progress?.({
