@@ -12,7 +12,7 @@ import {
   mockedObject,
 } from "../utils/mocking.helpers";
 import { BqrsKind } from "../../../src/common/bqrs-cli-types";
-import { NewQueryRunner, QueryServerClient } from "../../../src/query-server";
+import { QueryRunner, QueryServerClient } from "../../../src/query-server";
 import { QueryEvaluationInfo } from "../../../src/run-queries-shared";
 import {
   deregisterDatabases,
@@ -169,7 +169,7 @@ describe("run-queries", () => {
   describe("register", () => {
     it("should register", async () => {
       const qs = createMockQueryServerClient();
-      const runner = new NewQueryRunner(qs);
+      const runner = new QueryRunner(qs);
       const databaseUri = Uri.file("database-uri");
       const datasetUri = Uri.file("dataset-uri");
 
@@ -190,7 +190,7 @@ describe("run-queries", () => {
 
     it("should deregister", async () => {
       const qs = createMockQueryServerClient();
-      const runner = new NewQueryRunner(qs);
+      const runner = new QueryRunner(qs);
       const databaseUri = Uri.file("database-uri");
       const datasetUri = Uri.file("dataset-uri");
 

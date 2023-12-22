@@ -5,7 +5,7 @@ import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
-import { Logger, showAndLogErrorMessage } from "../common/logging";
+import { BaseLogger, Logger, showAndLogErrorMessage } from "../common/logging";
 import { extLogger, ProgressReporter } from "../common/logging/vscode";
 import { progress, ProgressMessage, WithProgressId } from "./new-messages";
 import {
@@ -57,7 +57,7 @@ export class QueryServerClient extends DisposableObject {
     this.queryServerStartListeners.push(e);
   };
 
-  public activeQueryLogger: Logger;
+  public activeQueryLogger: BaseLogger;
 
   constructor(
     app: App,

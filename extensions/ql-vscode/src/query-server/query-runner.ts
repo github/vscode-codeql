@@ -1,12 +1,29 @@
-import { CancellationToken } from "vscode";
+import vscode, { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { ProgressCallback } from "../common/vscode/progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { QueryOutputDir } from "../run-queries-shared";
-import { Position, QueryResultType } from "./new-messages";
+import {
+  clearCache,
+  ClearCacheParams,
+  clearPackCache,
+  deregisterDatabases,
+  Position,
+  QueryResultType,
+  registerDatabases,
+  trimCache,
+  TrimCacheParams,
+  upgradeDatabase,
+} from "./new-messages";
 import { BaseLogger, Logger } from "../common/logging";
 import { basename, join } from "path";
 import { nanoid } from "nanoid";
+import { QueryServerClient } from "./query-server-client";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
+import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 
 export interface CoreQueryTarget {
   /** The full path to the query. */
@@ -45,37 +62,69 @@ export interface CoreQueryRun {
 export type CoreCompletedQuery = CoreQueryResults &
   Omit<CoreQueryRun, "evaluate">;
 
-export abstract class QueryRunner {
-  abstract restartQueryServer(
+export class QueryRunner {
+  constructor(public readonly qs: QueryServerClient) {}
+
+  get cliServer(): CodeQLCliServer {
+    return this.qs.cliServer;
+  }
+
+  get customLogDirectory(): string | undefined {
+    return this.qs.config.customLogDirectory;
+  }
+
+  get logger(): Logger {
+    return this.qs.logger;
+  }
+
+  async restartQueryServer(
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<void>;
+  ): Promise<void> {
+    await this.qs.restartQueryServer(progress, token);
+  }
 
-  abstract cliServer: CodeQLCliServer;
-  abstract customLogDirectory: string | undefined;
-  abstract logger: Logger;
-
-  abstract onStart(
-    arg0: (
+  onStart(
+    callBack: (
       progress: ProgressCallback,
       token: CancellationToken,
     ) => Promise<void>,
-  ): void;
+  ) {
+    this.qs.onDidStartQueryServer(callBack);
+  }
 
-  abstract clearCacheInDatabase(
+  async clearCacheInDatabase(
     dbItem: DatabaseItem,
     token: CancellationToken,
-  ): Promise<void>;
+  ): Promise<void> {
+    if (dbItem.contents === undefined) {
+      throw new Error("Can't clear the cache in an invalid database.");
+    }
 
-  abstract trimCacheInDatabase(
+    const db = dbItem.databaseUri.fsPath;
+    const params: ClearCacheParams = {
+      dryRun: false,
+      db,
+    };
+    await this.qs.sendRequest(clearCache, params, token);
+  }
+
+  async trimCacheInDatabase(
     dbItem: DatabaseItem,
     token: CancellationToken,
-  ): Promise<void>;
+  ): Promise<void> {
+    if (dbItem.contents === undefined) {
+      throw new Error("Can't trim the cache in an invalid database.");
+    }
 
-  /**
-   * Overridden in subclasses to evaluate the query via the query server and return the results.
-   */
-  public abstract compileAndRunQueryAgainstDatabaseCore(
+    const db = dbItem.databaseUri.fsPath;
+    const params: TrimCacheParams = {
+      db,
+    };
+    await this.qs.sendRequest(trimCache, params, token);
+  }
+
+  public async compileAndRunQueryAgainstDatabaseCore(
     dbPath: string,
     query: CoreQueryTarget,
     additionalPacks: string[],
@@ -87,19 +136,72 @@ export abstract class QueryRunner {
     token: CancellationToken,
     templates: Record<string, string> | undefined,
     logger: BaseLogger,
-  ): Promise<CoreQueryResults>;
+  ): Promise<CoreQueryResults> {
+    return await compileAndRunQueryAgainstDatabaseCore(
+      this.qs,
+      dbPath,
+      query,
+      generateEvalLog,
+      additionalPacks,
+      extensionPacks,
+      additionalRunQueryArgs,
+      outputDir,
+      progress,
+      token,
+      templates,
+      logger,
+    );
+  }
 
-  abstract deregisterDatabase(dbItem: DatabaseItem): Promise<void>;
+  async deregisterDatabase(dbItem: DatabaseItem): Promise<void> {
+    if (dbItem.contents) {
+      const databases: string[] = [dbItem.databaseUri.fsPath];
+      await this.qs.sendRequest(deregisterDatabases, { databases });
+    }
+  }
+  async registerDatabase(dbItem: DatabaseItem): Promise<void> {
+    if (dbItem.contents) {
+      const databases: string[] = [dbItem.databaseUri.fsPath];
+      await this.qs.sendRequest(registerDatabases, { databases });
+    }
+  }
 
-  abstract registerDatabase(dbItem: DatabaseItem): Promise<void>;
+  async clearPackCache(): Promise<void> {
+    await this.qs.sendRequest(clearPackCache, {});
+  }
 
-  abstract upgradeDatabaseExplicit(
+  async upgradeDatabaseExplicit(
     dbItem: DatabaseItem,
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<void>;
+  ): Promise<void> {
+    const yesItem = { title: "Yes", isCloseAffordance: false };
+    const noItem = { title: "No", isCloseAffordance: true };
+    const dialogOptions: vscode.MessageItem[] = [yesItem, noItem];
 
-  abstract clearPackCache(): Promise<void>;
+    const message = `Should the database ${dbItem.databaseUri.fsPath} be destructively upgraded?\n\nThis should not be necessary to run queries
+    as we will non-destructively update it anyway.`;
+    const chosenItem = await vscode.window.showInformationMessage(
+      message,
+      { modal: true },
+      ...dialogOptions,
+    );
+
+    if (chosenItem !== yesItem) {
+      throw new UserCancellationException(
+        "User cancelled the database upgrade.",
+      );
+    }
+    await this.qs.sendRequest(
+      upgradeDatabase,
+      {
+        db: dbItem.databaseUri.fsPath,
+        additionalPacks: getOnDiskWorkspaceFolders(),
+      },
+      token,
+      progress,
+    );
+  }
 
   /**
    * Create a `CoreQueryRun` object. This creates an object whose `evaluate()` function can be
