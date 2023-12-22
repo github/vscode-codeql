@@ -30,6 +30,9 @@ export const buildWithoutPackage = series(
 );
 
 export const watch = parallel(
+  // Always build first, so that we don't have to run build manually
+  compileEsbuild,
+  compileViewEsbuild,
   watchEsbuild,
   watchCheckTypeScript,
   watchViewEsbuild,

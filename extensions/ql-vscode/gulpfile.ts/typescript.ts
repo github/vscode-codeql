@@ -56,7 +56,7 @@ export function compileEsbuild() {
 }
 
 export function watchEsbuild() {
-  watch("src/**/*.ts", compileEsbuild);
+  watch(["src/**/*.ts", "!src/view/**/*.ts"], compileEsbuild);
 }
 
 export function checkTypeScript() {
@@ -66,7 +66,7 @@ export function checkTypeScript() {
 }
 
 export function watchCheckTypeScript() {
-  watch("src/**/*.ts", checkTypeScript);
+  watch(["src/**/*.ts", "!src/view/**/*.ts"], checkTypeScript);
 }
 
 export function copyWasmFiles() {
