@@ -34,7 +34,7 @@ import { sarifParser } from "../common/sarif-parser";
 import { App } from "../common/app";
 import { QueryLanguage } from "../common/query-language";
 import { LINE_ENDINGS, splitStreamAtSeparators } from "../common/split-stream";
-import { Position } from "../query-server/new-messages";
+import { Position } from "../query-server/messages";
 
 /**
  * The version of the SARIF format that we are using.

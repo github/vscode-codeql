@@ -19,7 +19,7 @@ import {
 import { CancellationToken, LocationLink, Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { QueryRunner } from "../../query-server";
-import { QueryResultType } from "../../query-server/new-messages";
+import { QueryResultType } from "../../query-server/messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
 
 export const SELECT_QUERY_NAME = "#select";

@@ -17,7 +17,7 @@ import { QueryEvaluationInfo } from "../../../src/run-queries-shared";
 import {
   deregisterDatabases,
   registerDatabases,
-} from "../../../src/query-server/new-messages";
+} from "../../../src/query-server/messages";
 
 describe("run-queries", () => {
   let isCanarySpy: jest.SpiedFunction<typeof config.isCanary>;

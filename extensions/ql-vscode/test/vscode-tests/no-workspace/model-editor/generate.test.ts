@@ -4,7 +4,7 @@ import {
   DatabaseKind,
 } from "../../../../src/databases/local-databases";
 import { file } from "tmp-promise";
-import { QueryResultType } from "../../../../src/query-server/new-messages";
+import { QueryResultType } from "../../../../src/query-server/messages";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";
