@@ -1,19 +1,19 @@
 import { join, basename } from "path";
 import { dirSync } from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import * as messages from "../../../src/query-server/messages";
-import * as qsClient from "../../../src/query-server/query-server-client";
-import * as cli from "../../../src/codeql-cli/cli";
-import { BqrsCellValue } from "../../../src/common/bqrs-cli-types";
-import { describeWithCodeQL } from "../cli";
-import { QueryServerClient } from "../../../src/query-server/query-server-client";
+import * as messages from "../../../../src/query-server/messages";
+import * as qsClient from "../../../../src/query-server/query-server-client";
+import * as cli from "../../../../src/codeql-cli/cli";
+import { BqrsCellValue } from "../../../../src/common/bqrs-cli-types";
+import { describeWithCodeQL } from "../../cli";
+import { QueryServerClient } from "../../../../src/query-server/query-server-client";
 import {
   extLogger,
   ProgressReporter,
-} from "../../../src/common/logging/vscode";
-import { QueryResultType } from "../../../src/query-server/messages";
-import { ensureTestDatabase, getActivatedExtension } from "../global.helper";
-import { createMockApp } from "../../__mocks__/appMock";
+} from "../../../../src/common/logging/vscode";
+import { QueryResultType } from "../../../../src/query-server/messages";
+import { ensureTestDatabase, getActivatedExtension } from "../../global.helper";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 const baseDir = join(__dirname, "../../../test/data");
 
@@ -100,7 +100,7 @@ const nullProgressReporter: ProgressReporter = {
   },
 };
 
-describeWithCodeQL()("using the new query server", () => {
+describeWithCodeQL()("using the query server", () => {
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
   let db: string;
