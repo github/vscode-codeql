@@ -15,7 +15,7 @@ import { QueryResultType } from "../../../../src/query-server/messages";
 import { ensureTestDatabase, getActivatedExtension } from "../../global.helper";
 import { createMockApp } from "../../../__mocks__/appMock";
 
-const baseDir = join(__dirname, "../../../test/data");
+const baseDir = join(__dirname, "../../../../test/data");
 
 const tmpDir = dirSync({
   prefix: "query_test_",

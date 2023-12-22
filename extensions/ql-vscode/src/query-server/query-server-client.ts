@@ -169,7 +169,7 @@ export class QueryServerClient extends DisposableObject {
   private async startQueryServerImpl(
     progressReporter: ProgressReporter,
   ): Promise<void> {
-    void this.logger.log("Starting NEW query server.");
+    void this.logger.log("Starting query server.");
 
     const ramArgs = await this.cliServer.resolveRam(
       this.config.queryMemoryMb,
