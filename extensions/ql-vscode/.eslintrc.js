@@ -21,7 +21,6 @@ const baseConfig = {
   },
   extends: [
     "eslint:recommended",
-    "plugin:github/react",
     "plugin:github/recommended",
     "plugin:github/typescript",
     "plugin:jest-dom/recommended",
@@ -94,8 +93,10 @@ module.exports = {
       extends: [
         ...baseConfig.extends,
         "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
         "plugin:react-hooks/recommended",
         "plugin:storybook/recommended",
+        "plugin:github/react",
       ],
       rules: {
         ...baseConfig.rules,
@@ -114,7 +115,9 @@ module.exports = {
       extends: [
         ...baseConfig.extends,
         "plugin:react/recommended",
+        "plugin:react/jsx-runtime",
         "plugin:react-hooks/recommended",
+        "plugin:github/react",
       ],
       rules: {
         ...baseConfig.rules,
