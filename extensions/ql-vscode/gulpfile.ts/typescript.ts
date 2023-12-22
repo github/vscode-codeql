@@ -1,10 +1,10 @@
 import { gray, red } from "ansi-colors";
 import { dest, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
-import ts from "gulp-typescript";
+import { createProject, reporter } from "gulp-typescript";
 import del from "del";
 
-function goodReporter(): ts.reporter.Reporter {
+function goodReporter(): reporter.Reporter {
   return {
     error: (error, typescript) => {
       if (error.tsFile) {
@@ -27,7 +27,7 @@ function goodReporter(): ts.reporter.Reporter {
   };
 }
 
-const tsProject = ts.createProject("tsconfig.json");
+const tsProject = createProject("tsconfig.json");
 
 export function cleanOutput() {
   return tsProject.projectDirectory

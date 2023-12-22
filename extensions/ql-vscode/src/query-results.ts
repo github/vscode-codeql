@@ -164,18 +164,18 @@ export async function interpretResultsSarif(
  * Call cli command to interpret graph results.
  */
 export async function interpretGraphResults(
-  cli: cli.CodeQLCliServer,
+  cliServer: cli.CodeQLCliServer,
   metadata: QueryMetadata | undefined,
   resultsPaths: ResultsPaths,
   sourceInfo?: cli.SourceInfo,
 ): Promise<GraphInterpretationData> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
   if (await pathExists(interpretedResultsPath)) {
-    const dot = await cli.readDotFiles(interpretedResultsPath);
+    const dot = await cliServer.readDotFiles(interpretedResultsPath);
     return { dot, t: "GraphInterpretationData" };
   }
 
-  const dot = await cli.interpretBqrsGraph(
+  const dot = await cliServer.interpretBqrsGraph(
     ensureMetadataIsComplete(metadata),
     resultsPath,
     interpretedResultsPath,

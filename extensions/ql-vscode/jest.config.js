@@ -4,6 +4,7 @@
  */
 
 /** @type {import('@jest/types').Config.InitialOptions} */
+// eslint-disable-next-line import/no-commonjs
 module.exports = {
   projects: [
     "<rootDir>/src/view",

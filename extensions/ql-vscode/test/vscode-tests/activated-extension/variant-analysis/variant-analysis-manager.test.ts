@@ -10,7 +10,14 @@ import {
 import { extLogger } from "../../../../src/common/logging/vscode";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
-import * as fs from "fs-extra";
+import {
+  ensureDir,
+  outputJson,
+  pathExists,
+  readFile,
+  readJson,
+  remove,
+} from "fs-extra";
 import { join } from "path";
 import { Readable } from "stream";
 import * as fetchModule from "node-fetch";
@@ -100,7 +107,7 @@ describe("Variant Analysis Manager", () => {
 
     describe("when the directory exists", () => {
       beforeEach(async () => {
-        await fs.ensureDir(join(storagePath, variantAnalysis.id.toString()));
+        await ensureDir(join(storagePath, variantAnalysis.id.toString()));
       });
 
       it("should store the variant analysis", async () => {
@@ -216,7 +223,7 @@ describe("Variant Analysis Manager", () => {
           __dirname,
           "data/variant-analysis-results.zip",
         );
-        const fileContents = fs.readFileSync(sourceFilePath);
+        const fileContents = await readFile(sourceFilePath);
         const response = new Response(Readable.from(fileContents));
         response.size = fileContents.length;
         getVariantAnalysisRepoResultStub.mockResolvedValue(response);
@@ -263,7 +270,7 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis,
         );
 
-        await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+        await expect(readJson(repoStatesPath)).resolves.toEqual({
           [scannedRepos[0].repository.id]: {
             repositoryId: scannedRepos[0].repository.id,
             downloadStatus:
@@ -284,7 +291,7 @@ describe("Variant Analysis Manager", () => {
           ),
         ).rejects.toThrow();
 
-        await expect(fs.pathExists(repoStatesPath)).resolves.toBe(false);
+        await expect(pathExists(repoStatesPath)).resolves.toBe(false);
       });
 
       it("should have a failed repo state when the repo task API fails", async () => {
@@ -299,14 +306,14 @@ describe("Variant Analysis Manager", () => {
           ),
         ).rejects.toThrow();
 
-        await expect(fs.pathExists(repoStatesPath)).resolves.toBe(false);
+        await expect(pathExists(repoStatesPath)).resolves.toBe(false);
 
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[1],
           variantAnalysis,
         );
 
-        await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+        await expect(readJson(repoStatesPath)).resolves.toEqual({
           [scannedRepos[0].repository.id]: {
             repositoryId: scannedRepos[0].repository.id,
             downloadStatus:
@@ -332,14 +339,14 @@ describe("Variant Analysis Manager", () => {
           ),
         ).rejects.toThrow();
 
-        await expect(fs.pathExists(repoStatesPath)).resolves.toBe(false);
+        await expect(pathExists(repoStatesPath)).resolves.toBe(false);
 
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[1],
           variantAnalysis,
         );
 
-        await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+        await expect(readJson(repoStatesPath)).resolves.toEqual({
           [scannedRepos[0].repository.id]: {
             repositoryId: scannedRepos[0].repository.id,
             downloadStatus:
@@ -374,7 +381,7 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis,
         );
 
-        await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+        await expect(readJson(repoStatesPath)).resolves.toEqual({
           [scannedRepos[1].repository.id]: {
             repositoryId: scannedRepos[1].repository.id,
             downloadStatus:
@@ -396,7 +403,7 @@ describe("Variant Analysis Manager", () => {
       async function mockRepoStates(
         repoStates: Record<number, VariantAnalysisScannedRepositoryState>,
       ) {
-        await fs.outputJson(repoStatesPath, repoStates);
+        await outputJson(repoStatesPath, repoStates);
       }
     });
   });
@@ -440,7 +447,7 @@ describe("Variant Analysis Manager", () => {
     });
 
     it("should remove variant analysis", async () => {
-      await fs.ensureDir(join(storagePath, dummyVariantAnalysis.id.toString()));
+      await ensureDir(join(storagePath, dummyVariantAnalysis.id.toString()));
 
       await variantAnalysisManager.rehydrateVariantAnalysis(
         dummyVariantAnalysis,
@@ -453,7 +460,7 @@ describe("Variant Analysis Manager", () => {
       expect(variantAnalysisManager.variantAnalysesSize).toBe(0);
 
       await expect(
-        fs.pathExists(join(storagePath, dummyVariantAnalysis.id.toString())),
+        pathExists(join(storagePath, dummyVariantAnalysis.id.toString())),
       ).resolves.toBe(false);
     });
   });
@@ -498,8 +505,8 @@ describe("Variant Analysis Manager", () => {
         await createTimestampFile(variantAnalysisStorageLocation);
       });
 
-      afterEach(() => {
-        fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+      afterEach(async () => {
+        await remove(variantAnalysisStorageLocation);
       });
 
       describe("when the variant analysis is not complete", () => {
@@ -574,8 +581,8 @@ describe("Variant Analysis Manager", () => {
       await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
     });
 
-    afterEach(() => {
-      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    afterEach(async () => {
+      await remove(variantAnalysisStorageLocation);
     });
 
     it("should return early if the variant analysis is not found", async () => {
@@ -637,8 +644,8 @@ describe("Variant Analysis Manager", () => {
       });
     });
 
-    afterEach(() => {
-      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    afterEach(async () => {
+      await remove(variantAnalysisStorageLocation);
     });
 
     describe("when the variant analysis does not have any repositories", () => {
@@ -813,8 +820,8 @@ describe("Variant Analysis Manager", () => {
         .mockResolvedValue(mockedObject<TextDocument>({}));
     });
 
-    afterEach(() => {
-      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    afterEach(async () => {
+      await remove(variantAnalysisStorageLocation);
     });
 
     it("opens the query text", async () => {
@@ -861,8 +868,8 @@ describe("Variant Analysis Manager", () => {
         .mockResolvedValue(mockedObject<TextDocument>({}));
     });
 
-    afterEach(() => {
-      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    afterEach(async () => {
+      await remove(variantAnalysisStorageLocation);
     });
 
     it("opens the query file", async () => {

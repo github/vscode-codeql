@@ -27,6 +27,8 @@ const baseConfig = {
     "plugin:jest-dom/recommended",
     "plugin:prettier/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
   ],
   rules: {
     "@typescript-eslint/await-thenable": "error",
@@ -57,15 +59,6 @@ const baseConfig = {
     "filenames/match-regexp": "off",
     "func-style": "off",
     "i18n-text/no-en": "off",
-    "import/named": "off",
-    "import/no-dynamic-require": "off",
-    "import/no-dynamic-required": "off",
-    "import/no-anonymous-default-export": "off",
-    "import/no-commonjs": "off",
-    "import/no-mutable-exports": "off",
-    "import/no-namespace": "off",
-    "import/no-unresolved": "off",
-    "import/no-webpack-loader-syntax": "off",
     "no-invalid-this": "off",
     "no-fallthrough": "off",
     "no-console": "off",
@@ -73,6 +66,19 @@ const baseConfig = {
     "github/array-foreach": "off",
     "github/no-then": "off",
     "react/jsx-key": ["error", { checkFragmentShorthand: true }],
+    "import/no-cycle": "off",
+    "import/no-namespace": "off",
+    // Never allow extensions in import paths, except for JSON files where they are required.
+    "import/extensions": ["error", "never", { json: "always" }],
+  },
+  settings: {
+    "import/resolver": {
+      typescript: true,
+      node: true,
+    },
+    "import/extensions": [".js", ".jsx", ".ts", ".tsx", ".json"],
+    // vscode and sarif don't exist on-disk, but only provide types.
+    "import/core-modules": ["vscode", "sarif"],
   },
 };
 

@@ -8,27 +8,27 @@ import { VSCodeTheme } from "./theme";
 
 const themeFiles: { [key in VSCodeTheme]: string } = {
   [VSCodeTheme.Dark]:
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-commonjs,import/no-webpack-loader-syntax
     require("!file-loader?modules!../../src/stories/vscode-theme-dark.css")
       .default,
   [VSCodeTheme.Light]:
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-commonjs,import/no-webpack-loader-syntax
     require("!file-loader?modules!../../src/stories/vscode-theme-light.css")
       .default,
   [VSCodeTheme.LightHighContrast]:
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-commonjs,import/no-webpack-loader-syntax
     require("!file-loader?modules!../../src/stories/vscode-theme-light-high-contrast.css")
       .default,
   [VSCodeTheme.DarkHighContrast]:
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-commonjs,import/no-webpack-loader-syntax
     require("!file-loader?modules!../../src/stories/vscode-theme-dark-high-contrast.css")
       .default,
   [VSCodeTheme.GitHubLightDefault]:
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-commonjs,import/no-webpack-loader-syntax
     require("!file-loader?modules!../../src/stories/vscode-theme-github-light-default.css")
       .default,
   [VSCodeTheme.GitHubDarkDefault]:
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-commonjs,import/no-webpack-loader-syntax
     require("!file-loader?modules!../../src/stories/vscode-theme-github-dark-default.css")
       .default,
 };
