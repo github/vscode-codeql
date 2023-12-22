@@ -1,4 +1,3 @@
-import * as React from "react";
 import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
 import TextButton from "../common/TextButton";
 

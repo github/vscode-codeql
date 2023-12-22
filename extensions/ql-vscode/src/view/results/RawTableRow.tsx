@@ -1,4 +1,3 @@
-import * as React from "react";
 import { selectedRowClassName, zebraStripe } from "./result-table-utils";
 import RawTableValue from "./RawTableValue";
 import { Row } from "../../common/raw-result-types";

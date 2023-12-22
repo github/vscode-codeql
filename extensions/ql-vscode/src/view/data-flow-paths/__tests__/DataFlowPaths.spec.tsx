@@ -1,4 +1,3 @@
-import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { DataFlowPaths, DataFlowPathsProps } from "../DataFlowPaths";
 import { createMockDataFlowPaths } from "../../../../test/factories/variant-analysis/shared/data-flow-paths";

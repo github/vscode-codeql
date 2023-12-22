@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ToModelEditorMessage } from "../../common/interface-types";
 import {

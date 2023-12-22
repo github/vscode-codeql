@@ -1,4 +1,3 @@
-import * as React from "react";
 import { MethodRow } from "./MethodRow";
 import { Method, canMethodBeModeled } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";

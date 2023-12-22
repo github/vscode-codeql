@@ -1,4 +1,3 @@
-import * as React from "react";
 import { render as reactRender, screen, waitFor } from "@testing-library/react";
 import {
   VariantAnalysisFailureReason,

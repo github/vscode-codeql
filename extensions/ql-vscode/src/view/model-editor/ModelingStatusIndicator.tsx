@@ -1,4 +1,3 @@
-import * as React from "react";
 import { assertNever } from "../../common/helpers-pure";
 import { Codicon } from "../common/icon/Codicon";
 import { ModelingStatus } from "../../model-editor/shared/modeling-status";

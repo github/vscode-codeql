@@ -1,4 +1,3 @@
-import * as React from "react";
 import { sendTelemetry } from "../common/telemetry";
 import { Column, Row } from "../../common/raw-result-types";
 import RawTableHeader from "../results/RawTableHeader";

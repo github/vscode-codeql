@@ -1,6 +1,5 @@
-import * as React from "react";
 import { styled } from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useTelemetryOnChange } from "../common/telemetry";
 import { CodeFlowsDropdown } from "../common/CodePaths/CodeFlowsDropdown";
@@ -41,7 +40,7 @@ export const DataFlowPaths = ({
 
   const { codeFlows, ruleDescription, message, severity } = dataFlowPaths;
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Make sure to update the selected code flow if the data flow paths change
     setSelectedCodeFlow(dataFlowPaths.codeFlows[0]);
   }, [dataFlowPaths]);

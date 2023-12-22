@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { vscode } from "../vscode-api";
 import {
   RawResultsSortState,

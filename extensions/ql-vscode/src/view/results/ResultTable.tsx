@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTable } from "./AlertTable";
 import { Graph } from "./Graph";
 import { RawTable } from "./RawTable";

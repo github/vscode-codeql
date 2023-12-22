@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { vscode } from "../vscode-api";
 import { openFile, tableHeaderItemClassName } from "./result-table-utils";
 import { sendTelemetry } from "../common/telemetry";
@@ -62,7 +61,7 @@ const OpenQueryLink = styled(TextButton)`
 export function ResultTablesHeader(props: Props) {
   const { queryPath, queryName, parsedResultSets, selectedTable } = props;
 
-  const [selectedPage, setSelectedPage] = React.useState(
+  const [selectedPage, setSelectedPage] = useState(
     `${parsedResultSets.pageNumber + 1}`,
   );
   useEffect(() => {

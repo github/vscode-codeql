@@ -1,4 +1,3 @@
-import * as React from "react";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
 import { CellValue } from "../../common/raw-result-types";

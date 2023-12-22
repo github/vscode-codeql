@@ -1,4 +1,3 @@
-import * as React from "react";
 import { act, render as reactRender, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {

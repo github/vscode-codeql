@@ -1,4 +1,3 @@
-import * as React from "react";
 import * as Sarif from "sarif";
 import { parseSarifPlainTextMessage } from "../../../common/sarif-utils";
 import { SarifLocation } from "./SarifLocation";

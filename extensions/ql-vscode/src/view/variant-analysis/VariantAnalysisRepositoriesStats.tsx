@@ -1,4 +1,3 @@
-import * as React from "react";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { formatDecimal } from "../../common/number";
 import {

@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   getAllByRole,
   render as reactRender,

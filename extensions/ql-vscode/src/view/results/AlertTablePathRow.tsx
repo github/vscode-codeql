@@ -1,4 +1,3 @@
-import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { selectableZebraStripe } from "./result-table-utils";

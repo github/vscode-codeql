@@ -1,4 +1,3 @@
-import * as React from "react";
 import { styled } from "styled-components";
 import { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator";

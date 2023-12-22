@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ReactNode, forwardRef } from "react";
 import { styled } from "styled-components";
 

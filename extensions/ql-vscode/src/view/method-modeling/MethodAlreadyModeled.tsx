@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ResponsiveContainer } from "../common/ResponsiveContainer";
 
 export const MethodAlreadyModeled = () => {

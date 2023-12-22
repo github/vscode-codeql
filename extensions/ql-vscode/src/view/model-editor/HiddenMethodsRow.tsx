@@ -1,4 +1,3 @@
-import * as React from "react";
 import { styled } from "styled-components";
 import { pluralize } from "../../common/word";
 import { DataGridCell, DataGridRow } from "../common/DataGrid";

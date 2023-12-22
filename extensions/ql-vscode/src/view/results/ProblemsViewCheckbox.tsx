@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ALERTS_TABLE_NAME } from "../../common/interface-types";
 import {
   alertExtrasClassName,

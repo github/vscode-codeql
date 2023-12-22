@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ResultSet } from "../../common/interface-types";
 import { tableHeaderItemClassName } from "./result-table-utils";
 

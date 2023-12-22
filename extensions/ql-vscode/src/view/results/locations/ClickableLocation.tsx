@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useCallback } from "react";
 import { jumpToLocation } from "../result-table-utils";
 import TextButton from "../../common/TextButton";

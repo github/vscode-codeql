@@ -1,4 +1,3 @@
-import * as React from "react";
 import * as Sarif from "sarif";
 import { parseSarifLocation } from "../../../common/sarif-utils";
 import { basename } from "../../../common/path";

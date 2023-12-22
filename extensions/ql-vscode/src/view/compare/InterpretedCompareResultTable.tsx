@@ -1,4 +1,3 @@
-import * as React from "react";
 import * as sarif from "sarif";
 import { AlertTable } from "../results/AlertTable";
 

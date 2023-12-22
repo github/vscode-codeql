@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
