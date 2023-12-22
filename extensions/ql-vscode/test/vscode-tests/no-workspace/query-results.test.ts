@@ -25,13 +25,8 @@ import {
 import { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/tmp-dir";
-import {
-  EvaluationResult,
-  QueryResultType,
-} from "../../../src/query-server/legacy-messages";
 import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";
-import { formatLegacyMessage } from "../../../src/query-server/format-legacy-message";
 
 describe("query-results", () => {
   let queryPath: string;
@@ -106,33 +101,6 @@ describe("query-results", () => {
       expect(completedQuery.getResultsPath("zxa")).toBe("bxa");
     });
 
-    it("should format the statusString", () => {
-      const evalResult: EvaluationResult = {
-        resultType: QueryResultType.OTHER_ERROR,
-        evaluationTime: 12340,
-        queryId: 3,
-        runId: 1,
-      };
-
-      evalResult.message = "Tremendously";
-      expect(formatLegacyMessage(evalResult)).toBe("failed: Tremendously");
-
-      evalResult.resultType = QueryResultType.OTHER_ERROR;
-      expect(formatLegacyMessage(evalResult)).toBe("failed: Tremendously");
-
-      evalResult.resultType = QueryResultType.CANCELLATION;
-      evalResult.evaluationTime = 2345;
-      expect(formatLegacyMessage(evalResult)).toBe("cancelled after 2 seconds");
-
-      evalResult.resultType = QueryResultType.OOM;
-      expect(formatLegacyMessage(evalResult)).toBe("out of memory");
-
-      evalResult.resultType = QueryResultType.SUCCESS;
-      expect(formatLegacyMessage(evalResult)).toBe("finished in 2 seconds");
-
-      evalResult.resultType = QueryResultType.TIMEOUT;
-      expect(formatLegacyMessage(evalResult)).toBe("timed out after 2 seconds");
-    });
     it("should updateSortState", async () => {
       // setup
       const fqi = createMockFullQueryInfo(
@@ -471,12 +439,6 @@ describe("query-results", () => {
       query: queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
-      result: {
-        evaluationTime: 1,
-        queryId: 0,
-        runId: 0,
-        resultType: QueryResultType.SUCCESS,
-      },
     };
 
     return result;

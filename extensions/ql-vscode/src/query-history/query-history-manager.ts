@@ -1058,7 +1058,7 @@ export class QueryHistoryManager extends DisposableObject {
       .map((item) => ({
         label: this.labelProvider.getLabel(item),
         description: item.databaseName,
-        detail: item.completedQuery.statusString,
+        detail: item.completedQuery.message,
         query: item,
       }));
     if (comparableQueryLabels.length < 1) {

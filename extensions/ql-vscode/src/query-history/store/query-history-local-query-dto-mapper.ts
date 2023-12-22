@@ -56,17 +56,9 @@ function mapCompletedQueryInfoToDomainModel(
 
   return new CompletedQueryInfo(
     mapQueryEvaluationInfoToDomainModel(completedQuery.query),
-    {
-      runId: completedQuery.result.runId,
-      queryId: completedQuery.result.queryId,
-      resultType: completedQuery.result.resultType,
-      evaluationTime: completedQuery.result.evaluationTime,
-      message: completedQuery.result.message,
-      logFileLocation: completedQuery.result.logFileLocation,
-    },
     completedQuery.logFileLocation,
-    completedQuery.successful ?? completedQuery.sucessful,
-    completedQuery.message,
+    completedQuery.successful ?? false,
+    completedQuery.message ?? "",
     sortState,
     completedQuery.resultCount,
     sortedResults,

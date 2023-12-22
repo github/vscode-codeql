@@ -125,12 +125,12 @@ export class CompareView extends AbstractWebview<
           // only run interpolation if the label is user-defined
           // otherwise we will wind up with duplicated rows
           name: this.labelProvider.getShortLabel(from),
-          status: from.completedQuery.statusString,
+          status: from.completedQuery.message,
           time: from.startTime,
         },
         toQuery: {
           name: this.labelProvider.getShortLabel(to),
-          status: to.completedQuery.statusString,
+          status: to.completedQuery.message,
           time: to.startTime,
         },
       },

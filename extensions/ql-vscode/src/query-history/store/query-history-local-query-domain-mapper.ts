@@ -46,14 +46,6 @@ function mapCompletedQueryToDto(
 
   return {
     query: mapQueryEvaluationInfoToDto(query.query),
-    result: {
-      runId: query.result.runId,
-      queryId: query.result.queryId,
-      resultType: query.result.resultType,
-      evaluationTime: query.result.evaluationTime,
-      message: query.result.message,
-      logFileLocation: query.result.logFileLocation,
-    },
     logFileLocation: query.logFileLocation,
     successful: query.successful,
     message: query.message,

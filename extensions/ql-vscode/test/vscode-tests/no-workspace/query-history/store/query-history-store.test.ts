@@ -16,7 +16,6 @@ import {
 import { DatabaseInfo } from "../../../../../src/common/interface-types";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
-import { QueryResultType } from "../../../../../src/query-server/legacy-messages";
 import { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
 import { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
@@ -274,12 +273,6 @@ describe("write and read", () => {
       query: queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
-      result: {
-        evaluationTime: 1,
-        queryId: 0,
-        runId: 0,
-        resultType: QueryResultType.SUCCESS,
-      },
     };
 
     return result;

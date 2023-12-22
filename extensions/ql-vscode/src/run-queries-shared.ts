@@ -1,5 +1,4 @@
 import * as messages from "./query-server/messages-shared";
-import * as legacyMessages from "./query-server/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
 import { Range, TextEditor, Uri, window, workspace } from "vscode";
@@ -367,10 +366,9 @@ export class QueryEvaluationInfo extends QueryOutputDir {
 
 export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
-  readonly result: legacyMessages.EvaluationResult;
   readonly logFileLocation?: string;
-  readonly successful?: boolean;
-  readonly message?: string;
+  readonly successful: boolean;
+  readonly message: string;
 }
 
 /**

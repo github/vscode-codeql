@@ -52,7 +52,6 @@ export interface CompletedQueryInfoDto {
 
   // There once was a typo in the data model, which is why we need to support both
   sucessful?: boolean;
-  result: EvaluationResultDto;
   logFileLocation?: string;
   resultCount: number;
   sortedResultsInfo: Record<string, SortedResultSetInfoDto>;
@@ -79,15 +78,6 @@ export interface RawResultsSortStateDto {
 export enum SortDirectionDto {
   asc,
   desc,
-}
-
-interface EvaluationResultDto {
-  runId: number;
-  queryId: number;
-  resultType: number;
-  evaluationTime: number;
-  message?: string;
-  logFileLocation?: string;
 }
 
 export interface QueryEvaluationInfoDto {

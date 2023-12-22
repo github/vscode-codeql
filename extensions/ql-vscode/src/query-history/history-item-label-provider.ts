@@ -77,14 +77,14 @@ export class HistoryItemLabelProvider {
   private getLocalInterpolateReplacements(
     item: LocalQueryInfo,
   ): InterpolateReplacements {
-    const { resultCount = 0, statusString = "in progress" } =
+    const { resultCount = 0, message = "in progress" } =
       item.completedQuery || {};
     return {
       t: item.startTime,
       q: item.getQueryName(),
       d: item.databaseName,
       r: `(${resultCount} results)`,
-      s: statusString,
+      s: message,
       f: item.getQueryFileName(),
       l: this.getLanguageLabel(item),
       "%": "%",
