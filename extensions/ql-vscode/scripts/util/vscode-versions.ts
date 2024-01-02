@@ -1,15 +1,5 @@
 import { minVersion } from "semver";
-
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(
-      `Could not fetch ${url}: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  return (await response.json()) as T;
-}
+import { fetchJson } from "./fetch";
 
 type VsCodePackageJson = {
   devDependencies: {
