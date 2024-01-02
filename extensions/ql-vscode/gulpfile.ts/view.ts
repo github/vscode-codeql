@@ -3,6 +3,8 @@ import esbuild from "gulp-esbuild";
 import { createProject } from "gulp-typescript";
 import { goodReporter } from "./typescript";
 
+import * as chromiumVersion from "./chromium-version.json";
+
 const tsProject = createProject("src/view/tsconfig.json");
 
 export function compileViewEsbuild() {
@@ -13,7 +15,7 @@ export function compileViewEsbuild() {
         bundle: true,
         format: "iife",
         platform: "browser",
-        target: "chrome114", // Electron 25, VS Code 1.85
+        target: `chrome${chromiumVersion.chromiumVersion}`,
         jsx: "automatic",
         sourcemap: "linked",
         sourceRoot: "..",
