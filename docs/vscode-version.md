@@ -32,32 +32,12 @@ When updating the minimum version in `package.json`, you should also follow the 
 ### Updating the Chromium target version
 
 For the webview code, we use [esbuild](https://esbuild.github.io/) to bundle the code. This requires a target version of Chromium to be specified.
-This version should be the same as the version of Chromium that is bundled with the new minimum VS Code version. There are two
-methods to find this version.
+This version should be the same as the version of Chromium that is bundled with the new minimum VS Code version. To update
+the version, run:
 
-#### Using the About Visual Studio Code dialog
-
-Download the new minimum VS Code version from [the previous release versions](https://code.visualstudio.com/docs/supporting/faq#_previous-release-versions). Then,
-select "About Visual Studio Code" from the top menu. This will show the version of Chromium that is bundled with that version of VS Code.
-
-![Chromium version in the About Visual Studio Code dialog](images/about-vscode-chromium.png)
-
-In this case, the `target` would be `chrome114`.
-
-#### Using the VS Code source code
-
-You can find the version of Electron that VS Code uses by looking at its `package.json` file for a specific version
-(for example [the `package.json` for `1.82.0`](https://github.com/microsoft/vscode/blob/1.82.0/package.json#L153)).
-
-![Electron version in the `package.json` file](images/electron-version.png)
-
-Then, you can find the version of Chromium that is bundled with that version of Electron by looking at the
-Chromium version that is shown for that Electron version on [the Electron releases site](https://releases.electronjs.org/releases/stable)
-(for example [the `25.8.0` release](https://releases.electronjs.org/release/v25.8.0)):
-
-![Chromium version in the Electron releases site](images/electron-chromium-version.png)
-
-In this case, the `target` would be `chrome114`.
+```bash
+npx ts-node scripts/update-chromium-version.ts
+```
 
 #### Troubleshooting
 
