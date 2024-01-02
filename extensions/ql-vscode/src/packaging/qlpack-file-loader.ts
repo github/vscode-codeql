@@ -8,7 +8,15 @@ const ajv = new Ajv({ allErrors: true });
 const qlpackFileValidate = ajv.compile(qlpackFileSchemaJson);
 
 export async function loadQlpackFile(path: string): Promise<QlPackFile> {
-  const qlPack = load(await readFile(path, "utf8")) as QlPackFile | undefined;
+  const qlpackFileText = await readFile(path, "utf8");
+
+  let qlPack = load(qlpackFileText) as QlPackFile | undefined;
+
+  if (qlPack === undefined || qlPack === null) {
+    // An empty file is not valid according to the schema since it's not an object,
+    // but it is equivalent to an empty object.
+    qlPack = {};
+  }
 
   qlpackFileValidate(qlPack);
 
@@ -18,10 +26,6 @@ export async function loadQlpackFile(path: string): Promise<QlPackFile> {
         .map((error) => `${error.instancePath} ${error.message}`)
         .join(", ")}`,
     );
-  }
-
-  if (!qlPack) {
-    throw new Error(`Could not parse ${path}`);
   }
 
   return qlPack;
