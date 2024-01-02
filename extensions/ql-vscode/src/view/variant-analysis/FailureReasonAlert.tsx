@@ -34,8 +34,8 @@ const getMessage = (failureReason: VariantAnalysisFailureReason): ReactNode => {
       return (
         <>
           The GitHub Actions workflow run has failed.{" "}
-          <VSCodeLink onClick={openLogs}>Check logs</VSCodeLink> and try running
-          this query again.
+          <VSCodeLink onClick={openLogs}>View actions logs</VSCodeLink> and try
+          running this query again.
         </>
       );
     case VariantAnalysisFailureReason.InternalError:
