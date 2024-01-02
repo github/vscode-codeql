@@ -7,6 +7,16 @@ const extensionDirectory = resolve(__dirname, "..");
 
 const schemas = [
   {
+    path: join(extensionDirectory, "src", "packaging", "qlpack-file.ts"),
+    type: "QlPackFile",
+    schemaPath: join(
+      extensionDirectory,
+      "src",
+      "packaging",
+      "qlpack-file.schema.json",
+    ),
+  },
+  {
     path: join(
       extensionDirectory,
       "src",

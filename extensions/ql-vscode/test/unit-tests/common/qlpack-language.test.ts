@@ -59,24 +59,22 @@ describe("getQlPackLanguage", () => {
     expect(result).toEqual(undefined);
   });
 
-  it("should find nothing when dependencies is a scalar", async () => {
+  it("should throw when dependencies is a scalar", async () => {
     await writeYAML(qlpackPath, {
       name: "test",
       dependencies: "codeql/java-all",
     });
 
-    const result = await getQlPackLanguage(qlpackPath);
-    expect(result).toEqual(undefined);
+    await expect(getQlPackLanguage(qlpackPath)).rejects.toBeDefined();
   });
 
-  it("should find nothing when dependencies is an array", async () => {
+  it("should throw when dependencies is an array", async () => {
     await writeYAML(qlpackPath, {
       name: "test",
       dependencies: ["codeql/java-all"],
     });
 
-    const result = await getQlPackLanguage(qlpackPath);
-    expect(result).toEqual(undefined);
+    await expect(getQlPackLanguage(qlpackPath)).rejects.toBeDefined();
   });
 
   it("should find nothing when there are no matching dependencies", async () => {

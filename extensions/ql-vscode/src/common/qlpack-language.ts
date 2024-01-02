@@ -1,7 +1,5 @@
-import { load } from "js-yaml";
-import { readFile } from "fs-extra";
-import { QlPackFile } from "../packaging/qlpack-file";
 import { QueryLanguage } from "./query-language";
+import { loadQlpackFile } from "../packaging/qlpack-file-loader";
 
 /**
  * @param qlpackPath The path to the `qlpack.yml` or `codeql-pack.yml` file.
@@ -11,11 +9,9 @@ import { QueryLanguage } from "./query-language";
 export async function getQlPackLanguage(
   qlpackPath: string,
 ): Promise<QueryLanguage | undefined> {
-  const qlPack = load(await readFile(qlpackPath, "utf8")) as
-    | QlPackFile
-    | undefined;
+  const qlPack = await loadQlpackFile(qlpackPath);
   const dependencies = qlPack?.dependencies;
-  if (!dependencies || typeof dependencies !== "object") {
+  if (!dependencies) {
     return;
   }
 
