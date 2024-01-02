@@ -512,9 +512,7 @@ class ExtensionSpecificDistributionManager {
   }
 
   private get distributionOwnerName(): string {
-    if (this.config.ownerName) {
-      return this.config.ownerName;
-    } else if (this.config.channel === "nightly") {
+    if (this.config.channel === "nightly") {
       return NIGHTLY_DISTRIBUTION_OWNER_NAME;
     } else {
       return DEFAULT_DISTRIBUTION_OWNER_NAME;
@@ -522,9 +520,7 @@ class ExtensionSpecificDistributionManager {
   }
 
   private get distributionRepositoryName(): string {
-    if (this.config.repositoryName) {
-      return this.config.repositoryName;
-    } else if (this.config.channel === "nightly") {
+    if (this.config.channel === "nightly") {
       return NIGHTLY_DISTRIBUTION_REPOSITORY_NAME;
     } else {
       return DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
