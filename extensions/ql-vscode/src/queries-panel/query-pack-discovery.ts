@@ -5,6 +5,7 @@ import { FALLBACK_QLPACK_FILENAME, QLPACK_FILENAMES } from "../common/ql";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { containsPath } from "../common/files";
 import { getQlPackLanguage } from "../common/qlpack-language";
+import { getErrorMessage } from "../common/helpers-pure";
 
 interface QueryPack {
   path: string;
@@ -70,7 +71,12 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
     let language: QueryLanguage | undefined;
     try {
       language = await getQlPackLanguage(path);
-    } catch (e) {
+    } catch (err) {
+      void this.logger.log(
+        `Query pack discovery failed to determine language for query pack: ${path}\n\tReason: ${getErrorMessage(
+          err,
+        )}`,
+      );
       language = undefined;
     }
     return { path, language };
