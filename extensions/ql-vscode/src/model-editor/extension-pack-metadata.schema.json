@@ -6,16 +6,23 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "version": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "extensionTargets": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "dataExtensions": {
           "anyOf": [
@@ -27,29 +34,46 @@
             },
             {
               "type": "string"
+            },
+            {
+              "type": "null"
             }
           ]
         },
         "dependencies": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "dbscheme": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "library": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "defaultSuite": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SuiteInstruction"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SuiteInstruction"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "defaultSuiteFile": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       },
       "required": ["dataExtensions", "extensionTargets", "name", "version"]
