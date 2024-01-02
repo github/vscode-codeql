@@ -7,7 +7,7 @@ We should make sure the CodeQL for VS Code extension works with the Node.js vers
 
 ## Checking the version of Node.js supplied by VS Code
 
-You can find this info by seleting "About Visual Studio Code" from the top menu.
+You can find this info by selecting "About Visual Studio Code" from the top menu.
 
 ![about-vscode](images/about-vscode.png)
 
