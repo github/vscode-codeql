@@ -52,6 +52,16 @@ const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
 const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
 
 /**
+ * Owner name of the nightly version of the extension-managed distribution on GitHub.
+ */
+const NIGHTLY_DISTRIBUTION_OWNER_NAME = "dsp-testing";
+
+/**
+ * Repository name of the nightly version of the extension-managed distribution on GitHub.
+ */
+const NIGHTLY_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-nightlies";
+
+/**
  * Range of versions of the CLI that are compatible with the extension.
  *
  * This applies to both extension-managed and CLI distributions.
@@ -453,9 +463,18 @@ class ExtensionSpecificDistributionManager {
     void extLogger.log(
       `Searching for latest release including ${requiredAssetName}.`,
     );
+
+    const versionRange = this.usingNightlyReleases
+      ? undefined
+      : this.versionRange;
+    const orderBySemver = !this.usingNightlyReleases;
+    const includePrerelease =
+      this.usingNightlyReleases || this.config.includePrerelease;
+
     return this.createReleasesApiConsumer().getLatestRelease(
-      this.versionRange,
-      this.config.includePrerelease,
+      versionRange,
+      orderBySemver,
+      includePrerelease,
       (release) => {
         // v2.12.3 was released with a bug that causes the extension to fail
         // so we force the extension to ignore it.
@@ -485,16 +504,37 @@ class ExtensionSpecificDistributionManager {
   }
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
-    const ownerName = this.config.ownerName
-      ? this.config.ownerName
-      : DEFAULT_DISTRIBUTION_OWNER_NAME;
-    const repositoryName = this.config.repositoryName
-      ? this.config.repositoryName
-      : DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
     return new ReleasesApiConsumer(
-      ownerName,
-      repositoryName,
+      this.distributionOwnerName,
+      this.distributionRepositoryName,
       this.config.personalAccessToken,
+    );
+  }
+
+  private get distributionOwnerName(): string {
+    if (this.config.ownerName) {
+      return this.config.ownerName;
+    } else if (this.config.channel === "nightly") {
+      return NIGHTLY_DISTRIBUTION_OWNER_NAME;
+    } else {
+      return DEFAULT_DISTRIBUTION_OWNER_NAME;
+    }
+  }
+
+  private get distributionRepositoryName(): string {
+    if (this.config.repositoryName) {
+      return this.config.repositoryName;
+    } else if (this.config.channel === "nightly") {
+      return NIGHTLY_DISTRIBUTION_REPOSITORY_NAME;
+    } else {
+      return DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
+    }
+  }
+
+  private get usingNightlyReleases(): boolean {
+    return (
+      this.distributionOwnerName === NIGHTLY_DISTRIBUTION_OWNER_NAME &&
+      this.distributionRepositoryName === NIGHTLY_DISTRIBUTION_REPOSITORY_NAME
     );
   }
 
@@ -570,7 +610,8 @@ export class ReleasesApiConsumer {
   }
 
   public async getLatestRelease(
-    versionRange: semver.Range,
+    versionRange: semver.Range | undefined,
+    orderBySemver = true,
     includePrerelease = false,
     additionalCompatibilityCheck?: (release: GithubRelease) => boolean,
   ): Promise<Release> {
@@ -583,12 +624,14 @@ export class ReleasesApiConsumer {
         return false;
       }
 
-      const version = semver.parse(release.tag_name);
-      if (
-        version === null ||
-        !semver.satisfies(version, versionRange, { includePrerelease })
-      ) {
-        return false;
+      if (versionRange !== undefined) {
+        const version = semver.parse(release.tag_name);
+        if (
+          version === null ||
+          !semver.satisfies(version, versionRange, { includePrerelease })
+        ) {
+          return false;
+        }
       }
 
       return (
@@ -597,10 +640,9 @@ export class ReleasesApiConsumer {
     });
     // Tag names must all be parsable to semvers due to the previous filtering step.
     const latestRelease = compatibleReleases.sort((a, b) => {
-      const versionComparison = semver.compare(
-        semver.parse(b.tag_name)!,
-        semver.parse(a.tag_name)!,
-      );
+      const versionComparison = orderBySemver
+        ? semver.compare(semver.parse(b.tag_name)!, semver.parse(a.tag_name)!)
+        : b.id - a.id;
       if (versionComparison !== 0) {
         return versionComparison;
       }

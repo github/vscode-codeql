@@ -85,6 +85,15 @@ describe("Releases API consumer", () => {
         prerelease: true,
         tag_name: "v3.1.2-pre-2.0",
       },
+      // Has a tag_name that is not valid semver
+      {
+        assets: [],
+        created_at: "2019-08-010T00:00:00Z",
+        id: 6,
+        name: "",
+        prerelease: true,
+        tag_name: "codeql-bundle-20231220",
+      },
     ];
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
@@ -98,13 +107,24 @@ describe("Releases API consumer", () => {
       }
     }
 
-    it("picked release has version with the highest precedence", async () => {
+    it("picked release is non-prerelease with the highest semver", async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(
         unconstrainedVersionRange,
+        true,
       );
       expect(latestRelease.id).toBe(2);
+    });
+
+    it("picked release is non-prerelease with highest id", async () => {
+      const consumer = new MockReleasesApiConsumer(owner, repo);
+
+      const latestRelease = await consumer.getLatestRelease(
+        unconstrainedVersionRange,
+        false,
+      );
+      expect(latestRelease.id).toBe(3);
     });
 
     it("version of picked release is within the version range", async () => {
@@ -128,6 +148,7 @@ describe("Releases API consumer", () => {
       const latestRelease = await consumer.getLatestRelease(
         new Range("2.*.*"),
         true,
+        true,
         (release) =>
           release.assets.some((asset) => asset.name === "exampleAsset.txt"),
       );
@@ -138,7 +159,7 @@ describe("Releases API consumer", () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       await expect(
-        consumer.getLatestRelease(new Range("2.*.*"), true, (release) =>
+        consumer.getLatestRelease(new Range("2.*.*"), true, true, (release) =>
           release.assets.some(
             (asset) => asset.name === "otherExampleAsset.txt",
           ),
@@ -152,8 +173,20 @@ describe("Releases API consumer", () => {
       const latestRelease = await consumer.getLatestRelease(
         unconstrainedVersionRange,
         true,
+        true,
       );
       expect(latestRelease.id).toBe(5);
+    });
+
+    it("ignores invalid semver and picks (pre-)release with highest id", async () => {
+      const consumer = new MockReleasesApiConsumer(owner, repo);
+
+      const latestRelease = await consumer.getLatestRelease(
+        undefined,
+        false,
+        true,
+      );
+      expect(latestRelease.id).toBe(6);
     });
   });
 
