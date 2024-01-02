@@ -17,7 +17,7 @@ import {
   trimCache,
   TrimCacheParams,
   upgradeDatabase,
-} from "./new-messages";
+} from "./messages";
 import { BaseLogger, Logger } from "../common/logging";
 import { basename, join } from "path";
 import { nanoid } from "nanoid";

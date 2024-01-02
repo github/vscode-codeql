@@ -7,7 +7,7 @@ import * as cli from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
 import { BaseLogger, Logger, showAndLogErrorMessage } from "../common/logging";
 import { extLogger, ProgressReporter } from "../common/logging/vscode";
-import { progress, ProgressMessage, WithProgressId } from "./new-messages";
+import { progress, ProgressMessage, WithProgressId } from "./messages";
 import {
   ProgressCallback,
   ProgressTask,
@@ -169,7 +169,7 @@ export class QueryServerClient extends DisposableObject {
   private async startQueryServerImpl(
     progressReporter: ProgressReporter,
   ): Promise<void> {
-    void this.logger.log("Starting NEW query server.");
+    void this.logger.log("Starting query server.");
 
     const ramArgs = await this.cliServer.resolveRam(
       this.config.queryMemoryMb,

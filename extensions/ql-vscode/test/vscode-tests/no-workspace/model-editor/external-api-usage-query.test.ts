@@ -8,7 +8,7 @@ import {
   DatabaseKind,
 } from "../../../../src/databases/local-databases";
 import { dirSync, file } from "tmp-promise";
-import { QueryResultType } from "../../../../src/query-server/new-messages";
+import { QueryResultType } from "../../../../src/query-server/messages";
 import { fetchExternalApiQueries } from "../../../../src/model-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";

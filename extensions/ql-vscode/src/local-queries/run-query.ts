@@ -3,7 +3,7 @@ import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { TeeLogger, showAndLogExceptionWithTelemetry } from "../common/logging";
-import { QueryResultType } from "../query-server/new-messages";
+import { QueryResultType } from "../query-server/messages";
 import { extLogger } from "../common/logging/vscode";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
