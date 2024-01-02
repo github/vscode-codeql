@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import {
   ModeledMethod,

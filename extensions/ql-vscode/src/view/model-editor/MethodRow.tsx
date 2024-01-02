@@ -3,7 +3,6 @@ import {
   VSCodeLink,
   VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
-import * as React from "react";
 import {
   forwardRef,
   useCallback,

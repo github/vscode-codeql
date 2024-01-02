@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysis as VariantAnalysisComponent } from "../../view/variant-analysis/VariantAnalysis";

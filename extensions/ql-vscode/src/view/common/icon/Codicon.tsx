@@ -1,6 +1,4 @@
-import * as React from "react";
 import { styled } from "styled-components";
-import * as classNames from "classnames";
 
 type Props = {
   name: string;
@@ -18,7 +16,7 @@ export const Codicon = ({ name, label, className, slot }: Props) => (
     role="img"
     aria-label={label}
     title={label}
-    className={classNames("codicon", `codicon-${name}`, className)}
+    className={`codicon codicon-${name}${className ? ` ${className}` : ""}`}
     slot={slot}
   />
 );

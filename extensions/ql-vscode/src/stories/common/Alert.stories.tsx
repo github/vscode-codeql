@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Meta, StoryFn } from "@storybook/react";
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 

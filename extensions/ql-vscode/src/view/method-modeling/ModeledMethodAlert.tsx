@@ -1,7 +1,6 @@
 import { ModeledMethodValidationError } from "../../model-editor/shared/validation";
 import TextButton from "../common/TextButton";
 import { Alert } from "../common";
-import * as React from "react";
 import { useCallback } from "react";
 
 type Props = {

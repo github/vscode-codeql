@@ -1,4 +1,3 @@
-import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import {

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { select } from "d3";
 import { jumpToLocation } from "./result-table-utils";
 import { graphviz, GraphvizOptions } from "d3-graphviz";

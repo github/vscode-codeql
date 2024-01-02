@@ -1,4 +1,3 @@
-import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { MethodName } from "../MethodName";
 import { Method } from "../../../model-editor/method";

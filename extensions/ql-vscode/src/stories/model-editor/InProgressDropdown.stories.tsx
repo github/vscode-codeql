@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Meta, StoryFn } from "@storybook/react";
 
 import { InProgressDropdown as InProgressDropdownComponent } from "../../view/model-editor/InProgressDropdown";

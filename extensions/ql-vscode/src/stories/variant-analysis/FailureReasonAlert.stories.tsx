@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Meta, StoryFn } from "@storybook/react";
 import { VariantAnalysisFailureReason } from "../../variant-analysis/shared/variant-analysis";
 import { FailureReasonAlert } from "../../view/variant-analysis/FailureReasonAlert";

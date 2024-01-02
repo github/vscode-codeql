@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ChangeEvent, useCallback } from "react";
 import {
   calculateNewProvenance,

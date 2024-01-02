@@ -1,4 +1,3 @@
-import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { ResultsApp } from "../ResultsApp";
 import {

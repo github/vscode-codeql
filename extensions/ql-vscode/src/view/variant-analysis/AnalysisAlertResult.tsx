@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
 import { CodePaths, FileCodeSnippet } from "../common";
 

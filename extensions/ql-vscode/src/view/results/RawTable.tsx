@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { className, jumpToLocation } from "./result-table-utils";
 import {

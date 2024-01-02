@@ -1,4 +1,3 @@
-import * as React from "react";
 import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import {
   DatabaseInfo,
@@ -18,7 +17,7 @@ import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./ResultTables";
 
 import "./resultsView.css";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /**
  * ResultsApp.tsx
@@ -72,7 +71,7 @@ export const onNavigation = new EventHandlerList<NavigateMsg>();
  * A minimal state container for displaying results.
  */
 export function ResultsApp() {
-  const [state, setState] = React.useState<ResultsViewState>({
+  const [state, setState] = useState<ResultsViewState>({
     displayedResults: {
       resultsInfo: null,
       results: null,

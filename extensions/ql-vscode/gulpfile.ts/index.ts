@@ -8,9 +8,14 @@ import {
   copyWasmFiles,
 } from "./typescript";
 import { compileTextMateGrammar } from "./textmate";
-import { compileView, watchView } from "./webpack";
 import { packageExtension } from "./package";
 import { injectAppInsightsKey } from "./appInsights";
+import {
+  checkViewTypeScript,
+  compileViewEsbuild,
+  watchViewCheckTypeScript,
+  watchViewEsbuild,
+} from "./view";
 
 export const buildWithoutPackage = series(
   cleanOutput,
@@ -19,23 +24,33 @@ export const buildWithoutPackage = series(
     copyWasmFiles,
     checkTypeScript,
     compileTextMateGrammar,
-    compileView,
+    compileViewEsbuild,
+    checkViewTypeScript,
   ),
 );
 
-export const watch = parallel(watchEsbuild, watchCheckTypeScript, watchView);
+export const watch = parallel(
+  // Always build first, so that we don't have to run build manually
+  compileEsbuild,
+  compileViewEsbuild,
+  watchEsbuild,
+  watchCheckTypeScript,
+  watchViewEsbuild,
+  watchViewCheckTypeScript,
+);
 
 export {
   cleanOutput,
   compileTextMateGrammar,
   watchEsbuild,
   watchCheckTypeScript,
-  watchView,
+  watchViewEsbuild,
   compileEsbuild,
   copyWasmFiles,
   checkTypeScript,
   injectAppInsightsKey,
-  compileView,
+  compileViewEsbuild,
+  checkViewTypeScript,
 };
 export default series(
   buildWithoutPackage,

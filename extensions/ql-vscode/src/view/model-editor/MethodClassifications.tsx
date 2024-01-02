@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useMemo } from "react";
 import { CallClassification, Method } from "../../model-editor/method";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";

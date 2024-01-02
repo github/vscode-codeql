@@ -24,7 +24,49 @@ Also consider what percentage of our users are using each VS Code version. This 
 
 ## How to update the VS Code version
 
-To provide a good experience to users, it is recommented to update the `MIN_VERSION` in `extension.ts` first and release, and then update the `vscode` version in `package.json` and release again. By stagging this update across two releases it gives users on older VS Code versions a chance to upgrade before it silently refuses to upgrade them.
+To provide a good experience to users, it is recommented to update the `MIN_VERSION` in `extension.ts` first and release, and then update the `vscode` version in `package.json` and release again.
+By staggering this update across two releases it gives users on older VS Code versions a chance to upgrade before it silently refuses to upgrade them.
+
+When updating the minimum version in `package.json`, you should also follow the additional steps listed below.
+
+### Updating the Chromium target version
+
+For the webview code, we use [esbuild](https://esbuild.github.io/) to bundle the code. This requires a target version of Chromium to be specified.
+This version should be the same as the version of Chromium that is bundled with the new minimum VS Code version. There are two
+methods to find this version.
+
+#### Using the About Visual Studio Code dialog
+
+Download the new minimum VS Code version from [the previous release versions](https://code.visualstudio.com/docs/supporting/faq#_previous-release-versions). Then,
+select "About Visual Studio Code" from the top menu. This will show the version of Chromium that is bundled with that version of VS Code.
+
+![Chromium version in the About Visual Studio Code dialog](images/about-vscode-chromium.png)
+
+In this case, the `target` would be `chrome114`.
+
+#### Using the VS Code source code
+
+You can find the version of Electron that VS Code uses by looking at its `package.json` file for a specific version
+(for example [the `package.json` for `1.82.0`](https://github.com/microsoft/vscode/blob/1.82.0/package.json#L153)).
+
+![Electron version in the `package.json` file](images/electron-version.png)
+
+Then, you can find the version of Chromium that is bundled with that version of Electron by looking at the
+Chromium version that is shown for that Electron version on [the Electron releases site](https://releases.electronjs.org/releases/stable)
+(for example [the `25.8.0` release](https://releases.electronjs.org/release/v25.8.0)):
+
+![Chromium version in the Electron releases site](images/electron-chromium-version.png)
+
+In this case, the `target` would be `chrome114`.
+
+#### Troubleshooting
+
+In case there's an error when specifying a version of Chromium, you may need to update the version of `caniuse-lite`
+in `package.json` to a newer version. You should be able to do so by running:
+
+```shell
+npx update-browserslist-db@latest
+```
 
 ## VS Code version used in tests
 

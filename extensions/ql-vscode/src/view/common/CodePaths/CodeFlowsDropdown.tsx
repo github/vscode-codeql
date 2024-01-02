@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ChangeEvent, SetStateAction, useCallback } from "react";
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
 

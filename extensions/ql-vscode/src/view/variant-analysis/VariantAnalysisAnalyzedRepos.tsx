@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
 import { styled } from "styled-components";
 import { RepoRow } from "./RepoRow";

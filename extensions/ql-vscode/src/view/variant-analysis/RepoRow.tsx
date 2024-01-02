@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import { VSCodeBadge, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";

@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import { MethodModeling } from "./MethodModeling";
 import { getModelingStatus } from "../../model-editor/shared/modeling-status";

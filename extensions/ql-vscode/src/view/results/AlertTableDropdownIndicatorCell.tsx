@@ -1,4 +1,3 @@
-import * as React from "react";
 import TextButton from "../common/TextButton";
 import { chevronDown, chevronRight } from "./octicons";
 

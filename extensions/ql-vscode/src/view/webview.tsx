@@ -1,13 +1,28 @@
-import * as React from "react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { vscode } from "./vscode-api";
 
+import { registerUnhandledErrorListener } from "./common/errors";
 import { WebviewDefinition } from "./webview-definition";
+
+import compareView from "./compare";
+import dataFlowPathsView from "./data-flow-paths";
+import methodModelingView from "./method-modeling";
+import modelEditorView from "./model-editor";
+import resultsView from "./results";
+import variantAnalysisView from "./variant-analysis";
 
 // Allow all views to use Codicons
 import "@vscode/codicons/dist/codicon.css";
-import { registerUnhandledErrorListener } from "./common/errors";
+
+const views: Record<string, WebviewDefinition> = {
+  compare: compareView,
+  "data-flow-paths": dataFlowPathsView,
+  "method-modeling": methodModelingView,
+  "model-editor": modelEditorView,
+  results: resultsView,
+  "variant-analysis": variantAnalysisView,
+};
 
 const render = () => {
   registerUnhandledErrorListener();
@@ -25,10 +40,11 @@ const render = () => {
     return;
   }
 
-  // It's a lot harder to use dynamic imports since those don't import the CSS
-  // and require a less strict CSP policy
-  // eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-dynamic-require
-  const view: WebviewDefinition = require(`./${viewName}/index.tsx`).default;
+  const view: WebviewDefinition = views[viewName];
+  if (!view) {
+    console.error(`Could not find view with name "${viewName}"`);
+    return;
+  }
 
   const root = createRoot(element);
   root.render(

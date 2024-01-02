@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useMemo } from "react";
 
 import { UrlValue } from "../../../common/raw-result-types";
