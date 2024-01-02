@@ -13,15 +13,11 @@ You can find this info by selecting "About Visual Studio Code" from the top menu
 
 ## Updating the Node.js version
 
-The following files will need to be updated:
+To update the Node.js version, run:
 
-- `extensions/ql-vscode/.nvmrc` - this will enable nvm to automatically switch to the correct Node
-   version when you're in the project folder. It will also change the Node version the GitHub Actions
-   workflows use.
-- `extensions/ql-vscode/package.json` - the "engines.node: '[VERSION]'" setting
-- `extensions/ql-vscode/package.json` - the "@types/node: '[VERSION]'" dependency
-
-Then run `npm install` to update the `extensions/ql-vscode/package-lock.json` file.
+```bash
+npx ts-node scripts/update-node-version.ts
+```
 
 ## Node.js version used in tests
 
