@@ -107,7 +107,7 @@ describe("Releases API consumer", () => {
       }
     }
 
-    it("picked release is non-prerelease with with the highest semver", async () => {
+    it("picked release is non-prerelease with the highest semver", async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(
