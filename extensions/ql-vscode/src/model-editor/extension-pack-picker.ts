@@ -1,11 +1,14 @@
 import { join } from "path";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
-import { Uri } from "vscode";
+import { CancellationToken, Uri } from "vscode";
 import Ajv from "ajv";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { ProgressCallback } from "../common/vscode/progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
 import { getErrorMessage } from "../common/helpers-pure";
@@ -31,6 +34,7 @@ export async function pickExtensionPack(
   modelConfig: ModelConfig,
   logger: NotificationLogger,
   progress: ProgressCallback,
+  token: CancellationToken,
   maxStep: number,
 ): Promise<ExtensionPack | undefined> {
   progress({
@@ -49,6 +53,13 @@ export async function pickExtensionPack(
     additionalPacks,
     true,
   );
+
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException(
+      "Open Model editor action cancelled.",
+      true,
+    );
+  }
 
   progress({
     message: "Creating extension pack...",
