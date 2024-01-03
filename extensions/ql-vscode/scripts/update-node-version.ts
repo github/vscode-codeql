@@ -49,9 +49,20 @@ async function updateNodeVersion() {
     "utf8",
   );
 
+  // The @types/node version needs to match the first two parts of the Node
+  // version, e.g. if the Node version is 18.17.3, the @types/node version
+  // should be 18.17.*. This corresponds with the documentation at
+  // https://github.com/definitelytyped/definitelytyped#how-do-definitely-typed-package-versions-relate-to-versions-of-the-corresponding-library
+  // "The patch version of the type declaration package is unrelated to the library patch version. This allows
+  // Definitely Typed to safely update type declarations for the same major/minor version of a library."
+  // 18.17.* is equivalent to >=18.17.0 <18.18.0
+  const typesNodeVersion = versionInformation.nodeVersion
+    .split(".")
+    .slice(0, 2)
+    .join(".");
+
   packageJson.engines.node = `^${versionInformation.nodeVersion}`;
-  packageJson.devDependencies["@types/node"] =
-    `${versionInformation.nodeVersion}`;
+  packageJson.devDependencies["@types/node"] = `${typesNodeVersion}.*`;
 
   await outputFile(
     join(extensionDirectory, "package.json"),
@@ -61,6 +72,11 @@ async function updateNodeVersion() {
   console.log("Updated package.json, now running npm install");
 
   execSync("npm install", { cwd: extensionDirectory, stdio: "inherit" });
+  // Always use the latest patch version of @types/node
+  execSync("npm upgrade @types/node", {
+    cwd: extensionDirectory,
+    stdio: "inherit",
+  });
 
   console.log("Node version updated successfully");
 }

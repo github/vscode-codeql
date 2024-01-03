@@ -7,6 +7,12 @@ updates:
       day: "thursday" # Thursday is arbitrary
     labels:
       - "Update dependencies"
+    ignore:
+      # @types/node is related to the version of VS Code we're supporting and should
+      # not be updated to a newer version of Node automatically. However, patch versions
+      # are unrelated to the Node version, so we allow those.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
