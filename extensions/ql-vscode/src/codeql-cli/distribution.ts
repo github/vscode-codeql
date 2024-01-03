@@ -28,6 +28,7 @@ import {
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 import { Release, ReleaseAsset } from "./release";
+import { GithubRateLimitedError, GithubApiError } from "./github-api-error";
 
 /**
  * distribution.ts
@@ -957,23 +958,4 @@ export interface GithubReleaseAsset {
    * The size of the asset in bytes.
    */
   size: number;
-}
-
-export class GithubApiError extends Error {
-  constructor(
-    public status: number,
-    public body: string,
-  ) {
-    super(`API call failed with status code ${status}, body: ${body}`);
-  }
-}
-
-export class GithubRateLimitedError extends GithubApiError {
-  constructor(
-    public status: number,
-    public body: string,
-    public rateLimitResetDate: Date,
-  ) {
-    super(status, body);
-  }
 }
