@@ -4,6 +4,9 @@ import { URL } from "url";
 import { Release, ReleaseAsset } from "./release";
 import { GithubRateLimitedError, GithubApiError } from "./github-api-error";
 
+/**
+ * Communicates with the GitHub API to determine the latest compatible release and download assets.
+ */
 export class ReleasesApiConsumer {
   constructor(
     ownerName: string,
@@ -173,52 +176,27 @@ function isRedirectStatusCode(statusCode: number): boolean {
 
 /**
  * The json returned from github for a release.
+ * See https://docs.github.com/en/rest/releases/releases#get-a-release for example response and response schema.
+ *
+ * This type must match the format of the GitHub API and is not intended to be used outside of this file except for tests. Please use the `Release` type instead.
  */
-interface GithubRelease {
+export interface GithubRelease {
   assets: GithubReleaseAsset[];
-
-  /**
-   * The creation date of the release on GitHub, in ISO 8601 format.
-   */
   created_at: string;
-
-  /**
-   * The id associated with the release on GitHub.
-   */
   id: number;
-
-  /**
-   * The name associated with the release on GitHub.
-   */
   name: string;
-
-  /**
-   * Whether the release is a prerelease.
-   */
   prerelease: boolean;
-
-  /**
-   * The tag name.  This should be the version.
-   */
   tag_name: string;
 }
 
 /**
  * The json returned by github for an asset in a release.
+ * See https://docs.github.com/en/rest/releases/releases#get-a-release for example response and response schema.
+ *
+ * This type must match the format of the GitHub API and is not intended to be used outside of this file except for tests. Please use the `ReleaseAsset` type instead.
  */
-interface GithubReleaseAsset {
-  /**
-   * The id associated with the asset on GitHub.
-   */
+export interface GithubReleaseAsset {
   id: number;
-
-  /**
-   * The name associated with the asset on GitHub.
-   */
   name: string;
-
-  /**
-   * The size of the asset in bytes.
-   */
   size: number;
 }
