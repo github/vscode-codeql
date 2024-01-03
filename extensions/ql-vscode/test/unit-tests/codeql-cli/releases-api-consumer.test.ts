@@ -8,8 +8,7 @@ import {
 } from "../../../src/codeql-cli/releases-api-consumer";
 
 describe("Releases API consumer", () => {
-  const owner = "someowner";
-  const repo = "somerepo";
+  const repositoryNwo = "someowner/somerepo";
   const unconstrainedVersionRange = new Range("*");
 
   describe("picking the latest release", () => {
@@ -75,7 +74,7 @@ describe("Releases API consumer", () => {
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
       protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
-        if (apiPath === `/repos/${owner}/${repo}/releases`) {
+        if (apiPath === `/repos/${repositoryNwo}/releases`) {
           return Promise.resolve(
             new fetch.Response(JSON.stringify(sampleReleaseResponse)),
           );
@@ -85,7 +84,7 @@ describe("Releases API consumer", () => {
     }
 
     it("picked release is non-prerelease with the highest semver", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       const latestRelease = await consumer.getLatestRelease(
         unconstrainedVersionRange,
@@ -95,7 +94,7 @@ describe("Releases API consumer", () => {
     });
 
     it("picked release is non-prerelease with highest id", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       const latestRelease = await consumer.getLatestRelease(
         unconstrainedVersionRange,
@@ -105,14 +104,14 @@ describe("Releases API consumer", () => {
     });
 
     it("version of picked release is within the version range", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       const latestRelease = await consumer.getLatestRelease(new Range("2.*.*"));
       expect(latestRelease.id).toBe(1);
     });
 
     it("fails if none of the releases are within the version range", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       await expect(
         consumer.getLatestRelease(new Range("5.*.*")),
@@ -120,7 +119,7 @@ describe("Releases API consumer", () => {
     });
 
     it("picked release passes additional compatibility test if an additional compatibility test is specified", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       const latestRelease = await consumer.getLatestRelease(
         new Range("2.*.*"),
@@ -133,7 +132,7 @@ describe("Releases API consumer", () => {
     });
 
     it("fails if none of the releases pass the additional compatibility test", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       await expect(
         consumer.getLatestRelease(new Range("2.*.*"), true, true, (release) =>
@@ -145,7 +144,7 @@ describe("Releases API consumer", () => {
     });
 
     it("picked release is the most recent prerelease when includePrereleases is set", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       const latestRelease = await consumer.getLatestRelease(
         unconstrainedVersionRange,
@@ -156,7 +155,7 @@ describe("Releases API consumer", () => {
     });
 
     it("ignores invalid semver and picks (pre-)release with highest id", async () => {
-      const consumer = new MockReleasesApiConsumer(owner, repo);
+      const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
       const latestRelease = await consumer.getLatestRelease(
         undefined,
@@ -183,7 +182,7 @@ describe("Releases API consumer", () => {
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
       protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
-        if (apiPath === `/repos/${owner}/${repo}/releases`) {
+        if (apiPath === `/repos/${repositoryNwo}/releases`) {
           const responseBody: GithubRelease[] = [
             {
               assets: expectedAssets,
@@ -203,7 +202,7 @@ describe("Releases API consumer", () => {
       }
     }
 
-    const consumer = new MockReleasesApiConsumer(owner, repo);
+    const consumer = new MockReleasesApiConsumer(repositoryNwo);
 
     const assets = (await consumer.getLatestRelease(unconstrainedVersionRange))
       .assets;

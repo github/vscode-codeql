@@ -14,8 +14,7 @@ export class ReleasesApiConsumer {
   private readonly defaultHeaders: { [key: string]: string } = {};
 
   constructor(
-    private readonly ownerName: string,
-    private readonly repoName: string,
+    private readonly repositoryNwo: string,
     personalAccessToken?: string,
   ) {
     // Specify version of the GitHub API
@@ -32,7 +31,7 @@ export class ReleasesApiConsumer {
     includePrerelease = false,
     additionalCompatibilityCheck?: (release: GithubRelease) => boolean,
   ): Promise<Release> {
-    const apiPath = `/repos/${this.ownerName}/${this.repoName}/releases`;
+    const apiPath = `/repos/${this.repositoryNwo}/releases`;
     const allReleases: GithubRelease[] = await (
       await this.makeApiCall(apiPath)
     ).json();
@@ -90,7 +89,7 @@ export class ReleasesApiConsumer {
   public async streamBinaryContentOfAsset(
     asset: ReleaseAsset,
   ): Promise<fetch.Response> {
-    const apiPath = `/repos/${this.ownerName}/${this.repoName}/releases/assets/${asset.id}`;
+    const apiPath = `/repos/${this.repositoryNwo}/releases/assets/${asset.id}`;
 
     return await this.makeApiCall(apiPath, {
       accept: "application/octet-stream",

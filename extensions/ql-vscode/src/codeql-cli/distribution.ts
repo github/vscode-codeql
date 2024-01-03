@@ -36,30 +36,14 @@ import { ReleasesApiConsumer } from "./releases-api-consumer";
  */
 
 /**
- * Default value for the owner name of the extension-managed distribution on GitHub.
- *
- * We set the default here rather than as a default config value so that this default is invoked
- * upon blanking the setting.
+ * Repository name with owner of the stable version of the extension-managed distribution on GitHub.
  */
-const DEFAULT_DISTRIBUTION_OWNER_NAME = "github";
+const STABLE_DISTRIBUTION_REPOSITORY_NWO = "github/codeql-cli-binaries";
 
 /**
- * Default value for the repository name of the extension-managed distribution on GitHub.
- *
- * We set the default here rather than as a default config value so that this default is invoked
- * upon blanking the setting.
+ * Repository name with owner of the nightly version of the extension-managed distribution on GitHub.
  */
-const DEFAULT_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-binaries";
-
-/**
- * Owner name of the nightly version of the extension-managed distribution on GitHub.
- */
-const NIGHTLY_DISTRIBUTION_OWNER_NAME = "dsp-testing";
-
-/**
- * Repository name of the nightly version of the extension-managed distribution on GitHub.
- */
-const NIGHTLY_DISTRIBUTION_REPOSITORY_NAME = "codeql-cli-nightlies";
+const NIGHTLY_DISTRIBUTION_REPOSITORY_NWO = "dsp-testing/codeql-cli-nightlies";
 
 /**
  * Range of versions of the CLI that are compatible with the extension.
@@ -505,32 +489,22 @@ class ExtensionSpecificDistributionManager {
 
   private createReleasesApiConsumer(): ReleasesApiConsumer {
     return new ReleasesApiConsumer(
-      this.distributionOwnerName,
-      this.distributionRepositoryName,
+      this.distributionRepositoryNwo,
       this.config.personalAccessToken,
     );
   }
 
-  private get distributionOwnerName(): string {
+  private get distributionRepositoryNwo(): string {
     if (this.config.channel === "nightly") {
-      return NIGHTLY_DISTRIBUTION_OWNER_NAME;
+      return NIGHTLY_DISTRIBUTION_REPOSITORY_NWO;
     } else {
-      return DEFAULT_DISTRIBUTION_OWNER_NAME;
-    }
-  }
-
-  private get distributionRepositoryName(): string {
-    if (this.config.channel === "nightly") {
-      return NIGHTLY_DISTRIBUTION_REPOSITORY_NAME;
-    } else {
-      return DEFAULT_DISTRIBUTION_REPOSITORY_NAME;
+      return STABLE_DISTRIBUTION_REPOSITORY_NWO;
     }
   }
 
   private get usingNightlyReleases(): boolean {
     return (
-      this.distributionOwnerName === NIGHTLY_DISTRIBUTION_OWNER_NAME &&
-      this.distributionRepositoryName === NIGHTLY_DISTRIBUTION_REPOSITORY_NAME
+      this.distributionRepositoryNwo === NIGHTLY_DISTRIBUTION_REPOSITORY_NWO
     );
   }
 
