@@ -5,7 +5,7 @@ import {
   GithubRelease,
   GithubReleaseAsset,
   ReleasesApiConsumer,
-} from "../../../../src/codeql-cli/releases-api-consumer";
+} from "../../../src/codeql-cli/releases-api-consumer";
 
 describe("Releases API consumer", () => {
   const owner = "someowner";
