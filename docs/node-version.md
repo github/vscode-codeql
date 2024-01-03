@@ -23,4 +23,4 @@ npx ts-node scripts/update-node-version.ts
 
 Unit tests will use whatever version of Node.js is installed locally. In CI this will be the version specified in the workflow.
 
-Integration tests download a copy of VS Code and then will use whatever version of Node.js is provided by VS Code. Our integration tests are currently pinned to an older version of VS Code. See [VS Code version used in tests](./vscode-version.md#vs-code-version-used-in-tests) for more information.
+Integration tests download a copy of VS Code and then will use whatever version of Node.js is provided by VS Code. See [VS Code version used in tests](./vscode-version.md#vs-code-version-used-in-tests) for more information.

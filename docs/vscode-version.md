@@ -50,6 +50,6 @@ npx update-browserslist-db@latest
 
 ## VS Code version used in tests
 
-Our integration tests are currently pinned to use an older version of VS Code due to <https://github.com/github/vscode-codeql/issues/2402>.
-This version is specified in [`jest-runner-vscode.config.base.js`](https://github.com/github/vscode-codeql/blob/d93f2b67c84e79737b0ce4bb74e31558b5f5166e/extensions/ql-vscode/test/vscode-tests/jest-runner-vscode.config.base.js#L17).
-Until this is resolved this will limit us updating our minimum supported version of VS Code.
+The integration tests use the latest stable version of VS Code. This is specified in
+the [`test/vscode-tests/jest-runner-vscode.config.base.js`](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/test/vscode-tests/jest-runner-vscode.config.base.js#L15)
+file. This shouldn't need to be updated unless there is a breaking change in VS Code that prevents the tests from running.
