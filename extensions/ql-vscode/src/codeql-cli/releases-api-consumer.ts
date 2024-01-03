@@ -8,6 +8,11 @@ import { GithubRateLimitedError, GithubApiError } from "./github-api-error";
  * Communicates with the GitHub API to determine the latest compatible release and download assets.
  */
 export class ReleasesApiConsumer {
+  private static readonly apiBase = "https://api.github.com";
+  private static readonly maxRedirects = 20;
+
+  private readonly defaultHeaders: { [key: string]: string } = {};
+
   constructor(
     private readonly ownerName: string,
     private readonly repoName: string,
@@ -152,11 +157,6 @@ export class ReleasesApiConsumer {
 
     return response;
   }
-
-  private readonly defaultHeaders: { [key: string]: string } = {};
-
-  private static readonly apiBase = "https://api.github.com";
-  private static readonly maxRedirects = 20;
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {
