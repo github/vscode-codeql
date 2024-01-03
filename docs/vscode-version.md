@@ -36,7 +36,7 @@ This version should be the same as the version of Chromium that is bundled with 
 the version, run:
 
 ```bash
-npx ts-node scripts/update-chromium-version.ts
+npx ts-node scripts/generate-chromium-version.ts
 ```
 
 #### Troubleshooting
