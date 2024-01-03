@@ -119,8 +119,6 @@ export interface DistributionConfig {
   updateCustomCodeQlPath: (newPath: string | undefined) => Promise<void>;
   includePrerelease: boolean;
   personalAccessToken?: string;
-  ownerName?: string;
-  repositoryName?: string;
   channel: CLIChannel;
   onDidChangeConfiguration?: Event<void>;
 }
