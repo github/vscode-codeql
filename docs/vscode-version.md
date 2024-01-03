@@ -34,15 +34,6 @@ files dependent on this version:
 npm run generate
 ```
 
-#### Troubleshooting
-
-In case there's an error when specifying a version of Chromium, you may need to update the version of `caniuse-lite`
-in `package.json` to a newer version. You should be able to do so by running:
-
-```shell
-npx update-browserslist-db@latest
-```
-
 ## VS Code version used in tests
 
 Our integration tests are currently pinned to use an older version of VS Code due to <https://github.com/github/vscode-codeql/issues/2402>.
