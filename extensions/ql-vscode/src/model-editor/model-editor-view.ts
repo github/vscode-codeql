@@ -1,4 +1,5 @@
 import {
+  CancellationToken,
   CancellationTokenSource,
   Tab,
   TabInputWebview,
@@ -14,7 +15,11 @@ import {
   FromModelEditorMessage,
   ToModelEditorMessage,
 } from "../common/interface-types";
-import { ProgressCallback, withProgress } from "../common/vscode/progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+  withProgress,
+} from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,
@@ -338,8 +343,8 @@ export class ModelEditorView extends AbstractWebview<
 
     await Promise.all([
       this.setViewState(),
-      withProgress((progress) => this.loadMethods(progress), {
-        cancellable: false,
+      withProgress((progress, token) => this.loadMethods(progress, token), {
+        cancellable: true,
       }),
       this.loadExistingModeledMethods(),
     ]);
@@ -423,11 +428,16 @@ export class ModelEditorView extends AbstractWebview<
     }
   }
 
-  protected async loadMethods(progress: ProgressCallback): Promise<void> {
+  protected async loadMethods(
+    progress: ProgressCallback,
+    token?: CancellationToken,
+  ): Promise<void> {
     const mode = this.modelingStore.getMode(this.databaseItem);
 
     try {
-      const cancellationTokenSource = new CancellationTokenSource();
+      if (!token) {
+        token = new CancellationTokenSource().token;
+      }
       const queryResult = await runModelEditorQueries(mode, {
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
@@ -441,10 +451,17 @@ export class ModelEditorView extends AbstractWebview<
             ...update,
             message: `Loading models: ${update.message}`,
           }),
-        token: cancellationTokenSource.token,
+        token,
       });
       if (!queryResult) {
         return;
+      }
+
+      if (token.isCancellationRequested) {
+        throw new UserCancellationException(
+          "Model editor: Load methods cancelled.",
+          true,
+        );
       }
 
       this.modelingStore.setMethods(this.databaseItem, queryResult);
@@ -578,6 +595,7 @@ export class ModelEditorView extends AbstractWebview<
         this.modelConfig,
         this.app.logger,
         progress,
+        token,
         3,
       );
       if (!modelFile) {
