@@ -1,6 +1,6 @@
 import { DisposableObject } from "./disposable-object";
 import { getErrorMessage } from "./helpers-pure";
-import { Logger } from "./logging";
+import { BaseLogger } from "./logging";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -13,7 +13,7 @@ export abstract class Discovery extends DisposableObject {
 
   constructor(
     protected readonly name: string,
-    private readonly logger: Logger,
+    protected readonly logger: BaseLogger,
   ) {
     super();
   }

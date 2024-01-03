@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/ExtensionPackMetadata",
+  "$ref": "#/definitions/QlPackFile",
   "definitions": {
-    "ExtensionPackMetadata": {
+    "QlPackFile": {
       "type": "object",
       "properties": {
         "name": {
@@ -11,7 +11,7 @@
         "version": {
           "type": ["string", "null"]
         },
-        "extensionTargets": {
+        "dependencies": {
           "anyOf": [
             {
               "type": "object",
@@ -24,23 +24,7 @@
             }
           ]
         },
-        "dataExtensions": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "dependencies": {
+        "extensionTargets": {
           "anyOf": [
             {
               "type": "object",
@@ -74,9 +58,25 @@
         },
         "defaultSuiteFile": {
           "type": ["string", "null"]
+        },
+        "dataExtensions": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
-      "required": ["dataExtensions", "extensionTargets", "name", "version"]
+      "description": "The qlpack pack file, either in qlpack.yml or in codeql-pack.yml."
     },
     "SuiteInstruction": {
       "type": "object",
