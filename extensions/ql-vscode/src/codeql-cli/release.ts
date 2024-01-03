@@ -1,11 +1,17 @@
 /**
- * A release on GitHub.
+ * A release of the CodeQL CLI hosted on GitHub.
  */
 export interface Release {
+  /**
+   * The assets associated with the release on GitHub.
+   */
   assets: ReleaseAsset[];
 
   /**
    * The creation date of the release on GitHub.
+   *
+   * This is the date that the release was uploaded to GitHub, and not the date
+   * when we downloaded it or the date when we fetched the data from the GitHub API.
    */
   createdAt: string;
 
@@ -21,7 +27,8 @@ export interface Release {
 }
 
 /**
- * An asset corresponding to a release on GitHub.
+ * An asset attached to a release on GitHub.
+ * Each release may have multiple assets, and each asset can be downloaded independently.
  */
 export interface ReleaseAsset {
   /**
