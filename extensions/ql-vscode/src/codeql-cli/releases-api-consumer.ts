@@ -14,10 +14,10 @@ export class ReleasesApiConsumer {
     personalAccessToken?: string,
   ) {
     // Specify version of the GitHub API
-    this._defaultHeaders["accept"] = "application/vnd.github.v3+json";
+    this.defaultHeaders["accept"] = "application/vnd.github.v3+json";
 
     if (personalAccessToken) {
-      this._defaultHeaders["authorization"] = `token ${personalAccessToken}`;
+      this.defaultHeaders["authorization"] = `token ${personalAccessToken}`;
     }
   }
 
@@ -97,8 +97,8 @@ export class ReleasesApiConsumer {
     additionalHeaders: { [key: string]: string } = {},
   ): Promise<fetch.Response> {
     const response = await this.makeRawRequest(
-      ReleasesApiConsumer._apiBase + apiPath,
-      Object.assign({}, this._defaultHeaders, additionalHeaders),
+      ReleasesApiConsumer.apiBase + apiPath,
+      Object.assign({}, this.defaultHeaders, additionalHeaders),
     );
 
     if (!response.ok) {
@@ -134,7 +134,7 @@ export class ReleasesApiConsumer {
     if (
       isRedirectStatusCode(response.status) &&
       redirectUrl &&
-      redirectCount < ReleasesApiConsumer._maxRedirects
+      redirectCount < ReleasesApiConsumer.maxRedirects
     ) {
       const parsedRedirectUrl = new URL(redirectUrl);
       if (parsedRedirectUrl.protocol !== "https:") {
@@ -153,10 +153,10 @@ export class ReleasesApiConsumer {
     return response;
   }
 
-  private readonly _defaultHeaders: { [key: string]: string } = {};
+  private readonly defaultHeaders: { [key: string]: string } = {};
 
-  private static readonly _apiBase = "https://api.github.com";
-  private static readonly _maxRedirects = 20;
+  private static readonly apiBase = "https://api.github.com";
+  private static readonly maxRedirects = 20;
 }
 
 function isRedirectStatusCode(statusCode: number): boolean {
