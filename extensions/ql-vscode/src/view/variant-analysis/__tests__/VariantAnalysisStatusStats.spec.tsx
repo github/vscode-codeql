@@ -53,7 +53,7 @@ describe(VariantAnalysisStatusStats.name, () => {
       onViewLogsClick: () => undefined,
     });
 
-    expect(screen.getByText("View logs")).toBeInTheDocument();
+    expect(screen.getByText("View actions logs")).toBeInTheDocument();
   });
 
   it("renders when there isn't a viewLogs links", () => {
@@ -62,6 +62,6 @@ describe(VariantAnalysisStatusStats.name, () => {
       onViewLogsClick: undefined,
     });
 
-    expect(screen.queryByText("View logs")).not.toBeInTheDocument();
+    expect(screen.queryByText("View actions logs")).not.toBeInTheDocument();
   });
 });

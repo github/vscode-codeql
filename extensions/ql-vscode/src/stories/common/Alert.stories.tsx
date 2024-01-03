@@ -70,8 +70,8 @@ ErrorExample.args = {
     <>
       Request to
       https://api.github.com/repos/octodemo/Hello-World/code-scanning/codeql/queries
-      failed. <VSCodeLink>Check logs</VSCodeLink> and try running this query
-      again.
+      failed. <VSCodeLink>View actions logs</VSCodeLink> and try running this
+      query again.
     </>
   ),
 };
@@ -84,7 +84,7 @@ ErrorWithButtons.args = {
     "Request to https://api.github.com/repos/octodemo/Hello-World/code-scanning/codeql/queries failed. Try running this query again.",
   actions: (
     <>
-      <VSCodeButton appearance="secondary">View logs</VSCodeButton>
+      <VSCodeButton appearance="secondary">View actions logs</VSCodeButton>
       <VSCodeButton>Retry</VSCodeButton>
     </>
   ),

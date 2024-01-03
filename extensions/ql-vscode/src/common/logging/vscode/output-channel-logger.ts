@@ -63,7 +63,7 @@ export class OutputChannelLogger
     message: string,
     show: (message: string, ...items: string[]) => Thenable<string | undefined>,
   ): Promise<void> {
-    const label = "Show Log";
+    const label = "View extension logs";
     const result = await show(message, label);
 
     if (result === label) {
