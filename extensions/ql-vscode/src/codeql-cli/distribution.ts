@@ -27,6 +27,7 @@ import {
 } from "../common/logging";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
+import { Release, ReleaseAsset } from "./release";
 
 /**
  * distribution.ts
@@ -904,48 +905,6 @@ function warnDeprecatedLauncher() {
     `The "${deprecatedCodeQlLauncherName()!}" launcher has been deprecated and will be removed in a future version. ` +
       `Please use "${codeQlLauncherName()}" instead. It is recommended to update to the latest CodeQL binaries.`,
   );
-}
-
-/**
- * A release on GitHub.
- */
-interface Release {
-  assets: ReleaseAsset[];
-
-  /**
-   * The creation date of the release on GitHub.
-   */
-  createdAt: string;
-
-  /**
-   * The id associated with the release on GitHub.
-   */
-  id: number;
-
-  /**
-   * The name associated with the release on GitHub.
-   */
-  name: string;
-}
-
-/**
- * An asset corresponding to a release on GitHub.
- */
-interface ReleaseAsset {
-  /**
-   * The id associated with the asset on GitHub.
-   */
-  id: number;
-
-  /**
-   * The name associated with the asset on GitHub.
-   */
-  name: string;
-
-  /**
-   * The size of the asset in bytes.
-   */
-  size: number;
 }
 
 /**
