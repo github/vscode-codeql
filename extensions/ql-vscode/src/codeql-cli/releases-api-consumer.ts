@@ -9,8 +9,8 @@ import { GithubRateLimitedError, GithubApiError } from "./github-api-error";
  */
 export class ReleasesApiConsumer {
   constructor(
-    ownerName: string,
-    repoName: string,
+    private readonly ownerName: string,
+    private readonly repoName: string,
     personalAccessToken?: string,
   ) {
     // Specify version of the GitHub API
@@ -19,9 +19,6 @@ export class ReleasesApiConsumer {
     if (personalAccessToken) {
       this._defaultHeaders["authorization"] = `token ${personalAccessToken}`;
     }
-
-    this._ownerName = ownerName;
-    this._repoName = repoName;
   }
 
   public async getLatestRelease(
@@ -30,7 +27,7 @@ export class ReleasesApiConsumer {
     includePrerelease = false,
     additionalCompatibilityCheck?: (release: GithubRelease) => boolean,
   ): Promise<Release> {
-    const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases`;
+    const apiPath = `/repos/${this.ownerName}/${this.repoName}/releases`;
     const allReleases: GithubRelease[] = await (
       await this.makeApiCall(apiPath)
     ).json();
@@ -88,7 +85,7 @@ export class ReleasesApiConsumer {
   public async streamBinaryContentOfAsset(
     asset: ReleaseAsset,
   ): Promise<fetch.Response> {
-    const apiPath = `/repos/${this._ownerName}/${this._repoName}/releases/assets/${asset.id}`;
+    const apiPath = `/repos/${this.ownerName}/${this.repoName}/releases/assets/${asset.id}`;
 
     return await this.makeApiCall(apiPath, {
       accept: "application/octet-stream",
@@ -157,8 +154,6 @@ export class ReleasesApiConsumer {
   }
 
   private readonly _defaultHeaders: { [key: string]: string } = {};
-  private readonly _ownerName: string;
-  private readonly _repoName: string;
 
   private static readonly _apiBase = "https://api.github.com";
   private static readonly _maxRedirects = 20;
