@@ -25,8 +25,8 @@ import {
 } from "../common/logging";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
-import { Release } from "./release";
-import { ReleasesApiConsumer } from "./releases-api-consumer";
+import { Release } from "./distribution/release";
+import { ReleasesApiConsumer } from "./distribution/releases-api-consumer";
 
 /**
  * distribution.ts

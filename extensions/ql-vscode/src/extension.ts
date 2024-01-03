@@ -57,7 +57,7 @@ import {
 import {
   GithubApiError,
   GithubRateLimitedError,
-} from "./codeql-cli/github-api-error";
+} from "./codeql-cli/distribution/github-api-error";
 import { tmpDir, tmpDirDisposal } from "./tmp-dir";
 import { prepareCodeTour } from "./code-tour/code-tour";
 import {
