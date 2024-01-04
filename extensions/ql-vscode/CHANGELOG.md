@@ -6,6 +6,7 @@
 - Avoid showing a popup when hovering over source elements in database source files. [#3125](https://github.com/github/vscode-codeql/pull/3125)
 - Add comparison of alerts when comparing query results. This allows viewing path explanations for differences in alerts. [#3113](https://github.com/github/vscode-codeql/pull/3113)
 - Fix a bug where the CodeQL CLI and variant analysis results were corrupted after extraction in VS Code Insiders. [#3151](https://github.com/github/vscode-codeql/pull/3151) & [#3152](https://github.com/github/vscode-codeql/pull/3152)
+- Add option to cancel opening the model editor. [#3189](https://github.com/github/vscode-codeql/pull/3189)
 
 ## 1.11.0 - 13 December 2023
 
