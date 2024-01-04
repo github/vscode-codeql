@@ -466,6 +466,13 @@ export class ModelEditorView extends AbstractWebview<
 
       this.modelingStore.setMethods(this.databaseItem, queryResult);
     } catch (err) {
+      if (
+        getErrorMessage(err).match(/The request \(.*\) has been cancelled/i)
+      ) {
+        this.panel?.dispose();
+        return;
+      }
+
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
         this.app.telemetry,
