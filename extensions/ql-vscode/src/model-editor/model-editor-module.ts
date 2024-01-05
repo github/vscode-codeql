@@ -6,7 +6,10 @@ import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
-import { withProgress } from "../common/vscode/progress";
+import {
+  UserCancellationException,
+  withProgress,
+} from "../common/vscode/progress";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { showAndLogErrorMessage } from "../common/logging";
 import { dir } from "tmp-promise";
@@ -159,7 +162,7 @@ export class ModelEditorModule extends DisposableObject {
       }
 
       return withProgress(
-        async (progress) => {
+        async (progress, token) => {
           const maxStep = 4;
 
           if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
@@ -176,6 +179,7 @@ export class ModelEditorModule extends DisposableObject {
             this.modelConfig,
             this.app.logger,
             progress,
+            token,
             maxStep,
           );
           if (!modelFile) {
@@ -187,6 +191,13 @@ export class ModelEditorModule extends DisposableObject {
             step: 3,
             maxStep,
           });
+
+          if (token.isCancellationRequested) {
+            throw new UserCancellationException(
+              "Open Model editor action cancelled.",
+              true,
+            );
+          }
 
           // Create new temporary directory for query files and pack dependencies
           const { path: queryDir, cleanup: cleanupQueryDir } = await dir({
@@ -210,6 +221,13 @@ export class ModelEditorModule extends DisposableObject {
             step: 4,
             maxStep,
           });
+
+          if (token.isCancellationRequested) {
+            throw new UserCancellationException(
+              "Open Model editor action cancelled.",
+              true,
+            );
+          }
 
           // Check again just before opening the editor to ensure no model editor has been opened between
           // our first check and now.
@@ -253,6 +271,7 @@ export class ModelEditorModule extends DisposableObject {
         },
         {
           title: "Opening CodeQL Model Editor",
+          cancellable: true,
         },
       );
     }

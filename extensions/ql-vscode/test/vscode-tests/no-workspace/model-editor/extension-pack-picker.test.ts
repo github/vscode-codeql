@@ -1,4 +1,9 @@
-import { Uri, workspace, WorkspaceFolder } from "vscode";
+import {
+  CancellationTokenSource,
+  Uri,
+  workspace,
+  WorkspaceFolder,
+} from "vscode";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { outputFile, readFile } from "fs-extra";
 import { join } from "path";
@@ -24,6 +29,7 @@ describe("pickExtensionPack", () => {
   };
 
   const progress = jest.fn();
+  const token = new CancellationTokenSource().token;
   let workspaceFoldersSpy: jest.SpyInstance;
   let additionalPacks: string[];
   let workspaceFolder: WorkspaceFolder;
@@ -79,6 +85,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(autoExtensionPack);
@@ -136,6 +143,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual({
@@ -190,6 +198,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual({
@@ -234,6 +243,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(undefined);
@@ -260,6 +270,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(undefined);
@@ -288,6 +299,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(undefined);
@@ -326,6 +338,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(undefined);
@@ -364,6 +377,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(undefined);
@@ -405,6 +419,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(undefined);
@@ -463,6 +478,7 @@ describe("pickExtensionPack", () => {
         modelConfig,
         logger,
         progress,
+        token,
         maxStep,
       ),
     ).toEqual(extensionPack);

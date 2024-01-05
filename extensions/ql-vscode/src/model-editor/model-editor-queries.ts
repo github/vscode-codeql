@@ -7,7 +7,10 @@ import {
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
-import { ProgressCallback } from "../common/vscode/progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "../common/vscode/progress";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { join } from "path";
@@ -89,6 +92,13 @@ export async function runModelEditorQueries(
   // For a reference of what this should do in the future, see the previous implementation in
   // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
 
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException(
+      "Run model editor queries cancelled.",
+      true,
+    );
+  }
+
   progress({
     message: "Resolving QL packs",
     step: 1,
@@ -98,6 +108,13 @@ export async function runModelEditorQueries(
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
+
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException(
+      "Run model editor queries cancelled.",
+      true,
+    );
+  }
 
   progress({
     message: "Resolving query",
@@ -143,6 +160,13 @@ export async function runModelEditorQueries(
     return;
   }
 
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException(
+      "Run model editor queries cancelled.",
+      true,
+    );
+  }
+
   // Read the results and covert to internal representation
   progress({
     message: "Decoding results",
@@ -157,6 +181,13 @@ export async function runModelEditorQueries(
   });
   if (!bqrsChunk) {
     return;
+  }
+
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException(
+      "Run model editor queries cancelled.",
+      true,
+    );
   }
 
   progress({

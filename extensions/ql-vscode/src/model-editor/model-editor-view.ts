@@ -1,4 +1,5 @@
 import {
+  CancellationToken,
   CancellationTokenSource,
   Tab,
   TabInputWebview,
@@ -14,7 +15,11 @@ import {
   FromModelEditorMessage,
   ToModelEditorMessage,
 } from "../common/interface-types";
-import { ProgressCallback, withProgress } from "../common/vscode/progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+  withProgress,
+} from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,
@@ -47,6 +52,8 @@ import { ModelingStore } from "./modeling-store";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
+import { ResponseError } from "vscode-jsonrpc";
+import { LSPErrorCodes } from "vscode-languageclient";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -338,8 +345,8 @@ export class ModelEditorView extends AbstractWebview<
 
     await Promise.all([
       this.setViewState(),
-      withProgress((progress) => this.loadMethods(progress), {
-        cancellable: false,
+      withProgress((progress, token) => this.loadMethods(progress, token), {
+        cancellable: true,
       }),
       this.loadExistingModeledMethods(),
     ]);
@@ -423,11 +430,16 @@ export class ModelEditorView extends AbstractWebview<
     }
   }
 
-  protected async loadMethods(progress: ProgressCallback): Promise<void> {
+  protected async loadMethods(
+    progress: ProgressCallback,
+    token?: CancellationToken,
+  ): Promise<void> {
     const mode = this.modelingStore.getMode(this.databaseItem);
 
     try {
-      const cancellationTokenSource = new CancellationTokenSource();
+      if (!token) {
+        token = new CancellationTokenSource().token;
+      }
       const queryResult = await runModelEditorQueries(mode, {
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
@@ -441,14 +453,29 @@ export class ModelEditorView extends AbstractWebview<
             ...update,
             message: `Loading models: ${update.message}`,
           }),
-        token: cancellationTokenSource.token,
+        token,
       });
       if (!queryResult) {
         return;
       }
 
+      if (token.isCancellationRequested) {
+        throw new UserCancellationException(
+          "Model editor: Load methods cancelled.",
+          true,
+        );
+      }
+
       this.modelingStore.setMethods(this.databaseItem, queryResult);
     } catch (err) {
+      if (
+        err instanceof ResponseError &&
+        err.code === LSPErrorCodes.RequestCancelled
+      ) {
+        this.panel?.dispose();
+        return;
+      }
+
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
         this.app.telemetry,
@@ -578,6 +605,7 @@ export class ModelEditorView extends AbstractWebview<
         this.modelConfig,
         this.app.logger,
         progress,
+        token,
         3,
       );
       if (!modelFile) {
