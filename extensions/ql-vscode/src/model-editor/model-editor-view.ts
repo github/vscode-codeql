@@ -52,6 +52,8 @@ import { ModelingStore } from "./modeling-store";
 import { ModelingEvents } from "./modeling-events";
 import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
+import { ResponseError } from "vscode-jsonrpc";
+import { LSPErrorCodes } from "vscode-languageclient";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -467,7 +469,8 @@ export class ModelEditorView extends AbstractWebview<
       this.modelingStore.setMethods(this.databaseItem, queryResult);
     } catch (err) {
       if (
-        getErrorMessage(err).match(/The request \(.*\) has been cancelled/i)
+        err instanceof ResponseError &&
+        err.code === LSPErrorCodes.RequestCancelled
       ) {
         this.panel?.dispose();
         return;
