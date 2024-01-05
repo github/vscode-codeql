@@ -15,7 +15,7 @@ import { pathExists, readJson, writeJson } from "fs-extra";
 import { resolve, relative } from "path";
 
 import type { Octokit } from "@octokit/core";
-import { type RestEndpointMethodTypes } from "@octokit/rest";
+import type { RestEndpointMethodTypes } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
 
 import { getFiles } from "./util/files";
