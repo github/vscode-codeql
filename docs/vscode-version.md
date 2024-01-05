@@ -27,25 +27,11 @@ Also consider what percentage of our users are using each VS Code version. This 
 To provide a good experience to users, it is recommented to update the `MIN_VERSION` in `extension.ts` first and release, and then update the `vscode` version in `package.json` and release again.
 By staggering this update across two releases it gives users on older VS Code versions a chance to upgrade before it silently refuses to upgrade them.
 
-When updating the minimum version in `package.json`, you should also follow the additional steps listed below.
-
-### Updating the Chromium target version
-
-For the webview code, we use [esbuild](https://esbuild.github.io/) to bundle the code. This requires a target version of Chromium to be specified.
-This version should be the same as the version of Chromium that is bundled with the new minimum VS Code version. To update
-the version, run:
+After updating the minimum version in `package.json`, make sure to also run the following command to update any generated
+files dependent on this version:
 
 ```bash
-npx ts-node scripts/update-chromium-version.ts
-```
-
-#### Troubleshooting
-
-In case there's an error when specifying a version of Chromium, you may need to update the version of `caniuse-lite`
-in `package.json` to a newer version. You should be able to do so by running:
-
-```shell
-npx update-browserslist-db@latest
+npm run generate
 ```
 
 ## VS Code version used in tests

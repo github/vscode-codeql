@@ -5,7 +5,7 @@ import { getVersionInformation } from "./util/vscode-versions";
 
 const extensionDirectory = resolve(__dirname, "..");
 
-async function updateChromiumVersion() {
+async function generateChromiumVersion() {
   const packageJson = await readJSON(
     resolve(extensionDirectory, "package.json"),
   );
@@ -36,7 +36,7 @@ async function updateChromiumVersion() {
   );
 }
 
-updateChromiumVersion().catch((e: unknown) => {
+generateChromiumVersion().catch((e: unknown) => {
   console.error(e);
   process.exit(2);
 });
