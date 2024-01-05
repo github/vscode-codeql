@@ -19,9 +19,9 @@ import { QueryStatus } from "./query-history/query-status";
 import type {
   EvaluatorLogPaths,
   QueryEvaluationInfo,
-  QueryOutputDir,
   QueryWithResults,
 } from "./run-queries-shared";
+import type { QueryOutputDir } from "./local-queries/query-output-dir";
 import { sarifParser } from "./common/sarif-parser";
 
 /**

@@ -7,10 +7,8 @@ import { writeFileSync, mkdirpSync, writeFile } from "fs-extra";
 import type { InitialQueryInfo } from "../../../../../src/query-results";
 import { LocalQueryInfo } from "../../../../../src/query-results";
 import type { QueryWithResults } from "../../../../../src/run-queries-shared";
-import {
-  QueryEvaluationInfo,
-  QueryOutputDir,
-} from "../../../../../src/run-queries-shared";
+import { QueryEvaluationInfo } from "../../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../../src/local-queries/query-output-dir";
 import type { DatabaseInfo } from "../../../../../src/common/interface-types";
 import type { CancellationTokenSource } from "vscode";
 import { Uri } from "vscode";

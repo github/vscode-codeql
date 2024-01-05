@@ -9,9 +9,9 @@ import type { QueryHistoryManager } from "../query-history/query-history-manager
 import type { DatabaseItem } from "../databases/local-databases";
 import type {
   EvaluatorLogPaths,
-  QueryOutputDir,
   QueryWithResults,
 } from "../run-queries-shared";
+import type { QueryOutputDir } from "./query-output-dir";
 import {
   generateEvalLogSummaries,
   logEndSummary,

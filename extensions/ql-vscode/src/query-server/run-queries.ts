@@ -2,7 +2,7 @@ import type { CancellationToken } from "vscode";
 import type { ProgressCallback } from "../common/vscode/progress";
 import type { RunQueryParams } from "./messages";
 import { runQuery } from "./messages";
-import type { QueryOutputDir } from "../run-queries-shared";
+import type { QueryOutputDir } from "../local-queries/query-output-dir";
 import type { QueryServerClient } from "./query-server-client";
 import type { CoreQueryResults, CoreQueryTarget } from "./query-runner";
 import type { BaseLogger } from "../common/logging";

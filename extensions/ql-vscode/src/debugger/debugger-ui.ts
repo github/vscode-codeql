@@ -11,10 +11,10 @@ import { DisposableObject } from "../common/disposable-object";
 import type { CoreQueryResults } from "../query-server";
 import {
   getQuickEvalContext,
-  QueryOutputDir,
   saveBeforeStart,
   validateQueryUri,
 } from "../run-queries-shared";
+import { QueryOutputDir } from "../local-queries/query-output-dir";
 import type { QLResolvedDebugConfiguration } from "./debug-configuration";
 import type {
   AnyProtocolMessage,

@@ -1,6 +1,8 @@
 import type { InitialQueryInfo } from "../../query-results";
 import { LocalQueryInfo, CompletedQueryInfo } from "../../query-results";
-import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
+import { QueryEvaluationInfo } from "../../run-queries-shared";
+import { QueryOutputDir } from "../../local-queries/query-output-dir";
+import { SortDirectionDto } from "./query-history-local-query-dto";
 import type {
   CompletedQueryInfoDto,
   QueryEvaluationInfoDto,
@@ -10,7 +12,6 @@ import type {
   SortedResultSetInfoDto,
   RawResultsSortStateDto,
 } from "./query-history-local-query-dto";
-import { SortDirectionDto } from "./query-history-local-query-dto";
 import type {
   InterpretedResultsSortState,
   RawResultsSortState,

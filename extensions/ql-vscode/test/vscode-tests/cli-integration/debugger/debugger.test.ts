@@ -10,7 +10,7 @@ import {
 import { describeWithCodeQL } from "../../cli";
 import { withDebugController } from "./debug-controller";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import type { QueryOutputDir } from "../../../../src/run-queries-shared";
+import type { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import type { AllCommands } from "../../../../src/common/commands";
 import { getDataFolderFilePath } from "../utils";

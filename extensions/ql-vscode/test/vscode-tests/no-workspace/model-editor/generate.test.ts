@@ -8,7 +8,7 @@ import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { QueryRunner } from "../../../../src/query-server";
 import { join } from "path";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import { QueryOutputDir } from "../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 import { runGenerateQueries } from "../../../../src/model-editor/generate";
 import { ruby } from "../../../../src/model-editor/languages/ruby";
 
