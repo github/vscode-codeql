@@ -8,8 +8,7 @@ import {
   readDirFullPaths,
   walkDirectory,
 } from "../../../src/common/files";
-import { DirResult } from "tmp";
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { ensureDirSync, symlinkSync, writeFileSync } from "fs-extra";
 
 describe("files", () => {
@@ -360,7 +359,7 @@ describe("walkDirectory", () => {
   let dir2: string;
 
   beforeEach(() => {
-    tmpDir = tmp.dirSync({ unsafeCleanup: true });
+    tmpDir = dirSync({ unsafeCleanup: true });
     dir = join(tmpDir.name, "dir");
     ensureDirSync(dir);
     dir2 = join(tmpDir.name, "dir2");

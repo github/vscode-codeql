@@ -4,7 +4,7 @@ import {
   SkeletonQueryWizard,
 } from "../../../../src/local-queries/skeleton-query-wizard";
 import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import {
   MessageItem,
   TextDocument,
@@ -48,7 +48,7 @@ describe("SkeletonQueryWizard", () => {
   let mockApp: App;
   let wizard: SkeletonQueryWizard;
   let mockDatabaseManager: DatabaseManager;
-  let dir: tmp.DirResult;
+  let dir: DirResult;
   let storagePath: string;
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
@@ -104,7 +104,7 @@ describe("SkeletonQueryWizard", () => {
       databaseItems: [] as DatabaseItem[],
     });
 
-    dir = tmp.dirSync({
+    dir = dirSync({
       prefix: "skeleton_query_wizard_",
       unsafeCleanup: true,
     });
@@ -699,10 +699,10 @@ describe("SkeletonQueryWizard", () => {
     });
 
     describe("with folders and files", () => {
-      let queriesDir: tmp.DirResult;
+      let queriesDir: DirResult;
 
       beforeEach(async () => {
-        queriesDir = tmp.dirSync({
+        queriesDir = dirSync({
           prefix: "queries_",
           unsafeCleanup: true,
         });

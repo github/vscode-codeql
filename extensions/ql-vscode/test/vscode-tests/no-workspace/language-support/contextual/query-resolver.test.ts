@@ -1,5 +1,5 @@
 import { load } from "js-yaml";
-import * as fs from "fs-extra";
+import { readFile } from "fs-extra";
 
 import { getErrorMessage } from "../../../../../src/common/helpers-pure";
 
@@ -109,7 +109,7 @@ describe("queryResolver", () => {
 
       const fileName = resolveQueriesInSuite.mock.calls[0][0];
 
-      expect(load(await fs.readFile(fileName, "utf-8"))).toEqual([
+      expect(load(await readFile(fileName, "utf-8"))).toEqual([
         {
           from: "my-qlpack",
           queries: ".",

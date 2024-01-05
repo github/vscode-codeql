@@ -1,8 +1,8 @@
-import * as fetch from "node-fetch";
-import * as semver from "semver";
+import { default as fetch, Response } from "node-fetch";
+import { compare, parse, Range, satisfies } from "semver";
 import { URL } from "url";
 import { Release, ReleaseAsset } from "./release";
-import { GithubRateLimitedError, GithubApiError } from "./github-api-error";
+import { GithubApiError, GithubRateLimitedError } from "./github-api-error";
 
 /**
  * Communicates with the GitHub API to determine the latest compatible release and download assets.
@@ -26,7 +26,7 @@ export class ReleasesApiConsumer {
   }
 
   public async getLatestRelease(
-    versionRange: semver.Range | undefined,
+    versionRange: Range | undefined,
     orderBySemver = true,
     includePrerelease = false,
     additionalCompatibilityCheck?: (release: GithubRelease) => boolean,
@@ -41,10 +41,10 @@ export class ReleasesApiConsumer {
       }
 
       if (versionRange !== undefined) {
-        const version = semver.parse(release.tag_name);
+        const version = parse(release.tag_name);
         if (
           version === null ||
-          !semver.satisfies(version, versionRange, { includePrerelease })
+          !satisfies(version, versionRange, { includePrerelease })
         ) {
           return false;
         }
@@ -57,7 +57,7 @@ export class ReleasesApiConsumer {
     // Tag names must all be parsable to semvers due to the previous filtering step.
     const latestRelease = compatibleReleases.sort((a, b) => {
       const versionComparison = orderBySemver
-        ? semver.compare(semver.parse(b.tag_name)!, semver.parse(a.tag_name)!)
+        ? compare(parse(b.tag_name)!, parse(a.tag_name)!)
         : b.id - a.id;
       if (versionComparison !== 0) {
         return versionComparison;
@@ -88,7 +88,7 @@ export class ReleasesApiConsumer {
 
   public async streamBinaryContentOfAsset(
     asset: ReleaseAsset,
-  ): Promise<fetch.Response> {
+  ): Promise<Response> {
     const apiPath = `/repos/${this.repositoryNwo}/releases/assets/${asset.id}`;
 
     return await this.makeApiCall(apiPath, {
@@ -99,7 +99,7 @@ export class ReleasesApiConsumer {
   protected async makeApiCall(
     apiPath: string,
     additionalHeaders: { [key: string]: string } = {},
-  ): Promise<fetch.Response> {
+  ): Promise<Response> {
     const response = await this.makeRawRequest(
       ReleasesApiConsumer.apiBase + apiPath,
       Object.assign({}, this.defaultHeaders, additionalHeaders),
@@ -128,8 +128,8 @@ export class ReleasesApiConsumer {
     requestUrl: string,
     headers: { [key: string]: string },
     redirectCount = 0,
-  ): Promise<fetch.Response> {
-    const response = await fetch.default(requestUrl, {
+  ): Promise<Response> {
+    const response = await fetch(requestUrl, {
       headers,
       redirect: "manual",
     });

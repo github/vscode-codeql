@@ -1,5 +1,5 @@
-import * as vscode from "vscode";
-import * as Octokit from "@octokit/rest";
+import { authentication } from "vscode";
+import { Octokit } from "@octokit/rest";
 import { Credentials } from "../authentication";
 import { AppOctokit } from "../octokit";
 
@@ -18,14 +18,14 @@ export class VSCodeCredentials implements Credentials {
   /**
    * A specific octokit to return, otherwise a new authenticated octokit will be created when needed.
    */
-  private octokit: Octokit.Octokit | undefined;
+  private octokit: Octokit | undefined;
 
   /**
    * Creates or returns an instance of Octokit.
    *
    * @returns An instance of Octokit.
    */
-  async getOctokit(): Promise<Octokit.Octokit> {
+  async getOctokit(): Promise<Octokit> {
     if (this.octokit) {
       return this.octokit;
     }
@@ -38,7 +38,7 @@ export class VSCodeCredentials implements Credentials {
   }
 
   async getAccessToken(): Promise<string> {
-    const session = await vscode.authentication.getSession(
+    const session = await authentication.getSession(
       GITHUB_AUTH_PROVIDER_ID,
       SCOPES,
       { createIfNone: true },
@@ -48,7 +48,7 @@ export class VSCodeCredentials implements Credentials {
   }
 
   async getExistingAccessToken(): Promise<string | undefined> {
-    const session = await vscode.authentication.getSession(
+    const session = await authentication.getSession(
       GITHUB_AUTH_PROVIDER_ID,
       SCOPES,
       { createIfNone: false },

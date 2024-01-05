@@ -1,10 +1,10 @@
-import * as Sarif from "sarif";
+import { Location as SarifLogLocation } from "sarif";
 import { parseSarifPlainTextMessage } from "../../../common/sarif-utils";
 import { SarifLocation } from "./SarifLocation";
 
 interface Props {
   msg: string;
-  relatedLocations: Sarif.Location[];
+  relatedLocations: SarifLogLocation[];
   sourceLocationPrefix: string;
   databaseUri: string;
   onClick: () => void;
@@ -20,7 +20,7 @@ export function SarifMessageWithLocations({
   databaseUri,
   onClick,
 }: Props) {
-  const relatedLocationsById: Map<number, Sarif.Location> = new Map();
+  const relatedLocationsById: Map<number, SarifLogLocation> = new Map();
   for (const loc of relatedLocations) {
     if (loc.id !== undefined) {
       relatedLocationsById.set(loc.id, loc);

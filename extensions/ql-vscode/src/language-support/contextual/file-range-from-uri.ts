@@ -1,8 +1,8 @@
-import * as vscode from "vscode";
+import { Location, Range } from "vscode";
 
 import {
-  BqrsUrlValue,
   BqrsLineColumnLocation,
+  BqrsUrlValue,
 } from "../../common/bqrs-cli-types";
 import { isEmptyPath } from "../../common/bqrs-utils";
 import { DatabaseItem } from "../../databases/local-databases";
@@ -10,7 +10,7 @@ import { DatabaseItem } from "../../databases/local-databases";
 export function fileRangeFromURI(
   uri: BqrsUrlValue | undefined,
   db: DatabaseItem,
-): vscode.Location | undefined {
+): Location | undefined {
   if (!uri || typeof uri === "string") {
     return undefined;
   } else if ("startOffset" in uri) {
@@ -20,7 +20,7 @@ export function fileRangeFromURI(
     if (isEmptyPath(loc.uri)) {
       return undefined;
     }
-    const range = new vscode.Range(
+    const range = new Range(
       Math.max(0, (loc.startLine || 0) - 1),
       Math.max(0, (loc.startColumn || 0) - 1),
       Math.max(0, (loc.endLine || 0) - 1),
@@ -28,7 +28,7 @@ export function fileRangeFromURI(
     );
     try {
       if (uri.uri.startsWith("file:")) {
-        return new vscode.Location(db.resolveSourceFile(uri.uri), range);
+        return new Location(db.resolveSourceFile(uri.uri), range);
       }
       return undefined;
     } catch (e) {

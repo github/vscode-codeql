@@ -2,7 +2,7 @@ import { dest, src } from "gulp";
 import { load } from "js-yaml";
 import { obj } from "through2";
 import PluginError from "plugin-error";
-import * as Vinyl from "vinyl";
+import Vinyl from "vinyl";
 
 /**
  * Replaces all rule references with the match pattern of the referenced rule.

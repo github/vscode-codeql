@@ -1,4 +1,4 @@
-import * as Sarif from "sarif";
+import { Location as SarifLogLocation } from "sarif";
 import { parseSarifLocation } from "../../../common/sarif-utils";
 import { basename } from "../../../common/path";
 import { useMemo } from "react";
@@ -6,7 +6,7 @@ import { Location } from "./Location";
 
 interface Props {
   text?: string;
-  loc?: Sarif.Location;
+  loc?: SarifLogLocation;
   sourceLocationPrefix: string;
   databaseUri: string;
   onClick: () => void;

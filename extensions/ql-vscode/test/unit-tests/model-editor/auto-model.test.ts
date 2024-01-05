@@ -6,13 +6,13 @@ import {
 import { Mode } from "../../../src/model-editor/shared/mode";
 import { AutomodelMode } from "../../../src/model-editor/auto-model-api";
 import { AutoModelQueriesResult } from "../../../src/model-editor/auto-model-codeml-queries";
-import * as sarif from "sarif";
+import { Log } from "sarif";
 import { gzipDecode } from "../../../src/common/zlib";
 import { Method } from "../../../src/model-editor/method";
 import { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
 describe("createAutoModelRequest", () => {
-  const createSarifLog = (queryId: string): sarif.Log => {
+  const createSarifLog = (queryId: string): Log => {
     return {
       version: "2.1.0",
       $schema: "http://json.schemastore.org/sarif-2.1.0-rtm.4",

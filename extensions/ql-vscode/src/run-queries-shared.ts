@@ -1,4 +1,4 @@
-import * as messages from "./query-server/messages-shared";
+import { Position } from "./query-server/messages-shared";
 import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
 import { Range, TextEditor, Uri, window, workspace } from "vscode";
@@ -132,7 +132,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
     querySaveDir: string,
     public readonly dbItemPath: string,
     public readonly databaseHasMetadataFile: boolean,
-    public readonly quickEvalPosition?: messages.Position,
+    public readonly quickEvalPosition?: Position,
     public readonly metadata?: QueryMetadata,
   ) {
     super(querySaveDir);
@@ -414,7 +414,7 @@ export function validateQueryPath(
 }
 
 export interface QuickEvalContext {
-  quickEvalPosition: messages.Position;
+  quickEvalPosition: Position;
   quickEvalText: string;
   quickEvalCount: boolean;
 }
@@ -466,7 +466,7 @@ export interface SelectedQuery {
 async function getSelectedPosition(
   editor: TextEditor,
   range?: Range,
-): Promise<messages.Position> {
+): Promise<Position> {
   const selectedRange = range || editor.selection;
   const pos = selectedRange.start;
   const posEnd = selectedRange.end;

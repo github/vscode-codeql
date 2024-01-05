@@ -1,13 +1,13 @@
 import { join } from "path";
 import { createFileSync, mkdirSync } from "fs-extra";
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { window } from "vscode";
 
 import {
   convertGithubNwoToDatabaseUrl,
   findDirWithFile,
 } from "../../../../src/databases/database-fetcher";
-import * as Octokit from "@octokit/rest";
+import { Octokit } from "@octokit/rest";
 import {
   mockedObject,
   mockedOctokitFunction,
@@ -26,7 +26,7 @@ describe("database-fetcher", () => {
       "codeScanning",
       "listCodeqlDatabases"
     >();
-    const octokit = mockedObject<Octokit.Octokit>({
+    const octokit = mockedObject<Octokit>({
       rest: {
         codeScanning: {
           listCodeqlDatabases: mockListCodeqlDatabases,
@@ -202,9 +202,9 @@ describe("database-fetcher", () => {
   });
 
   describe("findDirWithFile", () => {
-    let dir: tmp.DirResult;
+    let dir: DirResult;
     beforeEach(() => {
-      dir = tmp.dirSync({ unsafeCleanup: true });
+      dir = dirSync({ unsafeCleanup: true });
       createFile("a");
       createFile("b");
       createFile("c");

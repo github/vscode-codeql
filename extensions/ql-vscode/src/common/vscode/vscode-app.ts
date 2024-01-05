@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import { ExtensionContext, ExtensionMode } from "vscode";
 import { VSCodeCredentials } from "./authentication";
 import { Disposable } from "../disposable-object";
 import { App, AppMode, EnvironmentContext } from "../app";
@@ -18,9 +18,7 @@ export class ExtensionApp implements App {
   public readonly commands: AppCommandManager;
   public readonly queryServerCommands: QueryServerCommandManager;
 
-  public constructor(
-    public readonly extensionContext: vscode.ExtensionContext,
-  ) {
+  public constructor(public readonly extensionContext: ExtensionContext) {
     this.credentials = new VSCodeCredentials();
     this.commands = createVSCodeCommandManager();
     this.queryServerCommands = createVSCodeCommandManager(queryServerLogger);
@@ -49,9 +47,9 @@ export class ExtensionApp implements App {
 
   public get mode(): AppMode {
     switch (this.extensionContext.extensionMode) {
-      case vscode.ExtensionMode.Development:
+      case ExtensionMode.Development:
         return AppMode.Development;
-      case vscode.ExtensionMode.Test:
+      case ExtensionMode.Test:
         return AppMode.Test;
       default:
         return AppMode.Production;

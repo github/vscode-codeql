@@ -1,4 +1,4 @@
-import vscode from "vscode";
+import { Uri } from "vscode";
 import { pathExists } from "fs-extra";
 import { basename, join, resolve } from "path";
 import {
@@ -16,7 +16,7 @@ import { extLogger } from "../../common/logging/vscode";
 
 export class DatabaseResolver {
   public static async resolveDatabaseContents(
-    uri: vscode.Uri,
+    uri: Uri,
   ): Promise<DatabaseContentsWithDbScheme> {
     if (uri.scheme !== "file") {
       throw new Error(
@@ -51,7 +51,7 @@ export class DatabaseResolver {
         `Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`,
       );
     } else {
-      const dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
+      const dbSchemeUri = Uri.file(resolve(dbPath, dbSchemeFiles[0]));
       return {
         ...contents,
         dbSchemeUri,
@@ -83,7 +83,7 @@ export class DatabaseResolver {
  */
 class InvalidDatabaseError extends Error {}
 
-async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
+async function findDataset(parentDirectory: string): Promise<Uri> {
   /*
    * Look directly in the root
    */
@@ -113,7 +113,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
     );
   }
 
-  return vscode.Uri.file(dbAbsolutePath);
+  return Uri.file(dbAbsolutePath);
 }
 
 /** Gets the relative paths of all `.dbscheme` files in the given directory. */
@@ -124,7 +124,7 @@ async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
 // exported for testing
 export async function findSourceArchive(
   databasePath: string,
-): Promise<vscode.Uri | undefined> {
+): Promise<Uri | undefined> {
   const relativePaths = ["src", "output/src_archive"];
 
   for (const relativePath of relativePaths) {
@@ -135,7 +135,7 @@ export async function findSourceArchive(
     if (await pathExists(zipPath)) {
       return encodeArchiveBasePath(zipPath);
     } else if (await pathExists(basePath)) {
-      return vscode.Uri.file(basePath);
+      return Uri.file(basePath);
     }
   }
 

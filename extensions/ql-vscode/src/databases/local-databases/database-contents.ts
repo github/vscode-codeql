@@ -1,4 +1,4 @@
-import vscode from "vscode";
+import { Uri } from "vscode";
 
 /**
  * The layout of the database.
@@ -18,13 +18,13 @@ export interface DatabaseContents {
    */
   name: string;
   /** The URI of the QL dataset within the database. */
-  datasetUri: vscode.Uri;
+  datasetUri: Uri;
   /** The URI of the source archive within the database, if one exists. */
-  sourceArchiveUri?: vscode.Uri;
+  sourceArchiveUri?: Uri;
   /** The URI of the CodeQL database scheme within the database, if exactly one exists. */
-  dbSchemeUri?: vscode.Uri;
+  dbSchemeUri?: Uri;
 }
 
 export interface DatabaseContentsWithDbScheme extends DatabaseContents {
-  dbSchemeUri: vscode.Uri; // Always present
+  dbSchemeUri: Uri; // Always present
 }

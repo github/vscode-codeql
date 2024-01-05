@@ -1,6 +1,6 @@
 import { env } from "vscode";
 import { beforeEachAction as testConfigBeforeEachAction } from "./test-config";
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { realpathSync } from "fs-extra";
 import {
   getActivatedExtension,
@@ -15,11 +15,11 @@ if (process.env.CI) {
 }
 
 // create an extension storage location
-let removeStorage: tmp.DirResult["removeCallback"] | undefined;
+let removeStorage: DirResult["removeCallback"] | undefined;
 
 export async function beforeAllAction() {
   // Create the temp directory to be used as extension local storage.
-  const dir = tmp.dirSync({
+  const dir = dirSync({
     unsafeCleanup: true,
   });
   let storagePath = realpathSync(dir.name);

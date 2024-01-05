@@ -1,9 +1,13 @@
 import { join, basename } from "path";
 import { dirSync } from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import * as messages from "../../../../src/query-server/messages";
-import * as qsClient from "../../../../src/query-server/query-server-client";
-import * as cli from "../../../../src/codeql-cli/cli";
+import {
+  QueryResultType,
+  registerDatabases,
+  runQuery,
+  RunQueryParams,
+} from "../../../../src/query-server/messages";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { BqrsCellValue } from "../../../../src/common/bqrs-cli-types";
 import { describeWithCodeQL } from "../../cli";
 import { QueryServerClient } from "../../../../src/query-server/query-server-client";
@@ -11,7 +15,6 @@ import {
   extLogger,
   ProgressReporter,
 } from "../../../../src/common/logging/vscode";
-import { QueryResultType } from "../../../../src/query-server/messages";
 import { ensureTestDatabase, getActivatedExtension } from "../../global.helper";
 import { createMockApp } from "../../../__mocks__/appMock";
 
@@ -101,8 +104,8 @@ const nullProgressReporter: ProgressReporter = {
 };
 
 describeWithCodeQL()("using the query server", () => {
-  let qs: qsClient.QueryServerClient;
-  let cliServer: cli.CodeQLCliServer;
+  let qs: QueryServerClient;
+  let cliServer: CodeQLCliServer;
   let db: string;
 
   beforeAll(async () => {
@@ -146,12 +149,12 @@ describeWithCodeQL()("using the query server", () => {
     const parsedResults = new Checkpoint<void>();
 
     it("should register the database", async () => {
-      await qs.sendRequest(messages.registerDatabases, { databases: [db] });
+      await qs.sendRequest(registerDatabases, { databases: [db] });
     });
 
     it(`should be able to run query ${queryName}`, async () => {
       try {
-        const params: messages.RunQueryParams = {
+        const params: RunQueryParams = {
           db,
           queryPath: queryTestCase.queryPath,
           outputPath: RESULTS_PATH,
@@ -160,14 +163,9 @@ describeWithCodeQL()("using the query server", () => {
           singletonExternalInputs: {},
           target: { query: {} },
         };
-        const result = await qs.sendRequest(
-          messages.runQuery,
-          params,
-          token,
-          () => {
-            /**/
-          },
-        );
+        const result = await qs.sendRequest(runQuery, params, token, () => {
+          /**/
+        });
         expect(result.resultType).toBe(QueryResultType.SUCCESS);
         await evaluationSucceeded.resolve();
       } catch (e) {

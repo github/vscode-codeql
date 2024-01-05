@@ -1,5 +1,11 @@
-import * as Sarif from "sarif";
-import * as Keys from "./result-keys";
+import { Result } from "sarif";
+import {
+  getAllPaths,
+  keyToString,
+  PathNode,
+  Result as ResultKeysResult,
+  ResultKey,
+} from "./result-keys";
 import { info, listUnordered } from "./octicons";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
@@ -9,17 +15,17 @@ import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations
 import { AlertTablePathRow } from "./AlertTablePathRow";
 
 interface Props {
-  result: Sarif.Result;
+  result: Result;
   resultIndex: number;
   expanded: Set<string>;
-  selectedItem: undefined | Keys.ResultKey;
+  selectedItem: undefined | ResultKey;
   selectedItemRef: React.RefObject<any>;
   databaseUri: string;
   sourceLocationPrefix: string;
   updateSelectionCallback: (
-    resultKey: Keys.PathNode | Keys.Result | undefined,
+    resultKey: PathNode | ResultKeysResult | undefined,
   ) => void;
-  toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
+  toggleExpanded: (e: React.MouseEvent, keys: ResultKey[]) => void;
 }
 
 export function AlertTableResultRow(props: Props) {
@@ -35,7 +41,7 @@ export function AlertTableResultRow(props: Props) {
     toggleExpanded,
   } = props;
 
-  const resultKey: Keys.Result = useMemo(
+  const resultKey: ResultKeysResult = useMemo(
     () => ({ resultIndex }),
     [resultIndex],
   );
@@ -47,7 +53,7 @@ export function AlertTableResultRow(props: Props) {
   const handleDropdownClick = useCallback(
     (e: React.MouseEvent) => {
       const indices =
-        Keys.getAllPaths(result).length === 1
+        getAllPaths(result).length === 1
           ? [resultKey, { ...resultKey, pathIndex: 0 }]
           : /* if there's exactly one path, auto-expand
              * the path when expanding the result */
@@ -75,7 +81,7 @@ export function AlertTableResultRow(props: Props) {
       />
     );
 
-  const currentResultExpanded = expanded.has(Keys.keyToString(resultKey));
+  const currentResultExpanded = expanded.has(keyToString(resultKey));
   return (
     <>
       <tr
@@ -110,14 +116,14 @@ export function AlertTableResultRow(props: Props) {
       </tr>
       {currentResultExpanded &&
         result.codeFlows &&
-        Keys.getAllPaths(result).map((path, pathIndex) => (
+        getAllPaths(result).map((path, pathIndex) => (
           <AlertTablePathRow
             key={`${resultIndex}-${pathIndex}`}
             {...props}
             path={path}
             pathIndex={pathIndex}
             currentPathExpanded={expanded.has(
-              Keys.keyToString({ resultIndex, pathIndex }),
+              keyToString({ resultIndex, pathIndex }),
             )}
           />
         ))}

@@ -1,16 +1,16 @@
 import { Logger } from "../common/logging";
-import * as cp from "child_process";
+import { ChildProcess } from "child_process";
 import { Disposable } from "vscode";
 import { MessageConnection } from "vscode-jsonrpc";
 
 /** A running query server process and its associated message connection. */
 export class ServerProcess implements Disposable {
-  child: cp.ChildProcess;
+  child: ChildProcess;
   connection: MessageConnection;
   logger: Logger;
 
   constructor(
-    child: cp.ChildProcess,
+    child: ChildProcess,
     connection: MessageConnection,
     private name: string,
     logger: Logger,

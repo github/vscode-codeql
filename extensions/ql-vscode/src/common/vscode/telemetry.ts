@@ -14,7 +14,7 @@ import {
   isIntegrationTestMode,
   isCanary,
 } from "../../config";
-import * as appInsights from "applicationinsights";
+import { TelemetryClient } from "applicationinsights";
 import { extLogger } from "../logging/vscode";
 import { UserCancellationException } from "./progress";
 import { showBinaryChoiceWithUrlDialog } from "./dialog";
@@ -129,8 +129,7 @@ export class ExtensionTelemetryListener
     );
     this.push(this.reporter);
 
-    const client = (this.reporter as any)
-      .appInsightsClient as appInsights.TelemetryClient;
+    const client = (this.reporter as any).appInsightsClient as TelemetryClient;
     if (client) {
       // add a telemetry processor to delete unwanted properties
       client.addTelemetryProcessor((envelope: any) => {

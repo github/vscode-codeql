@@ -14,12 +14,12 @@ import {
   ModelsAsDataLanguagePredicate,
   ModelsAsDataLanguagePredicates,
 } from "./languages";
-
-import * as modelExtensionFileSchema from "./model-extension-file.schema.json";
 import { Mode } from "./shared/mode";
 import { assertNever } from "../common/helpers-pure";
 import { ModelExtensionFile } from "./model-extension-file";
 import { QueryLanguage } from "../common/query-language";
+
+import modelExtensionFileSchema from "./model-extension-file.schema.json";
 
 const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);

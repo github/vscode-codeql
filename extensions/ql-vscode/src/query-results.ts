@@ -1,7 +1,7 @@
 import { CancellationTokenSource, env } from "vscode";
 
-import * as messages from "./query-server/messages-shared";
-import * as cli from "./codeql-cli/cli";
+import { Position } from "./query-server/messages-shared";
+import { CodeQLCliServer, SourceInfo } from "./codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { basename } from "path";
 import {
@@ -41,7 +41,7 @@ export interface InitialQueryInfo {
   readonly isQuickQuery: boolean;
   readonly isQuickEval: boolean;
   readonly isQuickEvalCount?: boolean; // Missing is false for backwards compatibility
-  readonly quickEvalPosition?: messages.Position;
+  readonly quickEvalPosition?: Position;
   readonly queryPath: string;
   readonly databaseInfo: DatabaseInfo;
   readonly start: Date;
@@ -86,7 +86,7 @@ export class CompletedQueryInfo implements QueryWithResults {
   }
 
   async updateSortState(
-    server: cli.CodeQLCliServer,
+    server: CodeQLCliServer,
     resultSetName: string,
     sortState?: RawResultsSortState,
   ): Promise<void> {
@@ -121,10 +121,10 @@ export class CompletedQueryInfo implements QueryWithResults {
  * Call cli command to interpret SARIF results.
  */
 export async function interpretResultsSarif(
-  cli: cli.CodeQLCliServer,
+  cli: CodeQLCliServer,
   metadata: QueryMetadata | undefined,
   resultsPaths: ResultsPaths,
-  sourceInfo?: cli.SourceInfo,
+  sourceInfo?: SourceInfo,
   args?: string[],
 ): Promise<SarifInterpretationData> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
@@ -147,10 +147,10 @@ export async function interpretResultsSarif(
  * Call cli command to interpret graph results.
  */
 export async function interpretGraphResults(
-  cliServer: cli.CodeQLCliServer,
+  cliServer: CodeQLCliServer,
   metadata: QueryMetadata | undefined,
   resultsPaths: ResultsPaths,
-  sourceInfo?: cli.SourceInfo,
+  sourceInfo?: SourceInfo,
 ): Promise<GraphInterpretationData> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
   if (await pathExists(interpretedResultsPath)) {

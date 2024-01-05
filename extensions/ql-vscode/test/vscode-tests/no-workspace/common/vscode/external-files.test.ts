@@ -1,22 +1,20 @@
-import * as vscode from "vscode";
+import { TextEditor, Uri, window } from "vscode";
 import { tryOpenExternalFile } from "../../../../../src/common/vscode/external-files";
 import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
 import { mockedObject } from "../../../utils/mocking.helpers";
 
 describe("tryOpenExternalFile", () => {
-  let showTextDocumentSpy: jest.SpiedFunction<
-    typeof vscode.window.showTextDocument
-  >;
+  let showTextDocumentSpy: jest.SpiedFunction<typeof window.showTextDocument>;
   let showInformationMessageSpy: jest.SpiedFunction<
-    typeof vscode.window.showInformationMessage
+    typeof window.showInformationMessage
   >;
 
   beforeEach(() => {
     showTextDocumentSpy = jest
-      .spyOn(vscode.window, "showTextDocument")
-      .mockResolvedValue(mockedObject<vscode.TextEditor>({}));
+      .spyOn(window, "showTextDocument")
+      .mockResolvedValue(mockedObject<TextEditor>({}));
     showInformationMessageSpy = jest
-      .spyOn(vscode.window, "showInformationMessage")
+      .spyOn(window, "showInformationMessage")
       .mockResolvedValue(undefined);
   });
 
@@ -27,7 +25,7 @@ describe("tryOpenExternalFile", () => {
     await tryOpenExternalFile(commandManager, "xxx");
     expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
     expect(showTextDocumentSpy).toHaveBeenCalledWith(
-      vscode.Uri.file("xxx"),
+      Uri.file("xxx"),
       expect.anything(),
     );
     expect(executeCommand).not.toBeCalled();
@@ -45,7 +43,7 @@ describe("tryOpenExternalFile", () => {
       showInformationMessageSpy.mockResolvedValue({ title: "Yes" });
 
       await tryOpenExternalFile(commandManager, "xxx");
-      const uri = vscode.Uri.file("xxx");
+      const uri = Uri.file("xxx");
       expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
       expect(showTextDocumentSpy).toHaveBeenCalledWith(uri, expect.anything());
       expect(executeCommand).toHaveBeenCalledWith("revealFileInOS", uri);
@@ -59,7 +57,7 @@ describe("tryOpenExternalFile", () => {
       showInformationMessageSpy.mockResolvedValue({ title: "No" });
 
       await tryOpenExternalFile(commandManager, "xxx");
-      const uri = vscode.Uri.file("xxx");
+      const uri = Uri.file("xxx");
       expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
       expect(showTextDocumentSpy).toHaveBeenCalledWith(uri, expect.anything());
       expect(showInformationMessageSpy).toBeCalled();

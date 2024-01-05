@@ -1,4 +1,4 @@
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { join } from "path";
 import { mkdirSync, writeFileSync } from "fs-extra";
 import {
@@ -7,9 +7,9 @@ import {
 } from "../../../../src/databases/local-databases/db-contents-heuristics";
 
 describe("isLikelyDatabaseRoot", () => {
-  let dir: tmp.DirResult;
+  let dir: DirResult;
   beforeEach(() => {
-    dir = tmp.dirSync({
+    dir = dirSync({
       unsafeCleanup: true,
     });
   });
@@ -54,9 +54,9 @@ describe("isLikelyDatabaseRoot", () => {
 });
 
 describe("isLikelyDbLanguageFolder", () => {
-  let dir: tmp.DirResult;
+  let dir: DirResult;
   beforeEach(() => {
-    dir = tmp.dirSync({
+    dir = dirSync({
       unsafeCleanup: true,
     });
   });

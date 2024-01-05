@@ -1,4 +1,4 @@
-import * as Sarif from "sarif";
+import { Location } from "sarif";
 
 import {
   getPathRelativeToSourceLocationPrefix,
@@ -109,7 +109,7 @@ describe("parsing sarif", () => {
     });
 
     it("should parse a sarif location with no region and no file protocol", () => {
-      const location: Sarif.Location = {
+      const location: Location = {
         physicalLocation: {
           artifactLocation: {
             uri: "abc?x=test",
@@ -124,7 +124,7 @@ describe("parsing sarif", () => {
     });
 
     it("should parse a sarif location with no region and file protocol", () => {
-      const location: Sarif.Location = {
+      const location: Location = {
         physicalLocation: {
           artifactLocation: {
             uri: "file:/abc%3Fx%3Dtest",
@@ -139,7 +139,7 @@ describe("parsing sarif", () => {
     });
 
     it("should parse a sarif location with a region and file protocol", () => {
-      const location: Sarif.Location = {
+      const location: Location = {
         physicalLocation: {
           artifactLocation: {
             uri: "file:abc%3Fx%3Dtest",

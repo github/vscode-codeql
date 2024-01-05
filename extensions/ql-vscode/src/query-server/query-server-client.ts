@@ -3,7 +3,11 @@ import { ensureFile } from "fs-extra";
 import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
-import * as cli from "../codeql-cli/cli";
+import {
+  CodeQLCliServer,
+  shouldDebugQueryServer,
+  spawnServer,
+} from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
 import { BaseLogger, Logger, showAndLogErrorMessage } from "../common/logging";
 import { extLogger, ProgressReporter } from "../common/logging/vscode";
@@ -62,7 +66,7 @@ export class QueryServerClient extends DisposableObject {
   constructor(
     app: App,
     readonly config: QueryServerConfig,
-    readonly cliServer: cli.CodeQLCliServer,
+    readonly cliServer: CodeQLCliServer,
     readonly opts: ServerOpts,
     withProgressReporting: WithProgressReporting,
   ) {
@@ -198,13 +202,13 @@ export class QueryServerClient extends DisposableObject {
       args.push("--debug", "--tuple-counting");
     }
 
-    if (cli.shouldDebugQueryServer()) {
+    if (shouldDebugQueryServer()) {
       args.push(
         "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=y,quiet=y",
       );
     }
 
-    const child = cli.spawnServer(
+    const child = spawnServer(
       this.config.codeQlPath,
       "CodeQL query server",
       ["execute", "query-server2"],

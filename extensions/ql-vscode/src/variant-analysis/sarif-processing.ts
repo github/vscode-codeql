@@ -1,21 +1,28 @@
-import * as sarif from "sarif";
 import {
-  SarifLink,
+  Log,
+  PhysicalLocation,
+  Region,
+  ReportingDescriptor,
+  Result,
+  Run,
+} from "sarif";
+import {
   parseHighlightedLine,
   parseSarifPlainTextMessage,
   parseSarifRegion,
+  SarifLink,
 } from "../common/sarif-utils";
 
 import {
   AnalysisAlert,
-  CodeFlow,
   AnalysisMessage,
+  AnalysisMessageLocationTokenLocation,
   AnalysisMessageToken,
-  ResultSeverity,
-  ThreadFlow,
+  CodeFlow,
   CodeSnippet,
   HighlightedRegion,
-  AnalysisMessageLocationTokenLocation,
+  ResultSeverity,
+  ThreadFlow,
 } from "./shared/analysis-result";
 
 // A line of more than 8k characters is probably generated.
@@ -26,7 +33,7 @@ const CODE_SNIPPET_HIGHLIGHTED_REGION_MINIMUM_RATIO = 0.01;
 const defaultSeverity = "Warning";
 
 export function extractAnalysisAlerts(
-  sarifLog: sarif.Log,
+  sarifLog: Log,
   fileLinkPrefix: string,
 ): {
   alerts: AnalysisAlert[];
@@ -50,8 +57,8 @@ export function extractAnalysisAlerts(
 }
 
 function extractResultAlerts(
-  run: sarif.Run,
-  result: sarif.Result,
+  run: Run,
+  result: Result,
   fileLinkPrefix: string,
 ): AnalysisAlert[] {
   const alerts: AnalysisAlert[] = [];
@@ -93,7 +100,7 @@ function extractResultAlerts(
 }
 
 function getShortDescription(
-  rule: sarif.ReportingDescriptor | undefined,
+  rule: ReportingDescriptor | undefined,
   message: AnalysisMessage,
 ): string {
   if (rule?.shortDescription?.text) {
@@ -104,9 +111,9 @@ function getShortDescription(
 }
 
 export function tryGetSeverity(
-  sarifRun: sarif.Run,
-  result: sarif.Result,
-  rule: sarif.ReportingDescriptor | undefined,
+  sarifRun: Run,
+  result: Result,
+  rule: ReportingDescriptor | undefined,
 ): ResultSeverity | undefined {
   if (!sarifRun || !result || !rule) {
     return undefined;
@@ -130,9 +137,9 @@ export function tryGetSeverity(
 }
 
 export function tryGetRule(
-  sarifRun: sarif.Run,
-  result: sarif.Result,
-): sarif.ReportingDescriptor | undefined {
+  sarifRun: Run,
+  result: Result,
+): ReportingDescriptor | undefined {
   if (!sarifRun || !result) {
     return undefined;
   }
@@ -171,7 +178,7 @@ export function tryGetRule(
 }
 
 export function tryGetFilePath(
-  physicalLocation: sarif.PhysicalLocation,
+  physicalLocation: PhysicalLocation,
 ): string | undefined {
   const filePath = physicalLocation.artifactLocation?.uri;
   // We expect the location uri value to be a relative file path, with no scheme.
@@ -188,8 +195,8 @@ export function tryGetFilePath(
 }
 
 function getCodeSnippet(
-  contextRegion?: sarif.Region,
-  region?: sarif.Region,
+  contextRegion?: Region,
+  region?: Region,
 ): CodeSnippet | undefined {
   const actualRegion = contextRegion ?? region;
 
@@ -234,7 +241,7 @@ function getCodeSnippet(
   };
 }
 
-function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
+function getHighlightedRegion(region: Region): HighlightedRegion {
   const { startLine, startColumn, endLine, endColumn } =
     parseSarifRegion(region);
 
@@ -249,10 +256,7 @@ function getHighlightedRegion(region: sarif.Region): HighlightedRegion {
   };
 }
 
-function getCodeFlows(
-  result: sarif.Result,
-  fileLinkPrefix: string,
-): CodeFlow[] {
+function getCodeFlows(result: Result, fileLinkPrefix: string): CodeFlow[] {
   const codeFlows = [];
 
   if (result.codeFlows) {
@@ -292,10 +296,7 @@ function getCodeFlows(
   return codeFlows;
 }
 
-function getMessage(
-  result: sarif.Result,
-  fileLinkPrefix: string,
-): AnalysisMessage {
+function getMessage(result: Result, fileLinkPrefix: string): AnalysisMessage {
   const tokens: AnalysisMessageToken[] = [];
 
   const messageText = result.message!.text!;
@@ -323,7 +324,7 @@ function getMessage(
 
 function getRelatedLocation(
   messagePart: SarifLink,
-  result: sarif.Result,
+  result: Result,
   fileLinkPrefix: string,
 ): AnalysisMessageLocationTokenLocation | undefined {
   const relatedLocation = result.relatedLocations!.find(

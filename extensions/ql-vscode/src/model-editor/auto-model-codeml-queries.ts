@@ -2,7 +2,7 @@ import { CodeQLCliServer, SourceInfo } from "../codeql-cli/cli";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
-import * as Sarif from "sarif";
+import { Log } from "sarif";
 import { Mode } from "./shared/mode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { interpretResultsSarif } from "../query-results";
@@ -30,7 +30,7 @@ type AutoModelQueriesOptions = {
 };
 
 export type AutoModelQueriesResult = {
-  candidates: Sarif.Log;
+  candidates: Log;
 };
 
 export async function runAutoModelQueries({
@@ -212,7 +212,7 @@ async function interpretAutomodelResults(
   completedQuery: CoreCompletedQuery,
   metadata: QueryMetadata,
   sourceInfo: SourceInfo | undefined,
-): Promise<Sarif.Log> {
+): Promise<Log> {
   const interpretedResultsPath = join(
     completedQuery.outputDir.querySaveDir,
     "results.sarif",

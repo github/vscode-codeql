@@ -1,4 +1,4 @@
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { dump } from "js-yaml";
 import { writeFileSync } from "fs-extra";
 import { join } from "path";
@@ -6,11 +6,11 @@ import { QueryLanguage } from "../../../src/common/query-language";
 import { getInitialQueryContents } from "../../../src/local-queries/query-contents";
 
 describe("getInitialQueryContents", () => {
-  let dir: tmp.DirResult;
+  let dir: DirResult;
   let language: QueryLanguage;
 
   beforeEach(() => {
-    dir = tmp.dirSync({
+    dir = dirSync({
       unsafeCleanup: true,
     });
     language = QueryLanguage.Cpp;

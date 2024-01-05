@@ -1,4 +1,4 @@
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { ensureDir, ensureFile, pathExists, writeFile } from "fs-extra";
 import { join } from "path";
 import { ExtensionContext, Uri, workspace } from "vscode";
@@ -48,11 +48,11 @@ describe("local databases", () => {
     typeof dialog.showNeverAskAgainDialog
   >;
 
-  let dir: tmp.DirResult;
+  let dir: DirResult;
   let extensionContextStoragePath: string;
 
   beforeEach(() => {
-    dir = tmp.dirSync({
+    dir = dirSync({
       unsafeCleanup: true,
     });
 

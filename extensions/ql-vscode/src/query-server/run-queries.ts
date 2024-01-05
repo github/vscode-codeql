@@ -1,8 +1,8 @@
 import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../common/vscode/progress";
-import * as messages from "./messages";
+import { runQuery, RunQueryParams } from "./messages";
 import { QueryOutputDir } from "../run-queries-shared";
-import * as qsClient from "./query-server-client";
+import { QueryServerClient } from "./query-server-client";
 import { CoreQueryResults, CoreQueryTarget } from "./query-runner";
 import { BaseLogger } from "../common/logging";
 
@@ -21,7 +21,7 @@ import { BaseLogger } from "../common/logging";
  */
 
 export async function compileAndRunQueryAgainstDatabaseCore(
-  qs: qsClient.QueryServerClient,
+  qs: QueryServerClient,
   dbPath: string,
   query: CoreQueryTarget,
   generateEvalLog: boolean,
@@ -45,7 +45,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
       : { query: {} };
 
   const evalLogPath = generateEvalLog ? outputDir.evalLogPath : undefined;
-  const queryToRun: messages.RunQueryParams = {
+  const queryToRun: RunQueryParams = {
     db: dbPath,
     additionalPacks,
     externalInputs: {},
@@ -65,12 +65,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   // in parallel, each query's log messages are interleaved. Fixing this
   // properly will require a change in the query server.
   qs.activeQueryLogger = logger;
-  const result = await qs.sendRequest(
-    messages.runQuery,
-    queryToRun,
-    token,
-    progress,
-  );
+  const result = await qs.sendRequest(runQuery, queryToRun, token, progress);
 
   return {
     resultType: result.resultType,

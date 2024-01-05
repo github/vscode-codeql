@@ -6,7 +6,7 @@ import { GitHubDatabaseConfig } from "../../../../../src/config";
 import * as dialog from "../../../../../src/common/vscode/dialog";
 import { listDatabases } from "../../../../../src/databases/github-databases/api";
 import { Credentials } from "../../../../../src/common/authentication";
-import * as Octokit from "@octokit/rest";
+import { Octokit } from "@octokit/rest";
 import { AppOctokit } from "../../../../../src/common/octokit";
 import { RequestError } from "@octokit/request-error";
 
@@ -18,7 +18,7 @@ const appMockListCodeqlDatabases = mockedOctokitFunction<
   "codeScanning",
   "listCodeqlDatabases"
 >();
-const appOctokit = mockedObject<Octokit.Octokit>({
+const appOctokit = mockedObject<Octokit>({
   rest: {
     codeScanning: {
       listCodeqlDatabases: appMockListCodeqlDatabases,
@@ -41,7 +41,7 @@ describe("listDatabases", () => {
     "codeScanning",
     "listCodeqlDatabases"
   >();
-  const octokit = mockedObject<Octokit.Octokit>({
+  const octokit = mockedObject<Octokit>({
     rest: {
       codeScanning: {
         listCodeqlDatabases: mockListCodeqlDatabases,

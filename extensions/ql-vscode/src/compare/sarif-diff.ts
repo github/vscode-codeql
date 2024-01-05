@@ -1,4 +1,4 @@
-import * as sarif from "sarif";
+import { Result } from "sarif";
 
 /**
  * Compare the alerts of two queries. Use deep equality to determine if
@@ -16,10 +16,7 @@ import * as sarif from "sarif";
  *  1. If either query is empty
  *  2. If the queries are 100% disjoint
  */
-export function sarifDiff(
-  fromResults: sarif.Result[],
-  toResults: sarif.Result[],
-) {
+export function sarifDiff(fromResults: Result[], toResults: Result[]) {
   if (!fromResults.length) {
     throw new Error("CodeQL Compare: Source query has no results.");
   }

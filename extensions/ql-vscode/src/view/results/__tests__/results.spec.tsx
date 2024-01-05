@@ -5,12 +5,12 @@ import {
   IntoResultsViewMsg,
   SortDirection,
 } from "../../../common/interface-types";
-import * as fs from "fs-extra";
+import { readJSONSync } from "fs-extra";
 import { resolve } from "path";
 import { postMessage } from "../../common/post-message";
 import { ColumnKind } from "../../../common/raw-result-types";
 
-const exampleSarif = fs.readJSONSync(
+const exampleSarif = readJSONSync(
   resolve(__dirname, "../../../../test/data/sarif/validSarif.sarif"),
 );
 

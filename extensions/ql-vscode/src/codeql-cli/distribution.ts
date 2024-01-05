@@ -1,8 +1,8 @@
-import { pathExists, mkdtemp, createWriteStream, remove } from "fs-extra";
+import { createWriteStream, mkdtemp, pathExists, remove } from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
-import * as semver from "semver";
-import { ExtensionContext, Event } from "vscode";
+import { Range, satisfies, SemVer } from "semver";
+import { Event, ExtensionContext } from "vscode";
 import { DistributionConfig } from "../config";
 import { extLogger } from "../common/logging/vscode";
 import { getCodeQlCliVersion } from "./cli-version";
@@ -50,8 +50,7 @@ const NIGHTLY_DISTRIBUTION_REPOSITORY_NWO = "dsp-testing/codeql-cli-nightlies";
  *
  * This applies to both extension-managed and CLI distributions.
  */
-export const DEFAULT_DISTRIBUTION_VERSION_RANGE: semver.Range =
-  new semver.Range("2.x");
+export const DEFAULT_DISTRIBUTION_VERSION_RANGE: Range = new Range("2.x");
 
 export interface DistributionProvider {
   getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>;
@@ -62,7 +61,7 @@ export interface DistributionProvider {
 export class DistributionManager implements DistributionProvider {
   constructor(
     public readonly config: DistributionConfig,
-    private readonly versionRange: semver.Range,
+    private readonly versionRange: Range,
     extensionContext: ExtensionContext,
   ) {
     this._onDidChangeDistribution = config.onDidChangeConfiguration;
@@ -121,7 +120,7 @@ export class DistributionManager implements DistributionProvider {
       distribution.kind !== DistributionKind.ExtensionManaged ||
       this.config.includePrerelease;
 
-    if (!semver.satisfies(version, this.versionRange, { includePrerelease })) {
+    if (!satisfies(version, this.versionRange, { includePrerelease })) {
       return {
         distribution,
         kind: FindDistributionResultKind.IncompatibleDistribution,
@@ -278,7 +277,7 @@ export class DistributionManager implements DistributionProvider {
 class ExtensionSpecificDistributionManager {
   constructor(
     private readonly config: DistributionConfig,
-    private readonly versionRange: semver.Range,
+    private readonly versionRange: Range,
     private readonly extensionContext: ExtensionContext,
   ) {
     /**/
@@ -601,7 +600,7 @@ interface DistributionResult {
 
 interface CompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.CompatibleDistribution;
-  version: semver.SemVer;
+  version: SemVer;
 }
 
 interface UnknownCompatibilityDistributionResult extends DistributionResult {
@@ -610,7 +609,7 @@ interface UnknownCompatibilityDistributionResult extends DistributionResult {
 
 interface IncompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.IncompatibleDistribution;
-  version: semver.SemVer;
+  version: SemVer;
 }
 
 interface NoDistributionResult {

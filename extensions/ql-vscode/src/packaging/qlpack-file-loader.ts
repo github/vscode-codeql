@@ -1,8 +1,9 @@
 import Ajv from "ajv";
-import * as qlpackFileSchemaJson from "./qlpack-file.schema.json";
 import { QlPackFile } from "./qlpack-file";
 import { load } from "js-yaml";
 import { readFile } from "fs-extra";
+
+import qlpackFileSchemaJson from "./qlpack-file.schema.json";
 
 const ajv = new Ajv({ allErrors: true });
 const qlpackFileValidate = ajv.compile(qlpackFileSchemaJson);

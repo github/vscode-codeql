@@ -1,9 +1,17 @@
-import * as Sarif from "sarif";
-import * as Keys from "./result-keys";
+import { Location, Result } from "sarif";
+import {
+  getPath,
+  getPathNode,
+  getResult,
+  keyToString,
+  PathNode,
+  Result as ResultKeysResult,
+  ResultKey,
+} from "./result-keys";
 import { className, jumpToLocation } from "./result-table-utils";
 import { onNavigation } from "./ResultsApp";
 import { NavigateMsg, NavigationDirection } from "../../common/interface-types";
-import { parseSarifLocation, isNoLocation } from "../../common/sarif-utils";
+import { isNoLocation, parseSarifLocation } from "../../common/sarif-utils";
 import { sendTelemetry } from "../common/telemetry";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTableResultRow } from "./AlertTableResultRow";
@@ -11,7 +19,7 @@ import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useScrollIntoView } from "./useScrollIntoView";
 
 type Props = {
-  results: Sarif.Result[];
+  results: Result[];
   databaseUri: string;
   sourceLocationPrefix: string;
   numTruncatedResults?: number;
@@ -29,7 +37,7 @@ export function AlertTable({
   noResults,
 }: Props) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set<string>());
-  const [selectedItem, setSelectedItem] = useState<Keys.ResultKey | undefined>(
+  const [selectedItem, setSelectedItem] = useState<ResultKey | undefined>(
     undefined,
   );
 
@@ -41,8 +49,8 @@ export function AlertTable({
    * first item, open all the rest as well. This mimics vscode's file
    * explorer tree view behavior.
    */
-  const toggle = useCallback((e: React.MouseEvent, keys: Keys.ResultKey[]) => {
-    const keyStrings = keys.map(Keys.keyToString);
+  const toggle = useCallback((e: React.MouseEvent, keys: ResultKey[]) => {
+    const keyStrings = keys.map(keyToString);
     setExpanded((previousExpanded) => {
       const expanded = new Set(previousExpanded);
       if (previousExpanded.has(keyStrings[0])) {
@@ -62,9 +70,9 @@ export function AlertTable({
   }, []);
 
   const getNewSelection = (
-    key: Keys.ResultKey | undefined,
+    key: ResultKey | undefined,
     direction: NavigationDirection,
-  ): Keys.ResultKey => {
+  ): ResultKey => {
     if (key === undefined) {
       return { resultIndex: 0 };
     }
@@ -109,19 +117,19 @@ export function AlertTable({
       const key = getNewSelection(selectedItem, event.direction);
 
       // Check if the selected node actually exists (bounds check) and get its location if relevant
-      let jumpLocation: Sarif.Location | undefined;
+      let jumpLocation: Location | undefined;
       if (key.pathNodeIndex !== undefined) {
-        jumpLocation = Keys.getPathNode(results, key);
+        jumpLocation = getPathNode(results, key);
         if (jumpLocation === undefined) {
           return; // Result does not exist
         }
       } else if (key.pathIndex !== undefined) {
-        if (Keys.getPath(results, key) === undefined) {
+        if (getPath(results, key) === undefined) {
           return; // Path does not exist
         }
         jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
       } else {
-        jumpLocation = Keys.getResult(results, key)?.locations?.[0];
+        jumpLocation = getResult(results, key)?.locations?.[0];
         if (jumpLocation === undefined) {
           return; // Path step does not exist.
         }
@@ -139,10 +147,10 @@ export function AlertTable({
       const newExpanded = new Set(expanded);
       if (event.direction === NavigationDirection.right) {
         // When stepping right, expand to ensure the selected node is visible
-        newExpanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
+        newExpanded.add(keyToString({ resultIndex: key.resultIndex }));
         if (key.pathIndex !== undefined) {
           newExpanded.add(
-            Keys.keyToString({
+            keyToString({
               resultIndex: key.resultIndex,
               pathIndex: key.pathIndex,
             }),
@@ -150,11 +158,11 @@ export function AlertTable({
         }
       } else if (event.direction === NavigationDirection.left) {
         // When stepping left, collapse immediately
-        newExpanded.delete(Keys.keyToString(key));
+        newExpanded.delete(keyToString(key));
       } else {
         // When stepping up or down, collapse the previous node
         if (selectedItem !== undefined) {
-          newExpanded.delete(Keys.keyToString(selectedItem));
+          newExpanded.delete(keyToString(selectedItem));
         }
       }
       setExpanded(newExpanded);
@@ -171,7 +179,7 @@ export function AlertTable({
   }, [handleNavigationEvent]);
 
   const updateSelectionCallback = useCallback(
-    (resultKey: Keys.PathNode | Keys.Result | undefined) => {
+    (resultKey: PathNode | ResultKeysResult | undefined) => {
       setSelectedItem(resultKey);
       sendTelemetry("local-results-alert-table-path-selected");
     },

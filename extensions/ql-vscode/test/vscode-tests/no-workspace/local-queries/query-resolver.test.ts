@@ -8,7 +8,7 @@ import * as qlpack from "../../../../src/databases/qlpack";
 import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
 import * as log from "../../../../src/common/logging/notifications";
 import { load } from "js-yaml";
-import * as fs from "fs-extra";
+import { readFile } from "fs-extra";
 
 describe("qlpackOfDatabase", () => {
   let getQlPackForDbschemeSpy: jest.SpiedFunction<
@@ -87,7 +87,7 @@ describe("resolveQueries", () => {
 
     const fileName = resolveQueriesInSuite.mock.calls[0][0];
 
-    expect(load(await fs.readFile(fileName, "utf-8"))).toEqual([
+    expect(load(await readFile(fileName, "utf-8"))).toEqual([
       {
         from: "my-qlpack",
         queries: ".",

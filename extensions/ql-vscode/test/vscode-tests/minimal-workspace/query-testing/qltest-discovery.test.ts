@@ -1,10 +1,9 @@
 import { Uri, WorkspaceFolder } from "vscode";
-import * as fs from "fs-extra";
+import { remove } from "fs-extra";
 import { join } from "path";
 
 import { QLTestDiscovery } from "../../../../src/query-testing/qltest-discovery";
-import { DirectoryResult } from "tmp-promise";
-import * as tmp from "tmp-promise";
+import { DirectoryResult, dir } from "tmp-promise";
 
 import "../../../matchers/toEqualPath";
 import { mockedObject } from "../../utils/mocking.helpers";
@@ -22,7 +21,7 @@ describe("qltest-discovery", () => {
     let qlTestDiscover: QLTestDiscovery;
 
     beforeEach(async () => {
-      directory = await tmp.dir({
+      directory = await dir({
         unsafeCleanup: true,
       });
 
@@ -83,7 +82,7 @@ describe("qltest-discovery", () => {
     });
 
     it("should avoid discovery if a folder does not exist", async () => {
-      await fs.remove(baseDir);
+      await remove(baseDir);
 
       await qlTestDiscover.refresh();
       const testDirectory = qlTestDiscover.testDirectory;

@@ -1,5 +1,5 @@
 import { join } from "path";
-import * as vscode from "vscode";
+import { ExtensionContext, Uri, window, workspace } from "vscode";
 
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
@@ -33,7 +33,7 @@ import { LanguageContextStore } from "../../../../src/language-context-store";
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
   let configListener: QueryHistoryConfigListener;
-  let showQuickPickSpy: jest.SpiedFunction<typeof vscode.window.showQuickPick>;
+  let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let cancelVariantAnalysisSpy: jest.SpiedFunction<
     typeof variantAnalysisManagerStub.cancelVariantAnalysis
   >;
@@ -55,7 +55,7 @@ describe("QueryHistoryManager", () => {
 
   beforeEach(() => {
     showQuickPickSpy = jest
-      .spyOn(vscode.window, "showQuickPick")
+      .spyOn(window, "showQuickPick")
       .mockResolvedValue(undefined);
 
     executeCommand = jest.fn();
@@ -929,9 +929,9 @@ describe("QueryHistoryManager", () => {
       {} as EvalLogViewer,
       createMockQueryHistoryDirs(),
       {
-        globalStorageUri: vscode.Uri.file(mockExtensionLocation),
-        extensionPath: vscode.Uri.file("/x/y/z").fsPath,
-      } as vscode.ExtensionContext,
+        globalStorageUri: Uri.file(mockExtensionLocation),
+        extensionPath: Uri.file("/x/y/z").fsPath,
+      } as ExtensionContext,
       configListener,
       new HistoryItemLabelProvider({
         format: "",
@@ -942,7 +942,7 @@ describe("QueryHistoryManager", () => {
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];
-    await vscode.workspace.saveAll();
+    await workspace.saveAll();
     await qhm.refreshTreeView();
     return qhm;
   }

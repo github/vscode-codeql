@@ -1,16 +1,15 @@
-import { resolve, join } from "path";
-import * as vscode from "vscode";
-import { Uri } from "vscode";
+import { join, resolve } from "path";
+import { TextDocument, Uri, window, workspace } from "vscode";
 import {
   getQuickEvalContext,
   validateQueryUri,
 } from "../../../../src/run-queries-shared";
 
-async function showQlDocument(name: string): Promise<vscode.TextDocument> {
-  const folderPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+async function showQlDocument(name: string): Promise<TextDocument> {
+  const folderPath = workspace.workspaceFolders![0].uri.fsPath;
   const documentPath = resolve(folderPath, name);
-  const document = await vscode.workspace.openTextDocument(documentPath);
-  await vscode.window.showTextDocument(document!);
+  const document = await workspace.openTextDocument(documentPath);
+  await window.showTextDocument(document!);
   return document;
 }
 

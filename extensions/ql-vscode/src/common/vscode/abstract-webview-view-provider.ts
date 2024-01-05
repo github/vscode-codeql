@@ -1,6 +1,11 @@
-import * as vscode from "vscode";
-import { Uri, WebviewViewProvider } from "vscode";
-import { WebviewKind, WebviewMessage, getHtmlForWebview } from "./webview-html";
+import {
+  CancellationToken,
+  Uri,
+  WebviewView,
+  WebviewViewProvider,
+  WebviewViewResolveContext,
+} from "vscode";
+import { getHtmlForWebview, WebviewKind, WebviewMessage } from "./webview-html";
 import { Disposable } from "../disposable-object";
 import { App } from "../app";
 import { DeepReadonly } from "../readonly";
@@ -10,7 +15,7 @@ export abstract class AbstractWebviewViewProvider<
   FromMessage extends WebviewMessage,
 > implements WebviewViewProvider
 {
-  protected webviewView: vscode.WebviewView | undefined = undefined;
+  protected webviewView: WebviewView | undefined = undefined;
   private disposables: Disposable[] = [];
 
   constructor(
@@ -23,9 +28,9 @@ export abstract class AbstractWebviewViewProvider<
    * first loaded or when the user hides and then shows a view again.
    */
   public resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken,
+    webviewView: WebviewView,
+    _context: WebviewViewResolveContext,
+    _token: CancellationToken,
   ) {
     webviewView.webview.options = {
       enableScripts: true,

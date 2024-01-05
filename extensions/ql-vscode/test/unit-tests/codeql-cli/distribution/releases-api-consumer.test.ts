@@ -1,4 +1,4 @@
-import * as fetch from "node-fetch";
+import { Response } from "node-fetch";
 import { Range } from "semver";
 
 import {
@@ -73,10 +73,10 @@ describe("Releases API consumer", () => {
     ];
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
-      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
+      protected async makeApiCall(apiPath: string): Promise<Response> {
         if (apiPath === `/repos/${repositoryNwo}/releases`) {
           return Promise.resolve(
-            new fetch.Response(JSON.stringify(sampleReleaseResponse)),
+            new Response(JSON.stringify(sampleReleaseResponse)),
           );
         }
         return Promise.reject(new Error(`Unknown API path: ${apiPath}`));
@@ -181,7 +181,7 @@ describe("Releases API consumer", () => {
     ];
 
     class MockReleasesApiConsumer extends ReleasesApiConsumer {
-      protected async makeApiCall(apiPath: string): Promise<fetch.Response> {
+      protected async makeApiCall(apiPath: string): Promise<Response> {
         if (apiPath === `/repos/${repositoryNwo}/releases`) {
           const responseBody: GithubRelease[] = [
             {
@@ -194,9 +194,7 @@ describe("Releases API consumer", () => {
             },
           ];
 
-          return Promise.resolve(
-            new fetch.Response(JSON.stringify(responseBody)),
-          );
+          return Promise.resolve(new Response(JSON.stringify(responseBody)));
         }
         return Promise.reject(new Error(`Unknown API path: ${apiPath}`));
       }

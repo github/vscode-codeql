@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "fs-extra";
 import { join } from "path";
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { BaseLogger, Logger, TeeLogger } from "../../../src/common/logging";
 import { OutputChannelLogger } from "../../../src/common/logging/vscode";
 
@@ -29,14 +29,14 @@ jest.mock(
 );
 
 describe("OutputChannelLogger tests", function () {
-  const tempFolders: Record<string, tmp.DirResult> = {};
+  const tempFolders: Record<string, DirResult> = {};
   let logger: any;
 
   beforeEach(async () => {
-    tempFolders.globalStoragePath = tmp.dirSync({
+    tempFolders.globalStoragePath = dirSync({
       prefix: "logging-tests-global",
     });
-    tempFolders.storagePath = tmp.dirSync({
+    tempFolders.storagePath = dirSync({
       prefix: "logging-tests-workspace",
     });
     logger = new OutputChannelLogger("test-logger");

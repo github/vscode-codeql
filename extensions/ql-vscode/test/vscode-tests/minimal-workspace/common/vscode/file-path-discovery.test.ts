@@ -9,7 +9,7 @@ import {
 import { FilePathDiscovery } from "../../../../../src/common/vscode/file-path-discovery";
 import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
-import * as tmp from "tmp";
+import { dirSync } from "tmp";
 import { normalizePath } from "../../../../../src/common/files";
 import { extLogger } from "../../../../../src/common/logging/vscode/loggers";
 import { getErrorMessage } from "../../../../../src/common/helpers-pure";
@@ -83,7 +83,7 @@ describe("FilePathDiscovery", () => {
   let discovery: TestFilePathDiscovery;
 
   beforeEach(() => {
-    const t = tmp.dirSync({
+    const t = dirSync({
       unsafeCleanup: true,
     });
     tmpDir = normalizePath(t.name);

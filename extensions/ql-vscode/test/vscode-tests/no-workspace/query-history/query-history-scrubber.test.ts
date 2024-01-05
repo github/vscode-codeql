@@ -1,6 +1,6 @@
 import { readdirSync, mkdirSync, writeFileSync } from "fs-extra";
 import { join } from "path";
-import * as vscode from "vscode";
+import { Disposable, ExtensionContext } from "vscode";
 
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { registerQueryHistoryScrubber } from "../../../../src/query-history/query-history-scrubber";
@@ -21,7 +21,7 @@ const now = Date.now();
 const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
 
 describe("query history scrubber", () => {
-  let deregister: vscode.Disposable | undefined;
+  let deregister: Disposable | undefined;
   let tmpDir: DirResult;
 
   beforeEach(() => {
@@ -160,7 +160,7 @@ describe("query history scrubber", () => {
     return `query-${timestamp}`;
   }
 
-  function createMockContext(): vscode.ExtensionContext {
+  function createMockContext(): ExtensionContext {
     return {
       globalState: {
         lastScrubTime: now,
@@ -177,13 +177,10 @@ describe("query history scrubber", () => {
           this.lastScrubTime = value;
         },
       },
-    } as any as vscode.ExtensionContext;
+    } as any as ExtensionContext;
   }
 
-  function registerScrubber(
-    dir: string,
-    ctx: vscode.ExtensionContext,
-  ): jest.Mock {
+  function registerScrubber(dir: string, ctx: ExtensionContext): jest.Mock {
     const onScrubberRun = jest.fn();
     deregister = registerQueryHistoryScrubber(
       ONE_HOUR_IN_MS,

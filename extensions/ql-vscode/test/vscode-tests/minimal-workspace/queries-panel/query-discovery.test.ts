@@ -5,7 +5,7 @@ import {
 } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { basename, dirname, join } from "path";
-import * as tmp from "tmp";
+import { dirSync } from "tmp";
 import {
   FileTreeDirectory,
   FileTreeLeaf,
@@ -31,7 +31,7 @@ describe("Query pack discovery", () => {
   let discovery: QueryDiscovery;
 
   beforeEach(() => {
-    const t = tmp.dirSync({
+    const t = dirSync({
       unsafeCleanup: true,
     });
     tmpDir = t.name;

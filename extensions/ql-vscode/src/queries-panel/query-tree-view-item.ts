@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
+import { TreeItem, TreeItemCollapsibleState, Uri } from "vscode";
 
-export class QueryTreeViewItem extends vscode.TreeItem {
+export class QueryTreeViewItem extends TreeItem {
   constructor(
     name: string,
     public readonly path: string,
@@ -17,7 +17,7 @@ export function createQueryTreeFolderItem(
 ): QueryTreeViewItem {
   const item = new QueryTreeViewItem(name, path, children);
   item.tooltip = path;
-  item.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+  item.collapsibleState = TreeItemCollapsibleState.Collapsed;
   item.contextValue = "queryFolder";
   return item;
 }
@@ -30,12 +30,12 @@ export function createQueryTreeFileItem(
   const item = new QueryTreeViewItem(name, path, []);
   item.tooltip = path;
   item.description = language;
-  item.collapsibleState = vscode.TreeItemCollapsibleState.None;
+  item.collapsibleState = TreeItemCollapsibleState.None;
   item.contextValue = "queryFile";
   item.command = {
     title: "Open",
     command: "vscode.open",
-    arguments: [vscode.Uri.file(path)],
+    arguments: [Uri.file(path)],
   };
   return item;
 }

@@ -1,6 +1,18 @@
 import { pathExists } from "fs-extra";
 import { Entry as ZipEntry, ZipFile } from "yauzl";
-import * as vscode from "vscode";
+import {
+  Disposable,
+  Event,
+  EventEmitter,
+  ExtensionContext,
+  FileChangeEvent,
+  FileStat,
+  FileSystemError,
+  FileSystemProvider,
+  FileType,
+  Uri,
+  workspace,
+} from "vscode";
 import { extLogger } from "../logging/vscode";
 import {
   excludeDirectories,
@@ -12,10 +24,11 @@ import {
 // All path operations in this file must be on paths *within* the zip
 // archive.
 import { posix } from "path";
+
 const path = posix;
 
-class File implements vscode.FileStat {
-  type: vscode.FileType;
+class File implements FileStat {
+  type: FileType;
   ctime: number;
   mtime: number;
   size: number;
@@ -24,7 +37,7 @@ class File implements vscode.FileStat {
     public name: string,
     public data: Uint8Array,
   ) {
-    this.type = vscode.FileType.File;
+    this.type = FileType.File;
     this.ctime = Date.now();
     this.mtime = Date.now();
     this.size = data.length;
@@ -32,15 +45,15 @@ class File implements vscode.FileStat {
   }
 }
 
-class Directory implements vscode.FileStat {
-  type: vscode.FileType;
+class Directory implements FileStat {
+  type: FileType;
   ctime: number;
   mtime: number;
   size: number;
   entries: Map<string, Entry> = new Map();
 
   constructor(public name: string) {
-    this.type = vscode.FileType.Directory;
+    this.type = FileType.Directory;
     this.ctime = Date.now();
     this.mtime = Date.now();
     this.size = 0;
@@ -58,7 +71,7 @@ type Entry = File | Directory;
  * dirMap['/foo'] = {'bar': vscode.FileType.Directory}
  * dirMap['/foo/bar'] = {'baz': vscode.FileType.File}
  */
-type DirectoryHierarchyMap = Map<string, Map<string, vscode.FileType>>;
+type DirectoryHierarchyMap = Map<string, Map<string, FileType>>;
 
 export type ZipFileReference = {
   sourceArchiveZipPath: string;
@@ -66,7 +79,7 @@ export type ZipFileReference = {
 };
 
 /** Encodes a reference to a source file within a zipped source archive into a single URI. */
-export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
+export function encodeSourceArchiveUri(ref: ZipFileReference): Uri {
   const { sourceArchiveZipPath, pathWithinSourceArchive } = ref;
 
   // These two paths are put into a single URI with a custom scheme.
@@ -94,7 +107,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   const sourceArchiveZipPathEndIndex =
     sourceArchiveZipPathStartIndex + sourceArchiveZipPath.length;
   const authority = `${sourceArchiveZipPathStartIndex}-${sourceArchiveZipPathEndIndex}`;
-  return vscode.Uri.parse(`${zipArchiveScheme}:/`, true).with({
+  return Uri.parse(`${zipArchiveScheme}:/`, true).with({
     path: encodedPath,
     authority,
   });
@@ -116,7 +129,7 @@ export function encodeArchiveBasePath(sourceArchiveZipPath: string) {
 const sourceArchiveUriAuthorityPattern = /^(\d+)-(\d+)$/;
 
 class InvalidSourceArchiveUriError extends Error {
-  constructor(uri: vscode.Uri) {
+  constructor(uri: Uri) {
     super(
       `Can't decode uri ${uri}: authority should be of the form startIndex-endIndex (where both indices are integers).`,
     );
@@ -124,7 +137,7 @@ class InvalidSourceArchiveUriError extends Error {
 }
 
 /** Decodes an encoded source archive URI into its corresponding paths. Inverse of `encodeSourceArchiveUri`. */
-export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
+export function decodeSourceArchiveUri(uri: Uri): ZipFileReference {
   if (!uri.authority) {
     // Uri is malformed, but this is recoverable
     void extLogger.log(
@@ -164,7 +177,7 @@ function ensureFile(map: DirectoryHierarchyMap, file: string) {
     throw new Error(error);
   }
   ensureDir(map, dirname);
-  map.get(dirname)!.set(path.basename(file), vscode.FileType.File);
+  map.get(dirname)!.set(path.basename(file), FileType.File);
 }
 
 /**
@@ -177,7 +190,7 @@ function ensureDir(map: DirectoryHierarchyMap, dir: string) {
     if (dir !== parent) {
       // not the root directory
       ensureDir(map, parent);
-      map.get(parent)!.set(path.basename(dir), vscode.FileType.Directory);
+      map.get(parent)!.set(path.basename(dir), FileType.Directory);
     }
   }
 }
@@ -190,7 +203,7 @@ type Archive = {
 
 async function parse_zip(zipPath: string): Promise<Archive> {
   if (!(await pathExists(zipPath))) {
-    throw vscode.FileSystemError.FileNotFound(zipPath);
+    throw FileSystemError.FileNotFound(zipPath);
   }
   const zipFile = await openZip(zipPath, {
     lazyEntries: true,
@@ -212,8 +225,8 @@ async function parse_zip(zipPath: string): Promise<Archive> {
   return archive;
 }
 
-export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
-  private readOnlyError = vscode.FileSystemError.NoPermissions(
+export class ArchiveFileSystemProvider implements FileSystemProvider {
+  private readOnlyError = FileSystemError.NoPermissions(
     "write operation attempted, but source archive filesystem is readonly",
   );
   private archives: Map<string, Promise<Archive>> = new Map();
@@ -229,63 +242,57 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
 
   // metadata
 
-  async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
+  async stat(uri: Uri): Promise<FileStat> {
     return await this._lookup(uri);
   }
 
-  async readDirectory(
-    uri: vscode.Uri,
-  ): Promise<Array<[string, vscode.FileType]>> {
+  async readDirectory(uri: Uri): Promise<Array<[string, FileType]>> {
     const ref = decodeSourceArchiveUri(uri);
     const archive = await this.getArchive(ref.sourceArchiveZipPath);
     const contents = archive.dirMap.get(ref.pathWithinSourceArchive);
     const result =
       contents === undefined ? undefined : Array.from(contents.entries());
     if (result === undefined) {
-      throw vscode.FileSystemError.FileNotFound(uri);
+      throw FileSystemError.FileNotFound(uri);
     }
     return result;
   }
 
   // file contents
 
-  async readFile(uri: vscode.Uri): Promise<Uint8Array> {
+  async readFile(uri: Uri): Promise<Uint8Array> {
     const data = (await this._lookupAsFile(uri)).data;
     if (data) {
       return data;
     }
-    throw vscode.FileSystemError.FileNotFound();
+    throw FileSystemError.FileNotFound();
   }
 
   // write operations, all disabled
 
   writeFile(
-    _uri: vscode.Uri,
+    _uri: Uri,
     _content: Uint8Array,
     _options: { create: boolean; overwrite: boolean },
   ): void {
     throw this.readOnlyError;
   }
 
-  rename(
-    _oldUri: vscode.Uri,
-    _newUri: vscode.Uri,
-    _options: { overwrite: boolean },
-  ): void {
+  rename(_oldUri: Uri, _newUri: Uri, _options: { overwrite: boolean }): void {
     throw this.readOnlyError;
   }
 
-  delete(_uri: vscode.Uri): void {
+  delete(_uri: Uri): void {
     throw this.readOnlyError;
   }
 
-  createDirectory(_uri: vscode.Uri): void {
+  createDirectory(_uri: Uri): void {
     throw this.readOnlyError;
   }
 
   // content lookup
 
-  private async _lookup(uri: vscode.Uri): Promise<Entry> {
+  private async _lookup(uri: Uri): Promise<Entry> {
     const ref = decodeSourceArchiveUri(uri);
     const archive = await this.getArchive(ref.sourceArchiveZipPath);
 
@@ -307,31 +314,30 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     if (archive.dirMap.has(reqPath)) {
       return new Directory(reqPath);
     }
-    throw vscode.FileSystemError.FileNotFound(
+    throw FileSystemError.FileNotFound(
       `uri '${uri.toString()}', interpreted as '${reqPath}' in archive '${
         ref.sourceArchiveZipPath
       }'`,
     );
   }
 
-  private async _lookupAsFile(uri: vscode.Uri): Promise<File> {
+  private async _lookupAsFile(uri: Uri): Promise<File> {
     const entry = await this._lookup(uri);
     if (entry instanceof File) {
       return entry;
     }
-    throw vscode.FileSystemError.FileIsADirectory(uri);
+    throw FileSystemError.FileIsADirectory(uri);
   }
 
   // file events
 
-  private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
+  private _emitter = new EventEmitter<FileChangeEvent[]>();
 
-  readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
-    this._emitter.event;
+  readonly onDidChangeFile: Event<FileChangeEvent[]> = this._emitter.event;
 
-  watch(_resource: vscode.Uri): vscode.Disposable {
+  watch(_resource: Uri): Disposable {
     // ignore, fires for all changes...
-    return new vscode.Disposable(() => {
+    return new Disposable(() => {
       /**/
     });
   }
@@ -347,9 +353,9 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
  */
 export const zipArchiveScheme = "codeql-zip-archive";
 
-export function activate(ctx: vscode.ExtensionContext) {
+export function activate(ctx: ExtensionContext) {
   ctx.subscriptions.push(
-    vscode.workspace.registerFileSystemProvider(
+    workspace.registerFileSystemProvider(
       zipArchiveScheme,
       new ArchiveFileSystemProvider(),
       {

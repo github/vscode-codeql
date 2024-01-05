@@ -1,14 +1,14 @@
-import * as Sarif from "sarif";
+import { Log, Tool } from "sarif";
 import { createReadStream } from "fs-extra";
 import { connectTo } from "stream-json/Assembler";
 import { getErrorMessage } from "./helpers-pure";
 import { withParser } from "stream-json/filters/Pick";
 
-const DUMMY_TOOL: Sarif.Tool = { driver: { name: "" } };
+const DUMMY_TOOL: Tool = { driver: { name: "" } };
 
 export async function sarifParser(
   interpretedResultsPath: string,
-): Promise<Sarif.Log> {
+): Promise<Log> {
   try {
     // Parse the SARIF file into token streams, filtering out only the results array.
     const pipeline = createReadStream(interpretedResultsPath).pipe(
@@ -38,7 +38,7 @@ export async function sarifParser(
       });
 
       asm.on("done", (asm) => {
-        const log: Sarif.Log = {
+        const log: Log = {
           version: "2.1.0",
           runs: [
             {

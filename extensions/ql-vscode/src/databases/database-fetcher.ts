@@ -12,7 +12,7 @@ import {
   readdir,
 } from "fs-extra";
 import { basename, join } from "path";
-import * as Octokit from "@octokit/rest";
+import { Octokit } from "@octokit/rest";
 
 import { DatabaseManager, DatabaseItem } from "./local-databases";
 import { tmpDir } from "../tmp-dir";
@@ -230,7 +230,7 @@ export async function downloadGitHubDatabaseFromUrl(
   commitOid: string | null,
   owner: string,
   name: string,
-  octokit: Octokit.Octokit,
+  octokit: Octokit,
   progress: ProgressCallback,
   databaseManager: DatabaseManager,
   storagePath: string,
@@ -568,7 +568,7 @@ export async function findDirWithFile(
 
 export async function convertGithubNwoToDatabaseUrl(
   nwo: string,
-  octokit: Octokit.Octokit,
+  octokit: Octokit,
   progress: ProgressCallback,
   language?: string,
 ): Promise<

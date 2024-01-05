@@ -6,7 +6,7 @@ import { dir, tmpName } from "tmp-promise";
 import { tmpDir } from "../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Credentials } from "../common/authentication";
-import * as cli from "../codeql-cli/cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger } from "../common/logging/vscode";
 import {
   getActionBranch,
@@ -57,7 +57,7 @@ interface GeneratedQueryPack {
  * @returns the entire qlpack as a base64 string.
  */
 async function generateQueryPack(
-  cliServer: cli.CodeQLCliServer,
+  cliServer: CodeQLCliServer,
   queryFile: string,
   queryPackDir: string,
 ): Promise<GeneratedQueryPack> {
@@ -169,7 +169,7 @@ async function createNewQueryPack(
 }
 
 async function copyExistingQueryPack(
-  cliServer: cli.CodeQLCliServer,
+  cliServer: CodeQLCliServer,
   originalPackRoot: string,
   queryFile: string,
   queryPackDir: string,
@@ -273,7 +273,7 @@ interface PreparedRemoteQuery {
 }
 
 export async function prepareRemoteQueryRun(
-  cliServer: cli.CodeQLCliServer,
+  cliServer: CodeQLCliServer,
   credentials: Credentials,
   uri: Uri | undefined,
   progress: ProgressCallback,
@@ -391,7 +391,7 @@ async function fixPackFile(
 }
 
 async function injectExtensionPacks(
-  cliServer: cli.CodeQLCliServer,
+  cliServer: CodeQLCliServer,
   queryPackDir: string,
   workspaceFolders: string[],
 ) {
