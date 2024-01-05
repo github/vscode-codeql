@@ -1,6 +1,6 @@
 import type { SemVer } from "semver";
 import { parse } from "semver";
-import { runCodeQlCliCommand } from "./cli";
+import { runCodeQlCliCommand } from "./cli-command";
 import type { Logger } from "../common/logging";
 import { getErrorMessage } from "../common/helpers-pure";
 
