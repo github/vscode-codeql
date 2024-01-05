@@ -56,16 +56,6 @@ const CSV_FORMAT = "csv";
 const LOGGING_FLAGS = ["-v", "--log-to-stderr"];
 
 /**
- * The expected output of `codeql resolve library-path`.
- */
-export interface QuerySetup {
-  libraryPath: string[];
-  dbscheme: string;
-  relativeName?: string;
-  compilationCache?: string;
-}
-
-/**
  * The expected output of `codeql resolve queries --format bylanguage`.
  */
 export interface QueryInfoByLanguage {
@@ -92,7 +82,7 @@ export interface DbInfo {
 /**
  * The expected output of `codeql resolve upgrades`.
  */
-export interface UpgradesInfo {
+interface UpgradesInfo {
   scripts: string[];
   finalDbscheme: string;
   matchesTarget?: boolean;
@@ -106,33 +96,33 @@ export type QlpacksInfo = { [name: string]: string[] };
 /**
  * The expected output of `codeql resolve languages`.
  */
-export type LanguagesInfo = { [name: string]: string[] };
+type LanguagesInfo = { [name: string]: string[] };
 
 /** Information about an ML model, as resolved by `codeql resolve ml-models`. */
-export type MlModelInfo = {
+type MlModelInfo = {
   checksum: string;
   path: string;
 };
 
 /** The expected output of `codeql resolve ml-models`. */
-export type MlModelsInfo = { models: MlModelInfo[] };
+type MlModelsInfo = { models: MlModelInfo[] };
 
 /** Information about a data extension predicate, as resolved by `codeql resolve extensions`. */
-export type DataExtensionResult = {
+type DataExtensionResult = {
   predicate: string;
   file: string;
   index: number;
 };
 
 /** The expected output of `codeql resolve extensions`. */
-export type ResolveExtensionsResult = {
+type ResolveExtensionsResult = {
   models: MlModelInfo[];
   data: {
     [path: string]: DataExtensionResult[];
   };
 };
 
-export type GenerateExtensiblePredicateMetadataResult = {
+type GenerateExtensiblePredicateMetadataResult = {
   // There are other properties in this object, but they are
   // not relevant for its use in the extension, so we omit them.
   extensible_predicates: Array<{
@@ -144,7 +134,7 @@ export type GenerateExtensiblePredicateMetadataResult = {
 /**
  * The expected output of `codeql resolve qlref`.
  */
-export type QlrefInfo = { resolvedPath: string };
+type QlrefInfo = { resolvedPath: string };
 
 // `codeql bqrs interpret` requires both of these to be present or
 // both absent.
@@ -156,17 +146,17 @@ export interface SourceInfo {
 /**
  * The expected output of `codeql resolve queries`.
  */
-export type ResolvedQueries = string[];
+type ResolvedQueries = string[];
 
 /**
  * The expected output of `codeql resolve tests`.
  */
-export type ResolvedTests = string[];
+type ResolvedTests = string[];
 
 /**
  * A compilation message for a test message (either an error or a warning)
  */
-export interface CompilationMessage {
+interface CompilationMessage {
   /**
    * The text of the message
    */
@@ -209,7 +199,7 @@ interface BqrsDecodeOptions {
   entities?: string[];
 }
 
-export type OnLineCallback = (
+type OnLineCallback = (
   line: string,
 ) => Promise<string | undefined> | string | undefined;
 
@@ -1714,7 +1704,7 @@ export function shouldDebugQueryServer() {
   return isEnvTrue("QUERY_SERVER_JAVA_DEBUG");
 }
 
-export function shouldDebugCliServer() {
+function shouldDebugCliServer() {
   return isEnvTrue("CLI_SERVER_JAVA_DEBUG");
 }
 

@@ -45,7 +45,7 @@ export interface TrimCacheParams {
 /**
  * The result of trimming or clearing the cache.
  */
-export interface ClearCacheResult {
+interface ClearCacheResult {
   /**
    * A user friendly message saying what was or would be
    * deleted.
@@ -92,19 +92,19 @@ export namespace QueryResultType {
   export const DBSCHEME_NO_UPGRADE = 6;
 }
 
-export interface RegisterDatabasesParams {
+interface RegisterDatabasesParams {
   databases: string[];
 }
 
-export interface DeregisterDatabasesParams {
+interface DeregisterDatabasesParams {
   databases: string[];
 }
 
-export type RegisterDatabasesResult = {
+type RegisterDatabasesResult = {
   registeredDatabases: string[];
 };
 
-export type DeregisterDatabasesResult = {
+type DeregisterDatabasesResult = {
   registeredDatabases: string[];
 };
 
@@ -130,22 +130,22 @@ export interface RunQueryParams {
   extensionPacks?: string[];
 }
 
-export interface RunQueryResult {
+interface RunQueryResult {
   resultType: QueryResultType;
   message?: string;
   expectedDbschemeName?: string;
   evaluationTime: number;
 }
 
-export interface UpgradeParams {
+interface UpgradeParams {
   db: string;
   additionalPacks: string[];
 }
 
-export type UpgradeResult = Record<string, unknown>;
+type UpgradeResult = Record<string, unknown>;
 
-export type ClearPackCacheParams = Record<string, unknown>;
-export type ClearPackCacheResult = Record<string, unknown>;
+type ClearPackCacheParams = Record<string, unknown>;
+type ClearPackCacheResult = Record<string, unknown>;
 
 /**
  * A position within a QL file.
@@ -156,9 +156,7 @@ export type Position = shared.Position;
  * The way of compiling the query, as a normal query
  * or a subset of it. Note that precisely one of the two options should be set.
  */
-export type CompilationTarget = shared.CompilationTarget;
-
-export type QuickEvalOptions = shared.QuickEvalOptions;
+type CompilationTarget = shared.CompilationTarget;
 
 export type WithProgressId<T> = shared.WithProgressId<T>;
 export type ProgressMessage = shared.ProgressMessage;

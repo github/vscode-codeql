@@ -21,7 +21,7 @@ export interface Result extends ResultKeyBase {
 /**
  * Identifies one of the paths associated with a result.
  */
-export interface Path extends ResultKeyBase {
+interface Path extends ResultKeyBase {
   pathIndex: number;
   pathNodeIndex?: undefined;
 }
