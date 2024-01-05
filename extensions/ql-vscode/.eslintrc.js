@@ -182,5 +182,17 @@ module.exports = {
         "@typescript-eslint/no-var-requires": "off",
       },
     },
+    {
+      files: [".storybook/**/*.tsx"],
+      parserOptions: {
+        project: resolve(__dirname, ".storybook/tsconfig.json"),
+      },
+      rules: {
+        ...baseConfig.rules,
+        // Storybook doesn't use the automatic JSX runtime in the addon yet, so we need to allow
+        // `React` to be imported.
+        "import/no-namespace": ["error", { ignore: ["react"] }],
+      },
+    },
   ],
 };

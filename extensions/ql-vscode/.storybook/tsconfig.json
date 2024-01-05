@@ -5,7 +5,7 @@
     "target": "es6",
     "outDir": "out",
     "lib": ["ES2021", "dom"],
-    "jsx": "react-jsx",
+    "jsx": "react",
     "sourceMap": true,
     "rootDir": "..",
     "strict": true,
