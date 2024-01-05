@@ -55,10 +55,12 @@ export async function prepareModelEditorQueries(
     return false;
   }
   // Create the query file.
-  Object.values(Mode).map(async (mode) => {
-    const queryFile = join(queryDir, queryNameFromMode(mode));
-    await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
-  });
+  await Promise.all(
+    Object.values(Mode).map(async (mode) => {
+      const queryFile = join(queryDir, queryNameFromMode(mode));
+      await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
+    }),
+  );
 
   // Create any dependencies
   if (query.dependencies) {
