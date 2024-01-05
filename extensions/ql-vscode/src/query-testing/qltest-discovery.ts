@@ -26,7 +26,7 @@ export class QLTestDiscovery extends Discovery {
 
   constructor(
     private readonly workspaceFolder: WorkspaceFolder,
-    private readonly cliServer: CodeQLCliServer,
+    private readonly cliServer: Pick<CodeQLCliServer, "resolveTests">,
   ) {
     super("QL Test Discovery", extLogger);
 

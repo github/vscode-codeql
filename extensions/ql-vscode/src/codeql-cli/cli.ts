@@ -246,6 +246,7 @@ export class CodeQLCliServer implements Disposable {
     private distributionProvider: DistributionProvider,
     private cliConfig: CliConfig,
     public readonly logger: Logger,
+    private readonly name = "CodeQL Cli Server",
   ) {
     this.commandQueue = [];
     this.commandInProcess = false;
@@ -260,6 +261,27 @@ export class CodeQLCliServer implements Disposable {
         this.restartCliServer();
       });
     }
+  }
+
+  /**
+   * Creates a clone of this CLI server with the same configuration. This is useful
+   * for creating a separate CLI server for running some commands in a different
+   * process to avoid blocking the main CLI server.
+   *
+   * To ensure that the CLI server is only used for its intended purpose, the
+   * generic `AvailableMethods` parameter should be set to the union of the
+   * methods that the CLI server will be used for.
+   */
+  public createClone<AvailableMethods extends keyof CodeQLCliServer>(
+    name: string,
+  ): Pick<CodeQLCliServer, AvailableMethods> & Disposable {
+    return new CodeQLCliServer(
+      this.app,
+      this.distributionProvider,
+      this.cliConfig,
+      this.logger,
+      name,
+    );
   }
 
   dispose(): void {
@@ -340,7 +362,7 @@ export class CodeQLCliServer implements Disposable {
 
     return spawnServer(
       codeQlPath,
-      "CodeQL CLI Server",
+      this.name,
       ["execute", "cli-server"],
       args,
       this.logger,
