@@ -1,9 +1,8 @@
-import {
+import type {
   CancellationToken,
-  ProgressLocation,
   ProgressOptions as VSCodeProgressOptions,
-  window as Window,
 } from "vscode";
+import { ProgressLocation, window as Window } from "vscode";
 import { readableBytesMb } from "../bytes";
 
 export class UserCancellationException extends Error {

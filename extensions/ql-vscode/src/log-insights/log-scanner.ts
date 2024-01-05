@@ -1,6 +1,6 @@
-import { SummaryEvent } from "./log-summary";
+import type { SummaryEvent } from "./log-summary";
 import { readJsonlFile } from "../common/jsonl-reader";
-import { Disposable } from "../common/disposable-object";
+import type { Disposable } from "../common/disposable-object";
 
 /**
  * Callback interface used to report diagnostics from a log scanner.

@@ -1,25 +1,24 @@
-import {
+import type {
   DebugAdapterTracker,
   DebugAdapterTrackerFactory,
   DebugSession,
   ProviderResult,
   Uri,
-  debug,
-  workspace,
 } from "vscode";
-import * as CodeQLProtocol from "../../../../src/debugger/debug-protocol";
+import { debug, workspace } from "vscode";
+import type * as CodeQLProtocol from "../../../../src/debugger/debug-protocol";
 import { DisposableObject } from "../../../../src/common/disposable-object";
 import { QueryResultType } from "../../../../src/query-server/messages";
-import { CoreCompletedQuery } from "../../../../src/query-server/query-runner";
+import type { CoreCompletedQuery } from "../../../../src/query-server/query-runner";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
-import {
+import type {
   QLDebugArgs,
   QLDebugConfiguration,
 } from "../../../../src/debugger/debug-configuration";
 import { join } from "path";
 import { writeFile } from "fs-extra";
 import { expect } from "@jest/globals";
-import { AppCommandManager } from "../../../../src/common/commands";
+import type { AppCommandManager } from "../../../../src/common/commands";
 import { getOnDiskWorkspaceFolders } from "../../../../src/common/vscode/workspace-folders";
 
 type Resolver<T> = (value: T) => void;

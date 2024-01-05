@@ -1,6 +1,6 @@
 import { readableBytesMb } from "../bytes";
-import { UnzipProgressCallback } from "../unzip";
-import { ProgressCallback } from "./progress";
+import type { UnzipProgressCallback } from "../unzip";
+import type { ProgressCallback } from "./progress";
 
 export function reportUnzipProgress(
   messagePrefix: string,

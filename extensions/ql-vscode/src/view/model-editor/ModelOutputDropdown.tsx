@@ -1,15 +1,16 @@
-import { ChangeEvent, useCallback, useMemo } from "react";
+import type { ChangeEvent } from "react";
+import { useCallback, useMemo } from "react";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import {
-  ModeledMethod,
   calculateNewProvenance,
   isModelAccepted,
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
-import { Method } from "../../model-editor/method";
+import type { Method } from "../../model-editor/method";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
-import { QueryLanguage } from "../../common/query-language";
-import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { QueryLanguage } from "../../common/query-language";
+import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
 
 type Props = {

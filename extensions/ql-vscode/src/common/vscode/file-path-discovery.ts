@@ -1,14 +1,8 @@
 import { Discovery } from "../discovery";
-import {
-  Event,
-  EventEmitter,
-  RelativePattern,
-  Uri,
-  WorkspaceFoldersChangeEvent,
-  workspace,
-} from "vscode";
+import type { Event, Uri, WorkspaceFoldersChangeEvent } from "vscode";
+import { EventEmitter, RelativePattern, workspace } from "vscode";
 import { MultiFileSystemWatcher } from "./multi-file-system-watcher";
-import { AppEventEmitter } from "../events";
+import type { AppEventEmitter } from "../events";
 import { extLogger } from "../logging/vscode";
 import { lstat } from "fs-extra";
 import { containsPath, isIOError } from "../files";

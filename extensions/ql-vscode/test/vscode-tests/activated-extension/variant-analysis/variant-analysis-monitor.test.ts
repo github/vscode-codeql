@@ -1,7 +1,7 @@
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { RequestError } from "@octokit/request-error";
 import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
-import {
+import type {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisFailureReason,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
@@ -10,10 +10,8 @@ import {
   createFailedMockApiResponse,
   createMockApiResponse,
 } from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
-import {
-  VariantAnalysis,
-  VariantAnalysisStatus,
-} from "../../../../src/variant-analysis/shared/variant-analysis";
+import type { VariantAnalysis } from "../../../../src/variant-analysis/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepos } from "../../../factories/variant-analysis/gh-api/scanned-repositories";
 import {
   processFailureReason,
@@ -23,7 +21,7 @@ import {
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import { NotificationLogger } from "../../../../src/common/logging";
+import type { NotificationLogger } from "../../../../src/common/logging";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 jest.setTimeout(60_000);

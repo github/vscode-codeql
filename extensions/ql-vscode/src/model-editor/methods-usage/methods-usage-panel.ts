@@ -1,16 +1,15 @@
-import { TreeView, window } from "vscode";
+import type { TreeView } from "vscode";
+import { window } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
-import {
-  MethodsUsageDataProvider,
-  MethodsUsageTreeViewItem,
-} from "./methods-usage-data-provider";
-import { Method, Usage } from "../method";
-import { DatabaseItem } from "../../databases/local-databases";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { ModelingStore } from "../modeling-store";
-import { ModeledMethod } from "../modeled-method";
-import { Mode } from "../shared/mode";
-import { ModelingEvents } from "../modeling-events";
+import type { MethodsUsageTreeViewItem } from "./methods-usage-data-provider";
+import { MethodsUsageDataProvider } from "./methods-usage-data-provider";
+import type { Method, Usage } from "../method";
+import type { DatabaseItem } from "../../databases/local-databases";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { ModelingStore } from "../modeling-store";
+import type { ModeledMethod } from "../modeled-method";
+import type { Mode } from "../shared/mode";
+import type { ModelingEvents } from "../modeling-events";
 
 export class MethodsUsagePanel extends DisposableObject {
   private readonly dataProvider: MethodsUsageDataProvider;

@@ -1,11 +1,11 @@
 import { pathExists, remove, readFile } from "fs-extra";
 import { EOL } from "os";
 import { join } from "path";
-import { Disposable, ExtensionContext } from "vscode";
+import type { Disposable, ExtensionContext } from "vscode";
 import { extLogger } from "../common/logging/vscode";
 import { readDirFullPaths } from "../common/files";
-import { QueryHistoryDirs } from "./query-history-dirs";
-import { QueryHistoryManager } from "./query-history-manager";
+import type { QueryHistoryDirs } from "./query-history-dirs";
+import type { QueryHistoryManager } from "./query-history-manager";
 import { getErrorMessage } from "../common/helpers-pure";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";

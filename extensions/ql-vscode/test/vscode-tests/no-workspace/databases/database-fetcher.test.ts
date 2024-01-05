@@ -1,13 +1,14 @@
 import { join } from "path";
 import { createFileSync, mkdirSync } from "fs-extra";
-import { DirResult, dirSync } from "tmp";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
 import { window } from "vscode";
 
 import {
   convertGithubNwoToDatabaseUrl,
   findDirWithFile,
 } from "../../../../src/databases/database-fetcher";
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 import {
   mockedObject,
   mockedOctokitFunction,

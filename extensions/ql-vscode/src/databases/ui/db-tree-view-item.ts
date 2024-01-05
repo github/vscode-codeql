@@ -5,15 +5,15 @@ import {
   TreeItemCollapsibleState,
   Uri,
 } from "vscode";
-import {
+import type {
   DbItem,
-  isSelectableDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
   RemoteUserDefinedListDbItem,
   RootRemoteDbItem,
 } from "../db-item";
+import { isSelectableDbItem } from "../db-item";
 import { getDbItemActions } from "./db-tree-view-item-action";
 
 export const SELECTED_DB_ITEM_RESOURCE_URI = "codeql://databases?selected=true";

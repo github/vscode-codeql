@@ -1,4 +1,4 @@
-import { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
+import type { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
 import { CodePaths, FileCodeSnippet } from "../common";
 
 const AnalysisAlertResult = ({ alert }: { alert: AnalysisAlert }) => {

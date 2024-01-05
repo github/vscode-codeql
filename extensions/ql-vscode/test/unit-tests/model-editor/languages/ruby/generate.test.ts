@@ -1,4 +1,4 @@
-import { DecodedBqrs } from "../../../../../src/common/bqrs-cli-types";
+import type { DecodedBqrs } from "../../../../../src/common/bqrs-cli-types";
 import { parseGenerateModelResults } from "../../../../../src/model-editor/languages/ruby/generate";
 import { ruby } from "../../../../../src/model-editor/languages/ruby";
 import { createMockLogger } from "../../../../__mocks__/loggerMock";

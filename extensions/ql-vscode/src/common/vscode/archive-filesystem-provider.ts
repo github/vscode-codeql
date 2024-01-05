@@ -1,14 +1,16 @@
 import { pathExists } from "fs-extra";
-import { Entry as ZipEntry, ZipFile } from "yauzl";
-import {
-  Disposable,
+import type { Entry as ZipEntry, ZipFile } from "yauzl";
+import type {
   Event,
-  EventEmitter,
   ExtensionContext,
   FileChangeEvent,
   FileStat,
-  FileSystemError,
   FileSystemProvider,
+} from "vscode";
+import {
+  Disposable,
+  EventEmitter,
+  FileSystemError,
   FileType,
   Uri,
   workspace,

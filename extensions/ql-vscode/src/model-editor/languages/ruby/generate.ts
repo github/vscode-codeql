@@ -1,8 +1,8 @@
-import { BaseLogger } from "../../../common/logging";
-import { DecodedBqrs } from "../../../common/bqrs-cli-types";
-import { ModelsAsDataLanguage } from "../models-as-data";
-import { ModeledMethod } from "../../modeled-method";
-import { DataTuple } from "../../model-extension-file";
+import type { BaseLogger } from "../../../common/logging";
+import type { DecodedBqrs } from "../../../common/bqrs-cli-types";
+import type { ModelsAsDataLanguage } from "../models-as-data";
+import type { ModeledMethod } from "../../modeled-method";
+import type { DataTuple } from "../../model-extension-file";
 
 export function parseGenerateModelResults(
   _queryPath: string,

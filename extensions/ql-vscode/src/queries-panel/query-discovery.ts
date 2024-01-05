@@ -1,18 +1,15 @@
 import { dirname, basename, normalize, relative } from "path";
-import { Event } from "vscode";
-import { App } from "../common/app";
-import {
-  FileTreeDirectory,
-  FileTreeLeaf,
-  FileTreeNode,
-} from "../common/file-tree-nodes";
-import { QueryDiscoverer } from "./query-tree-data-provider";
+import type { Event } from "vscode";
+import type { App } from "../common/app";
+import type { FileTreeNode } from "../common/file-tree-nodes";
+import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
+import type { QueryDiscoverer } from "./query-tree-data-provider";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { containsPath } from "../common/files";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
-import { QueryLanguage } from "../common/query-language";
-import { LanguageContextStore } from "../language-context-store";
-import { AppEvent, AppEventEmitter } from "../common/events";
+import type { QueryLanguage } from "../common/query-language";
+import type { LanguageContextStore } from "../language-context-store";
+import type { AppEvent, AppEventEmitter } from "../common/events";
 
 const QUERY_FILE_EXTENSION = ".ql";
 

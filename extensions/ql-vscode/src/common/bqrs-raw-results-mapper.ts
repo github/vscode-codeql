@@ -1,7 +1,6 @@
-import {
+import type {
   BqrsCellValue as BqrsCellValue,
   BqrsColumnKind as BqrsColumnKind,
-  BqrsColumnKindCode,
   DecodedBqrsChunk,
   BqrsEntityValue as BqrsEntityValue,
   BqrsLineColumnLocation,
@@ -10,16 +9,17 @@ import {
   BqrsWholeFileLocation,
   BqrsSchemaColumn,
 } from "./bqrs-cli-types";
-import {
+import { BqrsColumnKindCode } from "./bqrs-cli-types";
+import type {
   CellValue,
   Column,
-  ColumnKind,
   EntityValue,
   RawResultSet,
   Row,
   UrlValue,
   UrlValueResolvable,
 } from "./raw-result-types";
+import { ColumnKind } from "./raw-result-types";
 import { assertNever } from "./helpers-pure";
 import { isEmptyPath } from "./bqrs-utils";
 

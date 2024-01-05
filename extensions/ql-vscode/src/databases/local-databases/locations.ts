@@ -10,10 +10,10 @@ import {
   workspace,
 } from "vscode";
 import { assertNever, getErrorMessage } from "../../common/helpers-pure";
-import { Logger } from "../../common/logging";
-import { DatabaseItem } from "./database-item";
-import { DatabaseManager } from "./database-manager";
-import {
+import type { Logger } from "../../common/logging";
+import type { DatabaseItem } from "./database-item";
+import type { DatabaseManager } from "./database-manager";
+import type {
   UrlValueLineColumnLocation,
   UrlValueResolvable,
   UrlValueWholeFileLocation,

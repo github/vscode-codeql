@@ -1,11 +1,11 @@
 import { Response } from "node-fetch";
 import { Range } from "semver";
 
-import {
+import type {
   GithubRelease,
   GithubReleaseAsset,
-  ReleasesApiConsumer,
 } from "../../../../src/codeql-cli/distribution/releases-api-consumer";
+import { ReleasesApiConsumer } from "../../../../src/codeql-cli/distribution/releases-api-consumer";
 
 describe("Releases API consumer", () => {
   const repositoryNwo = "someowner/somerepo";

@@ -1,22 +1,24 @@
-import {
-  window,
+import type {
   TreeDataProvider,
-  EventEmitter,
   Event,
   ProviderResult,
-  TreeItemCollapsibleState,
-  TreeItem,
   TreeView,
   TextEditorSelectionChangeEvent,
-  TextEditorSelectionChangeKind,
   Location,
-  Range,
   Uri,
+} from "vscode";
+import {
+  window,
+  EventEmitter,
+  TreeItemCollapsibleState,
+  TreeItem,
+  TextEditorSelectionChangeKind,
+  Range,
 } from "vscode";
 import { basename } from "path";
 
-import { DatabaseItem } from "../../databases/local-databases";
-import { BqrsId } from "../../common/bqrs-cli-types";
+import type { DatabaseItem } from "../../databases/local-databases";
+import type { BqrsId } from "../../common/bqrs-cli-types";
 import { showLocation } from "../../databases/local-databases/locations";
 import { DisposableObject } from "../../common/disposable-object";
 import {
@@ -25,11 +27,11 @@ import {
   getErrorMessage,
 } from "../../common/helpers-pure";
 import { redactableError } from "../../common/errors";
-import { AstViewerCommands } from "../../common/commands";
+import type { AstViewerCommands } from "../../common/commands";
 import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { telemetryListener } from "../../common/vscode/telemetry";
-import { UrlValue } from "../../common/raw-result-types";
+import type { UrlValue } from "../../common/raw-result-types";
 
 export interface AstItem {
   id: BqrsId;

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { styled } from "styled-components";
-import { Method } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "../../model-editor/shared/modeled-percentage";
 import { percentFormatter } from "./formatters";
@@ -12,7 +12,7 @@ import {
   VSCodeDivider,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
-import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);

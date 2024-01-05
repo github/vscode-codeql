@@ -1,16 +1,14 @@
 import { ViewColumn } from "vscode";
-import {
-  AbstractWebview,
-  WebviewPanelConfig,
-} from "../common/vscode/abstract-webview";
+import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
+import { AbstractWebview } from "../common/vscode/abstract-webview";
 import { assertNever } from "../common/helpers-pure";
 import { telemetryListener } from "../common/vscode/telemetry";
-import {
+import type {
   FromDataFlowPathsMessage,
   ToDataFlowPathsMessage,
 } from "../common/interface-types";
-import { DataFlowPaths } from "./shared/data-flow-paths";
-import { App } from "../common/app";
+import type { DataFlowPaths } from "./shared/data-flow-paths";
+import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";

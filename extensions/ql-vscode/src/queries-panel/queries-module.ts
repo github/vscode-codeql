@@ -1,12 +1,12 @@
 import { extLogger } from "../common/logging/vscode";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
 import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
 import { QueryPackDiscovery } from "./query-pack-discovery";
-import { LanguageContextStore } from "../language-context-store";
-import { TreeViewSelectionChangeEvent } from "vscode";
-import { QueryTreeViewItem } from "./query-tree-view-item";
+import type { LanguageContextStore } from "../language-context-store";
+import type { TreeViewSelectionChangeEvent } from "vscode";
+import type { QueryTreeViewItem } from "./query-tree-view-item";
 
 export class QueriesModule extends DisposableObject {
   private queriesPanel: QueriesPanel | undefined;

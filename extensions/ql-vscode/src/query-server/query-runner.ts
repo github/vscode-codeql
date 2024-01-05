@@ -1,27 +1,28 @@
-import vscode, { CancellationToken } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import {
-  ProgressCallback,
-  UserCancellationException,
-} from "../common/vscode/progress";
-import { DatabaseItem } from "../databases/local-databases";
+import type { CancellationToken } from "vscode";
+import vscode from "vscode";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { UserCancellationException } from "../common/vscode/progress";
+import type { DatabaseItem } from "../databases/local-databases";
 import { QueryOutputDir } from "../run-queries-shared";
-import {
-  clearCache,
+import type {
   ClearCacheParams,
-  clearPackCache,
-  deregisterDatabases,
   Position,
   QueryResultType,
+  TrimCacheParams,
+} from "./messages";
+import {
+  clearCache,
+  clearPackCache,
+  deregisterDatabases,
   registerDatabases,
   trimCache,
-  TrimCacheParams,
   upgradeDatabase,
 } from "./messages";
-import { BaseLogger, Logger } from "../common/logging";
+import type { BaseLogger, Logger } from "../common/logging";
 import { basename, join } from "path";
 import { nanoid } from "nanoid";
-import { QueryServerClient } from "./query-server-client";
+import type { QueryServerClient } from "./query-server-client";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 

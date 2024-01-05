@@ -1,9 +1,11 @@
-import { Uri, window } from "vscode";
+import type { Uri } from "vscode";
+import { window } from "vscode";
 import { withProgress } from "../../common/vscode/progress";
-import { AstViewer } from "./ast-viewer";
-import { AstCfgCommands } from "../../common/commands";
-import { LocalQueries, QuickEvalType } from "../../local-queries";
-import {
+import type { AstViewer } from "./ast-viewer";
+import type { AstCfgCommands } from "../../common/commands";
+import type { LocalQueries } from "../../local-queries";
+import { QuickEvalType } from "../../local-queries";
+import type {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
 } from "../contextual/template-provider";

@@ -1,9 +1,7 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import {
-  ModeledMethodsList,
-  ModeledMethodsListProps,
-} from "../ModeledMethodsList";
+import type { ModeledMethodsListProps } from "../ModeledMethodsList";
+import { ModeledMethodsList } from "../ModeledMethodsList";
 import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(ModeledMethodsList.name, () => {

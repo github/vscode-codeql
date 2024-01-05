@@ -1,34 +1,33 @@
 import { readFile } from "fs-extra";
-import {
+import type {
   CancellationToken,
-  Location,
-  Range,
   TestController,
   TestItem,
-  TestMessage,
   TestRun,
-  TestRunProfileKind,
   TestRunRequest,
-  Uri,
   WorkspaceFolder,
   WorkspaceFoldersChangeEvent,
+} from "vscode";
+import {
+  Location,
+  Range,
+  TestMessage,
+  TestRunProfileKind,
+  Uri,
   tests,
   workspace,
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { QLTestDiscovery } from "./qltest-discovery";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { getErrorMessage } from "../common/helpers-pure";
-import { BaseLogger, LogOptions } from "../common/logging";
-import { TestRunner } from "./test-runner";
+import type { BaseLogger, LogOptions } from "../common/logging";
+import type { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { isWorkspaceFolderOnDisk } from "../common/vscode/workspace-folders";
-import {
-  FileTreeDirectory,
-  FileTreeLeaf,
-  FileTreeNode,
-} from "../common/file-tree-nodes";
+import type { FileTreeNode } from "../common/file-tree-nodes";
+import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 
 /**
  * Returns the complete text content of the specified file. If there is an error reading the file,

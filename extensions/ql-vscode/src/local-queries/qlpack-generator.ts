@@ -2,8 +2,8 @@ import { ensureDir, writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { dirname, join } from "path";
 import { Uri } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { QueryLanguage } from "../common/query-language";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { QueryLanguage } from "../common/query-language";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { basename } from "../common/path";
 

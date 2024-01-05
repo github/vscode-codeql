@@ -1,31 +1,29 @@
 import { basename } from "path";
-import {
+import type {
   DebugAdapterTracker,
   DebugAdapterTrackerFactory,
   DebugSession,
-  debug,
-  Uri,
-  CancellationTokenSource,
 } from "vscode";
-import { DebuggerCommands } from "../common/commands";
-import { DatabaseManager } from "../databases/local-databases";
+import { debug, Uri, CancellationTokenSource } from "vscode";
+import type { DebuggerCommands } from "../common/commands";
+import type { DatabaseManager } from "../databases/local-databases";
 import { DisposableObject } from "../common/disposable-object";
-import { CoreQueryResults } from "../query-server";
+import type { CoreQueryResults } from "../query-server";
 import {
   getQuickEvalContext,
   QueryOutputDir,
   saveBeforeStart,
   validateQueryUri,
 } from "../run-queries-shared";
-import { QLResolvedDebugConfiguration } from "./debug-configuration";
-import {
+import type { QLResolvedDebugConfiguration } from "./debug-configuration";
+import type {
   AnyProtocolMessage,
   EvaluationCompletedEvent,
   EvaluationStartedEvent,
   QuickEvalRequest,
 } from "./debug-protocol";
-import { App } from "../common/app";
-import { LocalQueryRun, LocalQueries } from "../local-queries";
+import type { App } from "../common/app";
+import type { LocalQueryRun, LocalQueries } from "../local-queries";
 
 /**
  * Listens to messages passing between VS Code and the debug adapter, so that we can supplement the

@@ -1,9 +1,10 @@
-import {
+import type {
   API as GitExtensionAPI,
   GitExtension,
   Repository,
 } from "../common/vscode/extension/git";
-import { extensions, Uri } from "vscode";
+import type { Uri } from "vscode";
+import { extensions } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { ValueResult } from "../common/value-result";
 

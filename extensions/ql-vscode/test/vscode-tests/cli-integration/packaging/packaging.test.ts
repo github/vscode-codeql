@@ -1,7 +1,7 @@
 import { window } from "vscode";
 import { join } from "path";
 
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getErrorMessage } from "../../../../src/common/helpers-pure";
 
 import * as log from "../../../../src/common/logging/notifications";
@@ -11,7 +11,7 @@ import {
 } from "../../../../src/packaging";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { getActivatedExtension } from "../../global.helper";
-import {
+import type {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "../../../../src/common/logging";

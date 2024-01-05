@@ -1,4 +1,5 @@
-import { DirResult, dirSync } from "tmp";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
 import { join } from "path";
 import { mkdirSync, writeFileSync } from "fs-extra";
 import {

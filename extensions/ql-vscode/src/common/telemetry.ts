@@ -1,4 +1,4 @@
-import { RedactableError } from "./errors";
+import type { RedactableError } from "./errors";
 
 export interface AppTelemetry {
   sendCommandUsage(name: string, executionTime: number, error?: Error): void;

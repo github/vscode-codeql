@@ -2,7 +2,8 @@ import { spawnSync } from "child_process";
 import { dirname } from "path";
 
 import type * as JestRunner from "jest-runner";
-import VSCodeTestRunner, { RunnerOptions } from "jest-runner-vscode";
+import type { RunnerOptions } from "jest-runner-vscode";
+import VSCodeTestRunner from "jest-runner-vscode";
 import { cosmiconfig } from "cosmiconfig";
 import {
   downloadAndUnzipVSCode,

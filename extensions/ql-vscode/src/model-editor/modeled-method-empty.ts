@@ -1,5 +1,5 @@
-import { ModeledMethod, SinkModeledMethod } from "./modeled-method";
-import { MethodSignature } from "./method";
+import type { ModeledMethod, SinkModeledMethod } from "./modeled-method";
+import type { MethodSignature } from "./method";
 import { assertNever } from "../common/helpers-pure";
 
 export function createEmptyModeledMethod(

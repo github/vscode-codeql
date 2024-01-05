@@ -1,10 +1,10 @@
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
-import { AppEvent, AppEventEmitter } from "../common/events";
-import { DatabaseItem } from "../databases/local-databases";
-import { Method, Usage } from "./method";
-import { ModeledMethod } from "./modeled-method";
-import { Mode } from "./shared/mode";
+import type { AppEvent, AppEventEmitter } from "../common/events";
+import type { DatabaseItem } from "../databases/local-databases";
+import type { Method, Usage } from "./method";
+import type { ModeledMethod } from "./modeled-method";
+import type { Mode } from "./shared/mode";
 
 interface MethodsChangedEvent {
   readonly methods: readonly Method[];

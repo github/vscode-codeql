@@ -1,17 +1,15 @@
-import {
-  DbConfig,
-  RemoteRepositoryList,
-  SelectedDbItemKind,
-} from "./config/db-config";
-import {
-  DbItemKind,
+import type { DbConfig, RemoteRepositoryList } from "./config/db-config";
+import { SelectedDbItemKind } from "./config/db-config";
+import type {
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
   RemoteUserDefinedListDbItem,
   RootRemoteDbItem,
 } from "./db-item";
-import { ExpandedDbItem, ExpandedDbItemKind } from "./db-item-expansion";
+import { DbItemKind } from "./db-item";
+import type { ExpandedDbItem } from "./db-item-expansion";
+import { ExpandedDbItemKind } from "./db-item-expansion";
 
 export function createRemoteTree(
   dbConfig: DbConfig,

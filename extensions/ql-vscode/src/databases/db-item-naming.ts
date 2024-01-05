@@ -1,4 +1,5 @@
-import { DbItem, DbItemKind } from "./db-item";
+import type { DbItem } from "./db-item";
+import { DbItemKind } from "./db-item";
 
 export function getDbItemName(dbItem: DbItem): string | undefined {
   switch (dbItem.kind) {

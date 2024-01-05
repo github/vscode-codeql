@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { MultipleModeledMethodsPanel as MultipleModeledMethodsPanelComponent } from "../../view/method-modeling/MultipleModeledMethodsPanel";
 import { createMethod } from "../../../test/factories/model-editor/method-factories";
@@ -8,7 +8,7 @@ import {
   createSinkModeledMethod,
   createSourceModeledMethod,
 } from "../../../test/factories/model-editor/modeled-method-factories";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { QueryLanguage } from "../../common/query-language";
 
 export default {

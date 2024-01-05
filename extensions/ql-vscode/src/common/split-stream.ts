@@ -1,4 +1,4 @@
-import { Readable } from "stream";
+import type { Readable } from "stream";
 import { StringDecoder } from "string_decoder";
 
 /**

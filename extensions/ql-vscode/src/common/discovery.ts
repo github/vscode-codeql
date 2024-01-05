@@ -1,6 +1,6 @@
 import { DisposableObject } from "./disposable-object";
 import { getErrorMessage } from "./helpers-pure";
-import { BaseLogger } from "./logging";
+import type { BaseLogger } from "./logging";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of

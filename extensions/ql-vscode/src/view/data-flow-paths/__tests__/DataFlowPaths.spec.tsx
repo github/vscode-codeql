@@ -1,5 +1,6 @@
 import { render as reactRender, screen } from "@testing-library/react";
-import { DataFlowPaths, DataFlowPathsProps } from "../DataFlowPaths";
+import type { DataFlowPathsProps } from "../DataFlowPaths";
+import { DataFlowPaths } from "../DataFlowPaths";
 import { createMockDataFlowPaths } from "../../../../test/factories/variant-analysis/shared/data-flow-paths";
 
 describe(DataFlowPaths.name, () => {

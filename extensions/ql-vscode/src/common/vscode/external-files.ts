@@ -1,5 +1,5 @@
 import { Uri, window } from "vscode";
-import { AppCommandManager } from "../commands";
+import type { AppCommandManager } from "../commands";
 import { showBinaryChoiceDialog } from "./dialog";
 import { redactableError } from "../../common/errors";
 import {

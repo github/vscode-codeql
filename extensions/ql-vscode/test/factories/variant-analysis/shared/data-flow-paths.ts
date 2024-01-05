@@ -1,9 +1,9 @@
-import {
+import type {
   AnalysisMessage,
   CodeFlow,
   ResultSeverity,
 } from "../../../../src/variant-analysis/shared/analysis-result";
-import { DataFlowPaths } from "../../../../src/variant-analysis/shared/data-flow-paths";
+import type { DataFlowPaths } from "../../../../src/variant-analysis/shared/data-flow-paths";
 
 const defaultCodeFlows: CodeFlow[] = [
   {

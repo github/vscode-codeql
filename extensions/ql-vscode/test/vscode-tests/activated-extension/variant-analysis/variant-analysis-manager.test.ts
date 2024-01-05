@@ -1,12 +1,5 @@
-import {
-  commands,
-  env,
-  TextDocument,
-  TextEditor,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
+import type { TextDocument, TextEditor, Uri } from "vscode";
+import { commands, env, window, workspace } from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
@@ -24,16 +17,18 @@ import * as fetchModule from "node-fetch";
 import { Response } from "node-fetch";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension, storagePath } from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import * as VariantAnalysisModule from "../../../../src/variant-analysis/shared/variant-analysis";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
-  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryState,
+} from "../../../../src/variant-analysis/shared/variant-analysis";
+import {
+  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisStatus,
 } from "../../../../src/variant-analysis/shared/variant-analysis";
 import {
@@ -42,10 +37,10 @@ import {
 } from "../../../factories/variant-analysis/shared/scanned-repositories";
 import { createTimestampFile } from "../../../../src/run-queries-shared";
 import { createMockVariantAnalysisRepoTask } from "../../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
-import { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
+import type { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { SortKey } from "../../../../src/variant-analysis/shared/variant-analysis-filter-sort";
 import { DbManager } from "../../../../src/databases/db-manager";
-import { App } from "../../../../src/common/app";
+import type { App } from "../../../../src/common/app";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { mockedObject } from "../../utils/mocking.helpers";

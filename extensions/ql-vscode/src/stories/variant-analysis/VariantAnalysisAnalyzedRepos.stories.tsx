@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { faker } from "@faker-js/faker";
 
@@ -9,7 +9,7 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
-import { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
+import type { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
 import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
 import { createMockScannedRepo } from "../../../test/factories/variant-analysis/shared/scanned-repositories";

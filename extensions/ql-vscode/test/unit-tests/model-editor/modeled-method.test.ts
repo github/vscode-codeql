@@ -1,6 +1,6 @@
 import { createNoneModeledMethod } from "../../factories/model-editor/modeled-method-factories";
+import type { ModeledMethod } from "../../../src/model-editor/modeled-method";
 import {
-  ModeledMethod,
   modeledMethodSupportsInput,
   modeledMethodSupportsKind,
   modeledMethodSupportsOutput,

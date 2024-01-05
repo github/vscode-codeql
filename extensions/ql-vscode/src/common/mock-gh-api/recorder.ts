@@ -2,24 +2,24 @@ import { ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 
 import fetch from "node-fetch";
-import { SetupServer } from "msw/node";
+import type { SetupServer } from "msw/node";
 
 import { DisposableObject } from "../disposable-object";
 import { gzipDecode } from "../zlib";
 
-import {
+import type {
   AutoModelResponse,
   BasicErrorResponse,
   CodeSearchResponse,
   GetVariantAnalysisRepoResultRequest,
   GitHubApiRequest,
-  RequestKind,
 } from "./gh-api-request";
-import {
+import { RequestKind } from "./gh-api-request";
+import type {
   VariantAnalysis,
   VariantAnalysisRepoTask,
 } from "../../variant-analysis/gh-api/variant-analysis";
-import { Repository } from "../../variant-analysis/gh-api/repository";
+import type { Repository } from "../../variant-analysis/gh-api/repository";
 
 export class Recorder extends DisposableObject {
   private currentRecordedScenario: GitHubApiRequest[] = [];

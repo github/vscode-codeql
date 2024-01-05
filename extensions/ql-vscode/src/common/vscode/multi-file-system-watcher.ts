@@ -1,5 +1,6 @@
 import { DisposableObject } from "../disposable-object";
-import { EventEmitter, Event, Uri, GlobPattern, workspace } from "vscode";
+import type { Event, Uri, GlobPattern } from "vscode";
+import { EventEmitter, workspace } from "vscode";
 
 /**
  * A collection of `FileSystemWatcher` objects. Disposing this object disposes all of the individual

@@ -1,4 +1,4 @@
-import {
+import type {
   DatabaseInfo,
   Interpretation,
   RawResultsSortState,
@@ -6,12 +6,14 @@ import {
   ResultsPaths,
   InterpretedResultsSortState,
   ResultSet,
+  ParsedResultSets,
+  IntoResultsViewMsg,
+} from "../../common/interface-types";
+import {
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
   SELECT_TABLE_NAME,
   getDefaultResultSetName,
-  ParsedResultSets,
-  IntoResultsViewMsg,
 } from "../../common/interface-types";
 import { tableHeaderClassName } from "./result-table-utils";
 import { vscode } from "../vscode-api";

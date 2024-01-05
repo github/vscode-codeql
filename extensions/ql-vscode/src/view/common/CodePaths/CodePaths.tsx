@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
-import {
+import type {
   AnalysisMessage,
   CodeFlow,
   ResultSeverity,

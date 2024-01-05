@@ -1,4 +1,4 @@
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 
 /**
  * An interface providing methods for obtaining access tokens

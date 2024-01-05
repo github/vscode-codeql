@@ -1,4 +1,4 @@
-import { Log, Tool } from "sarif";
+import type { Log, Tool } from "sarif";
 import { createReadStream } from "fs-extra";
 import { connectTo } from "stream-json/Assembler";
 import { getErrorMessage } from "./helpers-pure";

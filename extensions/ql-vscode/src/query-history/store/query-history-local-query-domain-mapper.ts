@@ -1,22 +1,22 @@
-import {
+import type {
   LocalQueryInfo,
   InitialQueryInfo,
   CompletedQueryInfo,
 } from "../../query-results";
-import { QueryEvaluationInfo } from "../../run-queries-shared";
-import {
+import type { QueryEvaluationInfo } from "../../run-queries-shared";
+import type {
   QueryHistoryLocalQueryDto,
   InitialQueryInfoDto,
   QueryEvaluationInfoDto,
   CompletedQueryInfoDto,
   SortedResultSetInfoDto,
-  SortDirectionDto,
 } from "./query-history-local-query-dto";
-import {
+import { SortDirectionDto } from "./query-history-local-query-dto";
+import type {
   RawResultsSortState,
-  SortDirection,
   SortedResultSetInfo,
 } from "../../common/interface-types";
+import { SortDirection } from "../../common/interface-types";
 import { mapQueryLanguageToDto } from "./query-history-domain-mapper";
 
 export function mapLocalQueryInfoToDto(

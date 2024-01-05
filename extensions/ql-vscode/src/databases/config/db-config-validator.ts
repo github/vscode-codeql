@@ -1,12 +1,11 @@
 import { readJsonSync } from "fs-extra";
 import { resolve } from "path";
-import Ajv, { ValidateFunction } from "ajv";
-import { DbConfig } from "./db-config";
+import type { ValidateFunction } from "ajv";
+import Ajv from "ajv";
+import type { DbConfig } from "./db-config";
 import { findDuplicateStrings } from "../../common/text-utils";
-import {
-  DbConfigValidationError,
-  DbConfigValidationErrorKind,
-} from "../db-validation-errors";
+import type { DbConfigValidationError } from "../db-validation-errors";
+import { DbConfigValidationErrorKind } from "../db-validation-errors";
 
 export class DbConfigValidator {
   private readonly validateSchemaFn: ValidateFunction;

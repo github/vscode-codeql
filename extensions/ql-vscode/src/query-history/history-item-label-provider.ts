@@ -1,14 +1,14 @@
 import { env } from "vscode";
 import { basename } from "path";
-import { QueryHistoryConfig } from "../config";
-import { LocalQueryInfo } from "../query-results";
+import type { QueryHistoryConfig } from "../config";
+import type { LocalQueryInfo } from "../query-results";
+import type { QueryHistoryInfo } from "./query-history-info";
 import {
   buildRepoLabel,
   getLanguage,
   getRawQueryName,
-  QueryHistoryInfo,
 } from "./query-history-info";
-import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
+import type { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { assertNever } from "../common/helpers-pure";
 import { pluralize } from "../common/word";
 import { humanizeQueryStatus } from "./query-status";

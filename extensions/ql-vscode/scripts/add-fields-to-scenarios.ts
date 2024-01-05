@@ -14,15 +14,15 @@
 import { pathExists, readJson, writeJson } from "fs-extra";
 import { resolve, relative } from "path";
 
-import { Octokit } from "@octokit/core";
+import type { Octokit } from "@octokit/core";
 import { type RestEndpointMethodTypes } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
 
 import { getFiles } from "./util/files";
 import type { GitHubApiRequest } from "../src/common/mock-gh-api/gh-api-request";
 import { isGetVariantAnalysisRequest } from "../src/common/mock-gh-api/gh-api-request";
-import { VariantAnalysis } from "../src/variant-analysis/gh-api/variant-analysis";
-import { RepositoryWithMetadata } from "../src/variant-analysis/gh-api/repository";
+import type { VariantAnalysis } from "../src/variant-analysis/gh-api/variant-analysis";
+import type { RepositoryWithMetadata } from "../src/variant-analysis/gh-api/repository";
 import { AppOctokit } from "../src/common/octokit";
 
 const extensionDirectory = resolve(__dirname, "..");

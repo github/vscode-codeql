@@ -2,7 +2,7 @@ import { useState } from "react";
 import { styled } from "styled-components";
 import TextButton from "../common/TextButton";
 import { useTelemetryOnChange } from "../common/telemetry";
-import { RawResultSet } from "../../common/raw-result-types";
+import type { RawResultSet } from "../../common/raw-result-types";
 import { RawResultRow } from "./RawResultRow";
 
 const numOfResultsInContractedMode = 5;

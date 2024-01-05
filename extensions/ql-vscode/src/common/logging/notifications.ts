@@ -1,6 +1,6 @@
-import { NotificationLogger } from "./notification-logger";
-import { AppTelemetry } from "../telemetry";
-import { RedactableError } from "../errors";
+import type { NotificationLogger } from "./notification-logger";
+import type { AppTelemetry } from "../telemetry";
+import type { RedactableError } from "../errors";
 
 interface ShowAndLogOptions {
   /**

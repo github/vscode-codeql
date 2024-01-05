@@ -1,25 +1,25 @@
+import type { Event, TreeDataProvider, TreeItem } from "vscode";
 import {
-  Event,
   EventEmitter,
   ThemeColor,
   ThemeIcon,
-  TreeDataProvider,
-  TreeItem,
   TreeItemCollapsibleState,
   Uri,
 } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
-import { Method, Usage, canMethodBeModeled } from "../method";
-import { DatabaseItem } from "../../databases/local-databases";
+import type { Method, Usage } from "../method";
+import { canMethodBeModeled } from "../method";
+import type { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../shared/hide-modeled-methods";
 import { getModelingStatus } from "../shared/modeling-status";
 import { assertNever } from "../../common/helpers-pure";
-import { ModeledMethod } from "../modeled-method";
+import type { ModeledMethod } from "../modeled-method";
 import { groupMethods, sortGroupNames, sortMethods } from "../shared/sorting";
-import { INITIAL_MODE, Mode } from "../shared/mode";
-import { UrlValueResolvable } from "../../common/raw-result-types";
+import type { Mode } from "../shared/mode";
+import { INITIAL_MODE } from "../shared/mode";
+import type { UrlValueResolvable } from "../../common/raw-result-types";
 
 export class MethodsUsageDataProvider
   extends DisposableObject

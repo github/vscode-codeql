@@ -1,4 +1,4 @@
-import { NotificationLogger } from "../../src/common/logging";
+import type { NotificationLogger } from "../../src/common/logging";
 
 export function createMockLogger(): NotificationLogger {
   return {

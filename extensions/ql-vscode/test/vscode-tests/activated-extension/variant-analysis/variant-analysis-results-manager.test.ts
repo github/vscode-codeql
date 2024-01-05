@@ -3,14 +3,15 @@ import { readFile, pathExists, remove, outputJson, readJson } from "fs-extra";
 import { join, resolve } from "path";
 import { Readable } from "stream";
 import * as fetchModule from "node-fetch";
-import { RequestInfo, RequestInit, Response } from "node-fetch";
+import type { RequestInfo, RequestInit } from "node-fetch";
+import { Response } from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { storagePath } from "../../global.helper";
 import { faker } from "@faker-js/faker";
 import { createMockVariantAnalysisRepositoryTask } from "../../../factories/variant-analysis/shared/variant-analysis-repo-tasks";
-import {
+import type {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "../../../../src/variant-analysis/shared/variant-analysis";

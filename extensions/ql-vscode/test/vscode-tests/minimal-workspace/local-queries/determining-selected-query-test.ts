@@ -1,5 +1,6 @@
 import { join, resolve } from "path";
-import { TextDocument, Uri, window, workspace } from "vscode";
+import type { TextDocument } from "vscode";
+import { Uri, window, workspace } from "vscode";
 import {
   getQuickEvalContext,
   validateQueryUri,

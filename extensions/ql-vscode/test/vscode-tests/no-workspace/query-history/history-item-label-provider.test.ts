@@ -1,5 +1,5 @@
 import { env } from "vscode";
-import { QueryHistoryConfig } from "../../../../src/config";
+import type { QueryHistoryConfig } from "../../../../src/config";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { createMockLocalQueryInfo } from "../../../factories/query-history/local-query-history-item";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";

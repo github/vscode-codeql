@@ -1,8 +1,8 @@
 import { workspace } from "vscode";
 
+import type { ConfigListener } from "../../../src/config";
 import {
   CliConfigListener,
-  ConfigListener,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "../../../src/config";

@@ -4,7 +4,7 @@ import { basename } from "path";
 import { load } from "js-yaml";
 import { readFile } from "fs-extra";
 import { getQlPackPath } from "../common/ql";
-import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
+import type { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { extLogger } from "../common/logging/vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 

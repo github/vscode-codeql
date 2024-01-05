@@ -1,8 +1,6 @@
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import {
-  DatabaseItem,
-  DatabaseKind,
-} from "../../../../src/databases/local-databases";
+import type { DatabaseItem } from "../../../../src/databases/local-databases";
+import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/messages";
 import {
@@ -11,16 +9,16 @@ import {
 } from "../../../../src/model-editor/auto-model-codeml-queries";
 import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { QueryRunner } from "../../../../src/query-server";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
-import { MethodSignature } from "../../../../src/model-editor/method";
+import type { MethodSignature } from "../../../../src/model-editor/method";
 import { join } from "path";
 import { pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
-import { ModelExtensionFile } from "../../../../src/model-editor/model-extension-file";
+import type { ModelExtensionFile } from "../../../../src/model-editor/model-extension-file";
 
 describe("runAutoModelQueries", () => {
   let resolveQueriesSpy: jest.SpiedFunction<

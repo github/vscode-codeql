@@ -1,8 +1,8 @@
-import { WebviewPanel, WebviewPanelSerializer } from "vscode";
+import type { WebviewPanel, WebviewPanelSerializer } from "vscode";
 import { VariantAnalysisView } from "./variant-analysis-view";
-import { VariantAnalysisState } from "../common/interface-types";
-import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
-import { App } from "../common/app";
+import type { VariantAnalysisState } from "../common/interface-types";
+import type { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
+import type { App } from "../common/app";
 
 export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
   private resolvePromises: Array<

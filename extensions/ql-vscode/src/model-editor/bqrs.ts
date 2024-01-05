@@ -1,10 +1,14 @@
-import { DecodedBqrsChunk, BqrsEntityValue } from "../common/bqrs-cli-types";
-import { CallClassification, Method, Usage } from "./method";
-import { ModeledMethodType } from "./modeled-method";
+import type {
+  DecodedBqrsChunk,
+  BqrsEntityValue,
+} from "../common/bqrs-cli-types";
+import type { Method, Usage } from "./method";
+import { CallClassification } from "./method";
+import type { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
 import { Mode } from "./shared/mode";
-import { ApplicationModeTuple, FrameworkModeTuple } from "./queries/query";
-import { QueryLanguage } from "../common/query-language";
+import type { ApplicationModeTuple, FrameworkModeTuple } from "./queries/query";
+import type { QueryLanguage } from "../common/query-language";
 import { getModelsAsDataLanguage } from "./languages";
 import { mapUrlValue } from "../common/bqrs-raw-results-mapper";
 import { isUrlValueResolvable } from "../common/raw-result-types";

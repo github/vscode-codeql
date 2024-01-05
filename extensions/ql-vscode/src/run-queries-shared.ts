@@ -1,7 +1,8 @@
-import { Position } from "./query-server/messages-shared";
-import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
+import type { Position } from "./query-server/messages-shared";
+import type { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
-import { Range, TextEditor, Uri, window, workspace } from "vscode";
+import type { Range, TextEditor } from "vscode";
+import { Uri, window, workspace } from "vscode";
 import { isCanary, VSCODE_SAVE_BEFORE_START_SETTING } from "./config";
 import {
   pathExists,
@@ -12,14 +13,19 @@ import {
   ensureDir,
   writeFile,
 } from "fs-extra";
-import { ensureMetadataIsComplete, InitialQueryInfo } from "./query-results";
+import type { InitialQueryInfo } from "./query-results";
+import { ensureMetadataIsComplete } from "./query-results";
 import { isQuickQueryPath } from "./local-queries";
 import { nanoid } from "nanoid";
-import { CodeQLCliServer } from "./codeql-cli/cli";
+import type { CodeQLCliServer } from "./codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "./language-support";
-import { DatabaseManager } from "./databases/local-databases";
-import { DecodedBqrsChunk, BqrsEntityValue } from "./common/bqrs-cli-types";
-import { BaseLogger, showAndLogWarningMessage } from "./common/logging";
+import type { DatabaseManager } from "./databases/local-databases";
+import type {
+  DecodedBqrsChunk,
+  BqrsEntityValue,
+} from "./common/bqrs-cli-types";
+import type { BaseLogger } from "./common/logging";
+import { showAndLogWarningMessage } from "./common/logging";
 import { extLogger } from "./common/logging/vscode";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./common/helpers-pure";

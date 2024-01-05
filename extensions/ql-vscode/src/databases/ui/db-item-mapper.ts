@@ -1,11 +1,12 @@
-import { DbItem, DbItemKind } from "../db-item";
+import type { DbItem } from "../db-item";
+import { DbItemKind } from "../db-item";
+import type { DbTreeViewItem } from "./db-tree-view-item";
 import {
   createDbTreeViewItemOwner,
   createDbTreeViewItemRepo,
   createDbTreeViewItemRoot,
   createDbTreeViewItemSystemDefinedList,
   createDbTreeViewItemUserDefinedList,
-  DbTreeViewItem,
 } from "./db-tree-view-item";
 
 export function mapDbItemToTreeViewItem(dbItem: DbItem): DbTreeViewItem {

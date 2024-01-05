@@ -1,13 +1,13 @@
 import { styled } from "styled-components";
-import { Method } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { ModelTypeDropdown } from "../model-editor/ModelTypeDropdown";
 import { ModelInputDropdown } from "../model-editor/ModelInputDropdown";
 import { ModelOutputDropdown } from "../model-editor/ModelOutputDropdown";
 import { ModelKindDropdown } from "../model-editor/ModelKindDropdown";
 import { InProgressDropdown } from "../model-editor/InProgressDropdown";
-import { QueryLanguage } from "../../common/query-language";
-import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { QueryLanguage } from "../../common/query-language";
+import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 const Container = styled.div`
   padding-top: 0.5rem;

@@ -4,15 +4,13 @@ import { Uri } from "vscode";
 
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/tmp-dir";
-import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
-import {
-  DeepPartial,
-  mockDatabaseItem,
-  mockedObject,
-} from "../utils/mocking.helpers";
-import { BqrsKind } from "../../../src/common/bqrs-cli-types";
-import { QueryRunner, QueryServerClient } from "../../../src/query-server";
+import type { DeepPartial } from "../utils/mocking.helpers";
+import { mockDatabaseItem, mockedObject } from "../utils/mocking.helpers";
+import type { BqrsKind } from "../../../src/common/bqrs-cli-types";
+import type { QueryServerClient } from "../../../src/query-server";
+import { QueryRunner } from "../../../src/query-server";
 import { QueryEvaluationInfo } from "../../../src/run-queries-shared";
 import {
   deregisterDatabases,

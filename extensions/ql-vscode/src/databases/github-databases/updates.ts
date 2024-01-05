@@ -1,14 +1,14 @@
-import { CodeqlDatabase } from "./api";
-import { DatabaseItem, DatabaseManager } from "../local-databases";
-import { Octokit } from "@octokit/rest";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { AppCommandManager } from "../../common/commands";
+import type { CodeqlDatabase } from "./api";
+import type { DatabaseItem, DatabaseManager } from "../local-databases";
+import type { Octokit } from "@octokit/rest";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { AppCommandManager } from "../../common/commands";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import { downloadGitHubDatabaseFromUrl } from "../database-fetcher";
 import { withProgress } from "../../common/vscode/progress";
 import { window } from "vscode";
-import { GitHubDatabaseConfig } from "../../config";
+import type { GitHubDatabaseConfig } from "../../config";
 import { joinLanguages, promptForDatabases } from "./download";
 
 export type DatabaseUpdate = {

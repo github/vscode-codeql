@@ -1,13 +1,14 @@
 import { faker } from "@faker-js/faker";
-import { InitialQueryInfo, LocalQueryInfo } from "../../../src/query-results";
-import {
+import type { InitialQueryInfo } from "../../../src/query-results";
+import { LocalQueryInfo } from "../../../src/query-results";
+import type {
   QueryEvaluationInfo,
-  QueryOutputDir,
   QueryWithResults,
 } from "../../../src/run-queries-shared";
-import { CancellationTokenSource } from "vscode";
-import { QueryMetadata } from "../../../src/common/interface-types";
-import { QueryLanguage } from "../../../src/common/query-language";
+import { QueryOutputDir } from "../../../src/run-queries-shared";
+import type { CancellationTokenSource } from "vscode";
+import type { QueryMetadata } from "../../../src/common/interface-types";
+import type { QueryLanguage } from "../../../src/common/query-language";
 
 export function createMockLocalQueryInfo({
   startTime = new Date(),

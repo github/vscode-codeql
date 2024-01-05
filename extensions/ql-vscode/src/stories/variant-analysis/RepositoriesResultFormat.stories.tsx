@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react";
 
 import { RepositoriesResultFormat as RepositoriesResultFormatComponent } from "../../view/variant-analysis/RepositoriesResultFormat";
 import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";

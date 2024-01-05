@@ -1,4 +1,5 @@
-import { ExtensionContext, Memento, Uri } from "vscode";
+import type { ExtensionContext, Memento } from "vscode";
+import { Uri } from "vscode";
 import { createMockMemento } from "../mock-memento";
 
 /**

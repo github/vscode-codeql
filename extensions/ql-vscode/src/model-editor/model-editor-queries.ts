@@ -1,24 +1,20 @@
-import { QueryRunner } from "../query-server";
+import type { QueryRunner } from "../query-server";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import {
-  NotificationLogger,
-  showAndLogExceptionWithTelemetry,
-} from "../common/logging";
-import { CancellationToken } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { DatabaseItem } from "../databases/local-databases";
-import {
-  ProgressCallback,
-  UserCancellationException,
-} from "../common/vscode/progress";
+import type { NotificationLogger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import type { CancellationToken } from "vscode";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { DatabaseItem } from "../databases/local-databases";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { UserCancellationException } from "../common/vscode/progress";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { join } from "path";
 import { Mode } from "./shared/mode";
 import { outputFile, writeFile } from "fs-extra";
-import { QueryLanguage } from "../common/query-language";
+import type { QueryLanguage } from "../common/query-language";
 import { fetchExternalApiQueries } from "./queries";
-import { Method } from "./method";
+import type { Method } from "./method";
 import { runQuery } from "../local-queries/run-query";
 import { decodeBqrsToMethods } from "./bqrs";
 import {

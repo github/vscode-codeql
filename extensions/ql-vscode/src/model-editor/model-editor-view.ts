@@ -1,56 +1,55 @@
+import type { CancellationToken, Tab } from "vscode";
 import {
-  CancellationToken,
   CancellationTokenSource,
-  Tab,
   TabInputWebview,
   Uri,
   ViewColumn,
   window,
 } from "vscode";
-import {
-  AbstractWebview,
-  WebviewPanelConfig,
-} from "../common/vscode/abstract-webview";
-import {
+import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
+import { AbstractWebview } from "../common/vscode/abstract-webview";
+import type {
   FromModelEditorMessage,
   ToModelEditorMessage,
 } from "../common/interface-types";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
-  ProgressCallback,
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
-import { QueryRunner } from "../query-server";
+import type { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
 } from "../common/logging";
-import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type {
+  DatabaseItem,
+  DatabaseManager,
+} from "../databases/local-databases";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import {
   externalApiQueriesProgressMaxStep,
   runModelEditorQueries,
 } from "./model-editor-queries";
-import { Method } from "./method";
-import { ModeledMethod } from "./modeled-method";
-import { ExtensionPack } from "./shared/extension-pack";
-import { ModelConfigListener } from "../config";
+import type { Method } from "./method";
+import type { ModeledMethod } from "./modeled-method";
+import type { ExtensionPack } from "./shared/extension-pack";
+import type { ModelConfigListener } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
-import {
-  getLanguageDisplayName,
-  QueryLanguage,
-} from "../common/query-language";
+import type { QueryLanguage } from "../common/query-language";
+import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { ModelingStore } from "./modeling-store";
-import { ModelingEvents } from "./modeling-events";
-import { getModelsAsDataLanguage, ModelsAsDataLanguage } from "./languages";
+import type { ModelingStore } from "./modeling-store";
+import type { ModelingEvents } from "./modeling-events";
+import type { ModelsAsDataLanguage } from "./languages";
+import { getModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";

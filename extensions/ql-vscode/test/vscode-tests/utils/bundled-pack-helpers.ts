@@ -1,5 +1,6 @@
 import { Readable } from "stream";
-import { extract as tar_extract, Headers } from "tar-stream";
+import type { Headers } from "tar-stream";
+import { extract as tar_extract } from "tar-stream";
 import { pipeline } from "stream/promises";
 import { createGunzip } from "zlib";
 

@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { LibraryRow as LibraryRowComponent } from "../../view/model-editor/LibraryRow";
 import { CallClassification } from "../../model-editor/method";

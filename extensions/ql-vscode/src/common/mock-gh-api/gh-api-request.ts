@@ -1,5 +1,5 @@
-import { Repository } from "../../variant-analysis/gh-api/repository";
-import {
+import type { Repository } from "../../variant-analysis/gh-api/repository";
+import type {
   VariantAnalysis,
   VariantAnalysisRepoTask,
 } from "../../variant-analysis/gh-api/variant-analysis";

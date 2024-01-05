@@ -1,9 +1,11 @@
-import { Uri, WorkspaceFolder } from "vscode";
+import type { WorkspaceFolder } from "vscode";
+import { Uri } from "vscode";
 import { remove } from "fs-extra";
 import { join } from "path";
 
 import { QLTestDiscovery } from "../../../../src/query-testing/qltest-discovery";
-import { DirectoryResult, dir } from "tmp-promise";
+import type { DirectoryResult } from "tmp-promise";
+import { dir } from "tmp-promise";
 
 import "../../../matchers/toEqualPath";
 import { mockedObject } from "../../utils/mocking.helpers";

@@ -1,21 +1,22 @@
 import { dirname, join } from "path";
 import { Uri, window, window as Window, workspace } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
-import { Credentials } from "../common/authentication";
-import {
-  getLanguageDisplayName,
-  QueryLanguage,
-} from "../common/query-language";
+import type { Credentials } from "../common/authentication";
+import type { QueryLanguage } from "../common/query-language";
+import { getLanguageDisplayName } from "../common/query-language";
 import {
   getFirstWorkspaceFolder,
   getOnDiskWorkspaceFolders,
 } from "../common/vscode/workspace-folders";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
-import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
+import type {
+  DatabaseItem,
+  DatabaseManager,
+} from "../databases/local-databases";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
-  ProgressCallback,
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
@@ -32,8 +33,8 @@ import { lstat, pathExists } from "fs-extra";
 import { askForLanguage } from "../codeql-cli/query-language";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
 import { redactableError } from "../common/errors";
-import { App } from "../common/app";
-import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { App } from "../common/app";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { containsPath, pathsEqual } from "../common/files";
 import { getQlPackPath } from "../common/ql";
 import { getQlPackLanguage } from "../common/qlpack-language";

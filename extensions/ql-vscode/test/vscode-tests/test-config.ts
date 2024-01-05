@@ -1,10 +1,8 @@
-import {
+import type {
   ConfigurationScope,
-  ConfigurationTarget,
-  workspace,
   WorkspaceConfiguration as VSCodeWorkspaceConfiguration,
-  Uri,
 } from "vscode";
+import { ConfigurationTarget, workspace, Uri } from "vscode";
 import { readFileSync } from "fs-extra";
 import { join } from "path";
 

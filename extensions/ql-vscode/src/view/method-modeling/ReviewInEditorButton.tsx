@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 import TextButton from "../common/TextButton";
-import { Method } from "../../model-editor/method";
+import type { Method } from "../../model-editor/method";
 
 const Button = styled(TextButton)`
   margin-top: 0.7rem;

@@ -1,24 +1,24 @@
-import { Log, Result } from "sarif";
-import {
+import type { Log, Result } from "sarif";
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
 } from "../variant-analysis/shared/variant-analysis";
-import {
+import type {
   RepositoriesFilterSortState,
   RepositoriesFilterSortStateWithIds,
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
-import { ErrorLike } from "../common/errors";
-import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { Method } from "../model-editor/method";
-import { ModeledMethod } from "../model-editor/modeled-method";
-import {
+import type { ErrorLike } from "../common/errors";
+import type { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
+import type { Method } from "../model-editor/method";
+import type { ModeledMethod } from "../model-editor/modeled-method";
+import type {
   MethodModelingPanelViewState,
   ModelEditorViewState,
 } from "../model-editor/shared/view-state";
-import { Mode } from "../model-editor/shared/mode";
-import { QueryLanguage } from "./query-language";
-import {
+import type { Mode } from "../model-editor/shared/mode";
+import type { QueryLanguage } from "./query-language";
+import type {
   Column,
   RawResultSet,
   Row,

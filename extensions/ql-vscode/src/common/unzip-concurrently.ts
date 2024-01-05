@@ -1,5 +1,6 @@
 import { availableParallelism } from "os";
-import { UnzipProgressCallback, unzipToDirectory } from "./unzip";
+import type { UnzipProgressCallback } from "./unzip";
+import { unzipToDirectory } from "./unzip";
 import PQueue from "p-queue";
 
 export async function unzipToDirectoryConcurrently(

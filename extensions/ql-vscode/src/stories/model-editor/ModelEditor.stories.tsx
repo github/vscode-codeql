@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { ModelEditor as ModelEditorComponent } from "../../view/model-editor/ModelEditor";
 import { CallClassification } from "../../model-editor/method";

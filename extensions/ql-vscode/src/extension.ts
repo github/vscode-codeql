@@ -1,9 +1,7 @@
 import "source-map-support/register";
+import type { CancellationToken, Disposable, ExtensionContext } from "vscode";
 import {
-  CancellationToken,
-  Disposable,
   env,
-  ExtensionContext,
   extensions,
   languages,
   ProgressLocation,
@@ -12,12 +10,13 @@ import {
   window as Window,
   workspace,
 } from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import type { LanguageClient } from "vscode-languageclient/node";
 import { arch, homedir, platform } from "os";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
-import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
+import type { TestHub } from "vscode-test-adapter-api";
+import { testExplorerExtensionId } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
 import { watch } from "chokidar";
 import {
@@ -46,12 +45,12 @@ import {
 } from "./language-support";
 import { DatabaseManager } from "./databases/local-databases";
 import { DatabaseUI } from "./databases/local-databases-ui";
+import type { FindDistributionResult } from "./codeql-cli/distribution";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,
   DistributionManager,
   DistributionUpdateCheckResultKind,
-  FindDistributionResult,
   FindDistributionResultKind,
 } from "./codeql-cli/distribution";
 import {
@@ -76,21 +75,21 @@ import {
   ResultsView,
   WebviewReveal,
 } from "./local-queries";
+import type { BaseLogger } from "./common/logging";
 import {
-  BaseLogger,
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "./common/logging";
+import type { ProgressReporter } from "./common/logging/vscode";
 import {
   extLogger,
   ideServerLogger,
-  ProgressReporter,
   queryServerLogger,
 } from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
-import { CompletedLocalQueryInfo } from "./query-results";
+import type { CompletedLocalQueryInfo } from "./query-results";
 import { QLTestAdapterFactory } from "./query-testing/test-adapter";
 import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
@@ -98,7 +97,8 @@ import {
   initializeTelemetry,
   telemetryListener,
 } from "./common/vscode/telemetry";
-import { ProgressCallback, withProgress } from "./common/vscode/progress";
+import type { ProgressCallback } from "./common/vscode/progress";
+import { withProgress } from "./common/vscode/progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
@@ -116,21 +116,21 @@ import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./common/errors";
 import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";
-import { QueryHistoryDirs } from "./query-history/query-history-dirs";
-import {
+import type { QueryHistoryDirs } from "./query-history/query-history-dirs";
+import type {
   AllExtensionCommands,
   BaseCommands,
   PreActivationCommands,
   QueryServerCommands,
 } from "./common/commands";
 import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-commands";
-import { App } from "./common/app";
+import type { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
 import { ModelEditorModule } from "./model-editor/model-editor-module";
 import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
-import { TestManagerBase } from "./query-testing/test-manager-base";
+import type { TestManagerBase } from "./query-testing/test-manager-base";
 import { QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";

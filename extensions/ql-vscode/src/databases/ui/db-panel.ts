@@ -1,11 +1,5 @@
-import {
-  QuickPickItem,
-  TreeView,
-  TreeViewExpansionEvent,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
+import type { QuickPickItem, TreeView, TreeViewExpansionEvent } from "vscode";
+import { Uri, window, workspace } from "vscode";
 import {
   UserCancellationException,
   withProgress,
@@ -17,16 +11,17 @@ import {
   isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
 import { DisposableObject } from "../../common/disposable-object";
-import { DbItem, DbItemKind, RemoteUserDefinedListDbItem } from "../db-item";
+import type { DbItem, RemoteUserDefinedListDbItem } from "../db-item";
+import { DbItemKind } from "../db-item";
 import { getDbItemName } from "../db-item-naming";
-import { DbManager } from "../db-manager";
+import type { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
-import { DbTreeViewItem } from "./db-tree-view-item";
+import type { DbTreeViewItem } from "./db-tree-view-item";
 import { getGitHubUrl } from "./db-tree-view-item-action";
 import { getControllerRepo } from "../../variant-analysis/run-remote-query";
 import { getErrorMessage } from "../../common/helpers-pure";
-import { DatabasePanelCommands } from "../../common/commands";
-import { App } from "../../common/app";
+import type { DatabasePanelCommands } from "../../common/commands";
+import type { App } from "../../common/app";
 import { QueryLanguage } from "../../common/query-language";
 import { getCodeSearchRepositories } from "../code-search-api";
 import { showAndLogErrorMessage } from "../../common/logging";

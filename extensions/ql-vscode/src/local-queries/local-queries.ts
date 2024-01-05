@@ -1,17 +1,15 @@
-import {
+import type {
   ProgressCallback,
   ProgressUpdate,
-  withProgress,
 } from "../common/vscode/progress";
-import {
+import { withProgress } from "../common/vscode/progress";
+import type {
   CancellationToken,
-  CancellationTokenSource,
   QuickPickItem,
   Range,
   TabInputText,
-  Uri,
-  window,
 } from "vscode";
+import { CancellationTokenSource, Uri, window } from "vscode";
 import {
   TeeLogger,
   showAndLogErrorMessage,
@@ -23,25 +21,29 @@ import { basename } from "path";
 import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { displayQuickQuery } from "./quick-query";
-import { CoreCompletedQuery, QueryRunner } from "../query-server";
-import { QueryHistoryManager } from "../query-history/query-history-manager";
-import { DatabaseUI } from "../databases/local-databases-ui";
-import { ResultsView } from "./results-view";
-import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
+import type { CoreCompletedQuery, QueryRunner } from "../query-server";
+import type { QueryHistoryManager } from "../query-history/query-history-manager";
+import type { DatabaseUI } from "../databases/local-databases-ui";
+import type { ResultsView } from "./results-view";
+import type {
+  DatabaseItem,
+  DatabaseManager,
+} from "../databases/local-databases";
+import type { QueryOutputDir, SelectedQuery } from "../run-queries-shared";
 import {
   createInitialQueryInfo,
   createTimestampFile,
   getQuickEvalContext,
-  QueryOutputDir,
   saveBeforeStart,
-  SelectedQuery,
   validateQueryUri,
 } from "../run-queries-shared";
-import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
-import { WebviewReveal } from "./webview";
+import type { CompletedLocalQueryInfo } from "../query-results";
+import { LocalQueryInfo } from "../query-results";
+import type { WebviewReveal } from "./webview";
 import { asError, getErrorMessage } from "../common/helpers-pure";
-import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
-import { LocalQueryCommands } from "../common/commands";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import { CliVersionConstraint } from "../codeql-cli/cli";
+import type { LocalQueryCommands } from "../common/commands";
 import { DisposableObject } from "../common/disposable-object";
 import { SkeletonQueryWizard } from "./skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
@@ -49,8 +51,8 @@ import { createMultiSelectionCommand } from "../common/vscode/selection-commands
 import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { tryGetQueryLanguage } from "../common/query-language";
-import { LanguageContextStore } from "../language-context-store";
-import { ExtensionApp } from "../common/vscode/vscode-app";
+import type { LanguageContextStore } from "../language-context-store";
+import type { ExtensionApp } from "../common/vscode/vscode-app";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;

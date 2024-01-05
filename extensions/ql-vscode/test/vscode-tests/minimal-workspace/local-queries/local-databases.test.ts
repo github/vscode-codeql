@@ -1,24 +1,28 @@
-import { DirResult, dirSync } from "tmp";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
 import { ensureDir, ensureFile, pathExists, writeFile } from "fs-extra";
 import { join } from "path";
-import { ExtensionContext, Uri, workspace } from "vscode";
+import type { ExtensionContext } from "vscode";
+import { Uri, workspace } from "vscode";
 
-import {
+import type {
   DatabaseContentsWithDbScheme,
-  DatabaseEventKind,
   DatabaseItemImpl,
-  DatabaseManager,
-  DatabaseResolver,
   FullDatabaseOptions,
 } from "../../../../src/databases/local-databases";
-import { Logger } from "../../../../src/common/logging";
-import { CodeQLCliServer, DbInfo } from "../../../../src/codeql-cli/cli";
+import {
+  DatabaseEventKind,
+  DatabaseManager,
+  DatabaseResolver,
+} from "../../../../src/databases/local-databases";
+import type { Logger } from "../../../../src/common/logging";
+import type { CodeQLCliServer, DbInfo } from "../../../../src/codeql-cli/cli";
 import {
   encodeArchiveBasePath,
   encodeSourceArchiveUri,
 } from "../../../../src/common/vscode/archive-filesystem-provider";
 import { testDisposeHandler } from "../../test-dispose-handler";
-import { QueryRunner } from "../../../../src/query-server/query-runner";
+import type { QueryRunner } from "../../../../src/query-server/query-runner";
 import * as dialog from "../../../../src/common/vscode/dialog";
 import * as config from "../../../../src/config";
 import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";

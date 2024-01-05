@@ -1,5 +1,6 @@
 import { createRemoteFileRef } from "../common/location-link-utils";
-import { isUrlValueResolvable, UrlValue } from "./raw-result-types";
+import type { UrlValue } from "./raw-result-types";
+import { isUrlValueResolvable } from "./raw-result-types";
 
 /**
  * Checks whether the file path is empty. If so, we do not want to render this location

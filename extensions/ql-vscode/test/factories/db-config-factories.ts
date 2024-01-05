@@ -1,9 +1,9 @@
-import {
+import type {
   DbConfig,
   RemoteRepositoryList,
   SelectedDbItem,
-  DB_CONFIG_VERSION,
 } from "../../src/databases/config/db-config";
+import { DB_CONFIG_VERSION } from "../../src/databases/config/db-config";
 
 export function createDbConfig({
   remoteLists = [],

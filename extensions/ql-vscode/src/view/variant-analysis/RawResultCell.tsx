@@ -1,6 +1,6 @@
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
-import { CellValue } from "../../common/raw-result-types";
+import type { CellValue } from "../../common/raw-result-types";
 import { sendTelemetry } from "../common/telemetry";
 import { convertNonPrintableChars } from "../../common/text-utils";
 import { tryGetRemoteLocation } from "../../common/bqrs-utils";

@@ -2,18 +2,20 @@ import { env, EventEmitter } from "vscode";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
 import { RequestError } from "@octokit/request-error";
 
-import {
-  isFinalVariantAnalysisStatus,
-  repoHasDownloadableArtifact,
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
 } from "./shared/variant-analysis";
-import { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
+import {
+  isFinalVariantAnalysisStatus,
+  repoHasDownloadableArtifact,
+} from "./shared/variant-analysis";
+import type { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
 import { processUpdatedVariantAnalysis } from "./variant-analysis-processor";
 import { DisposableObject } from "../common/disposable-object";
 import { sleep } from "../common/time";
 import { getErrorMessage } from "../common/helpers-pure";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { showAndLogWarningMessage } from "../common/logging";
 
 export class VariantAnalysisMonitor extends DisposableObject {

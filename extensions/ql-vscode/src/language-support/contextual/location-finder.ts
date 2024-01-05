@@ -2,23 +2,27 @@ import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
 } from "../../common/vscode/archive-filesystem-provider";
-import {
-  BqrsColumnKindCode,
+import type {
   BqrsEntityValue,
   BqrsResultSetSchema,
 } from "../../common/bqrs-cli-types";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { DatabaseItem, DatabaseManager } from "../../databases/local-databases";
-import { ProgressCallback } from "../../common/vscode/progress";
-import { KeyType } from "./key-type";
+import { BqrsColumnKindCode } from "../../common/bqrs-cli-types";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type {
+  DatabaseItem,
+  DatabaseManager,
+} from "../../databases/local-databases";
+import type { ProgressCallback } from "../../common/vscode/progress";
+import type { KeyType } from "./key-type";
 import {
   resolveContextualQlPacksForDatabase,
   resolveContextualQueries,
   runContextualQuery,
 } from "./query-resolver";
-import { CancellationToken, LocationLink, Uri } from "vscode";
-import { QueryOutputDir } from "../../run-queries-shared";
-import { QueryRunner } from "../../query-server";
+import type { CancellationToken, LocationLink } from "vscode";
+import { Uri } from "vscode";
+import type { QueryOutputDir } from "../../run-queries-shared";
+import type { QueryRunner } from "../../query-server";
 import { QueryResultType } from "../../query-server/messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
 

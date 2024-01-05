@@ -1,18 +1,13 @@
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import {
   QUERY_LANGUAGE_TO_DATABASE_REPO,
   SkeletonQueryWizard,
 } from "../../../../src/local-queries/skeleton-query-wizard";
 import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
-import { DirResult, dirSync } from "tmp";
-import {
-  MessageItem,
-  TextDocument,
-  Uri,
-  window,
-  workspace,
-  WorkspaceFolder,
-} from "vscode";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
+import type { MessageItem, TextDocument, WorkspaceFolder } from "vscode";
+import { Uri, window, workspace } from "vscode";
 import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";
 import {
   createFileSync,
@@ -24,7 +19,7 @@ import {
 } from "fs-extra";
 import { dirname, join } from "path";
 import { testCredentialsWithStub } from "../../../factories/authentication";
-import {
+import type {
   DatabaseItem,
   DatabaseManager,
   FullDatabaseOptions,
@@ -34,12 +29,12 @@ import { createMockDB } from "../../../factories/databases/databases";
 import { asError } from "../../../../src/common/helpers-pure";
 import { Setting } from "../../../../src/config";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { App } from "../../../../src/common/app";
+import type { App } from "../../../../src/common/app";
 import { createMockApp } from "../../../__mocks__/appMock";
+import type { QueryTreeViewItem } from "../../../../src/queries-panel/query-tree-view-item";
 import {
   createQueryTreeFileItem,
   createQueryTreeFolderItem,
-  QueryTreeViewItem,
 } from "../../../../src/queries-panel/query-tree-view-item";
 import { dump } from "js-yaml";
 

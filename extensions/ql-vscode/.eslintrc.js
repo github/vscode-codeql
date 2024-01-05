@@ -49,6 +49,7 @@ const baseConfig = {
     "@typescript-eslint/no-shadow": "off",
     "prefer-const": ["warn", { destructuring: "all" }],
     "@typescript-eslint/no-throw-literal": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
     "no-useless-escape": 0,
     camelcase: "off",
     curly: ["error", "all"],

@@ -4,20 +4,19 @@ import {
 } from "../../../../../src/query-history/store/query-history-store";
 import { join } from "path";
 import { writeFileSync, mkdirpSync, writeFile } from "fs-extra";
-import {
-  LocalQueryInfo,
-  InitialQueryInfo,
-} from "../../../../../src/query-results";
+import type { InitialQueryInfo } from "../../../../../src/query-results";
+import { LocalQueryInfo } from "../../../../../src/query-results";
+import type { QueryWithResults } from "../../../../../src/run-queries-shared";
 import {
   QueryEvaluationInfo,
   QueryOutputDir,
-  QueryWithResults,
 } from "../../../../../src/run-queries-shared";
-import { DatabaseInfo } from "../../../../../src/common/interface-types";
-import { CancellationTokenSource, Uri } from "vscode";
+import type { DatabaseInfo } from "../../../../../src/common/interface-types";
+import type { CancellationTokenSource } from "vscode";
+import { Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
-import { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
-import { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
+import type { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
+import type { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
 import { nanoid } from "nanoid";
 

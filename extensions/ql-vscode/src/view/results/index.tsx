@@ -1,4 +1,4 @@
-import { WebviewDefinition } from "../webview-definition";
+import type { WebviewDefinition } from "../webview-definition";
 import { ResultsApp } from "./ResultsApp";
 
 const definition: WebviewDefinition = {

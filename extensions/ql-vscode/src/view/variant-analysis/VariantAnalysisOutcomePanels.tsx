@@ -1,4 +1,5 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
 import { styled } from "styled-components";
 import {
   VSCodeBadge,
@@ -7,16 +8,16 @@ import {
   VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react";
 import { formatDecimal } from "../../common/number";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
-  VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysisAnalyzedRepos } from "./VariantAnalysisAnalyzedRepos";
 import { Alert } from "../common";
 import { VariantAnalysisSkippedRepositoriesTab } from "./VariantAnalysisSkippedRepositoriesTab";
-import { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import type { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { RepositoriesSearchSortRow } from "./RepositoriesSearchSortRow";
 import { FailureReasonAlert } from "./FailureReasonAlert";
 import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";

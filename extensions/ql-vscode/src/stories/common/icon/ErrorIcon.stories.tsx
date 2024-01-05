@@ -1,9 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
-import {
-  CodePaths,
-  ErrorIcon as ErrorIconComponent,
-} from "../../../view/common";
+import type { CodePaths } from "../../../view/common";
+import { ErrorIcon as ErrorIconComponent } from "../../../view/common";
 
 export default {
   title: "Icon/Error Icon",

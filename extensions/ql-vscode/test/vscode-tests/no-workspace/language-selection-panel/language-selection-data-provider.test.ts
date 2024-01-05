@@ -3,10 +3,8 @@ import {
   getLanguageDisplayName,
 } from "../../../../src/common/query-language";
 import { LanguageContextStore } from "../../../../src/language-context-store";
-import {
-  LanguageSelectionTreeDataProvider,
-  LanguageSelectionTreeViewItem,
-} from "../../../../src/language-selection-panel/language-selection-data-provider";
+import type { LanguageSelectionTreeViewItem } from "../../../../src/language-selection-panel/language-selection-data-provider";
+import { LanguageSelectionTreeDataProvider } from "../../../../src/language-selection-panel/language-selection-data-provider";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { EventEmitter, ThemeIcon } from "vscode";
 

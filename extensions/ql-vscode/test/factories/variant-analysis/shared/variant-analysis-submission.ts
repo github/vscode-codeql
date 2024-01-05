@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { VariantAnalysisSubmission } from "../../../../src/variant-analysis/shared/variant-analysis";
+import type { VariantAnalysisSubmission } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { QueryLanguage } from "../../../../src/common/query-language";
 
 export function createMockSubmission(): VariantAnalysisSubmission {

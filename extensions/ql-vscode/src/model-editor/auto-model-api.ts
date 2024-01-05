@@ -1,7 +1,7 @@
-import { Credentials } from "../common/authentication";
-import { OctokitResponse } from "@octokit/types";
+import type { Credentials } from "../common/authentication";
+import type { OctokitResponse } from "@octokit/types";
 import fetch from "node-fetch";
-import { ModelConfigListener } from "../config";
+import type { ModelConfigListener } from "../config";
 
 export enum AutomodelMode {
   Unspecified = "AUTOMODEL_MODE_UNSPECIFIED",

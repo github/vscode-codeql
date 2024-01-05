@@ -1,10 +1,10 @@
 import { DisposableObject } from "../common/disposable-object";
-import { DatabaseItem } from "../databases/local-databases";
-import { Method, Usage } from "./method";
-import { ModeledMethod } from "./modeled-method";
-import { ModelingEvents } from "./modeling-events";
+import type { DatabaseItem } from "../databases/local-databases";
+import type { Method, Usage } from "./method";
+import type { ModeledMethod } from "./modeled-method";
+import type { ModelingEvents } from "./modeling-events";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
-import { Mode } from "./shared/mode";
+import type { Mode } from "./shared/mode";
 
 interface InternalDbModelingState {
   databaseItem: DatabaseItem;

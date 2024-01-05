@@ -1,8 +1,6 @@
 import { faker } from "@faker-js/faker";
-import {
-  VariantAnalysisRepositoryTask,
-  VariantAnalysisRepoStatus,
-} from "../../../../src/variant-analysis/shared/variant-analysis";
+import type { VariantAnalysisRepositoryTask } from "../../../../src/variant-analysis/shared/variant-analysis";
+import { VariantAnalysisRepoStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "./repository";
 
 export function createMockVariantAnalysisRepositoryTask(

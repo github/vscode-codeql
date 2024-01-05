@@ -1,7 +1,8 @@
 import { gray, red } from "ansi-colors";
 import { dest, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
-import { createProject, reporter } from "gulp-typescript";
+import type { reporter } from "gulp-typescript";
+import { createProject } from "gulp-typescript";
 import del from "del";
 
 export function goodReporter(): reporter.Reporter {

@@ -3,7 +3,7 @@ import {
   resolveQueriesByLanguagePack,
 } from "../../../../src/local-queries";
 import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import * as qlpack from "../../../../src/databases/qlpack";
 import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
 import * as log from "../../../../src/common/logging/notifications";

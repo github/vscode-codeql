@@ -1,12 +1,13 @@
-import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
+import type { Event, TreeDataProvider, TreeItem } from "vscode";
+import { EventEmitter } from "vscode";
+import type { QueryTreeViewItem } from "./query-tree-view-item";
 import {
-  QueryTreeViewItem,
   createQueryTreeFileItem,
   createQueryTreeFolderItem,
 } from "./query-tree-view-item";
 import { DisposableObject } from "../common/disposable-object";
-import { FileTreeNode } from "../common/file-tree-nodes";
-import { App } from "../common/app";
+import type { FileTreeNode } from "../common/file-tree-nodes";
+import type { App } from "../common/app";
 import { containsPath } from "../common/files";
 
 export interface QueryDiscoverer {

@@ -1,12 +1,15 @@
 import { readFile } from "fs-extra";
-import { RawSourceMap, SourceMapConsumer } from "source-map";
+import type { RawSourceMap } from "source-map";
+import { SourceMapConsumer } from "source-map";
+import type {
+  TextDocument,
+  TextEditor,
+  TextEditorSelectionChangeEvent,
+} from "vscode";
 import {
   Position,
   Selection,
-  TextDocument,
-  TextEditor,
   TextEditorRevealType,
-  TextEditorSelectionChangeEvent,
   ViewColumn,
   window,
   workspace,
@@ -14,8 +17,8 @@ import {
 import { DisposableObject } from "../common/disposable-object";
 import { extLogger } from "../common/logging/vscode";
 import { getErrorMessage } from "../common/helpers-pure";
-import { SummaryLanguageSupportCommands } from "../common/commands";
-import { App } from "../common/app";
+import type { SummaryLanguageSupportCommands } from "../common/commands";
+import type { App } from "../common/app";
 
 /** A `Position` within a specified file on disk. */
 interface PositionInFile {

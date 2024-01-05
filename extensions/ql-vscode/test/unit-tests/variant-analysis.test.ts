@@ -1,5 +1,5 @@
+import type { VariantAnalysis } from "../../src/variant-analysis/shared/variant-analysis";
 import {
-  VariantAnalysis,
   parseVariantAnalysisQueryLanguage,
   VariantAnalysisStatus,
   isVariantAnalysisComplete,

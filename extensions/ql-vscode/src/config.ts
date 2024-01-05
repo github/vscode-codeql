@@ -1,13 +1,11 @@
 import { DisposableObject } from "./common/disposable-object";
-import {
+import type {
   ConfigurationChangeEvent,
   ConfigurationScope,
-  ConfigurationTarget,
   Event,
-  EventEmitter,
-  workspace,
 } from "vscode";
-import { DistributionManager } from "./codeql-cli/distribution";
+import { ConfigurationTarget, EventEmitter, workspace } from "vscode";
+import type { DistributionManager } from "./codeql-cli/distribution";
 import { extLogger } from "./common/logging/vscode";
 import { ONE_DAY_IN_MS } from "./common/time";
 import {

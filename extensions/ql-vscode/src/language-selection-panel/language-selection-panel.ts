@@ -1,11 +1,9 @@
 import { DisposableObject } from "../common/disposable-object";
 import { window } from "vscode";
-import {
-  LanguageSelectionTreeDataProvider,
-  LanguageSelectionTreeViewItem,
-} from "./language-selection-data-provider";
-import { LanguageContextStore } from "../language-context-store";
-import { LanguageSelectionCommands } from "../common/commands";
+import type { LanguageSelectionTreeViewItem } from "./language-selection-data-provider";
+import { LanguageSelectionTreeDataProvider } from "./language-selection-data-provider";
+import type { LanguageContextStore } from "../language-context-store";
+import type { LanguageSelectionCommands } from "../common/commands";
 
 // This panel allows the selection of a single language, that will
 // then filter all other relevant views (e.g. db panel, query history).

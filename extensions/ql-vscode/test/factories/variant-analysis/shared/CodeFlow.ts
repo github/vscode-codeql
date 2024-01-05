@@ -1,4 +1,4 @@
-import { CodeFlow } from "../../../../src/variant-analysis/shared/analysis-result";
+import type { CodeFlow } from "../../../../src/variant-analysis/shared/analysis-result";
 import { createMockAnalysisMessage } from "./AnalysisMessage";
 
 export function createMockCodeFlows(): CodeFlow[] {

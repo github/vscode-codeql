@@ -1,4 +1,4 @@
-import { ExtensionContext } from "vscode";
+import type { ExtensionContext } from "vscode";
 
 export function createMockExtensionContext(): ExtensionContext {
   return {

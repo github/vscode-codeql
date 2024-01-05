@@ -1,14 +1,17 @@
-import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
-import {
+import type { ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import type {
   ModeledMethod,
   ModeledMethodKind,
+} from "../../model-editor/modeled-method";
+import {
   modeledMethodSupportsKind,
   isModelAccepted,
   calculateNewProvenance,
 } from "../../model-editor/modeled-method";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
-import { QueryLanguage } from "../../common/query-language";
-import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { QueryLanguage } from "../../common/query-language";
+import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
 
 type Props = {

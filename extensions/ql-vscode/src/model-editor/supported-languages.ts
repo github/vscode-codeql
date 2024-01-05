@@ -1,5 +1,5 @@
 import { QueryLanguage } from "../common/query-language";
-import { ModelConfig } from "../config";
+import type { ModelConfig } from "../config";
 
 /**
  * Languages that are always supported by the model editor. These languages

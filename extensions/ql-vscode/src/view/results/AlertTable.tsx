@@ -1,21 +1,20 @@
-import { Location, Result } from "sarif";
-import {
-  getPath,
-  getPathNode,
-  getResult,
-  keyToString,
+import type { Location, Result } from "sarif";
+import type {
   PathNode,
   Result as ResultKeysResult,
   ResultKey,
 } from "./result-keys";
+import { getPath, getPathNode, getResult, keyToString } from "./result-keys";
 import { className, jumpToLocation } from "./result-table-utils";
 import { onNavigation } from "./ResultsApp";
-import { NavigateMsg, NavigationDirection } from "../../common/interface-types";
+import type { NavigateMsg } from "../../common/interface-types";
+import { NavigationDirection } from "../../common/interface-types";
 import { isNoLocation, parseSarifLocation } from "../../common/sarif-utils";
 import { sendTelemetry } from "../common/telemetry";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTableResultRow } from "./AlertTableResultRow";
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useScrollIntoView } from "./useScrollIntoView";
 
 type Props = {

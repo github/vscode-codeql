@@ -1,19 +1,20 @@
-import { window, TreeView } from "vscode";
-import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import { Method } from "../../../../../src/model-editor/method";
+import type { TreeView } from "vscode";
+import { window } from "vscode";
+import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
+import type { Method } from "../../../../../src/model-editor/method";
 import { MethodsUsagePanel } from "../../../../../src/model-editor/methods-usage/methods-usage-panel";
-import { DatabaseItem } from "../../../../../src/databases/local-databases";
+import type { DatabaseItem } from "../../../../../src/databases/local-databases";
 import { mockedObject } from "../../../utils/mocking.helpers";
 import {
   createMethod,
   createUsage,
 } from "../../../../factories/model-editor/method-factories";
-import { ModelingStore } from "../../../../../src/model-editor/modeling-store";
+import type { ModelingStore } from "../../../../../src/model-editor/modeling-store";
 import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
-import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
+import type { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 import { Mode } from "../../../../../src/model-editor/shared/mode";
 import { createMockModelingEvents } from "../../../../__mocks__/model-editor/modelingEventsMock";
-import { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
+import type { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});

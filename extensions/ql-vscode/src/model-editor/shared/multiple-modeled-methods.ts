@@ -1,4 +1,4 @@
-import { ModeledMethod } from "../modeled-method";
+import type { ModeledMethod } from "../modeled-method";
 
 export function canAddNewModeledMethod(
   modeledMethods: ModeledMethod[],

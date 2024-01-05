@@ -1,4 +1,4 @@
-import { ResultSet } from "../../common/interface-types";
+import type { ResultSet } from "../../common/interface-types";
 import { tableHeaderItemClassName } from "./result-table-utils";
 
 interface Props {

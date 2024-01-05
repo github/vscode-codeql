@@ -1,20 +1,19 @@
 import { ensureDir, writeFile, pathExists, readFile } from "fs-extra";
 import { dump, load } from "js-yaml";
 import { basename, join } from "path";
-import { CancellationToken, window as Window, workspace, Uri } from "vscode";
+import type { CancellationToken } from "vscode";
+import { window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { DatabaseUI } from "../databases/local-databases-ui";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { DatabaseUI } from "../databases/local-databases-ui";
 import { getInitialQueryContents } from "./query-contents";
 import { getPrimaryDbscheme, getQlPackForDbscheme } from "../databases/qlpack";
-import {
-  ProgressCallback,
-  UserCancellationException,
-} from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { UserCancellationException } from "../common/vscode/progress";
 import { getErrorMessage } from "../common/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "../common/ql";
-import { App } from "../common/app";
-import { ExtensionApp } from "../common/vscode/vscode-app";
+import type { App } from "../common/app";
+import type { ExtensionApp } from "../common/vscode/vscode-app";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";

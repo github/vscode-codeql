@@ -1,7 +1,9 @@
-import { commands, Disposable } from "vscode";
-import { CommandFunction, CommandManager } from "../../packages/commands";
+import type { Disposable } from "vscode";
+import { commands } from "vscode";
+import type { CommandFunction } from "../../packages/commands";
+import { CommandManager } from "../../packages/commands";
+import type { NotificationLogger } from "../logging";
 import {
-  NotificationLogger,
   showAndLogWarningMessage,
   showAndLogExceptionWithTelemetry,
 } from "../logging";
@@ -10,7 +12,7 @@ import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { redactableError } from "../../common/errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
-import { AppTelemetry } from "../telemetry";
+import type { AppTelemetry } from "../telemetry";
 
 /**
  * Create a command manager for VSCode, wrapping registerCommandWithErrorHandling

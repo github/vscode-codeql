@@ -1,5 +1,5 @@
-import { ModeledMethod, ModeledMethodType } from "./modeled-method";
-import { UrlValueResolvable } from "../common/raw-result-types";
+import type { ModeledMethod, ModeledMethodType } from "./modeled-method";
+import type { UrlValueResolvable } from "../common/raw-result-types";
 
 type Call = {
   readonly label: string;

@@ -1,9 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
-import {
-  CodePaths,
-  SuccessIcon as SuccessIconComponent,
-} from "../../../view/common";
+import type { CodePaths } from "../../../view/common";
+import { SuccessIcon as SuccessIconComponent } from "../../../view/common";
 
 export default {
   title: "Icon/Success Icon",

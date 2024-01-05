@@ -1,16 +1,18 @@
-import { ExtensionContext, ExtensionMode } from "vscode";
+import type { ExtensionContext } from "vscode";
+import { ExtensionMode } from "vscode";
 import { VSCodeCredentials } from "./authentication";
-import { Disposable } from "../disposable-object";
-import { App, AppMode, EnvironmentContext } from "../app";
-import { AppEventEmitter } from "../events";
-import { NotificationLogger } from "../logging";
+import type { Disposable } from "../disposable-object";
+import type { App, EnvironmentContext } from "../app";
+import { AppMode } from "../app";
+import type { AppEventEmitter } from "../events";
+import type { NotificationLogger } from "../logging";
 import { extLogger, queryServerLogger } from "../logging/vscode";
-import { Memento } from "../memento";
+import type { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
-import { AppCommandManager, QueryServerCommandManager } from "../commands";
+import type { AppCommandManager, QueryServerCommandManager } from "../commands";
 import { createVSCodeCommandManager } from "./commands";
 import { AppEnvironmentContext } from "./environment-context";
-import { AppTelemetry } from "../telemetry";
+import type { AppTelemetry } from "../telemetry";
 import { telemetryListener } from "./telemetry";
 
 export class ExtensionApp implements App {

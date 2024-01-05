@@ -1,9 +1,7 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import {
-  ModeledMethodDataGrid,
-  ModeledMethodDataGridProps,
-} from "../ModeledMethodDataGrid";
+import type { ModeledMethodDataGridProps } from "../ModeledMethodDataGrid";
+import { ModeledMethodDataGrid } from "../ModeledMethodDataGrid";
 import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 
 describe(ModeledMethodDataGrid.name, () => {

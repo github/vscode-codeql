@@ -1,7 +1,8 @@
-import { window as Window, OutputChannel, Progress } from "vscode";
-import { Logger, LogOptions } from "../logger";
+import type { OutputChannel, Progress } from "vscode";
+import { window as Window } from "vscode";
+import type { Logger, LogOptions } from "../logger";
 import { DisposableObject } from "../../disposable-object";
-import { NotificationLogger } from "../notification-logger";
+import type { NotificationLogger } from "../notification-logger";
 
 /**
  * A logger that writes messages to an output channel in the VS Code Output tab.

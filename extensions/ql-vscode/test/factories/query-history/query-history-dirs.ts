@@ -1,4 +1,4 @@
-import { QueryHistoryDirs } from "../../../src/query-history/query-history-dirs";
+import type { QueryHistoryDirs } from "../../../src/query-history/query-history-dirs";
 
 export function createMockQueryHistoryDirs({
   localQueriesDirPath = "mock-local-queries-dir-path",

@@ -1,6 +1,7 @@
-import { Dispatch, SetStateAction, useCallback } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { useCallback } from "react";
 import { styled } from "styled-components";
-import {
+import type {
   FilterKey,
   RepositoriesFilterSortState,
   SortKey,
@@ -9,7 +10,7 @@ import { RepositoriesSearch } from "./RepositoriesSearch";
 import { RepositoriesSort } from "./RepositoriesSort";
 import { RepositoriesFilter } from "./RepositoriesFilter";
 import { RepositoriesResultFormat } from "./RepositoriesResultFormat";
-import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
+import type { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 type Props = {
   filterSortValue: RepositoriesFilterSortState;

@@ -1,31 +1,29 @@
 import { ViewColumn } from "vscode";
-import {
-  AbstractWebview,
-  WebviewPanelConfig,
-} from "../common/vscode/abstract-webview";
+import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
+import { AbstractWebview } from "../common/vscode/abstract-webview";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../common/logging";
-import {
+import type {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,
 } from "../common/interface-types";
 import { assertNever } from "../common/helpers-pure";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
 } from "./shared/variant-analysis";
-import {
+import type {
   VariantAnalysisViewInterface,
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
-import { DataFlowPaths } from "./shared/data-flow-paths";
-import { App } from "../common/app";
+import type { DataFlowPaths } from "./shared/data-flow-paths";
+import type { App } from "../common/app";
 import {
   getVariantAnalysisDefaultResultsFilter,
   getVariantAnalysisDefaultResultsSort,

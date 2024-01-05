@@ -1,4 +1,4 @@
-import {
+import type {
   VariantAnalysis as ApiVariantAnalysis,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories as ApiVariantAnalysisSkippedRepositories,
@@ -9,16 +9,18 @@ import {
   VariantAnalysisNotFoundRepositoryGroup as ApiVariantAnalysisNotFoundRepositoryGroup,
   VariantAnalysisRepoTask as ApiVariantAnalysisRepoTask,
 } from "./gh-api/variant-analysis";
-import {
+import type {
   VariantAnalysis,
-  VariantAnalysisFailureReason,
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,
-  VariantAnalysisStatus,
-  VariantAnalysisRepoStatus,
   VariantAnalysisSubmission,
   VariantAnalysisSkippedRepositoryGroup,
   VariantAnalysisRepositoryTask,
+} from "./shared/variant-analysis";
+import {
+  VariantAnalysisFailureReason,
+  VariantAnalysisStatus,
+  VariantAnalysisRepoStatus,
 } from "./shared/variant-analysis";
 
 export function processVariantAnalysis(

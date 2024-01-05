@@ -1,12 +1,12 @@
-import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
-import { LocalQueryInfo } from "../query-results";
+import type { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
+import type { LocalQueryInfo } from "../query-results";
 import { assertNever } from "../common/helpers-pure";
 import { pluralize } from "../common/word";
 import {
   hasRepoScanCompleted,
   getActionsWorkflowRunUrl as getVariantAnalysisActionsWorkflowRunUrl,
 } from "../variant-analysis/shared/variant-analysis";
-import { QueryLanguage } from "../common/query-language";
+import type { QueryLanguage } from "../common/query-language";
 
 export type QueryHistoryInfo = LocalQueryInfo | VariantAnalysisHistoryItem;
 

@@ -1,5 +1,5 @@
 import { mockedObject } from "../../vscode-tests/utils/mocking.helpers";
-import { ModelingStore } from "../../../src/model-editor/modeling-store";
+import type { ModelingStore } from "../../../src/model-editor/modeling-store";
 
 export function createMockModelingStore({
   initializeStateForDb = jest.fn(),

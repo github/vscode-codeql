@@ -1,6 +1,6 @@
 import { authentication } from "vscode";
-import { Octokit } from "@octokit/rest";
-import { Credentials } from "../authentication";
+import type { Octokit } from "@octokit/rest";
+import type { Credentials } from "../authentication";
 import { AppOctokit } from "../octokit";
 
 export const GITHUB_AUTH_PROVIDER_ID = "github";

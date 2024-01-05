@@ -1,14 +1,15 @@
-import { CancellationToken } from "vscode";
-import { DatabaseItem } from "../databases/local-databases";
+import type { CancellationToken } from "vscode";
+import type { DatabaseItem } from "../databases/local-databases";
 import { basename } from "path";
-import { QueryRunner } from "../query-server";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { ProgressCallback } from "../common/vscode/progress";
+import type { QueryRunner } from "../query-server";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { ModeledMethod } from "./modeled-method";
+import type { ModeledMethod } from "./modeled-method";
 import { runQuery } from "../local-queries/run-query";
-import { QueryConstraints, resolveQueries } from "../local-queries";
-import { DecodedBqrs } from "../common/bqrs-cli-types";
+import type { QueryConstraints } from "../local-queries";
+import { resolveQueries } from "../local-queries";
+import type { DecodedBqrs } from "../common/bqrs-cli-types";
 type GenerateQueriesOptions = {
   queryConstraints: QueryConstraints;
   filterQueries?: (queryPath: string) => boolean;

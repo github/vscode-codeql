@@ -1,6 +1,7 @@
-import { Extension, extensions, Uri } from "vscode";
+import type { Extension } from "vscode";
+import { extensions, Uri } from "vscode";
 import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
-import {
+import type {
   GitExtension,
   API as GitExtensionAPI,
 } from "../../../../src/common/vscode/extension/git";

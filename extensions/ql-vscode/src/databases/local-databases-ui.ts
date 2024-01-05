@@ -1,15 +1,17 @@
 import { join, basename, dirname as path_dirname } from "path";
 import { DisposableObject } from "../common/disposable-object";
-import {
+import type {
   Event,
-  EventEmitter,
   ProviderResult,
   TreeDataProvider,
+  CancellationToken,
+} from "vscode";
+import {
+  EventEmitter,
   TreeItem,
   Uri,
   window,
   env,
-  CancellationToken,
   ThemeIcon,
   ThemeColor,
   workspace,
@@ -17,17 +19,16 @@ import {
 } from "vscode";
 import { pathExists, stat, readdir, remove } from "fs-extra";
 
-import {
+import type {
   DatabaseChangedEvent,
   DatabaseItem,
   DatabaseManager,
 } from "./local-databases";
-import {
+import type {
   ProgressCallback,
   ProgressContext,
-  withInheritedProgress,
-  withProgress,
 } from "../common/vscode/progress";
+import { withInheritedProgress, withProgress } from "../common/vscode/progress";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
@@ -42,17 +43,17 @@ import {
   promptImportInternetDatabase,
 } from "./database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
-import { QueryRunner } from "../query-server";
+import type { QueryRunner } from "../query-server";
 import { isCanary } from "../config";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
-import { LocalDatabasesCommands } from "../common/commands";
+import type { LocalDatabasesCommands } from "../common/commands";
 import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
 import { tryGetQueryLanguage } from "../common/query-language";
-import { LanguageContextStore } from "../language-context-store";
+import type { LanguageContextStore } from "../language-context-store";
 
 enum SortOrder {
   NameAsc = "NameAsc",

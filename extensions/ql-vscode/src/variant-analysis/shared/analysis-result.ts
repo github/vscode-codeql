@@ -1,4 +1,4 @@
-import { RawResultSet } from "../../common/raw-result-types";
+import type { RawResultSet } from "../../common/raw-result-types";
 
 export interface AnalysisRawResults {
   resultSet: RawResultSet;

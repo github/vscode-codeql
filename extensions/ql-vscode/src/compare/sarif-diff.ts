@@ -1,4 +1,4 @@
-import { Result } from "sarif";
+import type { Result } from "sarif";
 
 /**
  * Compare the alerts of two queries. Use deep equality to determine if

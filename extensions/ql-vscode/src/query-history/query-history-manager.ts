@@ -1,18 +1,20 @@
 import { join, dirname } from "path";
-import {
+import type {
   Disposable,
-  env,
-  EventEmitter,
   ExtensionContext,
   ProviderResult,
-  Range,
   TreeView,
+} from "vscode";
+import {
+  env,
+  EventEmitter,
+  Range,
   Uri,
   ViewColumn,
   window,
   workspace,
 } from "vscode";
-import { QueryHistoryConfig } from "../config";
+import type { QueryHistoryConfig } from "../config";
 import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,
@@ -21,14 +23,14 @@ import { URLSearchParams } from "url";
 import { DisposableObject } from "../common/disposable-object";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../common/time";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
-import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
+import type { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
+import type { QueryHistoryInfo } from "./query-history-info";
 import {
   getActionsWorkflowRunUrl,
   getQueryId,
   getQueryText,
-  QueryHistoryInfo,
 } from "./query-history-info";
-import { DatabaseManager } from "../databases/local-databases";
+import type { DatabaseManager } from "../databases/local-databases";
 import { registerQueryHistoryScrubber } from "./query-history-scrubber";
 import {
   QueryStatus,
@@ -36,22 +38,22 @@ import {
 } from "./query-status";
 import { readQueryHistoryFromFile, writeQueryHistoryToFile } from "./store";
 import { pathExists } from "fs-extra";
-import { HistoryItemLabelProvider } from "./history-item-label-provider";
-import { ResultsView, WebviewReveal } from "../local-queries";
-import { EvalLogTreeBuilder, EvalLogViewer } from "../query-evaluation-logging";
-import {
-  EvalLogData,
-  parseViewerData,
-} from "../log-insights/log-summary-parser";
-import { QueryWithResults } from "../run-queries-shared";
-import { QueryRunner } from "../query-server";
-import { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
-import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
+import type { HistoryItemLabelProvider } from "./history-item-label-provider";
+import type { ResultsView } from "../local-queries";
+import { WebviewReveal } from "../local-queries";
+import type { EvalLogViewer } from "../query-evaluation-logging";
+import { EvalLogTreeBuilder } from "../query-evaluation-logging";
+import type { EvalLogData } from "../log-insights/log-summary-parser";
+import { parseViewerData } from "../log-insights/log-summary-parser";
+import type { QueryWithResults } from "../run-queries-shared";
+import type { QueryRunner } from "../query-server";
+import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
+import type { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
-import { QueryHistoryDirs } from "./query-history-dirs";
-import { QueryHistoryCommands } from "../common/commands";
-import { App } from "../common/app";
+import type { QueryHistoryDirs } from "./query-history-dirs";
+import type { QueryHistoryCommands } from "../common/commands";
+import type { App } from "../common/app";
 import { tryOpenExternalFile } from "../common/vscode/external-files";
 import {
   createMultiSelectionCommand,
@@ -62,7 +64,7 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
-import { LanguageContextStore } from "../language-context-store";
+import type { LanguageContextStore } from "../language-context-store";
 
 /**
  * query-history-manager.ts

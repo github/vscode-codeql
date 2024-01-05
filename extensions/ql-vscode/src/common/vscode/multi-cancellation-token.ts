@@ -1,4 +1,4 @@
-import { CancellationToken, Disposable } from "vscode";
+import type { CancellationToken, Disposable } from "vscode";
 import { DisposableObject } from "../disposable-object";
 
 /**

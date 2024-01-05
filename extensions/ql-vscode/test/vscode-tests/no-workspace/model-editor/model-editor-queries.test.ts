@@ -4,11 +4,11 @@ import { load } from "js-yaml";
 import { setUpPack } from "../../../../src/model-editor/model-editor-queries-setup";
 import { dirSync } from "tmp-promise";
 import { fetchExternalApiQueries } from "../../../../src/model-editor/queries";
-import { QueryLanguage } from "../../../../src/common/query-language";
+import type { QueryLanguage } from "../../../../src/common/query-language";
 import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject } from "../../utils/mocking.helpers";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { ModelConfig } from "../../../../src/config";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { ModelConfig } from "../../../../src/config";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 describe("setUpPack", () => {

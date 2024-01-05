@@ -1,16 +1,17 @@
 import { outputFile, readFile } from "fs-extra";
-import { Method } from "./method";
-import { ModeledMethod } from "./modeled-method";
-import { Mode } from "./shared/mode";
+import type { Method } from "./method";
+import type { ModeledMethod } from "./modeled-method";
+import type { Mode } from "./shared/mode";
 import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
 import { join, relative } from "path";
-import { ExtensionPack } from "./shared/extension-pack";
-import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
+import type { ExtensionPack } from "./shared/extension-pack";
+import type { NotificationLogger } from "../common/logging";
+import { showAndLogErrorMessage } from "../common/logging";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { load as loadYaml } from "js-yaml";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
-import { QueryLanguage } from "../common/query-language";
+import type { QueryLanguage } from "../common/query-language";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,

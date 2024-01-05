@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
-import {
-  DbItemKind,
+import type {
   RemoteDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
@@ -8,6 +7,7 @@ import {
   RemoteUserDefinedListDbItem,
   RootRemoteDbItem,
 } from "../../src/databases/db-item";
+import { DbItemKind } from "../../src/databases/db-item";
 
 // Root Remote Db Items
 export function createRootRemoteDbItem({

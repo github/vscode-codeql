@@ -1,10 +1,11 @@
 import { MethodRow } from "./MethodRow";
-import { Method, canMethodBeModeled } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import { canMethodBeModeled } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
 import { sortMethods } from "../../model-editor/shared/sorting";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
-import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
 import { DataGrid, DataGridCell } from "../common/DataGrid";
 

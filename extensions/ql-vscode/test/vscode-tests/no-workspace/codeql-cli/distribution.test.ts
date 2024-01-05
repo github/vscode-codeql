@@ -3,12 +3,13 @@ import { extLogger } from "../../../../src/common/logging/vscode";
 import { writeFile } from "fs-extra";
 import { join } from "path";
 import * as os from "os";
-import { dir, DirectoryResult } from "tmp-promise";
+import type { DirectoryResult } from "tmp-promise";
+import { dir } from "tmp-promise";
 import {
   DistributionManager,
   getExecutableFromDirectory,
 } from "../../../../src/codeql-cli/distribution";
-import {
+import type {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "../../../../src/common/logging";

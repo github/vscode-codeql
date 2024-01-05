@@ -1,8 +1,9 @@
-import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
+import type { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { QuickPickItem, window } from "vscode";
+import type { QuickPickItem } from "vscode";
+import { window } from "vscode";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
-  ProgressCallback,
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
@@ -14,7 +15,7 @@ import {
 import { asError, getErrorStack } from "../common/helpers-pure";
 import { redactableError } from "../common/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "../common/query-language";
-import { PackagingCommands } from "../common/commands";
+import type { PackagingCommands } from "../common/commands";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { containsPath } from "../common/files";
 

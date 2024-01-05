@@ -3,9 +3,10 @@ import {
   VariantAnalysisFailureReason,
   VariantAnalysisStatus,
 } from "../../../variant-analysis/shared/variant-analysis";
-import { VariantAnalysis, VariantAnalysisProps } from "../VariantAnalysis";
+import type { VariantAnalysisProps } from "../VariantAnalysis";
+import { VariantAnalysis } from "../VariantAnalysis";
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
-import { ToVariantAnalysisMessage } from "../../../common/interface-types";
+import type { ToVariantAnalysisMessage } from "../../../common/interface-types";
 import {
   FilterKey,
   SortKey,

@@ -1,5 +1,5 @@
 import { assertNever, getErrorMessage } from "../../common/helpers-pure";
-import {
+import type {
   DatabaseInfo,
   Interpretation,
   IntoResultsViewMsg,
@@ -7,11 +7,13 @@ import {
   RawResultsSortState,
   QueryMetadata,
   ResultsPaths,
-  ALERTS_TABLE_NAME,
-  GRAPH_TABLE_NAME,
   ParsedResultSets,
   NavigateMsg,
   ResultSet,
+} from "../../common/interface-types";
+import {
+  ALERTS_TABLE_NAME,
+  GRAPH_TABLE_NAME,
 } from "../../common/interface-types";
 import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./ResultTables";

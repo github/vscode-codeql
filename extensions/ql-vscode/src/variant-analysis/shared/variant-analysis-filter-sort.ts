@@ -1,4 +1,4 @@
-import { Repository, RepositoryWithMetadata } from "./repository";
+import type { Repository, RepositoryWithMetadata } from "./repository";
 import { assertNever } from "../../common/helpers-pure";
 
 export enum FilterKey {

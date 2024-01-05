@@ -1,7 +1,7 @@
-import { App } from "./common/app";
+import type { App } from "./common/app";
 import { DisposableObject } from "./common/disposable-object";
-import { AppEvent, AppEventEmitter } from "./common/events";
-import { QueryLanguage } from "./common/query-language";
+import type { AppEvent, AppEventEmitter } from "./common/events";
+import type { QueryLanguage } from "./common/query-language";
 
 type LanguageFilter = QueryLanguage | "All";
 

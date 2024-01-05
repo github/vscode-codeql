@@ -1,28 +1,32 @@
-import {
+import type {
   QueryHistoryVariantAnalysisDto,
-  QueryStatusDto,
   VariantAnalysisDto,
-  VariantAnalysisFailureReasonDto,
-  VariantAnalysisRepoStatusDto,
   VariantAnalysisScannedRepositoryDto,
   VariantAnalysisSkippedRepositoriesDto,
   VariantAnalysisSkippedRepositoryDto,
   VariantAnalysisSkippedRepositoryGroupDto,
-  VariantAnalysisStatusDto,
 } from "./query-history-variant-analysis-dto";
 import {
+  QueryStatusDto,
+  VariantAnalysisFailureReasonDto,
+  VariantAnalysisRepoStatusDto,
+  VariantAnalysisStatusDto,
+} from "./query-history-variant-analysis-dto";
+import type {
   VariantAnalysis,
-  VariantAnalysisFailureReason,
-  VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,
   VariantAnalysisSkippedRepository,
   VariantAnalysisSkippedRepositoryGroup,
+} from "../../variant-analysis/shared/variant-analysis";
+import {
+  VariantAnalysisFailureReason,
+  VariantAnalysisRepoStatus,
   VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
 import { assertNever } from "../../common/helpers-pure";
 import { QueryStatus } from "../query-status";
-import { VariantAnalysisHistoryItem } from "../variant-analysis-history-item";
+import type { VariantAnalysisHistoryItem } from "../variant-analysis-history-item";
 import { mapQueryLanguageToDto } from "./query-history-domain-mapper";
 
 export function mapQueryHistoryVariantAnalysisToDto(

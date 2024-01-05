@@ -1,6 +1,6 @@
 import { Location } from "./locations/Location";
 import { RawNumberValue } from "../common/RawNumberValue";
-import { CellValue } from "../../common/raw-result-types";
+import type { CellValue } from "../../common/raw-result-types";
 import { assertNever } from "../../common/helpers-pure";
 
 interface Props {

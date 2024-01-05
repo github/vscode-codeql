@@ -1,12 +1,8 @@
 import { assertNever } from "../../common/helpers-pure";
-import {
-  VariantAnalysisScannedRepositoryState,
-  VariantAnalysisScannedRepositoryDownloadStatus,
-} from "../shared/variant-analysis";
-import {
-  VariantAnalysisScannedRepositoryStateDto,
-  VariantAnalysisScannedRepositoryDownloadDto,
-} from "./repo-states-dto";
+import type { VariantAnalysisScannedRepositoryState } from "../shared/variant-analysis";
+import { VariantAnalysisScannedRepositoryDownloadStatus } from "../shared/variant-analysis";
+import type { VariantAnalysisScannedRepositoryStateDto } from "./repo-states-dto";
+import { VariantAnalysisScannedRepositoryDownloadDto } from "./repo-states-dto";
 
 export function mapRepoStatesToDomainModel(
   repoStates: Record<number, VariantAnalysisScannedRepositoryStateDto>,

@@ -1,10 +1,9 @@
-import {
-  ConfigurationTarget,
+import type {
   Extension,
   ExtensionContext,
   ConfigurationChangeEvent,
-  env,
 } from "vscode";
+import { ConfigurationTarget, env } from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
 import {
   ConfigListener,
@@ -14,13 +13,13 @@ import {
   isIntegrationTestMode,
   isCanary,
 } from "../../config";
-import { TelemetryClient } from "applicationinsights";
+import type { TelemetryClient } from "applicationinsights";
 import { extLogger } from "../logging/vscode";
 import { UserCancellationException } from "./progress";
 import { showBinaryChoiceWithUrlDialog } from "./dialog";
-import { RedactableError } from "../errors";
-import { SemVer } from "semver";
-import { AppTelemetry } from "../telemetry";
+import type { RedactableError } from "../errors";
+import type { SemVer } from "semver";
+import type { AppTelemetry } from "../telemetry";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";

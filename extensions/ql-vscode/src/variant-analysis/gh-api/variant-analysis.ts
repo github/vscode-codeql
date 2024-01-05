@@ -1,5 +1,5 @@
-import { QueryLanguage } from "../../common/query-language";
-import { Repository, RepositoryWithMetadata } from "./repository";
+import type { QueryLanguage } from "../../common/query-language";
+import type { Repository, RepositoryWithMetadata } from "./repository";
 
 export interface VariantAnalysisSubmissionRequest {
   action_repo_ref: string;

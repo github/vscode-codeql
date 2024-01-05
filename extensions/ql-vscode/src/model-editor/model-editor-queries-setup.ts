@@ -1,14 +1,14 @@
 import { join } from "path";
-import { QueryLanguage } from "../common/query-language";
+import type { QueryLanguage } from "../common/query-language";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { prepareModelEditorQueries } from "./model-editor-queries";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { ModelConfig } from "../config";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { ModelConfig } from "../config";
 import { Mode } from "./shared/mode";
 import { resolveQueriesFromPacks } from "../local-queries";
 import { modeTag } from "./mode-tag";
-import { NotificationLogger } from "../common/logging";
+import type { NotificationLogger } from "../common/logging";
 
 export const syntheticQueryPackName = "codeql/model-editor-queries";
 

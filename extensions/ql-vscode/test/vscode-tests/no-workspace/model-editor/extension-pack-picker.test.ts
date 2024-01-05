@@ -1,19 +1,15 @@
-import {
-  CancellationTokenSource,
-  Uri,
-  workspace,
-  WorkspaceFolder,
-} from "vscode";
+import type { WorkspaceFolder } from "vscode";
+import { CancellationTokenSource, Uri, workspace } from "vscode";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { outputFile, readFile } from "fs-extra";
 import { join } from "path";
 import { dir } from "tmp-promise";
-import { QlpacksInfo } from "../../../../src/codeql-cli/cli";
+import type { QlpacksInfo } from "../../../../src/codeql-cli/cli";
 
 import { pickExtensionPack } from "../../../../src/model-editor/extension-pack-picker";
-import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
+import type { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import { ModelConfig } from "../../../../src/config";
+import type { ModelConfig } from "../../../../src/config";
 import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("pickExtensionPack", () => {

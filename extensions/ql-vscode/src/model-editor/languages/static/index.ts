@@ -1,9 +1,10 @@
-import { ModelsAsDataLanguage } from "../models-as-data";
-import { Provenance } from "../../modeled-method";
-import { DataTuple } from "../../model-extension-file";
+import type { ModelsAsDataLanguage } from "../models-as-data";
+import type { Provenance } from "../../modeled-method";
+import type { DataTuple } from "../../model-extension-file";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { filterFlowModelQueries, parseFlowModelResults } from "./generate";
-import { getArgumentsList, MethodArgument } from "../../method";
+import type { MethodArgument } from "../../method";
+import { getArgumentsList } from "../../method";
 
 function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;

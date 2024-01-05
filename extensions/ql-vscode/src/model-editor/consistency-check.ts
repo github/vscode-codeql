@@ -1,6 +1,6 @@
-import { Method } from "./method";
-import { ModeledMethod } from "./modeled-method";
-import { BaseLogger } from "../common/logging";
+import type { Method } from "./method";
+import type { ModeledMethod } from "./modeled-method";
+import type { BaseLogger } from "../common/logging";
 
 interface Notifier {
   missingMethod(signature: string): void;

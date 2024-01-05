@@ -1,4 +1,4 @@
-import {
+import type {
   CancellationToken,
   DefinitionProvider,
   Location,
@@ -7,21 +7,22 @@ import {
   ReferenceContext,
   ReferenceProvider,
   TextDocument,
-  Uri,
 } from "vscode";
+import { Uri } from "vscode";
 
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
   zipArchiveScheme,
 } from "../../common/vscode/archive-filesystem-provider";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { DatabaseManager } from "../../databases/local-databases";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { DatabaseManager } from "../../databases/local-databases";
 import { CachedOperation } from "./cached-operation";
-import { ProgressCallback, withProgress } from "../../common/vscode/progress";
+import type { ProgressCallback } from "../../common/vscode/progress";
+import { withProgress } from "../../common/vscode/progress";
 import { KeyType } from "./key-type";
+import type { FullLocationLink } from "./location-finder";
 import {
-  FullLocationLink,
   getLocationsForUriString,
   SELECTED_SOURCE_COLUMN,
   SELECTED_SOURCE_FILE,
@@ -37,7 +38,7 @@ import {
   NO_CACHE_AST_VIEWER,
   NO_CACHE_CONTEXTUAL_QUERIES,
 } from "../../config";
-import { CoreCompletedQuery, QueryRunner } from "../../query-server";
+import type { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { AstBuilder } from "../ast-viewer/ast-builder";
 import { MultiCancellationToken } from "../../common/vscode/multi-cancellation-token";
 

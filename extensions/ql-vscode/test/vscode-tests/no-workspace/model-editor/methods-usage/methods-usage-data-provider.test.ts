@@ -1,19 +1,15 @@
-import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import {
-  CallClassification,
-  Method,
-} from "../../../../../src/model-editor/method";
-import {
-  MethodsUsageDataProvider,
-  MethodsUsageTreeViewItem,
-} from "../../../../../src/model-editor/methods-usage/methods-usage-data-provider";
-import { DatabaseItem } from "../../../../../src/databases/local-databases";
+import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
+import type { Method } from "../../../../../src/model-editor/method";
+import { CallClassification } from "../../../../../src/model-editor/method";
+import type { MethodsUsageTreeViewItem } from "../../../../../src/model-editor/methods-usage/methods-usage-data-provider";
+import { MethodsUsageDataProvider } from "../../../../../src/model-editor/methods-usage/methods-usage-data-provider";
+import type { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
   createMethod,
   createUsage,
 } from "../../../../factories/model-editor/method-factories";
 import { mockedObject } from "../../../utils/mocking.helpers";
-import { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
+import type { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 import { Mode } from "../../../../../src/model-editor/shared/mode";
 import { createSinkModeledMethod } from "../../../../factories/model-editor/modeled-method-factories";
 

@@ -1,6 +1,6 @@
-import { Location, Region } from "sarif";
+import type { Location, Region } from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
-import { UrlValueResolvable } from "./raw-result-types";
+import type { UrlValueResolvable } from "./raw-result-types";
 import { isEmptyPath } from "./bqrs-utils";
 
 export interface SarifLink {

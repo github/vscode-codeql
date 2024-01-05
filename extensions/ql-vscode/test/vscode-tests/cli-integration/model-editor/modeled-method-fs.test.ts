@@ -1,12 +1,12 @@
 import { Uri, workspace } from "vscode";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension } from "../../global.helper";
 import { mkdirSync, writeFileSync } from "fs";
 import {
   listModelFiles,
   loadModeledMethods,
 } from "../../../../src/model-editor/modeled-method-fs";
-import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
+import type { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { join } from "path";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { homedir, tmpdir } from "os";

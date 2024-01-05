@@ -1,4 +1,4 @@
-import { ModelEditorViewState } from "../../../src/model-editor/shared/view-state";
+import type { ModelEditorViewState } from "../../../src/model-editor/shared/view-state";
 import { Mode } from "../../../src/model-editor/shared/mode";
 import { createMockExtensionPack } from "./extension-pack";
 import { QueryLanguage } from "../../../src/common/query-language";

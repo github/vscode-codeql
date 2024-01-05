@@ -1,5 +1,5 @@
-import { ModeledMethod, NeutralModeledMethod } from "../modeled-method";
-import { MethodSignature } from "../method";
+import type { ModeledMethod, NeutralModeledMethod } from "../modeled-method";
+import type { MethodSignature } from "../method";
 import { assertNever } from "../../common/helpers-pure";
 
 export type ModeledMethodValidationError = {

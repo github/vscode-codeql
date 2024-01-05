@@ -1,8 +1,6 @@
 import { render as reactRender, screen } from "@testing-library/react";
-import {
-  VariantAnalysisSkippedRepositoriesTab,
-  VariantAnalysisSkippedRepositoriesTabProps,
-} from "../VariantAnalysisSkippedRepositoriesTab";
+import type { VariantAnalysisSkippedRepositoriesTabProps } from "../VariantAnalysisSkippedRepositoriesTab";
+import { VariantAnalysisSkippedRepositoriesTab } from "../VariantAnalysisSkippedRepositoriesTab";
 import { SortKey } from "../../../variant-analysis/shared/variant-analysis-filter-sort";
 import { permissiveFilterSortState } from "../../../../test/unit-tests/variant-analysis-filter-sort.test";
 

@@ -1,14 +1,12 @@
 import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
-import { QueryHistoryInfo } from "../query-history/query-history-info";
-import {
-  EvaluationLogProblemReporter,
-  EvaluationLogScannerSet,
-} from "./log-scanner";
-import { PipelineInfo, SummarySymbols } from "./summary-parser";
+import type { QueryHistoryInfo } from "../query-history/query-history-info";
+import type { EvaluationLogProblemReporter } from "./log-scanner";
+import { EvaluationLogScannerSet } from "./log-scanner";
+import type { PipelineInfo, SummarySymbols } from "./summary-parser";
 import { readFile } from "fs-extra";
 import { extLogger } from "../common/logging/vscode";
-import { QueryHistoryManager } from "../query-history/query-history-manager";
+import type { QueryHistoryManager } from "../query-history/query-history-manager";
 
 /**
  * Compute the key used to find a predicate in the summary symbols.

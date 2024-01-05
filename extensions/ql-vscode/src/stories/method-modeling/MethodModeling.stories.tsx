@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { MethodModeling as MethodModelingComponent } from "../../view/method-modeling/MethodModeling";
 import { createMethod } from "../../../test/factories/model-editor/method-factories";

@@ -1,7 +1,7 @@
-import { Logger } from "../common/logging";
-import { ChildProcess } from "child_process";
-import { Disposable } from "vscode";
-import { MessageConnection } from "vscode-jsonrpc";
+import type { Logger } from "../common/logging";
+import type { ChildProcess } from "child_process";
+import type { Disposable } from "vscode";
+import type { MessageConnection } from "vscode-jsonrpc";
 
 /** A running query server process and its associated message connection. */
 export class ServerProcess implements Disposable {

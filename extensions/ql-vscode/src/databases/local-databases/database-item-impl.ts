@@ -1,7 +1,7 @@
 // Exported for testing
-import { CodeQLCliServer, DbInfo } from "../../codeql-cli/cli";
+import type { CodeQLCliServer, DbInfo } from "../../codeql-cli/cli";
 import { Uri, workspace } from "vscode";
-import { FullDatabaseOptions } from "./database-options";
+import type { FullDatabaseOptions } from "./database-options";
 import { basename, dirname, extname, join } from "path";
 import {
   decodeSourceArchiveUri,
@@ -9,12 +9,12 @@ import {
   encodeSourceArchiveUri,
   zipArchiveScheme,
 } from "../../common/vscode/archive-filesystem-provider";
-import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
+import type { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { isLikelyDatabaseRoot } from "./db-contents-heuristics";
 import { stat } from "fs-extra";
 import { containsPath, pathsEqual } from "../../common/files";
-import { DatabaseContents } from "./database-contents";
-import { DatabaseOrigin } from "./database-origin";
+import type { DatabaseContents } from "./database-contents";
+import type { DatabaseOrigin } from "./database-origin";
 
 export class DatabaseItemImpl implements DatabaseItem {
   // These are only public in the implementation, they are readonly in the interface

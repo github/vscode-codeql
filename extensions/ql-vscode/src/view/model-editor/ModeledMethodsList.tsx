@@ -1,13 +1,13 @@
 import { useMemo } from "react";
-import { Method } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { LibraryRow } from "./LibraryRow";
 import { Mode } from "../../model-editor/shared/mode";
 import {
   groupMethods,
   sortGroupNames,
 } from "../../model-editor/shared/sorting";
-import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
 export type ModeledMethodsListProps = {
   methods: Method[];

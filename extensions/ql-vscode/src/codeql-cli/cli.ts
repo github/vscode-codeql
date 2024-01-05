@@ -1,29 +1,24 @@
 import { EOL } from "os";
 import { spawn } from "child-process-promise";
-import {
-  ChildProcessWithoutNullStreams,
-  execFile,
-  spawn as spawnChildProcess,
-} from "child_process";
+import type { ChildProcessWithoutNullStreams } from "child_process";
+import { execFile, spawn as spawnChildProcess } from "child_process";
 import { readFile } from "fs-extra";
 import { delimiter, dirname, join } from "path";
-import { Log } from "sarif";
+import type { Log } from "sarif";
 import { SemVer } from "semver";
-import { Readable } from "stream";
+import type { Readable } from "stream";
 import tk from "tree-kill";
 import { promisify } from "util";
-import { CancellationToken, Disposable, Uri } from "vscode";
+import type { CancellationToken, Disposable, Uri } from "vscode";
 
-import {
+import type {
   BqrsInfo,
   DecodedBqrs,
   DecodedBqrsChunk,
 } from "../common/bqrs-cli-types";
-import { CliConfig } from "../config";
-import {
-  DistributionProvider,
-  FindDistributionResultKind,
-} from "./distribution";
+import type { CliConfig } from "../config";
+import type { DistributionProvider } from "./distribution";
+import { FindDistributionResultKind } from "./distribution";
 import {
   assertNever,
   getChildProcessErrorMessage,
@@ -31,14 +26,15 @@ import {
   getErrorStack,
 } from "../common/helpers-pure";
 import { walkDirectory } from "../common/files";
-import { QueryMetadata, SortDirection } from "../common/interface-types";
-import { BaseLogger, Logger } from "../common/logging";
-import { ProgressReporter } from "../common/logging/vscode";
+import type { QueryMetadata } from "../common/interface-types";
+import { SortDirection } from "../common/interface-types";
+import type { BaseLogger, Logger } from "../common/logging";
+import type { ProgressReporter } from "../common/logging/vscode";
 import { sarifParser } from "../common/sarif-parser";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { QueryLanguage } from "../common/query-language";
 import { LINE_ENDINGS, splitStreamAtSeparators } from "../common/split-stream";
-import { Position } from "../query-server/messages";
+import type { Position } from "../query-server/messages";
 
 /**
  * The version of the SARIF format that we are using.

@@ -1,17 +1,20 @@
-import { ChangeEvent, useCallback } from "react";
-import {
-  calculateNewProvenance,
-  isModelAccepted,
+import type { ChangeEvent } from "react";
+import { useCallback } from "react";
+import type {
   ModeledMethod,
   ModeledMethodType,
 } from "../../model-editor/modeled-method";
-import { Method } from "../../model-editor/method";
+import {
+  calculateNewProvenance,
+  isModelAccepted,
+} from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
-import { Mutable } from "../../common/mutable";
+import type { Mutable } from "../../common/mutable";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
-import { QueryLanguage } from "../../common/query-language";
+import type { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
-import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
 
 const options: Array<{ value: ModeledMethodType; label: string }> = [

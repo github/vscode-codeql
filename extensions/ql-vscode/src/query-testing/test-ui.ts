@@ -1,4 +1,4 @@
-import {
+import type {
   TestHub,
   TestController,
   TestAdapter,
@@ -7,10 +7,10 @@ import {
   TestEvent,
   TestSuiteEvent,
 } from "vscode-test-adapter-api";
-import { TestTreeNode } from "./test-tree-node";
+import type { TestTreeNode } from "./test-tree-node";
 import { DisposableObject } from "../common/disposable-object";
 import { QLTestAdapter } from "./test-adapter";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { TestManagerBase } from "./test-manager-base";
 
 type VSCodeTestEvent =

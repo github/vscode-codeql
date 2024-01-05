@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { MethodAlreadyModeled as MethodAlreadyModeledComponent } from "../../view/method-modeling/MethodAlreadyModeled";
 

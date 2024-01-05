@@ -1,5 +1,5 @@
 import { sendTelemetry } from "../common/telemetry";
-import { Column, Row } from "../../common/raw-result-types";
+import type { Column, Row } from "../../common/raw-result-types";
 import RawTableHeader from "../results/RawTableHeader";
 import RawTableRow from "../results/RawTableRow";
 

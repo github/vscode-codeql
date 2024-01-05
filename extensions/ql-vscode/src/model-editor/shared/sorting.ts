@@ -1,4 +1,4 @@
-import { Method } from "../method";
+import type { Method } from "../method";
 import { Mode } from "./mode";
 import { calculateModeledPercentage } from "./modeled-percentage";
 

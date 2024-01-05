@@ -1,6 +1,7 @@
 import { mockedObject } from "../../utils/mocking.helpers";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { dir, DirectoryResult } from "tmp-promise";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { DirectoryResult } from "tmp-promise";
+import { dir } from "tmp-promise";
 import { join } from "path";
 import { createLockFileForStandardQuery } from "../../../../src/local-queries/standard-queries";
 import { outputFile, pathExists } from "fs-extra";

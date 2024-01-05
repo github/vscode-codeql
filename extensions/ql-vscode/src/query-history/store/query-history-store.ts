@@ -7,9 +7,9 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../../common/helpers-pure";
-import { QueryHistoryInfo } from "../query-history-info";
+import type { QueryHistoryInfo } from "../query-history-info";
 import { redactableError } from "../../common/errors";
-import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
+import type { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
 import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
 import { mapQueryHistoryToDto } from "./query-history-domain-mapper";
 import { extLogger } from "../../common/logging/vscode";

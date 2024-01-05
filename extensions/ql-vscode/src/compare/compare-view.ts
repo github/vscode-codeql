@@ -1,34 +1,33 @@
 import { ViewColumn } from "vscode";
 
-import {
-  ALERTS_TABLE_NAME,
+import type {
   FromCompareViewMessage,
   InterpretedQueryCompareResult,
   QueryCompareResult,
   RawQueryCompareResult,
   ToCompareViewMessage,
 } from "../common/interface-types";
-import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
+import { ALERTS_TABLE_NAME } from "../common/interface-types";
+import type { Logger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { DatabaseManager } from "../databases/local-databases";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
-import { BqrsInfo } from "../common/bqrs-cli-types";
+import type { BqrsInfo } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
-import { CompletedLocalQueryInfo } from "../query-results";
+import type { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
-import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
-import {
-  AbstractWebview,
-  WebviewPanelConfig,
-} from "../common/vscode/abstract-webview";
+import type { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
+import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
+import { AbstractWebview } from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
-import { RawResultSet } from "../common/raw-result-types";
+import type { RawResultSet } from "../common/raw-result-types";
+import type { CompareQueryInfo } from "./result-set-names";
 import {
-  CompareQueryInfo,
   findCommonResultSetNames,
   findResultSetNames,
   getResultSetNames,

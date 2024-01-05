@@ -1,11 +1,17 @@
-import { Log, PhysicalLocation, ReportingDescriptor, Result, Run } from "sarif";
+import type {
+  Log,
+  PhysicalLocation,
+  ReportingDescriptor,
+  Result,
+  Run,
+} from "sarif";
 import {
   extractAnalysisAlerts,
   tryGetFilePath,
   tryGetRule,
   tryGetSeverity,
 } from "../../src/variant-analysis/sarif-processing";
-import {
+import type {
   AnalysisMessage,
   AnalysisMessageLocationToken,
 } from "../../src/variant-analysis/shared/analysis-result";

@@ -1,7 +1,9 @@
-import { default as fetch, Response } from "node-fetch";
-import { compare, parse, Range, satisfies } from "semver";
+import type { Response } from "node-fetch";
+import { default as fetch } from "node-fetch";
+import type { Range } from "semver";
+import { compare, parse, satisfies } from "semver";
 import { URL } from "url";
-import { Release, ReleaseAsset } from "./release";
+import type { Release, ReleaseAsset } from "./release";
 import { GithubApiError, GithubRateLimitedError } from "./github-api-error";
 
 /**

@@ -1,5 +1,5 @@
 import { decodeBqrsToMethods } from "../../../src/model-editor/bqrs";
-import { DecodedBqrsChunk } from "../../../src/common/bqrs-cli-types";
+import type { DecodedBqrsChunk } from "../../../src/common/bqrs-cli-types";
 import { CallClassification } from "../../../src/model-editor/method";
 import { Mode } from "../../../src/model-editor/shared/mode";
 import { QueryLanguage } from "../../../src/common/query-language";

@@ -1,4 +1,4 @@
-import { FileLink } from "../variant-analysis/shared/analysis-result";
+import type { FileLink } from "../variant-analysis/shared/analysis-result";
 
 export function createRemoteFileRef(
   fileLink: FileLink,

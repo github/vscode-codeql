@@ -1,11 +1,11 @@
 import { resolve } from "path";
 
+import type { ZipFileReference } from "../../../../../src/common/vscode/archive-filesystem-provider";
 import {
   encodeSourceArchiveUri,
   encodeArchiveBasePath,
   ArchiveFileSystemProvider,
   decodeSourceArchiveUri,
-  ZipFileReference,
   zipArchiveScheme,
 } from "../../../../../src/common/vscode/archive-filesystem-provider";
 import { FileType, FileSystemError, Uri } from "vscode";

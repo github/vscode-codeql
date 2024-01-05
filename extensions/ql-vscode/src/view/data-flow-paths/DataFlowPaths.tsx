@@ -5,7 +5,7 @@ import { useTelemetryOnChange } from "../common/telemetry";
 import { CodeFlowsDropdown } from "../common/CodePaths/CodeFlowsDropdown";
 import { SectionTitle, VerticalSpace } from "../common";
 import { CodePath } from "../common/CodePaths/CodePath";
-import { DataFlowPaths as DataFlowPathsDomainModel } from "../../variant-analysis/shared/data-flow-paths";
+import type { DataFlowPaths as DataFlowPathsDomainModel } from "../../variant-analysis/shared/data-flow-paths";
 
 const PathsContainer = styled.div`
   display: flex;

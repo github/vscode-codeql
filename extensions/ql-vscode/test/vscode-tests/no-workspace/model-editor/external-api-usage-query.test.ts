@@ -3,22 +3,20 @@ import {
   runModelEditorQueries,
 } from "../../../../src/model-editor/model-editor-queries";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import {
-  DatabaseItem,
-  DatabaseKind,
-} from "../../../../src/databases/local-databases";
+import type { DatabaseItem } from "../../../../src/databases/local-databases";
+import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { dirSync, file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/messages";
 import { fetchExternalApiQueries } from "../../../../src/model-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";
-import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
-import { QueryLanguage } from "../../../../src/common/query-language";
+import type { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
+import type { QueryLanguage } from "../../../../src/common/query-language";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { Mode } from "../../../../src/model-editor/shared/mode";
 import { join } from "path";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { QueryRunner } from "../../../../src/query-server";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { QueryRunner } from "../../../../src/query-server";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 
 describe("runModelEditorQueries", () => {

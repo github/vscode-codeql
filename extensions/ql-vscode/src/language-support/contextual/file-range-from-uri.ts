@@ -1,11 +1,11 @@
 import { Location, Range } from "vscode";
 
-import {
+import type {
   BqrsLineColumnLocation,
   BqrsUrlValue,
 } from "../../common/bqrs-cli-types";
 import { isEmptyPath } from "../../common/bqrs-utils";
-import { DatabaseItem } from "../../databases/local-databases";
+import type { DatabaseItem } from "../../databases/local-databases";
 
 export function fileRangeFromURI(
   uri: BqrsUrlValue | undefined,

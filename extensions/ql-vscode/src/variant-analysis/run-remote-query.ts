@@ -1,43 +1,42 @@
-import { CancellationToken, Uri, window } from "vscode";
+import type { CancellationToken } from "vscode";
+import { Uri, window } from "vscode";
 import { relative, join, sep, dirname, parse, basename } from "path";
 import { dump, load } from "js-yaml";
 import { copy, writeFile, readFile, mkdirp } from "fs-extra";
 import { dir, tmpName } from "tmp-promise";
 import { tmpDir } from "../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { Credentials } from "../common/authentication";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { Credentials } from "../common/authentication";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger } from "../common/logging/vscode";
 import {
   getActionBranch,
   getRemoteControllerRepo,
   setRemoteControllerRepo,
 } from "../config";
-import {
-  ProgressCallback,
-  UserCancellationException,
-} from "../common/vscode/progress";
-import { RequestError } from "@octokit/types/dist-types";
-import { QueryMetadata } from "../common/interface-types";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { UserCancellationException } from "../common/vscode/progress";
+import type { RequestError } from "@octokit/types/dist-types";
+import type { QueryMetadata } from "../common/interface-types";
 import { getErrorMessage, REPO_REGEX } from "../common/helpers-pure";
 import { getRepositoryFromNwo } from "./gh-api/gh-api-client";
+import type { RepositorySelection } from "./repository-selection";
 import {
   getRepositorySelection,
   isValidSelection,
-  RepositorySelection,
 } from "./repository-selection";
-import { Repository } from "./shared/repository";
-import { DbManager } from "../databases/db-manager";
+import type { Repository } from "./shared/repository";
+import type { DbManager } from "../databases/db-manager";
 import {
   getQlPackPath,
   FALLBACK_QLPACK_FILENAME,
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
 } from "../common/ql";
-import { QueryLanguage } from "../common/query-language";
+import type { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
-import { QlPackFile } from "../packaging/qlpack-file";
+import type { QlPackFile } from "../packaging/qlpack-file";
 
 /**
  * Well-known names for the query pack used by the server.

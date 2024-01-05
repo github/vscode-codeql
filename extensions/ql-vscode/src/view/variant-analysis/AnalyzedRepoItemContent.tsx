@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import {
+import type {
   AnalysisAlert,
   AnalysisRawResults,
 } from "../../variant-analysis/shared/analysis-result";

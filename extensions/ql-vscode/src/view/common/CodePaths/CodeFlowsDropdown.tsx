@@ -1,7 +1,8 @@
-import { ChangeEvent, SetStateAction, useCallback } from "react";
+import type { ChangeEvent, SetStateAction } from "react";
+import { useCallback } from "react";
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
 
-import { CodeFlow } from "../../../variant-analysis/shared/analysis-result";
+import type { CodeFlow } from "../../../variant-analysis/shared/analysis-result";
 
 const getCodeFlowName = (codeFlow: CodeFlow) => {
   const filePath =

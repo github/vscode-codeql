@@ -1,6 +1,6 @@
 import { join, resolve } from "path";
 
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension } from "../../global.helper";
 import { tryGetQueryMetadata } from "../../../../src/codeql-cli/query-metadata";
 import { getDataFolderFilePath } from "../utils";

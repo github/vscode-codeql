@@ -5,10 +5,8 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisStatus,
 } from "../../../variant-analysis/shared/variant-analysis";
-import {
-  VariantAnalysisAnalyzedRepos,
-  VariantAnalysisAnalyzedReposProps,
-} from "../VariantAnalysisAnalyzedRepos";
+import type { VariantAnalysisAnalyzedReposProps } from "../VariantAnalysisAnalyzedRepos";
+import { VariantAnalysisAnalyzedRepos } from "../VariantAnalysisAnalyzedRepos";
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "../../../../test/factories/variant-analysis/shared/repository";
 import { createMockScannedRepo } from "../../../../test/factories/variant-analysis/shared/scanned-repositories";

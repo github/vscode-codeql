@@ -1,4 +1,5 @@
-import { Location, Result, Run } from "sarif";
+import type { Location, Result, Run } from "sarif";
+import type { WebviewPanel, TextEditorSelectionChangeEvent } from "vscode";
 import {
   Diagnostic,
   DiagnosticRelatedInformation,
@@ -7,25 +8,23 @@ import {
   Uri,
   window,
   env,
-  WebviewPanel,
   TextEditorSelectionChangeKind,
-  TextEditorSelectionChangeEvent,
   ViewColumn,
   workspace,
 } from "vscode";
-import { CodeQLCliServer, SourceInfo } from "../codeql-cli/cli";
-import {
-  DatabaseEventKind,
+import type { CodeQLCliServer, SourceInfo } from "../codeql-cli/cli";
+import type {
   DatabaseItem,
   DatabaseManager,
 } from "../databases/local-databases";
+import { DatabaseEventKind } from "../databases/local-databases";
 import {
   asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
 } from "../common/helpers-pure";
-import {
+import type {
   FromResultsViewMsg,
   Interpretation,
   IntoResultsViewMsg,
@@ -34,23 +33,25 @@ import {
   SortedResultSetInfo,
   SortedResultsMap,
   InterpretedResultsSortState,
+  RawResultsSortState,
+  ParsedResultSets,
+} from "../common/interface-types";
+import {
   SortDirection,
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
-  RawResultsSortState,
   NavigationDirection,
   getDefaultResultSetName,
-  ParsedResultSets,
 } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
-import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
-import {
+import type { Logger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import type {
   CompletedQueryInfo,
-  interpretResultsSarif,
-  interpretGraphResults,
   CompletedLocalQueryInfo,
 } from "../query-results";
-import { QueryEvaluationInfo } from "../run-queries-shared";
+import { interpretResultsSarif, interpretGraphResults } from "../query-results";
+import type { QueryEvaluationInfo } from "../run-queries-shared";
 import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
@@ -63,19 +64,17 @@ import {
   jumpToLocation,
 } from "../databases/local-databases/locations";
 import { bqrsToResultSet } from "../common/bqrs-raw-results-mapper";
-import {
-  AbstractWebview,
-  WebviewPanelConfig,
-} from "../common/vscode/abstract-webview";
+import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
+import { AbstractWebview } from "../common/vscode/abstract-webview";
 import { isCanary, PAGE_SIZE } from "../config";
-import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
+import type { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
-import { ResultsViewCommands } from "../common/commands";
-import { App } from "../common/app";
-import { Disposable } from "../common/disposable-object";
-import { RawResultSet } from "../common/raw-result-types";
-import { BqrsResultSetSchema } from "../common/bqrs-cli-types";
+import type { ResultsViewCommands } from "../common/commands";
+import type { App } from "../common/app";
+import type { Disposable } from "../common/disposable-object";
+import type { RawResultSet } from "../common/raw-result-types";
+import type { BqrsResultSetSchema } from "../common/bqrs-cli-types";
 
 /**
  * results-view.ts

@@ -5,12 +5,10 @@ import {
   createSinkModeledMethod,
   createSourceModeledMethod,
 } from "../../../../test/factories/model-editor/modeled-method-factories";
-import {
-  MultipleModeledMethodsPanel,
-  MultipleModeledMethodsPanelProps,
-} from "../MultipleModeledMethodsPanel";
+import type { MultipleModeledMethodsPanelProps } from "../MultipleModeledMethodsPanel";
+import { MultipleModeledMethodsPanel } from "../MultipleModeledMethodsPanel";
 import { userEvent } from "@testing-library/user-event";
-import { ModeledMethod } from "../../../model-editor/modeled-method";
+import type { ModeledMethod } from "../../../model-editor/modeled-method";
 import { QueryLanguage } from "../../../common/query-language";
 
 describe(MultipleModeledMethodsPanel.name, () => {

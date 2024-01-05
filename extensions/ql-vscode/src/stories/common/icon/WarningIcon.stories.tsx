@@ -1,9 +1,7 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
-import {
-  CodePaths,
-  WarningIcon as WarningIconComponent,
-} from "../../../view/common";
+import type { CodePaths } from "../../../view/common";
+import { WarningIcon as WarningIconComponent } from "../../../view/common";
 
 export default {
   title: "Icon/Warning Icon",

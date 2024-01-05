@@ -1,7 +1,7 @@
 import Ajv from "ajv";
 
-import { Method } from "./method";
-import {
+import type { Method } from "./method";
+import type {
   ModeledMethod,
   NeutralModeledMethod,
   SinkModeledMethod,
@@ -9,15 +9,15 @@ import {
   SummaryModeledMethod,
   TypeModeledMethod,
 } from "./modeled-method";
-import {
-  getModelsAsDataLanguage,
+import type {
   ModelsAsDataLanguagePredicate,
   ModelsAsDataLanguagePredicates,
 } from "./languages";
+import { getModelsAsDataLanguage } from "./languages";
 import { Mode } from "./shared/mode";
 import { assertNever } from "../common/helpers-pure";
-import { ModelExtensionFile } from "./model-extension-file";
-import { QueryLanguage } from "../common/query-language";
+import type { ModelExtensionFile } from "./model-extension-file";
+import type { QueryLanguage } from "../common/query-language";
 
 import modelExtensionFileSchema from "./model-extension-file.schema.json";
 

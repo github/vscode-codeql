@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { styled } from "styled-components";
-import { VariantAnalysisSkippedRepositoryGroup } from "../../variant-analysis/shared/variant-analysis";
+import type { VariantAnalysisSkippedRepositoryGroup } from "../../variant-analysis/shared/variant-analysis";
 import { Alert } from "../common";
 import { RepoRow } from "./RepoRow";
+import type { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import {
   compareRepository,
   matchesFilter,
-  RepositoriesFilterSortState,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 export type VariantAnalysisSkippedRepositoriesTabProps = {

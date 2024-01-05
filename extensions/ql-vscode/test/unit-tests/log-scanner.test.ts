@@ -1,7 +1,5 @@
-import {
-  EvaluationLogProblemReporter,
-  EvaluationLogScannerSet,
-} from "../../src/log-insights/log-scanner";
+import type { EvaluationLogProblemReporter } from "../../src/log-insights/log-scanner";
+import { EvaluationLogScannerSet } from "../../src/log-insights/log-scanner";
 import { JoinOrderScannerProvider } from "../../src/log-insights/join-order";
 import { join } from "path";
 

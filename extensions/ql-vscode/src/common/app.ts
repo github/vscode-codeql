@@ -1,10 +1,10 @@
-import { Credentials } from "./authentication";
-import { Disposable } from "./disposable-object";
-import { AppEventEmitter } from "./events";
-import { NotificationLogger } from "./logging";
-import { Memento } from "./memento";
-import { AppCommandManager } from "./commands";
-import { AppTelemetry } from "./telemetry";
+import type { Credentials } from "./authentication";
+import type { Disposable } from "./disposable-object";
+import type { AppEventEmitter } from "./events";
+import type { NotificationLogger } from "./logging";
+import type { Memento } from "./memento";
+import type { AppCommandManager } from "./commands";
+import type { AppTelemetry } from "./telemetry";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;

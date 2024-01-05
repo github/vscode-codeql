@@ -1,15 +1,9 @@
 import { dirname, basename, normalize, relative, extname } from "path";
 import { Discovery } from "../common/discovery";
-import {
-  EventEmitter,
-  Event,
-  Uri,
-  RelativePattern,
-  WorkspaceFolder,
-  env,
-} from "vscode";
+import type { Event, Uri, WorkspaceFolder } from "vscode";
+import { EventEmitter, RelativePattern, env } from "vscode";
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { extLogger } from "../common/logging/vscode";

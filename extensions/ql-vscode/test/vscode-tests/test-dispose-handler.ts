@@ -1,4 +1,4 @@
-import { Disposable } from "vscode";
+import type { Disposable } from "vscode";
 import { DisposableObject } from "../../src/common/disposable-object";
 
 export function testDisposeHandler(disposable: any & Disposable) {

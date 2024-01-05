@@ -1,7 +1,9 @@
-import { Entry as ZipEntry, open, Options as ZipOptions, ZipFile } from "yauzl";
-import { Readable, Transform } from "stream";
+import type { Entry as ZipEntry, Options as ZipOptions, ZipFile } from "yauzl";
+import { open } from "yauzl";
+import type { Readable } from "stream";
+import { Transform } from "stream";
 import { dirname, join } from "path";
-import { WriteStream } from "fs";
+import type { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
 
 // We can't use promisify because it picks up the wrong overload.

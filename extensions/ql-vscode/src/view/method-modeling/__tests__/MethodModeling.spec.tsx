@@ -1,5 +1,6 @@
 import { render as reactRender, screen } from "@testing-library/react";
-import { MethodModeling, MethodModelingProps } from "../MethodModeling";
+import type { MethodModelingProps } from "../MethodModeling";
+import { MethodModeling } from "../MethodModeling";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { createSinkModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
 import { QueryLanguage } from "../../../common/query-language";

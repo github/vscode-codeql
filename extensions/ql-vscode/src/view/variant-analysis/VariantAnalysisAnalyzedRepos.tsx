@@ -1,16 +1,15 @@
-import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { useCallback, useMemo } from "react";
 import { styled } from "styled-components";
 import { RepoRow } from "./RepoRow";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
-import {
-  filterAndSortRepositoriesWithResultsByName,
-  RepositoriesFilterSortState,
-} from "../../variant-analysis/shared/variant-analysis-filter-sort";
-import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
+import type { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import { filterAndSortRepositoriesWithResultsByName } from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import type { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 const Container = styled.div`
   display: flex;

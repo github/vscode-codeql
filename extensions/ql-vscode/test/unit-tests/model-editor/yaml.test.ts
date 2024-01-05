@@ -6,9 +6,10 @@ import {
   createFilenameForPackage,
   loadDataExtensionYaml,
 } from "../../../src/model-editor/yaml";
-import { CallClassification, Method } from "../../../src/model-editor/method";
+import type { Method } from "../../../src/model-editor/method";
+import { CallClassification } from "../../../src/model-editor/method";
 import { QueryLanguage } from "../../../src/common/query-language";
-import { ModeledMethod } from "../../../src/model-editor/modeled-method";
+import type { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {

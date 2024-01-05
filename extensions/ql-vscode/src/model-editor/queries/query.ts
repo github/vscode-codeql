@@ -1,6 +1,6 @@
-import { CallClassification } from "../method";
-import { ModeledMethodType } from "../modeled-method";
-import { BqrsEntityValue } from "../../common/bqrs-cli-types";
+import type { CallClassification } from "../method";
+import type { ModeledMethodType } from "../modeled-method";
+import type { BqrsEntityValue } from "../../common/bqrs-cli-types";
 
 export type Query = {
   /**
