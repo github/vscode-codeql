@@ -3,7 +3,7 @@ import esbuild from "gulp-esbuild";
 import { createProject } from "gulp-typescript";
 import { goodReporter } from "./typescript";
 
-import * as chromiumVersion from "./chromium-version.json";
+import chromiumVersion from "./chromium-version.json";
 
 const tsProject = createProject("src/view/tsconfig.json");
 

@@ -1,21 +1,26 @@
-import * as Sarif from "sarif";
-import * as Keys from "./result-keys";
+import { ThreadFlowLocation } from "sarif";
+import {
+  equalsNotUndefined,
+  PathNode,
+  Result as ResultKeysResult,
+  ResultKey,
+} from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
 import { useCallback, useMemo } from "react";
 import { VerticalRule } from "../common/VerticalRule";
 
 interface Props {
-  step: Sarif.ThreadFlowLocation;
+  step: ThreadFlowLocation;
   pathNodeIndex: number;
   pathIndex: number;
   resultIndex: number;
-  selectedItem: undefined | Keys.ResultKey;
+  selectedItem: undefined | ResultKey;
   selectedItemRef: React.RefObject<any>;
   databaseUri: string;
   sourceLocationPrefix: string;
   updateSelectionCallback: (
-    resultKey: Keys.PathNode | Keys.Result | undefined,
+    resultKey: PathNode | ResultKeysResult | undefined,
   ) => void;
 }
 
@@ -32,7 +37,7 @@ export function AlertTablePathNodeRow(props: Props) {
     updateSelectionCallback,
   } = props;
 
-  const pathNodeKey: Keys.PathNode = useMemo(
+  const pathNodeKey: PathNode = useMemo(
     () => ({
       resultIndex,
       pathIndex,
@@ -45,7 +50,7 @@ export function AlertTablePathNodeRow(props: Props) {
     [pathNodeKey, updateSelectionCallback],
   );
 
-  const isSelected = Keys.equalsNotUndefined(selectedItem, pathNodeKey);
+  const isSelected = equalsNotUndefined(selectedItem, pathNodeKey);
   const stepIndex = pathNodeIndex + 1; // Convert to 1-based
   const zebraIndex = resultIndex + stepIndex;
   return (

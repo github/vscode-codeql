@@ -15,6 +15,7 @@
  */
 
 import { RequestType } from "vscode-jsonrpc";
+// eslint-disable-next-line import/no-namespace -- these names are intentionally the same
 import * as shared from "./messages-shared";
 
 /**

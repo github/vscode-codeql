@@ -1,20 +1,24 @@
 import { extname } from "path";
-import * as vscode from "vscode";
+import {
+  CancellationTokenSource,
+  Event,
+  EventEmitter,
+  WorkspaceFolder,
+} from "vscode";
 import {
   TestAdapter,
-  TestLoadStartedEvent,
-  TestLoadFinishedEvent,
-  TestRunStartedEvent,
-  TestRunFinishedEvent,
-  TestSuiteEvent,
   TestEvent,
-  TestSuiteInfo,
-  TestInfo,
   TestHub,
+  TestInfo,
+  TestLoadFinishedEvent,
+  TestLoadStartedEvent,
+  TestRunFinishedEvent,
+  TestRunStartedEvent,
+  TestSuiteEvent,
+  TestSuiteInfo,
 } from "vscode-test-adapter-api";
 import { TestAdapterRegistrar } from "vscode-test-adapter-util";
 import { QLTestDiscovery } from "./qltest-discovery";
-import { Event, EventEmitter, CancellationTokenSource } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
 import { testLogger } from "../common/logging/vscode";
@@ -95,10 +99,10 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     >(),
   );
   private readonly _autorun = this.push(new EventEmitter<void>());
-  private runningTask?: vscode.CancellationTokenSource = undefined;
+  private runningTask?: CancellationTokenSource = undefined;
 
   constructor(
-    public readonly workspaceFolder: vscode.WorkspaceFolder,
+    public readonly workspaceFolder: WorkspaceFolder,
     private readonly testRunner: TestRunner,
     cliServer: CodeQLCliServer,
   ) {

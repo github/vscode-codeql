@@ -1,4 +1,3 @@
-import * as React from "react";
 import { FunctionComponent, useCallback } from "react";
 
 import { useGlobals } from "@storybook/manager-api";

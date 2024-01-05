@@ -1,5 +1,10 @@
-import * as Sarif from "sarif";
-import * as Keys from "./result-keys";
+import { ThreadFlow } from "sarif";
+import {
+  equalsNotUndefined,
+  PathNode,
+  Result as ResultKeysResult,
+  ResultKey,
+} from "./result-keys";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
@@ -7,18 +12,18 @@ import { useCallback, useMemo } from "react";
 import { VerticalRule } from "../common/VerticalRule";
 
 interface Props {
-  path: Sarif.ThreadFlow;
+  path: ThreadFlow;
   pathIndex: number;
   resultIndex: number;
   currentPathExpanded: boolean;
-  selectedItem: undefined | Keys.ResultKey;
+  selectedItem: undefined | ResultKey;
   selectedItemRef: React.RefObject<any>;
   databaseUri: string;
   sourceLocationPrefix: string;
   updateSelectionCallback: (
-    resultKey: Keys.PathNode | Keys.Result | undefined,
+    resultKey: PathNode | ResultKeysResult | undefined,
   ) => void;
-  toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
+  toggleExpanded: (e: React.MouseEvent, keys: ResultKey[]) => void;
 }
 
 export function AlertTablePathRow(props: Props) {
@@ -41,10 +46,7 @@ export function AlertTablePathRow(props: Props) {
     [pathKey, toggleExpanded],
   );
 
-  const isPathSpecificallySelected = Keys.equalsNotUndefined(
-    pathKey,
-    selectedItem,
-  );
+  const isPathSpecificallySelected = equalsNotUndefined(pathKey, selectedItem);
 
   return (
     <>

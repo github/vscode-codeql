@@ -14,7 +14,7 @@ import { createMockVariantAnalysis } from "../../../test/factories/variant-analy
 import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
 import { createMockScannedRepo } from "../../../test/factories/variant-analysis/shared/scanned-repositories";
 
-import * as analysesResults from "../data/analysesResultsMessage.json";
+import { analysesResults } from "../data/analysesResultsMessage.json";
 
 export default {
   title: "Variant Analysis/Analyzed Repos",
@@ -35,7 +35,7 @@ const Template: StoryFn<typeof VariantAnalysisAnalyzedRepos> = (args) => (
 const interpretedResultsForRepo = (
   nwo: string,
 ): AnalysisAlert[] | undefined => {
-  return analysesResults.analysesResults.find((v) => v.nwo === nwo)
+  return analysesResults.find((v) => v.nwo === nwo)
     ?.interpretedResults as AnalysisAlert[];
 };
 

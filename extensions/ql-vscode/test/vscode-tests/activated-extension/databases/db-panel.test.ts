@@ -1,7 +1,7 @@
 import { window } from "vscode";
 
 import { readJson } from "fs-extra";
-import * as path from "path";
+import { join } from "path";
 import {
   DbConfig,
   SelectedDbItemKind,
@@ -32,10 +32,7 @@ describe("Db panel UI commands", () => {
     storagePath =
       extension.ctx.storageUri?.fsPath || extension.ctx.globalStorageUri.fsPath;
 
-    dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
+    dbConfigFilePath = join(storagePath, DbConfigStore.databaseConfigFileName);
   });
 
   it("should add new remote db list", async () => {

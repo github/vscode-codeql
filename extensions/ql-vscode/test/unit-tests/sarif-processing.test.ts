@@ -1,4 +1,4 @@
-import * as sarif from "sarif";
+import { Log, PhysicalLocation, ReportingDescriptor, Result, Run } from "sarif";
 import {
   extractAnalysisAlerts,
   tryGetFilePath,
@@ -17,11 +17,11 @@ describe("SARIF processing", () => {
         const result = {
           message: "msg",
           // Rule is missing here.
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -34,7 +34,7 @@ describe("SARIF processing", () => {
           rule: {
             id: "NonExistentRule",
           },
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
@@ -51,7 +51,7 @@ describe("SARIF processing", () => {
               ],
             },
           },
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -64,7 +64,7 @@ describe("SARIF processing", () => {
           rule: {
             id: "B",
           },
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
@@ -78,7 +78,7 @@ describe("SARIF processing", () => {
               ],
             },
           },
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -97,7 +97,7 @@ describe("SARIF processing", () => {
               index: 1,
             },
           },
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
@@ -127,7 +127,7 @@ describe("SARIF processing", () => {
               },
             ],
           },
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -143,7 +143,7 @@ describe("SARIF processing", () => {
               // The tool component index should be set here.
             },
           },
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
@@ -173,7 +173,7 @@ describe("SARIF processing", () => {
               },
             ],
           },
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -189,14 +189,14 @@ describe("SARIF processing", () => {
               index: 1,
             },
           },
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
           tool: {
             // Extensions should be set here.
           },
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -212,7 +212,7 @@ describe("SARIF processing", () => {
               index: 1,
             },
           },
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
@@ -232,7 +232,7 @@ describe("SARIF processing", () => {
               // There should be one more extension here (index 1).
             ],
           },
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -249,7 +249,7 @@ describe("SARIF processing", () => {
               index: 1,
             },
           },
-        } as sarif.Result;
+        } as Result;
 
         const sarifRun = {
           results: [result],
@@ -279,7 +279,7 @@ describe("SARIF processing", () => {
               },
             ],
           },
-        } as sarif.Run;
+        } as Run;
 
         const rule = tryGetRule(sarifRun, result);
 
@@ -291,7 +291,7 @@ describe("SARIF processing", () => {
 
   describe("tryGetFilePath", () => {
     it("should return value when uri is a file path", () => {
-      const physicalLocation: sarif.PhysicalLocation = {
+      const physicalLocation: PhysicalLocation = {
         artifactLocation: {
           uri: "foo/bar",
         },
@@ -300,7 +300,7 @@ describe("SARIF processing", () => {
     });
 
     it("should return undefined when uri has a file scheme", () => {
-      const physicalLocation: sarif.PhysicalLocation = {
+      const physicalLocation: PhysicalLocation = {
         artifactLocation: {
           uri: "file:/",
         },
@@ -309,7 +309,7 @@ describe("SARIF processing", () => {
     });
 
     it("should return undefined when uri is empty", () => {
-      const physicalLocation: sarif.PhysicalLocation = {
+      const physicalLocation: PhysicalLocation = {
         artifactLocation: {
           uri: "",
         },
@@ -318,7 +318,7 @@ describe("SARIF processing", () => {
     });
 
     it("should return undefined if artifact location uri is undefined", () => {
-      const physicalLocation: sarif.PhysicalLocation = {
+      const physicalLocation: PhysicalLocation = {
         artifactLocation: {
           uri: undefined,
         },
@@ -327,7 +327,7 @@ describe("SARIF processing", () => {
     });
 
     it("should return undefined if artifact location is undefined", () => {
-      const physicalLocation: sarif.PhysicalLocation = {
+      const physicalLocation: PhysicalLocation = {
         artifactLocation: undefined,
       };
       expect(tryGetFilePath(physicalLocation)).toBe(undefined);
@@ -338,14 +338,14 @@ describe("SARIF processing", () => {
     it("should return undefined if no rule set", () => {
       const result = {
         message: "msg",
-      } as sarif.Result;
+      } as Result;
 
       // The rule should be set here.
-      const rule: sarif.ReportingDescriptor | undefined = undefined;
+      const rule: ReportingDescriptor | undefined = undefined;
 
       const sarifRun = {
         results: [result],
-      } as sarif.Run;
+      } as Run;
 
       const severity = tryGetSeverity(sarifRun, result, rule);
       expect(severity).toBeUndefined();
@@ -357,14 +357,14 @@ describe("SARIF processing", () => {
         rule: {
           id: "A",
         },
-      } as sarif.Result;
+      } as Result;
 
       const rule = {
         id: "A",
         properties: {
           // Severity not set
         },
-      } as sarif.ReportingDescriptor;
+      } as ReportingDescriptor;
 
       const sarifRun = {
         results: [result],
@@ -373,7 +373,7 @@ describe("SARIF processing", () => {
             rules: [rule, result.rule],
           },
         },
-      } as sarif.Run;
+      } as Run;
 
       const severity = tryGetSeverity(sarifRun, result, rule);
       expect(severity).toBeUndefined();
@@ -392,14 +392,14 @@ describe("SARIF processing", () => {
           rule: {
             id: "A",
           },
-        } as sarif.Result;
+        } as Result;
 
         const rule = {
           id: "A",
           properties: {
             "problem.severity": sarifSeverity,
           },
-        } as sarif.ReportingDescriptor;
+        } as ReportingDescriptor;
 
         const sarifRun = {
           results: [result],
@@ -408,7 +408,7 @@ describe("SARIF processing", () => {
               rules: [rule, result.rule],
             },
           },
-        } as sarif.Run;
+        } as Run;
 
         const severity = tryGetSeverity(sarifRun, result, rule);
         expect(severity).toBe(parsedSeverity);
@@ -421,7 +421,7 @@ describe("SARIF processing", () => {
     it("should not return any results if no runs found in the SARIF", () => {
       const sarif = {
         // Runs are missing here.
-      } as sarif.Log;
+      } as Log;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
@@ -439,7 +439,7 @@ describe("SARIF processing", () => {
             // Results are missing here.
           },
         ],
-      } as sarif.Log;
+      } as Log;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
@@ -524,7 +524,7 @@ describe("SARIF processing", () => {
 
     it("should return results for all alerts", () => {
       const sarif = {
-        version: "0.0.1" as sarif.Log.version,
+        version: "0.0.1" as Log.version,
         runs: [
           {
             results: [
@@ -602,7 +602,7 @@ describe("SARIF processing", () => {
             ],
           },
         ],
-      } as sarif.Log;
+      } as Log;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
       expect(result).toBeTruthy();
@@ -770,7 +770,7 @@ describe("SARIF processing", () => {
     expect(array).toEqual([]);
   }
 
-  function buildValidSarifLog(): sarif.Log {
+  function buildValidSarifLog(): Log {
     return {
       version: "2.1.0",
       runs: [
@@ -805,7 +805,7 @@ describe("SARIF processing", () => {
           ],
         },
       ],
-    } as sarif.Log;
+    } as Log;
   }
 
   function getMessageText(message: AnalysisMessage) {

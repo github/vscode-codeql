@@ -1,5 +1,5 @@
 import { Uri } from "vscode";
-import * as sarif from "sarif";
+import { Log } from "sarif";
 import { pathExists } from "fs-extra";
 import { sarifParser } from "../common/sarif-parser";
 import { CompletedLocalQueryInfo } from "../query-results";
@@ -11,7 +11,7 @@ import { sarifDiff } from "./sarif-diff";
 
 async function getInterpretedResults(
   interpretedResultsPath: string,
-): Promise<sarif.Log | undefined> {
+): Promise<Log | undefined> {
   if (!(await pathExists(interpretedResultsPath))) {
     return undefined;
   }

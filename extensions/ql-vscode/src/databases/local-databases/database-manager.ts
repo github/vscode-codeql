@@ -4,7 +4,7 @@ import { extLogger } from "../../common/logging/vscode";
 import { DisposableObject } from "../../common/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";
-import * as cli from "../../codeql-cli/cli";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { ProgressCallback, withProgress } from "../../common/vscode/progress";
 import {
   addDatabaseSourceToWorkspace,
@@ -105,7 +105,7 @@ export class DatabaseManager extends DisposableObject {
     private readonly ctx: ExtensionContext,
     private readonly app: App,
     private readonly qs: QueryRunner,
-    private readonly cli: cli.CodeQLCliServer,
+    private readonly cli: CodeQLCliServer,
     private readonly languageContext: LanguageContextStore,
     public logger: Logger,
   ) {

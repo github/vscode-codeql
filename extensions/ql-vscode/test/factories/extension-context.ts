@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import { ExtensionContext, Memento, Uri } from "vscode";
 import { createMockMemento } from "../mock-memento";
 
 /**
@@ -12,13 +12,13 @@ export function createMockExtensionContext({
   extensionPath?: string;
   workspaceStoragePath?: string;
   globalStoragePath?: string;
-  workspaceState?: vscode.Memento;
-}): vscode.ExtensionContext {
+  workspaceState?: Memento;
+}): ExtensionContext {
   return {
     extensionPath,
-    globalStorageUri: vscode.Uri.file(globalStoragePath),
-    storageUri: vscode.Uri.file(workspaceStoragePath),
+    globalStorageUri: Uri.file(globalStoragePath),
+    storageUri: Uri.file(workspaceStoragePath),
     workspaceState: createMockMemento(),
     subscriptions: [],
-  } as any as vscode.ExtensionContext;
+  } as any as ExtensionContext;
 }

@@ -18,7 +18,12 @@ import {
   validateQueryUri,
 } from "../run-queries-shared";
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
-import * as CodeQLProtocol from "./debug-protocol";
+import {
+  AnyProtocolMessage,
+  EvaluationCompletedEvent,
+  EvaluationStartedEvent,
+  QuickEvalRequest,
+} from "./debug-protocol";
 import { App } from "../common/app";
 import { LocalQueryRun, LocalQueries } from "../local-queries";
 
@@ -46,7 +51,7 @@ class QLDebugAdapterTracker
     this.configuration = <QLResolvedDebugConfiguration>session.configuration;
   }
 
-  public onDidSendMessage(message: CodeQLProtocol.AnyProtocolMessage): void {
+  public onDidSendMessage(message: AnyProtocolMessage): void {
     if (message.type === "event") {
       switch (message.event) {
         case "codeql-evaluation-started":
@@ -77,7 +82,7 @@ class QLDebugAdapterTracker
     // Since we're not going through VS Code's launch path, we need to save dirty files ourselves.
     await saveBeforeStart();
 
-    const args: CodeQLProtocol.QuickEvalRequest["arguments"] = {
+    const args: QuickEvalRequest["arguments"] = {
       quickEvalContext: await getQuickEvalContext(undefined, false),
     };
     await this.session.customRequest("codeql-quickeval", args);
@@ -102,7 +107,7 @@ class QLDebugAdapterTracker
 
   /** Updates the UI to track the currently executing query. */
   private async onEvaluationStarted(
-    body: CodeQLProtocol.EvaluationStartedEvent["body"],
+    body: EvaluationStartedEvent["body"],
   ): Promise<void> {
     const dbUri = Uri.file(this.configuration.database);
     const dbItem = await this.dbm.createOrOpenDatabaseItem(dbUri, {
@@ -128,7 +133,7 @@ class QLDebugAdapterTracker
 
   /** Update the UI after a query has finished evaluating. */
   private async onEvaluationCompleted(
-    body: CodeQLProtocol.EvaluationCompletedEvent["body"],
+    body: EvaluationCompletedEvent["body"],
   ): Promise<void> {
     if (this.localQueryRun !== undefined) {
       const results: CoreQueryResults = body;

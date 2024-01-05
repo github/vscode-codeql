@@ -1,5 +1,11 @@
 import { join } from "path";
-import * as vscode from "vscode";
+import {
+  ExtensionContext,
+  ThemeColor,
+  ThemeIcon,
+  Uri,
+  workspace,
+} from "vscode";
 
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { QueryHistoryConfigListener } from "../../../../src/config";
@@ -165,7 +171,7 @@ describe("HistoryTreeDataProvider", () => {
       });
       expect(treeItem.label).toContain("query-file.ql");
       expect(treeItem.contextValue).toBe("rawResultsItem");
-      expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("database"));
+      expect(treeItem.iconPath).toEqual(new ThemeIcon("database"));
     });
 
     it("should get a tree item with interpreted results", async () => {
@@ -181,7 +187,7 @@ describe("HistoryTreeDataProvider", () => {
         mockQueryWithInterpretedResults,
       );
       expect(treeItem.contextValue).toBe("interpretedResultsItem");
-      expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("database"));
+      expect(treeItem.iconPath).toEqual(new ThemeIcon("database"));
     });
 
     it("should get a tree item that did not complete successfully", async () => {
@@ -195,7 +201,7 @@ describe("HistoryTreeDataProvider", () => {
 
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.iconPath).toEqual(
-        new vscode.ThemeIcon("error", new vscode.ThemeColor("errorForeground")),
+        new ThemeIcon("error", new ThemeColor("errorForeground")),
       );
     });
 
@@ -207,7 +213,7 @@ describe("HistoryTreeDataProvider", () => {
 
       const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
       expect(treeItem.iconPath).toEqual(
-        new vscode.ThemeIcon("error", new vscode.ThemeColor("errorForeground")),
+        new ThemeIcon("error", new ThemeColor("errorForeground")),
       );
     });
 
@@ -497,9 +503,9 @@ describe("HistoryTreeDataProvider", () => {
       {} as EvalLogViewer,
       createMockQueryHistoryDirs(),
       {
-        globalStorageUri: vscode.Uri.file(mockExtensionLocation),
-        extensionPath: vscode.Uri.file("/x/y/z").fsPath,
-      } as vscode.ExtensionContext,
+        globalStorageUri: Uri.file(mockExtensionLocation),
+        extensionPath: Uri.file("/x/y/z").fsPath,
+      } as ExtensionContext,
       configListener,
       new HistoryItemLabelProvider({
         format: "",
@@ -510,7 +516,7 @@ describe("HistoryTreeDataProvider", () => {
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];
-    await vscode.workspace.saveAll();
+    await workspace.saveAll();
     await qhm.refreshTreeView();
     return qhm;
   }

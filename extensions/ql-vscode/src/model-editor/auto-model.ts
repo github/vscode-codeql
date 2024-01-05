@@ -2,7 +2,7 @@ import { AutomodelMode, ModelRequest } from "./auto-model-api";
 import { Mode } from "./shared/mode";
 import { AutoModelQueriesResult } from "./auto-model-codeml-queries";
 import { assertNever } from "../common/helpers-pure";
-import * as Sarif from "sarif";
+import { Log } from "sarif";
 import { gzipEncode } from "../common/zlib";
 import { Method, MethodSignature } from "./method";
 import { ModeledMethod } from "./modeled-method";
@@ -57,7 +57,7 @@ export function getCandidates(
  * @param log SARIF log to encode
  * @returns base64-encoded GZIP-compressed SARIF log
  */
-export async function encodeSarif(log: Sarif.Log): Promise<string> {
+export async function encodeSarif(log: Log): Promise<string> {
   const json = JSON.stringify(log);
   const buffer = Buffer.from(json, "utf-8");
   const compressed = await gzipEncode(buffer);

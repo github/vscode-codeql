@@ -11,7 +11,8 @@ import {
 } from "../../variant-analysis/shared/analysis-result";
 import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
 
-import * as analysesResults from "../data/analysesResultsMessage.json";
+import { analysesResults } from "../data/analysesResultsMessage.json";
+// eslint-disable-next-line import/no-namespace -- We need the full JSON object, so we can't use named imports
 import * as rawResults from "../data/rawResults.json";
 import { RepoRow, RepoRowProps } from "../../view/variant-analysis/RepoRow";
 
@@ -120,7 +121,7 @@ InterpretedResults.args = {
   ...Pending.args,
   status: VariantAnalysisRepoStatus.Succeeded,
   resultCount: 198,
-  interpretedResults: analysesResults.analysesResults.find(
+  interpretedResults: analysesResults.find(
     (v) => v.nwo === "facebook/create-react-app",
   )?.interpretedResults as AnalysisAlert[],
 };

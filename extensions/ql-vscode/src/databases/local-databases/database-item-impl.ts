@@ -1,6 +1,6 @@
 // Exported for testing
-import * as cli from "../../codeql-cli/cli";
-import vscode from "vscode";
+import { CodeQLCliServer, DbInfo } from "../../codeql-cli/cli";
+import { Uri, workspace } from "vscode";
 import { FullDatabaseOptions } from "./database-options";
 import { basename, dirname, extname, join } from "path";
 import {
@@ -21,10 +21,10 @@ export class DatabaseItemImpl implements DatabaseItem {
   public error: Error | undefined = undefined;
   public contents: DatabaseContents | undefined;
   /** A cache of database info */
-  private _dbinfo: cli.DbInfo | undefined;
+  private _dbinfo: DbInfo | undefined;
 
   public constructor(
-    public readonly databaseUri: vscode.Uri,
+    public readonly databaseUri: Uri,
     contents: DatabaseContents | undefined,
     private options: FullDatabaseOptions,
   ) {
@@ -45,7 +45,7 @@ export class DatabaseItemImpl implements DatabaseItem {
     this.options.displayName = newName;
   }
 
-  public get sourceArchive(): vscode.Uri | undefined {
+  public get sourceArchive(): Uri | undefined {
     if (this.ignoreSourceArchive || this.contents === undefined) {
       return undefined;
     } else {
@@ -66,9 +66,9 @@ export class DatabaseItemImpl implements DatabaseItem {
     return this.options.origin;
   }
 
-  public resolveSourceFile(uriStr: string | undefined): vscode.Uri {
+  public resolveSourceFile(uriStr: string | undefined): Uri {
     const sourceArchive = this.sourceArchive;
-    const uri = uriStr ? vscode.Uri.parse(uriStr, true) : undefined;
+    const uri = uriStr ? Uri.parse(uriStr, true) : undefined;
     if (uri && uri.scheme !== "file") {
       throw new Error(
         `Invalid uri scheme in ${uriStr}. Only 'file' is allowed.`,
@@ -131,7 +131,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   /**
    * Returns information about a database.
    */
-  private async getDbInfo(server: cli.CodeQLCliServer): Promise<cli.DbInfo> {
+  private async getDbInfo(server: CodeQLCliServer): Promise<DbInfo> {
     if (this._dbinfo === undefined) {
       this._dbinfo = await server.resolveDatabase(this.databaseUri.fsPath);
     }
@@ -143,7 +143,7 @@ export class DatabaseItemImpl implements DatabaseItem {
    * has a `.dbinfo` file, which is the source of the prefix.
    */
   public async getSourceLocationPrefix(
-    server: cli.CodeQLCliServer,
+    server: CodeQLCliServer,
   ): Promise<string> {
     const dbInfo = await this.getDbInfo(server);
     return dbInfo.sourceLocationPrefix;
@@ -152,7 +152,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   /**
    * Returns path to dataset folder of database.
    */
-  public async getDatasetFolder(server: cli.CodeQLCliServer): Promise<string> {
+  public async getDatasetFolder(server: CodeQLCliServer): Promise<string> {
     const dbInfo = await this.getDbInfo(server);
     return dbInfo.datasetFolder;
   }
@@ -164,7 +164,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive.
    */
-  public getSourceArchiveExplorerUri(): vscode.Uri {
+  public getSourceArchiveExplorerUri(): Uri {
     const sourceArchive = this.sourceArchive;
     if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith(".zip")) {
       throw new Error(this.verifyZippedSources());
@@ -176,7 +176,7 @@ export class DatabaseItemImpl implements DatabaseItem {
    * Returns true if the database's source archive is in the workspace.
    */
   public hasSourceArchiveInExplorer(): boolean {
-    return (vscode.workspace.workspaceFolders || []).some((folder) =>
+    return (workspace.workspaceFolders || []).some((folder) =>
       this.belongsToSourceArchiveExplorerUri(folder.uri),
     );
   }
@@ -196,7 +196,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   /**
    * Holds if `uri` belongs to this database's source archive.
    */
-  public belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean {
+  public belongsToSourceArchiveExplorerUri(uri: Uri): boolean {
     if (this.sourceArchive === undefined) {
       return false;
     }

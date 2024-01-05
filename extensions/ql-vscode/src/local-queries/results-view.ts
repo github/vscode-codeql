@@ -1,17 +1,19 @@
-import * as Sarif from "sarif";
-import * as vscode from "vscode";
+import { Location, Result, Run } from "sarif";
 import {
   Diagnostic,
   DiagnosticRelatedInformation,
   DiagnosticSeverity,
   languages,
   Uri,
-  window as Window,
+  window,
   env,
   WebviewPanel,
+  TextEditorSelectionChangeKind,
+  TextEditorSelectionChangeEvent,
+  ViewColumn,
+  workspace,
 } from "vscode";
-import * as cli from "../codeql-cli/cli";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { CodeQLCliServer, SourceInfo } from "../codeql-cli/cli";
 import {
   DatabaseEventKind,
   DatabaseItem,
@@ -93,7 +95,7 @@ function sortMultiplier(sortDirection: SortDirection): number {
 }
 
 function sortInterpretedResults(
-  results: Sarif.Result[],
+  results: Result[],
   sortState: InterpretedResultsSortState | undefined,
 ): void {
   if (sortState !== undefined) {
@@ -188,7 +190,7 @@ export class ResultsView extends AbstractWebview<
     // We can't use this.push for these two event listeners because they need to be disposed of when the view is
     // disposed, not when the panel is disposed. The results view is a singleton, so we shouldn't be calling this.push.
     this.disposableEventListeners.push(
-      vscode.window.onDidChangeTextEditorSelection(
+      window.onDidChangeTextEditorSelection(
         this.handleSelectionChange.bind(this),
       ),
     );
@@ -241,7 +243,7 @@ export class ResultsView extends AbstractWebview<
     if (!this.panel?.visible) {
       return;
     }
-    // Reveal the panel now as the subsequent call to 'Window.showTextEditor' in 'showLocation' may destroy the webview otherwise.
+    // Reveal the panel now as the subsequent call to 'window.showTextEditor' in 'showLocation' may destroy the webview otherwise.
     this.panel.reveal();
     await this.postMessage({ t: "navigate", direction });
   }
@@ -363,12 +365,12 @@ export class ResultsView extends AbstractWebview<
    *
    * The goal is to avoid opening new columns when there already are two columns open.
    */
-  private chooseColumnForWebview(): vscode.ViewColumn {
+  private chooseColumnForWebview(): ViewColumn {
     // This is not a great way to determine the number of view columns, but I
     // can't find a vscode API that does it any better.
     // Here, iterate through all the visible editors and determine the max view column.
     // This won't work if the largest view column is empty.
-    const colCount = Window.visibleTextEditors.reduce(
+    const colCount = window.visibleTextEditors.reduce(
       (maxVal, editor) =>
         Math.max(
           maxVal,
@@ -377,15 +379,15 @@ export class ResultsView extends AbstractWebview<
       0,
     );
     if (colCount <= 1) {
-      return vscode.ViewColumn.Beside;
+      return ViewColumn.Beside;
     }
     const activeViewColumnNum = Number.parseInt(
-      Window.activeTextEditor?.viewColumn?.toFixed() || "0",
+      window.activeTextEditor?.viewColumn?.toFixed() || "0",
       10,
     );
     return activeViewColumnNum === colCount
-      ? vscode.ViewColumn.One
-      : vscode.ViewColumn.Beside;
+      ? ViewColumn.One
+      : ViewColumn.Beside;
   }
 
   private async changeInterpretedSortState(
@@ -481,7 +483,7 @@ export class ResultsView extends AbstractWebview<
         // user's workflow by immediately revealing the panel.
         const showButton = "View Results";
         const queryName = this.labelProvider.getShortLabel(fullQuery);
-        const resultPromise = vscode.window.showInformationMessage(
+        const resultPromise = window.showInformationMessage(
           `Finished running query ${
             queryName.length > 0 ? ` "${queryName}"` : ""
           }.`,
@@ -609,8 +611,8 @@ export class ResultsView extends AbstractWebview<
   }
 
   public async openFile(filePath: string) {
-    const textDocument = await vscode.workspace.openTextDocument(filePath);
-    await vscode.window.showTextDocument(textDocument, vscode.ViewColumn.One);
+    const textDocument = await workspace.openTextDocument(filePath);
+    await window.showTextDocument(textDocument, ViewColumn.One);
   }
 
   /**
@@ -699,7 +701,7 @@ export class ResultsView extends AbstractWebview<
   private async _getInterpretedResults(
     metadata: QueryMetadata | undefined,
     resultsPaths: ResultsPaths,
-    sourceInfo: cli.SourceInfo | undefined,
+    sourceInfo: SourceInfo | undefined,
     sourceLocationPrefix: string,
     sortState: InterpretedResultsSortState | undefined,
   ): Promise<Interpretation | undefined> {
@@ -753,7 +755,7 @@ export class ResultsView extends AbstractWebview<
   }
 
   private getPageOfInterpretedResults(pageNumber: number): Interpretation {
-    function getPageOfRun(run: Sarif.Run): Sarif.Run {
+    function getPageOfRun(run: Run): Run {
       return {
         ...run,
         results: run.results?.slice(
@@ -926,7 +928,7 @@ export class ResultsView extends AbstractWebview<
       }
       const parsedMessage = parseSarifPlainTextMessage(message);
       const relatedInformation: DiagnosticRelatedInformation[] = [];
-      const relatedLocationsById: { [k: number]: Sarif.Location } = {};
+      const relatedLocationsById: { [k: number]: Location } = {};
 
       for (const loc of result.relatedLocations || []) {
         relatedLocationsById[loc.id!] = loc;
@@ -984,13 +986,11 @@ export class ResultsView extends AbstractWebview<
     };
   }
 
-  private handleSelectionChange(
-    event: vscode.TextEditorSelectionChangeEvent,
-  ): void {
-    if (event.kind === vscode.TextEditorSelectionChangeKind.Command) {
+  private handleSelectionChange(event: TextEditorSelectionChangeEvent): void {
+    if (event.kind === TextEditorSelectionChangeKind.Command) {
       return; // Ignore selection events we caused ourselves.
     }
-    const editor = vscode.window.activeTextEditor;
+    const editor = window.activeTextEditor;
     if (editor !== undefined) {
       editor.setDecorations(shownLocationDecoration, []);
       editor.setDecorations(shownLocationLineDecoration, []);

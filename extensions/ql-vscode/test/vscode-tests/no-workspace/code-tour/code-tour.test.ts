@@ -1,5 +1,5 @@
 import { Uri, window, workspace, WorkspaceFolder } from "vscode";
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { join } from "path";
 import { mkdir, writeFile } from "fs-extra";
 
@@ -8,13 +8,13 @@ import { Setting } from "../../../../src/config";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 
 describe("prepareCodeTour", () => {
-  let dir: tmp.DirResult;
+  let dir: DirResult;
   let showInformationMessageSpy: jest.SpiedFunction<
     typeof window.showInformationMessage
   >;
 
   beforeEach(() => {
-    dir = tmp.dirSync({
+    dir = dirSync({
       unsafeCleanup: true,
     });
 

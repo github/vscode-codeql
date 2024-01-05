@@ -5,7 +5,7 @@ import { QueryLanguage } from "../../../src/common/query-language";
 import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { Uri, workspace } from "vscode";
 import { getErrorMessage } from "../../../src/common/helpers-pure";
-import * as tmp from "tmp";
+import { DirResult, dirSync } from "tmp";
 import { mockedObject } from "../utils/mocking.helpers";
 import { ensureDir, readFile } from "fs-extra";
 import { load } from "js-yaml";
@@ -22,10 +22,10 @@ describe("QlPackGenerator", () => {
     typeof CodeQLCliServer.prototype.resolveQlpacks
   >;
   let mockCli: CodeQLCliServer;
-  let dir: tmp.DirResult;
+  let dir: DirResult;
 
   beforeEach(async () => {
-    dir = tmp.dirSync({
+    dir = dirSync({
       unsafeCleanup: true,
     });
 

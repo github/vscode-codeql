@@ -1,4 +1,4 @@
-import * as Octokit from "@octokit/rest";
+import { Octokit } from "@octokit/rest";
 
 /**
  * An interface providing methods for obtaining access tokens
@@ -12,7 +12,7 @@ export interface Credentials {
    *
    * @returns An instance of Octokit.
    */
-  getOctokit(): Promise<Octokit.Octokit>;
+  getOctokit(): Promise<Octokit>;
 
   /**
    * Returns an OAuth access token.

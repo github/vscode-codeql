@@ -1,4 +1,4 @@
-import * as Sarif from "sarif";
+import { Location, Region } from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
 import { UrlValueResolvable } from "./raw-result-types";
 import { isEmptyPath } from "./bqrs-utils";
@@ -103,7 +103,7 @@ export function getPathRelativeToSourceLocationPrefix(
  * @param sourceLocationPrefix a file path (usually a full path) to the database containing the source location.
  */
 export function parseSarifLocation(
-  loc: Sarif.Location,
+  loc: Location,
   sourceLocationPrefix: string,
 ): ParsedSarifLocation {
   const physicalLocation = loc.physicalLocation;
@@ -153,7 +153,7 @@ export function parseSarifLocation(
   }
 }
 
-export function parseSarifRegion(region: Sarif.Region): {
+export function parseSarifRegion(region: Region): {
   startLine: number;
   endLine: number;
   startColumn: number;

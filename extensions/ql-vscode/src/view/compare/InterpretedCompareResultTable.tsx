@@ -1,8 +1,8 @@
-import * as sarif from "sarif";
+import { Result } from "sarif";
 import { AlertTable } from "../results/AlertTable";
 
 type Props = {
-  results: sarif.Result[];
+  results: Result[];
   databaseUri: string;
   sourceLocationPrefix: string;
 };

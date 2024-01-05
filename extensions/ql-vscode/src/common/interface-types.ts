@@ -1,4 +1,4 @@
-import * as sarif from "sarif";
+import { Log, Result } from "sarif";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
@@ -76,7 +76,7 @@ export type SarifInterpretationData = {
    * they appear in the sarif file.
    */
   sortState?: InterpretedResultsSortState;
-} & sarif.Log;
+} & Log;
 
 export type GraphInterpretationData = {
   t: "GraphInterpretationData";
@@ -393,8 +393,8 @@ export type RawQueryCompareResult = {
 export type InterpretedQueryCompareResult = {
   kind: "interpreted";
   sourceLocationPrefix: string;
-  from: sarif.Result[];
-  to: sarif.Result[];
+  from: Result[];
+  to: Result[];
 };
 
 /**

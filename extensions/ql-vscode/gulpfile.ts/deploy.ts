@@ -9,7 +9,7 @@ import {
 } from "fs-extra";
 import { resolve, join } from "path";
 import { isDevBuild } from "./dev";
-import type * as packageJsonType from "../package.json";
+import type packageJsonType from "../package.json";
 
 export interface DeployedPackage {
   distPath: string;

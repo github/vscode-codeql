@@ -1,6 +1,6 @@
 import { Uri, workspace } from "vscode";
 import { QueryPackDiscovery } from "../../../../src/queries-panel/query-pack-discovery";
-import * as tmp from "tmp";
+import { dirSync } from "tmp";
 import { dirname, join } from "path";
 import { ensureDir, writeJSON } from "fs-extra";
 import { QueryLanguage } from "../../../../src/common/query-language";
@@ -14,7 +14,7 @@ describe("Query pack discovery", () => {
   let discovery: QueryPackDiscovery;
 
   beforeEach(() => {
-    const t = tmp.dirSync({
+    const t = dirSync({
       unsafeCleanup: true,
     });
     tmpDir = t.name;

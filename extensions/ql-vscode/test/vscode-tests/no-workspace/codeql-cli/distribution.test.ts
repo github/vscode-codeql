@@ -1,10 +1,9 @@
 import * as log from "../../../../src/common/logging/notifications";
 import { extLogger } from "../../../../src/common/logging/vscode";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { writeFile } from "fs-extra";
+import { join } from "path";
 import * as os from "os";
-import * as tmp from "tmp-promise";
-import { DirectoryResult } from "tmp-promise";
+import { dir, DirectoryResult } from "tmp-promise";
 import {
   DistributionManager,
   getExecutableFromDirectory,
@@ -45,12 +44,12 @@ describe("Launcher path", () => {
 
     mockedOS.platform.mockReturnValue("win32");
 
-    directory = await tmp.dir({
+    directory = await dir({
       unsafeCleanup: true,
     });
 
-    pathToCmd = path.join(directory.path, "codeql.cmd");
-    pathToExe = path.join(directory.path, "codeql.exe");
+    pathToCmd = join(directory.path, "codeql.cmd");
+    pathToExe = join(directory.path, "codeql.exe");
   });
 
   afterEach(async () => {
@@ -58,7 +57,7 @@ describe("Launcher path", () => {
   });
 
   it("should not warn with proper launcher name", async () => {
-    await fs.writeFile(pathToExe, "");
+    await writeFile(pathToExe, "");
 
     const result = await getExecutableFromDirectory(directory.path);
 
@@ -70,7 +69,7 @@ describe("Launcher path", () => {
   });
 
   it("should warn when using a hard-coded deprecated launcher name", async () => {
-    await fs.writeFile(pathToCmd, "");
+    await writeFile(pathToCmd, "");
 
     const result = await getExecutableFromDirectory(directory.path);
 
@@ -102,7 +101,7 @@ describe("Launcher path", () => {
   });
 
   it("should not warn when deprecated launcher is used, but no new launcher is available", async function () {
-    await fs.writeFile(pathToCmd, "");
+    await writeFile(pathToCmd, "");
 
     const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
@@ -119,8 +118,8 @@ describe("Launcher path", () => {
   });
 
   it("should warn when deprecated launcher is used, and new launcher is available", async () => {
-    await fs.writeFile(pathToCmd, "");
-    await fs.writeFile(pathToExe, "");
+    await writeFile(pathToCmd, "");
+    await writeFile(pathToExe, "");
 
     const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,

@@ -1,9 +1,13 @@
 import { EOL } from "os";
 import { spawn } from "child-process-promise";
-import * as child_process from "child_process";
+import {
+  ChildProcessWithoutNullStreams,
+  execFile,
+  spawn as spawnChildProcess,
+} from "child_process";
 import { readFile } from "fs-extra";
 import { delimiter, dirname, join } from "path";
-import * as sarif from "sarif";
+import { Log } from "sarif";
 import { SemVer } from "semver";
 import { Readable } from "stream";
 import tk from "tree-kill";
@@ -219,7 +223,7 @@ type VersionChangedListener = (newVersion: SemVer | undefined) => void;
  */
 export class CodeQLCliServer implements Disposable {
   /** The process for the cli server, or undefined if one doesn't exist yet */
-  process?: child_process.ChildProcessWithoutNullStreams;
+  process?: ChildProcessWithoutNullStreams;
   /** Queue of future commands*/
   commandQueue: Array<() => void>;
   /** Whether a command is running */
@@ -335,7 +339,7 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Launch the cli server
    */
-  private async launchProcess(): Promise<child_process.ChildProcessWithoutNullStreams> {
+  private async launchProcess(): Promise<ChildProcessWithoutNullStreams> {
     const codeQlPath = await this.getCodeQlPath();
     const args = [];
     if (shouldDebugCliServer()) {
@@ -1101,7 +1105,7 @@ export class CodeQLCliServer implements Disposable {
     interpretedResultsPath: string,
     sourceInfo?: SourceInfo,
     args?: string[],
-  ): Promise<sarif.Log> {
+  ): Promise<Log> {
     const additionalArgs = [
       // TODO: This flag means that we don't group interpreted results
       // by primary location. We may want to revisit whether we call
@@ -1592,7 +1596,7 @@ export function spawnServer(
   stderrListener: (data: any) => void,
   stdoutListener?: (data: any) => void,
   progressReporter?: ProgressReporter,
-): child_process.ChildProcessWithoutNullStreams {
+): ChildProcessWithoutNullStreams {
   // Enable verbose logging.
   const args = command.concat(commandArgs).concat(LOGGING_FLAGS);
 
@@ -1603,7 +1607,7 @@ export function spawnServer(
     progressReporter.report({ message: `Starting ${name}` });
   }
   void logger.log(`Starting ${name} using CodeQL CLI: ${base} ${argsString}`);
-  const child = child_process.spawn(base, args);
+  const child = spawnChildProcess(base, args);
   if (!child || !child.pid) {
     throw new Error(
       `Failed to start ${name} using command ${base} ${argsString}.`,
@@ -1670,7 +1674,7 @@ export async function runCodeQlCliCommand(
     void logger.log(
       `${description} using CodeQL CLI: ${codeQlPath} ${argsString}...`,
     );
-    const result = await promisify(child_process.execFile)(codeQlPath, args);
+    const result = await promisify(execFile)(codeQlPath, args);
     void logger.log(result.stderr);
     void logger.log("CLI command succeeded.");
     return result.stdout;

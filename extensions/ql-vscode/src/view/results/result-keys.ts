@@ -1,4 +1,4 @@
-import * as sarif from "sarif";
+import { Location, Result as SarifResult, ThreadFlow } from "sarif";
 
 /**
  * Identifies a result, a path, or one of the nodes on a path.
@@ -40,9 +40,9 @@ export type ResultKey = Result | Path | PathNode;
  * Looks up a specific result in a result set.
  */
 export function getResult(
-  results: sarif.Result[],
+  results: SarifResult[],
   key: Result | Path | PathNode,
-): sarif.Result | undefined {
+): SarifResult | undefined {
   return results[key.resultIndex];
 }
 
@@ -50,9 +50,9 @@ export function getResult(
  * Looks up a specific path in a result set.
  */
 export function getPath(
-  results: sarif.Result[],
+  results: SarifResult[],
   key: Path | PathNode,
-): sarif.ThreadFlow | undefined {
+): ThreadFlow | undefined {
   const result = getResult(results, key);
   if (result === undefined) {
     return undefined;
@@ -76,9 +76,9 @@ export function getPath(
  * Looks up a specific path node in a result set.
  */
 export function getPathNode(
-  results: sarif.Result[],
+  results: SarifResult[],
   key: PathNode,
-): sarif.Location | undefined {
+): Location | undefined {
   const path = getPath(results, key);
   if (path === undefined) {
     return undefined;
@@ -108,7 +108,7 @@ export function equalsNotUndefined(
  *
  * Path nodes indices are relative to this flattened list.
  */
-export function getAllPaths(result: sarif.Result): sarif.ThreadFlow[] {
+export function getAllPaths(result: SarifResult): ThreadFlow[] {
   if (result.codeFlows === undefined) {
     return [];
   }

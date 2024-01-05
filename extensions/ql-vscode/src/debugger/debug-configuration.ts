@@ -7,7 +7,7 @@ import {
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { LocalQueries } from "../local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
-import * as CodeQLProtocol from "./debug-protocol";
+import { LaunchConfig } from "./debug-protocol";
 import { getErrorMessage } from "../common/helpers-pure";
 import { showAndLogErrorMessage } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
@@ -36,8 +36,7 @@ export type QLDebugConfiguration = DebugConfiguration & QLDebugArgs;
  * A CodeQL debug configuration after all variables and defaults have been resolved. This is what
  * is passed to the debug adapter via the `launch` request.
  */
-export type QLResolvedDebugConfiguration = DebugConfiguration &
-  CodeQLProtocol.LaunchConfig;
+export type QLResolvedDebugConfiguration = DebugConfiguration & LaunchConfig;
 
 /** If the specified value is a single element, then turn it into an array containing that element. */
 function makeArray<T extends Exclude<any, any[]>>(value: T | T[]): T[] {

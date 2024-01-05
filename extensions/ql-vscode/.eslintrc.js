@@ -66,7 +66,6 @@ const baseConfig = {
     "github/no-then": "off",
     "react/jsx-key": ["error", { checkFragmentShorthand: true }],
     "import/no-cycle": "off",
-    "import/no-namespace": "off",
     // Never allow extensions in import paths, except for JSON files where they are required.
     "import/extensions": ["error", "never", { json: "always" }],
   },
@@ -147,6 +146,8 @@ module.exports = {
       },
       rules: {
         ...baseConfig.rules,
+        // We want to allow mocking of functions in modules, so we need to allow namespace imports.
+        "import/no-namespace": "off",
         "@typescript-eslint/ban-types": [
           "error",
           {

@@ -20,7 +20,7 @@ import {
 import { autoPickExtensionsDirectory } from "./extensions-workspace-folder";
 
 import { ExtensionPackMetadata } from "./extension-pack-metadata";
-import * as extensionPackMetadataSchemaJson from "./extension-pack-metadata.schema.json";
+import extensionPackMetadataSchemaJson from "./extension-pack-metadata.schema.json";
 
 const ajv = new Ajv({ allErrors: true });
 const extensionPackValidate = ajv.compile(extensionPackMetadataSchemaJson);
