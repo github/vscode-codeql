@@ -18,7 +18,7 @@ export function install() {
   langConfig.wordPattern = new RegExp(langConfig.wordPattern);
   langConfig.onEnterRules = onEnterRules;
   langConfig.indentationRules = {
-    decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[\}\]].*$/,
+    decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[}\]].*$/,
     increaseIndentPattern: /^((?!\/\/).)*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/,
   };
   delete langConfig.autoClosingPairs;
@@ -31,18 +31,18 @@ export function install() {
 const onEnterRules: OnEnterRule[] = [
   {
     // e.g. /** | */
-    beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
+    beforeText: /^\s*\/\*\*(?!\/)([^*]|\*(?!\/))*$/,
     afterText: /^\s*\*\/$/,
     action: { indentAction: IndentAction.IndentOutdent, appendText: " * " },
   },
   {
     // e.g. /** ...|
-    beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
+    beforeText: /^\s*\/\*\*(?!\/)([^*]|\*(?!\/))*$/,
     action: { indentAction: IndentAction.None, appendText: " * " },
   },
   {
     // e.g.  * ...|
-    beforeText: /^(\t|[ ])*[ ]\*([ ]([^\*]|\*(?!\/))*)?$/,
+    beforeText: /^(\t|[ ])*[ ]\*([ ]([^*]|\*(?!\/))*)?$/,
     // oneLineAboveText: /^(\s*(\/\*\*|\*)).*/,
     action: { indentAction: IndentAction.None, appendText: "* " },
   },

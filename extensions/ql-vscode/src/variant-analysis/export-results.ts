@@ -356,7 +356,7 @@ async function exportToLocalMarkdown(
   // This needs to use .then to ensure we aren't keeping the progress notification open. We shouldn't await the
   // "Open exported results" button click.
   void showInformationMessageWithAction(
-    `Variant analysis results exported to \"${exportedResultsPath}\".`,
+    `Variant analysis results exported to "${exportedResultsPath}".`,
     "Open exported results",
   ).then(async (shouldOpenExportedResults) => {
     if (!shouldOpenExportedResults) {

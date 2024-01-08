@@ -47,7 +47,6 @@ const baseConfig = {
     "@typescript-eslint/no-throw-literal": "error",
     "@typescript-eslint/consistent-type-imports": "error",
     "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
-    "no-useless-escape": 0,
     camelcase: "off",
     curly: ["error", "all"],
     "escompat/no-regexp-lookbehind": "off",
