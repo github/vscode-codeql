@@ -8,15 +8,14 @@ import type {
   QueryMetadata,
   ResultsPaths,
   ParsedResultSets,
-  NavigateMsg,
   ResultSet,
 } from "../../common/interface-types";
 import {
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
 } from "../../common/interface-types";
-import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./ResultTables";
+import { onNavigation } from "./navigation";
 
 import "./resultsView.css";
 import { useCallback, useEffect, useState } from "react";
@@ -63,11 +62,6 @@ interface ResultsViewState {
   nextResultsInfo: ResultsInfo | null;
   isExpectingResultsUpdate: boolean;
 }
-
-/**
- * Event handlers to be notified of navigation events coming from outside the webview.
- */
-export const onNavigation = new EventHandlerList<NavigateMsg>();
 
 /**
  * A minimal state container for displaying results.

@@ -10,7 +10,7 @@ import {
 } from "../../common/interface-types";
 import RawTableHeader from "./RawTableHeader";
 import RawTableRow from "./RawTableRow";
-import { onNavigation } from "./ResultsApp";
+import { onNavigation } from "./navigation";
 import { sendTelemetry } from "../common/telemetry";
 import { assertNever } from "../../common/helpers-pure";
 import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
