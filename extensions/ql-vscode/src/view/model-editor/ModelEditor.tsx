@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ToModelEditorMessage } from "../../common/interface-types";
+import type { ToModelEditorMessage } from "../../common/interface-types";
 import {
   VSCodeButton,
   VSCodeCheckbox,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
-import { Method } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "../../model-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../model-editor/shared/mode";

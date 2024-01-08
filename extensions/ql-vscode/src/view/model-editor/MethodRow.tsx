@@ -14,8 +14,8 @@ import {
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
-import { Method } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { ModelKindDropdown } from "./ModelKindDropdown";
 import { Mode } from "../../model-editor/shared/mode";
 import { MethodClassifications } from "./MethodClassifications";
@@ -26,7 +26,7 @@ import { MethodName } from "./MethodName";
 import { ModelTypeDropdown } from "./ModelTypeDropdown";
 import { ModelInputDropdown } from "./ModelInputDropdown";
 import { ModelOutputDropdown } from "./ModelOutputDropdown";
-import { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { Codicon } from "../common";
 import { canAddNewModeledMethod } from "../../model-editor/shared/multiple-modeled-methods";
 import { DataGridCell, DataGridRow } from "../common/DataGrid";

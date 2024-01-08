@@ -1,10 +1,8 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { VariantAnalysisStatus } from "../../../variant-analysis/shared/variant-analysis";
-import {
-  VariantAnalysisActions,
-  VariantAnalysisActionsProps,
-} from "../VariantAnalysisActions";
+import type { VariantAnalysisActionsProps } from "../VariantAnalysisActions";
+import { VariantAnalysisActions } from "../VariantAnalysisActions";
 
 describe(VariantAnalysisActions.name, () => {
   const onStopQueryClick = jest.fn();

@@ -1,5 +1,5 @@
 import Ajv from "ajv";
-import { QlPackFile } from "./qlpack-file";
+import type { QlPackFile } from "./qlpack-file";
 import { load } from "js-yaml";
 import { readFile } from "fs-extra";
 

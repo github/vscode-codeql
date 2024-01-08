@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
+import type { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { VariantAnalysisRepoStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockRepository } from "./repository";
 

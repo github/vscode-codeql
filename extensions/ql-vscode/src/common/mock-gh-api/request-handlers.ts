@@ -1,8 +1,9 @@
 import { join } from "path";
 import { readdir, readJson, readFile } from "fs-extra";
-import { http, RequestHandler } from "msw";
+import type { RequestHandler } from "msw";
+import { http } from "msw";
+import type { GitHubApiRequest } from "./gh-api-request";
 import {
-  GitHubApiRequest,
   isAutoModelRequest,
   isCodeSearchRequest,
   isGetRepoRequest,

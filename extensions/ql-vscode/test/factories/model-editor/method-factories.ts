@@ -1,9 +1,6 @@
-import {
-  CallClassification,
-  Method,
-  Usage,
-} from "../../../src/model-editor/method";
-import { UrlValueResolvable } from "../../../src/common/raw-result-types";
+import type { Method, Usage } from "../../../src/model-editor/method";
+import { CallClassification } from "../../../src/model-editor/method";
+import type { UrlValueResolvable } from "../../../src/common/raw-result-types";
 
 export function createMethod(data: Partial<Method> = {}): Method {
   return {

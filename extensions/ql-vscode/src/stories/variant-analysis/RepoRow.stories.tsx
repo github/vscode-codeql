@@ -1,11 +1,11 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../../variant-analysis/shared/variant-analysis";
-import {
+import type {
   AnalysisAlert,
   AnalysisRawResults,
 } from "../../variant-analysis/shared/analysis-result";
@@ -14,7 +14,8 @@ import { createMockRepositoryWithMetadata } from "../../../test/factories/varian
 import { analysesResults } from "../data/analysesResultsMessage.json";
 // eslint-disable-next-line import/no-namespace -- We need the full JSON object, so we can't use named imports
 import * as rawResults from "../data/rawResults.json";
-import { RepoRow, RepoRowProps } from "../../view/variant-analysis/RepoRow";
+import type { RepoRowProps } from "../../view/variant-analysis/RepoRow";
+import { RepoRow } from "../../view/variant-analysis/RepoRow";
 
 export default {
   title: "Variant Analysis/Repo Row",

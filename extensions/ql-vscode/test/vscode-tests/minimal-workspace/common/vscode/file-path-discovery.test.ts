@@ -1,11 +1,9 @@
-import {
-  EventEmitter,
+import type {
   FileSystemWatcher,
-  Uri,
-  workspace,
   WorkspaceFolder,
   WorkspaceFoldersChangeEvent,
 } from "vscode";
+import { EventEmitter, Uri, workspace } from "vscode";
 import { FilePathDiscovery } from "../../../../../src/common/vscode/file-path-discovery";
 import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";

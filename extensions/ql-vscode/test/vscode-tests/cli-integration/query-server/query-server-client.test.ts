@@ -1,20 +1,18 @@
 import { join, basename } from "path";
 import { dirSync } from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
+import type { RunQueryParams } from "../../../../src/query-server/messages";
 import {
   QueryResultType,
   registerDatabases,
   runQuery,
-  RunQueryParams,
 } from "../../../../src/query-server/messages";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { BqrsCellValue } from "../../../../src/common/bqrs-cli-types";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { BqrsCellValue } from "../../../../src/common/bqrs-cli-types";
 import { describeWithCodeQL } from "../../cli";
 import { QueryServerClient } from "../../../../src/query-server/query-server-client";
-import {
-  extLogger,
-  ProgressReporter,
-} from "../../../../src/common/logging/vscode";
+import type { ProgressReporter } from "../../../../src/common/logging/vscode";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import { ensureTestDatabase, getActivatedExtension } from "../../global.helper";
 import { createMockApp } from "../../../__mocks__/appMock";
 

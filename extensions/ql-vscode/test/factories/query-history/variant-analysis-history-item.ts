@@ -1,9 +1,7 @@
-import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
+import type { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../src/query-history/query-status";
-import {
-  VariantAnalysis,
-  VariantAnalysisStatus,
-} from "../../../src/variant-analysis/shared/variant-analysis";
+import type { VariantAnalysis } from "../../../src/variant-analysis/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../../src/variant-analysis/shared/variant-analysis";
 import { createMockVariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 import { QueryLanguage } from "../../../src/common/query-language";
 

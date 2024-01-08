@@ -1,5 +1,6 @@
-import { RequestError } from "@octokit/request-error";
-import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
+import type { RequestError } from "@octokit/request-error";
+import type { NotificationLogger } from "../common/logging";
+import { showAndLogErrorMessage } from "../common/logging";
 
 type ApiError = {
   resource: string;

@@ -9,7 +9,8 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../../../variant-analysis/shared/variant-analysis";
 import { userEvent } from "@testing-library/user-event";
-import { RepoRow, RepoRowProps } from "../RepoRow";
+import type { RepoRowProps } from "../RepoRow";
+import { RepoRow } from "../RepoRow";
 import { createMockRepositoryWithMetadata } from "../../../../test/factories/variant-analysis/shared/repository";
 
 describe(RepoRow.name, () => {

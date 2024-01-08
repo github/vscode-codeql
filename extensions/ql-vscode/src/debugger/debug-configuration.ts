@@ -1,13 +1,13 @@
-import {
+import type {
   CancellationToken,
   DebugConfiguration,
   DebugConfigurationProvider,
   WorkspaceFolder,
 } from "vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { LocalQueries } from "../local-queries";
+import type { LocalQueries } from "../local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
-import { LaunchConfig } from "./debug-protocol";
+import type { LaunchConfig } from "./debug-protocol";
 import { getErrorMessage } from "../common/helpers-pure";
 import { showAndLogErrorMessage } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";

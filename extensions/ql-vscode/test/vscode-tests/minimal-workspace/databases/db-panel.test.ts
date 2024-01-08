@@ -1,11 +1,11 @@
 import { TreeItemCollapsibleState, ThemeIcon, ThemeColor } from "vscode";
 import { join } from "path";
 import { ensureDir, remove, writeJson } from "fs-extra";
-import { DbConfig } from "../../../../src/databases/config/db-config";
+import type { DbConfig } from "../../../../src/databases/config/db-config";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { DbTreeDataProvider } from "../../../../src/databases/ui/db-tree-data-provider";
-import { DbTreeViewItem } from "../../../../src/databases/ui/db-tree-view-item";
+import type { DbTreeViewItem } from "../../../../src/databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
 import { createDbConfig } from "../../../factories/db-config-factories";

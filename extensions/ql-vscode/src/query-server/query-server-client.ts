@@ -1,24 +1,23 @@
 import { ensureFile } from "fs-extra";
 
-import { DisposableObject, DisposeHandler } from "../common/disposable-object";
-import { CancellationToken } from "vscode";
-import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
-import {
-  CodeQLCliServer,
-  shouldDebugQueryServer,
-  spawnServer,
-} from "../codeql-cli/cli";
-import { QueryServerConfig } from "../config";
-import { BaseLogger, Logger, showAndLogErrorMessage } from "../common/logging";
-import { extLogger, ProgressReporter } from "../common/logging/vscode";
-import { progress, ProgressMessage, WithProgressId } from "./messages";
-import {
-  ProgressCallback,
-  ProgressTask,
-  withProgress,
-} from "../common/vscode/progress";
+import type { DisposeHandler } from "../common/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
+import type { CancellationToken } from "vscode";
+import type { RequestType } from "vscode-jsonrpc/node";
+import { createMessageConnection } from "vscode-jsonrpc/node";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import { shouldDebugQueryServer, spawnServer } from "../codeql-cli/cli";
+import type { QueryServerConfig } from "../config";
+import type { BaseLogger, Logger } from "../common/logging";
+import { showAndLogErrorMessage } from "../common/logging";
+import type { ProgressReporter } from "../common/logging/vscode";
+import { extLogger } from "../common/logging/vscode";
+import type { ProgressMessage, WithProgressId } from "./messages";
+import { progress } from "./messages";
+import type { ProgressCallback, ProgressTask } from "../common/vscode/progress";
+import { withProgress } from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 
 type ServerOpts = {
   logger: Logger;

@@ -1,9 +1,9 @@
 import { pathExists } from "fs-extra";
-import { BqrsInfo } from "../common/bqrs-cli-types";
+import type { BqrsInfo } from "../common/bqrs-cli-types";
+import type { QueryMetadata } from "../common/interface-types";
 import {
   ALERTS_TABLE_NAME,
   getDefaultResultSetName,
-  QueryMetadata,
 } from "../common/interface-types";
 
 export async function getResultSetNames(

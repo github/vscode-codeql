@@ -1,12 +1,12 @@
-import { OctokitResponse } from "@octokit/types/dist-types";
-import { Credentials } from "../../common/authentication";
-import { VariantAnalysisSubmission } from "../shared/variant-analysis";
-import {
+import type { OctokitResponse } from "@octokit/types/dist-types";
+import type { Credentials } from "../../common/authentication";
+import type { VariantAnalysisSubmission } from "../shared/variant-analysis";
+import type {
   VariantAnalysis,
   VariantAnalysisRepoTask,
   VariantAnalysisSubmissionRequest,
 } from "./variant-analysis";
-import { Repository } from "./repository";
+import type { Repository } from "./repository";
 
 export async function submitVariantAnalysis(
   credentials: Credentials,

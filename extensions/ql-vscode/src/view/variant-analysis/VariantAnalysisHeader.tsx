@@ -1,23 +1,25 @@
 import { useMemo } from "react";
 import { styled } from "styled-components";
+import type {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryState,
+} from "../../variant-analysis/shared/variant-analysis";
 import {
   getSkippedRepoCount,
   getTotalResultCount,
   hasRepoScanCompleted,
   isRepoScanSuccessful,
-  VariantAnalysis,
   VariantAnalysisScannedRepositoryDownloadStatus,
-  VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
 import { QueryDetails } from "./QueryDetails";
 import { VariantAnalysisActions } from "./VariantAnalysisActions";
 import { VariantAnalysisStats } from "./VariantAnalysisStats";
 import { parseDate } from "../../common/date";
 import { basename } from "../../common/path";
+import type { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
-  RepositoriesFilterSortState,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 type VariantAnalysisHeaderProps = {

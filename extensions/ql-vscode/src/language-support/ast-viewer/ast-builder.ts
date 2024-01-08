@@ -1,13 +1,13 @@
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import {
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type {
   DecodedBqrsChunk,
   BqrsId,
   BqrsEntityValue,
 } from "../../common/bqrs-cli-types";
-import { DatabaseItem } from "../../databases/local-databases";
-import { ChildAstItem, AstItem } from "./ast-viewer";
-import { Uri } from "vscode";
-import { QueryOutputDir } from "../../run-queries-shared";
+import type { DatabaseItem } from "../../databases/local-databases";
+import type { ChildAstItem, AstItem } from "./ast-viewer";
+import type { Uri } from "vscode";
+import type { QueryOutputDir } from "../../run-queries-shared";
 import { fileRangeFromURI } from "../contextual/file-range-from-uri";
 import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
 

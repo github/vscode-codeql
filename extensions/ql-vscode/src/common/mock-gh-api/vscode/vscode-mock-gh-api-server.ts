@@ -1,5 +1,6 @@
 import { pathExists } from "fs-extra";
-import { env, QuickPickItem, Uri, window } from "vscode";
+import type { QuickPickItem } from "vscode";
+import { env, Uri, window } from "vscode";
 
 import {
   getMockGitHubApiServerScenariosPath,
@@ -7,8 +8,9 @@ import {
 } from "../../../config";
 import { DisposableObject } from "../../disposable-object";
 import { MockGitHubApiServer } from "../mock-gh-api-server";
-import { MockGitHubApiServerCommands } from "../../commands";
-import { App, AppMode } from "../../app";
+import type { MockGitHubApiServerCommands } from "../../commands";
+import type { App } from "../../app";
+import { AppMode } from "../../app";
 import path from "path";
 
 /**

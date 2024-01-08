@@ -1,7 +1,9 @@
-import fetch, { Response } from "node-fetch";
+import type { Response } from "node-fetch";
+import fetch from "node-fetch";
 import { zip } from "zip-a-folder";
-import { Uri, window, InputBoxOptions } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { InputBoxOptions } from "vscode";
+import { Uri, window } from "vscode";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   ensureDir,
   realpath as fs_realpath,
@@ -12,27 +14,25 @@ import {
   readdir,
 } from "fs-extra";
 import { basename, join } from "path";
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 
-import { DatabaseManager, DatabaseItem } from "./local-databases";
+import type { DatabaseManager, DatabaseItem } from "./local-databases";
 import { tmpDir } from "../tmp-dir";
-import {
-  reportStreamProgress,
-  ProgressCallback,
-} from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { reportStreamProgress } from "../common/vscode/progress";
 import { extLogger } from "../common/logging/vscode";
 import { getErrorMessage } from "../common/helpers-pure";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
 } from "../common/github-url-identifier-helper";
-import { Credentials } from "../common/authentication";
-import { AppCommandManager } from "../common/commands";
+import type { Credentials } from "../common/authentication";
+import type { AppCommandManager } from "../common/commands";
 import { addDatabaseSourceToWorkspace, allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
-import { DatabaseOrigin } from "./local-databases/database-origin";
+import type { DatabaseOrigin } from "./local-databases/database-origin";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.

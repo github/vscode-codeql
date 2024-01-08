@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { VariantAnalysisOutcomePanels } from "../../view/variant-analysis/VariantAnalysisOutcomePanels";
@@ -11,10 +11,8 @@ import {
 import { createMockScannedRepo } from "../../../test/factories/variant-analysis/shared/scanned-repositories";
 import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
-import {
-  defaultFilterSortState,
-  RepositoriesFilterSortState,
-} from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import type { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 export default {
   title: "Variant Analysis/Variant Analysis Outcome Panels",

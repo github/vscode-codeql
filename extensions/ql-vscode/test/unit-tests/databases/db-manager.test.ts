@@ -1,25 +1,25 @@
 import { ensureDir, readJSON, remove, writeJson } from "fs-extra";
 import { join } from "path";
-import { App } from "../../../src/common/app";
-import {
-  DbConfig,
-  SelectedDbItemKind,
-} from "../../../src/databases/config/db-config";
+import type { App } from "../../../src/common/app";
+import type { DbConfig } from "../../../src/databases/config/db-config";
+import { SelectedDbItemKind } from "../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../src/databases/config/db-config-store";
-import {
-  flattenDbItems,
-  isRemoteOwnerDbItem,
-  isRemoteRepoDbItem,
-  isRemoteUserDefinedListDbItem,
+import type {
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteUserDefinedListDbItem,
 } from "../../../src/databases/db-item";
 import {
+  flattenDbItems,
+  isRemoteOwnerDbItem,
+  isRemoteRepoDbItem,
+  isRemoteUserDefinedListDbItem,
+} from "../../../src/databases/db-item";
+import type {
   ExpandedDbItem,
-  ExpandedDbItemKind,
   RemoteUserDefinedListExpandedDbItem,
 } from "../../../src/databases/db-item-expansion";
+import { ExpandedDbItemKind } from "../../../src/databases/db-item-expansion";
 import { DbManager } from "../../../src/databases/db-manager";
 import { createDbConfig } from "../../factories/db-config-factories";
 import { createRemoteUserDefinedListDbItem } from "../../factories/db-item-factories";

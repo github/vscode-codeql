@@ -1,4 +1,5 @@
-import { languages, IndentAction, OnEnterRule } from "vscode";
+import type { OnEnterRule } from "vscode";
+import { languages, IndentAction } from "vscode";
 
 /**
  * OnEnterRules are available in language-configurations, but you cannot specify them in the language-configuration.json.

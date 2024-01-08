@@ -1,4 +1,5 @@
-import { DirResult, dirSync } from "tmp";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
 import { dump } from "js-yaml";
 import { writeFileSync } from "fs-extra";
 import { join } from "path";

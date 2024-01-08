@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { className, jumpToLocation } from "./result-table-utils";
-import {
-  RAW_RESULTS_LIMIT,
+import type {
   RawResultsSortState,
   NavigateMsg,
+} from "../../common/interface-types";
+import {
+  RAW_RESULTS_LIMIT,
   NavigationDirection,
 } from "../../common/interface-types";
 import RawTableHeader from "./RawTableHeader";
@@ -13,10 +15,8 @@ import { sendTelemetry } from "../common/telemetry";
 import { assertNever } from "../../common/helpers-pure";
 import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
 import { useScrollIntoView } from "./useScrollIntoView";
-import {
-  isUrlValueResolvable,
-  RawResultSet,
-} from "../../common/raw-result-types";
+import type { RawResultSet } from "../../common/raw-result-types";
+import { isUrlValueResolvable } from "../../common/raw-result-types";
 
 type RawTableProps = {
   databaseUri: string;

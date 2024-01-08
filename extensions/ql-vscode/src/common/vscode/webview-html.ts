@@ -1,7 +1,8 @@
-import { Uri, Webview } from "vscode";
+import type { Webview } from "vscode";
+import { Uri } from "vscode";
 import { randomBytes } from "crypto";
 import { EOL } from "os";
-import { App } from "../app";
+import type { App } from "../app";
 
 export type WebviewKind =
   | "results"

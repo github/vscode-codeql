@@ -1,4 +1,4 @@
-import { Disposable } from "./disposable-object";
+import type { Disposable } from "./disposable-object";
 
 export interface AppEvent<T> {
   (listener: (event: T) => void): Disposable;

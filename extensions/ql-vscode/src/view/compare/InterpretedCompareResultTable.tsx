@@ -1,4 +1,4 @@
-import { Result } from "sarif";
+import type { Result } from "sarif";
 import { AlertTable } from "../results/AlertTable";
 
 type Props = {

@@ -1,10 +1,10 @@
 import { getRepositorySelection } from "../../../../src/variant-analysis/repository-selection";
-import { DbManager } from "../../../../src/databases/db-manager";
-import {
+import type { DbManager } from "../../../../src/databases/db-manager";
+import type {
   DbItem,
-  DbItemKind,
   RemoteRepoDbItem,
 } from "../../../../src/databases/db-item";
+import { DbItemKind } from "../../../../src/databases/db-item";
 
 describe("repository selection", () => {
   it("should throw error when no database item is selected", async () => {

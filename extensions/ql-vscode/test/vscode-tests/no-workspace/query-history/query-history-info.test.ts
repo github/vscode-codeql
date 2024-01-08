@@ -6,7 +6,7 @@ import {
   getQueryText,
   getRawQueryName,
 } from "../../../../src/query-history/query-history-info";
-import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
+import type { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepos } from "../../../factories/variant-analysis/shared/scanned-repositories";
 import { createMockLocalQueryInfo } from "../../../factories/query-history/local-query-history-item";

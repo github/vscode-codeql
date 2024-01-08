@@ -1,6 +1,6 @@
 import { outputJson, readJson } from "fs-extra";
-import { VariantAnalysisScannedRepositoryState } from "../shared/variant-analysis";
-import { VariantAnalysisScannedRepositoryStateDto } from "./repo-states-dto";
+import type { VariantAnalysisScannedRepositoryState } from "../shared/variant-analysis";
+import type { VariantAnalysisScannedRepositoryStateDto } from "./repo-states-dto";
 import { mapRepoStatesToDto } from "./repo-states-dto-mapper";
 import { mapRepoStatesToDomainModel } from "./repo-states-domain-mapper";
 

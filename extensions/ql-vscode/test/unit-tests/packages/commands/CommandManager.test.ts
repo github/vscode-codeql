@@ -1,7 +1,5 @@
-import {
-  CommandFunction,
-  CommandManager,
-} from "../../../../src/packages/commands";
+import type { CommandFunction } from "../../../../src/packages/commands";
+import { CommandManager } from "../../../../src/packages/commands";
 
 describe("CommandManager", () => {
   it("can register a command", () => {

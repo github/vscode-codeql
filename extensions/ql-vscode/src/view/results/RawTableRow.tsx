@@ -1,6 +1,6 @@
 import { selectedRowClassName, zebraStripe } from "./result-table-utils";
 import RawTableValue from "./RawTableValue";
-import { Row } from "../../common/raw-result-types";
+import type { Row } from "../../common/raw-result-types";
 
 interface Props {
   rowIndex: number;

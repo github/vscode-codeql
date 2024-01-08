@@ -1,13 +1,11 @@
 import { throttling } from "@octokit/plugin-throttling";
-import { Octokit } from "@octokit/rest";
-import { CancellationToken } from "vscode";
-import { Credentials } from "../common/authentication";
-import { BaseLogger } from "../common/logging";
+import type { Octokit } from "@octokit/rest";
+import type { CancellationToken } from "vscode";
+import type { Credentials } from "../common/authentication";
+import type { BaseLogger } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
-import {
-  ProgressCallback,
-  UserCancellationException,
-} from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { UserCancellationException } from "../common/vscode/progress";
 
 export async function getCodeSearchRepositories(
   query: string,

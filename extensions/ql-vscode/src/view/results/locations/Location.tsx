@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { UrlValue } from "../../../common/raw-result-types";
+import type { UrlValue } from "../../../common/raw-result-types";
 import { convertNonPrintableChars } from "../../../common/text-utils";
 import { NonClickableLocation } from "./NonClickableLocation";
 import { ClickableLocation } from "./ClickableLocation";

@@ -1,6 +1,7 @@
 import { env } from "vscode";
 import { beforeEachAction as testConfigBeforeEachAction } from "./test-config";
-import { DirResult, dirSync } from "tmp";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
 import { realpathSync } from "fs-extra";
 import {
   getActivatedExtension,

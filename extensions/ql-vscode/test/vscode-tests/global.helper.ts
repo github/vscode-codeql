@@ -1,12 +1,12 @@
 import { join } from "path";
 import { realpathSync } from "fs-extra";
 import { extensions, Uri } from "vscode";
-import {
+import type {
   DatabaseItem,
   DatabaseManager,
 } from "../../src/databases/local-databases";
-import { CodeQLCliServer } from "../../src/codeql-cli/cli";
-import { CodeQLExtensionInterface } from "../../src/extension";
+import type { CodeQLCliServer } from "../../src/codeql-cli/cli";
+import type { CodeQLExtensionInterface } from "../../src/extension";
 import { importArchiveDatabase } from "../../src/databases/database-fetcher";
 import { createMockCommandManager } from "../__mocks__/commandsMock";
 

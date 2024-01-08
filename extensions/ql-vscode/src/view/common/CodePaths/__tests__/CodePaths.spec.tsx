@@ -1,6 +1,7 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { CodePaths, CodePathsProps } from "../CodePaths";
+import type { CodePathsProps } from "../CodePaths";
+import { CodePaths } from "../CodePaths";
 
 import { createMockCodeFlows } from "../../../../../test/factories/variant-analysis/shared/CodeFlow";
 import { createMockAnalysisMessage } from "../../../../../test/factories/variant-analysis/shared/AnalysisMessage";

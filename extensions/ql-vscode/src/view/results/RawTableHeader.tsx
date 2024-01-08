@@ -1,10 +1,8 @@
 import { vscode } from "../vscode-api";
-import {
-  RawResultsSortState,
-  SortDirection,
-} from "../../common/interface-types";
+import type { RawResultsSortState } from "../../common/interface-types";
+import { SortDirection } from "../../common/interface-types";
 import { nextSortDirection } from "./result-table-utils";
-import { Column } from "../../common/raw-result-types";
+import type { Column } from "../../common/raw-result-types";
 
 interface Props {
   readonly columns: readonly Column[];

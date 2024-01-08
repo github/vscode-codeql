@@ -1,21 +1,21 @@
 import { window } from "vscode";
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 import { createMockApp } from "../../../../__mocks__/appMock";
-import { App } from "../../../../../src/common/app";
-import { DatabaseManager } from "../../../../../src/databases/local-databases";
+import type { App } from "../../../../../src/common/app";
+import type { DatabaseManager } from "../../../../../src/databases/local-databases";
 import { mockEmptyDatabaseManager } from "../../query-testing/test-runner-helpers";
-import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
-import { GitHubDatabaseConfig } from "../../../../../src/config";
+import type { GitHubDatabaseConfig } from "../../../../../src/config";
 import { GitHubDatabasesModule } from "../../../../../src/databases/github-databases";
 import { ValueResult } from "../../../../../src/common/value-result";
-import { CodeqlDatabase } from "../../../../../src/databases/github-databases/api";
+import type { CodeqlDatabase } from "../../../../../src/databases/github-databases/api";
 
 import * as githubRepositoryFinder from "../../../../../src/databases/github-repository-finder";
 import * as githubDatabasesApi from "../../../../../src/databases/github-databases/api";
 import * as githubDatabasesDownload from "../../../../../src/databases/github-databases/download";
 import * as githubDatabasesUpdates from "../../../../../src/databases/github-databases/updates";
-import { DatabaseUpdate } from "../../../../../src/databases/github-databases/updates";
+import type { DatabaseUpdate } from "../../../../../src/databases/github-databases/updates";
 
 describe("GitHubDatabasesModule", () => {
   describe("promptGitHubRepositoryDownload", () => {

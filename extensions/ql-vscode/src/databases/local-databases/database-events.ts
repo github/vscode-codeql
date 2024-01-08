@@ -1,4 +1,4 @@
-import { DatabaseItem } from "./database-item";
+import type { DatabaseItem } from "./database-item";
 
 export enum DatabaseEventKind {
   Add = "Add",

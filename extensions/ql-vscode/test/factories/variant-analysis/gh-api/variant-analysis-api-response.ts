@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import {
+import type {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,

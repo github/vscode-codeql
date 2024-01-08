@@ -1,11 +1,9 @@
-import { ProgressLocation, TextEditor, window } from "vscode";
-import {
-  LanguageClient,
-  NotificationType,
-  StreamInfo,
-} from "vscode-languageclient/node";
+import type { TextEditor } from "vscode";
+import { ProgressLocation, window } from "vscode";
+import type { StreamInfo } from "vscode-languageclient/node";
+import { LanguageClient, NotificationType } from "vscode-languageclient/node";
 import { shouldDebugIdeServer, spawnServer } from "../codeql-cli/cli";
-import { QueryServerConfig } from "../config";
+import type { QueryServerConfig } from "../config";
 import { ideServerLogger } from "../common/logging/vscode";
 
 /**

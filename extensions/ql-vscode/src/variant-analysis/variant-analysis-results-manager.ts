@@ -3,18 +3,22 @@ import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
 
-import { Logger } from "../common/logging";
-import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
+import type { Logger } from "../common/logging";
+import type {
+  AnalysisAlert,
+  AnalysisRawResults,
+} from "./shared/analysis-result";
 import { sarifParser } from "../common/sarif-parser";
 import { extractAnalysisAlerts } from "./sarif-processing";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { extractRawResults } from "./bqrs-processing";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
-import { DisposableObject, DisposeHandler } from "../common/disposable-object";
+import type { DisposeHandler } from "../common/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { EventEmitter } from "vscode";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { readRepoTask, writeRepoTask } from "./repo-tasks-store";

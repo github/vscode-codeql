@@ -1,23 +1,25 @@
-import { Method, MethodSignature } from "./method";
-import { ModeledMethod } from "./modeled-method";
+import type { Method, MethodSignature } from "./method";
+import type { ModeledMethod } from "./modeled-method";
 import { load as loadYaml } from "js-yaml";
-import { ProgressCallback, withProgress } from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { withProgress } from "../common/vscode/progress";
 import { createAutoModelRequest, getCandidates } from "./auto-model";
 import { runAutoModelQueries } from "./auto-model-codeml-queries";
 import { loadDataExtensionYaml } from "./yaml";
-import { ModelRequest, ModelResponse, autoModel } from "./auto-model-api";
+import type { ModelRequest, ModelResponse } from "./auto-model-api";
+import { autoModel } from "./auto-model-api";
 import { RequestError } from "@octokit/request-error";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { redactableError } from "../common/errors";
-import { App } from "../common/app";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { QueryRunner } from "../query-server";
-import { DatabaseItem } from "../databases/local-databases";
-import { Mode } from "./shared/mode";
+import type { App } from "../common/app";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { QueryRunner } from "../query-server";
+import type { DatabaseItem } from "../databases/local-databases";
+import type { Mode } from "./shared/mode";
 import { CancellationTokenSource } from "vscode";
-import { ModelingStore } from "./modeling-store";
-import { ModelConfigListener } from "../config";
-import { QueryLanguage } from "../common/query-language";
+import type { ModelingStore } from "./modeling-store";
+import type { ModelConfigListener } from "../config";
+import type { QueryLanguage } from "../common/query-language";
 
 /**
  * The auto-modeler holds state around auto-modeling jobs and allows

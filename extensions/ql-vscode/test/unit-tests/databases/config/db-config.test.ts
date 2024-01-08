@@ -1,5 +1,5 @@
+import type { RemoteRepositoryList } from "../../../../src/databases/config/db-config";
 import {
-  RemoteRepositoryList,
   removeRemoteList,
   removeRemoteOwner,
   removeRemoteRepo,

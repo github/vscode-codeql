@@ -1,19 +1,14 @@
 import { resolve } from "path";
 
-import {
-  authentication,
-  commands,
-  TextDocument,
-  window,
-  workspace,
-} from "vscode";
+import type { TextDocument } from "vscode";
+import { authentication, commands, window, workspace } from "vscode";
 
 import { MockGitHubApiServer } from "../../../../src/common/mock-gh-api/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
-import { AllCommands } from "../../../../src/common/commands";
+import type { AllCommands } from "../../../../src/common/commands";
 
 const mockServer = new MockGitHubApiServer();
 beforeAll(() => mockServer.startServer());

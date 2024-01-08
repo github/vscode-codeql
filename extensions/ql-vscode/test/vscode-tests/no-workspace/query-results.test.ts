@@ -7,23 +7,24 @@ import {
   mkdirpSync,
 } from "fs-extra";
 import { platform } from "os";
+import type { InitialQueryInfo } from "../../../src/query-results";
 import {
   LocalQueryInfo,
-  InitialQueryInfo,
   interpretResultsSarif,
 } from "../../../src/query-results";
+import type { QueryWithResults } from "../../../src/run-queries-shared";
 import {
   QueryEvaluationInfo,
   QueryOutputDir,
-  QueryWithResults,
 } from "../../../src/run-queries-shared";
-import {
+import type {
   DatabaseInfo,
-  SortDirection,
   SortedResultSetInfo,
 } from "../../../src/common/interface-types";
-import { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
-import { CancellationTokenSource, Uri } from "vscode";
+import { SortDirection } from "../../../src/common/interface-types";
+import type { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
+import type { CancellationTokenSource } from "vscode";
+import { Uri } from "vscode";
 import { tmpDir } from "../../../src/tmp-dir";
 import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";

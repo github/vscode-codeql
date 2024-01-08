@@ -1,32 +1,34 @@
 import { join } from "path";
-import { ExtensionContext, Uri, window, workspace } from "vscode";
+import type { ExtensionContext } from "vscode";
+import { Uri, window, workspace } from "vscode";
 
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { QueryHistoryConfigListener } from "../../../../src/config";
-import { LocalQueryInfo } from "../../../../src/query-results";
-import { DatabaseManager } from "../../../../src/databases/local-databases";
+import type { LocalQueryInfo } from "../../../../src/query-results";
+import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir } from "../../../../src/tmp-dir";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
-import { ResultsView, WebviewReveal } from "../../../../src/local-queries";
-import { EvalLogViewer } from "../../../../src/query-evaluation-logging";
-import { QueryRunner } from "../../../../src/query-server/query-runner";
-import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
+import type { ResultsView } from "../../../../src/local-queries";
+import { WebviewReveal } from "../../../../src/local-queries";
+import type { EvalLogViewer } from "../../../../src/query-evaluation-logging";
+import type { QueryRunner } from "../../../../src/query-server/query-runner";
+import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
+import type { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
 import {
   createMockLocalQueryInfo,
   createMockQueryWithResults,
 } from "../../../factories/query-history/local-query-history-item";
 import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
-import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
+import type { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-history/query-status";
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import * as dialog from "../../../../src/common/vscode/dialog";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 import { createMockApp } from "../../../__mocks__/appMock";
-import { App } from "../../../../src/common/app";
+import type { App } from "../../../../src/common/app";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 import { LanguageContextStore } from "../../../../src/language-context-store";
 

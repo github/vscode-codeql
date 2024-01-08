@@ -1,5 +1,5 @@
 import { UserCancellationException } from "../common/vscode/progress";
-import { DbManager } from "../databases/db-manager";
+import type { DbManager } from "../databases/db-manager";
 import { DbItemKind } from "../databases/db-item";
 
 export interface RepositorySelection {

@@ -1,5 +1,5 @@
 import { QueryLanguage } from "../../common/query-language";
-import {
+import type {
   ModelsAsDataLanguage,
   ModelsAsDataLanguagePredicates,
 } from "./models-as-data";

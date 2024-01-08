@@ -1,11 +1,11 @@
 import { CancellationTokenSource, Uri } from "vscode";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import {
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type {
   DatabaseItem,
-  DatabaseItemImpl,
   DatabaseManager,
   FullDatabaseOptions,
 } from "../../../../src/databases/local-databases";
+import { DatabaseItemImpl } from "../../../../src/databases/local-databases";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { TestRunner } from "../../../../src/query-testing/test-runner";
 import { createMockLogger } from "../../../__mocks__/loggerMock";

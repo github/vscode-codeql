@@ -1,9 +1,9 @@
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { QLPACK_FILENAMES, QLPACK_LOCK_FILENAMES } from "../common/ql";
 import { basename, dirname, resolve } from "path";
 import { extLogger } from "../common/logging/vscode";
 import { promises } from "fs-extra";
-import { BaseLogger } from "../common/logging";
+import type { BaseLogger } from "../common/logging";
 
 type LockFileForStandardQueryResult = {
   cleanup?: () => Promise<void>;

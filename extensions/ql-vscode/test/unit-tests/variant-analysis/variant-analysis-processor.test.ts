@@ -1,9 +1,7 @@
 import { faker } from "@faker-js/faker";
-import { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository } from "../../../src/variant-analysis/gh-api/variant-analysis";
-import {
-  VariantAnalysisScannedRepository,
-  VariantAnalysisRepoStatus,
-} from "../../../src/variant-analysis/shared/variant-analysis";
+import type { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository } from "../../../src/variant-analysis/gh-api/variant-analysis";
+import type { VariantAnalysisScannedRepository } from "../../../src/variant-analysis/shared/variant-analysis";
+import { VariantAnalysisRepoStatus } from "../../../src/variant-analysis/shared/variant-analysis";
 import {
   processScannedRepository,
   processVariantAnalysis,

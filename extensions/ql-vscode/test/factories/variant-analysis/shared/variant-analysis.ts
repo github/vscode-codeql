@@ -1,10 +1,10 @@
 import { faker } from "@faker-js/faker";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,
-  VariantAnalysisStatus,
 } from "../../../../src/variant-analysis/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepos } from "./scanned-repositories";
 import { createMockSkippedRepos } from "./skipped-repositories";
 import { createMockRepository } from "./repository";

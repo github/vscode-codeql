@@ -1,9 +1,10 @@
-import {
+import type {
   ExplorerSelectionCommandFunction,
   TreeViewContextMultiSelectionCommandFunction,
   TreeViewContextSingleSelectionCommandFunction,
 } from "../commands";
-import { showAndLogErrorMessage, NotificationLogger } from "../logging";
+import type { NotificationLogger } from "../logging";
+import { showAndLogErrorMessage } from "../logging";
 
 // A hack to match types that are not an array, which is useful to help avoid
 // misusing createSingleSelectionCommand, e.g. where T accidentally gets instantiated

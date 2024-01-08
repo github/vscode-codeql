@@ -1,14 +1,15 @@
-import {
+import type {
   CancellationToken,
-  Uri,
   WebviewView,
   WebviewViewProvider,
   WebviewViewResolveContext,
 } from "vscode";
-import { getHtmlForWebview, WebviewKind, WebviewMessage } from "./webview-html";
-import { Disposable } from "../disposable-object";
-import { App } from "../app";
-import { DeepReadonly } from "../readonly";
+import { Uri } from "vscode";
+import type { WebviewKind, WebviewMessage } from "./webview-html";
+import { getHtmlForWebview } from "./webview-html";
+import type { Disposable } from "../disposable-object";
+import type { App } from "../app";
+import type { DeepReadonly } from "../readonly";
 
 export abstract class AbstractWebviewViewProvider<
   ToMessage extends WebviewMessage,

@@ -1,19 +1,19 @@
-import { CodeQLCliServer, SourceInfo } from "../codeql-cli/cli";
-import { CoreCompletedQuery, QueryRunner } from "../query-server";
-import { DatabaseItem } from "../databases/local-databases";
-import { ProgressCallback } from "../common/vscode/progress";
-import { Log } from "sarif";
-import { Mode } from "./shared/mode";
+import type { CodeQLCliServer, SourceInfo } from "../codeql-cli/cli";
+import type { CoreCompletedQuery, QueryRunner } from "../query-server";
+import type { DatabaseItem } from "../databases/local-databases";
+import type { ProgressCallback } from "../common/vscode/progress";
+import type { Log } from "sarif";
+import type { Mode } from "./shared/mode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { interpretResultsSarif } from "../query-results";
 import { join } from "path";
 import { dir } from "tmp-promise";
 import { writeFile, outputFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
-import { MethodSignature } from "./method";
+import type { MethodSignature } from "./method";
 import { runQuery } from "../local-queries/run-query";
-import { QueryMetadata } from "../common/interface-types";
-import { CancellationTokenSource } from "vscode";
+import type { QueryMetadata } from "../common/interface-types";
+import type { CancellationTokenSource } from "vscode";
 import { resolveQueries } from "../local-queries";
 import { modeTag } from "./mode-tag";
 

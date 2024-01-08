@@ -1,17 +1,14 @@
+import type { TreeDataProvider, TreeView, ProviderResult, Event } from "vscode";
 import {
   window,
-  TreeDataProvider,
-  TreeView,
   TreeItem,
-  ProviderResult,
-  Event,
   EventEmitter,
   TreeItemCollapsibleState,
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import { redactableError } from "../common/errors";
-import { EvalLogViewerCommands } from "../common/commands";
+import type { EvalLogViewerCommands } from "../common/commands";
 import { extLogger } from "../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { telemetryListener } from "../common/vscode/telemetry";

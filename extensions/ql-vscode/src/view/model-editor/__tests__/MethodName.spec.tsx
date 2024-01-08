@@ -1,6 +1,6 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { MethodName } from "../MethodName";
-import { Method } from "../../../model-editor/method";
+import type { Method } from "../../../model-editor/method";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 
 describe(MethodName.name, () => {

@@ -1,9 +1,9 @@
-import {
+import type {
   EvaluationLogProblemReporter,
   EvaluationLogScanner,
   EvaluationLogScannerProvider,
 } from "./log-scanner";
-import {
+import type {
   InLayer,
   ComputeRecursive,
   SummaryEvent,

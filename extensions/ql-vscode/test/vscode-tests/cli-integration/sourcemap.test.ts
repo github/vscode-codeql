@@ -3,7 +3,7 @@ import { join, basename } from "path";
 import { tmpDir } from "../../../src/tmp-dir";
 import { readFile, writeFile, ensureDir, copy } from "fs-extra";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
-import { AllCommands } from "../../../src/common/commands";
+import type { AllCommands } from "../../../src/common/commands";
 
 /**
  * Integration tests for queries

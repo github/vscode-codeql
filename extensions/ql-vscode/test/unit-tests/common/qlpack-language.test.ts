@@ -1,6 +1,6 @@
 import { join } from "path";
 import { dirSync } from "tmp-promise";
-import { DirResult } from "tmp";
+import type { DirResult } from "tmp";
 import { outputFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { QueryLanguage } from "../../../src/common/query-language";

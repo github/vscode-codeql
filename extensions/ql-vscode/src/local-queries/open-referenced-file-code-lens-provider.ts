@@ -1,10 +1,5 @@
-import {
-  CodeLensProvider,
-  TextDocument,
-  CodeLens,
-  Command,
-  Range,
-} from "vscode";
+import type { CodeLensProvider, TextDocument, Command } from "vscode";
+import { CodeLens, Range } from "vscode";
 
 export class OpenReferencedFileCodeLensProvider implements CodeLensProvider {
   async provideCodeLenses(document: TextDocument): Promise<CodeLens[]> {

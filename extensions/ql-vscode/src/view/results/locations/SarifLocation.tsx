@@ -1,4 +1,4 @@
-import { Location as SarifLogLocation } from "sarif";
+import type { Location as SarifLogLocation } from "sarif";
 import { parseSarifLocation } from "../../../common/sarif-utils";
 import { basename } from "../../../common/path";
 import { useMemo } from "react";

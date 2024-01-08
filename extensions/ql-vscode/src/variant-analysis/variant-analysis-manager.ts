@@ -4,11 +4,13 @@ import {
   submitVariantAnalysis,
   getVariantAnalysisRepo,
 } from "./gh-api/gh-api-client";
-import { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
-import {
-  authentication,
+import type { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
+import type {
   AuthenticationSessionsChangeEvent,
   CancellationToken,
+} from "vscode";
+import {
+  authentication,
   env,
   EventEmitter,
   Uri,
@@ -18,22 +20,24 @@ import {
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
-import {
-  getActionsWorkflowRunUrl,
-  isVariantAnalysisComplete,
-  parseVariantAnalysisQueryLanguage,
+import type {
   VariantAnalysis,
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepository,
-  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
+import {
+  getActionsWorkflowRunUrl,
+  isVariantAnalysisComplete,
+  parseVariantAnalysisQueryLanguage,
+  VariantAnalysisScannedRepositoryDownloadStatus,
+} from "./shared/variant-analysis";
 import { getErrorMessage } from "../common/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
-import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
-import {
+import type { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
+import type {
   LoadResultsOptions,
   VariantAnalysisResultsManager,
 } from "./variant-analysis-results-manager";
@@ -47,22 +51,25 @@ import { createTimestampFile, saveBeforeStart } from "../run-queries-shared";
 import { readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
-  ProgressCallback,
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { RepositoriesFilterSortStateWithIds } from "./shared/variant-analysis-filter-sort";
 import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
-  RepositoriesFilterSortStateWithIds,
 } from "./shared/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
-import { DbManager } from "../databases/db-manager";
-import { App } from "../common/app";
+import type { DbManager } from "../databases/db-manager";
+import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
-import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
+import type {
+  AppCommandManager,
+  VariantAnalysisCommands,
+} from "../common/commands";
 import { exportVariantAnalysisResults } from "./export-results";
 import {
   readRepoStates,
@@ -76,7 +83,7 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
-import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { RequestError } from "@octokit/request-error";
 import { handleRequestError } from "./custom-errors";
 

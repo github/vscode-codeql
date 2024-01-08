@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Method } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import {
   canAddNewModeledMethod,
   canRemoveModeledMethod,
@@ -11,10 +11,10 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { Codicon } from "../common";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "./ModeledMethodAlert";
-import { QueryLanguage } from "../../common/query-language";
+import type { QueryLanguage } from "../../common/query-language";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { sendTelemetry } from "../common/telemetry";
-import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;

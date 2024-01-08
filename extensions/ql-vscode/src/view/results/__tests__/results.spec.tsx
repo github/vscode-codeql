@@ -1,10 +1,10 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { ResultsApp } from "../ResultsApp";
-import {
+import type {
   Interpretation,
   IntoResultsViewMsg,
-  SortDirection,
 } from "../../../common/interface-types";
+import { SortDirection } from "../../../common/interface-types";
 import { readJSONSync } from "fs-extra";
 import { resolve } from "path";
 import { postMessage } from "../../common/post-message";

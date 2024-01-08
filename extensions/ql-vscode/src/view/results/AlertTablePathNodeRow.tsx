@@ -1,10 +1,10 @@
-import { ThreadFlowLocation } from "sarif";
-import {
-  equalsNotUndefined,
+import type { ThreadFlowLocation } from "sarif";
+import type {
   PathNode,
   Result as ResultKeysResult,
   ResultKey,
 } from "./result-keys";
+import { equalsNotUndefined } from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
 import { useCallback, useMemo } from "react";

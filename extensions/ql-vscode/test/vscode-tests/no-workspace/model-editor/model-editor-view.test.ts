@@ -1,15 +1,15 @@
 import { join } from "path";
 import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { Uri, WebviewPanel } from "vscode";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { Uri, WebviewPanel } from "vscode";
 import { ModelEditorView } from "../../../../src/model-editor/model-editor-view";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { mockEmptyDatabaseManager } from "../query-testing/test-runner-helpers";
-import { QueryRunner } from "../../../../src/query-server";
-import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
+import type { QueryRunner } from "../../../../src/query-server";
+import type { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { createMockModelingStore } from "../../../__mocks__/model-editor/modelingStoreMock";
-import { ModelConfigListener } from "../../../../src/config";
+import type { ModelConfigListener } from "../../../../src/config";
 import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
 import { QueryLanguage } from "../../../../src/common/query-language";
 

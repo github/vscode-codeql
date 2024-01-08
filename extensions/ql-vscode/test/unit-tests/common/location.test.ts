@@ -1,5 +1,5 @@
 import { tryGetRemoteLocation } from "../../../src/common/bqrs-utils";
-import {
+import type {
   UrlValue,
   UrlValueResolvable,
 } from "../../../src/common/raw-result-types";

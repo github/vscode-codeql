@@ -1,4 +1,4 @@
-import { Location as SarifLogLocation } from "sarif";
+import type { Location as SarifLogLocation } from "sarif";
 import { parseSarifPlainTextMessage } from "../../../common/sarif-utils";
 import { SarifLocation } from "./SarifLocation";
 

@@ -1,10 +1,12 @@
-import { Uri, workspace, WorkspaceFolder } from "vscode";
-import { dir, DirectoryResult } from "tmp-promise";
+import type { WorkspaceFolder } from "vscode";
+import { Uri, workspace } from "vscode";
+import type { DirectoryResult } from "tmp-promise";
+import { dir } from "tmp-promise";
 import { join } from "path";
 import { autoPickExtensionsDirectory } from "../../../../src/model-editor/extensions-workspace-folder";
 import * as files from "../../../../src/common/files";
 import { mkdirp } from "fs-extra";
-import { NotificationLogger } from "../../../../src/common/logging";
+import type { NotificationLogger } from "../../../../src/common/logging";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 describe("autoPickExtensionsDirectory", () => {

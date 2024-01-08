@@ -1,4 +1,5 @@
-import { CancellationToken, ExtensionContext, Range, Uri } from "vscode";
+import type { CancellationToken, ExtensionContext, Range } from "vscode";
+import { Uri } from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -9,7 +10,7 @@ import {
 } from "fs-extra";
 import { load, dump } from "js-yaml";
 
-import {
+import type {
   DatabaseItem,
   DatabaseManager,
 } from "../../../src/databases/local-databases";
@@ -18,25 +19,24 @@ import {
   ensureTestDatabase,
   getActivatedExtension,
 } from "../global.helper";
-import {
-  CliVersionConstraint,
-  CodeQLCliServer,
-} from "../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../src/codeql-cli/cli";
+import { CliVersionConstraint } from "../../../src/codeql-cli/cli";
 import { describeWithCodeQL } from "../cli";
-import {
+import type {
   CoreCompletedQuery,
   QueryRunner,
 } from "../../../src/query-server/query-runner";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
-import { LocalQueries, QuickEvalType } from "../../../src/local-queries";
+import type { LocalQueries } from "../../../src/local-queries";
+import { QuickEvalType } from "../../../src/local-queries";
 import { QueryResultType } from "../../../src/query-server/messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
-import {
+import type {
   AllCommands,
   AppCommandManager,
   QueryServerCommands,
 } from "../../../src/common/commands";
-import { ProgressCallback } from "../../../src/common/vscode/progress";
+import type { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 import { getDataFolderFilePath } from "./utils";
 

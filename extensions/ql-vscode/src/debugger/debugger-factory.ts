@@ -1,17 +1,19 @@
-import {
-  debug,
+import type {
   DebugAdapterDescriptor,
   DebugAdapterDescriptorFactory,
   DebugAdapterExecutable,
-  DebugAdapterInlineImplementation,
-  DebugConfigurationProviderTriggerKind,
   DebugSession,
   ProviderResult,
 } from "vscode";
+import {
+  debug,
+  DebugAdapterInlineImplementation,
+  DebugConfigurationProviderTriggerKind,
+} from "vscode";
 import { isCanary } from "../config";
-import { LocalQueries } from "../local-queries";
+import type { LocalQueries } from "../local-queries";
 import { DisposableObject } from "../common/disposable-object";
-import { QueryRunner } from "../query-server";
+import type { QueryRunner } from "../query-server";
 import { QLDebugConfigurationProvider } from "./debug-configuration";
 import { QLDebugSession } from "./debug-session";
 

@@ -2,10 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { vscode } from "../vscode-api";
 import { openFile, tableHeaderItemClassName } from "./result-table-utils";
 import { sendTelemetry } from "../common/telemetry";
-import {
-  ALERTS_TABLE_NAME,
-  ParsedResultSets,
-} from "../../common/interface-types";
+import type { ParsedResultSets } from "../../common/interface-types";
+import { ALERTS_TABLE_NAME } from "../../common/interface-types";
 import { basename } from "../../common/path";
 import { styled } from "styled-components";
 import TextButton from "../common/TextButton";

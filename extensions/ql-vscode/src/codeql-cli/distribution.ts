@@ -1,15 +1,14 @@
 import { createWriteStream, mkdtemp, pathExists, remove } from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
-import { Range, satisfies, SemVer } from "semver";
-import { Event, ExtensionContext } from "vscode";
-import { DistributionConfig } from "../config";
+import type { SemVer } from "semver";
+import { Range, satisfies } from "semver";
+import type { Event, ExtensionContext } from "vscode";
+import type { DistributionConfig } from "../config";
 import { extLogger } from "../common/logging/vscode";
 import { getCodeQlCliVersion } from "./cli-version";
-import {
-  ProgressCallback,
-  reportStreamProgress,
-} from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { reportStreamProgress } from "../common/vscode/progress";
 import {
   codeQlLauncherName,
   deprecatedCodeQlLauncherName,
@@ -25,7 +24,7 @@ import {
 } from "../common/logging";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
-import { Release } from "./distribution/release";
+import type { Release } from "./distribution/release";
 import { ReleasesApiConsumer } from "./distribution/releases-api-consumer";
 
 /**

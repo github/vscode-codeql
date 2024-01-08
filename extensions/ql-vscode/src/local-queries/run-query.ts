@@ -1,7 +1,7 @@
-import { CancellationToken } from "vscode";
-import { ProgressCallback } from "../common/vscode/progress";
-import { DatabaseItem } from "../databases/local-databases";
-import { CoreCompletedQuery, QueryRunner } from "../query-server";
+import type { CancellationToken } from "vscode";
+import type { ProgressCallback } from "../common/vscode/progress";
+import type { DatabaseItem } from "../databases/local-databases";
+import type { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { TeeLogger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import { QueryResultType } from "../query-server/messages";
 import { extLogger } from "../common/logging/vscode";

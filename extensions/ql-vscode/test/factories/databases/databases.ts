@@ -1,11 +1,11 @@
 import { join } from "path";
 import { Uri } from "vscode";
-import {
+import type {
   DatabaseContents,
-  DatabaseItemImpl,
   FullDatabaseOptions,
 } from "../../../src/databases/local-databases";
-import { DirResult } from "tmp";
+import { DatabaseItemImpl } from "../../../src/databases/local-databases";
+import type { DirResult } from "tmp";
 
 export function mockDbOptions(): FullDatabaseOptions {
   return {

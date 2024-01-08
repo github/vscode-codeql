@@ -2,7 +2,7 @@ import {
   bqrsToResultSet,
   mapUrlValue,
 } from "../../../src/common/bqrs-raw-results-mapper";
-import {
+import type {
   BqrsResultSetSchema,
   DecodedBqrsChunk,
 } from "../../../src/common/bqrs-cli-types";

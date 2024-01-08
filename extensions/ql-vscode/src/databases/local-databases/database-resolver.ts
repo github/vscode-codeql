@@ -1,11 +1,11 @@
 import { Uri } from "vscode";
 import { pathExists } from "fs-extra";
 import { basename, join, resolve } from "path";
-import {
+import type {
   DatabaseContents,
   DatabaseContentsWithDbScheme,
-  DatabaseKind,
 } from "./database-contents";
+import { DatabaseKind } from "./database-contents";
 import { glob } from "glob";
 import { encodeArchiveBasePath } from "../../common/vscode/archive-filesystem-provider";
 import {

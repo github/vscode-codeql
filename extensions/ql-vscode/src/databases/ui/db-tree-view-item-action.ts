@@ -1,4 +1,5 @@
-import { DbItem, DbItemKind, isSelectableDbItem } from "../db-item";
+import type { DbItem } from "../db-item";
+import { DbItemKind, isSelectableDbItem } from "../db-item";
 
 type DbTreeViewItemAction =
   | "canBeSelected"

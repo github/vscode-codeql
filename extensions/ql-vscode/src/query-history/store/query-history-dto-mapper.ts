@@ -1,5 +1,6 @@
-import { QueryHistoryInfo } from "../query-history-info";
-import { QueryHistoryItemDto, QueryLanguageDto } from "./query-history-dto";
+import type { QueryHistoryInfo } from "../query-history-info";
+import type { QueryHistoryItemDto } from "./query-history-dto";
+import { QueryLanguageDto } from "./query-history-dto";
 import { mapQueryHistoryVariantAnalysisToDomainModel } from "./query-history-variant-analysis-dto-mapper";
 import { mapLocalQueryItemToDomainModel } from "./query-history-local-query-dto-mapper";
 import { QueryLanguage } from "../../common/query-language";

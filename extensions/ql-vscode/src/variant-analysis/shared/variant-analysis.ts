@@ -1,5 +1,5 @@
-import { Repository, RepositoryWithMetadata } from "./repository";
-import { AnalysisAlert, AnalysisRawResults } from "./analysis-result";
+import type { Repository, RepositoryWithMetadata } from "./repository";
+import type { AnalysisAlert, AnalysisRawResults } from "./analysis-result";
 import { QueryLanguage } from "../../common/query-language";
 
 export interface VariantAnalysis {

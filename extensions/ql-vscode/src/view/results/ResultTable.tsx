@@ -1,7 +1,7 @@
 import { AlertTable } from "./AlertTable";
 import { Graph } from "./Graph";
 import { RawTable } from "./RawTable";
-import { ResultTableProps } from "./result-table-utils";
+import type { ResultTableProps } from "./result-table-utils";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableHeader } from "./AlertTableHeader";
 

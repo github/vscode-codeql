@@ -1,4 +1,4 @@
-import { Location, Result as SarifResult, ThreadFlow } from "sarif";
+import type { Location, Result as SarifResult, ThreadFlow } from "sarif";
 
 /**
  * Identifies a result, a path, or one of the nodes on a path.

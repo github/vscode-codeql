@@ -1,9 +1,9 @@
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryState,
 } from "./shared/variant-analysis";
-import { AppCommandManager } from "../common/commands";
-import { RepositoriesFilterSortStateWithIds } from "./shared/variant-analysis-filter-sort";
+import type { AppCommandManager } from "../common/commands";
+import type { RepositoriesFilterSortStateWithIds } from "./shared/variant-analysis-filter-sort";
 
 export interface VariantAnalysisViewInterface {
   variantAnalysisId: number;

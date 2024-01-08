@@ -1,4 +1,5 @@
-import { workspace, WorkspaceFolder } from "vscode";
+import type { WorkspaceFolder } from "vscode";
+import { workspace } from "vscode";
 import { join } from "path";
 import {
   getFirstWorkspaceFolder,

@@ -1,8 +1,5 @@
-import {
-  DbItem,
-  DbItemKind,
-  flattenDbItems,
-} from "../../../src/databases/db-item";
+import type { DbItem } from "../../../src/databases/db-item";
+import { DbItemKind, flattenDbItems } from "../../../src/databases/db-item";
 import {
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,

@@ -1,4 +1,4 @@
-import { Query } from "./query";
+import type { Query } from "./query";
 
 export const fetchExternalApisQuery: Query = {
   applicationModeQuery: `/**

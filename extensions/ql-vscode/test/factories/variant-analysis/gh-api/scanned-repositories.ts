@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import {
+import type {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository,
 } from "../../../../src/variant-analysis/gh-api/variant-analysis";

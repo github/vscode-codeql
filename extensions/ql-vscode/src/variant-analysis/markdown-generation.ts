@@ -18,7 +18,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
 import type { RepositoryWithMetadata } from "./shared/repository";
-import { CellValue } from "../common/raw-result-types";
+import type { CellValue } from "../common/raw-result-types";
 
 type MarkdownLinkType = "local" | "gist";
 

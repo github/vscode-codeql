@@ -1,12 +1,12 @@
-import {
+import type {
   QueryMetadata,
   RawResultsSortState,
   ResultSet,
-  SortDirection,
 } from "../../common/interface-types";
+import { SortDirection } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
-import { UrlValueResolvable } from "../../common/raw-result-types";
+import type { UrlValueResolvable } from "../../common/raw-result-types";
 
 export interface ResultTableProps {
   resultSet: ResultSet;

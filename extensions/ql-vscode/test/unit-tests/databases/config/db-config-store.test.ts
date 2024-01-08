@@ -1,11 +1,11 @@
 import { ensureDir, remove, pathExists, writeJSON, readJSON } from "fs-extra";
 import { join } from "path";
-import { App } from "../../../../src/common/app";
-import {
+import type { App } from "../../../../src/common/app";
+import type {
   DbConfig,
   SelectedDbItem,
-  SelectedDbItemKind,
 } from "../../../../src/databases/config/db-config";
+import { SelectedDbItemKind } from "../../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { createDbConfig } from "../../../factories/db-config-factories";
 import {

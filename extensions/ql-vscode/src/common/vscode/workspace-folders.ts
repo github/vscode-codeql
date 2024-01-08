@@ -1,5 +1,6 @@
 import { dirname, join } from "path";
-import { workspace, WorkspaceFolder } from "vscode";
+import type { WorkspaceFolder } from "vscode";
+import { workspace } from "vscode";
 
 /** Returns true if the specified workspace folder is on the file system. */
 export function isWorkspaceFolderOnDisk(

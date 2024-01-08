@@ -1,15 +1,15 @@
 import { DisposableObject } from "../common/disposable-object";
 import { QueryTreeDataProvider } from "./query-tree-data-provider";
-import { QueryDiscovery } from "./query-discovery";
-import {
+import type { QueryDiscovery } from "./query-discovery";
+import type {
   Event,
   TextEditor,
   TreeView,
   TreeViewSelectionChangeEvent,
-  window,
 } from "vscode";
-import { App } from "../common/app";
-import { QueryTreeViewItem } from "./query-tree-view-item";
+import { window } from "vscode";
+import type { App } from "../common/app";
+import type { QueryTreeViewItem } from "./query-tree-view-item";
 
 export class QueriesPanel extends DisposableObject {
   private readonly dataProvider: QueryTreeDataProvider;

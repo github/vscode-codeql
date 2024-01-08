@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { jumpToLocation } from "../result-table-utils";
 import TextButton from "../../common/TextButton";
 import { styled } from "styled-components";
-import { UrlValueResolvable } from "../../../common/raw-result-types";
+import type { UrlValueResolvable } from "../../../common/raw-result-types";
 
 interface Props {
   loc: UrlValueResolvable;

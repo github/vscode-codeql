@@ -1,9 +1,7 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import {
-  MethodModelingInputs,
-  MethodModelingInputsProps,
-} from "../MethodModelingInputs";
+import type { MethodModelingInputsProps } from "../MethodModelingInputs";
+import { MethodModelingInputs } from "../MethodModelingInputs";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import {
   createMethodSignature,

@@ -1,4 +1,4 @@
-import { AppTelemetry } from "../../src/common/telemetry";
+import type { AppTelemetry } from "../../src/common/telemetry";
 
 export function createMockTelemetryReporter(): AppTelemetry {
   return {

@@ -5,11 +5,11 @@ import {
 } from "../../../src/model-editor/auto-model";
 import { Mode } from "../../../src/model-editor/shared/mode";
 import { AutomodelMode } from "../../../src/model-editor/auto-model-api";
-import { AutoModelQueriesResult } from "../../../src/model-editor/auto-model-codeml-queries";
-import { Log } from "sarif";
+import type { AutoModelQueriesResult } from "../../../src/model-editor/auto-model-codeml-queries";
+import type { Log } from "sarif";
 import { gzipDecode } from "../../../src/common/zlib";
-import { Method } from "../../../src/model-editor/method";
-import { ModeledMethod } from "../../../src/model-editor/modeled-method";
+import type { Method } from "../../../src/model-editor/method";
+import type { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
 describe("createAutoModelRequest", () => {
   const createSarifLog = (queryId: string): Log => {

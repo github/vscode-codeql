@@ -1,27 +1,28 @@
 import { extLogger } from "../common/logging/vscode";
+import type { BaseLogger, Logger } from "../common/logging";
 import {
-  BaseLogger,
-  Logger,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../common/logging";
-import { CoreQueryResults } from "../query-server";
-import { QueryHistoryManager } from "../query-history/query-history-manager";
-import { DatabaseItem } from "../databases/local-databases";
-import {
+import type { CoreQueryResults } from "../query-server";
+import type { QueryHistoryManager } from "../query-history/query-history-manager";
+import type { DatabaseItem } from "../databases/local-databases";
+import type {
   EvaluatorLogPaths,
-  generateEvalLogSummaries,
-  logEndSummary,
-  QueryEvaluationInfo,
   QueryOutputDir,
   QueryWithResults,
 } from "../run-queries-shared";
-import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
+import {
+  generateEvalLogSummaries,
+  logEndSummary,
+  QueryEvaluationInfo,
+} from "../run-queries-shared";
+import type { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "./webview";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryResultType } from "../query-server/messages";
 import { redactableError } from "../common/errors";
-import { LocalQueries } from "./local-queries";
+import type { LocalQueries } from "./local-queries";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { telemetryListener } from "../common/vscode/telemetry";
 

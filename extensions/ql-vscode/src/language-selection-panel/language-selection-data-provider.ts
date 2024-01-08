@@ -1,12 +1,7 @@
 import { DisposableObject } from "../common/disposable-object";
-import { LanguageContextStore } from "../language-context-store";
-import {
-  Event,
-  EventEmitter,
-  ThemeIcon,
-  TreeDataProvider,
-  TreeItem,
-} from "vscode";
+import type { LanguageContextStore } from "../language-context-store";
+import type { Event, TreeDataProvider } from "vscode";
+import { EventEmitter, ThemeIcon, TreeItem } from "vscode";
 import {
   QueryLanguage,
   getLanguageDisplayName,

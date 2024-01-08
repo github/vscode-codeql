@@ -1,28 +1,25 @@
 import { join } from "path";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
-import { CancellationToken, Uri } from "vscode";
+import type { CancellationToken } from "vscode";
+import { Uri } from "vscode";
 import Ajv from "ajv";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import {
-  ProgressCallback,
-  UserCancellationException,
-} from "../common/vscode/progress";
-import { DatabaseItem } from "../databases/local-databases";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { UserCancellationException } from "../common/vscode/progress";
+import type { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
 import { getErrorMessage } from "../common/helpers-pure";
-import { ExtensionPack } from "./shared/extension-pack";
-import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
-import { ModelConfig } from "../config";
-import {
-  autoNameExtensionPack,
-  ExtensionPackName,
-  formatPackName,
-} from "./extension-pack-name";
+import type { ExtensionPack } from "./shared/extension-pack";
+import type { NotificationLogger } from "../common/logging";
+import { showAndLogErrorMessage } from "../common/logging";
+import type { ModelConfig } from "../config";
+import type { ExtensionPackName } from "./extension-pack-name";
+import { autoNameExtensionPack, formatPackName } from "./extension-pack-name";
 import { autoPickExtensionsDirectory } from "./extensions-workspace-folder";
 
-import { ExtensionPackMetadata } from "./extension-pack-metadata";
+import type { ExtensionPackMetadata } from "./extension-pack-metadata";
 import extensionPackMetadataSchemaJson from "./extension-pack-metadata.schema.json";
 
 const ajv = new Ajv({ allErrors: true });

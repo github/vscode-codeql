@@ -1,6 +1,7 @@
-import { AppCommandManager } from "../../src/common/commands";
-import { CommandFunction, CommandManager } from "../../src/packages/commands";
-import { Disposable } from "../../src/packages/commands/Disposable";
+import type { AppCommandManager } from "../../src/common/commands";
+import type { CommandFunction } from "../../src/packages/commands";
+import { CommandManager } from "../../src/packages/commands";
+import type { Disposable } from "../../src/packages/commands/Disposable";
 
 export function createMockCommandManager({
   registerCommand = jest.fn(),

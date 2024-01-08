@@ -19,7 +19,8 @@
 import { spawnSync } from "child_process";
 import { basename, resolve } from "path";
 import { pathExists, readJSON } from "fs-extra";
-import { RawSourceMap, SourceMapConsumer } from "source-map";
+import type { RawSourceMap } from "source-map";
+import { SourceMapConsumer } from "source-map";
 import { unzipToDirectorySequentially } from "../src/common/unzip";
 
 if (process.argv.length !== 4) {

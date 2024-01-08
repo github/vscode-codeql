@@ -2,7 +2,7 @@ import { authentication, Uri } from "vscode";
 import { join } from "path";
 import { SemVer } from "semver";
 
-import {
+import type {
   CodeQLCliServer,
   QueryInfoByLanguage,
 } from "../../../src/codeql-cli/cli";
@@ -14,7 +14,7 @@ import {
 } from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
-import { BaseLogger } from "../../../src/common/logging";
+import type { BaseLogger } from "../../../src/common/logging";
 import { getQlPackForDbscheme } from "../../../src/databases/qlpack";
 import { dbSchemeToLanguage } from "../../../src/common/query-language";
 

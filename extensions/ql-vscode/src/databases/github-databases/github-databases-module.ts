@@ -1,6 +1,6 @@
 import { window } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
-import { App } from "../../common/app";
+import type { App } from "../../common/app";
 import { findGitHubRepositoryForWorkspace } from "../github-repository-finder";
 import { redactableError } from "../../common/errors";
 import {
@@ -12,17 +12,18 @@ import {
   askForGitHubDatabaseDownload,
   downloadDatabaseFromGitHub,
 } from "./download";
-import { GitHubDatabaseConfig } from "../../config";
-import { DatabaseManager } from "../local-databases";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { CodeqlDatabase, listDatabases, ListDatabasesResult } from "./api";
+import type { GitHubDatabaseConfig } from "../../config";
+import type { DatabaseManager } from "../local-databases";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { CodeqlDatabase, ListDatabasesResult } from "./api";
+import { listDatabases } from "./api";
+import type { DatabaseUpdate } from "./updates";
 import {
   askForGitHubDatabaseUpdate,
-  DatabaseUpdate,
   downloadDatabaseUpdateFromGitHub,
   isNewerDatabaseAvailable,
 } from "./updates";
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 
 export class GitHubDatabasesModule extends DisposableObject {
   /**

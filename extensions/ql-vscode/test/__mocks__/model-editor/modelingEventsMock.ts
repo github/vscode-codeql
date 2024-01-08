@@ -1,5 +1,5 @@
 import { mockedObject } from "../../vscode-tests/utils/mocking.helpers";
-import { ModelingEvents } from "../../../src/model-editor/modeling-events";
+import type { ModelingEvents } from "../../../src/model-editor/modeling-events";
 
 export function createMockModelingEvents({
   onActiveDbChanged = jest.fn(),

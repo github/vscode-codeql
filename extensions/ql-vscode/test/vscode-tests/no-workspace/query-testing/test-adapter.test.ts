@@ -1,18 +1,20 @@
-import {
-  CancellationTokenSource,
-  Range,
+import type {
   TestItem,
   TestItemCollection,
   TestRun,
+  WorkspaceFolder,
+} from "vscode";
+import {
+  CancellationTokenSource,
+  Range,
   TestRunRequest,
   Uri,
-  WorkspaceFolder,
   tests,
 } from "vscode";
 
 import { QLTestAdapter } from "../../../../src/query-testing/test-adapter";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { DatabaseManager } from "../../../../src/databases/local-databases";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { TestRunner } from "../../../../src/query-testing/test-runner";
 import {

@@ -1,6 +1,6 @@
 import type { QuickPickItem, window, Uri } from "vscode";
-import { DatabaseItem } from "../../../src/databases/local-databases";
-import { Octokit } from "@octokit/rest";
+import type { DatabaseItem } from "../../../src/databases/local-databases";
+import type { Octokit } from "@octokit/rest";
 
 export type DeepPartial<T> = T extends object
   ? {

@@ -1,12 +1,12 @@
 import { window } from "vscode";
-import { App } from "../../common/app";
+import type { App } from "../../common/app";
 import { DisposableObject } from "../../common/disposable-object";
 import { MethodModelingViewProvider } from "./method-modeling-view-provider";
-import { Method } from "../method";
-import { ModelingStore } from "../modeling-store";
+import type { Method } from "../method";
+import type { ModelingStore } from "../modeling-store";
 import { ModelConfigListener } from "../../config";
-import { DatabaseItem } from "../../databases/local-databases";
-import { ModelingEvents } from "../modeling-events";
+import type { DatabaseItem } from "../../databases/local-databases";
+import type { ModelingEvents } from "../modeling-events";
 
 export class MethodModelingPanel extends DisposableObject {
   private readonly provider: MethodModelingViewProvider;

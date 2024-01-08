@@ -1,13 +1,13 @@
 import { styled } from "styled-components";
-import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator";
-import { Method } from "../../model-editor/method";
+import type { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { ReviewInEditorButton } from "./ReviewInEditorButton";
 import { MultipleModeledMethodsPanel } from "./MultipleModeledMethodsPanel";
-import { QueryLanguage } from "../../common/query-language";
+import type { QueryLanguage } from "../../common/query-language";
 
 const Container = styled.div`
   padding-top: 0.5rem;

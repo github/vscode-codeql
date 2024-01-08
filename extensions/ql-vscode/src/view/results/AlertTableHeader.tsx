@@ -1,9 +1,7 @@
 import { useCallback } from "react";
 import { vscode } from "../vscode-api";
-import {
-  InterpretedResultsSortState,
-  SortDirection,
-} from "../../common/interface-types";
+import type { InterpretedResultsSortState } from "../../common/interface-types";
+import { SortDirection } from "../../common/interface-types";
 import { nextSortDirection } from "./result-table-utils";
 
 export function AlertTableHeader({

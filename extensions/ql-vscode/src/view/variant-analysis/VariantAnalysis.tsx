@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 
-import {
+import type {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
-  VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
 import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
-import { ToVariantAnalysisMessage } from "../../common/interface-types";
+import type { ToVariantAnalysisMessage } from "../../common/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";

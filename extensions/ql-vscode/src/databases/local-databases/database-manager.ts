@@ -1,11 +1,14 @@
-import vscode, { ExtensionContext } from "vscode";
-import { Logger, showAndLogExceptionWithTelemetry } from "../../common/logging";
+import type { ExtensionContext } from "vscode";
+import vscode from "vscode";
+import type { Logger } from "../../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { extLogger } from "../../common/logging/vscode";
 import { DisposableObject } from "../../common/disposable-object";
-import { App } from "../../common/app";
-import { QueryRunner } from "../../query-server";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { ProgressCallback, withProgress } from "../../common/vscode/progress";
+import type { App } from "../../common/app";
+import type { QueryRunner } from "../../query-server";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { ProgressCallback } from "../../common/vscode/progress";
+import { withProgress } from "../../common/vscode/progress";
 import {
   addDatabaseSourceToWorkspace,
   getAutogenerateQlPacks,
@@ -13,7 +16,7 @@ import {
   setAutogenerateQlPacks,
 } from "../../config";
 import { join } from "path";
-import { FullDatabaseOptions } from "./database-options";
+import type { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import {
@@ -27,15 +30,16 @@ import {
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../local-queries/qlpack-generator";
 import { asError, getErrorMessage } from "../../common/helpers-pure";
-import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
+import type { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { redactableError } from "../../common/errors";
 import { remove } from "fs-extra";
 import { containsPath } from "../../common/files";
-import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
+import type { DatabaseChangedEvent } from "./database-events";
+import { DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
-import { LanguageContextStore } from "../../language-context-store";
-import { DatabaseOrigin } from "./database-origin";
+import type { LanguageContextStore } from "../../language-context-store";
+import type { DatabaseOrigin } from "./database-origin";
 
 /**
  * The name of the key in the workspaceState dictionary in which we

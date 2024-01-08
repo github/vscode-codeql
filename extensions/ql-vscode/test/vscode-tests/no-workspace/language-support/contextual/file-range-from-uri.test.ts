@@ -1,7 +1,7 @@
 import { Uri, Range } from "vscode";
 
-import { DatabaseItem } from "../../../../../src/databases/local-databases";
-import {
+import type { DatabaseItem } from "../../../../../src/databases/local-databases";
+import type {
   BqrsWholeFileLocation,
   BqrsLineColumnLocation,
 } from "../../../../../src/common/bqrs-cli-types";

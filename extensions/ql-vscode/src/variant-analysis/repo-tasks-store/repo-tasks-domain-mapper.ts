@@ -1,12 +1,8 @@
 import { assertNever } from "../../common/helpers-pure";
-import {
-  VariantAnalysisRepositoryTask,
-  VariantAnalysisRepoStatus,
-} from "../shared/variant-analysis";
-import {
-  VariantAnalysisRepositoryTaskDto,
-  VariantAnalysisRepoStatusDto,
-} from "./repo-tasks-dto";
+import type { VariantAnalysisRepositoryTask } from "../shared/variant-analysis";
+import { VariantAnalysisRepoStatus } from "../shared/variant-analysis";
+import type { VariantAnalysisRepositoryTaskDto } from "./repo-tasks-dto";
+import { VariantAnalysisRepoStatusDto } from "./repo-tasks-dto";
 
 export function mapRepoTaskToDomainModel(
   repoTask: VariantAnalysisRepositoryTaskDto,

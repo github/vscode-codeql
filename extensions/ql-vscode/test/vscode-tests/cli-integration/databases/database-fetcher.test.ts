@@ -1,8 +1,8 @@
 import { join } from "path";
 import { Uri, window } from "vscode";
 
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { DatabaseManager } from "../../../../src/databases/local-databases";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import {
   importArchiveDatabase,
   promptImportInternetDatabase,

@@ -1,13 +1,11 @@
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import {
-  DatabaseItem,
-  DatabaseKind,
-} from "../../../../src/databases/local-databases";
+import type { DatabaseItem } from "../../../../src/databases/local-databases";
+import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/messages";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { QueryRunner } from "../../../../src/query-server";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { QueryRunner } from "../../../../src/query-server";
 import { join } from "path";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";

@@ -1,22 +1,20 @@
-import {
+import type {
   FromMethodModelingMessage,
   ToMethodModelingMessage,
 } from "../../common/interface-types";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging/notifications";
-import { App } from "../../common/app";
+import type { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
-import { Method } from "../method";
-import { ModelingStore } from "../modeling-store";
+import type { Method } from "../method";
+import type { ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
-import { ModelConfigListener } from "../../config";
-import { DatabaseItem } from "../../databases/local-databases";
-import { ModelingEvents } from "../modeling-events";
-import {
-  QueryLanguage,
-  tryGetQueryLanguage,
-} from "../../common/query-language";
+import type { ModelConfigListener } from "../../config";
+import type { DatabaseItem } from "../../databases/local-databases";
+import type { ModelingEvents } from "../modeling-events";
+import type { QueryLanguage } from "../../common/query-language";
+import { tryGetQueryLanguage } from "../../common/query-language";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,

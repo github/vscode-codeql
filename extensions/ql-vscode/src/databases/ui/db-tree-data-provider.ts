@@ -1,18 +1,12 @@
-import {
-  Event,
-  EventEmitter,
-  ProviderResult,
-  TreeDataProvider,
-  TreeItem,
-} from "vscode";
-import { createDbTreeViewItemError, DbTreeViewItem } from "./db-tree-view-item";
-import { DbManager } from "../db-manager";
+import type { Event, ProviderResult, TreeDataProvider, TreeItem } from "vscode";
+import { EventEmitter } from "vscode";
+import type { DbTreeViewItem } from "./db-tree-view-item";
+import { createDbTreeViewItemError } from "./db-tree-view-item";
+import type { DbManager } from "../db-manager";
 import { mapDbItemToTreeViewItem } from "./db-item-mapper";
 import { DisposableObject } from "../../common/disposable-object";
-import {
-  DbConfigValidationError,
-  DbConfigValidationErrorKind,
-} from "../db-validation-errors";
+import type { DbConfigValidationError } from "../db-validation-errors";
+import { DbConfigValidationErrorKind } from "../db-validation-errors";
 import { VariantAnalysisConfigListener } from "../../config";
 
 export class DbTreeDataProvider

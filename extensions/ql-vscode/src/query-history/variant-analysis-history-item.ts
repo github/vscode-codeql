@@ -1,5 +1,5 @@
-import { QueryStatus } from "./query-status";
-import { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
+import type { QueryStatus } from "./query-status";
+import type { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 
 /**
  * Information about a variant analysis.

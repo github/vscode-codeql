@@ -10,10 +10,13 @@ import {
   resolveContextualQlPacksForDatabase,
   resolveContextualQueries,
 } from "../../../../../src/language-support";
-import { CodeQLCliServer, DbInfo } from "../../../../../src/codeql-cli/cli";
+import type {
+  CodeQLCliServer,
+  DbInfo,
+} from "../../../../../src/codeql-cli/cli";
 import { mockedObject } from "../../../utils/mocking.helpers";
 import * as queryResolver from "../../../../../src/local-queries/query-resolver";
-import { DatabaseItem } from "../../../../../src/databases/local-databases";
+import type { DatabaseItem } from "../../../../../src/databases/local-databases";
 import { Uri } from "vscode";
 
 describe("queryResolver", () => {

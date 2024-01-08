@@ -8,7 +8,8 @@ import {
   readDirFullPaths,
   walkDirectory,
 } from "../../../src/common/files";
-import { DirResult, dirSync } from "tmp";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
 import { ensureDirSync, symlinkSync, writeFileSync } from "fs-extra";
 
 describe("files", () => {

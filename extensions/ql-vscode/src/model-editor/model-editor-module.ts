@@ -1,11 +1,15 @@
 import { ModelEditorView } from "./model-editor-view";
-import { ModelEditorCommands } from "../common/commands";
-import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
-import { QueryRunner } from "../query-server";
-import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
+import type { ModelEditorCommands } from "../common/commands";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import { CliVersionConstraint } from "../codeql-cli/cli";
+import type { QueryRunner } from "../query-server";
+import type {
+  DatabaseItem,
+  DatabaseManager,
+} from "../databases/local-databases";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import {
   UserCancellationException,
   withProgress,
@@ -17,7 +21,7 @@ import { dir } from "tmp-promise";
 import { isQueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
-import { Method, Usage } from "./method";
+import type { Method, Usage } from "./method";
 import { setUpPack } from "./model-editor-queries-setup";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 import { ModelingStore } from "./modeling-store";

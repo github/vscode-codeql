@@ -1,7 +1,8 @@
 import { assertNever } from "../../common/helpers-pure";
-import { QueryHistoryInfo } from "../query-history-info";
+import type { QueryHistoryInfo } from "../query-history-info";
 import { mapLocalQueryInfoToDto } from "./query-history-local-query-domain-mapper";
-import { QueryHistoryItemDto, QueryLanguageDto } from "./query-history-dto";
+import type { QueryHistoryItemDto } from "./query-history-dto";
+import { QueryLanguageDto } from "./query-history-dto";
 import { mapQueryHistoryVariantAnalysisToDto } from "./query-history-variant-analysis-domain-mapper";
 import { QueryLanguage } from "../../common/query-language";
 

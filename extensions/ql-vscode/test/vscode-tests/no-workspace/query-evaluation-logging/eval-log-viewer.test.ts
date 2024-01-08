@@ -1,9 +1,9 @@
 import { commands } from "vscode";
-import {
+import type {
   ChildEvalLogTreeItem,
   EvalLogTreeItem,
-  EvalLogViewer,
 } from "../../../../src/query-evaluation-logging";
+import { EvalLogViewer } from "../../../../src/query-evaluation-logging";
 import { testDisposeHandler } from "../../test-dispose-handler";
 
 describe("EvalLogViewer", () => {

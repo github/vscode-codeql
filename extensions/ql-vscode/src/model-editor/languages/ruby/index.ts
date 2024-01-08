@@ -1,8 +1,9 @@
-import { ModelsAsDataLanguage } from "../models-as-data";
+import type { ModelsAsDataLanguage } from "../models-as-data";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { Mode } from "../../shared/mode";
 import { parseGenerateModelResults } from "./generate";
-import { getArgumentsList, MethodArgument } from "../../method";
+import type { MethodArgument } from "../../method";
+import { getArgumentsList } from "../../method";
 
 function parseRubyMethodFromPath(path: string): string {
   const match = path.match(/Method\[([^\]]+)].*/);

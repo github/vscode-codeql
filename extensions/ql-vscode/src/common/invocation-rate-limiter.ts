@@ -1,4 +1,4 @@
-import { Memento } from "./memento";
+import type { Memento } from "./memento";
 
 /**
  * Provides a utility method to invoke a function only if a minimum time interval has elapsed since

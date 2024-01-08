@@ -5,20 +5,16 @@ import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-cli
 import { isAbsolute, join } from "path";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import {
-  CliVersionConstraint,
-  CodeQLCliServer,
-} from "../../../../src/codeql-cli/cli";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import { CliVersionConstraint } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension, storagePath } from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
-import {
-  VariantAnalysisStatus,
-  VariantAnalysisSubmission,
-} from "../../../../src/variant-analysis/shared/variant-analysis";
-import { VariantAnalysis as VariantAnalysisApiResponse } from "../../../../src/variant-analysis/gh-api/variant-analysis";
+import type { VariantAnalysisSubmission } from "../../../../src/variant-analysis/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
+import type { VariantAnalysis as VariantAnalysisApiResponse } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { createMockApiResponse } from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
 import { UserCancellationException } from "../../../../src/common/vscode/progress";
-import { Repository } from "../../../../src/variant-analysis/gh-api/repository";
+import type { Repository } from "../../../../src/variant-analysis/gh-api/repository";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
@@ -26,8 +22,8 @@ import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { load } from "js-yaml";
-import { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
-import { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
+import type { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
+import type { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;

@@ -1,4 +1,5 @@
-import { TextEditor, Uri, window } from "vscode";
+import type { TextEditor } from "vscode";
+import { Uri, window } from "vscode";
 import { tryOpenExternalFile } from "../../../../../src/common/vscode/external-files";
 import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
 import { mockedObject } from "../../../utils/mocking.helpers";

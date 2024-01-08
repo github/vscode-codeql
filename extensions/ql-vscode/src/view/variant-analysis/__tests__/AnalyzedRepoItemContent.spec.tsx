@@ -3,10 +3,8 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../../../variant-analysis/shared/variant-analysis";
-import {
-  AnalyzedRepoItemContent,
-  AnalyzedRepoItemContentProps,
-} from "../AnalyzedRepoItemContent";
+import type { AnalyzedRepoItemContentProps } from "../AnalyzedRepoItemContent";
+import { AnalyzedRepoItemContent } from "../AnalyzedRepoItemContent";
 import { ResultFormat } from "../../../variant-analysis/shared/variant-analysis-result-format";
 import { ColumnKind } from "../../../common/raw-result-types";
 

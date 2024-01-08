@@ -5,7 +5,7 @@
  * and then allow other parts to call those commands in a well-typed manner.
  */
 
-import { Disposable } from "./Disposable";
+import type { Disposable } from "./Disposable";
 
 /**
  * A command function is a completely untyped command.

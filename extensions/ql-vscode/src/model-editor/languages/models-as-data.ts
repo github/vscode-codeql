@@ -1,5 +1,5 @@
-import { MethodArgument, MethodDefinition } from "../method";
-import {
+import type { MethodArgument, MethodDefinition } from "../method";
+import type {
   ModeledMethod,
   NeutralModeledMethod,
   SinkModeledMethod,
@@ -7,11 +7,11 @@ import {
   SummaryModeledMethod,
   TypeModeledMethod,
 } from "../modeled-method";
-import { DataTuple } from "../model-extension-file";
-import { Mode } from "../shared/mode";
+import type { DataTuple } from "../model-extension-file";
+import type { Mode } from "../shared/mode";
 import type { QueryConstraints } from "../../local-queries/query-constraints";
-import { DecodedBqrs } from "../../common/bqrs-cli-types";
-import { BaseLogger } from "../../common/logging";
+import type { DecodedBqrs } from "../../common/bqrs-cli-types";
+import type { BaseLogger } from "../../common/logging";
 
 type GenerateMethodDefinition<T> = (method: T) => DataTuple[];
 type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;

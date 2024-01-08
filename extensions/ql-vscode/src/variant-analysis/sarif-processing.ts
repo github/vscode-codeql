@@ -1,4 +1,4 @@
-import {
+import type {
   Log,
   PhysicalLocation,
   Region,
@@ -6,14 +6,14 @@ import {
   Result,
   Run,
 } from "sarif";
+import type { SarifLink } from "../common/sarif-utils";
 import {
   parseHighlightedLine,
   parseSarifPlainTextMessage,
   parseSarifRegion,
-  SarifLink,
 } from "../common/sarif-utils";
 
-import {
+import type {
   AnalysisAlert,
   AnalysisMessage,
   AnalysisMessageLocationTokenLocation,

@@ -1,11 +1,11 @@
-import {
+import type {
   NeutralModeledMethod,
   NoneModeledMethod,
   SinkModeledMethod,
   SourceModeledMethod,
   SummaryModeledMethod,
 } from "../../../src/model-editor/modeled-method";
-import { MethodSignature } from "../../../src/model-editor/method";
+import type { MethodSignature } from "../../../src/model-editor/method";
 
 export function createMethodSignature(
   data: Partial<MethodSignature> = {},

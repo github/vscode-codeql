@@ -1,13 +1,15 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysis as VariantAnalysisComponent } from "../../view/variant-analysis/VariantAnalysis";
-import {
+import type {
   VariantAnalysis as VariantAnalysisDomainModel,
+  VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState,
+} from "../../variant-analysis/shared/variant-analysis";
+import {
   VariantAnalysisFailureReason,
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-  VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
 import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";

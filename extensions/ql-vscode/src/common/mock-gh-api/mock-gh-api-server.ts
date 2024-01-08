@@ -1,6 +1,7 @@
 import { join, resolve } from "path";
 import { pathExists } from "fs-extra";
-import { setupServer, SetupServer } from "msw/node";
+import type { SetupServer } from "msw/node";
+import { setupServer } from "msw/node";
 
 import { DisposableObject } from "../disposable-object";
 

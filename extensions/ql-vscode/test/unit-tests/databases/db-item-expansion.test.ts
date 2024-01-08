@@ -1,6 +1,6 @@
+import type { ExpandedDbItem } from "../../../src/databases/db-item-expansion";
 import {
   updateExpandedItem,
-  ExpandedDbItem,
   ExpandedDbItemKind,
   replaceExpandedItem,
   cleanNonExistentExpandedItems,

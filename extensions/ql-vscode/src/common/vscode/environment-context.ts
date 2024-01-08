@@ -1,5 +1,5 @@
 import { env } from "vscode";
-import { EnvironmentContext } from "../app";
+import type { EnvironmentContext } from "../app";
 
 export class AppEnvironmentContext implements EnvironmentContext {
   public get language(): string {

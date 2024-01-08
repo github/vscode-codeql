@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Meta } from "@storybook/react";
+import type { Meta } from "@storybook/react";
 
 import { RepositoriesFilter as RepositoriesFilterComponent } from "../../view/variant-analysis/RepositoriesFilter";
 import { FilterKey } from "../../variant-analysis/shared/variant-analysis-filter-sort";

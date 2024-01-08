@@ -1,13 +1,13 @@
 import { window } from "vscode";
-import { Octokit } from "@octokit/rest";
+import type { Octokit } from "@octokit/rest";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { downloadGitHubDatabaseFromUrl } from "../database-fetcher";
 import { withProgress } from "../../common/vscode/progress";
-import { DatabaseManager } from "../local-databases";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { AppCommandManager } from "../../common/commands";
-import { GitHubDatabaseConfig } from "../../config";
+import type { DatabaseManager } from "../local-databases";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { AppCommandManager } from "../../common/commands";
+import type { GitHubDatabaseConfig } from "../../config";
 import type { CodeqlDatabase } from "./api";
 
 /**

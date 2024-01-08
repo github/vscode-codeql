@@ -1,4 +1,5 @@
-import { DbItem, DbItemKind } from "../../../src/databases/db-item";
+import type { DbItem } from "../../../src/databases/db-item";
+import { DbItemKind } from "../../../src/databases/db-item";
 import { getSelectedDbItem } from "../../../src/databases/db-item-selection";
 import {
   createRemoteOwnerDbItem,

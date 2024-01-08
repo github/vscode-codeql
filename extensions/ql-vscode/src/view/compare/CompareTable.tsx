@@ -1,4 +1,4 @@
-import {
+import type {
   SetComparisonQueryInfoMessage,
   SetComparisonsMessage,
 } from "../../common/interface-types";

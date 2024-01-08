@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { CodePaths } from "../../view/common";
 import type { CodeFlow } from "../../variant-analysis/shared/analysis-result";

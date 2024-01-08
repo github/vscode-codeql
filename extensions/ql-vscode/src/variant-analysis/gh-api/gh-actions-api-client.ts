@@ -1,5 +1,5 @@
-import { Credentials } from "../../common/authentication";
-import { VariantAnalysis } from "../shared/variant-analysis";
+import type { Credentials } from "../../common/authentication";
+import type { VariantAnalysis } from "../shared/variant-analysis";
 
 export async function cancelVariantAnalysis(
   credentials: Credentials,

@@ -1,6 +1,6 @@
 import { outputJson, readJson } from "fs-extra";
 import { join } from "path";
-import { VariantAnalysisRepositoryTask } from "../shared/variant-analysis";
+import type { VariantAnalysisRepositoryTask } from "../shared/variant-analysis";
 import { mapRepoTaskToDto } from "./repo-tasks-dto-mapper";
 import { mapRepoTaskToDomainModel } from "./repo-tasks-domain-mapper";
 

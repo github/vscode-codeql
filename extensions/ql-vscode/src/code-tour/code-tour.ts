@@ -1,4 +1,4 @@
-import { AppCommandManager } from "../common/commands";
+import type { AppCommandManager } from "../common/commands";
 import { Uri, workspace } from "vscode";
 import { join } from "path";
 import { pathExists } from "fs-extra";

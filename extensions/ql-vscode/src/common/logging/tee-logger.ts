@@ -1,7 +1,7 @@
 import { appendFile, ensureFile } from "fs-extra";
 import { isAbsolute } from "path";
 import { getErrorMessage } from "../helpers-pure";
-import { Logger, LogOptions } from "./logger";
+import type { Logger, LogOptions } from "./logger";
 
 /**
  * An implementation of {@link Logger} that sends the output both to another {@link Logger}

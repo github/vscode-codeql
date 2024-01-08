@@ -1,10 +1,10 @@
-import { BaseLogger } from "../../../common/logging";
-import {
+import type { BaseLogger } from "../../../common/logging";
+import type {
   ModelsAsDataLanguage,
   ModelsAsDataLanguagePredicates,
 } from "../models-as-data";
-import { DecodedBqrs } from "../../../common/bqrs-cli-types";
-import { ModeledMethod } from "../../modeled-method";
+import type { DecodedBqrs } from "../../../common/bqrs-cli-types";
+import type { ModeledMethod } from "../../modeled-method";
 import { basename } from "../../../common/path";
 
 const queriesToModel: Record<string, keyof ModelsAsDataLanguagePredicates> = {

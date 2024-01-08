@@ -1,11 +1,12 @@
-import { AutomodelMode, ModelRequest } from "./auto-model-api";
+import type { ModelRequest } from "./auto-model-api";
+import { AutomodelMode } from "./auto-model-api";
 import { Mode } from "./shared/mode";
-import { AutoModelQueriesResult } from "./auto-model-codeml-queries";
+import type { AutoModelQueriesResult } from "./auto-model-codeml-queries";
 import { assertNever } from "../common/helpers-pure";
-import { Log } from "sarif";
+import type { Log } from "sarif";
 import { gzipEncode } from "../common/zlib";
-import { Method, MethodSignature } from "./method";
-import { ModeledMethod } from "./modeled-method";
+import type { Method, MethodSignature } from "./method";
+import type { ModeledMethod } from "./modeled-method";
 import { groupMethods, sortGroupNames, sortMethods } from "./shared/sorting";
 
 /**

@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 
-import { HighlightedRegion } from "../../../variant-analysis/shared/analysis-result";
+import type { HighlightedRegion } from "../../../variant-analysis/shared/analysis-result";
 import {
   parseHighlightedLine,
   shouldHighlightLine,

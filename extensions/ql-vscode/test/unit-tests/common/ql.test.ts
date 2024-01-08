@@ -1,6 +1,6 @@
 import { join } from "path";
 import { dirSync } from "tmp-promise";
-import { DirResult } from "tmp";
+import type { DirResult } from "tmp";
 import { writeFile } from "fs-extra";
 import { getQlPackPath } from "../../../src/common/ql";
 

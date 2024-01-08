@@ -1,11 +1,10 @@
-import { Result } from "sarif";
-import {
-  getAllPaths,
-  keyToString,
+import type { Result } from "sarif";
+import type {
   PathNode,
   Result as ResultKeysResult,
   ResultKey,
 } from "./result-keys";
+import { getAllPaths, keyToString } from "./result-keys";
 import { info, listUnordered } from "./octicons";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";

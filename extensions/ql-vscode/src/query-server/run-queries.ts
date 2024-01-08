@@ -1,10 +1,11 @@
-import { CancellationToken } from "vscode";
-import { ProgressCallback } from "../common/vscode/progress";
-import { runQuery, RunQueryParams } from "./messages";
-import { QueryOutputDir } from "../run-queries-shared";
-import { QueryServerClient } from "./query-server-client";
-import { CoreQueryResults, CoreQueryTarget } from "./query-runner";
-import { BaseLogger } from "../common/logging";
+import type { CancellationToken } from "vscode";
+import type { ProgressCallback } from "../common/vscode/progress";
+import type { RunQueryParams } from "./messages";
+import { runQuery } from "./messages";
+import type { QueryOutputDir } from "../run-queries-shared";
+import type { QueryServerClient } from "./query-server-client";
+import type { CoreQueryResults, CoreQueryTarget } from "./query-runner";
+import type { BaseLogger } from "../common/logging";
 
 /**
  * run-queries.ts

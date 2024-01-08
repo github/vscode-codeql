@@ -1,30 +1,27 @@
 import { pathExists, outputJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
+import type { DbConfig, SelectedDbItem } from "./db-config";
 import {
   cloneDbConfig,
-  DbConfig,
   removeRemoteList,
   removeRemoteOwner,
   removeRemoteRepo,
   renameRemoteList,
-  SelectedDbItem,
   DB_CONFIG_VERSION,
   SelectedDbItemKind,
 } from "./db-config";
-import { FSWatcher, watch } from "chokidar";
-import {
-  DisposableObject,
-  DisposeHandler,
-} from "../../common/disposable-object";
+import type { FSWatcher } from "chokidar";
+import { watch } from "chokidar";
+import type { DisposeHandler } from "../../common/disposable-object";
+import { DisposableObject } from "../../common/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
-import { App } from "../../common/app";
-import { AppEvent, AppEventEmitter } from "../../common/events";
-import {
-  DbConfigValidationError,
-  DbConfigValidationErrorKind,
-} from "../db-validation-errors";
+import type { App } from "../../common/app";
+import type { AppEvent, AppEventEmitter } from "../../common/events";
+import type { DbConfigValidationError } from "../db-validation-errors";
+import { DbConfigValidationErrorKind } from "../db-validation-errors";
 import { ValueResult } from "../../common/value-result";
-import { RemoteUserDefinedListDbItem, DbItem, DbItemKind } from "../db-item";
+import type { RemoteUserDefinedListDbItem, DbItem } from "../db-item";
+import { DbItemKind } from "../db-item";
 
 export class DbConfigStore extends DisposableObject {
   public static readonly databaseConfigFileName = "databases.json";

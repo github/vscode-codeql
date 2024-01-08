@@ -1,5 +1,7 @@
-import { DbItem, DbItemKind, RemoteDbItem } from "./db-item";
-import { SelectedDbItem, SelectedDbItemKind } from "./config/db-config";
+import type { DbItem, RemoteDbItem } from "./db-item";
+import { DbItemKind } from "./db-item";
+import type { SelectedDbItem } from "./config/db-config";
+import { SelectedDbItemKind } from "./config/db-config";
 
 export function getSelectedDbItem(dbItems: DbItem[]): DbItem | undefined {
   for (const dbItem of dbItems) {

@@ -1,4 +1,4 @@
-import { ModeledMethodValidationError } from "../../model-editor/shared/validation";
+import type { ModeledMethodValidationError } from "../../model-editor/shared/validation";
 import TextButton from "../common/TextButton";
 import { Alert } from "../common";
 import { useCallback } from "react";

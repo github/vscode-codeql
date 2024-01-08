@@ -1,5 +1,5 @@
-import { RawQueryCompareResult } from "../common/interface-types";
-import { RawResultSet } from "../common/raw-result-types";
+import type { RawQueryCompareResult } from "../common/interface-types";
+import type { RawResultSet } from "../common/raw-result-types";
 
 /**
  * Compare the rows of two queries. Use deep equality to determine if

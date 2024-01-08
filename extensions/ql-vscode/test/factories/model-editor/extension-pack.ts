@@ -1,4 +1,4 @@
-import { ExtensionPack } from "../../../src/model-editor/shared/extension-pack";
+import type { ExtensionPack } from "../../../src/model-editor/shared/extension-pack";
 import { join } from "path";
 
 export function createMockExtensionPack({

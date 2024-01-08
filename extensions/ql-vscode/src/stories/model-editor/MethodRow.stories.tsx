@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
-import { CallClassification, Method } from "../../model-editor/method";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { Method } from "../../model-editor/method";
+import { CallClassification } from "../../model-editor/method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS } from "../../view/model-editor/ModeledMethodDataGrid";
 import { DataGrid } from "../../view/common/DataGrid";
 import { createMockModelEditorViewState } from "../../../test/factories/model-editor/view-state";

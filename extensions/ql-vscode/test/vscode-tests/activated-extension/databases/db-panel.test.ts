@@ -2,17 +2,15 @@ import { window } from "vscode";
 
 import { readJson } from "fs-extra";
 import { join } from "path";
-import {
-  DbConfig,
-  SelectedDbItemKind,
-} from "../../../../src/databases/config/db-config";
-import { RemoteDatabaseQuickPickItem } from "../../../../src/databases/ui/db-panel";
+import type { DbConfig } from "../../../../src/databases/config/db-config";
+import { SelectedDbItemKind } from "../../../../src/databases/config/db-config";
+import type { RemoteDatabaseQuickPickItem } from "../../../../src/databases/ui/db-panel";
 import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases/ui/db-tree-view-item";
 import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
-import { AllCommands } from "../../../../src/common/commands";
+import type { AllCommands } from "../../../../src/common/commands";
 
 jest.setTimeout(60_000);
 

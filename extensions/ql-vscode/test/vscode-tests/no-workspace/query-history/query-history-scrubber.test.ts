@@ -1,10 +1,10 @@
 import { readdirSync, mkdirSync, writeFileSync } from "fs-extra";
 import { join } from "path";
-import { Disposable, ExtensionContext } from "vscode";
+import type { Disposable, ExtensionContext } from "vscode";
 
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { registerQueryHistoryScrubber } from "../../../../src/query-history/query-history-scrubber";
-import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
+import type { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { dirSync } from "tmp-promise";
 import {
   ONE_DAY_IN_MS,
@@ -13,7 +13,7 @@ import {
   TWO_HOURS_IN_MS,
 } from "../../../../src/common/time";
 import { mockedObject } from "../../utils/mocking.helpers";
-import { DirResult } from "tmp";
+import type { DirResult } from "tmp";
 
 const now = Date.now();
 // We don't want our times to align exactly with the hour,

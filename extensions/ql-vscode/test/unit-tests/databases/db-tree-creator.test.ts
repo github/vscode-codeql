@@ -1,17 +1,13 @@
-import {
-  DbConfig,
-  SelectedDbItemKind,
-} from "../../../src/databases/config/db-config";
+import type { DbConfig } from "../../../src/databases/config/db-config";
+import { SelectedDbItemKind } from "../../../src/databases/config/db-config";
 import {
   DbItemKind,
   isRemoteOwnerDbItem,
   isRemoteRepoDbItem,
   isRemoteUserDefinedListDbItem,
 } from "../../../src/databases/db-item";
-import {
-  ExpandedDbItem,
-  ExpandedDbItemKind,
-} from "../../../src/databases/db-item-expansion";
+import type { ExpandedDbItem } from "../../../src/databases/db-item-expansion";
+import { ExpandedDbItemKind } from "../../../src/databases/db-item-expansion";
 import { createRemoteTree } from "../../../src/databases/db-tree-creator";
 import { createDbConfig } from "../../factories/db-config-factories";
 

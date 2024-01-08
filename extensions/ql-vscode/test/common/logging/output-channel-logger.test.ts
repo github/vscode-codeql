@@ -1,7 +1,9 @@
 import { readdirSync, readFileSync } from "fs-extra";
 import { join } from "path";
-import { DirResult, dirSync } from "tmp";
-import { BaseLogger, Logger, TeeLogger } from "../../../src/common/logging";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
+import type { BaseLogger, Logger } from "../../../src/common/logging";
+import { TeeLogger } from "../../../src/common/logging";
 import { OutputChannelLogger } from "../../../src/common/logging/vscode";
 
 jest.setTimeout(999999);

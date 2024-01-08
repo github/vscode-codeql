@@ -1,6 +1,6 @@
-import { ExtensionPack } from "./extension-pack";
-import { Mode } from "./mode";
-import { QueryLanguage } from "../../common/query-language";
+import type { ExtensionPack } from "./extension-pack";
+import type { Mode } from "./mode";
+import type { QueryLanguage } from "../../common/query-language";
 
 export interface ModelEditorViewState {
   extensionPack: ExtensionPack;

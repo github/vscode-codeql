@@ -1,7 +1,7 @@
-import { Octokit } from "@octokit/rest";
-import { RequestInterface } from "@octokit/types/dist-types/RequestInterface";
+import type { Octokit } from "@octokit/rest";
+import type { RequestInterface } from "@octokit/types/dist-types/RequestInterface";
 
-import { Credentials } from "../../src/common/authentication";
+import type { Credentials } from "../../src/common/authentication";
 import { AppOctokit } from "../../src/common/octokit";
 
 function makeTestOctokit(octokit: Octokit): Credentials {

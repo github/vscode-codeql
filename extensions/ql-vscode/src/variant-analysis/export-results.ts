@@ -1,34 +1,30 @@
 import { join } from "path";
 import { ensureDir, writeFile } from "fs-extra";
 
-import { CancellationToken, Uri, ViewColumn, window, workspace } from "vscode";
+import type { CancellationToken } from "vscode";
+import { Uri, ViewColumn, window, workspace } from "vscode";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
-  ProgressCallback,
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
 import { extLogger } from "../common/logging/vscode";
 import { createGist } from "./gh-api/gh-api-client";
-import {
-  generateVariantAnalysisMarkdown,
-  MarkdownFile,
-  RepositorySummary,
-} from "./markdown-generation";
+import type { MarkdownFile, RepositorySummary } from "./markdown-generation";
+import { generateVariantAnalysisMarkdown } from "./markdown-generation";
 import { pluralize } from "../common/word";
-import { VariantAnalysisManager } from "./variant-analysis-manager";
-import {
+import type { VariantAnalysisManager } from "./variant-analysis-manager";
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
-  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
-import {
-  filterAndSortRepositoriesWithResults,
-  RepositoriesFilterSortStateWithIds,
-} from "./shared/variant-analysis-filter-sort";
-import { Credentials } from "../common/authentication";
-import { AppCommandManager } from "../common/commands";
+import { VariantAnalysisScannedRepositoryDownloadStatus } from "./shared/variant-analysis";
+import type { RepositoriesFilterSortStateWithIds } from "./shared/variant-analysis-filter-sort";
+import { filterAndSortRepositoriesWithResults } from "./shared/variant-analysis-filter-sort";
+import type { Credentials } from "../common/authentication";
+import type { AppCommandManager } from "../common/commands";
 
 const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
 

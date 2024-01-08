@@ -1,4 +1,4 @@
-import { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/react";
 import { themes } from "@storybook/theming";
 import { action } from "@storybook/addon-actions";
 

@@ -1,15 +1,16 @@
 import { join } from "path";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../../src/local-queries/qlpack-generator";
-import { QueryLanguage } from "../../../src/common/query-language";
-import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
+import type { QueryLanguage } from "../../../src/common/query-language";
+import type { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { Uri, workspace } from "vscode";
 import { getErrorMessage } from "../../../src/common/helpers-pure";
-import { DirResult, dirSync } from "tmp";
+import type { DirResult } from "tmp";
+import { dirSync } from "tmp";
 import { mockedObject } from "../utils/mocking.helpers";
 import { ensureDir, readFile } from "fs-extra";
 import { load } from "js-yaml";
-import { QlPackFile } from "../../../src/packaging/qlpack-file";
+import type { QlPackFile } from "../../../src/packaging/qlpack-file";
 
 describe("QlPackGenerator", () => {
   let packFolderPath: string;

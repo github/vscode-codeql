@@ -1,13 +1,7 @@
-import {
-  Position,
-  Selection,
-  TextEditor,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
+import type { TextEditor } from "vscode";
+import { Position, Selection, Uri, window, workspace } from "vscode";
 
-import { DatabaseManager } from "../../../../src/databases/local-databases";
+import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import {
   cleanDatabases,
   ensureTestDatabase,
@@ -15,10 +9,10 @@ import {
 } from "../../global.helper";
 import { describeWithCodeQL } from "../../cli";
 import { withDebugController } from "./debug-controller";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { QueryOutputDir } from "../../../../src/run-queries-shared";
+import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { QueryOutputDir } from "../../../../src/run-queries-shared";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
-import { AllCommands } from "../../../../src/common/commands";
+import type { AllCommands } from "../../../../src/common/commands";
 import { getDataFolderFilePath } from "../utils";
 
 async function selectForQuickEval(

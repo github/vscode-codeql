@@ -1,17 +1,15 @@
 import { join, resolve } from "path";
 import { readdir, readFile } from "fs-extra";
 
-import {
-  generateVariantAnalysisMarkdown,
-  MarkdownFile,
-} from "../../../src/variant-analysis/markdown-generation";
-import {
+import type { MarkdownFile } from "../../../src/variant-analysis/markdown-generation";
+import { generateVariantAnalysisMarkdown } from "../../../src/variant-analysis/markdown-generation";
+import type {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "../../../src/variant-analysis/shared/variant-analysis";
 import { QueryLanguage } from "../../../src/common/query-language";
-import {
+import type {
   AnalysisAlert,
   AnalysisRawResults,
 } from "../../../src/variant-analysis/shared/analysis-result";

@@ -1,10 +1,7 @@
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { DatabaseItem } from "../databases/local-databases";
-import {
-  getPrimaryDbscheme,
-  getQlPackForDbscheme,
-  QlPacksForLanguage,
-} from "../databases/qlpack";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { DatabaseItem } from "../databases/local-databases";
+import type { QlPacksForLanguage } from "../databases/qlpack";
+import { getPrimaryDbscheme, getQlPackForDbscheme } from "../databases/qlpack";
 import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
@@ -13,8 +10,8 @@ import { redactableError } from "../common/errors";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { SuiteInstruction } from "../packaging/suite-instruction";
-import { QueryConstraints } from "./query-constraints";
+import type { SuiteInstruction } from "../packaging/suite-instruction";
+import type { QueryConstraints } from "./query-constraints";
 
 /**
  * Consider using `resolveContextualQlPacksForDatabase` instead.

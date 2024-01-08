@@ -1,13 +1,13 @@
-import { App } from "../common/app";
-import { AppEvent, AppEventEmitter } from "../common/events";
+import type { App } from "../common/app";
+import type { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DisposableObject } from "../common/disposable-object";
-import { DbConfigStore } from "./config/db-config-store";
-import { DbItem, RemoteUserDefinedListDbItem } from "./db-item";
+import type { DbConfigStore } from "./config/db-config-store";
+import type { DbItem, RemoteUserDefinedListDbItem } from "./db-item";
+import type { ExpandedDbItem } from "./db-item-expansion";
 import {
   updateExpandedItem,
   replaceExpandedItem,
-  ExpandedDbItem,
   cleanNonExistentExpandedItems,
 } from "./db-item-expansion";
 import {
@@ -15,7 +15,7 @@ import {
   mapDbItemToSelectedDbItem,
 } from "./db-item-selection";
 import { createRemoteTree } from "./db-tree-creator";
-import { DbConfigValidationError } from "./db-validation-errors";
+import type { DbConfigValidationError } from "./db-validation-errors";
 
 export class DbManager extends DisposableObject {
   public readonly onDbItemsChanged: AppEvent<void>;

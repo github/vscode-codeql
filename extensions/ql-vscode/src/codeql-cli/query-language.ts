@@ -1,5 +1,6 @@
-import { CodeQLCliServer } from "./cli";
-import { Uri, window } from "vscode";
+import type { CodeQLCliServer } from "./cli";
+import type { Uri } from "vscode";
+import { window } from "vscode";
 import {
   getLanguageDisplayName,
   isQueryLanguage,

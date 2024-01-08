@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { ToDataFlowPathsMessage } from "../../common/interface-types";
-import { DataFlowPaths as DataFlowPathsDomainModel } from "../../variant-analysis/shared/data-flow-paths";
+import type { ToDataFlowPathsMessage } from "../../common/interface-types";
+import type { DataFlowPaths as DataFlowPathsDomainModel } from "../../variant-analysis/shared/data-flow-paths";
 import { DataFlowPaths } from "./DataFlowPaths";
 
 export type DataFlowPathsViewProps = {

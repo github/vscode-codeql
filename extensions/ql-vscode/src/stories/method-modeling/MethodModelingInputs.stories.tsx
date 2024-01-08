@@ -1,10 +1,10 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { MethodModelingInputs as MethodModelingInputsComponent } from "../../view/method-modeling/MethodModelingInputs";
 import { createMethod } from "../../../test/factories/model-editor/method-factories";
 import { createSinkModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
 import { useState } from "react";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { QueryLanguage } from "../../common/query-language";
 
 export default {

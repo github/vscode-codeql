@@ -8,17 +8,18 @@ import {
 } from "fs-extra";
 import { join } from "path";
 
-import { ExtensionContext, Uri } from "vscode";
-import { DatabaseManager } from "../../../../src/databases/local-databases";
+import type { ExtensionContext } from "vscode";
+import { Uri } from "vscode";
+import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir } from "../../../../src/tmp-dir";
 import { walkDirectory } from "../../../../src/common/files";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
-import { ResultsView } from "../../../../src/local-queries";
-import { EvalLogViewer } from "../../../../src/query-evaluation-logging";
-import { QueryRunner } from "../../../../src/query-server/query-runner";
-import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
+import type { ResultsView } from "../../../../src/local-queries";
+import type { EvalLogViewer } from "../../../../src/query-evaluation-logging";
+import type { QueryRunner } from "../../../../src/query-server/query-runner";
+import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";

@@ -1,8 +1,6 @@
 import { EventEmitter, Uri, workspace } from "vscode";
-import {
-  QueryDiscovery,
-  QueryPackDiscoverer,
-} from "../../../../src/queries-panel/query-discovery";
+import type { QueryPackDiscoverer } from "../../../../src/queries-panel/query-discovery";
+import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { basename, dirname, join } from "path";
 import { dirSync } from "tmp";

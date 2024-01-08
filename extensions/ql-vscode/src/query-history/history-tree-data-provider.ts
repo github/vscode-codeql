@@ -1,19 +1,12 @@
-import {
-  env,
-  Event,
-  EventEmitter,
-  ProviderResult,
-  ThemeColor,
-  ThemeIcon,
-  TreeDataProvider,
-  TreeItem,
-} from "vscode";
+import type { Event, ProviderResult, TreeDataProvider } from "vscode";
+import { env, EventEmitter, ThemeColor, ThemeIcon, TreeItem } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { assertNever } from "../common/helpers-pure";
-import { getLanguage, QueryHistoryInfo } from "./query-history-info";
+import type { QueryHistoryInfo } from "./query-history-info";
+import { getLanguage } from "./query-history-info";
 import { QueryStatus } from "./query-status";
-import { HistoryItemLabelProvider } from "./history-item-label-provider";
-import { LanguageContextStore } from "../language-context-store";
+import type { HistoryItemLabelProvider } from "./history-item-label-provider";
+import type { LanguageContextStore } from "../language-context-store";
 
 export enum SortOrder {
   NameAsc = "NameAsc",

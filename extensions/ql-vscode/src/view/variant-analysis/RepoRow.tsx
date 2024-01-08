@@ -1,11 +1,12 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import { VSCodeBadge, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
+import type { VariantAnalysisScannedRepositoryState } from "../../variant-analysis/shared/variant-analysis";
 import {
   isCompletedAnalysisRepoStatus,
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-  VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
 import { formatDecimal } from "../../common/number";
 import {
@@ -15,8 +16,8 @@ import {
   SuccessIcon,
   WarningIcon,
 } from "../common";
-import { RepositoryWithMetadata } from "../../variant-analysis/shared/repository";
-import {
+import type { RepositoryWithMetadata } from "../../variant-analysis/shared/repository";
+import type {
   AnalysisAlert,
   AnalysisRawResults,
 } from "../../variant-analysis/shared/analysis-result";

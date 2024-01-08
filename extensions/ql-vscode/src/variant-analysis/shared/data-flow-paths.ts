@@ -1,4 +1,8 @@
-import { AnalysisMessage, CodeFlow, ResultSeverity } from "./analysis-result";
+import type {
+  AnalysisMessage,
+  CodeFlow,
+  ResultSeverity,
+} from "./analysis-result";
 
 export interface DataFlowPaths {
   codeFlows: CodeFlow[];

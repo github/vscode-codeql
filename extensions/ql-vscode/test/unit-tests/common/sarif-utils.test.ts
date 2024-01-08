@@ -1,4 +1,4 @@
-import { Location } from "sarif";
+import type { Location } from "sarif";
 
 import {
   getPathRelativeToSourceLocationPrefix,

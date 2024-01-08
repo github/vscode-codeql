@@ -1,10 +1,5 @@
-import {
-  CodeLensProvider,
-  TextDocument,
-  CodeLens,
-  Command,
-  Range,
-} from "vscode";
+import type { CodeLensProvider, TextDocument, Command } from "vscode";
+import { CodeLens, Range } from "vscode";
 import { isQuickEvalCodelensEnabled } from "../config";
 
 export class QuickEvalCodeLensProvider implements CodeLensProvider {

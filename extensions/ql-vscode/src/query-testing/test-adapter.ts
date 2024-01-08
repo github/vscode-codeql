@@ -1,11 +1,7 @@
 import { extname } from "path";
-import {
-  CancellationTokenSource,
-  Event,
-  EventEmitter,
-  WorkspaceFolder,
-} from "vscode";
-import {
+import type { Event, WorkspaceFolder } from "vscode";
+import { CancellationTokenSource, EventEmitter } from "vscode";
+import type {
   TestAdapter,
   TestEvent,
   TestHub,
@@ -20,14 +16,11 @@ import {
 import { TestAdapterRegistrar } from "vscode-test-adapter-util";
 import { QLTestDiscovery } from "./qltest-discovery";
 import { DisposableObject } from "../common/disposable-object";
-import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
+import type { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
 import { testLogger } from "../common/logging/vscode";
-import { TestRunner } from "./test-runner";
-import {
-  FileTreeDirectory,
-  FileTreeLeaf,
-  FileTreeNode,
-} from "../common/file-tree-nodes";
+import type { TestRunner } from "./test-runner";
+import type { FileTreeNode } from "../common/file-tree-nodes";
+import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.

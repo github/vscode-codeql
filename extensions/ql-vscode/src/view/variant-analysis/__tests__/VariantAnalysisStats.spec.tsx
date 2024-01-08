@@ -1,9 +1,7 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { VariantAnalysisStatus } from "../../../variant-analysis/shared/variant-analysis";
-import {
-  VariantAnalysisStats,
-  VariantAnalysisStatsProps,
-} from "../VariantAnalysisStats";
+import type { VariantAnalysisStatsProps } from "../VariantAnalysisStats";
+import { VariantAnalysisStats } from "../VariantAnalysisStats";
 import { userEvent } from "@testing-library/user-event";
 
 describe(VariantAnalysisStats.name, () => {

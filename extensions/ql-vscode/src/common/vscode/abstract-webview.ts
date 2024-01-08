@@ -1,18 +1,18 @@
-import {
+import type {
   WebviewPanel,
-  window as Window,
   ViewColumn,
-  Uri,
   WebviewPanelOptions,
   WebviewOptions,
 } from "vscode";
+import { window as Window, Uri } from "vscode";
 import { join } from "path";
 
-import { App } from "../app";
-import { Disposable } from "../disposable-object";
+import type { App } from "../app";
+import type { Disposable } from "../disposable-object";
 import { tmpDir } from "../../tmp-dir";
-import { getHtmlForWebview, WebviewMessage, WebviewKind } from "./webview-html";
-import { DeepReadonly } from "../readonly";
+import type { WebviewMessage, WebviewKind } from "./webview-html";
+import { getHtmlForWebview } from "./webview-html";
+import type { DeepReadonly } from "../readonly";
 
 export type WebviewPanelConfig = {
   viewId: string;

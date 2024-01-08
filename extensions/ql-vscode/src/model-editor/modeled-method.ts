@@ -1,5 +1,5 @@
-import { MethodSignature } from "./method";
-import { ModelingStatus } from "./shared/modeling-status";
+import type { MethodSignature } from "./method";
+import type { ModelingStatus } from "./shared/modeling-status";
 
 export type ModeledMethodType =
   | "none"

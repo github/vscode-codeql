@@ -9,16 +9,20 @@ import {
   StoppedEvent,
   TerminatedEvent,
 } from "@vscode/debugadapter";
-import { DebugProtocol as Protocol } from "@vscode/debugprotocol";
-import { Disposable } from "vscode";
+import type { DebugProtocol as Protocol } from "@vscode/debugprotocol";
+import type { Disposable } from "vscode";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import { BaseLogger, LogOptions } from "../common/logging";
+import type { BaseLogger, LogOptions } from "../common/logging";
 import { queryServerLogger } from "../common/logging/vscode";
 import { QueryResultType } from "../query-server/messages";
-import { CoreQueryResults, CoreQueryRun, QueryRunner } from "../query-server";
+import type {
+  CoreQueryResults,
+  CoreQueryRun,
+  QueryRunner,
+} from "../query-server";
 // eslint-disable-next-line import/no-namespace -- There are two different debug protocols, so we should make a distinction.
-import * as CodeQLProtocol from "./debug-protocol";
-import { QuickEvalContext } from "../run-queries-shared";
+import type * as CodeQLProtocol from "./debug-protocol";
+import type { QuickEvalContext } from "../run-queries-shared";
 import { getErrorMessage } from "../common/helpers-pure";
 import { DisposableObject } from "../common/disposable-object";
 

@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { MethodModeling } from "./MethodModeling";
 import { getModelingStatus } from "../../model-editor/shared/modeling-status";
-import { Method, canMethodBeModeled } from "../../model-editor/method";
-import { ToMethodModelingMessage } from "../../common/interface-types";
+import type { Method } from "../../model-editor/method";
+import { canMethodBeModeled } from "../../model-editor/method";
+import type { ToMethodModelingMessage } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
-import { ModeledMethod } from "../../model-editor/modeled-method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { vscode } from "../vscode-api";
 import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
-import { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
+import type { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
 import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
 
 type Props = {

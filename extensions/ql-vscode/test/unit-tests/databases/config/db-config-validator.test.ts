@@ -1,8 +1,6 @@
 import { join } from "path";
-import {
-  DbConfig,
-  DB_CONFIG_VERSION,
-} from "../../../../src/databases/config/db-config";
+import type { DbConfig } from "../../../../src/databases/config/db-config";
+import { DB_CONFIG_VERSION } from "../../../../src/databases/config/db-config";
 import { DbConfigValidator } from "../../../../src/databases/config/db-config-validator";
 import { DbConfigValidationErrorKind } from "../../../../src/databases/db-validation-errors";
 import { createDbConfig } from "../../../factories/db-config-factories";

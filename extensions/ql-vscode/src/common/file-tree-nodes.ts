@@ -1,5 +1,5 @@
 import { basename, dirname, join } from "path";
-import { EnvironmentContext } from "./app";
+import type { EnvironmentContext } from "./app";
 
 /**
  * A node in the tree of files. This will be either a `FileTreeDirectory` or a `FileTreeLeaf`.

@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 
-import { Row } from "../../common/raw-result-types";
+import type { Row } from "../../common/raw-result-types";
 import { RawResultCell } from "./RawResultCell";
 
 const StyledRow = styled.div`

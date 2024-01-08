@@ -1,6 +1,7 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
-import { LibraryRow, LibraryRowProps } from "../LibraryRow";
+import type { LibraryRowProps } from "../LibraryRow";
+import { LibraryRow } from "../LibraryRow";
 import { userEvent } from "@testing-library/user-event";
 import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
 

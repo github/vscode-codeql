@@ -1,7 +1,7 @@
 // Contains models and consts for the data we want to store in the query history store.
 // Changes to these models should be done carefully and account for backwards compatibility of data.
 
-import { QueryLanguageDto } from "./query-history-dto";
+import type { QueryLanguageDto } from "./query-history-dto";
 
 export interface QueryHistoryLocalQueryDto {
   initialInfo: InitialQueryInfoDto;

@@ -1,10 +1,11 @@
-import { CancellationTokenSource, env } from "vscode";
+import type { CancellationTokenSource } from "vscode";
+import { env } from "vscode";
 
-import { Position } from "./query-server/messages-shared";
-import { CodeQLCliServer, SourceInfo } from "./codeql-cli/cli";
+import type { Position } from "./query-server/messages-shared";
+import type { CodeQLCliServer, SourceInfo } from "./codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { basename } from "path";
-import {
+import type {
   RawResultsSortState,
   SortedResultSetInfo,
   QueryMetadata,
@@ -15,7 +16,7 @@ import {
   DatabaseInfo,
 } from "./common/interface-types";
 import { QueryStatus } from "./query-history/query-status";
-import {
+import type {
   EvaluatorLogPaths,
   QueryEvaluationInfo,
   QueryOutputDir,

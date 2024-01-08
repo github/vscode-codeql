@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { vscode } from "./vscode-api";
 
 import { registerUnhandledErrorListener } from "./common/errors";
-import { WebviewDefinition } from "./webview-definition";
+import type { WebviewDefinition } from "./webview-definition";
 
 import compareView from "./compare";
 import dataFlowPathsView from "./data-flow-paths";

@@ -1,11 +1,11 @@
 import { Uri } from "vscode";
-import { Log } from "sarif";
+import type { Log } from "sarif";
 import { pathExists } from "fs-extra";
 import { sarifParser } from "../common/sarif-parser";
-import { CompletedLocalQueryInfo } from "../query-results";
-import { DatabaseManager } from "../databases/local-databases";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import { InterpretedQueryCompareResult } from "../common/interface-types";
+import type { CompletedLocalQueryInfo } from "../query-results";
+import type { DatabaseManager } from "../databases/local-databases";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { InterpretedQueryCompareResult } from "../common/interface-types";
 
 import { sarifDiff } from "./sarif-diff";
 

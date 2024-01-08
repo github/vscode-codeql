@@ -1,4 +1,4 @@
-import { DatabaseOrigin } from "./database-origin";
+import type { DatabaseOrigin } from "./database-origin";
 
 export interface DatabaseOptions {
   displayName?: string;

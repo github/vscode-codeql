@@ -1,4 +1,4 @@
-import { SuiteInstruction } from "./suite-instruction";
+import type { SuiteInstruction } from "./suite-instruction";
 
 /**
  * The qlpack pack file, either in qlpack.yml or in codeql-pack.yml.

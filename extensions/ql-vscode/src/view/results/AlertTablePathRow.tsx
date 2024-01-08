@@ -1,10 +1,10 @@
-import { ThreadFlow } from "sarif";
-import {
-  equalsNotUndefined,
+import type { ThreadFlow } from "sarif";
+import type {
   PathNode,
   Result as ResultKeysResult,
   ResultKey,
 } from "./result-keys";
+import { equalsNotUndefined } from "./result-keys";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";

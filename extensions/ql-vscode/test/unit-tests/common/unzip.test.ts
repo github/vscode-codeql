@@ -2,7 +2,8 @@ import { createHash } from "crypto";
 import { open } from "fs/promises";
 import { join, relative, resolve, sep } from "path";
 import { chmod, pathExists, readdir } from "fs-extra";
-import { dir, DirectoryResult } from "tmp-promise";
+import type { DirectoryResult } from "tmp-promise";
+import { dir } from "tmp-promise";
 import {
   excludeDirectories,
   openZip,

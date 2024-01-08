@@ -1,12 +1,12 @@
 import { window } from "vscode";
-import { App } from "../common/app";
+import type { App } from "../common/app";
 import { extLogger } from "../common/logging/vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
 import { DbPanel } from "./ui/db-panel";
 import { DbSelectionDecorationProvider } from "./ui/db-selection-decoration-provider";
-import { DatabasePanelCommands } from "../common/commands";
+import type { DatabasePanelCommands } from "../common/commands";
 
 export class DbModule extends DisposableObject {
   public readonly dbManager: DbManager;

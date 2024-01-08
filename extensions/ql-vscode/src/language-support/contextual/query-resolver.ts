@@ -1,22 +1,18 @@
 import { getOnDiskWorkspaceFolders } from "../../common/vscode/workspace-folders";
-import { QlPacksForLanguage } from "../../databases/qlpack";
-import {
-  KeyType,
-  kindOfKeyType,
-  nameOfKeyType,
-  tagOfKeyType,
-} from "./key-type";
-import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { DatabaseItem } from "../../databases/local-databases";
+import type { QlPacksForLanguage } from "../../databases/qlpack";
+import type { KeyType } from "./key-type";
+import { kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./key-type";
+import type { CodeQLCliServer } from "../../codeql-cli/cli";
+import type { DatabaseItem } from "../../databases/local-databases";
 import {
   qlpackOfDatabase,
   resolveQueriesByLanguagePack as resolveLocalQueriesByLanguagePack,
 } from "../../local-queries/query-resolver";
 import { extLogger } from "../../common/logging/vscode";
 import { TeeLogger } from "../../common/logging";
-import { CancellationToken } from "vscode";
-import { ProgressCallback } from "../../common/vscode/progress";
-import { CoreCompletedQuery, QueryRunner } from "../../query-server";
+import type { CancellationToken } from "vscode";
+import type { ProgressCallback } from "../../common/vscode/progress";
+import type { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { createLockFileForStandardQuery } from "../../local-queries/standard-queries";
 
 /**

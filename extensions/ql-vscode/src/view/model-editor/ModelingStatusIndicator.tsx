@@ -1,6 +1,6 @@
 import { assertNever } from "../../common/helpers-pure";
 import { Codicon } from "../common/icon/Codicon";
-import { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 interface Props {
   status: ModelingStatus;

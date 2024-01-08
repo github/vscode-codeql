@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react";
+import type { Meta, StoryFn } from "@storybook/react";
 
 import { DataFlowPaths as DataFlowPathsComponent } from "../../view/data-flow-paths/DataFlowPaths";
 import { createMockDataFlowPaths } from "../../../test/factories/variant-analysis/shared/data-flow-paths";

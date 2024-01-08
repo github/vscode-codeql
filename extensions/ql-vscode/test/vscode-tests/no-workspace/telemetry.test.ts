@@ -1,11 +1,6 @@
 import TelemetryReporter from "vscode-extension-telemetry";
-import {
-  ExtensionContext,
-  workspace,
-  ConfigurationTarget,
-  window,
-  env,
-} from "vscode";
+import type { ExtensionContext } from "vscode";
+import { workspace, ConfigurationTarget, window, env } from "vscode";
 import {
   ExtensionTelemetryListener,
   telemetryListener as globalTelemetryListener,
