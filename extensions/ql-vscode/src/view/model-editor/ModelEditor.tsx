@@ -222,6 +222,10 @@ export function ModelEditor({
     });
   }, [selectedSignatures]);
 
+  const onDeselectAllClick = useCallback(() => {
+    setSelectedSignatures(new Set());
+  }, []);
+
   const onSaveModelClick = useCallback(
     (methodSignatures: string[]) => {
       vscode.postMessage({
@@ -339,6 +343,13 @@ export function ModelEditor({
                 disabled={modifiedSignatures.size === 0}
               >
                 {selectedSignatures.size === 0 ? "Save all" : "Save selected"}
+              </VSCodeButton>
+              <VSCodeButton
+                appearance="secondary"
+                onClick={onDeselectAllClick}
+                disabled={selectedSignatures.size === 0}
+              >
+                Deselect all
               </VSCodeButton>
               <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
                 Refresh
