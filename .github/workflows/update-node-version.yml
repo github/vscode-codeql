@@ -1,0 +1,58 @@
+name: Update Node version
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 12 * * *' # At 12:15 PM UTC every day
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-pr:
+    name: Create PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: extensions/ql-vscode/.nvmrc
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
+      - name: Install dependencies
+        working-directory: extensions/ql-vscode
+        run: |
+          npm ci
+        shell: bash
+      - name: Get current Node version
+        working-directory: extensions/ql-vscode
+        id: get-current-node-version
+        run: |
+          echo "version=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Update Node version
+        working-directory: extensions/ql-vscode
+        run: |
+          npx ts-node scripts/update-node-version.ts
+        shell: bash
+      - name: Get current Node version
+        working-directory: extensions/ql-vscode
+        id: get-new-node-version
+        run: |
+          echo "version=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Commit, Push and Open a PR
+        uses: ./.github/actions/create-pr
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base-branch: main
+          head-branch: github-action/bump-node-version
+          commit-message: Bump Node version to ${{ steps.get-new-node-version.outputs.version }}
+          title: Bump Node version to ${{ steps.get-new-node-version.outputs.version }}
+          body: >
+            The Node version used in the latest version of VS Code has been updated. This PR updates the Node version
+            used for integration tests to match.
+
+            The previous Node version was ${{ steps.get-current-node-version.outputs.version }}. This PR updates the
+            Node version to ${{ steps.get-new-node-version.outputs.version }}.
