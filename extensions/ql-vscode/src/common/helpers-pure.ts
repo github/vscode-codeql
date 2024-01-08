@@ -27,13 +27,13 @@ export function assertNever(value: never): never {
 /**
  * Use to perform array filters where the predicate is asynchronous.
  */
-export const asyncFilter = async function <T>(
+export async function asyncFilter<T>(
   arr: T[],
   predicate: (arg0: T) => Promise<boolean>,
 ) {
   const results = await Promise.all(arr.map(predicate));
   return arr.filter((_, index) => results[index]);
-};
+}
 
 /**
  * This regex matches strings of the form `owner/repo` where:

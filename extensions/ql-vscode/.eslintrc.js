@@ -53,7 +53,6 @@ const baseConfig = {
     "etc/no-implicit-any-catch": "error",
     "filenames/match-regex": "off",
     "filenames/match-regexp": "off",
-    "func-style": "off",
     "i18n-text/no-en": "off",
     "no-invalid-this": "off",
     "no-console": "off",
