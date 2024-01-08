@@ -57,7 +57,6 @@ const baseConfig = {
     "func-style": "off",
     "i18n-text/no-en": "off",
     "no-invalid-this": "off",
-    "no-fallthrough": "off",
     "no-console": "off",
     "no-shadow": "off",
     "github/array-foreach": "off",
