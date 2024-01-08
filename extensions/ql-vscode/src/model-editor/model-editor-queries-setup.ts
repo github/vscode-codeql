@@ -2,15 +2,15 @@ import { join } from "path";
 import type { QueryLanguage } from "../common/query-language";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
-import { prepareModelEditorQueries } from "./model-editor-queries";
+import {
+  prepareModelEditorQueries,
+  resolveEndpointsQuery,
+  syntheticQueryPackName,
+} from "./model-editor-queries";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { ModelConfig } from "../config";
 import { Mode } from "./shared/mode";
-import { resolveQueriesFromPacks } from "../local-queries";
-import { modeTag } from "./mode-tag";
 import type { NotificationLogger } from "../common/logging";
-
-export const syntheticQueryPackName = "codeql/model-editor-queries";
 
 /**
  * setUpPack sets up a directory to use for the data extension editor queries if required.
@@ -95,50 +95,4 @@ export async function setUpPack(
   }
 
   return true;
-}
-
-/**
- * Resolve the query path to the model editor endpoints query. All queries are tagged like this:
- * modeleditor endpoints <mode>
- * Example: modeleditor endpoints framework-mode
- *
- * @param cliServer The CodeQL CLI server to use.
- * @param language The language of the query pack to use.
- * @param mode The mode to resolve the query for.
- * @param additionalPackNames Additional pack names to search.
- * @param additionalPackPaths Additional pack paths to search.
- */
-export async function resolveEndpointsQuery(
-  cliServer: CodeQLCliServer,
-  language: string,
-  mode: Mode,
-  additionalPackNames: string[] = [],
-  additionalPackPaths: string[] = [],
-): Promise<string | undefined> {
-  const packsToSearch = [`codeql/${language}-queries`, ...additionalPackNames];
-
-  // First, resolve the query that we want to run.
-  // All queries are tagged like this:
-  // internal extract automodel <mode> <queryTag>
-  // Example: internal extract automodel framework-mode candidates
-  const queries = await resolveQueriesFromPacks(
-    cliServer,
-    packsToSearch,
-    {
-      kind: "table",
-      "tags contain all": ["modeleditor", "endpoints", modeTag(mode)],
-    },
-    additionalPackPaths,
-  );
-  if (queries.length > 1) {
-    throw new Error(
-      `Found multiple endpoints queries for ${mode}. Can't continue`,
-    );
-  }
-
-  if (queries.length === 0) {
-    return undefined;
-  }
-
-  return queries[0];
 }
