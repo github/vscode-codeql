@@ -1,4 +1,5 @@
 {
   "workbench.startupEditor": "none",
-  "security.workspace.trust.enabled": false
+  "security.workspace.trust.enabled": false,
+  "codeQL.cli.executablePath": "/opt/codeql/codeql"
 }
