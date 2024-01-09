@@ -2,7 +2,7 @@ import { readFileSync } from "fs-extra";
 
 import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { Uri } from "vscode";
-import { QueryOutputDir } from "../../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../../src/local-queries/query-output-dir";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 import path from "path";
 import { AstBuilder } from "../../../../../src/language-support";

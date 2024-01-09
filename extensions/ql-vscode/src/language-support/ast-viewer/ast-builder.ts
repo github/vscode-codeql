@@ -7,7 +7,7 @@ import type {
 import type { DatabaseItem } from "../../databases/local-databases";
 import type { ChildAstItem, AstItem } from "./ast-viewer";
 import type { Uri } from "vscode";
-import type { QueryOutputDir } from "../../run-queries-shared";
+import type { QueryOutputDir } from "../../local-queries/query-output-dir";
 import { fileRangeFromURI } from "../contextual/file-range-from-uri";
 import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
 

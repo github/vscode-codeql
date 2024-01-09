@@ -63,7 +63,7 @@ const baseConfig = {
     "github/array-foreach": "off",
     "github/no-then": "off",
     "react/jsx-key": ["error", { checkFragmentShorthand: true }],
-    "import/no-cycle": "off",
+    "import/no-cycle": "error",
     // Never allow extensions in import paths, except for JSON files where they are required.
     "import/extensions": ["error", "never", { json: "always" }],
   },

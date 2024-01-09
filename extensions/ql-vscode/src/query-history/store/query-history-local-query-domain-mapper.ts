@@ -17,7 +17,7 @@ import type {
   SortedResultSetInfo,
 } from "../../common/interface-types";
 import { SortDirection } from "../../common/interface-types";
-import { mapQueryLanguageToDto } from "./query-history-domain-mapper";
+import { mapQueryLanguageToDto } from "./query-history-language-domain-mapper";
 
 export function mapLocalQueryInfoToDto(
   query: LocalQueryInfo,

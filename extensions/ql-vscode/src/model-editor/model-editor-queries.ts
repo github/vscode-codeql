@@ -17,10 +17,10 @@ import { fetchExternalApiQueries } from "./queries";
 import type { Method } from "./method";
 import { runQuery } from "../local-queries/run-query";
 import { decodeBqrsToMethods } from "./bqrs";
-import {
-  resolveEndpointsQuery,
-  syntheticQueryPackName,
-} from "./model-editor-queries-setup";
+import { resolveQueriesFromPacks } from "../local-queries";
+import { modeTag } from "./mode-tag";
+
+export const syntheticQueryPackName = "codeql/model-editor-queries";
 
 type RunQueryOptions = {
   cliServer: CodeQLCliServer;
@@ -221,6 +221,52 @@ export async function readQueryResults({
   const resultSet = bqrsInfo["result-sets"][0];
 
   return cliServer.bqrsDecode(bqrsPath, resultSet.name);
+}
+
+/**
+ * Resolve the query path to the model editor endpoints query. All queries are tagged like this:
+ * modeleditor endpoints <mode>
+ * Example: modeleditor endpoints framework-mode
+ *
+ * @param cliServer The CodeQL CLI server to use.
+ * @param language The language of the query pack to use.
+ * @param mode The mode to resolve the query for.
+ * @param additionalPackNames Additional pack names to search.
+ * @param additionalPackPaths Additional pack paths to search.
+ */
+export async function resolveEndpointsQuery(
+  cliServer: CodeQLCliServer,
+  language: string,
+  mode: Mode,
+  additionalPackNames: string[] = [],
+  additionalPackPaths: string[] = [],
+): Promise<string | undefined> {
+  const packsToSearch = [`codeql/${language}-queries`, ...additionalPackNames];
+
+  // First, resolve the query that we want to run.
+  // All queries are tagged like this:
+  // internal extract automodel <mode> <queryTag>
+  // Example: internal extract automodel framework-mode candidates
+  const queries = await resolveQueriesFromPacks(
+    cliServer,
+    packsToSearch,
+    {
+      kind: "table",
+      "tags contain all": ["modeleditor", "endpoints", modeTag(mode)],
+    },
+    additionalPackPaths,
+  );
+  if (queries.length > 1) {
+    throw new Error(
+      `Found multiple endpoints queries for ${mode}. Can't continue`,
+    );
+  }
+
+  if (queries.length === 0) {
+    return undefined;
+  }
+
+  return queries[0];
 }
 
 function queryNameFromMode(mode: Mode): string {

@@ -13,15 +13,13 @@ import {
   interpretResultsSarif,
 } from "../../../src/query-results";
 import type { QueryWithResults } from "../../../src/run-queries-shared";
-import {
-  QueryEvaluationInfo,
-  QueryOutputDir,
-} from "../../../src/run-queries-shared";
+import { QueryEvaluationInfo } from "../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../src/local-queries/query-output-dir";
+import { SortDirection } from "../../../src/common/interface-types";
 import type {
   DatabaseInfo,
   SortedResultSetInfo,
 } from "../../../src/common/interface-types";
-import { SortDirection } from "../../../src/common/interface-types";
 import type { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
 import type { CancellationTokenSource } from "vscode";
 import { Uri } from "vscode";

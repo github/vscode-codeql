@@ -27,7 +27,7 @@ import {
 import { assertNever } from "../../common/helpers-pure";
 import { QueryStatus } from "../query-status";
 import type { VariantAnalysisHistoryItem } from "../variant-analysis-history-item";
-import { mapQueryLanguageToDto } from "./query-history-domain-mapper";
+import { mapQueryLanguageToDto } from "./query-history-language-domain-mapper";
 
 export function mapQueryHistoryVariantAnalysisToDto(
   item: VariantAnalysisHistoryItem,

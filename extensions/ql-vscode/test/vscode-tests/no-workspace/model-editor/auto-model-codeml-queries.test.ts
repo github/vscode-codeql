@@ -17,7 +17,7 @@ import { join } from "path";
 import { pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import { QueryOutputDir } from "../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 import type { ModelExtensionFile } from "../../../../src/model-editor/model-extension-file";
 
 describe("runAutoModelQueries", () => {

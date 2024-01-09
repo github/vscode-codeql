@@ -17,7 +17,7 @@ import { Mode } from "../../../../src/model-editor/shared/mode";
 import { join } from "path";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { QueryRunner } from "../../../../src/query-server";
-import { QueryOutputDir } from "../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 
 describe("runModelEditorQueries", () => {
   const language = Object.keys(fetchExternalApiQueries)[

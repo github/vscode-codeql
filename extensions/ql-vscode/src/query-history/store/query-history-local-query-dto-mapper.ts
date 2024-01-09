@@ -1,6 +1,8 @@
 import type { InitialQueryInfo } from "../../query-results";
 import { LocalQueryInfo, CompletedQueryInfo } from "../../query-results";
-import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
+import { QueryEvaluationInfo } from "../../run-queries-shared";
+import { QueryOutputDir } from "../../local-queries/query-output-dir";
+import { SortDirectionDto } from "./query-history-local-query-dto";
 import type {
   CompletedQueryInfoDto,
   QueryEvaluationInfoDto,
@@ -10,14 +12,13 @@ import type {
   SortedResultSetInfoDto,
   RawResultsSortStateDto,
 } from "./query-history-local-query-dto";
-import { SortDirectionDto } from "./query-history-local-query-dto";
 import type {
   InterpretedResultsSortState,
   RawResultsSortState,
   SortedResultSetInfo,
 } from "../../common/interface-types";
 import { SortDirection } from "../../common/interface-types";
-import { mapQueryLanguageToDomainModel } from "./query-history-dto-mapper";
+import { mapQueryLanguageToDomainModel } from "./query-history-language-dto-mapper";
 
 export function mapLocalQueryItemToDomainModel(
   localQuery: QueryHistoryLocalQueryDto,

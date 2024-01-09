@@ -6,7 +6,7 @@ import type {
 } from "./result-keys";
 import { getPath, getPathNode, getResult, keyToString } from "./result-keys";
 import { className, jumpToLocation } from "./result-table-utils";
-import { onNavigation } from "./ResultsApp";
+import { onNavigation } from "./navigation";
 import type { NavigateMsg } from "../../common/interface-types";
 import { NavigationDirection } from "../../common/interface-types";
 import { isNoLocation, parseSarifLocation } from "../../common/sarif-utils";

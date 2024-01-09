@@ -29,7 +29,8 @@ import type {
   DatabaseItem,
   DatabaseManager,
 } from "../databases/local-databases";
-import type { QueryOutputDir, SelectedQuery } from "../run-queries-shared";
+import type { SelectedQuery } from "../run-queries-shared";
+import type { QueryOutputDir } from "./query-output-dir";
 import {
   createInitialQueryInfo,
   createTimestampFile,

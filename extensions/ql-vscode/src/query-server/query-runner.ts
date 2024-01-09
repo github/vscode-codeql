@@ -1,10 +1,10 @@
-import type { CancellationToken } from "vscode";
-import vscode from "vscode";
+import { window } from "vscode";
+import type { CancellationToken, MessageItem } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { UserCancellationException } from "../common/vscode/progress";
-import type { DatabaseItem } from "../databases/local-databases";
-import { QueryOutputDir } from "../run-queries-shared";
+import type { DatabaseItem } from "../databases/local-databases/database-item";
+import { QueryOutputDir } from "../local-queries/query-output-dir";
 import type {
   ClearCacheParams,
   Position,
@@ -178,11 +178,11 @@ export class QueryRunner {
   ): Promise<void> {
     const yesItem = { title: "Yes", isCloseAffordance: false };
     const noItem = { title: "No", isCloseAffordance: true };
-    const dialogOptions: vscode.MessageItem[] = [yesItem, noItem];
+    const dialogOptions: MessageItem[] = [yesItem, noItem];
 
     const message = `Should the database ${dbItem.databaseUri.fsPath} be destructively upgraded?\n\nThis should not be necessary to run queries
     as we will non-destructively update it anyway.`;
-    const chosenItem = await vscode.window.showInformationMessage(
+    const chosenItem = await window.showInformationMessage(
       message,
       { modal: true },
       ...dialogOptions,

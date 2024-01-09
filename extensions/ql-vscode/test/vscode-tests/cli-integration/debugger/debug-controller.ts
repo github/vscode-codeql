@@ -10,7 +10,7 @@ import type * as CodeQLProtocol from "../../../../src/debugger/debug-protocol";
 import { DisposableObject } from "../../../../src/common/disposable-object";
 import { QueryResultType } from "../../../../src/query-server/messages";
 import type { CoreCompletedQuery } from "../../../../src/query-server/query-runner";
-import { QueryOutputDir } from "../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 import type {
   QLDebugArgs,
   QLDebugConfiguration,

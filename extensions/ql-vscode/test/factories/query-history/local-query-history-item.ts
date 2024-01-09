@@ -5,7 +5,7 @@ import type {
   QueryEvaluationInfo,
   QueryWithResults,
 } from "../../../src/run-queries-shared";
-import { QueryOutputDir } from "../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../src/local-queries/query-output-dir";
 import type { CancellationTokenSource } from "vscode";
 import type { QueryMetadata } from "../../../src/common/interface-types";
 import type { QueryLanguage } from "../../../src/common/query-language";

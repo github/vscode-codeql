@@ -21,7 +21,7 @@ import {
 } from "./query-resolver";
 import type { CancellationToken, LocationLink } from "vscode";
 import { Uri } from "vscode";
-import type { QueryOutputDir } from "../../run-queries-shared";
+import type { QueryOutputDir } from "../../local-queries/query-output-dir";
 import type { QueryRunner } from "../../query-server";
 import { QueryResultType } from "../../query-server/messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
