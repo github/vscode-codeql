@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- If you run a query without having selected a database, we show a more intuitive prompt to help you select a database. [#3214](https://github.com/github/vscode-codeql/pull/3214)
 - Add a prompt for downloading a GitHub database when opening a GitHub repository. [#3138](https://github.com/github/vscode-codeql/pull/3138)
 - Avoid showing a popup when hovering over source elements in database source files. [#3125](https://github.com/github/vscode-codeql/pull/3125)
 - Add comparison of alerts when comparing query results. This allows viewing path explanations for differences in alerts. [#3113](https://github.com/github/vscode-codeql/pull/3113)
