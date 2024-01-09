@@ -607,11 +607,11 @@ async function getDistributionDisplayingDistributionWarnings(
           case DistributionKind.ExtensionManaged:
             return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
           case DistributionKind.CustomPathConfig:
-            return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
+            return `Please update the "CodeQL CLI Executable Path" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
           case DistributionKind.PathEnvironmentVariable:
             return (
               `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
-              `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
+              `set the "CodeQL CLI Executable Path" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
             );
         }
       })();
