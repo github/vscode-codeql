@@ -7,11 +7,11 @@ import {
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
 import type { Method } from "../../model-editor/method";
-import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import type { QueryLanguage } from "../../common/query-language";
 import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
+import { ModelTypeTextbox } from "./ModelTypeTextbox";
 
 type Props = {
   language: QueryLanguage;
@@ -69,9 +69,10 @@ export const ModelOutputDropdown = ({
 
   if (modeledMethod?.type === "type") {
     return (
-      <ReadonlyDropdown
-        value={modeledMethod.relatedTypeName}
-        aria-label="Related type name"
+      <ModelTypeTextbox
+        modeledMethod={modeledMethod}
+        typeInfo="relatedTypeName"
+        onChange={onChange}
       />
     );
   }

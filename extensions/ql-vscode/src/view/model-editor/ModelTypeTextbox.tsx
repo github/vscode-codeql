@@ -6,11 +6,13 @@ import { useDebounceCallback } from "../common/useDebounceCallback";
 
 type Props = {
   modeledMethod: ModeledMethod | undefined;
+  typeInfo: "path" | "relatedTypeName";
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelTypeTextbox = ({
   modeledMethod,
+  typeInfo,
   onChange,
 }: Props): JSX.Element => {
   const enabled = useMemo(
@@ -19,15 +21,21 @@ export const ModelTypeTextbox = ({
   );
   const [value, setValue] = useState<string | undefined>(
     modeledMethod && modeledMethod.type === "type"
-      ? modeledMethod.path
+      ? typeInfo === "path"
+        ? modeledMethod.path
+        : modeledMethod.relatedTypeName
       : undefined,
   );
 
   useEffect(() => {
     if (modeledMethod && modeledMethod.type === "type") {
-      setValue(modeledMethod.path);
+      setValue(
+        typeInfo === "path"
+          ? modeledMethod.path
+          : modeledMethod.relatedTypeName,
+      );
     }
-  }, [modeledMethod]);
+  }, [modeledMethod, typeInfo]);
 
   const handleChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
     const target = e.target as HTMLSelectElement;
@@ -39,14 +47,14 @@ export const ModelTypeTextbox = ({
   // Not doing this results in a lot of lag when typing.
   useDebounceCallback(
     value,
-    (path: string | undefined) => {
+    (newValue: string | undefined) => {
       if (!modeledMethod || modeledMethod.type !== "type") {
         return;
       }
 
       onChange({
         ...modeledMethod,
-        path: path ?? "",
+        [typeInfo]: newValue ?? "",
       });
     },
     500,
@@ -56,7 +64,7 @@ export const ModelTypeTextbox = ({
     <VSCodeTextField
       value={value}
       onInput={handleChange}
-      aria-label="Path"
+      aria-label={typeInfo === "path" ? "Path" : "Related type name"}
       disabled={!enabled}
     />
   );

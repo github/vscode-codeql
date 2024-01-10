@@ -68,7 +68,11 @@ export const ModelInputDropdown = ({
 
   if (modeledMethod?.type === "type") {
     return (
-      <ModelTypeTextbox modeledMethod={modeledMethod} onChange={onChange} />
+      <ModelTypeTextbox
+        modeledMethod={modeledMethod}
+        typeInfo="path"
+        onChange={onChange}
+      />
     );
   }
 
