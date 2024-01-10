@@ -22,3 +22,4 @@ artifacts/
 
 # E2E Reports
 **/playwright-report/**
+**/test-results/**

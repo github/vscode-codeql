@@ -25,7 +25,7 @@ test("run query and open it from history", async ({ page }) => {
     )
     .press("Enter");
 
-  // Download database
+  // download database
   await page
     .getByRole("button", { name: "Download database" })
     .click({ timeout: 60000 });
@@ -39,17 +39,26 @@ test("run query and open it from history", async ({ page }) => {
   await page.keyboard.type("Run Query on selected");
   await page.keyboard.press("Enter");
 
-  // select folder for first query run
-  // await page.getByRole("button", { name: "OK" }).click();
+  // check if results page is visible
+  await expect(page.getByText("CodeQL Query Results")).toBeVisible({
+    timeout: 600000,
+  });
 
-  // check that query was run successfully and results page opens
-  await page.getByText("Hello world on d3/d3").click({ timeout: 800000 });
+  // wait for query history item to be finished
+  await expect(
+    page
+      .locator("#list_id_6_0")
+      .getByLabel("Hello world on d3/d3 -")
+      .locator("div")
+      .first(),
+  ).toBeVisible({ timeout: 60000 });
 
   // close results page and open query from history
   await page
     .getByLabel("CodeQL Query Results, Editor Group")
     .getByLabel("Close (Ctrl+F4)")
     .click();
+
   await expect(
     page
       .frameLocator(".webview")
@@ -65,9 +74,6 @@ test("run query and open it from history", async ({ page }) => {
     .click();
 
   await expect(
-    page
-      .frameLocator('iframe[name="\\34 884429a-d667-4121-932e-99abaa20b599"]')
-      .frameLocator('iframe[title="CodeQL Query Results"]')
-      .getByText("#selectalerts32 resultsShow"),
-  ).not.toBeVisible();
+    page.getByLabel("CodeQL Query Results", { exact: true }).locator("div"),
+  ).toBeVisible({ timeout: 60000 });
 });
