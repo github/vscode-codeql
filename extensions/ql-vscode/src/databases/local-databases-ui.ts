@@ -814,10 +814,10 @@ export class DatabaseUI extends DisposableObject {
    * notification if it tries to perform any long-running operations.
    */
   private async getDatabaseItemInternal(
-    progress: ProgressContext | undefined,
+    progressContext: ProgressContext | undefined,
   ): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
-      progress?.progress({
+      progressContext?.progress({
         maxStep: 2,
         step: 1,
         message: "Choosing database",
