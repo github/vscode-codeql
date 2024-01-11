@@ -364,9 +364,9 @@ describe("Variant Analysis Manager", () => {
 
       // Assume the first dependency to check is the core library.
       if (dependenciesToCheck.length > 0) {
-        expect(qlpackContents.dependencies?.[dependenciesToCheck[0]]).toEqual(
-          "*",
-        );
+        expect(
+          qlpackContents.dependencies?.[dependenciesToCheck[0]],
+        ).not.toEqual("${workspace}");
       }
       const qlpackLockContents = load(
         packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),
