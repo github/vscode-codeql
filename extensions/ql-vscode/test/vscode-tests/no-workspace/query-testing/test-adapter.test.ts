@@ -1,9 +1,4 @@
-import type {
-  TestItem,
-  TestItemCollection,
-  TestRun,
-  WorkspaceFolder,
-} from "vscode";
+import type { TestItem, TestItemCollection, TestRun } from "vscode";
 import {
   CancellationTokenSource,
   Range,
@@ -12,7 +7,6 @@ import {
   tests,
 } from "vscode";
 
-import { QLTestAdapter } from "../../../../src/query-testing/test-adapter";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import { mockedObject } from "../../utils/mocking.helpers";
@@ -39,50 +33,6 @@ describe("test-adapter", () => {
     fakeCliServer = mockCli.cliServer;
 
     testRunner = new TestRunner(fakeDatabaseManager, fakeCliServer);
-  });
-
-  it("legacy test adapter should run some tests", async () => {
-    const adapter = new QLTestAdapter(
-      mockedObject<WorkspaceFolder>({
-        name: "ABC",
-        uri: Uri.parse("file:/ab/c"),
-      }),
-      testRunner,
-      fakeCliServer,
-    );
-
-    const listenerSpy = jest.fn();
-    adapter.testStates(listenerSpy);
-    await adapter.run([mockTestsInfo.testsPath]);
-
-    expect(listenerSpy).toBeCalledTimes(5);
-
-    expect(listenerSpy).toHaveBeenNthCalledWith(1, {
-      type: "started",
-      tests: [mockTestsInfo.testsPath],
-    });
-    expect(listenerSpy).toHaveBeenNthCalledWith(2, {
-      type: "test",
-      state: "passed",
-      test: mockTestsInfo.dPath,
-      message: undefined,
-      decorations: [],
-    });
-    expect(listenerSpy).toHaveBeenNthCalledWith(3, {
-      type: "test",
-      state: "errored",
-      test: mockTestsInfo.gPath,
-      message: `\ncompilation error: ${mockTestsInfo.gPath}\nERROR: abc\n`,
-      decorations: [{ line: 1, message: "abc" }],
-    });
-    expect(listenerSpy).toHaveBeenNthCalledWith(4, {
-      type: "test",
-      state: "failed",
-      test: mockTestsInfo.hPath,
-      message: `\nfailed: ${mockTestsInfo.hPath}\njkh\ntuv\n`,
-      decorations: [],
-    });
-    expect(listenerSpy).toHaveBeenNthCalledWith(5, { type: "finished" });
   });
 
   it("native test manager should run some tests", async () => {
