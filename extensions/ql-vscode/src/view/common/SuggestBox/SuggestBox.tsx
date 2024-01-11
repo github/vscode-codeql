@@ -1,5 +1,5 @@
 import type { FormEvent, ReactNode } from "react";
-import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   autoUpdate,
   flip,
@@ -50,7 +50,7 @@ const NoSuggestionsText = styled.div`
   padding-left: 22px;
 `;
 
-type Props<T extends Option<T>> = {
+export type SuggestBoxProps<T extends Option<T>> = {
   value?: string;
   onChange: (value: string) => void;
   options: T[];
@@ -76,6 +76,14 @@ type Props<T extends Option<T>> = {
   disabled?: boolean;
 
   "aria-label"?: string;
+
+  /**
+   * Can be used to render a different component for the input. This is used
+   * in testing to use default HTML components rather than the VSCodeTextField
+   * for easier testing.
+   * @param props The props returned by `getReferenceProps` of {@link useInteractions}
+   */
+  renderInputComponent?: (props: Record<string, unknown>) => ReactNode;
 };
 
 export const SuggestBox = <T extends Option<T>>({
@@ -87,7 +95,8 @@ export const SuggestBox = <T extends Option<T>>({
   getDetails,
   disabled,
   "aria-label": ariaLabel,
-}: Props<T>) => {
+  renderInputComponent = (props) => <Input {...props} />,
+}: SuggestBoxProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -150,8 +159,8 @@ export const SuggestBox = <T extends Option<T>>({
 
   return (
     <>
-      <Input
-        {...getReferenceProps({
+      {renderInputComponent(
+        getReferenceProps({
           ref: refs.setReference,
           value,
           onInput: handleInput,
@@ -170,8 +179,8 @@ export const SuggestBox = <T extends Option<T>>({
             }
           },
           disabled,
-        })}
-      />
+        }),
+      )}
       {isOpen && (
         <FloatingPortal>
           {value && suggestionItems.length === 0 && (
