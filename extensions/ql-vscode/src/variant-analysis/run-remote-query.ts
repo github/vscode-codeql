@@ -593,7 +593,7 @@ async function getControllerRepoFromApi(
   }
 }
 
-export function removeWorkspaceRefs(qlpack: QlPackFile) {
+function removeWorkspaceRefs(qlpack: QlPackFile) {
   if (!qlpack.dependencies) {
     return;
   }
