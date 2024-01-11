@@ -1959,7 +1959,7 @@
     "@storybook/addon-links": "^7.1.0",
     "@storybook/components": "^7.6.7",
     "@storybook/csf": "^0.1.1",
-    "@storybook/manager-api": "^7.6.6",
+    "@storybook/manager-api": "^7.6.7",
     "@storybook/react": "^7.1.0",
     "@storybook/react-webpack5": "^7.6.7",
     "@storybook/theming": "^7.6.7",
