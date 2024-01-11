@@ -6,9 +6,8 @@ import type { TestItem, TextDocumentShowOptions } from "vscode";
 import { Uri, window } from "vscode";
 import { basename } from "path";
 import type { App } from "../common/app";
-import type { TestTreeNode } from "./test-tree-node";
 
-type TestNode = TestTreeNode | TestItem;
+type TestNode = TestItem;
 
 /**
  * Base class for both the legacy and new test services. Implements commands that are common to
