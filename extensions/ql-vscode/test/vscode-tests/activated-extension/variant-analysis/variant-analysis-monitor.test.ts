@@ -14,10 +14,10 @@ import type { VariantAnalysis } from "../../../../src/variant-analysis/shared/va
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepos } from "../../../factories/variant-analysis/gh-api/scanned-repositories";
 import {
-  processFailureReason,
-  processScannedRepository,
-  processUpdatedVariantAnalysis,
-} from "../../../../src/variant-analysis/variant-analysis-processor";
+  mapFailureReason,
+  mapScannedRepository,
+  mapUpdatedVariantAnalysis,
+} from "../../../../src/variant-analysis/variant-analysis-mapper";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
@@ -88,7 +88,7 @@ describe("Variant Analysis Monitor", () => {
       expect(onVariantAnalysisChangeSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           status: VariantAnalysisStatus.Failed,
-          failureReason: processFailureReason(
+          failureReason: mapFailureReason(
             mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason,
           ),
         }),
@@ -127,8 +127,8 @@ describe("Variant Analysis Monitor", () => {
           expect(mockEecuteCommand).toHaveBeenNthCalledWith(
             index + 1,
             "codeQL.autoDownloadVariantAnalysisResult",
-            processScannedRepository(succeededRepo),
-            processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
+            mapScannedRepository(succeededRepo),
+            mapUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
           );
         });
       });
