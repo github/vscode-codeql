@@ -1,5 +1,6 @@
-type Option<T extends Option<T>> = {
+export type Option<T extends Option<T>> = {
   label: string;
+  value: string;
   followup?: T[];
 };
 
