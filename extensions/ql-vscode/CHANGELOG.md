@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.12.0 - 11 January 2024
 
 - If you run a query without having selected a database, we show a more intuitive prompt to help you select a database. [#3214](https://github.com/github/vscode-codeql/pull/3214)
