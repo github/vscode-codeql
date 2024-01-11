@@ -1,11 +1,14 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { ModeledMethod } from "../../model-editor/modeled-method";
+import type {
+  ModeledMethod,
+  TypeModeledMethod,
+} from "../../model-editor/modeled-method";
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import { useDebounceCallback } from "../common/useDebounceCallback";
 
 type Props = {
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethod: TypeModeledMethod;
   typeInfo: "path" | "relatedTypeName";
   onChange: (modeledMethod: ModeledMethod) => void;
 };
@@ -15,25 +18,14 @@ export const ModelTypeTextbox = ({
   typeInfo,
   onChange,
 }: Props): JSX.Element => {
-  const enabled = useMemo(
-    () => modeledMethod && modeledMethod.type === "type",
-    [modeledMethod],
-  );
+  const enabled = useMemo(() => modeledMethod, [modeledMethod]);
   const [value, setValue] = useState<string | undefined>(
-    modeledMethod && modeledMethod.type === "type"
-      ? typeInfo === "path"
-        ? modeledMethod.path
-        : modeledMethod.relatedTypeName
-      : undefined,
+    modeledMethod[typeInfo],
   );
 
   useEffect(() => {
-    if (modeledMethod && modeledMethod.type === "type") {
-      setValue(
-        typeInfo === "path"
-          ? modeledMethod.path
-          : modeledMethod.relatedTypeName,
-      );
+    if (modeledMethod) {
+      setValue(modeledMethod[typeInfo]);
     }
   }, [modeledMethod, typeInfo]);
 
@@ -48,7 +40,7 @@ export const ModelTypeTextbox = ({
   useDebounceCallback(
     value,
     (newValue: string | undefined) => {
-      if (!modeledMethod || modeledMethod.type !== "type") {
+      if (!modeledMethod) {
         return;
       }
 
