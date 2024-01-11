@@ -5,6 +5,7 @@ import type {
   ProviderResult,
   TreeDataProvider,
   CancellationToken,
+  QuickPickItem,
 } from "vscode";
 import {
   EventEmitter,
@@ -28,7 +29,11 @@ import type {
   ProgressCallback,
   ProgressContext,
 } from "../common/vscode/progress";
-import { withInheritedProgress, withProgress } from "../common/vscode/progress";
+import {
+  UserCancellationException,
+  withInheritedProgress,
+  withProgress,
+} from "../common/vscode/progress";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
@@ -52,7 +57,10 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
-import { tryGetQueryLanguage } from "../common/query-language";
+import {
+  getLanguageDisplayName,
+  tryGetQueryLanguage,
+} from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 
 enum SortOrder {
@@ -225,6 +233,18 @@ async function chooseDatabaseDir(byFolder: boolean): Promise<Uri | undefined> {
     filters: byFolder ? {} : { Archives: ["zip"] },
   });
   return getFirst(chosen);
+}
+
+interface DatabaseSelectionQuickPickItem extends QuickPickItem {
+  databaseKind: "new" | "existing";
+}
+
+export interface DatabaseQuickPickItem extends QuickPickItem {
+  databaseItem: DatabaseItem;
+}
+
+interface DatabaseImportQuickPickItems extends QuickPickItem {
+  importType: "URL" | "github" | "archive" | "folder";
 }
 
 export class DatabaseUI extends DisposableObject {
@@ -794,13 +814,120 @@ export class DatabaseUI extends DisposableObject {
    * notification if it tries to perform any long-running operations.
    */
   private async getDatabaseItemInternal(
-    progress: ProgressContext | undefined,
+    progressContext: ProgressContext | undefined,
   ): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
-      await this.chooseAndSetDatabase(false, progress);
+      progressContext?.progress({
+        maxStep: 2,
+        step: 1,
+        message: "Choosing database",
+      });
+      await this.promptForDatabase();
+    }
+    return this.databaseManager.currentDatabaseItem;
+  }
+
+  private async promptForDatabase(): Promise<void> {
+    const quickPickItems: DatabaseSelectionQuickPickItem[] = [
+      {
+        label: "$(database) Existing database",
+        detail: "Select an existing database from your workspace",
+        alwaysShow: true,
+        databaseKind: "existing",
+      },
+      {
+        label: "$(arrow-down) New database",
+        detail: "Import a new database from the cloud or your local machine",
+        alwaysShow: true,
+        databaseKind: "new",
+      },
+    ];
+    const selectedOption =
+      await window.showQuickPick<DatabaseSelectionQuickPickItem>(
+        quickPickItems,
+        {
+          placeHolder: "Select an option",
+          ignoreFocusOut: true,
+        },
+      );
+
+    if (!selectedOption) {
+      throw new UserCancellationException("No database selected", true);
     }
 
-    return this.databaseManager.currentDatabaseItem;
+    if (selectedOption.databaseKind === "existing") {
+      await this.selectExistingDatabase();
+    } else if (selectedOption.databaseKind === "new") {
+      await this.importNewDatabase();
+    }
+  }
+
+  private async selectExistingDatabase() {
+    const dbItems: DatabaseQuickPickItem[] =
+      this.databaseManager.databaseItems.map((dbItem) => ({
+        label: dbItem.name,
+        description: getLanguageDisplayName(dbItem.language),
+        databaseItem: dbItem,
+      }));
+
+    const selectedDatabase = await window.showQuickPick(dbItems, {
+      placeHolder: "Select a database",
+      ignoreFocusOut: true,
+    });
+
+    if (!selectedDatabase) {
+      throw new UserCancellationException("No database selected", true);
+    }
+
+    await this.databaseManager.setCurrentDatabaseItem(
+      selectedDatabase.databaseItem,
+    );
+  }
+
+  private async importNewDatabase() {
+    const importOptions: DatabaseImportQuickPickItems[] = [
+      {
+        label: "$(github) GitHub",
+        detail: "Import a database from a GitHub repository",
+        alwaysShow: true,
+        importType: "github",
+      },
+      {
+        label: "$(link) URL",
+        detail: "Import a database archive or folder from a remote URL",
+        alwaysShow: true,
+        importType: "URL",
+      },
+      {
+        label: "$(file-zip) Archive",
+        detail: "Import a database from a local ZIP archive",
+        alwaysShow: true,
+        importType: "archive",
+      },
+      {
+        label: "$(folder) Folder",
+        detail: "Import a database from a local folder",
+        alwaysShow: true,
+        importType: "folder",
+      },
+    ];
+    const selectedImportOption =
+      await window.showQuickPick<DatabaseImportQuickPickItems>(importOptions, {
+        placeHolder: "Import a database from...",
+        ignoreFocusOut: true,
+      });
+    if (!selectedImportOption) {
+      throw new UserCancellationException("No database selected", true);
+    }
+    if (selectedImportOption.importType === "github") {
+      await this.handleChooseDatabaseGithub();
+    } else if (selectedImportOption.importType === "URL") {
+      await this.handleChooseDatabaseInternet();
+    } else if (selectedImportOption.importType === "archive") {
+      await this.handleChooseDatabaseArchive();
+    } else if (selectedImportOption.importType === "folder") {
+      await this.handleChooseDatabaseFolder();
+    }
   }
 
   /**

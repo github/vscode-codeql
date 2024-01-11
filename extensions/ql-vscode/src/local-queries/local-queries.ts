@@ -3,12 +3,7 @@ import type {
   ProgressUpdate,
 } from "../common/vscode/progress";
 import { withProgress } from "../common/vscode/progress";
-import type {
-  CancellationToken,
-  QuickPickItem,
-  Range,
-  TabInputText,
-} from "vscode";
+import type { CancellationToken, Range, TabInputText } from "vscode";
 import { CancellationTokenSource, Uri, window } from "vscode";
 import {
   TeeLogger,
@@ -23,7 +18,10 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { displayQuickQuery } from "./quick-query";
 import type { CoreCompletedQuery, QueryRunner } from "../query-server";
 import type { QueryHistoryManager } from "../query-history/query-history-manager";
-import type { DatabaseUI } from "../databases/local-databases-ui";
+import type {
+  DatabaseQuickPickItem,
+  DatabaseUI,
+} from "../databases/local-databases-ui";
 import type { ResultsView } from "./results-view";
 import type {
   DatabaseItem,
@@ -54,10 +52,6 @@ import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { tryGetQueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 import type { ExtensionApp } from "../common/vscode/vscode-app";
-
-interface DatabaseQuickPickItem extends QuickPickItem {
-  databaseItem: DatabaseItem;
-}
 
 export enum QuickEvalType {
   None,

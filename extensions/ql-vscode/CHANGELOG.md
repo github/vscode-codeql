@@ -2,10 +2,15 @@
 
 ## [UNRELEASED]
 
+- If you run a query without having selected a database, we show a more intuitive prompt to help you select a database. [#3214](https://github.com/github/vscode-codeql/pull/3214)
+
+## 1.12.0 - 11 January 2024
+
 - Add a prompt for downloading a GitHub database when opening a GitHub repository. [#3138](https://github.com/github/vscode-codeql/pull/3138)
 - Avoid showing a popup when hovering over source elements in database source files. [#3125](https://github.com/github/vscode-codeql/pull/3125)
 - Add comparison of alerts when comparing query results. This allows viewing path explanations for differences in alerts. [#3113](https://github.com/github/vscode-codeql/pull/3113)
 - Fix a bug where the CodeQL CLI and variant analysis results were corrupted after extraction in VS Code Insiders. [#3151](https://github.com/github/vscode-codeql/pull/3151) & [#3152](https://github.com/github/vscode-codeql/pull/3152)
+- Show progress when extracting the CodeQL CLI distribution during installation. [#3157](https://github.com/github/vscode-codeql/pull/3157)
 - Add option to cancel opening the model editor. [#3189](https://github.com/github/vscode-codeql/pull/3189)
 
 ## 1.11.0 - 13 December 2023
