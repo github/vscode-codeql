@@ -11,7 +11,7 @@ import {
   repoHasDownloadableArtifact,
 } from "./shared/variant-analysis";
 import type { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
-import { processUpdatedVariantAnalysis } from "./variant-analysis-processor";
+import { mapUpdatedVariantAnalysis } from "./variant-analysis-mapper";
 import { DisposableObject } from "../common/disposable-object";
 import { sleep } from "../common/time";
 import { getErrorMessage } from "../common/helpers-pure";
@@ -119,7 +119,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
         continue;
       }
 
-      variantAnalysis = processUpdatedVariantAnalysis(
+      variantAnalysis = mapUpdatedVariantAnalysis(
         variantAnalysis,
         variantAnalysisSummary,
       );

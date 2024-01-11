@@ -43,9 +43,9 @@ import type {
 } from "./variant-analysis-results-manager";
 import { getQueryName, prepareRemoteQueryRun } from "./run-remote-query";
 import {
-  processVariantAnalysis,
-  processVariantAnalysisRepositoryTask,
-} from "./variant-analysis-processor";
+  mapVariantAnalysis,
+  mapVariantAnalysisRepositoryTask,
+} from "./variant-analysis-mapper";
 import PQueue from "p-queue";
 import { createTimestampFile, saveBeforeStart } from "../run-queries-shared";
 import { readFile, remove, pathExists } from "fs-extra";
@@ -279,7 +279,7 @@ export class VariantAnalysisManager
       throw e;
     }
 
-    const processedVariantAnalysis = processVariantAnalysis(
+    const processedVariantAnalysis = mapVariantAnalysis(
       variantAnalysisSubmission,
       variantAnalysisResponse,
     );
@@ -619,7 +619,7 @@ export class VariantAnalysisManager
         scannedRepo.repository.id,
       );
 
-      repoTask = processVariantAnalysisRepositoryTask(repoTaskResponse);
+      repoTask = mapVariantAnalysisRepositoryTask(repoTaskResponse);
     } catch (e) {
       repoState.downloadStatus =
         VariantAnalysisScannedRepositoryDownloadStatus.Failed;
