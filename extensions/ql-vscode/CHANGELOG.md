@@ -3,6 +3,9 @@
 ## [UNRELEASED]
 
 - If you run a query without having selected a database, we show a more intuitive prompt to help you select a database. [#3214](https://github.com/github/vscode-codeql/pull/3214)
+- The UI for browsing and running CodeQL tests has moved to use VS Code's built-in test UI. This makes the CodeQL test UI more consistent with the test UIs for other languages.
+  This change means that this extension no longer depends on the "Test Explorer UI" and "Test Adapter Converter" extensions. You can uninstall those two extensions if they are
+  not being used by any other extensions you may have installed.
 
 ## 1.12.0 - 11 January 2024
 

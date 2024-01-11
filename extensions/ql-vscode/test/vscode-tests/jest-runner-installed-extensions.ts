@@ -50,20 +50,10 @@ export default class JestRunnerInstalledExtensions extends VSCodeTestRunner {
       const [cli, ...args] =
         resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
-      spawnSync(
-        cli,
-        [
-          ...args,
-          "--install-extension",
-          "hbenl.vscode-test-explorer",
-          "--install-extension",
-          "ms-vscode.test-adapter-converter",
-        ],
-        {
-          encoding: "utf-8",
-          stdio: "inherit",
-        },
-      );
+      spawnSync(cli, args, {
+        encoding: "utf-8",
+        stdio: "inherit",
+      });
 
       installedOnVsCodeVersions.add(versionKey);
     }

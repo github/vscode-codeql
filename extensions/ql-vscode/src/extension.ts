@@ -15,8 +15,6 @@ import { arch, homedir, platform } from "os";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
-import type { TestHub } from "vscode-test-adapter-api";
-import { testExplorerExtensionId } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
 import { watch } from "chokidar";
 import {
@@ -28,7 +26,6 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   GitHubDatabaseConfigListener,
-  isCanary,
   joinOrderWarningThreshold,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
@@ -90,8 +87,6 @@ import {
 } from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import type { CompletedLocalQueryInfo } from "./query-results";
-import { QLTestAdapterFactory } from "./query-testing/test-adapter";
-import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
 import {
   initializeTelemetry,
@@ -130,7 +125,6 @@ import { DebuggerUI } from "./debugger/debugger-ui";
 import { ModelEditorModule } from "./model-editor/model-editor-module";
 import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
-import type { TestManagerBase } from "./query-testing/test-manager-base";
 import { QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
@@ -977,27 +971,8 @@ async function activateWithInstalledDistribution(
   const testRunner = new TestRunner(dbm, cliServer);
   ctx.subscriptions.push(testRunner);
 
-  let testManager: TestManagerBase | undefined = undefined;
-  if (isCanary()) {
-    testManager = new TestManager(app, testRunner, cliServer);
-    ctx.subscriptions.push(testManager);
-  } else {
-    const testExplorerExtension = extensions.getExtension<TestHub>(
-      testExplorerExtensionId,
-    );
-    if (testExplorerExtension) {
-      const testHub = testExplorerExtension.exports;
-      const testAdapterFactory = new QLTestAdapterFactory(
-        testHub,
-        testRunner,
-        cliServer,
-      );
-      ctx.subscriptions.push(testAdapterFactory);
-
-      testManager = new TestUIService(app, testHub);
-      ctx.subscriptions.push(testManager);
-    }
-  }
+  const testManager = new TestManager(app, testRunner, cliServer);
+  ctx.subscriptions.push(testManager);
 
   const testUiCommands = testManager?.getCommands() ?? {};
 
