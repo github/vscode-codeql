@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.12.0 - 11 January 2024
 
 - Add a prompt for downloading a GitHub database when opening a GitHub repository. [#3138](https://github.com/github/vscode-codeql/pull/3138)
 - Avoid showing a popup when hovering over source elements in database source files. [#3125](https://github.com/github/vscode-codeql/pull/3125)
