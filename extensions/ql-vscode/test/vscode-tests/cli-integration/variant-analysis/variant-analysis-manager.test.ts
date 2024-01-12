@@ -41,7 +41,8 @@ function toExistInPack(
   }
 
   const pass = packFS.fileExists(actual);
-  const files = packFS.allFiles().join("\n");
+  const files = packFS.allFiles();
+  const filesString = files.length > 0 ? files.join("\n") : "<none>";
   if (pass) {
     return {
       pass: true,
@@ -51,7 +52,7 @@ function toExistInPack(
     return {
       pass: false,
       message: () =>
-        `expected ${actual} to exist in pack. The following files were found in the pack:\n${files}`,
+        `expected ${actual} to exist in pack.\nThe following files were found in the pack:\n${filesString}`,
     };
   }
 }
