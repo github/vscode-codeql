@@ -6,7 +6,10 @@ import { workspace } from "vscode";
  */
 function hasCodeQL() {
   const folders = workspace.workspaceFolders;
-  return !!folders?.some((folder) => folder.uri.path.endsWith("/codeql"));
+  return !!folders?.some(
+    (folder) =>
+      folder.uri.path.endsWith("/codeql") || folder.uri.path.endsWith("/ql"),
+  );
 }
 
 // describeWithCodeQL will be equal to describe if the CodeQL libraries are
