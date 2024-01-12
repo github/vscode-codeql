@@ -29,7 +29,7 @@ jobs:
         working-directory: extensions/ql-vscode
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        working-directory: extensions/ql-vscode
+        working-directory: extensions/ql-vscode/test/e2e
         run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
