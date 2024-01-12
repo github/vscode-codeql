@@ -1,15 +1,12 @@
-import { dirname, basename, normalize, relative } from "path";
 import type { Event } from "vscode";
 import type { App } from "../common/app";
 import type { FileTreeNode } from "../common/file-tree-nodes";
-import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import type { QueryDiscoverer } from "./query-tree-data-provider";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
-import { containsPath } from "../common/files";
-import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import type { QueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 import type { AppEvent, AppEventEmitter } from "../common/events";
+import { buildDiscoveryTree } from "../common/vscode/discovery-tree";
 
 const QUERY_FILE_EXTENSION = ".ql";
 
@@ -68,41 +65,12 @@ export class QueryDiscovery
    * Trivial directories where there is only one child will be collapsed into a single node.
    */
   public buildQueryTree(): Array<FileTreeNode<string>> | undefined {
-    const pathData = this.getPathData();
-    if (pathData === undefined) {
-      return undefined;
-    }
-
-    const roots = [];
-    for (const workspaceFolder of getOnDiskWorkspaceFoldersObjects()) {
-      const queriesInRoot = pathData.filter(
-        (query) =>
-          containsPath(workspaceFolder.uri.fsPath, query.path) &&
-          this.languageContext.shouldInclude(query.language),
-      );
-      if (queriesInRoot.length === 0) {
-        continue;
-      }
-      const root = new FileTreeDirectory<string>(
-        workspaceFolder.uri.fsPath,
-        workspaceFolder.name,
-        this.app.environment,
-      );
-      for (const query of queriesInRoot) {
-        const dirName = dirname(normalize(relative(root.path, query.path)));
-        const parentDirectory = root.createDirectory(dirName);
-        parentDirectory.addChild(
-          new FileTreeLeaf<string>(
-            query.path,
-            basename(query.path),
-            query.language,
-          ),
-        );
-      }
-      root.finish();
-      roots.push(root);
-    }
-    return roots;
+    return buildDiscoveryTree(
+      this.app,
+      this.getPathData(),
+      (query) => query.language,
+      (query) => !this.languageContext.shouldInclude(query.language),
+    );
   }
 
   protected async getDataForPath(path: string): Promise<Query> {

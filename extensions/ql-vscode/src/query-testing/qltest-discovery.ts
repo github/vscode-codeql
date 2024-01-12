@@ -1,21 +1,12 @@
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import type { App } from "../common/app";
 import type { AppEvent, AppEventEmitter } from "../common/events";
-import {
-  basename,
-  dirname,
-  extname,
-  join,
-  normalize,
-  relative,
-  sep,
-} from "path";
+import { basename, dirname, extname, join, sep } from "path";
 import type { Event } from "vscode";
 import { containsPath } from "../common/files";
 import { pathExists } from "fs-extra";
 import type { FileTreeNode } from "../common/file-tree-nodes";
-import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
-import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
+import { buildDiscoveryTree } from "../common/vscode/discovery-tree";
 
 export interface QueryPackDiscoverer {
   getTestsPathForFile(path: string): string | undefined;
@@ -66,35 +57,7 @@ export class QLTestDiscovery extends FilePathDiscovery<Test> {
    * Trivial directories where there is only one child will be collapsed into a single node.
    */
   public buildTestTree(): FileTreeNode[] | undefined {
-    const pathData = this.getPathData();
-    if (pathData === undefined) {
-      return undefined;
-    }
-
-    const roots = [];
-    for (const workspaceFolder of getOnDiskWorkspaceFoldersObjects()) {
-      const queriesInRoot = pathData.filter((query) =>
-        containsPath(workspaceFolder.uri.fsPath, query.path),
-      );
-      if (queriesInRoot.length === 0) {
-        continue;
-      }
-      const root = new FileTreeDirectory(
-        workspaceFolder.uri.fsPath,
-        workspaceFolder.name,
-        this.app.environment,
-      );
-      for (const query of queriesInRoot) {
-        const dirName = dirname(normalize(relative(root.path, query.path)));
-        const parentDirectory = root.createDirectory(dirName);
-        parentDirectory.addChild(
-          new FileTreeLeaf(query.path, basename(query.path)),
-        );
-      }
-      root.finish();
-      roots.push(root);
-    }
-    return roots;
+    return buildDiscoveryTree(this.app, this.getPathData());
   }
 
   protected async getDataForPath(path: string): Promise<Test | undefined> {
