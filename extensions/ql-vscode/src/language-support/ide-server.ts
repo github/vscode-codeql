@@ -65,6 +65,7 @@ async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
           "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=n,quiet=y",
         );
       }
+      args.push("-J=-XX:-OmitStackTraceInFastThrow");
       const child = spawnServer(
         config.codeQlPath,
         "CodeQL language server",
