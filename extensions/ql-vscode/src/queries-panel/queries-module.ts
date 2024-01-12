@@ -18,8 +18,12 @@ export class QueriesModule extends DisposableObject {
 
   public readonly onDidChangeSelection = this.onDidChangeSelectionEmitter.event;
 
+  public queryPackDiscovery: QueryPackDiscovery;
+
   private constructor(readonly app: App) {
     super();
+
+    this.queryPackDiscovery = this.push(new QueryPackDiscovery());
   }
 
   public static initialize(
@@ -36,13 +40,11 @@ export class QueriesModule extends DisposableObject {
   private initialize(app: App, langauageContext: LanguageContextStore): void {
     void extLogger.log("Initializing queries panel.");
 
-    const queryPackDiscovery = new QueryPackDiscovery();
-    this.push(queryPackDiscovery);
-    void queryPackDiscovery.initialRefresh();
+    void this.queryPackDiscovery.initialRefresh();
 
     const queryDiscovery = new QueryDiscovery(
       app,
-      queryPackDiscovery,
+      this.queryPackDiscovery,
       langauageContext,
     );
     this.push(queryDiscovery);

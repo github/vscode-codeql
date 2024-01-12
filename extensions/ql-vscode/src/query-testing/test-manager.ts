@@ -6,31 +6,26 @@ import type {
   TestRun,
   TestRunRequest,
   TextDocumentShowOptions,
-  WorkspaceFolder,
-  WorkspaceFoldersChangeEvent,
 } from "vscode";
 import {
   Location,
   Range,
   TestMessage,
   TestRunProfileKind,
-  Uri,
   tests,
+  Uri,
   window,
-  workspace,
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
-import { QLTestDiscovery } from "./qltest-discovery";
-import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { getErrorMessage } from "../common/helpers-pure";
 import type { BaseLogger, LogOptions } from "../common/logging";
 import type { TestRunner } from "./test-runner";
 import type { App } from "../common/app";
-import { isWorkspaceFolderOnDisk } from "../common/vscode/workspace-folders";
 import type { FileTreeNode } from "../common/file-tree-nodes";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import type { TestUICommands } from "../common/commands";
 import { basename, extname } from "path";
+import type { QLTestFileDiscovery } from "./qltest-file-discovery";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -49,7 +44,7 @@ function getActualFile(testPath: string): string {
 }
 
 /**
- * Gets the the full path to a particular output file of the specified QL test.
+ * Gets the full path to a particular output file of the specified QL test.
  * @param testPath The full path to the QL test.
  * @param extension The file extension of the output file.
  */
@@ -112,53 +107,14 @@ class TestRunLogger implements BaseLogger {
 }
 
 /**
- * Handles test discovery for a specific workspace folder, and reports back to `TestManager`.
- */
-class WorkspaceFolderHandler extends DisposableObject {
-  private readonly testDiscovery: QLTestDiscovery;
-
-  public constructor(
-    private readonly workspaceFolder: WorkspaceFolder,
-    private readonly testUI: TestManager,
-    cliServer: CodeQLCliServer,
-  ) {
-    super();
-
-    this.testDiscovery = new QLTestDiscovery(workspaceFolder, cliServer);
-    this.push(
-      this.testDiscovery.onDidChangeTests(this.handleDidChangeTests, this),
-    );
-    void this.testDiscovery.refresh();
-  }
-
-  private handleDidChangeTests(): void {
-    const testDirectory = this.testDiscovery.testDirectory;
-
-    this.testUI.updateTestsForWorkspaceFolder(
-      this.workspaceFolder,
-      testDirectory,
-    );
-  }
-}
-
-/**
  * Service that populates the VS Code "Test Explorer" panel for CodeQL, and handles running and
  * debugging of tests.
  */
 export class TestManager extends DisposableObject {
-  /**
-   * Maps from each workspace folder being tracked to the `WorkspaceFolderHandler` responsible for
-   * tracking it.
-   */
-  private readonly workspaceFolderHandlers = new Map<
-    WorkspaceFolder,
-    WorkspaceFolderHandler
-  >();
-
   public constructor(
     private readonly app: App,
     private readonly testRunner: TestRunner,
-    private readonly cliServer: CodeQLCliServer,
+    private readonly qlTestDiscovery: QLTestFileDiscovery,
     // Having this as a parameter with a default value makes passing in a mock easier.
     private readonly testController: TestController = tests.createTestController(
       "codeql",
@@ -173,19 +129,7 @@ export class TestManager extends DisposableObject {
       this.run.bind(this),
     );
 
-    // Start by tracking whatever folders are currently in the workspace.
-    this.startTrackingWorkspaceFolders(workspace.workspaceFolders ?? []);
-
-    // Listen for changes to the set of workspace folders.
-    workspace.onDidChangeWorkspaceFolders(
-      this.handleDidChangeWorkspaceFolders,
-      this,
-    );
-  }
-
-  public dispose(): void {
-    this.workspaceFolderHandlers.clear(); // These will be disposed in the `super.dispose()` call.
-    super.dispose();
+    this.qlTestDiscovery.onDidChangeTests(this.handleDidChangeTests.bind(this));
   }
 
   public getCommands(): TestUICommands {
@@ -246,71 +190,14 @@ export class TestManager extends DisposableObject {
     }
   }
 
-  /** Start tracking tests in the specified workspace folders. */
-  private startTrackingWorkspaceFolders(
-    workspaceFolders: readonly WorkspaceFolder[],
-  ): void {
-    // Only track on-disk workspace folders, to avoid trying to run the CLI test discovery command
-    // on random URIs.
-    workspaceFolders
-      .filter(isWorkspaceFolderOnDisk)
-      .forEach((workspaceFolder) => {
-        const workspaceFolderHandler = new WorkspaceFolderHandler(
-          workspaceFolder,
-          this,
-          this.cliServer,
-        );
-        this.track(workspaceFolderHandler);
-        this.workspaceFolderHandlers.set(
-          workspaceFolder,
-          workspaceFolderHandler,
-        );
-      });
-  }
-
-  /** Stop tracking tests in the specified workspace folders. */
-  private stopTrackingWorkspaceFolders(
-    workspaceFolders: readonly WorkspaceFolder[],
-  ): void {
-    for (const workspaceFolder of workspaceFolders) {
-      const workspaceFolderHandler =
-        this.workspaceFolderHandlers.get(workspaceFolder);
-      if (workspaceFolderHandler !== undefined) {
-        // Delete the root item for this workspace folder, if any.
-        this.testController.items.delete(workspaceFolder.uri.toString());
-        this.disposeAndStopTracking(workspaceFolderHandler);
-        this.workspaceFolderHandlers.delete(workspaceFolder);
-      }
-    }
-  }
-
-  private handleDidChangeWorkspaceFolders(
-    e: WorkspaceFoldersChangeEvent,
-  ): void {
-    this.startTrackingWorkspaceFolders(e.added);
-    this.stopTrackingWorkspaceFolders(e.removed);
-  }
-
-  /**
-   * Update the test controller when we discover changes to the tests in the workspace folder.
-   */
-  public updateTestsForWorkspaceFolder(
-    workspaceFolder: WorkspaceFolder,
-    testDirectory: FileTreeDirectory | undefined,
-  ): void {
-    if (testDirectory !== undefined) {
-      // Adding an item with the same ID as an existing item will replace it, which is exactly what
-      // we want.
-      // Test discovery returns a root `QLTestDirectory` representing the workspace folder itself,
-      // named after the `WorkspaceFolder` object's `name` property. We can map this directly to a
-      // `TestItem`.
-      this.testController.items.add(
-        this.createTestItemTree(testDirectory, true),
-      );
-    } else {
-      // No tests, so delete any existing item.
-      this.testController.items.delete(workspaceFolder.uri.toString());
-    }
+  private handleDidChangeTests(): void {
+    this.testController.items.replace(
+      this.qlTestDiscovery
+        .buildTestTree()
+        ?.map((testDirectory) =>
+          this.createTestItemTree(testDirectory, true),
+        ) ?? [],
+    );
   }
 
   /**

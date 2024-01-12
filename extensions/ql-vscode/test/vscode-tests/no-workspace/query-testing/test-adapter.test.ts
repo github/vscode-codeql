@@ -18,6 +18,7 @@ import {
 } from "./test-runner-helpers";
 import { TestManager } from "../../../../src/query-testing/test-manager";
 import { createMockApp } from "../../../__mocks__/appMock";
+import type { QLTestFileDiscovery } from "../../../../src/query-testing/qltest-file-discovery";
 
 type IdTestItemPair = [id: string, testItem: TestItem];
 
@@ -55,7 +56,9 @@ describe("test-adapter", () => {
     const testManager = new TestManager(
       createMockApp({}),
       testRunner,
-      fakeCliServer,
+      mockedObject<QLTestFileDiscovery>({
+        onDidChangeTests: jest.fn(),
+      }),
       testController,
     );
 
