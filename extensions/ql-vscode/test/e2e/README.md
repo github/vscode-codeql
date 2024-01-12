@@ -1,17 +1,18 @@
 ## VS Code CodeQL E2E Tests
 
-When running the tests locally on a mac a different processor has to be emulated, which makes everythign VERY slow. Hence many timeouts in the test.
+When running the tests locally on a mac a different processor has to be emulated, which makes everythign VERY slow. Therefore we need to add higher timeouts in the test, so that they pass locally.
 
 ### How to use locally
 
 Setup
 
-- run `docker-compose build` from the e2e test folder `vscode-codeql/extensions/ql-vscode/test/e2e`
-- run `docker-compose up` from the e2e test folder `vscode-codeql/extensions/ql-vscode/test/e2e`
+- go to the e2e test folder on your terminal
+- run `docker-compose build`
+- run `docker-compose up`
 
 Run tests
 
-- run  `npx playwright test --ui` from the vscode-codeql folder `vscode-codeql/extensions/ql-vscode` to follow the test while it's running. This UI has a 'locator' tool with which elements on the test screen can be 
+- run  `npx playwright test --ui` from the e2e test folder to follow the test while it's running. This UI has a 'locator' tool with which elements on the test screen can be found
 - use `npx playwright test --debug` to follow the test in real time and interact with the interface, e.g. press enter or input into fields, stop and start
 
-If you get failures after the first test run you can try to remove the volume data, e.g. by running `docker-compose down -v`. Sometimes already existing queries from former runs change the input the extension needs.
+During the test elements are created in the docker volume, e.g. the downloaded database or query data. This might interfer with other tests or when running a test twice. If that happens restart your docker volume by using `docker-compose down -v` and `docker-compose up`. Sometimes already existing queries from former runs change the input the extension needs.
