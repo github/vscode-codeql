@@ -41,6 +41,7 @@ function toExistInPack(
   }
 
   const pass = packFS.fileExists(actual);
+  const files = packFS.allFiles().join("\n");
   if (pass) {
     return {
       pass: true,
@@ -49,7 +50,8 @@ function toExistInPack(
   } else {
     return {
       pass: false,
-      message: () => `expected ${actual} to exist in pack`,
+      message: () =>
+        `expected ${actual} to exist in pack. The following files were found in the pack:\n${files}`,
     };
   }
 }
