@@ -17,7 +17,7 @@ import type { FileTreeNode } from "../common/file-tree-nodes";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 
-interface QueryPackDiscoverer {
+export interface QueryPackDiscoverer {
   getTestsPathForFile(path: string): string | undefined;
   onDidChangeQueryPacks: Event<void>;
 }
