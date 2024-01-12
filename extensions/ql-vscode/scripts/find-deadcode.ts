@@ -14,7 +14,8 @@ function ignoreFile(file: string): boolean {
     ) ||
     basename(file) === "jest.config.ts" ||
     basename(file) === "index.tsx" ||
-    basename(file) === "index.ts"
+    basename(file) === "index.ts" ||
+    basename(file) === "playwright.config.ts"
   );
 }
 
