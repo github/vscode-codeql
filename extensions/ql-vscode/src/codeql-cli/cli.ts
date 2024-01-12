@@ -139,11 +139,6 @@ export interface SourceInfo {
 type ResolvedQueries = string[];
 
 /**
- * The expected output of `codeql resolve tests`.
- */
-type ResolvedTests = string[];
-
-/**
  * A compilation message for a test message (either an error or a warning)
  */
 interface CompilationMessage {
@@ -761,25 +756,6 @@ export class CodeQLCliServer implements Disposable {
       subcommandArgs,
       "Resolving queries",
       { silent },
-    );
-  }
-
-  /**
-   * Finds all available QL tests in a given directory.
-   * @param testPath Root of directory tree to search for tests.
-   * @returns The list of tests that were found.
-   */
-  public async resolveTests(testPath: string): Promise<ResolvedTests> {
-    const subcommandArgs = [testPath];
-    return await this.runJsonCodeQlCliCommand<ResolvedTests>(
-      ["resolve", "tests", "--strict-test-discovery"],
-      subcommandArgs,
-      "Resolving tests",
-      {
-        // This happens as part of a background process, so we don't want to
-        // spam the log with messages.
-        silent: true,
-      },
     );
   }
 

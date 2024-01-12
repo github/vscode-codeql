@@ -31,15 +31,11 @@ export function createMockCliServerForTestRun() {
   const resolveQlpacksSpy = jest.fn();
   resolveQlpacksSpy.mockResolvedValue({});
 
-  const resolveTestsSpy = jest.fn();
-  resolveTestsSpy.mockResolvedValue([]);
-
   const runTestsSpy = mockRunTests();
   return {
     cliServer: mockedObject<CodeQLCliServer>({
       runTests: runTestsSpy,
       resolveQlpacks: resolveQlpacksSpy,
-      resolveTests: resolveTestsSpy,
     }),
     runTestsSpy,
   };
