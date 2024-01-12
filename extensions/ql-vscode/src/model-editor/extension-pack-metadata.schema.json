@@ -74,6 +74,9 @@
         },
         "defaultSuiteFile": {
           "type": ["string", "null"]
+        },
+        "tests": {
+          "type": ["string", "null"]
         }
       },
       "required": ["dataExtensions", "extensionTargets", "name", "version"]

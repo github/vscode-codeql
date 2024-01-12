@@ -89,8 +89,10 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
   /**
    * Compute any extra data to be stored regarding the given path.
+   * When `undefined` is returned, the path is considered to not be relevant
+   * and will be removed regardless of what {@link #pathIsRelevant} returns.
    */
-  protected abstract getDataForPath(path: string): Promise<T>;
+  protected abstract getDataForPath(path: string): Promise<T | undefined>;
 
   /**
    * Is the given path relevant to this discovery operation?
@@ -109,9 +111,9 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
    * Update the data for every path by calling `getDataForPath`.
    */
   protected async recomputeAllData() {
-    this.pathData = await Promise.all(
-      this.pathData.map((p) => this.getDataForPath(p.path)),
-    );
+    this.pathData = (
+      await Promise.all(this.pathData.map((p) => this.getDataForPath(p.path)))
+    ).filter((v): v is Awaited<T> => v !== undefined);
     this.onDidChangePathDataEmitter.fire();
   }
 
@@ -226,6 +228,16 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
     let pathsUpdated = false;
     for (const path of newPaths) {
+      // We don't enforce that `pathIsRelevant` is equal to checking the
+      // fileWatchPattern, so we need to check it here as well. If it isn't
+      // relevant, we treat it as if it doesn't exist.
+      if (!this.pathIsRelevant(path.fsPath)) {
+        if (await this.addOrUpdatePathWithData(path.fsPath, undefined)) {
+          pathsUpdated = true;
+        }
+        continue;
+      }
+
       if (await this.addOrUpdatePath(path.fsPath)) {
         pathsUpdated = true;
       }
@@ -243,11 +255,21 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
   private async addOrUpdatePath(path: string): Promise<boolean> {
     const data = await this.getDataForPath(path);
+    return this.addOrUpdatePathWithData(path, data);
+  }
+
+  private async addOrUpdatePathWithData(
+    path: string,
+    data: T | undefined,
+  ): Promise<boolean> {
     const existingPathDataIndex = this.pathData.findIndex(
       (existingPathData) => existingPathData.path === path,
     );
     if (existingPathDataIndex !== -1) {
-      if (
+      if (data === undefined) {
+        this.pathData.splice(existingPathDataIndex, 1);
+        return true;
+      } else if (
         this.shouldOverwriteExistingData(
           data,
           this.pathData[existingPathDataIndex],
@@ -258,9 +280,11 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
       } else {
         return false;
       }
-    } else {
+    } else if (data !== undefined) {
       this.pathData.push(data);
       return true;
+    } else {
+      return false;
     }
   }
 }

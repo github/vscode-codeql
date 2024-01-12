@@ -59,6 +59,9 @@
         "defaultSuiteFile": {
           "type": ["string", "null"]
         },
+        "tests": {
+          "type": ["string", "null"]
+        },
         "dataExtensions": {
           "anyOf": [
             {

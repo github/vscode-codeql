@@ -12,5 +12,6 @@ export interface QlPackFile {
   library?: boolean | null;
   defaultSuite?: SuiteInstruction[] | null;
   defaultSuiteFile?: string | null;
+  tests?: string | null;
   dataExtensions?: string[] | string | null;
 }
