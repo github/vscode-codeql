@@ -25,7 +25,7 @@ import type { FileTreeNode } from "../common/file-tree-nodes";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import type { TestUICommands } from "../common/commands";
 import { basename, extname } from "path";
-import type { QLTestFileDiscovery } from "./qltest-file-discovery";
+import type { QLTestDiscovery } from "./qltest-discovery";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -114,7 +114,7 @@ export class TestManager extends DisposableObject {
   public constructor(
     private readonly app: App,
     private readonly testRunner: TestRunner,
-    private readonly qlTestDiscovery: QLTestFileDiscovery,
+    private readonly qlTestDiscovery: QLTestDiscovery,
     // Having this as a parameter with a default value makes passing in a mock easier.
     private readonly testController: TestController = tests.createTestController(
       "codeql",

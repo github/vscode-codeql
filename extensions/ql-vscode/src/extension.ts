@@ -131,7 +131,7 @@ import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referen
 import { LanguageContextStore } from "./language-context-store";
 import { LanguageSelectionPanel } from "./language-selection-panel/language-selection-panel";
 import { GitHubDatabasesModule } from "./databases/github-databases";
-import { QLTestFileDiscovery } from "./query-testing/qltest-file-discovery";
+import { QLTestDiscovery } from "./query-testing/qltest-discovery";
 
 /**
  * extension.ts
@@ -972,7 +972,7 @@ async function activateWithInstalledDistribution(
   const testRunner = new TestRunner(dbm, cliServer);
   ctx.subscriptions.push(testRunner);
 
-  const qlTestDiscovery = new QLTestFileDiscovery(
+  const qlTestDiscovery = new QLTestDiscovery(
     app,
     queriesModule.queryPackDiscovery,
   );

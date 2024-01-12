@@ -1,6 +1,6 @@
 import { createMockApp } from "../../../__mocks__/appMock";
-import type { QueryPackDiscoverer } from "../../../../src/query-testing/qltest-file-discovery";
-import { QLTestFileDiscovery } from "../../../../src/query-testing/qltest-file-discovery";
+import type { QueryPackDiscoverer } from "../../../../src/query-testing/qltest-discovery";
+import { QLTestDiscovery } from "../../../../src/query-testing/qltest-discovery";
 import { EventEmitter, Uri, workspace } from "vscode";
 import { dirSync } from "tmp";
 import { join } from "path";
@@ -11,7 +11,7 @@ import {
 import { outputFile } from "fs-extra";
 import { containsPath } from "../../../../src/common/files";
 
-describe("QLTest file discovery", () => {
+describe("QLTest discovery", () => {
   let tmpDir: string;
   let tmpDirRemoveCallback: (() => void) | undefined;
 
@@ -24,7 +24,7 @@ describe("QLTest file discovery", () => {
   const onDidChangeQueryPacks = new EventEmitter<void>();
 
   let queryPackDiscoverer: QueryPackDiscoverer;
-  let discovery: QLTestFileDiscovery;
+  let discovery: QLTestDiscovery;
 
   beforeEach(async () => {
     const t = dirSync({
@@ -47,7 +47,7 @@ describe("QLTest file discovery", () => {
       getTestsPathForFile,
       onDidChangeQueryPacks: onDidChangeQueryPacks.event,
     };
-    discovery = new QLTestFileDiscovery(app, queryPackDiscoverer);
+    discovery = new QLTestDiscovery(app, queryPackDiscoverer);
   });
 
   afterEach(() => {

@@ -18,7 +18,7 @@ import {
 } from "./test-runner-helpers";
 import { TestManager } from "../../../../src/query-testing/test-manager";
 import { createMockApp } from "../../../__mocks__/appMock";
-import type { QLTestFileDiscovery } from "../../../../src/query-testing/qltest-file-discovery";
+import type { QLTestDiscovery } from "../../../../src/query-testing/qltest-discovery";
 
 type IdTestItemPair = [id: string, testItem: TestItem];
 
@@ -56,7 +56,7 @@ describe("test-adapter", () => {
     const testManager = new TestManager(
       createMockApp({}),
       testRunner,
-      mockedObject<QLTestFileDiscovery>({
+      mockedObject<QLTestDiscovery>({
         onDidChangeTests: jest.fn(),
       }),
       testController,

@@ -32,7 +32,7 @@ const QUERY_TEST_FILE_EXTENSION = ".qlref";
 /**
  * Discovers all QL tests contained in the QL packs in all workspace folders.
  */
-export class QLTestFileDiscovery extends FilePathDiscovery<Test> {
+export class QLTestDiscovery extends FilePathDiscovery<Test> {
   private readonly onDidChangeTestsEmitter: AppEventEmitter<void>;
   public readonly onDidChangeTests: AppEvent<void>;
 
