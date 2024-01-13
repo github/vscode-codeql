@@ -38,6 +38,7 @@ import type { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 import type { QlPackFile } from "../packaging/qlpack-file";
+import { expandShortPaths } from "../common/short-paths";
 
 /**
  * Well-known names for the query pack used by the server.
@@ -286,10 +287,16 @@ interface RemoteQueryTempDir {
 }
 
 async function createRemoteQueriesTempDirectory(): Promise<RemoteQueryTempDir> {
-  const remoteQueryDir = await dir({
+  const shortRemoteQueryDir = await dir({
     dir: tmpDir.name,
     unsafeCleanup: true,
   });
+  // Expand 8.3 filenames here to work around a CLI bug where `codeql pack bundle` produces an empty
+  // archive if the pack path contains any 8.3 components.
+  const remoteQueryDir = {
+    ...shortRemoteQueryDir,
+    dir: expandShortPaths(shortRemoteQueryDir.path),
+  };
   const queryPackDir = join(remoteQueryDir.path, "query-pack");
   await mkdirp(queryPackDir);
   const compiledPackDir = join(remoteQueryDir.path, "compiled-pack");
