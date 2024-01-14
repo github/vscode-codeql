@@ -295,12 +295,14 @@ async function createRemoteQueriesTempDirectory(): Promise<RemoteQueryTempDir> {
   // archive if the pack path contains any 8.3 components.
   const remoteQueryDir = {
     ...shortRemoteQueryDir,
-    dir: expandShortPaths(shortRemoteQueryDir.path),
+    path: await expandShortPaths(shortRemoteQueryDir.path),
   };
   const queryPackDir = join(remoteQueryDir.path, "query-pack");
   await mkdirp(queryPackDir);
   const compiledPackDir = join(remoteQueryDir.path, "compiled-pack");
-  const bundleFile = await getPackedBundlePath(tmpDir.name);
+  const bundleFile = await expandShortPaths(
+    await getPackedBundlePath(tmpDir.name),
+  );
   return { remoteQueryDir, queryPackDir, compiledPackDir, bundleFile };
 }
 
