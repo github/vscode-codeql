@@ -72,6 +72,7 @@ export const ModelInputDropdown = ({
         modeledMethod={modeledMethod}
         typeInfo="path"
         onChange={onChange}
+        aria-label="Path"
       />
     );
   }

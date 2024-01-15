@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   ModeledMethod,
   TypeModeledMethod,
@@ -11,22 +11,22 @@ type Props = {
   modeledMethod: TypeModeledMethod;
   typeInfo: "path" | "relatedTypeName";
   onChange: (modeledMethod: ModeledMethod) => void;
+
+  "aria-label"?: "Path" | "Related type name";
 };
 
 export const ModelTypeTextbox = ({
   modeledMethod,
   typeInfo,
   onChange,
+  ...props
 }: Props): JSX.Element => {
-  const enabled = useMemo(() => modeledMethod, [modeledMethod]);
   const [value, setValue] = useState<string | undefined>(
     modeledMethod[typeInfo],
   );
 
   useEffect(() => {
-    if (modeledMethod) {
-      setValue(modeledMethod[typeInfo]);
-    }
+    setValue(modeledMethod[typeInfo]);
   }, [modeledMethod, typeInfo]);
 
   const handleChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
@@ -40,10 +40,6 @@ export const ModelTypeTextbox = ({
   useDebounceCallback(
     value,
     (newValue: string | undefined) => {
-      if (!modeledMethod) {
-        return;
-      }
-
       onChange({
         ...modeledMethod,
         [typeInfo]: newValue ?? "",
@@ -52,12 +48,5 @@ export const ModelTypeTextbox = ({
     500,
   );
 
-  return (
-    <VSCodeTextField
-      value={value}
-      onInput={handleChange}
-      aria-label={typeInfo === "path" ? "Path" : "Related type name"}
-      disabled={!enabled}
-    />
-  );
+  return <VSCodeTextField value={value} onInput={handleChange} {...props} />;
 };

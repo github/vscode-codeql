@@ -73,6 +73,7 @@ export const ModelOutputDropdown = ({
         modeledMethod={modeledMethod}
         typeInfo="relatedTypeName"
         onChange={onChange}
+        aria-label="Related type name"
       />
     );
   }
