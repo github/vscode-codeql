@@ -175,6 +175,8 @@ export class VariantAnalysisManager
       ),
       "codeQLQueries.runVariantAnalysisContextMenu":
         this.runVariantAnalysisFromQueriesPanel.bind(this),
+      "codeQL.runVariantAnalysisPublishedPack":
+        this.runVariantAnalysisFromPublishedPack.bind(this),
     };
   }
 
@@ -212,6 +214,10 @@ export class VariantAnalysisManager
         Uri.file(queryTreeViewItem.path),
       );
     }
+  }
+
+  private async runVariantAnalysisFromPublishedPack(): Promise<void> {
+    throw new Error("Command not yet implemented");
   }
 
   public async runVariantAnalysis(

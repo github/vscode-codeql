@@ -550,6 +550,10 @@
         "title": "CodeQL: Run Variant Analysis"
       },
       {
+        "command": "codeQL.runVariantAnalysisPublishedPack",
+        "title": "CodeQL: Run Variant Analysis against published pack"
+      },
+      {
         "command": "codeQL.exportSelectedVariantAnalysisResults",
         "title": "CodeQL: Export Variant Analysis Results"
       },
@@ -1409,6 +1413,10 @@
         {
           "command": "codeQL.runVariantAnalysisContextExplorer",
           "when": "false"
+        },
+        {
+          "command": "codeQL.runVariantAnalysisPublishedPack",
+          "when": "config.codeQL.canary && config.codeQL.variantAnalysis.multiQuery"
         },
         {
           "command": "codeQL.runVariantAnalysisContextEditor",
