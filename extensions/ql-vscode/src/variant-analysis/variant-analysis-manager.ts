@@ -86,6 +86,7 @@ import {
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { RequestError } from "@octokit/request-error";
 import { handleRequestError } from "./custom-errors";
+import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 
 const maxRetryCount = 3;
 
@@ -167,9 +168,11 @@ export class VariantAnalysisManager
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
         this.runVariantAnalysisFromCommand.bind(this),
-      // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
       "codeQL.runVariantAnalysisContextEditor":
         this.runVariantAnalysisFromCommand.bind(this),
+      "codeQL.runVariantAnalysisContextExplorer": createMultiSelectionCommand(
+        this.runVariantAnalysisFromExplorer.bind(this),
+      ),
       "codeQLQueries.runVariantAnalysisContextMenu":
         this.runVariantAnalysisFromQueriesPanel.bind(this),
     };
@@ -192,6 +195,13 @@ export class VariantAnalysisManager
         cancellable: true,
       },
     );
+  }
+
+  private async runVariantAnalysisFromExplorer(fileURIs: Uri[]): Promise<void> {
+    if (fileURIs.length !== 1) {
+      throw new Error("Can only run a single query at a time");
+    }
+    return this.runVariantAnalysisFromCommand(fileURIs[0]);
   }
 
   private async runVariantAnalysisFromQueriesPanel(
