@@ -16,22 +16,26 @@ export type ModeledMethodDataGridProps = {
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
+  selectedSignatures: Set<string>;
   inProgressMethods: Set<string>;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
+  onMethodClick: (methodSignature: string) => void;
 };
 
 export const ModeledMethodDataGrid = ({
   methods,
   modeledMethodsMap,
   modifiedSignatures,
+  selectedSignatures,
   inProgressMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
   onChange,
+  onMethodClick,
 }: ModeledMethodDataGridProps) => {
   const [methodsWithModelability, numHiddenMethods]: [
     Array<{ method: Method; methodCanBeModeled: boolean }>,
@@ -80,10 +84,12 @@ export const ModeledMethodDataGrid = ({
                 methodCanBeModeled={methodCanBeModeled}
                 modeledMethods={modeledMethods}
                 methodIsUnsaved={modifiedSignatures.has(method.signature)}
+                methodIsSelected={selectedSignatures.has(method.signature)}
                 modelingInProgress={inProgressMethods.has(method.signature)}
                 viewState={viewState}
                 revealedMethodSignature={revealedMethodSignature}
                 onChange={onChange}
+                onMethodClick={onMethodClick}
               />
             );
           })}
