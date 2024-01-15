@@ -3,8 +3,8 @@ import type { App } from "../common/app";
 import type { AppEvent, AppEventEmitter } from "../common/events";
 import { basename, dirname, extname, join, sep } from "path";
 import type { Event } from "vscode";
+import { RelativePattern, workspace } from "vscode";
 import { containsPath } from "../common/files";
-import { pathExists } from "fs-extra";
 import type { FileTreeNode } from "../common/file-tree-nodes";
 import { buildDiscoveryTree } from "../common/vscode/discovery-tree";
 
@@ -17,13 +17,26 @@ interface Test {
   path: string;
 }
 
+interface Context {
+  /**
+   * The set of `.expected` files that exist for this directory. Normalized
+   * using the `normalizeExpectedPath` function.
+   */
+  expectedFiles: Set<string>;
+}
+
+function normalizeExpectedPath(path: string): string {
+  return path.toLowerCase();
+}
+
 const QUERY_FILE_EXTENSION = ".ql";
 const QUERY_TEST_FILE_EXTENSION = ".qlref";
+const EXPECTED_FILE_EXTENSION = ".expected";
 
 /**
  * Discovers all QL tests contained in the QL packs in all workspace folders.
  */
-export class QLTestDiscovery extends FilePathDiscovery<Test> {
+export class QLTestDiscovery extends FilePathDiscovery<Test, Context> {
   private readonly onDidChangeTestsEmitter: AppEventEmitter<void>;
   public readonly onDidChangeTests: AppEvent<void>;
 
@@ -60,7 +73,10 @@ export class QLTestDiscovery extends FilePathDiscovery<Test> {
     return buildDiscoveryTree(this.app, this.getPathData());
   }
 
-  protected async getDataForPath(path: string): Promise<Test | undefined> {
+  protected async getDataForPath(
+    path: string,
+    context: Context,
+  ): Promise<Test | undefined> {
     const testsPath = this.queryPackDiscovery.getTestsPathForFile(path);
 
     if (testsPath !== undefined) {
@@ -77,7 +93,7 @@ export class QLTestDiscovery extends FilePathDiscovery<Test> {
         `${basename(path).slice(0, -extname(path).length)}.expected`,
       );
 
-      if (!(await pathExists(expectedFile))) {
+      if (!context.expectedFiles.has(normalizeExpectedPath(expectedFile))) {
         return undefined;
       }
     }
@@ -121,5 +137,23 @@ export class QLTestDiscovery extends FilePathDiscovery<Test> {
   protected shouldOverwriteExistingData(): boolean {
     // The data doesn't change, so we don't need to overwrite.
     return false;
+  }
+
+  /**
+   * The context for a path is the set of `.expected` files that exist for this directory. This is
+   * a performance optimization: checking the existence of every `.expected` file separately can take
+   * 30+ seconds, while finding all `.expected` files in a directory is much faster (less than 1 second
+   * for the entire workspace).
+   */
+  protected async computeContext(path: string): Promise<Context> {
+    const expectedFiles = await workspace.findFiles(
+      new RelativePattern(path, `**/*${EXPECTED_FILE_EXTENSION}`),
+    );
+
+    return {
+      expectedFiles: new Set(
+        expectedFiles.map((file) => normalizeExpectedPath(file.fsPath)),
+      ),
+    };
   }
 }
