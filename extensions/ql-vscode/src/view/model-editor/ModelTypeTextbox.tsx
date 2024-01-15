@@ -12,7 +12,7 @@ type Props = {
   typeInfo: "path" | "relatedTypeName";
   onChange: (modeledMethod: ModeledMethod) => void;
 
-  "aria-label"?: "Path" | "Related type name";
+  "aria-label"?: string;
 };
 
 export const ModelTypeTextbox = ({
