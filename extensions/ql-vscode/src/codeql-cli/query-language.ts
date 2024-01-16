@@ -63,7 +63,7 @@ export async function askForLanguage(
     .sort((a, b) => a.label.localeCompare(b.label));
 
   const selectedItem = await window.showQuickPick(items, {
-    placeHolder: "Select target language for your query",
+    placeHolder: "Select target query language",
     ignoreFocusOut: true,
   });
   if (!selectedItem) {
