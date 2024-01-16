@@ -7,14 +7,57 @@ import {
   createFileSync,
   pathExistsSync,
 } from "fs-extra";
-import { Uri } from "vscode";
+import { Uri, window } from "vscode";
+import type { DatabaseSelectionQuickPickItem } from "../../../../src/databases/local-databases-ui";
 
 import { DatabaseUI } from "../../../../src/databases/local-databases-ui";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { QueryLanguage } from "../../../../src/common/query-language";
+import { mockedQuickPickItem, mockedObject } from "../../utils/mocking.helpers";
 
 describe("local-databases-ui", () => {
+  const storageDir = dirSync({ unsafeCleanup: true }).name;
+  const db1 = createDatabase(storageDir, "db1-imported", QueryLanguage.Cpp);
+  const db2 = createDatabase(storageDir, "db2-notimported", QueryLanguage.Cpp);
+  const db3 = createDatabase(storageDir, "db3-invalidlanguage", "hucairz");
+
+  // these two should be deleted
+  const db4 = createDatabase(
+    storageDir,
+    "db2-notimported-with-db-info",
+    QueryLanguage.Cpp,
+    ".dbinfo",
+  );
+  const db5 = createDatabase(
+    storageDir,
+    "db2-notimported-with-codeql-database.yml",
+    QueryLanguage.Cpp,
+    "codeql-database.yml",
+  );
+
+  const app = createMockApp({});
+  const databaseUI = new DatabaseUI(
+    app,
+    {
+      databaseItems: [{ databaseUri: Uri.file(db1) }],
+      onDidChangeDatabaseItem: () => {
+        /**/
+      },
+      onDidChangeCurrentDatabaseItem: () => {
+        /**/
+      },
+      setCurrentDatabaseItem: () => {},
+    } as any,
+    {
+      onLanguageContextChanged: () => {
+        /**/
+      },
+    } as any,
+    {} as any,
+    storageDir,
+    storageDir,
+  );
   describe("fixDbUri", () => {
     const fixDbUri = (DatabaseUI.prototype as any).fixDbUri;
     it("should choose current directory normally", async () => {
@@ -64,51 +107,6 @@ describe("local-databases-ui", () => {
   });
 
   it("should delete orphaned databases", async () => {
-    const storageDir = dirSync({ unsafeCleanup: true }).name;
-    const db1 = createDatabase(storageDir, "db1-imported", QueryLanguage.Cpp);
-    const db2 = createDatabase(
-      storageDir,
-      "db2-notimported",
-      QueryLanguage.Cpp,
-    );
-    const db3 = createDatabase(storageDir, "db3-invalidlanguage", "hucairz");
-
-    // these two should be deleted
-    const db4 = createDatabase(
-      storageDir,
-      "db2-notimported-with-db-info",
-      QueryLanguage.Cpp,
-      ".dbinfo",
-    );
-    const db5 = createDatabase(
-      storageDir,
-      "db2-notimported-with-codeql-database.yml",
-      QueryLanguage.Cpp,
-      "codeql-database.yml",
-    );
-
-    const app = createMockApp({});
-    const databaseUI = new DatabaseUI(
-      app,
-      {
-        databaseItems: [{ databaseUri: Uri.file(db1) }],
-        onDidChangeDatabaseItem: () => {
-          /**/
-        },
-        onDidChangeCurrentDatabaseItem: () => {
-          /**/
-        },
-      } as any,
-      {
-        onLanguageContextChanged: () => {
-          /**/
-        },
-      } as any,
-      {} as any,
-      storageDir,
-      storageDir,
-    );
-
     await databaseUI.handleRemoveOrphanedDatabases();
 
     expect(pathExistsSync(db1)).toBe(true);
@@ -119,6 +117,51 @@ describe("local-databases-ui", () => {
     expect(pathExistsSync(db5)).toBe(false);
 
     databaseUI.dispose(testDisposeHandler);
+  });
+
+  describe("promptForDatabase", () => {
+    it("should prompt for a new or existing database", async () => {
+      const showQuickPickSpy = jest
+        .spyOn(window, "showQuickPick")
+        .mockResolvedValue(
+          mockedQuickPickItem(
+            mockedObject<DatabaseSelectionQuickPickItem>({
+              databaseKind: "existing",
+            }),
+          ),
+        );
+
+      const selectExistingDatabaseSpy = jest
+        .spyOn(databaseUI, "selectExistingDatabase")
+        .mockResolvedValue(undefined);
+
+      const importNewDatabaseSpy = jest
+        .spyOn(databaseUI, "importNewDatabase")
+        .mockResolvedValue(undefined);
+
+      await databaseUI.promptForDatabase();
+      expect(showQuickPickSpy).toHaveBeenCalledWith(
+        [
+          {
+            label: "$(database) Existing database",
+            detail: "Select an existing database from your workspace",
+            alwaysShow: true,
+            databaseKind: "existing",
+          },
+          {
+            label: "$(arrow-down) New database",
+            detail:
+              "Import a new database from the cloud or your local machine",
+            alwaysShow: true,
+            databaseKind: "new",
+          },
+        ],
+        { ignoreFocusOut: true, placeHolder: "Select an option" },
+      );
+
+      expect(selectExistingDatabaseSpy).toHaveBeenCalled();
+      expect(importNewDatabaseSpy).not.toHaveBeenCalled();
+    });
   });
 
   function createDatabase(

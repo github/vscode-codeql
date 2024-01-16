@@ -235,7 +235,7 @@ async function chooseDatabaseDir(byFolder: boolean): Promise<Uri | undefined> {
   return getFirst(chosen);
 }
 
-interface DatabaseSelectionQuickPickItem extends QuickPickItem {
+export interface DatabaseSelectionQuickPickItem extends QuickPickItem {
   databaseKind: "new" | "existing";
 }
 
@@ -827,7 +827,7 @@ export class DatabaseUI extends DisposableObject {
     return this.databaseManager.currentDatabaseItem;
   }
 
-  private async promptForDatabase(): Promise<void> {
+  public async promptForDatabase(): Promise<void> {
     const quickPickItems: DatabaseSelectionQuickPickItem[] = [
       {
         label: "$(database) Existing database",
@@ -862,7 +862,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private async selectExistingDatabase() {
+  public async selectExistingDatabase() {
     const dbItems: DatabaseQuickPickItem[] =
       this.databaseManager.databaseItems.map((dbItem) => ({
         label: dbItem.name,
@@ -884,7 +884,7 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  private async importNewDatabase() {
+  public async importNewDatabase() {
     const importOptions: DatabaseImportQuickPickItems[] = [
       {
         label: "$(github) GitHub",
