@@ -121,6 +121,16 @@ type GenerateExtensiblePredicateMetadataResult = {
   }>;
 };
 
+type PackDownloadResult = {
+  // There are other properties in this object, but they are
+  // not relevant for its use in the extension, so we omit them.
+  packs: Array<{
+    name: string;
+    version: string;
+  }>;
+  packDir: string;
+};
+
 /**
  * The expected output of `codeql resolve qlref`.
  */
@@ -1383,7 +1393,7 @@ export class CodeQLCliServer implements Disposable {
    * Downloads a specified pack.
    * @param packs The `<package-scope/name[@version]>` of the packs to download.
    */
-  async packDownload(packs: string[]) {
+  async packDownload(packs: string[]): Promise<PackDownloadResult> {
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "download"],
       packs,

@@ -87,6 +87,7 @@ import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { RequestError } from "@octokit/request-error";
 import { handleRequestError } from "./custom-errors";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
+import { askForLanguage } from "../codeql-cli/query-language";
 
 const maxRetryCount = 3;
 
@@ -214,7 +215,51 @@ export class VariantAnalysisManager
   }
 
   private async runVariantAnalysisFromPublishedPack(): Promise<void> {
-    throw new Error("Command not yet implemented");
+    const language = await askForLanguage(this.cliServer);
+
+    const packName = `codeql/${language}-queries`;
+    const packDownloadResult = await this.cliServer.packDownload([packName]);
+    const downloadedPack = packDownloadResult.packs[0];
+
+    const packDir = `${packDownloadResult.packDir}/${downloadedPack.name}/${downloadedPack.version}`;
+
+    const suitePath = `${packDir}/codeql-suites/${language}-code-scanning.qls`;
+    const resolvedQueries = await this.cliServer.resolveQueries(suitePath);
+
+    const problemQueries =
+      await this.filterToOnlyProblemQueries(resolvedQueries);
+
+    if (problemQueries.length === 0) {
+      void this.app.logger.showErrorMessage(
+        `Unable to trigger variant analysis. No problem queries found in published query pack: ${packName}.`,
+      );
+    }
+
+    return withProgress((progress, token) =>
+      this.runVariantAnalysis(
+        problemQueries.map((q) => Uri.file(q)),
+        progress,
+        token,
+      ),
+    );
+  }
+
+  private async filterToOnlyProblemQueries(
+    queries: string[],
+  ): Promise<string[]> {
+    const problemQueries: string[] = [];
+    for (const query of queries) {
+      const queryMetadata = await this.cliServer.resolveMetadata(query);
+      if (
+        queryMetadata.kind === "problem" ||
+        queryMetadata.kind === "path-problem"
+      ) {
+        problemQueries.push(query);
+      } else {
+        void this.app.logger.log(`Skipping non-problem query ${query}`);
+      }
+    }
+    return problemQueries;
   }
 
   private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
