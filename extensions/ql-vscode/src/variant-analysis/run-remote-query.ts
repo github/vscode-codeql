@@ -274,12 +274,12 @@ interface PreparedRemoteQuery {
 export async function prepareRemoteQueryRun(
   cliServer: CodeQLCliServer,
   credentials: Credentials,
-  uri: Uri | undefined,
+  uri: Uri,
   progress: ProgressCallback,
   token: CancellationToken,
   dbManager: DbManager,
 ): Promise<PreparedRemoteQuery> {
-  if (!uri?.fsPath.endsWith(".ql")) {
+  if (!uri.fsPath.endsWith(".ql")) {
     throw new UserCancellationException("Not a CodeQL query file.");
   }
 

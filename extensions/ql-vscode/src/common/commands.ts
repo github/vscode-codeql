@@ -275,8 +275,8 @@ export type VariantAnalysisCommands = {
   "codeQL.openVariantAnalysisView": (
     variantAnalysisId: number,
   ) => Promise<void>;
-  "codeQL.runVariantAnalysis": (uri?: Uri) => Promise<void>;
-  "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
+  "codeQL.runVariantAnalysis": () => Promise<void>;
+  "codeQL.runVariantAnalysisContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.runVariantAnalysisContextExplorer": ExplorerSelectionCommandFunction<Uri>;
   "codeQLQueries.runVariantAnalysisContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
   "codeQL.runVariantAnalysisPublishedPack": () => Promise<void>;
