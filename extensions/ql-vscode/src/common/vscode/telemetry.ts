@@ -221,6 +221,7 @@ export class ExtensionTelemetryListener
       "config",
       {
         ...config,
+        isCanary: isCanary().toString(),
         cliVersion: this.cliVersionStr,
       },
       {},

@@ -556,6 +556,7 @@ describe("telemetry reporting", () => {
       {
         testKey: "testValue",
         testKey2: "42",
+        isCanary: "false",
         cliVersion: "not-set",
       },
       {},
