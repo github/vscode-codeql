@@ -450,7 +450,7 @@ describe("telemetry reporting", () => {
     expect(showInformationMessageSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("should send a ui-interaction telementry event", async () => {
+  it("should send a ui-interaction telemetry event", async () => {
     await telemetryListener.initialize();
 
     telemetryListener.sendUIInteraction("test");
@@ -467,7 +467,7 @@ describe("telemetry reporting", () => {
     expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
-  it("should send a ui-interaction telementry event with a cli version", async () => {
+  it("should send a ui-interaction telemetry event with a cli version", async () => {
     await telemetryListener.initialize();
 
     telemetryListener.cliVersion = new SemVer("1.2.3");
@@ -485,7 +485,7 @@ describe("telemetry reporting", () => {
     expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
-  it("should send an error telementry event", async () => {
+  it("should send an error telemetry event", async () => {
     await telemetryListener.initialize();
 
     telemetryListener.sendError(redactableError`test`);
@@ -503,7 +503,7 @@ describe("telemetry reporting", () => {
     );
   });
 
-  it("should send an error telementry event with a cli version", async () => {
+  it("should send an error telemetry event with a cli version", async () => {
     await telemetryListener.initialize();
     telemetryListener.cliVersion = new SemVer("1.2.3");
 
@@ -541,6 +541,27 @@ describe("telemetry reporting", () => {
       },
       {},
     );
+  });
+
+  it("should send config telemetry event", async () => {
+    await telemetryListener.initialize();
+
+    telemetryListener.sendConfigInformation({
+      testKey: "testValue",
+      testKey2: "42",
+    });
+
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "config",
+      {
+        testKey: "testValue",
+        testKey2: "42",
+        isCanary: "false",
+        cliVersion: "not-set",
+      },
+      {},
+    );
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   async function enableTelemetry(section: string, value: boolean | undefined) {

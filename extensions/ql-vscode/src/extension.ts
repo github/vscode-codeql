@@ -23,6 +23,8 @@ import {
 } from "./common/vscode/archive-filesystem-provider";
 import { CliVersionConstraint, CodeQLCliServer } from "./codeql-cli/cli";
 import {
+  ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING,
+  addDatabaseSourceToWorkspace,
   CliConfigListener,
   DistributionConfigListener,
   GitHubDatabaseConfigListener,
@@ -302,6 +304,14 @@ const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
 // before silently being refused to upgrade.
 const MIN_VERSION = "1.82.0";
 
+function sendConfigTelemetryData() {
+  const config: Record<string, string> = {};
+  config[ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING.qualifiedName] =
+    addDatabaseSourceToWorkspace().toString();
+
+  telemetryListener?.sendConfigInformation(config);
+}
+
 /**
  * Returns the CodeQLExtensionInterface, or an empty object if the interface is not
  * available after activation is complete. This will happen if there is no cli
@@ -328,6 +338,8 @@ export async function activate(
   install();
 
   const app = new ExtensionApp(ctx);
+
+  sendConfigTelemetryData();
 
   const quickEvalCodeLensProvider = new QuickEvalCodeLensProvider();
   languages.registerCodeLensProvider(
