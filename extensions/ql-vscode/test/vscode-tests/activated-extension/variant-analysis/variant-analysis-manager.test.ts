@@ -610,7 +610,7 @@ describe("Variant Analysis Manager", () => {
     it("should return cancel if valid", async () => {
       await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
 
-      expect(mockCancelVariantAnalysis).toBeCalledWith(
+      expect(mockCancelVariantAnalysis).toHaveBeenCalledWith(
         app.credentials,
         variantAnalysis,
       );

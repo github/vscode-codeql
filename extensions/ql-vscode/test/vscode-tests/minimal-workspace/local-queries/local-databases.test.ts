@@ -130,13 +130,13 @@ describe("local databases", () => {
     await (databaseManager as any).addDatabaseItem(mockDbItem);
 
     expect((databaseManager as any)._databaseItems).toEqual([mockDbItem]);
-    expect(updateSpy).toBeCalledWith("databaseList", [
+    expect(updateSpy).toHaveBeenCalledWith("databaseList", [
       {
         options: mockDbOptions(),
         uri: dbLocationUri(dir).toString(true),
       },
     ]);
-    expect(onDidChangeDatabaseItem).toBeCalledWith({
+    expect(onDidChangeDatabaseItem).toHaveBeenCalledWith({
       item: undefined,
       kind: DatabaseEventKind.Add,
     });
@@ -147,8 +147,8 @@ describe("local databases", () => {
     // now remove the item
     await databaseManager.removeDatabaseItem(mockDbItem);
     expect((databaseManager as any)._databaseItems).toEqual([]);
-    expect(updateSpy).toBeCalledWith("databaseList", []);
-    expect(onDidChangeDatabaseItem).toBeCalledWith({
+    expect(updateSpy).toHaveBeenCalledWith("databaseList", []);
+    expect(onDidChangeDatabaseItem).toHaveBeenCalledWith({
       item: undefined,
       kind: DatabaseEventKind.Remove,
     });
@@ -164,14 +164,14 @@ describe("local databases", () => {
       await databaseManager.renameDatabaseItem(mockDbItem, "new name");
 
       expect(mockDbItem.name).toBe("new name");
-      expect(updateSpy).toBeCalledWith("databaseList", [
+      expect(updateSpy).toHaveBeenCalledWith("databaseList", [
         {
           options: { ...mockDbOptions(), displayName: "new name" },
           uri: dbLocationUri(dir).toString(true),
         },
       ]);
 
-      expect(onDidChangeDatabaseItem).toBeCalledWith({
+      expect(onDidChangeDatabaseItem).toHaveBeenCalledWith({
         item: undefined,
         kind: DatabaseEventKind.Rename,
       });
@@ -187,7 +187,7 @@ describe("local databases", () => {
       await (databaseManager as any).addDatabaseItem(mockDbItem);
 
       expect(databaseManager.databaseItems).toEqual([mockDbItem]);
-      expect(updateSpy).toBeCalledWith("databaseList", [
+      expect(updateSpy).toHaveBeenCalledWith("databaseList", [
         {
           uri: dbLocationUri(dir).toString(true),
           options: mockDbOptions(),
@@ -198,7 +198,7 @@ describe("local databases", () => {
         item: undefined,
         kind: DatabaseEventKind.Add,
       };
-      expect(onDidChangeDatabaseItem).toBeCalledWith(mockEvent);
+      expect(onDidChangeDatabaseItem).toHaveBeenCalledWith(mockEvent);
     });
 
     it("should add a database item source archive", async () => {
@@ -234,9 +234,9 @@ describe("local databases", () => {
       await databaseManager.removeDatabaseItem(mockDbItem);
 
       expect(databaseManager.databaseItems).toEqual([]);
-      expect(updateSpy).toBeCalledWith("databaseList", []);
+      expect(updateSpy).toHaveBeenCalledWith("databaseList", []);
       // should remove the folder
-      expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
+      expect(workspace.updateWorkspaceFolders).toHaveBeenCalledWith(0, 1);
 
       // should also delete the db contents
       await expect(pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
@@ -262,9 +262,9 @@ describe("local databases", () => {
       await databaseManager.removeDatabaseItem(mockDbItem);
 
       expect(databaseManager.databaseItems).toEqual([]);
-      expect(updateSpy).toBeCalledWith("databaseList", []);
+      expect(updateSpy).toHaveBeenCalledWith("databaseList", []);
       // should remove the folder
-      expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
+      expect(workspace.updateWorkspaceFolders).toHaveBeenCalledWith(0, 1);
 
       // should NOT delete the db contents
       await expect(pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
@@ -279,12 +279,12 @@ describe("local databases", () => {
 
       await (databaseManager as any).addDatabaseItem(mockDbItem);
       // Should have registered this database
-      expect(registerSpy).toBeCalledWith(mockDbItem);
+      expect(registerSpy).toHaveBeenCalledWith(mockDbItem);
 
       await databaseManager.removeDatabaseItem(mockDbItem);
 
       // Should have deregistered this database
-      expect(deregisterSpy).toBeCalledWith(mockDbItem);
+      expect(deregisterSpy).toHaveBeenCalledWith(mockDbItem);
     });
   });
 

@@ -619,7 +619,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = variantAnalysisHistory[1];
 
         await queryHistoryManager.handleCancel([inProgress1]);
-        expect(cancelVariantAnalysisSpy).toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).toHaveBeenCalledWith(
           inProgress1.variantAnalysis.id,
         );
       });
@@ -632,10 +632,10 @@ describe("QueryHistoryManager", () => {
         const inProgress2 = variantAnalysisHistory[3];
 
         await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
-        expect(cancelVariantAnalysisSpy).toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).toHaveBeenCalledWith(
           inProgress1.variantAnalysis.id,
         );
-        expect(cancelVariantAnalysisSpy).toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).toHaveBeenCalledWith(
           inProgress2.variantAnalysis.id,
         );
       });
@@ -675,7 +675,7 @@ describe("QueryHistoryManager", () => {
         const completedVariantAnalysis = variantAnalysisHistory[0];
 
         await queryHistoryManager.handleCancel([completedVariantAnalysis]);
-        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).not.toHaveBeenCalledWith(
           completedVariantAnalysis.variantAnalysis,
         );
       });
@@ -691,10 +691,10 @@ describe("QueryHistoryManager", () => {
           completedVariantAnalysis,
           failedVariantAnalysis,
         ]);
-        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).not.toHaveBeenCalledWith(
           completedVariantAnalysis.variantAnalysis.id,
         );
-        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).not.toHaveBeenCalledWith(
           failedVariantAnalysis.variantAnalysis.id,
         );
       });
@@ -718,9 +718,9 @@ describe("QueryHistoryManager", () => {
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleCopyRepoList(item);
 
-      expect(variantAnalysisManagerStub.copyRepoListToClipboard).toBeCalledWith(
-        item.variantAnalysis.id,
-      );
+      expect(
+        variantAnalysisManagerStub.copyRepoListToClipboard,
+      ).toHaveBeenCalledWith(item.variantAnalysis.id);
     });
   });
 
@@ -739,7 +739,7 @@ describe("QueryHistoryManager", () => {
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleExportResults(item);
-      expect(variantAnalysisManagerStub.exportResults).toBeCalledWith(
+      expect(variantAnalysisManagerStub.exportResults).toHaveBeenCalledWith(
         item.variantAnalysis.id,
       );
     });

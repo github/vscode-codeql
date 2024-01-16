@@ -86,7 +86,7 @@ describe("AstViewer", () => {
     const mockEvent = createMockEvent(selectionRange, fileUri);
     (viewer as any).updateTreeSelection(mockEvent);
     if (expectedSelection) {
-      expect(revealMock).toBeCalledWith(expectedSelection);
+      expect(revealMock).toHaveBeenCalledWith(expectedSelection);
     } else {
       expect(revealMock).not.toHaveBeenCalled();
     }

@@ -130,7 +130,7 @@ describe("query-results", () => {
         queryPath,
         "sortedResults-cc8589f226adc134f87f2438e10075e0667571c72342068e2281e0b3b65e1092.bqrs",
       );
-      expect(spy).toBeCalledWith(
+      expect(spy).toHaveBeenCalledWith(
         expectedResultsPath,
         expectedSortedResultsPath,
         "a-result-set-name",
@@ -189,7 +189,7 @@ describe("query-results", () => {
         );
 
         expect(results).toEqual({ a: "1234", t: "SarifInterpretationData" });
-        expect(spy).toBeCalledWith(
+        expect(spy).toHaveBeenCalledWith(
           metadata,
           resultsPath,
           interpretedResultsPath,
@@ -214,7 +214,7 @@ describe("query-results", () => {
           sourceInfo as SourceInfo,
         );
         expect(results).toEqual({ a: "1234", t: "SarifInterpretationData" });
-        expect(spy).toBeCalledWith(
+        expect(spy).toHaveBeenCalledWith(
           { kind: "my-kind", id: "dummy-id", scored: undefined },
           resultsPath,
           interpretedResultsPath,

@@ -139,7 +139,7 @@ describe("db config store", () => {
       const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
-      expect(executeCommand).toBeCalledWith(
+      expect(executeCommand).toHaveBeenCalledWith(
         "setContext",
         "codeQLVariantAnalysisRepositories.configError",
         true,
@@ -157,7 +157,7 @@ describe("db config store", () => {
       const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
-      expect(executeCommand).toBeCalledWith(
+      expect(executeCommand).toHaveBeenCalledWith(
         "setContext",
         "codeQLVariantAnalysisRepositories.configError",
         false,
