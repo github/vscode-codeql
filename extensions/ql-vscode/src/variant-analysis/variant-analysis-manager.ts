@@ -167,9 +167,9 @@ export class VariantAnalysisManager
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
-        this.runVariantAnalysisFromCommand.bind(this),
+        this.runVariantAnalysisFromCommandPalette.bind(this),
       "codeQL.runVariantAnalysisContextEditor":
-        this.runVariantAnalysisFromCommand.bind(this),
+        this.runVariantAnalysisFromContextEditor.bind(this),
       "codeQL.runVariantAnalysisContextExplorer": createMultiSelectionCommand(
         this.runVariantAnalysisFromExplorer.bind(this),
       ),
@@ -184,35 +184,32 @@ export class VariantAnalysisManager
     return this.app.commands;
   }
 
-  private async runVariantAnalysisFromCommand(uri?: Uri) {
-    return withProgress(
-      async (progress, token) =>
-        this.runVariantAnalysis(
-          uri || Window.activeTextEditor?.document.uri,
-          progress,
-          token,
-        ),
-      {
-        title: "Run Variant Analysis",
-        cancellable: true,
-      },
-    );
+  private async runVariantAnalysisFromCommandPalette() {
+    const fileUri = Window.activeTextEditor?.document.uri;
+    if (!fileUri) {
+      throw new Error("Please select a .ql file to run variant analysis on");
+    }
+
+    await this.runVariantAnalysisCommand(fileUri);
+  }
+
+  private async runVariantAnalysisFromContextEditor(uri: Uri) {
+    await this.runVariantAnalysisCommand(uri);
   }
 
   private async runVariantAnalysisFromExplorer(fileURIs: Uri[]): Promise<void> {
     if (fileURIs.length !== 1) {
       throw new Error("Can only run a single query at a time");
     }
-    return this.runVariantAnalysisFromCommand(fileURIs[0]);
+
+    return this.runVariantAnalysisCommand(fileURIs[0]);
   }
 
   private async runVariantAnalysisFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
     if (queryTreeViewItem.path !== undefined) {
-      await this.runVariantAnalysisFromCommand(
-        Uri.file(queryTreeViewItem.path),
-      );
+      await this.runVariantAnalysisCommand(Uri.file(queryTreeViewItem.path));
     }
   }
 
@@ -220,8 +217,20 @@ export class VariantAnalysisManager
     throw new Error("Command not yet implemented");
   }
 
+  private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.runVariantAnalysis(uri, progress, token);
+      },
+      {
+        title: "Run Variant Analysis",
+        cancellable: true,
+      },
+    );
+  }
+
   public async runVariantAnalysis(
-    uri: Uri | undefined,
+    uri: Uri,
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
