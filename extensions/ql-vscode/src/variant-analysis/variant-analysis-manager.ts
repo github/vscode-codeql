@@ -221,9 +221,17 @@ export class VariantAnalysisManager
     const packDownloadResult = await this.cliServer.packDownload([packName]);
     const downloadedPack = packDownloadResult.packs[0];
 
-    const packDir = `${packDownloadResult.packDir}/${downloadedPack.name}/${downloadedPack.version}`;
+    const packDir = join(
+      packDownloadResult.packDir,
+      downloadedPack.name,
+      downloadedPack.version,
+    );
 
-    const suitePath = `${packDir}/codeql-suites/${language}-code-scanning.qls`;
+    const suitePath = join(
+      packDir,
+      "codeql-suites",
+      `${language}-code-scanning.qls`,
+    );
     const resolvedQueries = await this.cliServer.resolveQueries(suitePath);
 
     const problemQueries =
