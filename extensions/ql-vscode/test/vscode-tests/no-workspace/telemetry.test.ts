@@ -162,7 +162,7 @@ describe("telemetry reporting", () => {
   it("should reinitialize reporter when extension setting changes", async () => {
     await telemetryListener.initialize();
 
-    expect(disposeSpy).not.toBeCalled();
+    expect(disposeSpy).not.toHaveBeenCalled();
     expect(telemetryListener._reporter).toBeDefined();
 
     // this disables the reporter
@@ -205,7 +205,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   it("should send a command usage event with an error", async () => {
@@ -227,7 +227,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   it("should send a command usage event with a cli version", async () => {
@@ -250,7 +250,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
 
     // Verify that if the cli version is not set, then the telemetry falls back to "not-set"
     sendTelemetryEventSpy.mockClear();
@@ -272,7 +272,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 5678 },
     );
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   it("should avoid sending an event when telemetry is disabled", async () => {
@@ -282,8 +282,8 @@ describe("telemetry reporting", () => {
     telemetryListener.sendCommandUsage("command-id", 1234, undefined);
     telemetryListener.sendCommandUsage("command-id", 1234, new Error());
 
-    expect(sendTelemetryEventSpy).not.toBeCalled();
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryEventSpy).not.toHaveBeenCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   it("should send an event when telemetry is re-enabled", async () => {
@@ -303,7 +303,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   it("should filter undesired properties from telemetry payload", async () => {
@@ -426,7 +426,7 @@ describe("telemetry reporting", () => {
     await telemetryListener.initialize();
 
     // popup should not be shown even though we have initialized telemetry
-    expect(showInformationMessageSpy).not.toBeCalled();
+    expect(showInformationMessageSpy).not.toHaveBeenCalled();
   });
 
   // This test is failing because codeQL.canary is not a registered configuration.
@@ -464,7 +464,7 @@ describe("telemetry reporting", () => {
       },
       {},
     );
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   it("should send a ui-interaction telementry event with a cli version", async () => {
@@ -482,7 +482,7 @@ describe("telemetry reporting", () => {
       },
       {},
     );
-    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toHaveBeenCalled();
   });
 
   it("should send an error telementry event", async () => {
@@ -490,7 +490,7 @@ describe("telemetry reporting", () => {
 
     telemetryListener.sendError(redactableError`test`);
 
-    expect(sendTelemetryEventSpy).not.toBeCalled();
+    expect(sendTelemetryEventSpy).not.toHaveBeenCalled();
     expect(sendTelemetryErrorEventSpy).toHaveBeenCalledWith(
       "error",
       {
@@ -509,7 +509,7 @@ describe("telemetry reporting", () => {
 
     telemetryListener.sendError(redactableError`test`);
 
-    expect(sendTelemetryEventSpy).not.toBeCalled();
+    expect(sendTelemetryEventSpy).not.toHaveBeenCalled();
     expect(sendTelemetryErrorEventSpy).toHaveBeenCalledWith(
       "error",
       {
@@ -529,7 +529,7 @@ describe("telemetry reporting", () => {
       redactableError`test message with secret information: ${42} and more ${"secret"} parts`,
     );
 
-    expect(sendTelemetryEventSpy).not.toBeCalled();
+    expect(sendTelemetryEventSpy).not.toHaveBeenCalled();
     expect(sendTelemetryErrorEventSpy).toHaveBeenCalledWith(
       "error",
       {

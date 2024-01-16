@@ -608,8 +608,8 @@ describe("QueryHistoryManager", () => {
         const cancelSpy2 = jest.spyOn(inProgress2, "cancel");
 
         await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
-        expect(cancelSpy1).toBeCalled();
-        expect(cancelSpy2).toBeCalled();
+        expect(cancelSpy1).toHaveBeenCalled();
+        expect(cancelSpy2).toHaveBeenCalled();
       });
 
       it("should cancel a single variant analysis", async () => {
@@ -708,7 +708,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleCopyRepoList(item);
 
-      expect(executeCommand).not.toBeCalled();
+      expect(executeCommand).not.toHaveBeenCalled();
     });
 
     it("should copy repo list for a single variant analysis", async () => {
@@ -731,7 +731,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleExportResults(item);
 
-      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
+      expect(variantAnalysisManagerStub.exportResults).not.toHaveBeenCalled();
     });
 
     it("should export results for a single variant analysis", async () => {
@@ -801,7 +801,7 @@ describe("QueryHistoryManager", () => {
           queryHistoryManager as any
         ).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0]]);
         expect(otherQuery).toBe(localQueryHistory[0]);
-        expect(showQuickPickSpy).not.toBeCalled();
+        expect(showQuickPickSpy).not.toHaveBeenCalled();
       });
 
       it("should throw an error when a databases are not the same", async () => {
@@ -850,7 +850,7 @@ describe("QueryHistoryManager", () => {
         await queryHistoryManager.handleCompareWith(localQueryHistory[0], [
           localQueryHistory[0],
         ]);
-        expect(doCompareCallback).not.toBeCalled();
+        expect(doCompareCallback).not.toHaveBeenCalled();
       });
 
       it("should throw an error when a query is not successful", async () => {

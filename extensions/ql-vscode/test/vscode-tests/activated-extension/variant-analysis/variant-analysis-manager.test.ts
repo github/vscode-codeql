@@ -656,7 +656,7 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis.id,
         );
 
-        expect(writeTextStub).not.toBeCalled();
+        expect(writeTextStub).not.toHaveBeenCalled();
       });
     });
 
@@ -682,7 +682,7 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis.id,
         );
 
-        expect(writeTextStub).not.toBeCalled();
+        expect(writeTextStub).not.toHaveBeenCalled();
       });
     });
 

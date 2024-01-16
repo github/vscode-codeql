@@ -245,7 +245,7 @@ describe("query-results", () => {
           sourceInfo as SourceInfo,
         );
         // We do not re-interpret if we are reading from a SARIF file.
-        expect(spy).not.toBeCalled();
+        expect(spy).not.toHaveBeenCalled();
 
         expect(results).toHaveProperty("t", "SarifInterpretationData");
         expect(results).toHaveProperty("runs[0].results");
@@ -279,7 +279,7 @@ describe("query-results", () => {
         );
 
         // We do not attempt to re-interpret if we are reading from a SARIF file.
-        expect(spy).not.toBeCalled();
+        expect(spy).not.toHaveBeenCalled();
       },
       2 * 60 * 1000, // up to 2 minutes per test
     );
@@ -336,7 +336,7 @@ describe("query-results", () => {
           sourceInfo as SourceInfo,
         );
         // We do not re-interpret if we are reading from a SARIF file.
-        expect(spy).not.toBeCalled();
+        expect(spy).not.toHaveBeenCalled();
 
         expect(results).toHaveProperty("t", "SarifInterpretationData");
         expect(results).toHaveProperty("runs[0].results");
@@ -400,7 +400,7 @@ describe("query-results", () => {
         );
 
         // We do not attempt to re-interpret if we are reading from a SARIF file.
-        expect(spy).not.toBeCalled();
+        expect(spy).not.toHaveBeenCalled();
       },
       2 * 60 * 1000, // up to 2 minutes per test
     );

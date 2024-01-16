@@ -291,7 +291,7 @@ describe("Variant Analysis Monitor", () => {
       it("should not try to download any repos", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).not.toBeCalled();
+        expect(mockEecuteCommand).not.toHaveBeenCalled();
       });
     });
 

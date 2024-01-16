@@ -48,7 +48,7 @@ describe("helpers", () => {
     );
 
     // There are no listeners registered to this readable
-    expect(mockReadable.on).not.toBeCalled();
+    expect(mockReadable.on).not.toHaveBeenCalled();
 
     expect(progressSpy).toBeCalledTimes(1);
     expect(progressSpy).toBeCalledWith({

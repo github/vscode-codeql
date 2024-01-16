@@ -628,7 +628,7 @@ describe("local databases", () => {
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(generateSpy).not.toBeCalled();
+        expect(generateSpy).not.toHaveBeenCalled();
       });
 
       it("should return early if the user escapes out of the dialog", async () => {
@@ -638,7 +638,7 @@ describe("local databases", () => {
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(generateSpy).not.toBeCalled();
+        expect(generateSpy).not.toHaveBeenCalled();
       });
 
       it("should return early and write choice to settings if user wants to never be asked again", async () => {
@@ -652,14 +652,14 @@ describe("local databases", () => {
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(generateSpy).not.toBeCalled();
+        expect(generateSpy).not.toHaveBeenCalled();
         expect(setAutogenerateQlPacksSpy).toHaveBeenCalledWith("never");
       });
 
       it("should create the skeleton QL pack for the user", async () => {
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(generateSpy).toBeCalled();
+        expect(generateSpy).toHaveBeenCalled();
       });
     });
 
@@ -694,7 +694,7 @@ describe("local databases", () => {
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(generateSpy).not.toBeCalled();
+        expect(generateSpy).not.toHaveBeenCalled();
       });
     });
   });

@@ -88,7 +88,7 @@ describe("AstViewer", () => {
     if (expectedSelection) {
       expect(revealMock).toBeCalledWith(expectedSelection);
     } else {
-      expect(revealMock).not.toBeCalled();
+      expect(revealMock).not.toHaveBeenCalled();
     }
   }
 
