@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from "react";
 import { renderHook } from "@testing-library/react";
 import type { FloatingContext } from "@floating-ui/react";
-import { mockedObject } from "../../../../../test/vscode-tests/utils/mocking.helpers";
+import { mockedObject } from "../../../../../test/mocked-object";
 import { useOpenKey } from "../useOpenKey";
 
 describe("useOpenKey", () => {
