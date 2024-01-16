@@ -18,6 +18,7 @@ import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import type { Option } from "./options";
 import { findMatchingOptions } from "./options";
 import { SuggestBoxItem } from "./SuggestBoxItem";
+import { useOpenKey } from "./useOpenKey";
 
 const Input = styled(VSCodeTextField)`
   width: 430px;
@@ -125,6 +126,7 @@ export const SuggestBox = <T extends Option<T>>({
   const focus = useFocus(context);
   const role = useRole(context, { role: "listbox" });
   const dismiss = useDismiss(context);
+  const openKey = useOpenKey(context);
   const listNav = useListNavigation(context, {
     listRef,
     activeIndex,
@@ -134,7 +136,7 @@ export const SuggestBox = <T extends Option<T>>({
   });
 
   const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions(
-    [focus, role, dismiss, listNav],
+    [focus, role, dismiss, openKey, listNav],
   );
 
   const handleInput = useCallback(
