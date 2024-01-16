@@ -100,7 +100,7 @@ describe("Variant Analysis Manager", () => {
       const fileUri = getFile("data-remote-qlpack/in-pack.ql");
 
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
@@ -121,7 +121,7 @@ describe("Variant Analysis Manager", () => {
       const fileUri = getFile("data-remote-no-qlpack/in-pack.ql");
 
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
@@ -142,7 +142,7 @@ describe("Variant Analysis Manager", () => {
       const fileUri = getFile("data-remote-qlpack-nested/subfolder/in-pack.ql");
 
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
@@ -163,7 +163,7 @@ describe("Variant Analysis Manager", () => {
       const fileUri = getFile("data-remote-no-qlpack/in-pack.ql");
 
       const promise = variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
@@ -313,7 +313,7 @@ describe("Variant Analysis Manager", () => {
     }) {
       const fileUri = getFile(queryPath);
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
