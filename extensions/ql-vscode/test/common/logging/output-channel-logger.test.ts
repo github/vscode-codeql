@@ -54,12 +54,12 @@ describe("OutputChannelLogger tests", function () {
 
   it("should log to the output channel", async () => {
     await logger.log("xxx");
-    expect(mockOutputChannel.appendLine).toBeCalledWith("xxx");
-    expect(mockOutputChannel.append).not.toBeCalledWith("xxx");
+    expect(mockOutputChannel.appendLine).toHaveBeenCalledWith("xxx");
+    expect(mockOutputChannel.append).not.toHaveBeenCalledWith("xxx");
 
     await logger.log("yyy", { trailingNewline: false });
-    expect(mockOutputChannel.appendLine).not.toBeCalledWith("yyy");
-    expect(mockOutputChannel.append).toBeCalledWith("yyy");
+    expect(mockOutputChannel.appendLine).not.toHaveBeenCalledWith("yyy");
+    expect(mockOutputChannel.append).toHaveBeenCalledWith("yyy");
 
     const hucairz = createSideLogger(logger, "hucairz");
     await hucairz.log("zzz");

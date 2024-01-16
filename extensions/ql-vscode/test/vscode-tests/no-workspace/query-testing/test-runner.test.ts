@@ -94,7 +94,7 @@ describe("test-runner", () => {
       eventHandlerSpy,
     );
 
-    expect(eventHandlerSpy).toBeCalledTimes(3);
+    expect(eventHandlerSpy).toHaveBeenCalledTimes(3);
 
     expect(eventHandlerSpy).toHaveBeenNthCalledWith(1, {
       test: mockTestsInfo.dPath,
@@ -160,24 +160,24 @@ describe("test-runner", () => {
       setCurrentDatabaseItemSpy.mock.invocationCallOrder[0],
     ).toBeGreaterThan(openDatabaseSpy.mock.invocationCallOrder[0]);
 
-    expect(removeDatabaseItemSpy).toBeCalledTimes(1);
-    expect(removeDatabaseItemSpy).toBeCalledWith(preTestDatabaseItem);
+    expect(removeDatabaseItemSpy).toHaveBeenCalledTimes(1);
+    expect(removeDatabaseItemSpy).toHaveBeenCalledWith(preTestDatabaseItem);
 
-    expect(openDatabaseSpy).toBeCalledTimes(1);
-    expect(openDatabaseSpy).toBeCalledWith(
+    expect(openDatabaseSpy).toHaveBeenCalledTimes(1);
+    expect(openDatabaseSpy).toHaveBeenCalledWith(
       preTestDatabaseItem.databaseUri,
       preTestDatabaseItem.origin,
       false,
     );
 
-    expect(renameDatabaseItemSpy).toBeCalledTimes(1);
-    expect(renameDatabaseItemSpy).toBeCalledWith(
+    expect(renameDatabaseItemSpy).toHaveBeenCalledTimes(1);
+    expect(renameDatabaseItemSpy).toHaveBeenCalledWith(
       postTestDatabaseItem,
       preTestDatabaseItem.name,
     );
 
-    expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
-    expect(setCurrentDatabaseItemSpy).toBeCalledWith(
+    expect(setCurrentDatabaseItemSpy).toHaveBeenCalledTimes(1);
+    expect(setCurrentDatabaseItemSpy).toHaveBeenCalledWith(
       postTestDatabaseItem,
       true,
     );

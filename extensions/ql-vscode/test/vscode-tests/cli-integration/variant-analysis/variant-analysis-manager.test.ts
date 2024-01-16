@@ -105,7 +105,7 @@ describe("Variant Analysis Manager", () => {
         cancellationTokenSource.token,
       );
 
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
@@ -113,8 +113,8 @@ describe("Variant Analysis Manager", () => {
         }),
       );
 
-      expect(mockGetRepositoryFromNwo).toBeCalledTimes(1);
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
+      expect(mockGetRepositoryFromNwo).toHaveBeenCalledTimes(1);
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
     });
 
     it("should run a remote query that is not part of a qlpack", async () => {
@@ -126,7 +126,7 @@ describe("Variant Analysis Manager", () => {
         cancellationTokenSource.token,
       );
 
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
@@ -134,8 +134,8 @@ describe("Variant Analysis Manager", () => {
         }),
       );
 
-      expect(mockGetRepositoryFromNwo).toBeCalledTimes(1);
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
+      expect(mockGetRepositoryFromNwo).toHaveBeenCalledTimes(1);
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
     });
 
     it("should run a remote query that is nested inside a qlpack", async () => {
@@ -147,7 +147,7 @@ describe("Variant Analysis Manager", () => {
         cancellationTokenSource.token,
       );
 
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
@@ -155,8 +155,8 @@ describe("Variant Analysis Manager", () => {
         }),
       );
 
-      expect(mockGetRepositoryFromNwo).toBeCalledTimes(1);
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
+      expect(mockGetRepositoryFromNwo).toHaveBeenCalledTimes(1);
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
     });
 
     it("should cancel a run before uploading", async () => {
@@ -318,8 +318,8 @@ describe("Variant Analysis Manager", () => {
         cancellationTokenSource.token,
       );
 
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           query: expect.objectContaining({ filePath: fileUri.fsPath }),

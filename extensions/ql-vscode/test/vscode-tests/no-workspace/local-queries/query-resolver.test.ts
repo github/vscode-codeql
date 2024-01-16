@@ -49,7 +49,7 @@ describe("qlpackOfDatabase", () => {
       dbschemePack: "my-qlpack",
       dbschemePackIsLibraryPack: false,
     });
-    expect(getPrimaryDbschemeSpy).toBeCalledWith("/path/to/database");
+    expect(getPrimaryDbschemeSpy).toHaveBeenCalledWith("/path/to/database");
   });
 });
 

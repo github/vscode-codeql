@@ -95,8 +95,8 @@ describe("test-adapter", () => {
     const request = new TestRunRequest([rootItem]);
     await testManager.run(request, new CancellationTokenSource().token);
 
-    expect(enqueuedSpy).toBeCalledTimes(3);
-    expect(passedSpy).toBeCalledTimes(1);
+    expect(enqueuedSpy).toHaveBeenCalledTimes(3);
+    expect(passedSpy).toHaveBeenCalledTimes(1);
     expect(passedSpy).toHaveBeenCalledWith(childItems[0], 3000);
     expect(erroredSpy).toHaveBeenCalledTimes(1);
     expect(erroredSpy).toHaveBeenCalledWith(
@@ -121,7 +121,7 @@ describe("test-adapter", () => {
       ],
       11000,
     );
-    expect(failedSpy).toBeCalledTimes(1);
-    expect(endSpy).toBeCalledTimes(1);
+    expect(failedSpy).toHaveBeenCalledTimes(1);
+    expect(endSpy).toHaveBeenCalledTimes(1);
   });
 });
