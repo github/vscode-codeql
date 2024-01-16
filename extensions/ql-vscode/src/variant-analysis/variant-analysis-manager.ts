@@ -215,42 +215,65 @@ export class VariantAnalysisManager
   }
 
   private async runVariantAnalysisFromPublishedPack(): Promise<void> {
-    const language = await askForLanguage(this.cliServer);
+    return withProgress(async (progress, token) => {
+      progress({
+        maxStep: 8,
+        step: 0,
+        message: "Determining query language",
+      });
 
-    const packName = `codeql/${language}-queries`;
-    const packDownloadResult = await this.cliServer.packDownload([packName]);
-    const downloadedPack = packDownloadResult.packs[0];
+      const language = await askForLanguage(this.cliServer);
 
-    const packDir = join(
-      packDownloadResult.packDir,
-      downloadedPack.name,
-      downloadedPack.version,
-    );
+      progress({
+        maxStep: 8,
+        step: 1,
+        message: "Downloading query pack",
+      });
 
-    const suitePath = join(
-      packDir,
-      "codeql-suites",
-      `${language}-code-scanning.qls`,
-    );
-    const resolvedQueries = await this.cliServer.resolveQueries(suitePath);
+      const packName = `codeql/${language}-queries`;
+      const packDownloadResult = await this.cliServer.packDownload([packName]);
+      const downloadedPack = packDownloadResult.packs[0];
 
-    const problemQueries =
-      await this.filterToOnlyProblemQueries(resolvedQueries);
-
-    if (problemQueries.length === 0) {
-      void this.app.logger.showErrorMessage(
-        `Unable to trigger variant analysis. No problem queries found in published query pack: ${packName}.`,
+      const packDir = join(
+        packDownloadResult.packDir,
+        downloadedPack.name,
+        downloadedPack.version,
       );
-      return;
-    }
 
-    return withProgress((progress, token) =>
-      this.runVariantAnalysis(
+      progress({
+        maxStep: 8,
+        step: 2,
+        message: "Resolving queries in pack",
+      });
+
+      const suitePath = join(
+        packDir,
+        "codeql-suites",
+        `${language}-code-scanning.qls`,
+      );
+      const resolvedQueries = await this.cliServer.resolveQueries(suitePath);
+
+      const problemQueries =
+        await this.filterToOnlyProblemQueries(resolvedQueries);
+
+      if (problemQueries.length === 0) {
+        void this.app.logger.showErrorMessage(
+          `Unable to trigger variant analysis. No problem queries found in published query pack: ${packName}.`,
+        );
+        return;
+      }
+
+      await this.runVariantAnalysis(
         problemQueries.map((q) => Uri.file(q)),
-        progress,
+        (p) =>
+          progress({
+            ...p,
+            maxStep: p.maxStep + 3,
+            step: p.step + 3,
+          }),
         token,
-      ),
-    );
+      );
+    });
   }
 
   private async filterToOnlyProblemQueries(
