@@ -187,7 +187,7 @@ export class VariantAnalysisManager
   private async runVariantAnalysisFromCommandPalette() {
     const fileUri = Window.activeTextEditor?.document.uri;
     if (!fileUri) {
-      throw new Error("Please select a .ql file to run variant analysis on");
+      throw new Error("Please select a .ql file to run as a variant analysis");
     }
 
     await this.runVariantAnalysisCommand(fileUri);
