@@ -241,6 +241,7 @@ export class VariantAnalysisManager
       void this.app.logger.showErrorMessage(
         `Unable to trigger variant analysis. No problem queries found in published query pack: ${packName}.`,
       );
+      return;
     }
 
     return withProgress((progress, token) =>
