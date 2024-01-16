@@ -5,6 +5,7 @@ import { styled } from "styled-components";
 import { Codicon } from "../../view/common";
 import { SuggestBox as SuggestBoxComponent } from "../../view/common/SuggestBox/SuggestBox";
 import { useCallback, useState } from "react";
+import type { Diagnostic } from "../../view/common/SuggestBox/diagnostics";
 
 export default {
   title: "Suggest Box",
@@ -141,6 +142,25 @@ export const AccessPath = Template.bind({});
 AccessPath.args = {
   options: suggestedOptions,
   parseValueToTokens: (value: string) => value.split("."),
+  validateValue: (value: string) => {
+    let index = value.indexOf("|");
+
+    const diagnostics: Diagnostic[] = [];
+
+    while (index !== -1) {
+      index = value.indexOf("|", index + 1);
+
+      diagnostics.push({
+        message: "This cannot contain |",
+        range: {
+          start: index,
+          end: index + 1,
+        },
+      });
+    }
+
+    return diagnostics;
+  },
   getIcon: (option: StoryOption) => <Icon name={option.icon} />,
   getDetails: (option: StoryOption) => option.details,
 };
