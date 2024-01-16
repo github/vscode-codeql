@@ -119,7 +119,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
   it("should read query history that has variant analysis history items", async () => {
     await qhm.readQueryHistory();
 
-    expect(rehydrateVariantAnalysisStub).toBeCalledTimes(2);
+    expect(rehydrateVariantAnalysisStub).toHaveBeenCalledTimes(2);
     expect(rehydrateVariantAnalysisStub).toHaveBeenNthCalledWith(
       1,
       rawQueryHistory[0].variantAnalysis,
@@ -142,8 +142,8 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
     // Add it back to the history
     qhm.addQuery(rawQueryHistory[0]);
-    expect(removeVariantAnalysisStub).toBeCalledTimes(1);
-    expect(rehydrateVariantAnalysisStub).toBeCalledTimes(2);
+    expect(removeVariantAnalysisStub).toHaveBeenCalledTimes(1);
+    expect(rehydrateVariantAnalysisStub).toHaveBeenCalledTimes(2);
     expect(qhm.treeDataProvider.allHistory).toEqual([
       rawQueryHistory[1],
       rawQueryHistory[0],

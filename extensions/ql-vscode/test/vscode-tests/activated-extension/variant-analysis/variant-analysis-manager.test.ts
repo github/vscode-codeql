@@ -96,7 +96,7 @@ describe("Variant Analysis Manager", () => {
 
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
-        expect(stub).toBeCalledTimes(1);
+        expect(stub).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -423,7 +423,7 @@ describe("Variant Analysis Manager", () => {
       );
 
       expect(variantAnalysisManager.downloadsQueueSize()).toBe(0);
-      expect(getResultsSpy).toBeCalledTimes(3);
+      expect(getResultsSpy).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -451,7 +451,7 @@ describe("Variant Analysis Manager", () => {
 
       await variantAnalysisManager.removeVariantAnalysis(dummyVariantAnalysis);
 
-      expect(removeAnalysisResultsStub).toBeCalledTimes(1);
+      expect(removeAnalysisResultsStub).toHaveBeenCalledTimes(1);
       expect(variantAnalysisManager.variantAnalysesSize).toBe(0);
 
       await expect(
@@ -722,7 +722,7 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis.id,
         );
 
-        expect(writeTextStub).toBeCalledTimes(1);
+        expect(writeTextStub).toHaveBeenCalledTimes(1);
       });
 
       it("should be valid JSON when put in object", async () => {

@@ -145,7 +145,7 @@ describe("database-fetcher", () => {
       await expect(
         convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy),
       ).rejects.toThrow(/Unable to get database/);
-      expect(progressSpy).toBeCalledTimes(0);
+      expect(progressSpy).toHaveBeenCalledTimes(0);
     });
 
     // User has access to the repository, but there are no databases for any language.
@@ -159,7 +159,7 @@ describe("database-fetcher", () => {
       await expect(
         convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy),
       ).rejects.toThrow(/Unable to get database/);
-      expect(progressSpy).toBeCalledTimes(1);
+      expect(progressSpy).toHaveBeenCalledTimes(1);
     });
 
     describe("when language is already provided", () => {

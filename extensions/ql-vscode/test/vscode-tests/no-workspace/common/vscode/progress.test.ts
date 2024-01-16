@@ -17,7 +17,7 @@ describe("helpers", () => {
     listener({ length: firstStep });
     listener({ length: secondStep });
 
-    expect(progressSpy).toBeCalledTimes(3);
+    expect(progressSpy).toHaveBeenCalledTimes(3);
     expect(progressSpy).toHaveBeenCalledWith({
       step: 0,
       maxStep: max,
@@ -50,7 +50,7 @@ describe("helpers", () => {
     // There are no listeners registered to this readable
     expect(mockReadable.on).not.toHaveBeenCalled();
 
-    expect(progressSpy).toBeCalledTimes(1);
+    expect(progressSpy).toHaveBeenCalledTimes(1);
     expect(progressSpy).toHaveBeenCalledWith({
       step: 1,
       maxStep: 2,

@@ -152,11 +152,11 @@ describe("telemetry reporting", () => {
     expect(telemetryListener._reporter).toBeDefined();
     expect(telemetryListener._reporter).not.toBe(firstReporter);
 
-    expect(disposeSpy).toBeCalledTimes(1);
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
 
     // initializing a third time continues to dispose
     await telemetryListener.initialize();
-    expect(disposeSpy).toBeCalledTimes(2);
+    expect(disposeSpy).toHaveBeenCalledTimes(2);
   });
 
   it("should reinitialize reporter when extension setting changes", async () => {
@@ -170,13 +170,13 @@ describe("telemetry reporting", () => {
 
     expect(telemetryListener._reporter).toBeUndefined();
 
-    expect(disposeSpy).toBeCalledTimes(1);
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
 
     // creates a new reporter, but does not dispose again
     await enableTelemetry("codeQL.telemetry", true);
 
     expect(telemetryListener._reporter).toBeDefined();
-    expect(disposeSpy).toBeCalledTimes(1);
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
   });
 
   it("should set userOprIn to false when global setting changes", async () => {
@@ -361,7 +361,7 @@ describe("telemetry reporting", () => {
     await wait(500);
 
     // Dialog opened, user clicks "yes" and telemetry enabled
-    expect(showInformationMessageSpy).toBeCalledTimes(1);
+    expect(showInformationMessageSpy).toHaveBeenCalledTimes(1);
     expect(ENABLE_TELEMETRY.getValue()).toBe(true);
     expect(ctx.globalState.get("telemetry-request-viewed")).toBe(true);
   });
@@ -374,7 +374,7 @@ describe("telemetry reporting", () => {
     await telemetryListener.initialize();
 
     // Dialog opened, user clicks "no" and telemetry disabled
-    expect(showInformationMessageSpy).toBeCalledTimes(1);
+    expect(showInformationMessageSpy).toHaveBeenCalledTimes(1);
     expect(ENABLE_TELEMETRY.getValue()).toBe(false);
     expect(ctx.globalState.get("telemetry-request-viewed")).toBe(true);
   });
@@ -387,7 +387,7 @@ describe("telemetry reporting", () => {
     await enableTelemetry("codeQL.telemetry", false);
 
     // Dialog opened, and user closes without interacting with it
-    expect(showInformationMessageSpy).toBeCalledTimes(1);
+    expect(showInformationMessageSpy).toHaveBeenCalledTimes(1);
     expect(ENABLE_TELEMETRY.getValue()).toBe(false);
     // dialog was canceled, so should not have marked as viewed
     expect(ctx.globalState.get("telemetry-request-viewed")).toBe(false);
@@ -406,7 +406,7 @@ describe("telemetry reporting", () => {
 
     // Dialog opened, and user closes without interacting with it
     // Telemetry state should not have changed
-    expect(showInformationMessageSpy).toBeCalledTimes(1);
+    expect(showInformationMessageSpy).toHaveBeenCalledTimes(1);
     expect(ENABLE_TELEMETRY.getValue()).toBe(true);
     // dialog was canceled, so should not have marked as viewed
     expect(ctx.globalState.get("telemetry-request-viewed")).toBe(false);
@@ -447,7 +447,7 @@ describe("telemetry reporting", () => {
 
     // now, we should have to click through the telemetry requestor again
     expect(ctx.globalState.get("telemetry-request-viewed")).toBe(false);
-    expect(showInformationMessageSpy).toBeCalledTimes(1);
+    expect(showInformationMessageSpy).toHaveBeenCalledTimes(1);
   });
 
   it("should send a ui-interaction telementry event", async () => {

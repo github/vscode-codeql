@@ -594,7 +594,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy = jest.spyOn(inProgress1, "cancel");
 
         await queryHistoryManager.handleCancel([inProgress1]);
-        expect(cancelSpy).toBeCalledTimes(1);
+        expect(cancelSpy).toHaveBeenCalledTimes(1);
       });
 
       it("should cancel multiple local queries", async () => {
@@ -650,7 +650,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy = jest.spyOn(completed, "cancel");
 
         await queryHistoryManager.handleCancel([completed]);
-        expect(cancelSpy).not.toBeCalledTimes(1);
+        expect(cancelSpy).not.toHaveBeenCalledTimes(1);
       });
 
       it("should not cancel multiple local queries", async () => {
@@ -664,8 +664,8 @@ describe("QueryHistoryManager", () => {
         const cancelSpy2 = jest.spyOn(failed, "cancel");
 
         await queryHistoryManager.handleCancel([completed, failed]);
-        expect(cancelSpy).not.toBeCalledTimes(1);
-        expect(cancelSpy2).not.toBeCalledTimes(1);
+        expect(cancelSpy).not.toHaveBeenCalledTimes(1);
+        expect(cancelSpy2).not.toHaveBeenCalledTimes(1);
       });
 
       it("should not cancel a single variant analysis", async () => {

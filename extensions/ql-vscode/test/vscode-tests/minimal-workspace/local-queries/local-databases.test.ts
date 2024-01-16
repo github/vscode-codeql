@@ -618,7 +618,7 @@ describe("local databases", () => {
       it("should offer the user to set up a skeleton QL pack", async () => {
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(showNeverAskAgainDialogSpy).toBeCalledTimes(1);
+        expect(showNeverAskAgainDialogSpy).toHaveBeenCalledTimes(1);
       });
 
       it("should return early if the user refuses help", async () => {
@@ -742,7 +742,7 @@ describe("local databases", () => {
         mockDbItem.origin,
       );
 
-      expect(resolveDatabaseContentsSpy).toBeCalledTimes(2);
+      expect(resolveDatabaseContentsSpy).toHaveBeenCalledTimes(2);
     });
 
     it("should set the database as the currently selected one", async () => {
@@ -751,7 +751,7 @@ describe("local databases", () => {
         mockDbItem.origin,
       );
 
-      expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
+      expect(setCurrentDatabaseItemSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should not add database source archive folder when `codeQL.addingDatabases.addDatabaseSourceToWorkspace` is `false`", async () => {
@@ -762,7 +762,7 @@ describe("local databases", () => {
         mockDbItem.origin,
       );
 
-      expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(0);
+      expect(addDatabaseSourceArchiveFolderSpy).toHaveBeenCalledTimes(0);
     });
 
     it("should add database source archive folder when `codeQL.addingDatabases.addDatabaseSourceToWorkspace` is `true`", async () => {
@@ -773,7 +773,7 @@ describe("local databases", () => {
         mockDbItem.origin,
       );
 
-      expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(1);
+      expect(addDatabaseSourceArchiveFolderSpy).toHaveBeenCalledTimes(1);
     });
 
     describe("when codeQL.codespacesTemplate is set to true", () => {
@@ -793,7 +793,7 @@ describe("local databases", () => {
             { isTutorialDatabase },
           );
 
-          expect(createSkeletonPacksSpy).toBeCalledTimes(0);
+          expect(createSkeletonPacksSpy).toHaveBeenCalledTimes(0);
         });
       });
 
@@ -806,7 +806,7 @@ describe("local databases", () => {
             mockDbItem.origin,
           );
 
-          expect(createSkeletonPacksSpy).toBeCalledTimes(1);
+          expect(createSkeletonPacksSpy).toHaveBeenCalledTimes(1);
         });
       });
     });
@@ -819,7 +819,7 @@ describe("local databases", () => {
           mockDbItem.databaseUri,
           mockDbItem.origin,
         );
-        expect(createSkeletonPacksSpy).toBeCalledTimes(0);
+        expect(createSkeletonPacksSpy).toHaveBeenCalledTimes(0);
       });
     });
   });

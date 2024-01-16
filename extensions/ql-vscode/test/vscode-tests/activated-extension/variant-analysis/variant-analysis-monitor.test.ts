@@ -121,7 +121,7 @@ describe("Variant Analysis Monitor", () => {
         );
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).toBeCalledTimes(succeededRepos.length);
+        expect(mockEecuteCommand).toHaveBeenCalledTimes(succeededRepos.length);
 
         succeededRepos.forEach((succeededRepo, index) => {
           expect(mockEecuteCommand).toHaveBeenNthCalledWith(
@@ -197,8 +197,8 @@ describe("Variant Analysis Monitor", () => {
       it("should trigger a download extension command for each repo", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockGetVariantAnalysis).toBeCalledTimes(4);
-        expect(mockEecuteCommand).toBeCalledTimes(5);
+        expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(4);
+        expect(mockEecuteCommand).toHaveBeenCalledTimes(5);
       });
     });
 
@@ -261,7 +261,7 @@ describe("Variant Analysis Monitor", () => {
       it("should only trigger the warning once per error", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(logger.showWarningMessage).toBeCalledTimes(4);
+        expect(logger.showWarningMessage).toHaveBeenCalledTimes(4);
         expect(logger.showWarningMessage).toHaveBeenNthCalledWith(
           1,
           expect.stringMatching(/No internet connection/),

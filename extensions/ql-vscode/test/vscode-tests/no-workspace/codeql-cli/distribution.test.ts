@@ -114,8 +114,8 @@ describe("Launcher path", () => {
     expect(result).toBe(pathToCmd);
 
     // no warning or error message
-    expect(warnSpy).toBeCalledTimes(0);
-    expect(errorSpy).toBeCalledTimes(0);
+    expect(warnSpy).toHaveBeenCalledTimes(0);
+    expect(errorSpy).toHaveBeenCalledTimes(0);
   });
 
   it("should warn when deprecated launcher is used, and new launcher is available", async () => {
@@ -132,8 +132,8 @@ describe("Launcher path", () => {
     expect(result).toBe(pathToCmd);
 
     // has warning message
-    expect(warnSpy).toBeCalledTimes(1);
-    expect(errorSpy).toBeCalledTimes(0);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledTimes(0);
   });
 
   it("should warn when launcher path is incorrect", async () => {
@@ -147,7 +147,7 @@ describe("Launcher path", () => {
     expect(result).toBeUndefined();
 
     // no error message
-    expect(warnSpy).toBeCalledTimes(0);
-    expect(errorSpy).toBeCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledTimes(0);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
   });
 });
