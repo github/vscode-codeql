@@ -220,7 +220,7 @@ export class VariantAnalysisManager
   private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        await this.runVariantAnalysis(uri, progress, token);
+        await this.runVariantAnalysis([uri], progress, token);
       },
       {
         title: "Run Variant Analysis",
@@ -230,7 +230,7 @@ export class VariantAnalysisManager
   }
 
   public async runVariantAnalysis(
-    uri: Uri,
+    uris: Uri[],
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
@@ -254,7 +254,7 @@ export class VariantAnalysisManager
     } = await prepareRemoteQueryRun(
       this.cliServer,
       this.app.credentials,
-      uri,
+      uris,
       progress,
       token,
       this.dbManager,
