@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type {
   ModeledMethod,
   ModeledMethodType,
@@ -32,16 +32,20 @@ export const ModelTypeDropdown = ({
   modelingStatus,
   onChange,
 }: Props): JSX.Element => {
-  const options: Array<{ value: ModeledMethodType; label: string }> = [
-    { value: "none", label: "Unmodeled" },
-    { value: "source", label: "Source" },
-    { value: "sink", label: "Sink" },
-    { value: "summary", label: "Flow summary" },
-    { value: "neutral", label: "Neutral" },
-  ];
-  if (language === QueryLanguage.Ruby) {
-    options.push({ value: "type", label: "Type" });
-  }
+  const options = useMemo(() => {
+    const baseOptions: Array<{ value: ModeledMethodType; label: string }> = [
+      { value: "none", label: "Unmodeled" },
+      { value: "source", label: "Source" },
+      { value: "sink", label: "Sink" },
+      { value: "summary", label: "Flow summary" },
+      { value: "neutral", label: "Neutral" },
+    ];
+    if (language === QueryLanguage.Ruby) {
+      baseOptions.push({ value: "type", label: "Type" });
+    }
+
+    return baseOptions;
+  }, [language]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
