@@ -827,7 +827,7 @@ export class DatabaseUI extends DisposableObject {
     return this.databaseManager.currentDatabaseItem;
   }
 
-  public async promptForDatabase(): Promise<void> {
+  private async promptForDatabase(): Promise<void> {
     const quickPickItems: DatabaseSelectionQuickPickItem[] = [
       {
         label: "$(database) Existing database",
@@ -862,7 +862,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  public async selectExistingDatabase() {
+  private async selectExistingDatabase() {
     const dbItems: DatabaseQuickPickItem[] =
       this.databaseManager.databaseItems.map((dbItem) => ({
         label: dbItem.name,
@@ -884,7 +884,7 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  public async importNewDatabase() {
+  private async importNewDatabase() {
     const importOptions: DatabaseImportQuickPickItems[] = [
       {
         label: "$(github) GitHub",

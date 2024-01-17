@@ -7,7 +7,7 @@ import {
   createFileSync,
   pathExistsSync,
 } from "fs-extra";
-import { Uri, window } from "vscode";
+import { CancellationTokenSource, Uri, window } from "vscode";
 import type { DatabaseSelectionQuickPickItem } from "../../../../src/databases/local-databases-ui";
 
 import { DatabaseUI } from "../../../../src/databases/local-databases-ui";
@@ -37,27 +37,7 @@ describe("local-databases-ui", () => {
   );
 
   const app = createMockApp({});
-  const databaseUI = new DatabaseUI(
-    app,
-    {
-      databaseItems: [{ databaseUri: Uri.file(db1) }],
-      onDidChangeDatabaseItem: () => {
-        /**/
-      },
-      onDidChangeCurrentDatabaseItem: () => {
-        /**/
-      },
-      setCurrentDatabaseItem: () => {},
-    } as any,
-    {
-      onLanguageContextChanged: () => {
-        /**/
-      },
-    } as any,
-    {} as any,
-    storageDir,
-    storageDir,
-  );
+
   describe("fixDbUri", () => {
     const fixDbUri = (DatabaseUI.prototype as any).fixDbUri;
     it("should choose current directory normally", async () => {
@@ -107,6 +87,27 @@ describe("local-databases-ui", () => {
   });
 
   it("should delete orphaned databases", async () => {
+    const databaseUI = new DatabaseUI(
+      app,
+      {
+        databaseItems: [{ databaseUri: Uri.file(db1) }],
+        onDidChangeDatabaseItem: () => {
+          /**/
+        },
+        onDidChangeCurrentDatabaseItem: () => {
+          /**/
+        },
+        setCurrentDatabaseItem: () => {},
+      } as any,
+      {
+        onLanguageContextChanged: () => {
+          /**/
+        },
+      } as any,
+      {} as any,
+      storageDir,
+      storageDir,
+    );
     await databaseUI.handleRemoveOrphanedDatabases();
 
     expect(pathExistsSync(db1)).toBe(true);
@@ -119,8 +120,62 @@ describe("local-databases-ui", () => {
     databaseUI.dispose(testDisposeHandler);
   });
 
-  describe("promptForDatabase", () => {
-    it("should prompt for a new or existing database", async () => {
+  describe("getDatabaseItem", () => {
+    const progress = jest.fn();
+    const token = new CancellationTokenSource().token;
+    it("should return current database if there is one", async () => {
+      const databaseUI = new DatabaseUI(
+        app,
+        {
+          databaseItems: [{ databaseUri: Uri.file(db1) }],
+          onDidChangeDatabaseItem: () => {
+            /**/
+          },
+          onDidChangeCurrentDatabaseItem: () => {
+            /**/
+          },
+          setCurrentDatabaseItem: () => {},
+          currentDatabaseItem: { databaseUri: Uri.file(db1) },
+        } as any,
+        {
+          onLanguageContextChanged: () => {
+            /**/
+          },
+        } as any,
+        {} as any,
+        storageDir,
+        storageDir,
+      );
+
+      const databaseItem = await databaseUI.getDatabaseItem(progress, token);
+
+      expect(databaseItem).toBeDefined();
+    });
+
+    it("should prompt for a database if there is no current one", async () => {
+      const databaseUI = new DatabaseUI(
+        app,
+        {
+          databaseItems: [{ databaseUri: Uri.file(db1) }],
+          onDidChangeDatabaseItem: () => {
+            /**/
+          },
+          onDidChangeCurrentDatabaseItem: () => {
+            /**/
+          },
+          setCurrentDatabaseItem: () => {},
+          currentDatabaseItem: undefined,
+        } as any,
+        {
+          onLanguageContextChanged: () => {
+            /**/
+          },
+        } as any,
+        {} as any,
+        storageDir,
+        storageDir,
+      );
+
       const showQuickPickSpy = jest
         .spyOn(window, "showQuickPick")
         .mockResolvedValue(
@@ -132,14 +187,15 @@ describe("local-databases-ui", () => {
         );
 
       const selectExistingDatabaseSpy = jest
-        .spyOn(databaseUI, "selectExistingDatabase")
+        .spyOn(databaseUI as any, "selectExistingDatabase")
         .mockResolvedValue(undefined);
 
       const importNewDatabaseSpy = jest
-        .spyOn(databaseUI, "importNewDatabase")
+        .spyOn(databaseUI as any, "importNewDatabase")
         .mockResolvedValue(undefined);
 
-      await databaseUI.promptForDatabase();
+      await databaseUI.getDatabaseItem(progress, token);
+
       expect(showQuickPickSpy).toHaveBeenCalledWith(
         [
           {
