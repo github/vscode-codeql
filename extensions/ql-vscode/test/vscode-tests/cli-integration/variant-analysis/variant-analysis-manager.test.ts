@@ -413,7 +413,7 @@ describe("Variant Analysis Manager", () => {
       // Should include queries. Just check that at least one known query exists.
       // It doesn't particularly matter which query we check for.
       expect(
-        queries.find((q) => q.fsPath.includes("CWE-201/PostMessageStar.ql")),
+        queries.find((q) => q.fsPath.includes("PostMessageStar.ql")),
       ).toBeDefined();
       // Should not include non-problem queries.
       expect(
