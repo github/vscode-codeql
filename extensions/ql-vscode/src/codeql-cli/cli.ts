@@ -1420,27 +1420,6 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
-  public async packCreate(
-    dir: string,
-    workspaceFolders: string[],
-    outputPath: string,
-    moreOptions: string[],
-  ): Promise<void> {
-    const args = [
-      "--output",
-      outputPath,
-      dir,
-      ...moreOptions,
-      ...this.getAdditionalPacksArg(workspaceFolders),
-    ];
-
-    return this.runJsonCodeQlCliCommandWithAuthentication(
-      ["pack", "create"],
-      args,
-      "Creating pack",
-    );
-  }
-
   async packBundle(
     dir: string,
     workspaceFolders: string[],

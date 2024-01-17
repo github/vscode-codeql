@@ -1,11 +1,7 @@
 import { platform } from "os";
 import { basename, dirname, join, normalize, resolve } from "path";
 import { lstat, readdir } from "fs/promises";
-import { extLogger } from "./logging/vscode";
-
-async function log(message: string): Promise<void> {
-  await extLogger.log(message);
-}
+import type { BaseLogger } from "./logging";
 
 /**
  * Expand a single short path component
@@ -16,8 +12,9 @@ async function log(message: string): Promise<void> {
 async function expandShortPathComponent(
   dir: string,
   shortBase: string,
+  logger: BaseLogger,
 ): Promise<string> {
-  await log(`Expanding short path component: ${shortBase}`);
+  void logger.log(`Expanding short path component: ${shortBase}`);
 
   const fullPath = join(dir, shortBase);
 
@@ -25,36 +22,36 @@ async function expandShortPathComponent(
   const stats = await lstat(fullPath, { bigint: true });
   if (stats.dev === BigInt(0) || stats.ino === BigInt(0)) {
     // No inode info, so we won't be able to find this in the directory listing.
-    await log(`No inode info available. Skipping.`);
+    void logger.log(`No inode info available. Skipping.`);
     return shortBase;
   }
-  await log(`dev/inode: ${stats.dev}/${stats.ino}`);
+  void logger.log(`dev/inode: ${stats.dev}/${stats.ino}`);
 
   try {
     // Enumerate the children of the parent directory, and try to find one with the same dev/inode.
     const children = await readdir(dir);
     for (const child of children) {
-      await log(`considering child: ${child}`);
+      void logger.log(`considering child: ${child}`);
       try {
         const childStats = await lstat(join(dir, child), { bigint: true });
-        await log(`child dev/inode: ${childStats.dev}/${childStats.ino}`);
+        void logger.log(`child dev/inode: ${childStats.dev}/${childStats.ino}`);
         if (childStats.dev === stats.dev && childStats.ino === stats.ino) {
           // Found a match.
-          await log(`Found a match: ${child}`);
+          void logger.log(`Found a match: ${child}`);
           return child;
         }
       } catch (e) {
         // Can't read stats for the child, so skip it.
-        await log(`Error reading stats for child: ${e}`);
+        void logger.log(`Error reading stats for child: ${e}`);
       }
     }
   } catch (e) {
     // Can't read the directory, so we won't be able to find this in the directory listing.
-    await log(`Error reading directory: ${e}`);
+    void logger.log(`Error reading directory: ${e}`);
     return shortBase;
   }
 
-  await log(`No match found. Returning original.`);
+  void logger.log(`No match found. Returning original.`);
   return shortBase;
 }
 
@@ -63,49 +60,58 @@ async function expandShortPathComponent(
  * @param shortPath The path to expand.
  * @returns The expanded path.
  */
-async function expandShortPathRecursive(shortPath: string): Promise<string> {
+async function expandShortPathRecursive(
+  shortPath: string,
+  logger: BaseLogger,
+): Promise<string> {
   const shortBase = basename(shortPath);
   if (shortBase.length === 0) {
     // We've reached the root.
     return shortPath;
   }
 
-  const dir = await expandShortPathRecursive(dirname(shortPath));
-  await log(`dir: ${dir}`);
-  await log(`base: ${shortBase}`);
+  const dir = await expandShortPathRecursive(dirname(shortPath), logger);
+  void logger.log(`dir: ${dir}`);
+  void logger.log(`base: ${shortBase}`);
   if (shortBase.indexOf("~") < 0) {
     // This component doesn't have a short name, so just append it to the (long) parent.
-    await log(`Component is not a short name`);
+    void logger.log(`Component is not a short name`);
     return join(dir, shortBase);
   }
 
   // This component looks like it has a short name, so try to expand it.
-  const longBase = await expandShortPathComponent(dir, shortBase);
+  const longBase = await expandShortPathComponent(dir, shortBase, logger);
   return join(dir, longBase);
 }
 
 /**
  * Expands a path that potentially contains 8.3 short names (e.g. "C:\PROGRA~1" instead of "C:\Program Files").
+ *
+ * See https://en.wikipedia.org/wiki/8.3_filename if you're not familiar with Windows 8.3 short names.
+ *
  * @param shortPath The path to expand.
  * @returns A normalized, absolute path, with any short components expanded.
  */
-export async function expandShortPaths(shortPath: string): Promise<string> {
+export async function expandShortPaths(
+  shortPath: string,
+  logger: BaseLogger,
+): Promise<string> {
   const absoluteShortPath = normalize(resolve(shortPath));
   if (platform() !== "win32") {
     // POSIX doesn't have short paths.
     return absoluteShortPath;
   }
 
-  await log(`Expanding short paths in: ${absoluteShortPath}`);
+  void logger.log(`Expanding short paths in: ${absoluteShortPath}`);
   // A quick check to see if there might be any short components.
   // There might be a case where a short component doesn't contain a `~`, but if there is, I haven't
   // found it.
   // This may find long components that happen to have a '~', but that's OK.
   if (absoluteShortPath.indexOf("~") < 0) {
     // No short components to expand.
-    await log(`Skipping due to no short components`);
+    void logger.log(`Skipping due to no short components`);
     return absoluteShortPath;
   }
 
-  return await expandShortPathRecursive(absoluteShortPath);
+  return await expandShortPathRecursive(absoluteShortPath, logger);
 }
