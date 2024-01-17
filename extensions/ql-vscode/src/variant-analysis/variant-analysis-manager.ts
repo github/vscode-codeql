@@ -214,7 +214,7 @@ export class VariantAnalysisManager
     }
   }
 
-  private async runVariantAnalysisFromPublishedPack(): Promise<void> {
+  public async runVariantAnalysisFromPublishedPack(): Promise<void> {
     return withProgress(async (progress, token) => {
       progress({
         maxStep: 8,

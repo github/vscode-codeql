@@ -388,4 +388,37 @@ describe("Variant Analysis Manager", () => {
       }
     }
   });
+
+  describe("runVariantAnalysisFromPublishedPack", () => {
+    it("should download pack for correct language and identify problem queries", async () => {
+      const showQuickPickSpy = jest
+        .spyOn(window, "showQuickPick")
+        .mockResolvedValue(
+          mockedQuickPickItem({
+            label: "JavaScript",
+            description: "javascript",
+            language: "javascript",
+          }),
+        );
+
+      const runVariantAnalysisMock = jest.fn();
+      variantAnalysisManager.runVariantAnalysis = runVariantAnalysisMock;
+
+      await variantAnalysisManager.runVariantAnalysisFromPublishedPack();
+
+      expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+      expect(runVariantAnalysisMock).toHaveBeenCalledTimes(1);
+
+      const queries: Uri[] = runVariantAnalysisMock.mock.calls[0][0];
+      // Should include queries. Just check that at least one known query exists.
+      // It doesn't particularly matter which query we check for.
+      expect(
+        queries.find((q) => q.fsPath.includes("CWE-201/PostMessageStar.ql")),
+      ).toBeDefined();
+      // Should not include non-problem queries.
+      expect(
+        queries.find((q) => q.fsPath.includes("LinesOfCode.ql")),
+      ).not.toBeDefined();
+    });
+  });
 });
