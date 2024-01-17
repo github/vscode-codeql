@@ -347,6 +347,13 @@ export class VariantAnalysisManager
 
     const queryText = await readFile(queryFile, "utf8");
 
+    const queries =
+      uris.length === 1
+        ? undefined
+        : {
+            language: variantAnalysisLanguage,
+          };
+
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
       startTime: queryStartTime,
       actionRepoRef: actionBranch,
@@ -359,6 +366,7 @@ export class VariantAnalysisManager
         text: queryText,
         kind: queryMetadata?.kind,
       },
+      queries,
       databases: {
         repositories: repoSelection.repositories,
         repositoryLists: repoSelection.repositoryLists,

@@ -373,6 +373,11 @@ export class QueryHistoryManager extends DisposableObject {
     const variantAnalysisAddedSubscription =
       this.variantAnalysisManager.onVariantAnalysisAdded(
         async (variantAnalysis) => {
+          if (variantAnalysis.queries === undefined) {
+            // This is a variant analysis that contains multiple queries, which
+            // is not fully supported yet. So we ignore it from the query history.
+            return;
+          }
           this.addQuery({
             t: "variant-analysis",
             status: QueryStatus.InProgress,
