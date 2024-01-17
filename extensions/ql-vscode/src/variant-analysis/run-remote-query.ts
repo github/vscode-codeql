@@ -79,11 +79,10 @@ async function generateQueryPack(
     ? await askForLanguage(cliServer) // open popup to ask for language if not already hardcoded
     : await findLanguage(cliServer, Uri.file(queryFile));
   if (!language) {
-    throw new UserCancellationException("Could not determine language.");
+    throw new UserCancellationException("Could not determine language");
   }
 
   let queryPackDir: string;
-  let precompilationOpts: string[];
   let needsInstall: boolean;
   if (mustSynthesizePack) {
     // This section applies whether or not the CLI supports MRVA pack creation directly.
@@ -136,8 +135,7 @@ async function generateQueryPack(
     await cliServer.clearCache();
   }
 
-  // Clear the CLI cache so that the most recent qlpack lock file is used.
-  await cliServer.clearCache();
+  let precompilationOpts: string[];
   if (cliSupportsMrvaPackCreate) {
     precompilationOpts = [
       "--mrva",
@@ -151,11 +149,11 @@ async function generateQueryPack(
     if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
       precompilationOpts = ["--qlx"];
     } else {
-      const ccache = join(originalPackRoot, ".cache");
+      const cache = join(originalPackRoot, ".cache");
       precompilationOpts = [
         "--qlx",
         "--no-default-compilation-cache",
-        `--compilation-cache=${ccache}`,
+        `--compilation-cache=${cache}`,
       ];
     }
 
@@ -168,11 +166,13 @@ async function generateQueryPack(
   void extLogger.log(
     `Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`,
   );
-  await cliServer.packBundle(queryPackDir, workspaceFolders, bundlePath, [
-    "--pack-path",
+  await cliServer.packBundle(
+    queryPackDir,
+    workspaceFolders,
+    bundlePath,
     tmpDir.compiledPackDir,
-    ...precompilationOpts,
-  ]);
+    precompilationOpts,
+  );
   const base64Pack = (await readFile(bundlePath)).toString("base64");
   return {
     base64Pack,

@@ -20,50 +20,11 @@ import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import type { QueryPackFS } from "../../utils/bundled-pack-helpers";
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { load } from "js-yaml";
 import type { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
 import type { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
 import { expect } from "@jest/globals";
-import type { ExpectationResult } from "expect";
-
-/**
- * Custom Jest matcher to check if a file exists in a query pack.
- */
-function toExistInPack(
-  this: jest.MatcherContext,
-  actual: unknown,
-  packFS: QueryPackFS,
-): ExpectationResult {
-  if (typeof actual !== "string") {
-    throw new TypeError("Expected actual value to be a string.");
-  }
-
-  const pass = packFS.fileExists(actual);
-  const files = packFS.allFiles();
-  const filesString = files.length > 0 ? files.join("\n") : "<none>";
-  if (pass) {
-    return {
-      pass: true,
-      message: () => `expected ${actual} not to exist in pack`,
-    };
-  } else {
-    return {
-      pass: false,
-      message: () =>
-        `expected ${actual} to exist in pack.\nThe following files were found in the pack:\n${filesString}`,
-    };
-  }
-}
-
-expect.extend({ toExistInPack });
-
-declare module "expect" {
-  interface Matchers<R> {
-    toExistInPack(packFS: QueryPackFS): R;
-  }
-}
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
@@ -371,14 +332,14 @@ describe("Variant Analysis Manager", () => {
 
       const packFS = await readBundledPack(request.query.pack);
       filesThatExist.forEach((file) => {
-        expect(file).toExistInPack(packFS);
+        expect(file).toExistInCodeQLPack(packFS);
       });
 
       qlxFilesThatExist.forEach((file) => {
-        expect(file).toExistInPack(packFS);
+        expect(file).toExistInCodeQLPack(packFS);
       });
       filesThatDoNotExist.forEach((file) => {
-        expect(file).not.toExistInPack(packFS);
+        expect(file).not.toExistInCodeQLPack(packFS);
       });
 
       expect(

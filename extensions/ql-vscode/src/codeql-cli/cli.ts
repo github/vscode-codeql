@@ -1420,16 +1420,28 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
+  /**
+   * Compile a CodeQL pack and bundle it into a single file.
+   *
+   * @param sourcePackDir The directory of the input CodeQL pack.
+   * @param workspaceFolders The workspace folders to search for additional packs.
+   * @param outputBundleFile The path to the output bundle file.
+   * @param outputPackDir The directory to contain the unbundled output pack.
+   * @param moreOptions Additional options to be passed to `codeql pack bundle`.
+   */
   async packBundle(
-    dir: string,
+    sourcePackDir: string,
     workspaceFolders: string[],
-    outputPath: string,
+    outputBundleFile: string,
+    outputPackDir: string,
     moreOptions: string[],
   ): Promise<void> {
     const args = [
       "-o",
-      outputPath,
-      dir,
+      outputBundleFile,
+      sourcePackDir,
+      "--pack-path",
+      outputPackDir,
       ...moreOptions,
       ...this.getAdditionalPacksArg(workspaceFolders),
     ];
@@ -1492,7 +1504,7 @@ export class CodeQLCliServer implements Disposable {
     return (await this.getVersionAndFeatures()).features;
   }
 
-  public async getVersionAndFeatures(): Promise<VersionAndFeatures> {
+  private async getVersionAndFeatures(): Promise<VersionAndFeatures> {
     if (!this._versionAndFeatures) {
       try {
         const newVersionAndFeatures = await this.refreshVersion();
