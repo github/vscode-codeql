@@ -36,6 +36,7 @@ export function mapVariantAnalysis(
         text: submission.query.text,
         kind: submission.query.kind,
       },
+      queries: submission.queries,
       databases: submission.databases,
       executionStartTime: submission.startTime,
     },
@@ -46,7 +47,7 @@ export function mapVariantAnalysis(
 export function mapUpdatedVariantAnalysis(
   previousVariantAnalysis: Pick<
     VariantAnalysis,
-    "query" | "databases" | "executionStartTime"
+    "query" | "queries" | "databases" | "executionStartTime"
   >,
   response: ApiVariantAnalysis,
 ): VariantAnalysis {
@@ -73,6 +74,7 @@ export function mapUpdatedVariantAnalysis(
       private: response.controller_repo.private,
     },
     query: previousVariantAnalysis.query,
+    queries: previousVariantAnalysis.queries,
     databases: previousVariantAnalysis.databases,
     executionStartTime: previousVariantAnalysis.executionStartTime,
     createdAt: response.created_at,
