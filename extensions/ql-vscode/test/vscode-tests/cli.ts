@@ -1,4 +1,4 @@
-import { dirname } from "path";
+import { basename } from "path";
 import { workspace } from "vscode";
 
 /**
@@ -8,7 +8,7 @@ import { workspace } from "vscode";
 function hasCodeQL() {
   const folders = workspace.workspaceFolders;
   return !!folders?.some((folder) => {
-    const name = dirname(folder.uri.fsPath);
+    const name = basename(folder.uri.fsPath);
     return name === "codeql" || name === "ql";
   });
 }

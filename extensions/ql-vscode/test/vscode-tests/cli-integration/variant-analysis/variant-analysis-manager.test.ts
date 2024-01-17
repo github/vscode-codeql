@@ -24,7 +24,8 @@ import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { load } from "js-yaml";
 import type { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
 import type { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
-import { expect } from "@jest/globals";
+//import { expect } from "@jest/globals";
+import "../../../matchers/toExistInCodeQLPack";
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
