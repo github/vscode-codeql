@@ -31,6 +31,7 @@ import type { FileTreeNode } from "../common/file-tree-nodes";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import type { TestUICommands } from "../common/commands";
 import { basename, extname } from "path";
+import type { QueryServerClient } from "../query-server";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -121,10 +122,15 @@ class WorkspaceFolderHandler extends DisposableObject {
     private readonly workspaceFolder: WorkspaceFolder,
     private readonly testUI: TestManager,
     cliServer: CodeQLCliServer,
+    queryServerClient: QueryServerClient,
   ) {
     super();
 
-    this.testDiscovery = new QLTestDiscovery(workspaceFolder, cliServer);
+    this.testDiscovery = new QLTestDiscovery(
+      workspaceFolder,
+      cliServer,
+      queryServerClient,
+    );
     this.push(
       this.testDiscovery.onDidChangeTests(this.handleDidChangeTests, this),
     );
@@ -159,6 +165,7 @@ export class TestManager extends DisposableObject {
     private readonly app: App,
     private readonly testRunner: TestRunner,
     private readonly cliServer: CodeQLCliServer,
+    private readonly queryServerClient: QueryServerClient,
     // Having this as a parameter with a default value makes passing in a mock easier.
     private readonly testController: TestController = tests.createTestController(
       "codeql",
@@ -259,6 +266,7 @@ export class TestManager extends DisposableObject {
           workspaceFolder,
           this,
           this.cliServer,
+          this.queryServerClient,
         );
         this.track(workspaceFolderHandler);
         this.workspaceFolderHandlers.set(

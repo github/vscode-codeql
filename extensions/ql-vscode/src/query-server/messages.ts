@@ -147,6 +147,14 @@ type UpgradeResult = Record<string, unknown>;
 type ClearPackCacheParams = Record<string, unknown>;
 type ClearPackCacheResult = Record<string, unknown>;
 
+interface ResolveTestsParams {
+  paths: string[];
+}
+
+interface ResolveTestsResult {
+  paths: string[];
+}
+
 /**
  * A position within a QL file.
  */
@@ -213,6 +221,12 @@ export const upgradeDatabase = new RequestType<
   UpgradeResult,
   void
 >("evaluation/runUpgrade");
+
+export const resolveTests = new RequestType<
+  WithProgressId<ResolveTestsParams>,
+  ResolveTestsResult,
+  void
+>("codeql/resolveTests");
 
 /**
  * A notification that the progress has been changed.

@@ -1,12 +1,14 @@
-import { dirname, basename, normalize, relative, extname } from "path";
+import { basename, dirname, extname, normalize, relative } from "path";
 import { Discovery } from "../common/discovery";
-import type { Event, Uri, WorkspaceFolder } from "vscode";
-import { EventEmitter, RelativePattern, env } from "vscode";
+import type { Event, WorkspaceFolder, Uri } from "vscode";
+import { env, EventEmitter, RelativePattern } from "vscode";
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { extLogger } from "../common/logging/vscode";
+import type { QueryServerClient } from "../query-server";
+import { resolveTests } from "../query-server/messages";
 
 /**
  * Discovers all QL tests contained in the QL packs in a given workspace folder.
@@ -21,6 +23,7 @@ export class QLTestDiscovery extends Discovery {
   constructor(
     private readonly workspaceFolder: WorkspaceFolder,
     private readonly cliServer: CodeQLCliServer,
+    private readonly queryServerClient: QueryServerClient,
   ) {
     super("QL Test Discovery", extLogger);
 
@@ -56,6 +59,7 @@ export class QLTestDiscovery extends Discovery {
       void this.refresh();
     }
   }
+
   protected async discover() {
     this._testDirectory = await this.discoverTests();
 
@@ -74,9 +78,9 @@ export class QLTestDiscovery extends Discovery {
 
     // Don't try discovery on workspace folders that don't exist on the filesystem
     if (await pathExists(fullPath)) {
-      const resolvedTests = (
-        await this.cliServer.resolveTests(fullPath)
-      ).filter((testPath) => !QLTestDiscovery.ignoreTestPath(testPath));
+      const resolvedTests = (await this.resolveTestsForPath(fullPath)).filter(
+        (testPath) => !QLTestDiscovery.ignoreTestPath(testPath),
+      );
       for (const testPath of resolvedTests) {
         const relativePath = normalize(relative(fullPath, testPath));
         const dirName = dirname(relativePath);
@@ -89,6 +93,20 @@ export class QLTestDiscovery extends Discovery {
       rootDirectory.finish();
     }
     return rootDirectory;
+  }
+
+  private async resolveTestsForPath(path: string): Promise<string[]> {
+    if (
+      await this.cliServer.cliConstraints.supportsResolveTestsInQueryServer2()
+    ) {
+      const { paths } = await this.queryServerClient.sendRequest(resolveTests, {
+        paths: [path],
+      });
+
+      return paths;
+    } else {
+      return await this.cliServer.resolveTests(path);
+    }
   }
 
   /**

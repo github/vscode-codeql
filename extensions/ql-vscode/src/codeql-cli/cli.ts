@@ -1755,4 +1755,8 @@ export class CliVersionConstraint {
       CliVersionConstraint.CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA,
     );
   }
+
+  async supportsResolveTestsInQueryServer2() {
+    return true;
+  }
 }

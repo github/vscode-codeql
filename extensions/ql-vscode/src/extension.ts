@@ -983,7 +983,7 @@ async function activateWithInstalledDistribution(
   const testRunner = new TestRunner(dbm, cliServer);
   ctx.subscriptions.push(testRunner);
 
-  const testManager = new TestManager(app, testRunner, cliServer);
+  const testManager = new TestManager(app, testRunner, cliServer, qs.qs);
   ctx.subscriptions.push(testManager);
 
   const testUiCommands = testManager?.getCommands() ?? {};
