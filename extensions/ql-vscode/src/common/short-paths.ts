@@ -4,6 +4,38 @@ import { lstat, readdir } from "fs/promises";
 import type { BaseLogger } from "./logging";
 
 /**
+ * Expands a path that potentially contains 8.3 short names (e.g. "C:\PROGRA~1" instead of "C:\Program Files").
+ *
+ * See https://en.wikipedia.org/wiki/8.3_filename if you're not familiar with Windows 8.3 short names.
+ *
+ * @param shortPath The path to expand.
+ * @returns A normalized, absolute path, with any short components expanded.
+ */
+export async function expandShortPaths(
+  shortPath: string,
+  logger: BaseLogger,
+): Promise<string> {
+  const absoluteShortPath = normalize(resolve(shortPath));
+  if (platform() !== "win32") {
+    // POSIX doesn't have short paths.
+    return absoluteShortPath;
+  }
+
+  void logger.log(`Expanding short paths in: ${absoluteShortPath}`);
+  // A quick check to see if there might be any short components.
+  // There might be a case where a short component doesn't contain a `~`, but if there is, I haven't
+  // found it.
+  // This may find long components that happen to have a '~', but that's OK.
+  if (absoluteShortPath.indexOf("~") < 0) {
+    // No short components to expand.
+    void logger.log(`Skipping due to no short components`);
+    return absoluteShortPath;
+  }
+
+  return await expandShortPathRecursive(absoluteShortPath, logger);
+}
+
+/**
  * Expand a single short path component
  * @param dir The absolute path of the directory containing the short path component.
  * @param shortBase The shot path component to expand.
@@ -82,36 +114,4 @@ async function expandShortPathRecursive(
   // This component looks like it has a short name, so try to expand it.
   const longBase = await expandShortPathComponent(dir, shortBase, logger);
   return join(dir, longBase);
-}
-
-/**
- * Expands a path that potentially contains 8.3 short names (e.g. "C:\PROGRA~1" instead of "C:\Program Files").
- *
- * See https://en.wikipedia.org/wiki/8.3_filename if you're not familiar with Windows 8.3 short names.
- *
- * @param shortPath The path to expand.
- * @returns A normalized, absolute path, with any short components expanded.
- */
-export async function expandShortPaths(
-  shortPath: string,
-  logger: BaseLogger,
-): Promise<string> {
-  const absoluteShortPath = normalize(resolve(shortPath));
-  if (platform() !== "win32") {
-    // POSIX doesn't have short paths.
-    return absoluteShortPath;
-  }
-
-  void logger.log(`Expanding short paths in: ${absoluteShortPath}`);
-  // A quick check to see if there might be any short components.
-  // There might be a case where a short component doesn't contain a `~`, but if there is, I haven't
-  // found it.
-  // This may find long components that happen to have a '~', but that's OK.
-  if (absoluteShortPath.indexOf("~") < 0) {
-    // No short components to expand.
-    void logger.log(`Skipping due to no short components`);
-    return absoluteShortPath;
-  }
-
-  return await expandShortPathRecursive(absoluteShortPath, logger);
 }
