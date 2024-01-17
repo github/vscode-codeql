@@ -1657,7 +1657,7 @@ function isEnvTrue(name: string): boolean {
   );
 }
 
-export function shouldDebugIdeServer() {
+export function shouldDebugLanguageServer() {
   return isEnvTrue("IDE_SERVER_JAVA_DEBUG");
 }
 

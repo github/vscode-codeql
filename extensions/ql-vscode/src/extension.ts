@@ -34,7 +34,7 @@ import {
 } from "./config";
 import {
   AstViewer,
-  createIDEServer,
+  createLanguageClient,
   getQueryEditorCommands,
   install,
   TemplatePrintAstProvider,
@@ -84,7 +84,7 @@ import {
 import type { ProgressReporter } from "./common/logging/vscode";
 import {
   extLogger,
-  ideServerLogger,
+  languageServerLogger,
   queryServerLogger,
 } from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
@@ -171,7 +171,7 @@ function getCommands(
   app: App,
   cliServer: CodeQLCliServer,
   queryRunner: QueryRunner,
-  ideServer: LanguageClient,
+  languageClient: LanguageClient,
 ): BaseCommands {
   const getCliVersion = async () => {
     try {
@@ -189,10 +189,10 @@ function getCommands(
         await Promise.all([
           queryRunner.restartQueryServer(progress, token),
           async () => {
-            if (ideServer.isRunning()) {
-              await ideServer.restart();
+            if (languageClient.isRunning()) {
+              await languageClient.restart();
             } else {
-              await ideServer.start();
+              await languageClient.start();
             }
           },
         ]);
@@ -942,7 +942,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(tmpDirDisposal);
 
   void extLogger.log("Initializing CodeQL language server.");
-  const ideServer = createIDEServer(qlConfigurationListener);
+  const languageClient = createLanguageClient(qlConfigurationListener);
 
   const localQueries = new LocalQueries(
     app,
@@ -1008,7 +1008,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(app, cliServer, qs, ideServer),
+    ...getCommands(app, cliServer, qs, languageClient),
     ...getQueryEditorCommands({
       commandManager: app.commands,
       queryRunner: qs,
@@ -1055,21 +1055,21 @@ async function activateWithInstalledDistribution(
   }
 
   void extLogger.log("Starting language server.");
-  await ideServer.start();
+  await languageClient.start();
   ctx.subscriptions.push({
     dispose: () => {
-      void ideServer.stop();
+      void languageClient.stop();
     },
   });
 
-  // Handle visibility changes in the ideserver
+  // Handle visibility changes in the CodeQL language client.
   if (await cliServer.cliConstraints.supportsVisibilityNotifications()) {
     Window.onDidChangeVisibleTextEditors((editors) => {
-      ideServer.notifyVisibilityChange(editors);
+      languageClient.notifyVisibilityChange(editors);
     });
     // Send an inital notification to the language server
     // to set the initial state of the visible editors.
-    ideServer.notifyVisibilityChange(Window.visibleTextEditors);
+    languageClient.notifyVisibilityChange(Window.visibleTextEditors);
   }
 
   // Jump-to-definition and find-references
@@ -1251,7 +1251,7 @@ function getContextStoragePath(ctx: ExtensionContext) {
 async function initializeLogging(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(extLogger);
   ctx.subscriptions.push(queryServerLogger);
-  ctx.subscriptions.push(ideServerLogger);
+  ctx.subscriptions.push(languageServerLogger);
 }
 
 const checkForUpdatesCommand: keyof PreActivationCommands =
