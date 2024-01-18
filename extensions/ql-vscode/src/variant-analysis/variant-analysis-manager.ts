@@ -43,9 +43,9 @@ import type {
 } from "./variant-analysis-results-manager";
 import { getQueryName, prepareRemoteQueryRun } from "./run-remote-query";
 import {
-  processVariantAnalysis,
-  processVariantAnalysisRepositoryTask,
-} from "./variant-analysis-processor";
+  mapVariantAnalysis,
+  mapVariantAnalysisRepositoryTask,
+} from "./variant-analysis-mapper";
 import PQueue from "p-queue";
 import { createTimestampFile, saveBeforeStart } from "../run-queries-shared";
 import { readFile, remove, pathExists } from "fs-extra";
@@ -86,6 +86,8 @@ import {
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { RequestError } from "@octokit/request-error";
 import { handleRequestError } from "./custom-errors";
+import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
+import { askForLanguage } from "../codeql-cli/query-language";
 
 const maxRetryCount = 3;
 
@@ -166,12 +168,16 @@ export class VariantAnalysisManager
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
-        this.runVariantAnalysisFromCommand.bind(this),
-      // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
+        this.runVariantAnalysisFromCommandPalette.bind(this),
       "codeQL.runVariantAnalysisContextEditor":
-        this.runVariantAnalysisFromCommand.bind(this),
+        this.runVariantAnalysisFromContextEditor.bind(this),
+      "codeQL.runVariantAnalysisContextExplorer": createMultiSelectionCommand(
+        this.runVariantAnalysisFromExplorer.bind(this),
+      ),
       "codeQLQueries.runVariantAnalysisContextMenu":
         this.runVariantAnalysisFromQueriesPanel.bind(this),
+      "codeQL.runVariantAnalysisPublishedPack":
+        this.runVariantAnalysisFromPublishedPack.bind(this),
     };
   }
 
@@ -179,14 +185,120 @@ export class VariantAnalysisManager
     return this.app.commands;
   }
 
-  private async runVariantAnalysisFromCommand(uri?: Uri) {
+  private async runVariantAnalysisFromCommandPalette() {
+    const fileUri = Window.activeTextEditor?.document.uri;
+    if (!fileUri) {
+      throw new Error("Please select a .ql file to run as a variant analysis");
+    }
+
+    await this.runVariantAnalysisCommand(fileUri);
+  }
+
+  private async runVariantAnalysisFromContextEditor(uri: Uri) {
+    await this.runVariantAnalysisCommand(uri);
+  }
+
+  private async runVariantAnalysisFromExplorer(fileURIs: Uri[]): Promise<void> {
+    if (fileURIs.length !== 1) {
+      throw new Error("Can only run a single query at a time");
+    }
+
+    return this.runVariantAnalysisCommand(fileURIs[0]);
+  }
+
+  private async runVariantAnalysisFromQueriesPanel(
+    queryTreeViewItem: QueryTreeViewItem,
+  ): Promise<void> {
+    if (queryTreeViewItem.path !== undefined) {
+      await this.runVariantAnalysisCommand(Uri.file(queryTreeViewItem.path));
+    }
+  }
+
+  public async runVariantAnalysisFromPublishedPack(): Promise<void> {
+    return withProgress(async (progress, token) => {
+      progress({
+        maxStep: 8,
+        step: 0,
+        message: "Determining query language",
+      });
+
+      const language = await askForLanguage(this.cliServer);
+
+      progress({
+        maxStep: 8,
+        step: 1,
+        message: "Downloading query pack",
+      });
+
+      const packName = `codeql/${language}-queries`;
+      const packDownloadResult = await this.cliServer.packDownload([packName]);
+      const downloadedPack = packDownloadResult.packs[0];
+
+      const packDir = join(
+        packDownloadResult.packDir,
+        downloadedPack.name,
+        downloadedPack.version,
+      );
+
+      progress({
+        maxStep: 8,
+        step: 2,
+        message: "Resolving queries in pack",
+      });
+
+      const suitePath = join(
+        packDir,
+        "codeql-suites",
+        `${language}-code-scanning.qls`,
+      );
+      const resolvedQueries = await this.cliServer.resolveQueries(suitePath);
+
+      const problemQueries =
+        await this.filterToOnlyProblemQueries(resolvedQueries);
+
+      if (problemQueries.length === 0) {
+        void this.app.logger.showErrorMessage(
+          `Unable to trigger variant analysis. No problem queries found in published query pack: ${packName}.`,
+        );
+        return;
+      }
+
+      await this.runVariantAnalysis(
+        problemQueries.map((q) => Uri.file(q)),
+        (p) =>
+          progress({
+            ...p,
+            maxStep: p.maxStep + 3,
+            step: p.step + 3,
+          }),
+        token,
+      );
+    });
+  }
+
+  private async filterToOnlyProblemQueries(
+    queries: string[],
+  ): Promise<string[]> {
+    const problemQueries: string[] = [];
+    for (const query of queries) {
+      const queryMetadata = await this.cliServer.resolveMetadata(query);
+      if (
+        queryMetadata.kind === "problem" ||
+        queryMetadata.kind === "path-problem"
+      ) {
+        problemQueries.push(query);
+      } else {
+        void this.app.logger.log(`Skipping non-problem query ${query}`);
+      }
+    }
+    return problemQueries;
+  }
+
+  private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
     return withProgress(
-      async (progress, token) =>
-        this.runVariantAnalysis(
-          uri || Window.activeTextEditor?.document.uri,
-          progress,
-          token,
-        ),
+      async (progress, token) => {
+        await this.runVariantAnalysis([uri], progress, token);
+      },
       {
         title: "Run Variant Analysis",
         cancellable: true,
@@ -194,18 +306,8 @@ export class VariantAnalysisManager
     );
   }
 
-  private async runVariantAnalysisFromQueriesPanel(
-    queryTreeViewItem: QueryTreeViewItem,
-  ): Promise<void> {
-    if (queryTreeViewItem.path !== undefined) {
-      await this.runVariantAnalysisFromCommand(
-        Uri.file(queryTreeViewItem.path),
-      );
-    }
-  }
-
   public async runVariantAnalysis(
-    uri: Uri | undefined,
+    uris: Uri[],
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
@@ -229,7 +331,7 @@ export class VariantAnalysisManager
     } = await prepareRemoteQueryRun(
       this.cliServer,
       this.app.credentials,
-      uri,
+      uris,
       progress,
       token,
       this.dbManager,
@@ -245,6 +347,13 @@ export class VariantAnalysisManager
 
     const queryText = await readFile(queryFile, "utf8");
 
+    const queries =
+      uris.length === 1
+        ? undefined
+        : {
+            language: variantAnalysisLanguage,
+          };
+
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
       startTime: queryStartTime,
       actionRepoRef: actionBranch,
@@ -257,6 +366,7 @@ export class VariantAnalysisManager
         text: queryText,
         kind: queryMetadata?.kind,
       },
+      queries,
       databases: {
         repositories: repoSelection.repositories,
         repositoryLists: repoSelection.repositoryLists,
@@ -279,7 +389,7 @@ export class VariantAnalysisManager
       throw e;
     }
 
-    const processedVariantAnalysis = processVariantAnalysis(
+    const processedVariantAnalysis = mapVariantAnalysis(
       variantAnalysisSubmission,
       variantAnalysisResponse,
     );
@@ -619,7 +729,7 @@ export class VariantAnalysisManager
         scannedRepo.repository.id,
       );
 
-      repoTask = processVariantAnalysisRepositoryTask(repoTaskResponse);
+      repoTask = mapVariantAnalysisRepositoryTask(repoTaskResponse);
     } catch (e) {
       repoState.downloadStatus =
         VariantAnalysisScannedRepositoryDownloadStatus.Failed;

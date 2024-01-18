@@ -7,11 +7,11 @@ import {
   modeledMethodSupportsInput,
 } from "../../model-editor/modeled-method";
 import type { Method } from "../../model-editor/method";
-import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import type { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
+import { ModelTypeTextbox } from "./ModelTypeTextbox";
 
 type Props = {
   language: QueryLanguage;
@@ -67,7 +67,14 @@ export const ModelInputDropdown = ({
       : undefined;
 
   if (modeledMethod?.type === "type") {
-    return <ReadonlyDropdown value={modeledMethod.path} aria-label="Path" />;
+    return (
+      <ModelTypeTextbox
+        modeledMethod={modeledMethod}
+        typeInfo="path"
+        onChange={onChange}
+        aria-label="Path"
+      />
+    );
   }
 
   const modelAccepted = isModelAccepted(modeledMethod, modelingStatus);

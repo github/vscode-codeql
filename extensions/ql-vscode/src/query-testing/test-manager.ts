@@ -1,10 +1,11 @@
-import { readFile } from "fs-extra";
+import { copy, createFile, lstat, pathExists, readFile } from "fs-extra";
 import type {
   CancellationToken,
   TestController,
   TestItem,
   TestRun,
   TestRunRequest,
+  TextDocumentShowOptions,
   WorkspaceFolder,
   WorkspaceFoldersChangeEvent,
 } from "vscode";
@@ -15,6 +16,7 @@ import {
   TestRunProfileKind,
   Uri,
   tests,
+  window,
   workspace,
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
@@ -23,11 +25,46 @@ import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { getErrorMessage } from "../common/helpers-pure";
 import type { BaseLogger, LogOptions } from "../common/logging";
 import type { TestRunner } from "./test-runner";
-import { TestManagerBase } from "./test-manager-base";
 import type { App } from "../common/app";
 import { isWorkspaceFolderOnDisk } from "../common/vscode/workspace-folders";
 import type { FileTreeNode } from "../common/file-tree-nodes";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
+import type { TestUICommands } from "../common/commands";
+import { basename, extname } from "path";
+
+/**
+ * Get the full path of the `.expected` file for the specified QL test.
+ * @param testPath The full path to the test file.
+ */
+function getExpectedFile(testPath: string): string {
+  return getTestOutputFile(testPath, ".expected");
+}
+
+/**
+ * Get the full path of the `.actual` file for the specified QL test.
+ * @param testPath The full path to the test file.
+ */
+function getActualFile(testPath: string): string {
+  return getTestOutputFile(testPath, ".actual");
+}
+
+/**
+ * Gets the the full path to a particular output file of the specified QL test.
+ * @param testPath The full path to the QL test.
+ * @param extension The file extension of the output file.
+ */
+function getTestOutputFile(testPath: string, extension: string): string {
+  return changeExtension(testPath, extension);
+}
+
+/**
+ * Change the file extension of the specified path.
+ * @param p The original file path.
+ * @param ext The new extension, including the `.`.
+ */
+function changeExtension(p: string, ext: string): string {
+  return p.slice(0, -extname(p).length) + ext;
+}
 
 /**
  * Returns the complete text content of the specified file. If there is an error reading the file,
@@ -108,7 +145,7 @@ class WorkspaceFolderHandler extends DisposableObject {
  * Service that populates the VS Code "Test Explorer" panel for CodeQL, and handles running and
  * debugging of tests.
  */
-export class TestManager extends TestManagerBase {
+export class TestManager extends DisposableObject {
   /**
    * Maps from each workspace folder being tracked to the `WorkspaceFolderHandler` responsible for
    * tracking it.
@@ -119,7 +156,7 @@ export class TestManager extends TestManagerBase {
   >();
 
   public constructor(
-    app: App,
+    private readonly app: App,
     private readonly testRunner: TestRunner,
     private readonly cliServer: CodeQLCliServer,
     // Having this as a parameter with a default value makes passing in a mock easier.
@@ -128,7 +165,7 @@ export class TestManager extends TestManagerBase {
       "CodeQL Tests",
     ),
   ) {
-    super(app);
+    super();
 
     this.testController.createRunProfile(
       "Run",
@@ -151,11 +188,62 @@ export class TestManager extends TestManagerBase {
     super.dispose();
   }
 
+  public getCommands(): TestUICommands {
+    return {
+      "codeQLTests.showOutputDifferences":
+        this.showOutputDifferences.bind(this),
+      "codeQLTests.acceptOutput": this.acceptOutput.bind(this),
+      "codeQLTests.acceptOutputContextTestItem": this.acceptOutput.bind(this),
+    };
+  }
+
   protected getTestPath(node: TestItem): string {
     if (node.uri === undefined || node.uri.scheme !== "file") {
       throw new Error("Selected test is not a CodeQL test.");
     }
     return node.uri.fsPath;
+  }
+
+  private async acceptOutput(node: TestItem): Promise<void> {
+    const testPath = this.getTestPath(node);
+    const stat = await lstat(testPath);
+    if (stat.isFile()) {
+      const expectedPath = getExpectedFile(testPath);
+      const actualPath = getActualFile(testPath);
+      await copy(actualPath, expectedPath, { overwrite: true });
+    }
+  }
+
+  private async showOutputDifferences(node: TestItem): Promise<void> {
+    const testId = this.getTestPath(node);
+    const stat = await lstat(testId);
+    if (stat.isFile()) {
+      const expectedPath = getExpectedFile(testId);
+      const expectedUri = Uri.file(expectedPath);
+      const actualPath = getActualFile(testId);
+      const options: TextDocumentShowOptions = {
+        preserveFocus: true,
+        preview: true,
+      };
+
+      if (!(await pathExists(expectedPath))) {
+        // Just create a new file.
+        await createFile(expectedPath);
+      }
+
+      if (await pathExists(actualPath)) {
+        const actualUri = Uri.file(actualPath);
+        await this.app.commands.execute(
+          "vscode.diff",
+          expectedUri,
+          actualUri,
+          `Expected vs. Actual for ${basename(testId)}`,
+          options,
+        );
+      } else {
+        await window.showTextDocument(expectedUri, options);
+      }
+    }
   }
 
   /** Start tracking tests in the specified workspace folders. */

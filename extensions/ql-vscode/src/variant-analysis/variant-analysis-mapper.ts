@@ -23,11 +23,11 @@ import {
   VariantAnalysisRepoStatus,
 } from "./shared/variant-analysis";
 
-export function processVariantAnalysis(
+export function mapVariantAnalysis(
   submission: VariantAnalysisSubmission,
   response: ApiVariantAnalysis,
 ): VariantAnalysis {
-  return processUpdatedVariantAnalysis(
+  return mapUpdatedVariantAnalysis(
     {
       query: {
         name: submission.query.name,
@@ -36,6 +36,7 @@ export function processVariantAnalysis(
         text: submission.query.text,
         kind: submission.query.kind,
       },
+      queries: submission.queries,
       databases: submission.databases,
       executionStartTime: submission.startTime,
     },
@@ -43,10 +44,10 @@ export function processVariantAnalysis(
   );
 }
 
-export function processUpdatedVariantAnalysis(
+export function mapUpdatedVariantAnalysis(
   previousVariantAnalysis: Pick<
     VariantAnalysis,
-    "query" | "databases" | "executionStartTime"
+    "query" | "queries" | "databases" | "executionStartTime"
   >,
   response: ApiVariantAnalysis,
 ): VariantAnalysis {
@@ -54,13 +55,13 @@ export function processUpdatedVariantAnalysis(
   let skippedRepos: VariantAnalysisSkippedRepositories = {};
 
   if (response.scanned_repositories) {
-    scannedRepos = processScannedRepositories(
+    scannedRepos = mapScannedRepositories(
       response.scanned_repositories as ApiVariantAnalysisScannedRepository[],
     );
   }
 
   if (response.skipped_repositories) {
-    skippedRepos = processSkippedRepositories(
+    skippedRepos = mapSkippedRepositories(
       response.skipped_repositories as ApiVariantAnalysisSkippedRepositories,
     );
   }
@@ -73,11 +74,12 @@ export function processUpdatedVariantAnalysis(
       private: response.controller_repo.private,
     },
     query: previousVariantAnalysis.query,
+    queries: previousVariantAnalysis.queries,
     databases: previousVariantAnalysis.databases,
     executionStartTime: previousVariantAnalysis.executionStartTime,
     createdAt: response.created_at,
     updatedAt: response.updated_at,
-    status: processApiStatus(response.status),
+    status: mapApiStatus(response.status),
     completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos,
@@ -85,15 +87,13 @@ export function processUpdatedVariantAnalysis(
   };
 
   if (response.failure_reason) {
-    variantAnalysis.failureReason = processFailureReason(
-      response.failure_reason,
-    );
+    variantAnalysis.failureReason = mapFailureReason(response.failure_reason);
   }
 
   return variantAnalysis;
 }
 
-export function processVariantAnalysisRepositoryTask(
+export function mapVariantAnalysisRepositoryTask(
   response: ApiVariantAnalysisRepoTask,
 ): VariantAnalysisRepositoryTask {
   return {
@@ -102,7 +102,7 @@ export function processVariantAnalysisRepositoryTask(
       fullName: response.repository.full_name,
       private: response.repository.private,
     },
-    analysisStatus: processApiRepoStatus(response.analysis_status),
+    analysisStatus: mapApiRepoStatus(response.analysis_status),
     resultCount: response.result_count,
     artifactSizeInBytes: response.artifact_size_in_bytes,
     failureMessage: response.failure_message,
@@ -112,7 +112,7 @@ export function processVariantAnalysisRepositoryTask(
   };
 }
 
-export function processScannedRepository(
+export function mapScannedRepository(
   scannedRepo: ApiVariantAnalysisScannedRepository,
 ): VariantAnalysisScannedRepository {
   return {
@@ -123,33 +123,31 @@ export function processScannedRepository(
       stargazersCount: scannedRepo.repository.stargazers_count,
       updatedAt: scannedRepo.repository.updated_at,
     },
-    analysisStatus: processApiRepoStatus(scannedRepo.analysis_status),
+    analysisStatus: mapApiRepoStatus(scannedRepo.analysis_status),
     resultCount: scannedRepo.result_count,
     artifactSizeInBytes: scannedRepo.artifact_size_in_bytes,
     failureMessage: scannedRepo.failure_message,
   };
 }
 
-function processScannedRepositories(
+function mapScannedRepositories(
   scannedRepos: ApiVariantAnalysisScannedRepository[],
 ): VariantAnalysisScannedRepository[] {
-  return scannedRepos.map((scannedRepo) =>
-    processScannedRepository(scannedRepo),
-  );
+  return scannedRepos.map((scannedRepo) => mapScannedRepository(scannedRepo));
 }
 
-function processSkippedRepositories(
+function mapSkippedRepositories(
   skippedRepos: ApiVariantAnalysisSkippedRepositories,
 ): VariantAnalysisSkippedRepositories {
   return {
-    accessMismatchRepos: processRepoGroup(skippedRepos.access_mismatch_repos),
-    notFoundRepos: processNotFoundRepoGroup(skippedRepos.not_found_repos),
-    noCodeqlDbRepos: processRepoGroup(skippedRepos.no_codeql_db_repos),
-    overLimitRepos: processRepoGroup(skippedRepos.over_limit_repos),
+    accessMismatchRepos: mapRepoGroup(skippedRepos.access_mismatch_repos),
+    notFoundRepos: mapNotFoundRepoGroup(skippedRepos.not_found_repos),
+    noCodeqlDbRepos: mapRepoGroup(skippedRepos.no_codeql_db_repos),
+    overLimitRepos: mapRepoGroup(skippedRepos.over_limit_repos),
   };
 }
 
-function processRepoGroup(
+function mapRepoGroup(
   repoGroup: ApiVariantAnalysisSkippedRepositoryGroup | undefined,
 ): VariantAnalysisSkippedRepositoryGroup | undefined {
   if (!repoGroup) {
@@ -172,7 +170,7 @@ function processRepoGroup(
   };
 }
 
-function processNotFoundRepoGroup(
+function mapNotFoundRepoGroup(
   repoGroup: ApiVariantAnalysisNotFoundRepositoryGroup | undefined,
 ): VariantAnalysisSkippedRepositoryGroup | undefined {
   if (!repoGroup) {
@@ -191,7 +189,7 @@ function processNotFoundRepoGroup(
   };
 }
 
-function processApiRepoStatus(
+function mapApiRepoStatus(
   analysisStatus: ApiVariantAnalysisRepoStatus,
 ): VariantAnalysisRepoStatus {
   switch (analysisStatus) {
@@ -210,9 +208,7 @@ function processApiRepoStatus(
   }
 }
 
-function processApiStatus(
-  status: ApiVariantAnalysisStatus,
-): VariantAnalysisStatus {
+function mapApiStatus(status: ApiVariantAnalysisStatus): VariantAnalysisStatus {
   if (status === "succeeded") {
     return VariantAnalysisStatus.Succeeded;
   } else if (status === "in_progress") {
@@ -226,7 +222,7 @@ function processApiStatus(
   }
 }
 
-export function processFailureReason(
+export function mapFailureReason(
   failureReason: ApiVariantAnalysisFailureReason,
 ): VariantAnalysisFailureReason {
   switch (failureReason) {

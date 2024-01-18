@@ -9,7 +9,7 @@ function ignoreFile(file: string): boolean {
     containsPath(".storybook", file) ||
     containsPath(join("src", "stories"), file) ||
     pathsEqual(
-      join("test", "vscode-tests", "jest-runner-installed-extensions.ts"),
+      join("test", "vscode-tests", "jest-runner-vscode-codeql-cli.ts"),
       file,
     ) ||
     basename(file) === "jest.config.ts" ||

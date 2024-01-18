@@ -2,32 +2,32 @@ import type { TextEditor } from "vscode";
 import { ProgressLocation, window } from "vscode";
 import type { StreamInfo } from "vscode-languageclient/node";
 import { LanguageClient, NotificationType } from "vscode-languageclient/node";
-import { shouldDebugIdeServer, spawnServer } from "../codeql-cli/cli";
+import { shouldDebugLanguageServer, spawnServer } from "../codeql-cli/cli";
 import type { QueryServerConfig } from "../config";
-import { ideServerLogger } from "../common/logging/vscode";
+import { languageServerLogger } from "../common/logging/vscode";
 
 /**
- * Managing the language server for CodeQL.
+ * Managing the language client and corresponding server process for CodeQL.
  */
 
 /**
- * Create a new CodeQL language server.
+ * Create a new CodeQL language client connected to a language server.
  */
-export function createIDEServer(
+export function createLanguageClient(
   config: QueryServerConfig,
 ): CodeQLLanguageClient {
   return new CodeQLLanguageClient(config);
 }
 
 /**
- * CodeQL language server.
+ * CodeQL language client.
  */
 export class CodeQLLanguageClient extends LanguageClient {
   constructor(config: QueryServerConfig) {
     super(
       "codeQL.lsp",
       "CodeQL Language Server",
-      () => spawnIdeServer(config),
+      () => spawnLanguageServer(config),
       {
         documentSelector: [
           { language: "ql", scheme: "file" },
@@ -38,7 +38,7 @@ export class CodeQLLanguageClient extends LanguageClient {
           configurationSection: "codeQL",
         },
         // Ensure that language server exceptions are logged to the same channel as its output.
-        outputChannel: ideServerLogger.outputChannel,
+        outputChannel: languageServerLogger.outputChannel,
       },
       true,
     );
@@ -55,12 +55,14 @@ export class CodeQLLanguageClient extends LanguageClient {
 }
 
 /** Starts a new CodeQL language server process, sending progress messages to the status bar. */
-async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
+async function spawnLanguageServer(
+  config: QueryServerConfig,
+): Promise<StreamInfo> {
   return window.withProgress(
     { title: "CodeQL language server", location: ProgressLocation.Window },
     async (progressReporter, _) => {
       const args = ["--check-errors", "ON_CHANGE"];
-      if (shouldDebugIdeServer()) {
+      if (shouldDebugLanguageServer()) {
         args.push(
           "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=n,quiet=y",
         );
@@ -70,11 +72,11 @@ async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
         "CodeQL language server",
         ["execute", "language-server"],
         args,
-        ideServerLogger,
+        languageServerLogger,
         (data) =>
-          ideServerLogger.log(data.toString(), { trailingNewline: false }),
+          languageServerLogger.log(data.toString(), { trailingNewline: false }),
         (data) =>
-          ideServerLogger.log(data.toString(), { trailingNewline: false }),
+          languageServerLogger.log(data.toString(), { trailingNewline: false }),
         progressReporter,
       );
       return { writer: child.stdin!, reader: child.stdout! };

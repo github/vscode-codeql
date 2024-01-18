@@ -13,17 +13,26 @@ import {
   useListNavigation,
   useRole,
 } from "@floating-ui/react";
-import { styled } from "styled-components";
+import { css, styled } from "styled-components";
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import type { Option } from "./options";
 import { findMatchingOptions } from "./options";
 import { SuggestBoxItem } from "./SuggestBoxItem";
+import { LabelText } from "./LabelText";
+import type { Diagnostic } from "./diagnostics";
 import { useOpenKey } from "./useOpenKey";
 
-const Input = styled(VSCodeTextField)`
+const Input = styled(VSCodeTextField)<{ $error: boolean }>`
   width: 430px;
 
   font-family: var(--vscode-editor-font-family);
+
+  ${(props) =>
+    props.$error &&
+    css`
+      --dropdown-border: var(--vscode-inputValidation-errorBorder);
+      --focus-border: var(--vscode-inputValidation-errorBorder);
+    `}
 `;
 
 const Container = styled.div`
@@ -51,7 +60,10 @@ const NoSuggestionsText = styled.div`
   padding-left: 22px;
 `;
 
-export type SuggestBoxProps<T extends Option<T>> = {
+export type SuggestBoxProps<
+  T extends Option<T>,
+  D extends Diagnostic = Diagnostic,
+> = {
   value?: string;
   onChange: (value: string) => void;
   options: T[];
@@ -62,6 +74,12 @@ export type SuggestBoxProps<T extends Option<T>> = {
    * @param value The user-entered value to parse.
    */
   parseValueToTokens: (value: string) => string[];
+
+  /**
+   * Validate the value. This is used to show syntax errors in the input.
+   * @param value The user-entered value to validate.
+   */
+  validateValue?: (value: string) => D[];
 
   /**
    * Get the icon to display for an option.
@@ -84,20 +102,29 @@ export type SuggestBoxProps<T extends Option<T>> = {
    * for easier testing.
    * @param props The props returned by `getReferenceProps` of {@link useInteractions}
    */
-  renderInputComponent?: (props: Record<string, unknown>) => ReactNode;
+  renderInputComponent?: (
+    props: Record<string, unknown>,
+    hasError: boolean,
+  ) => ReactNode;
 };
 
-export const SuggestBox = <T extends Option<T>>({
+export const SuggestBox = <
+  T extends Option<T>,
+  D extends Diagnostic = Diagnostic,
+>({
   value = "",
   onChange,
   options,
   parseValueToTokens,
+  validateValue,
   getIcon,
   getDetails,
   disabled,
   "aria-label": ariaLabel,
-  renderInputComponent = (props) => <Input {...props} />,
-}: SuggestBoxProps<T>) => {
+  renderInputComponent = (props, hasError) => (
+    <Input {...props} $error={hasError} />
+  ),
+}: SuggestBoxProps<T, D>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -149,9 +176,20 @@ export const SuggestBox = <T extends Option<T>>({
     [onChange],
   );
 
+  const tokens = useMemo(() => {
+    return parseValueToTokens(value);
+  }, [value, parseValueToTokens]);
+
   const suggestionItems = useMemo(() => {
-    return findMatchingOptions(options, parseValueToTokens(value));
-  }, [options, value, parseValueToTokens]);
+    return findMatchingOptions(options, tokens);
+  }, [options, tokens]);
+
+  const diagnostics = useMemo(
+    () => validateValue?.(value) ?? [],
+    [validateValue, value],
+  );
+
+  const hasSyntaxError = diagnostics.length > 0;
 
   useEffect(() => {
     if (disabled) {
@@ -182,6 +220,7 @@ export const SuggestBox = <T extends Option<T>>({
           },
           disabled,
         }),
+        hasSyntaxError,
       )}
       {isOpen && (
         <FloatingPortal>
@@ -224,7 +263,7 @@ export const SuggestBox = <T extends Option<T>>({
                     })}
                     active={activeIndex === index}
                     icon={getIcon?.(item)}
-                    labelText={item.label}
+                    labelText={<LabelText tokens={tokens} item={item} />}
                     details={getDetails?.(item)}
                   />
                 ))}

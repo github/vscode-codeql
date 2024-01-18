@@ -5,6 +5,6 @@ export * from "./contextual/key-type";
 export * from "./contextual/location-finder";
 export * from "./contextual/query-resolver";
 export * from "./contextual/template-provider";
-export * from "./ide-server";
+export * from "./language-client";
 export * from "./language-support";
 export * from "./query-editor";

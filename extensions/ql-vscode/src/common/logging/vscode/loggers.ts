@@ -11,7 +11,7 @@ export const extLogger = new OutputChannelLogger("CodeQL Extension Log");
 export const queryServerLogger = new OutputChannelLogger("CodeQL Query Server");
 
 // Logger for messages from the language server.
-export const ideServerLogger = new OutputChannelLogger(
+export const languageServerLogger = new OutputChannelLogger(
   "CodeQL Language Server",
 );
 
