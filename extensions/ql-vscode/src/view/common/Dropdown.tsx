@@ -25,6 +25,9 @@ type Props = {
   "aria-label"?: string;
 };
 
+const stopClickPropagation = (e: React.MouseEvent) => {
+  e.stopPropagation();
+};
 /**
  * A dropdown implementation styled to look like `VSCodeDropdown`.
  *
@@ -50,6 +53,7 @@ export function Dropdown({
       value={disabled ? disabledValue : value}
       disabled={disabled}
       onChange={onChange}
+      onClick={stopClickPropagation}
       className={className}
       {...props}
     >

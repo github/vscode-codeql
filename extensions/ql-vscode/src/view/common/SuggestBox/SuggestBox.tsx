@@ -18,6 +18,7 @@ import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import type { Option } from "./options";
 import { findMatchingOptions } from "./options";
 import { SuggestBoxItem } from "./SuggestBoxItem";
+import { LabelText } from "./LabelText";
 import type { Diagnostic } from "./diagnostics";
 
 const Input = styled(VSCodeTextField)<{ $error: boolean }>`
@@ -173,9 +174,13 @@ export const SuggestBox = <
     [onChange],
   );
 
+  const tokens = useMemo(() => {
+    return parseValueToTokens(value);
+  }, [value, parseValueToTokens]);
+
   const suggestionItems = useMemo(() => {
-    return findMatchingOptions(options, parseValueToTokens(value));
-  }, [options, value, parseValueToTokens]);
+    return findMatchingOptions(options, tokens);
+  }, [options, tokens]);
 
   const diagnostics = useMemo(
     () => validateValue?.(value) ?? [],
@@ -256,7 +261,7 @@ export const SuggestBox = <
                     })}
                     active={activeIndex === index}
                     icon={getIcon?.(item)}
-                    labelText={item.label}
+                    labelText={<LabelText tokens={tokens} item={item} />}
                     details={getDetails?.(item)}
                   />
                 ))}

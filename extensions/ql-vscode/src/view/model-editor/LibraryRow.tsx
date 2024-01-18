@@ -71,11 +71,13 @@ export type LibraryRowProps = {
   methods: Method[];
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
+  selectedSignatures: Set<string>;
   inProgressMethods: Set<string>;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
+  onMethodClick: (methodSignature: string) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
   onGenerateFromLlmClick: (
     dependencyName: string,
@@ -92,11 +94,13 @@ export const LibraryRow = ({
   methods,
   modeledMethodsMap,
   modifiedSignatures,
+  selectedSignatures,
   inProgressMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
   onChange,
+  onMethodClick,
   onSaveModelClick,
   onGenerateFromLlmClick,
   onStopGenerateFromLlmClick,
@@ -228,16 +232,18 @@ export const LibraryRow = ({
             methods={methods}
             modeledMethodsMap={modeledMethodsMap}
             modifiedSignatures={modifiedSignatures}
+            selectedSignatures={selectedSignatures}
             inProgressMethods={inProgressMethods}
             viewState={viewState}
             hideModeledMethods={hideModeledMethods}
             revealedMethodSignature={revealedMethodSignature}
             onChange={onChange}
+            onMethodClick={onMethodClick}
           />
           <SectionDivider />
           <ButtonsContainer>
             <VSCodeButton onClick={handleSave} disabled={!hasUnsavedChanges}>
-              Save
+              {selectedSignatures.size === 0 ? "Save" : "Save selected"}
             </VSCodeButton>
           </ButtonsContainer>
         </>

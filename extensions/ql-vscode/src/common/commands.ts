@@ -1,10 +1,9 @@
 import type { CommandManager } from "../packages/commands";
-import type { Uri, Range, TextDocumentShowOptions } from "vscode";
+import type { Uri, Range, TextDocumentShowOptions, TestItem } from "vscode";
 import type { AstItem } from "../language-support";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../databases/local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
-import type { TestTreeNode } from "../query-testing/test-tree-node";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
@@ -276,9 +275,11 @@ export type VariantAnalysisCommands = {
   "codeQL.openVariantAnalysisView": (
     variantAnalysisId: number,
   ) => Promise<void>;
-  "codeQL.runVariantAnalysis": (uri?: Uri) => Promise<void>;
-  "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
+  "codeQL.runVariantAnalysis": () => Promise<void>;
+  "codeQL.runVariantAnalysisContextEditor": (uri: Uri) => Promise<void>;
+  "codeQL.runVariantAnalysisContextExplorer": ExplorerSelectionCommandFunction<Uri>;
   "codeQLQueries.runVariantAnalysisContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+  "codeQL.runVariantAnalysisPublishedPack": () => Promise<void>;
 };
 
 export type DatabasePanelCommands = {
@@ -334,11 +335,9 @@ export type SummaryLanguageSupportCommands = {
 };
 
 export type TestUICommands = {
-  "codeQLTests.showOutputDifferences": (node: TestTreeNode) => Promise<void>;
-  "codeQLTests.acceptOutput": (node: TestTreeNode) => Promise<void>;
-  "codeQLTests.acceptOutputContextTestItem": (
-    node: TestTreeNode,
-  ) => Promise<void>;
+  "codeQLTests.showOutputDifferences": (node: TestItem) => Promise<void>;
+  "codeQLTests.acceptOutput": (node: TestItem) => Promise<void>;
+  "codeQLTests.acceptOutputContextTestItem": (node: TestItem) => Promise<void>;
 };
 
 export type MockGitHubApiServerCommands = {

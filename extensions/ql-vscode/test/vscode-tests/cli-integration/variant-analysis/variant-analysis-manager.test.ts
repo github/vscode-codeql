@@ -100,12 +100,12 @@ describe("Variant Analysis Manager", () => {
       const fileUri = getFile("data-remote-qlpack/in-pack.ql");
 
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
 
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
@@ -113,20 +113,20 @@ describe("Variant Analysis Manager", () => {
         }),
       );
 
-      expect(mockGetRepositoryFromNwo).toBeCalledTimes(1);
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
+      expect(mockGetRepositoryFromNwo).toHaveBeenCalledTimes(1);
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
     });
 
     it("should run a remote query that is not part of a qlpack", async () => {
       const fileUri = getFile("data-remote-no-qlpack/in-pack.ql");
 
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
 
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
@@ -134,20 +134,20 @@ describe("Variant Analysis Manager", () => {
         }),
       );
 
-      expect(mockGetRepositoryFromNwo).toBeCalledTimes(1);
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
+      expect(mockGetRepositoryFromNwo).toHaveBeenCalledTimes(1);
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
     });
 
     it("should run a remote query that is nested inside a qlpack", async () => {
       const fileUri = getFile("data-remote-qlpack-nested/subfolder/in-pack.ql");
 
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
 
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
@@ -155,15 +155,15 @@ describe("Variant Analysis Manager", () => {
         }),
       );
 
-      expect(mockGetRepositoryFromNwo).toBeCalledTimes(1);
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
+      expect(mockGetRepositoryFromNwo).toHaveBeenCalledTimes(1);
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
     });
 
     it("should cancel a run before uploading", async () => {
       const fileUri = getFile("data-remote-no-qlpack/in-pack.ql");
 
       const promise = variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
@@ -313,13 +313,13 @@ describe("Variant Analysis Manager", () => {
     }) {
       const fileUri = getFile(queryPath);
       await variantAnalysisManager.runVariantAnalysis(
-        fileUri,
+        [fileUri],
         progress,
         cancellationTokenSource.token,
       );
 
-      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(mockSubmitVariantAnalysis).toHaveBeenCalledTimes(1);
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           query: expect.objectContaining({ filePath: fileUri.fsPath }),
@@ -387,5 +387,38 @@ describe("Variant Analysis Manager", () => {
         return Uri.file(join(baseDir, file));
       }
     }
+  });
+
+  describe("runVariantAnalysisFromPublishedPack", () => {
+    it("should download pack for correct language and identify problem queries", async () => {
+      const showQuickPickSpy = jest
+        .spyOn(window, "showQuickPick")
+        .mockResolvedValue(
+          mockedQuickPickItem({
+            label: "JavaScript",
+            description: "javascript",
+            language: "javascript",
+          }),
+        );
+
+      const runVariantAnalysisMock = jest.fn();
+      variantAnalysisManager.runVariantAnalysis = runVariantAnalysisMock;
+
+      await variantAnalysisManager.runVariantAnalysisFromPublishedPack();
+
+      expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+      expect(runVariantAnalysisMock).toHaveBeenCalledTimes(1);
+
+      const queries: Uri[] = runVariantAnalysisMock.mock.calls[0][0];
+      // Should include queries. Just check that at least one known query exists.
+      // It doesn't particularly matter which query we check for.
+      expect(
+        queries.find((q) => q.fsPath.includes("PostMessageStar.ql")),
+      ).toBeDefined();
+      // Should not include non-problem queries.
+      expect(
+        queries.find((q) => q.fsPath.includes("LinesOfCode.ql")),
+      ).not.toBeDefined();
+    });
   });
 });

@@ -17,18 +17,18 @@ describe("helpers", () => {
     listener({ length: firstStep });
     listener({ length: secondStep });
 
-    expect(progressSpy).toBeCalledTimes(3);
-    expect(progressSpy).toBeCalledWith({
+    expect(progressSpy).toHaveBeenCalledTimes(3);
+    expect(progressSpy).toHaveBeenCalledWith({
       step: 0,
       maxStep: max,
       message: "My prefix [0.0 MB of 4.0 MB]",
     });
-    expect(progressSpy).toBeCalledWith({
+    expect(progressSpy).toHaveBeenCalledWith({
       step: firstStep,
       maxStep: max,
       message: "My prefix [1.6 MB of 4.0 MB]",
     });
-    expect(progressSpy).toBeCalledWith({
+    expect(progressSpy).toHaveBeenCalledWith({
       step: firstStep + secondStep,
       maxStep: max,
       message: "My prefix [3.6 MB of 4.0 MB]",
@@ -48,10 +48,10 @@ describe("helpers", () => {
     );
 
     // There are no listeners registered to this readable
-    expect(mockReadable.on).not.toBeCalled();
+    expect(mockReadable.on).not.toHaveBeenCalled();
 
-    expect(progressSpy).toBeCalledTimes(1);
-    expect(progressSpy).toBeCalledWith({
+    expect(progressSpy).toHaveBeenCalledTimes(1);
+    expect(progressSpy).toHaveBeenCalledWith({
       step: 1,
       maxStep: 2,
       message: "My prefix (Size unknown)",

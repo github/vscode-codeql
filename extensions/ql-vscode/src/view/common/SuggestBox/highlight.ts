@@ -1,4 +1,4 @@
-type Snippet = {
+export type Snippet = {
   text: string;
   highlight: boolean;
 };

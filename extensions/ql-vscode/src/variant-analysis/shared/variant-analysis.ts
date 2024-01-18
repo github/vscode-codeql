@@ -12,6 +12,7 @@ export interface VariantAnalysis {
     text: string;
     kind?: string;
   };
+  queries?: VariantAnalysisQueries;
   databases: {
     repositories?: string[];
     repositoryLists?: string[];
@@ -144,11 +145,20 @@ export interface VariantAnalysisSubmission {
     // Base64 encoded query pack.
     pack: string;
   };
+  queries?: VariantAnalysisQueries;
   databases: {
     repositories?: string[];
     repositoryLists?: string[];
     repositoryOwners?: string[];
   };
+}
+
+// Experimental information about the queries that are
+// going to be run as part of the variant analysis.
+// For now, this is just the query language, but it's
+// unclear what it will look like in the future.
+export interface VariantAnalysisQueries {
+  language: QueryLanguage;
 }
 
 export async function isVariantAnalysisComplete(

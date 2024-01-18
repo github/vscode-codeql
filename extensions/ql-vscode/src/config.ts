@@ -653,7 +653,7 @@ export function allowHttp(): boolean {
   );
 }
 
-const ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING = new Setting(
+export const ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING = new Setting(
   "addDatabaseSourceToWorkspace",
   ADDING_DATABASES_SETTING,
 );

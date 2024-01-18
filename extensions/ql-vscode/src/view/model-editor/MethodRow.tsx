@@ -70,10 +70,12 @@ export type MethodRowProps = {
   methodCanBeModeled: boolean;
   modeledMethods: ModeledMethod[];
   methodIsUnsaved: boolean;
+  methodIsSelected: boolean;
   modelingInProgress: boolean;
   viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
+  onMethodClick: (methodSignature: string) => void;
 };
 
 export const MethodRow = (props: MethodRowProps) => {
@@ -103,9 +105,11 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       method,
       modeledMethods: modeledMethodsProp,
       methodIsUnsaved,
+      methodIsSelected,
       viewState,
       revealedMethodSignature,
       onChange,
+      onMethodClick,
     } = props;
 
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -186,6 +190,10 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       <DataGridRow
         data-testid="modelable-method-row"
         focused={revealedMethodSignature === method.signature}
+        selected={methodIsSelected}
+        onClick={() => {
+          onMethodClick(method.signature);
+        }}
       >
         <DataGridCell
           gridRow={`span ${modeledMethods.length + validationErrors.length}`}
@@ -196,11 +204,23 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <MethodClassifications method={method} />
             <MethodName {...props.method} />
             {viewState.mode === Mode.Application && (
-              <UsagesButton onClick={jumpToMethod}>
+              <UsagesButton
+                onClick={(event: React.MouseEvent) => {
+                  event.stopPropagation();
+                  jumpToMethod();
+                }}
+              >
                 {method.usages.length}
               </UsagesButton>
             )}
-            <ViewLink onClick={jumpToMethod}>View</ViewLink>
+            <ViewLink
+              onClick={(event: React.MouseEvent) => {
+                event.stopPropagation();
+                jumpToMethod();
+              }}
+            >
+              View
+            </ViewLink>
             {props.modelingInProgress && <ProgressRing />}
           </ApiOrMethodRow>
         </DataGridCell>
@@ -269,7 +289,10 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     <CodiconRow
                       appearance="icon"
                       aria-label="Add new model"
-                      onClick={handleAddModelClick}
+                      onClick={(event: React.MouseEvent) => {
+                        event.stopPropagation();
+                        handleAddModelClick();
+                      }}
                       disabled={addModelButtonDisabled}
                     >
                       <Codicon name="add" />
@@ -278,7 +301,10 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     <CodiconRow
                       appearance="icon"
                       aria-label="Remove model"
-                      onClick={removeModelClickedHandlers[index]}
+                      onClick={(event: React.MouseEvent) => {
+                        event.stopPropagation();
+                        removeModelClickedHandlers[index]();
+                      }}
                     >
                       <Codicon name="trash" />
                     </CodiconRow>

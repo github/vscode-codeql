@@ -3,10 +3,10 @@ import type { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepos
 import type { VariantAnalysisScannedRepository } from "../../../src/variant-analysis/shared/variant-analysis";
 import { VariantAnalysisRepoStatus } from "../../../src/variant-analysis/shared/variant-analysis";
 import {
-  processScannedRepository,
-  processVariantAnalysis,
-  processVariantAnalysisRepositoryTask,
-} from "../../../src/variant-analysis/variant-analysis-processor";
+  mapScannedRepository,
+  mapVariantAnalysis,
+  mapVariantAnalysisRepositoryTask,
+} from "../../../src/variant-analysis/variant-analysis-mapper";
 import {
   createMockScannedRepo,
   createMockScannedRepos,
@@ -17,7 +17,7 @@ import { createMockSubmission } from "../../factories/variant-analysis/shared/va
 import { createMockVariantAnalysisRepoTask } from "../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 import { QueryLanguage } from "../../../src/common/query-language";
 
-describe(processVariantAnalysis.name, () => {
+describe(mapVariantAnalysis.name, () => {
   const scannedRepos = createMockScannedRepos();
   const skippedRepos = createMockSkippedRepos();
   const mockApiResponse = createMockApiResponse(
@@ -27,8 +27,8 @@ describe(processVariantAnalysis.name, () => {
   );
   const mockSubmission = createMockSubmission();
 
-  it("should process an API response and return a variant analysis", () => {
-    const result = processVariantAnalysis(mockSubmission, mockApiResponse);
+  it("should map an API response and return a variant analysis", () => {
+    const result = mapVariantAnalysis(mockSubmission, mockApiResponse);
 
     const {
       access_mismatch_repos,
@@ -173,11 +173,11 @@ describe(processVariantAnalysis.name, () => {
   }
 });
 
-describe(processVariantAnalysisRepositoryTask.name, () => {
+describe(mapVariantAnalysisRepositoryTask.name, () => {
   const mockApiResponse = createMockVariantAnalysisRepoTask();
 
   it("should return the correct result", () => {
-    expect(processVariantAnalysisRepositoryTask(mockApiResponse)).toEqual({
+    expect(mapVariantAnalysisRepositoryTask(mockApiResponse)).toEqual({
       repository: {
         id: mockApiResponse.repository.id,
         fullName: mockApiResponse.repository.full_name,
@@ -194,7 +194,7 @@ describe(processVariantAnalysisRepositoryTask.name, () => {
   });
 });
 
-describe(processScannedRepository.name, () => {
+describe(mapScannedRepository.name, () => {
   const mockApiResponse = createMockScannedRepo(
     faker.word.sample(),
     faker.datatype.boolean(),
@@ -202,7 +202,7 @@ describe(processScannedRepository.name, () => {
   );
 
   it("should return the correct result", () => {
-    expect(processScannedRepository(mockApiResponse)).toEqual({
+    expect(mapScannedRepository(mockApiResponse)).toEqual({
       repository: {
         id: mockApiResponse.repository.id,
         fullName: mockApiResponse.repository.full_name,

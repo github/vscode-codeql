@@ -274,12 +274,20 @@ interface PreparedRemoteQuery {
 export async function prepareRemoteQueryRun(
   cliServer: CodeQLCliServer,
   credentials: Credentials,
-  uri: Uri | undefined,
+  uris: Uri[],
   progress: ProgressCallback,
   token: CancellationToken,
   dbManager: DbManager,
 ): Promise<PreparedRemoteQuery> {
-  if (!uri?.fsPath.endsWith(".ql")) {
+  if (uris.length !== 1) {
+    // For now we only support a single file, but we're aiming
+    // to support multiple files in the near future.
+    throw Error("Exactly one query file must be selected.");
+  }
+
+  const uri = uris[0];
+
+  if (!uri.fsPath.endsWith(".ql")) {
     throw new UserCancellationException("Not a CodeQL query file.");
   }
 
