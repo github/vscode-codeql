@@ -1981,7 +1981,7 @@
     "@storybook/manager-api": "^7.6.7",
     "@storybook/react": "^7.1.0",
     "@storybook/react-webpack5": "^7.6.7",
-    "@storybook/theming": "^7.6.7",
+    "@storybook/theming": "^7.6.9",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.0.0",
