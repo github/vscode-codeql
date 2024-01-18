@@ -148,6 +148,8 @@ AccessPath.args = {
     const diagnostics: Diagnostic[] = [];
 
     while (index !== -1) {
+      // For testing in this Storybook, disallow pipe characters to avoid a dependency on the
+      // real access path validation.
       index = value.indexOf("|", index + 1);
 
       diagnostics.push({
