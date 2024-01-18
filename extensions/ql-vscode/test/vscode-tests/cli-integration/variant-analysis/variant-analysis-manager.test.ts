@@ -24,6 +24,8 @@ import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { load } from "js-yaml";
 import type { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
 import type { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
+//import { expect } from "@jest/globals";
+import "../../../matchers/toExistInCodeQLPack";
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
@@ -331,14 +333,14 @@ describe("Variant Analysis Manager", () => {
 
       const packFS = await readBundledPack(request.query.pack);
       filesThatExist.forEach((file) => {
-        expect(packFS.fileExists(file)).toBe(true);
+        expect(file).toExistInCodeQLPack(packFS);
       });
 
       qlxFilesThatExist.forEach((file) => {
-        expect(packFS.fileExists(file)).toBe(true);
+        expect(file).toExistInCodeQLPack(packFS);
       });
       filesThatDoNotExist.forEach((file) => {
-        expect(packFS.fileExists(file)).toBe(false);
+        expect(file).not.toExistInCodeQLPack(packFS);
       });
 
       expect(
@@ -364,9 +366,17 @@ describe("Variant Analysis Manager", () => {
 
       // Assume the first dependency to check is the core library.
       if (dependenciesToCheck.length > 0) {
-        expect(qlpackContents.dependencies?.[dependenciesToCheck[0]]).toEqual(
-          "*",
-        );
+        const dependencyVersion =
+          qlpackContents.dependencies?.[dependenciesToCheck[0]];
+
+        // There should be a version specified.
+        expect(dependencyVersion).toBeDefined();
+
+        // Any `${workspace}` placeholder should have been replaced.
+        // The actual version might be `*` (for the legacy code path where we replace workspace
+        // references with `*`) or a specific version (for the new code path where the CLI does all
+        // the work).
+        expect(dependencyVersion).not.toEqual("${workspace}");
       }
       const qlpackLockContents = load(
         packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),

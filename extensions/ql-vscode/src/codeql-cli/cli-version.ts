@@ -1,8 +1,23 @@
 import type { SemVer } from "semver";
 import { parse } from "semver";
-import { runCodeQlCliCommand } from "./cli-command";
+import { runJsonCodeQlCliCommand } from "./cli-command";
 import type { Logger } from "../common/logging";
 import { getErrorMessage } from "../common/helpers-pure";
+
+interface VersionResult {
+  version: string;
+  features: CliFeatures | undefined;
+}
+
+export interface CliFeatures {
+  featuresInVersionResult?: boolean;
+  mrvaPackCreate?: boolean;
+}
+
+export interface VersionAndFeatures {
+  version: SemVer;
+  features: CliFeatures;
+}
 
 /**
  * Get the version of a CodeQL CLI.
@@ -10,16 +25,25 @@ import { getErrorMessage } from "../common/helpers-pure";
 export async function getCodeQlCliVersion(
   codeQlPath: string,
   logger: Logger,
-): Promise<SemVer | undefined> {
+): Promise<VersionAndFeatures | undefined> {
   try {
-    const output: string = await runCodeQlCliCommand(
+    const output: VersionResult = await runJsonCodeQlCliCommand<VersionResult>(
       codeQlPath,
       ["version"],
-      ["--format=terse"],
+      ["--format=json"],
       "Checking CodeQL version",
       logger,
     );
-    return parse(output.trim()) || undefined;
+
+    const version = parse(output.version.trim()) || undefined;
+    if (version === undefined) {
+      return undefined;
+    }
+
+    return {
+      version,
+      features: output.features ?? {},
+    };
   } catch (e) {
     // Failed to run the version command. This might happen if the cli version is _really_ old, or it is corrupted.
     // Either way, we can't determine compatibility.

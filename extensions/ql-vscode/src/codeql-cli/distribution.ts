@@ -1,11 +1,11 @@
 import { createWriteStream, mkdtemp, pathExists, remove } from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
-import type { SemVer } from "semver";
 import { Range, satisfies } from "semver";
 import type { Event, ExtensionContext } from "vscode";
 import type { DistributionConfig } from "../config";
 import { extLogger } from "../common/logging/vscode";
+import type { VersionAndFeatures } from "./cli-version";
 import { getCodeQlCliVersion } from "./cli-version";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { reportStreamProgress } from "../common/vscode/progress";
@@ -88,11 +88,11 @@ export class DistributionManager implements DistributionProvider {
         kind: FindDistributionResultKind.NoDistribution,
       };
     }
-    const version = await getCodeQlCliVersion(
+    const versionAndFeatures = await getCodeQlCliVersion(
       distribution.codeQlPath,
       extLogger,
     );
-    if (version === undefined) {
+    if (versionAndFeatures === undefined) {
       return {
         distribution,
         kind: FindDistributionResultKind.UnknownCompatibilityDistribution,
@@ -119,17 +119,21 @@ export class DistributionManager implements DistributionProvider {
       distribution.kind !== DistributionKind.ExtensionManaged ||
       this.config.includePrerelease;
 
-    if (!satisfies(version, this.versionRange, { includePrerelease })) {
+    if (
+      !satisfies(versionAndFeatures.version, this.versionRange, {
+        includePrerelease,
+      })
+    ) {
       return {
         distribution,
         kind: FindDistributionResultKind.IncompatibleDistribution,
-        version,
+        versionAndFeatures,
       };
     }
     return {
       distribution,
       kind: FindDistributionResultKind.CompatibleDistribution,
-      version,
+      versionAndFeatures,
     };
   }
 
@@ -599,7 +603,7 @@ interface DistributionResult {
 
 interface CompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.CompatibleDistribution;
-  version: SemVer;
+  versionAndFeatures: VersionAndFeatures;
 }
 
 interface UnknownCompatibilityDistributionResult extends DistributionResult {
@@ -608,7 +612,7 @@ interface UnknownCompatibilityDistributionResult extends DistributionResult {
 
 interface IncompatibleDistributionResult extends DistributionResult {
   kind: FindDistributionResultKind.IncompatibleDistribution;
-  version: SemVer;
+  versionAndFeatures: VersionAndFeatures;
 }
 
 interface NoDistributionResult {
