@@ -243,7 +243,7 @@ export interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
 }
 
-interface DatabaseImportQuickPickItems extends QuickPickItem {
+export interface DatabaseImportQuickPickItems extends QuickPickItem {
   importType: "URL" | "github" | "archive" | "folder";
 }
 

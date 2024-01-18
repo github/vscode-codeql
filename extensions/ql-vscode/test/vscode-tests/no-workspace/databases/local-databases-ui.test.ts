@@ -8,7 +8,12 @@ import {
   pathExistsSync,
 } from "fs-extra";
 import { CancellationTokenSource, Uri, window } from "vscode";
-import type { DatabaseSelectionQuickPickItem } from "../../../../src/databases/local-databases-ui";
+
+import type {
+  DatabaseImportQuickPickItems,
+  DatabaseQuickPickItem,
+  DatabaseSelectionQuickPickItem,
+} from "../../../../src/databases/local-databases-ui";
 
 import { DatabaseUI } from "../../../../src/databases/local-databases-ui";
 import { testDisposeHandler } from "../../test-dispose-handler";
@@ -123,7 +128,7 @@ describe("local-databases-ui", () => {
   describe("getDatabaseItem", () => {
     const progress = jest.fn();
     const token = new CancellationTokenSource().token;
-    it("should return current database if there is one", async () => {
+    describe("when there is a current database", () => {
       const databaseUI = new DatabaseUI(
         app,
         {
@@ -147,25 +152,32 @@ describe("local-databases-ui", () => {
         storageDir,
       );
 
-      const databaseItem = await databaseUI.getDatabaseItem(progress, token);
+      it("should return current database", async () => {
+        const databaseItem = await databaseUI.getDatabaseItem(progress, token);
 
-      expect(databaseItem).toBeDefined();
+        expect(databaseItem).toEqual({ databaseUri: Uri.file(db1) });
+      });
     });
 
-    it("should prompt for a database if there is no current one", async () => {
+    describe("when there is no current database", () => {
+      const databaseManager = {
+        databaseItems: [
+          { databaseUri: Uri.file(db1) },
+          { databaseUri: Uri.file(db2) },
+        ],
+        onDidChangeDatabaseItem: () => {
+          /**/
+        },
+        onDidChangeCurrentDatabaseItem: () => {
+          /**/
+        },
+        setCurrentDatabaseItem: () => {},
+        currentDatabaseItem: undefined,
+      } as any;
+
       const databaseUI = new DatabaseUI(
         app,
-        {
-          databaseItems: [{ databaseUri: Uri.file(db1) }],
-          onDidChangeDatabaseItem: () => {
-            /**/
-          },
-          onDidChangeCurrentDatabaseItem: () => {
-            /**/
-          },
-          setCurrentDatabaseItem: () => {},
-          currentDatabaseItem: undefined,
-        } as any,
+        databaseManager,
         {
           onLanguageContextChanged: () => {
             /**/
@@ -176,47 +188,64 @@ describe("local-databases-ui", () => {
         storageDir,
       );
 
-      const showQuickPickSpy = jest
-        .spyOn(window, "showQuickPick")
-        .mockResolvedValue(
-          mockedQuickPickItem(
-            mockedObject<DatabaseSelectionQuickPickItem>({
-              databaseKind: "existing",
-            }),
-          ),
+      it("should prompt for a database and select existing one", async () => {
+        const showQuickPickSpy = jest
+          .spyOn(window, "showQuickPick")
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseSelectionQuickPickItem>({
+                databaseKind: "existing",
+              }),
+            ),
+          )
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseQuickPickItem>({
+                databaseItem: { databaseUri: Uri.file(db2) },
+              }),
+            ),
+          );
+
+        const setCurrentDatabaseItemSpy = jest.spyOn(
+          databaseManager,
+          "setCurrentDatabaseItem",
         );
 
-      const selectExistingDatabaseSpy = jest
-        .spyOn(databaseUI as any, "selectExistingDatabase")
-        .mockResolvedValue(undefined);
+        await databaseUI.getDatabaseItem(progress, token);
 
-      const importNewDatabaseSpy = jest
-        .spyOn(databaseUI as any, "importNewDatabase")
-        .mockResolvedValue(undefined);
+        expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
+        expect(setCurrentDatabaseItemSpy).toHaveBeenCalledWith({
+          databaseUri: Uri.file(db2),
+        });
+      });
 
-      await databaseUI.getDatabaseItem(progress, token);
+      it("should prompt for a database and import a new one", async () => {
+        const showQuickPickSpy = jest
+          .spyOn(window, "showQuickPick")
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseSelectionQuickPickItem>({
+                databaseKind: "new",
+              }),
+            ),
+          )
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseImportQuickPickItems>({
+                importType: "github",
+              }),
+            ),
+          );
 
-      expect(showQuickPickSpy).toHaveBeenCalledWith(
-        [
-          {
-            label: "$(database) Existing database",
-            detail: "Select an existing database from your workspace",
-            alwaysShow: true,
-            databaseKind: "existing",
-          },
-          {
-            label: "$(arrow-down) New database",
-            detail:
-              "Import a new database from the cloud or your local machine",
-            alwaysShow: true,
-            databaseKind: "new",
-          },
-        ],
-        { ignoreFocusOut: true, placeHolder: "Select an option" },
-      );
+        const handleChooseDatabaseGithubSpy = jest
+          .spyOn(databaseUI as any, "handleChooseDatabaseGithub")
+          .mockResolvedValue(undefined);
 
-      expect(selectExistingDatabaseSpy).toHaveBeenCalled();
-      expect(importNewDatabaseSpy).not.toHaveBeenCalled();
+        await databaseUI.getDatabaseItem(progress, token);
+
+        expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
+        expect(handleChooseDatabaseGithubSpy).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
