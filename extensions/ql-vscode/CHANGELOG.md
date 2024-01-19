@@ -5,6 +5,7 @@
 - Enable collection of telemetry for the `codeQL.addingDatabases.addDatabaseSourceToWorkspace` setting. [#3238](https://github.com/github/vscode-codeql/pull/3238)
 - In the CodeQL model editor, you can now select individual method rows and save changes to only the selected rows, instead of having to save the entire library model. [#3156](https://github.com/github/vscode-codeql/pull/3156)
 - If you run a query without having selected a database, we show a more intuitive prompt to help you select a database. [#3214](https://github.com/github/vscode-codeql/pull/3214)
+- Error messages returned from the CodeQL CLI are now less verbose and more user-friendly. [#3259](https://github.com/github/vscode-codeql/pull/3259)
 - The UI for browsing and running CodeQL tests has moved to use VS Code's built-in test UI. This makes the CodeQL test UI more consistent with the test UIs for other languages.
   This change means that this extension no longer depends on the "Test Explorer UI" and "Test Adapter Converter" extensions. You can uninstall those two extensions if they are
   not being used by any other extensions you may have installed.
