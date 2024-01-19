@@ -35,6 +35,7 @@ import { LINE_ENDINGS, splitStreamAtSeparators } from "../common/split-stream";
 import type { Position } from "../query-server/messages";
 import { LOGGING_FLAGS } from "./cli-command";
 import type { CliFeatures, VersionAndFeatures } from "./cli-version";
+import { ExitCodeError, getCliError } from "./cli-errors";
 
 /**
  * The version of the SARIF format that we are using.
@@ -420,7 +421,9 @@ export class CodeQLCliServer implements Disposable {
             stderrBuffers.push(newData);
           });
           // Listen for process exit.
-          process.addListener("close", (code) => reject(code));
+          process.addListener("close", (code) =>
+            reject(new ExitCodeError(code)),
+          );
           // Write the command followed by a null terminator.
           process.stdin.write(JSON.stringify(args), "utf8");
           process.stdin.write(this.nullBuffer);
@@ -436,19 +439,18 @@ export class CodeQLCliServer implements Disposable {
       } catch (err) {
         // Kill the process if it isn't already dead.
         this.killProcessIfRunning();
+
         // Report the error (if there is a stderr then use that otherwise just report the error code or nodejs error)
-        const newError =
-          stderrBuffers.length === 0
-            ? new Error(
-                `${description} failed with args:${EOL}    ${argsString}${EOL}${err}`,
-              )
-            : new Error(
-                `${description} failed with args:${EOL}    ${argsString}${EOL}${Buffer.concat(
-                  stderrBuffers,
-                ).toString("utf8")}`,
-              );
-        newError.stack += getErrorStack(err);
-        throw newError;
+        const cliError = getCliError(
+          err,
+          stderrBuffers.length > 0
+            ? Buffer.concat(stderrBuffers).toString("utf8")
+            : undefined,
+          description,
+          args,
+        );
+        cliError.stack += getErrorStack(err);
+        throw cliError;
       } finally {
         if (!silent) {
           void this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
