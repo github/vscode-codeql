@@ -594,7 +594,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy = jest.spyOn(inProgress1, "cancel");
 
         await queryHistoryManager.handleCancel([inProgress1]);
-        expect(cancelSpy).toBeCalledTimes(1);
+        expect(cancelSpy).toHaveBeenCalledTimes(1);
       });
 
       it("should cancel multiple local queries", async () => {
@@ -608,8 +608,8 @@ describe("QueryHistoryManager", () => {
         const cancelSpy2 = jest.spyOn(inProgress2, "cancel");
 
         await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
-        expect(cancelSpy1).toBeCalled();
-        expect(cancelSpy2).toBeCalled();
+        expect(cancelSpy1).toHaveBeenCalled();
+        expect(cancelSpy2).toHaveBeenCalled();
       });
 
       it("should cancel a single variant analysis", async () => {
@@ -619,7 +619,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = variantAnalysisHistory[1];
 
         await queryHistoryManager.handleCancel([inProgress1]);
-        expect(cancelVariantAnalysisSpy).toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).toHaveBeenCalledWith(
           inProgress1.variantAnalysis.id,
         );
       });
@@ -632,10 +632,10 @@ describe("QueryHistoryManager", () => {
         const inProgress2 = variantAnalysisHistory[3];
 
         await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
-        expect(cancelVariantAnalysisSpy).toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).toHaveBeenCalledWith(
           inProgress1.variantAnalysis.id,
         );
-        expect(cancelVariantAnalysisSpy).toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).toHaveBeenCalledWith(
           inProgress2.variantAnalysis.id,
         );
       });
@@ -650,7 +650,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy = jest.spyOn(completed, "cancel");
 
         await queryHistoryManager.handleCancel([completed]);
-        expect(cancelSpy).not.toBeCalledTimes(1);
+        expect(cancelSpy).not.toHaveBeenCalledTimes(1);
       });
 
       it("should not cancel multiple local queries", async () => {
@@ -664,8 +664,8 @@ describe("QueryHistoryManager", () => {
         const cancelSpy2 = jest.spyOn(failed, "cancel");
 
         await queryHistoryManager.handleCancel([completed, failed]);
-        expect(cancelSpy).not.toBeCalledTimes(1);
-        expect(cancelSpy2).not.toBeCalledTimes(1);
+        expect(cancelSpy).not.toHaveBeenCalledTimes(1);
+        expect(cancelSpy2).not.toHaveBeenCalledTimes(1);
       });
 
       it("should not cancel a single variant analysis", async () => {
@@ -675,7 +675,7 @@ describe("QueryHistoryManager", () => {
         const completedVariantAnalysis = variantAnalysisHistory[0];
 
         await queryHistoryManager.handleCancel([completedVariantAnalysis]);
-        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).not.toHaveBeenCalledWith(
           completedVariantAnalysis.variantAnalysis,
         );
       });
@@ -691,10 +691,10 @@ describe("QueryHistoryManager", () => {
           completedVariantAnalysis,
           failedVariantAnalysis,
         ]);
-        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).not.toHaveBeenCalledWith(
           completedVariantAnalysis.variantAnalysis.id,
         );
-        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
+        expect(cancelVariantAnalysisSpy).not.toHaveBeenCalledWith(
           failedVariantAnalysis.variantAnalysis.id,
         );
       });
@@ -708,7 +708,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleCopyRepoList(item);
 
-      expect(executeCommand).not.toBeCalled();
+      expect(executeCommand).not.toHaveBeenCalled();
     });
 
     it("should copy repo list for a single variant analysis", async () => {
@@ -718,9 +718,9 @@ describe("QueryHistoryManager", () => {
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleCopyRepoList(item);
 
-      expect(variantAnalysisManagerStub.copyRepoListToClipboard).toBeCalledWith(
-        item.variantAnalysis.id,
-      );
+      expect(
+        variantAnalysisManagerStub.copyRepoListToClipboard,
+      ).toHaveBeenCalledWith(item.variantAnalysis.id);
     });
   });
 
@@ -731,7 +731,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleExportResults(item);
 
-      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
+      expect(variantAnalysisManagerStub.exportResults).not.toHaveBeenCalled();
     });
 
     it("should export results for a single variant analysis", async () => {
@@ -739,7 +739,7 @@ describe("QueryHistoryManager", () => {
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleExportResults(item);
-      expect(variantAnalysisManagerStub.exportResults).toBeCalledWith(
+      expect(variantAnalysisManagerStub.exportResults).toHaveBeenCalledWith(
         item.variantAnalysis.id,
       );
     });
@@ -801,7 +801,7 @@ describe("QueryHistoryManager", () => {
           queryHistoryManager as any
         ).findOtherQueryToCompare(thisQuery, [thisQuery, localQueryHistory[0]]);
         expect(otherQuery).toBe(localQueryHistory[0]);
-        expect(showQuickPickSpy).not.toBeCalled();
+        expect(showQuickPickSpy).not.toHaveBeenCalled();
       });
 
       it("should throw an error when a databases are not the same", async () => {
@@ -850,7 +850,7 @@ describe("QueryHistoryManager", () => {
         await queryHistoryManager.handleCompareWith(localQueryHistory[0], [
           localQueryHistory[0],
         ]);
-        expect(doCompareCallback).not.toBeCalled();
+        expect(doCompareCallback).not.toHaveBeenCalled();
       });
 
       it("should throw an error when a query is not successful", async () => {

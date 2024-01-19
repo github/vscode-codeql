@@ -47,7 +47,7 @@ export function parseSarifPlainTextMessage(
   // Technically we could have any uri in the target but we don't output that yet.
   // The possibility of escaping outside the link is not mentioned in the sarif spec but we always output sartif this way.
   const linkRegex =
-    /(?<=(?<!\\)(\\\\)*)\[(?<linkText>([^\\\]\[]|\\\\|\\\]|\\\[)*)\]\((?<linkTarget>[0-9]+)\)/g;
+    /(?<=(?<!\\)(\\\\)*)\[(?<linkText>([^\\\][]|\\\\|\\\]|\\\[)*)\]\((?<linkTarget>[0-9]+)\)/g;
   let result: RegExpExecArray | null;
   let curIndex = 0;
   while ((result = linkRegex.exec(message)) !== null) {

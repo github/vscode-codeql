@@ -39,7 +39,7 @@ describe("QueryTreeDataProvider", () => {
       );
 
       expect(dataProvider.getChildren()).toEqual([]);
-      expect(executeCommand).toBeCalledWith(
+      expect(executeCommand).toHaveBeenCalledWith(
         "setContext",
         "codeQL.noQueries",
         true,
@@ -118,7 +118,7 @@ describe("QueryTreeDataProvider", () => {
       onDidChangeQueriesEmitter.fire();
 
       expect(dataProvider.getChildren().length).toEqual(2);
-      expect(executeCommand).toBeCalledWith(
+      expect(executeCommand).toHaveBeenCalledWith(
         "setContext",
         "codeQL.noQueries",
         false,

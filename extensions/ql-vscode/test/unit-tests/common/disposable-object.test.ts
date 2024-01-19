@@ -34,9 +34,9 @@ describe("DisposableObject and DisposeHandler", () => {
 
     disposableObject.dispose();
 
-    expect(disposable1.dispose).toBeCalled();
-    expect(disposable2.dispose).toBeCalled();
-    expect(disposable3.dispose).toBeCalled();
+    expect(disposable1.dispose).toHaveBeenCalled();
+    expect(disposable2.dispose).toHaveBeenCalled();
+    expect(disposable3.dispose).toHaveBeenCalled();
 
     // pushed items must be called in reverse order
     expect(disposable2.dispose.mock.invocationCallOrder[0]).toBeLessThan(
@@ -51,30 +51,30 @@ describe("DisposableObject and DisposeHandler", () => {
 
     disposableObject.dispose();
 
-    expect(disposable1.dispose).not.toBeCalled();
-    expect(disposable2.dispose).not.toBeCalled();
-    expect(disposable3.dispose).not.toBeCalled();
+    expect(disposable1.dispose).not.toHaveBeenCalled();
+    expect(disposable2.dispose).not.toHaveBeenCalled();
+    expect(disposable3.dispose).not.toHaveBeenCalled();
   });
 
   it("should dispose and stop tracking objects", () => {
     disposableObject.track(disposable1);
     disposableObject.disposeAndStopTracking(disposable1);
 
-    expect(disposable1.dispose).toBeCalled();
+    expect(disposable1.dispose).toHaveBeenCalled();
     disposable1.dispose.mockClear();
 
     disposableObject.dispose();
-    expect(disposable1.dispose).not.toBeCalled();
+    expect(disposable1.dispose).not.toHaveBeenCalled();
   });
 
   it("should avoid disposing an object that is not tracked", () => {
     disposableObject.push(disposable1);
     disposableObject.disposeAndStopTracking(disposable1);
 
-    expect(disposable1.dispose).not.toBeCalled();
+    expect(disposable1.dispose).not.toHaveBeenCalled();
 
     disposableObject.dispose();
-    expect(disposable1.dispose).toBeCalled();
+    expect(disposable1.dispose).toHaveBeenCalled();
   });
 
   it("ahould use a dispose handler", () => {
@@ -91,10 +91,10 @@ describe("DisposableObject and DisposeHandler", () => {
 
     disposableObject.dispose(handler);
 
-    expect(disposable1.dispose).toBeCalled();
-    expect(disposable2.dispose).not.toBeCalled();
-    expect(disposable3.dispose).toBeCalled();
-    expect(disposable4.dispose).not.toBeCalled();
+    expect(disposable1.dispose).toHaveBeenCalled();
+    expect(disposable2.dispose).not.toHaveBeenCalled();
+    expect(disposable3.dispose).toHaveBeenCalled();
+    expect(disposable4.dispose).not.toHaveBeenCalled();
 
     // now that disposableObject has been disposed, subsequent disposals are
     // no-ops
@@ -105,10 +105,10 @@ describe("DisposableObject and DisposeHandler", () => {
 
     disposableObject.dispose();
 
-    expect(disposable1.dispose).not.toBeCalled();
-    expect(disposable2.dispose).not.toBeCalled();
-    expect(disposable3.dispose).not.toBeCalled();
-    expect(disposable4.dispose).not.toBeCalled();
+    expect(disposable1.dispose).not.toHaveBeenCalled();
+    expect(disposable2.dispose).not.toHaveBeenCalled();
+    expect(disposable3.dispose).not.toHaveBeenCalled();
+    expect(disposable4.dispose).not.toHaveBeenCalled();
   });
 
   class MyDisposableObject extends DisposableObject {

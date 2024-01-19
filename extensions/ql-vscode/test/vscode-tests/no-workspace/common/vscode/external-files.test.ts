@@ -29,7 +29,7 @@ describe("tryOpenExternalFile", () => {
       Uri.file("xxx"),
       expect.anything(),
     );
-    expect(executeCommand).not.toBeCalled();
+    expect(executeCommand).not.toHaveBeenCalled();
   });
 
   [
@@ -61,8 +61,8 @@ describe("tryOpenExternalFile", () => {
       const uri = Uri.file("xxx");
       expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
       expect(showTextDocumentSpy).toHaveBeenCalledWith(uri, expect.anything());
-      expect(showInformationMessageSpy).toBeCalled();
-      expect(executeCommand).not.toBeCalled();
+      expect(showInformationMessageSpy).toHaveBeenCalled();
+      expect(executeCommand).not.toHaveBeenCalled();
     });
   });
 });

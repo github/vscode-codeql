@@ -34,6 +34,7 @@ import { QueryLanguage } from "../common/query-language";
 import { LINE_ENDINGS, splitStreamAtSeparators } from "../common/split-stream";
 import type { Position } from "../query-server/messages";
 import { LOGGING_FLAGS } from "./cli-command";
+import type { CliFeatures, VersionAndFeatures } from "./cli-version";
 
 /**
  * The version of the SARIF format that we are using.
@@ -121,6 +122,16 @@ type GenerateExtensiblePredicateMetadataResult = {
   }>;
 };
 
+type PackDownloadResult = {
+  // There are other properties in this object, but they are
+  // not relevant for its use in the extension, so we omit them.
+  packs: Array<{
+    name: string;
+    version: string;
+  }>;
+  packDir: string;
+};
+
 /**
  * The expected output of `codeql resolve qlref`.
  */
@@ -193,7 +204,9 @@ type OnLineCallback = (
   line: string,
 ) => Promise<string | undefined> | string | undefined;
 
-type VersionChangedListener = (newVersion: SemVer | undefined) => void;
+type VersionChangedListener = (
+  newVersionAndFeatures: VersionAndFeatures | undefined,
+) => void;
 
 /**
  * This class manages a cli server started by `codeql execute cli-server` to
@@ -211,8 +224,8 @@ export class CodeQLCliServer implements Disposable {
   /**  A buffer with a single null byte. */
   nullBuffer: Buffer;
 
-  /** Version of current cli, lazily computed by the `getVersion()` method */
-  private _version: SemVer | undefined;
+  /** Version of current cli and its supported features, lazily computed by the `getVersion()` method */
+  private _versionAndFeatures: VersionAndFeatures | undefined;
 
   private _versionChangedListeners: VersionChangedListener[] = [];
 
@@ -288,7 +301,7 @@ export class CodeQLCliServer implements Disposable {
     const callback = (): void => {
       try {
         this.killProcessIfRunning();
-        this._version = undefined;
+        this._versionAndFeatures = undefined;
         this._supportedLanguages = undefined;
       } finally {
         this.runNext();
@@ -1383,7 +1396,7 @@ export class CodeQLCliServer implements Disposable {
    * Downloads a specified pack.
    * @param packs The `<package-scope/name[@version]>` of the packs to download.
    */
-  async packDownload(packs: string[]) {
+  async packDownload(packs: string[]): Promise<PackDownloadResult> {
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "download"],
       packs,
@@ -1417,16 +1430,28 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
+  /**
+   * Compile a CodeQL pack and bundle it into a single file.
+   *
+   * @param sourcePackDir The directory of the input CodeQL pack.
+   * @param workspaceFolders The workspace folders to search for additional packs.
+   * @param outputBundleFile The path to the output bundle file.
+   * @param outputPackDir The directory to contain the unbundled output pack.
+   * @param moreOptions Additional options to be passed to `codeql pack bundle`.
+   */
   async packBundle(
-    dir: string,
+    sourcePackDir: string,
     workspaceFolders: string[],
-    outputPath: string,
+    outputBundleFile: string,
+    outputPackDir: string,
     moreOptions: string[],
   ): Promise<void> {
     const args = [
       "-o",
-      outputPath,
-      dir,
+      outputBundleFile,
+      sourcePackDir,
+      "--pack-path",
+      outputPackDir,
       ...moreOptions,
       ...this.getAdditionalPacksArg(workspaceFolders),
     ];
@@ -1481,27 +1506,35 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
-  public async getVersion() {
-    if (!this._version) {
+  public async getVersion(): Promise<SemVer> {
+    return (await this.getVersionAndFeatures()).version;
+  }
+
+  public async getFeatures(): Promise<CliFeatures> {
+    return (await this.getVersionAndFeatures()).features;
+  }
+
+  private async getVersionAndFeatures(): Promise<VersionAndFeatures> {
+    if (!this._versionAndFeatures) {
       try {
-        const newVersion = await this.refreshVersion();
-        this._version = newVersion;
+        const newVersionAndFeatures = await this.refreshVersion();
+        this._versionAndFeatures = newVersionAndFeatures;
         this._versionChangedListeners.forEach((listener) =>
-          listener(newVersion),
+          listener(newVersionAndFeatures),
         );
 
         // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
         await this.app.commands.execute(
           "setContext",
           "codeql.supportsQuickEvalCount",
-          newVersion.compare(
+          newVersionAndFeatures.version.compare(
             CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
           ) >= 0,
         );
         await this.app.commands.execute(
           "setContext",
           "codeql.supportsTrimCache",
-          newVersion.compare(
+          newVersionAndFeatures.version.compare(
             CliVersionConstraint.CLI_VERSION_WITH_TRIM_CACHE,
           ) >= 0,
         );
@@ -1512,23 +1545,23 @@ export class CodeQLCliServer implements Disposable {
         throw e;
       }
     }
-    return this._version;
+    return this._versionAndFeatures;
   }
 
   public addVersionChangedListener(listener: VersionChangedListener) {
-    if (this._version) {
-      listener(this._version);
+    if (this._versionAndFeatures) {
+      listener(this._versionAndFeatures);
     }
     this._versionChangedListeners.push(listener);
   }
 
-  private async refreshVersion() {
+  private async refreshVersion(): Promise<VersionAndFeatures> {
     const distribution = await this.distributionProvider.getDistribution();
     switch (distribution.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-
+      // eslint-disable-next-line no-fallthrough -- Intentional fallthrough
       case FindDistributionResultKind.IncompatibleDistribution:
-        return distribution.version;
+        return distribution.versionAndFeatures;
 
       default:
         // We should not get here because if no distributions are available, then
@@ -1647,7 +1680,7 @@ function isEnvTrue(name: string): boolean {
   );
 }
 
-export function shouldDebugIdeServer() {
+export function shouldDebugLanguageServer() {
   return isEnvTrue("IDE_SERVER_JAVA_DEBUG");
 }
 
@@ -1744,5 +1777,9 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA,
     );
+  }
+
+  async supportsMrvaPackCreate(): Promise<boolean> {
+    return (await this.cli.getFeatures()).mrvaPackCreate === true;
   }
 }

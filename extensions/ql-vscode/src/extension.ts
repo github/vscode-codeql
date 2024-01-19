@@ -15,8 +15,6 @@ import { arch, homedir, platform } from "os";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
-import type { TestHub } from "vscode-test-adapter-api";
-import { testExplorerExtensionId } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
 import { watch } from "chokidar";
 import {
@@ -25,17 +23,18 @@ import {
 } from "./common/vscode/archive-filesystem-provider";
 import { CliVersionConstraint, CodeQLCliServer } from "./codeql-cli/cli";
 import {
+  ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING,
+  addDatabaseSourceToWorkspace,
   CliConfigListener,
   DistributionConfigListener,
   GitHubDatabaseConfigListener,
-  isCanary,
   joinOrderWarningThreshold,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "./config";
 import {
   AstViewer,
-  createIDEServer,
+  createLanguageClient,
   getQueryEditorCommands,
   install,
   TemplatePrintAstProvider,
@@ -85,13 +84,11 @@ import {
 import type { ProgressReporter } from "./common/logging/vscode";
 import {
   extLogger,
-  ideServerLogger,
+  languageServerLogger,
   queryServerLogger,
 } from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import type { CompletedLocalQueryInfo } from "./query-results";
-import { QLTestAdapterFactory } from "./query-testing/test-adapter";
-import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
 import {
   initializeTelemetry,
@@ -130,7 +127,6 @@ import { DebuggerUI } from "./debugger/debugger-ui";
 import { ModelEditorModule } from "./model-editor/model-editor-module";
 import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
-import type { TestManagerBase } from "./query-testing/test-manager-base";
 import { QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
 import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
@@ -175,7 +171,7 @@ function getCommands(
   app: App,
   cliServer: CodeQLCliServer,
   queryRunner: QueryRunner,
-  ideServer: LanguageClient,
+  languageClient: LanguageClient,
 ): BaseCommands {
   const getCliVersion = async () => {
     try {
@@ -193,10 +189,10 @@ function getCommands(
         await Promise.all([
           queryRunner.restartQueryServer(progress, token),
           async () => {
-            if (ideServer.isRunning()) {
-              await ideServer.restart();
+            if (languageClient.isRunning()) {
+              await languageClient.restart();
             } else {
-              await ideServer.start();
+              await languageClient.start();
             }
           },
         ]);
@@ -219,8 +215,9 @@ function getCommands(
     "codeQL.restartLegacyQueryServerOnConfigChange": restartQueryServer,
     "codeQL.restartQueryServerOnExternalConfigChange": restartQueryServer,
     "codeQL.copyVersion": async () => {
-      const text = `CodeQL extension version: ${extension?.packageJSON
-        .version} \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
+      const text = `CodeQL extension version: ${
+        extension?.packageJSON.version
+      } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
       await env.clipboard.writeText(text);
       void showAndLogInformationMessage(extLogger, text);
     },
@@ -308,6 +305,14 @@ const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
 // before silently being refused to upgrade.
 const MIN_VERSION = "1.82.0";
 
+function sendConfigTelemetryData() {
+  const config: Record<string, string> = {};
+  config[ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING.qualifiedName] =
+    addDatabaseSourceToWorkspace().toString();
+
+  telemetryListener?.sendConfigInformation(config);
+}
+
 /**
  * Returns the CodeQLExtensionInterface, or an empty object if the interface is not
  * available after activation is complete. This will happen if there is no cli
@@ -334,6 +339,8 @@ export async function activate(
   install();
 
   const app = new ExtensionApp(ctx);
+
+  sendConfigTelemetryData();
 
   const quickEvalCodeLensProvider = new QuickEvalCodeLensProvider();
   languages.registerCodeLensProvider(
@@ -424,7 +431,7 @@ export async function activate(
       codeQlExtension.variantAnalysisManager,
     );
     codeQlExtension.cliServer.addVersionChangedListener((ver) => {
-      telemetryListener.cliVersion = ver;
+      telemetryListener.cliVersion = ver?.version;
     });
 
     let unsupportedWarningShown = false;
@@ -437,13 +444,16 @@ export async function activate(
         return;
       }
 
-      if (CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(ver) < 0) {
+      if (
+        CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(ver.version) <
+        0
+      ) {
         return;
       }
 
       void showAndLogWarningMessage(
         extLogger,
-        `You are using an unsupported version of the CodeQL CLI (${ver}). ` +
+        `You are using an unsupported version of the CodeQL CLI (${ver.version}). ` +
           `The minimum supported version is ${CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION}. ` +
           `Please upgrade to a newer version of the CodeQL CLI.`,
       );
@@ -598,7 +608,7 @@ async function getDistributionDisplayingDistributionWarnings(
   switch (result.kind) {
     case FindDistributionResultKind.CompatibleDistribution:
       void extLogger.log(
-        `Found compatible version of CodeQL CLI (version ${result.version.raw})`,
+        `Found compatible version of CodeQL CLI (version ${result.versionAndFeatures.version.raw})`,
       );
       break;
     case FindDistributionResultKind.IncompatibleDistribution: {
@@ -607,18 +617,18 @@ async function getDistributionDisplayingDistributionWarnings(
           case DistributionKind.ExtensionManaged:
             return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
           case DistributionKind.CustomPathConfig:
-            return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
+            return `Please update the "CodeQL CLI Executable Path" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
           case DistributionKind.PathEnvironmentVariable:
             return (
               `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
-              `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
+              `set the "CodeQL CLI Executable Path" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
             );
         }
       })();
 
       void showAndLogWarningMessage(
         extLogger,
-        `The current version of the CodeQL CLI (${result.version.raw}) ` +
+        `The current version of the CodeQL CLI (${result.versionAndFeatures.version.raw}) ` +
           `is incompatible with this extension. ${fixGuidanceMessage}`,
       );
       break;
@@ -936,7 +946,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(tmpDirDisposal);
 
   void extLogger.log("Initializing CodeQL language server.");
-  const ideServer = createIDEServer(qlConfigurationListener);
+  const languageClient = createLanguageClient(qlConfigurationListener);
 
   const localQueries = new LocalQueries(
     app,
@@ -977,27 +987,8 @@ async function activateWithInstalledDistribution(
   const testRunner = new TestRunner(dbm, cliServer);
   ctx.subscriptions.push(testRunner);
 
-  let testManager: TestManagerBase | undefined = undefined;
-  if (isCanary()) {
-    testManager = new TestManager(app, testRunner, cliServer);
-    ctx.subscriptions.push(testManager);
-  } else {
-    const testExplorerExtension = extensions.getExtension<TestHub>(
-      testExplorerExtensionId,
-    );
-    if (testExplorerExtension) {
-      const testHub = testExplorerExtension.exports;
-      const testAdapterFactory = new QLTestAdapterFactory(
-        testHub,
-        testRunner,
-        cliServer,
-      );
-      ctx.subscriptions.push(testAdapterFactory);
-
-      testManager = new TestUIService(app, testHub);
-      ctx.subscriptions.push(testManager);
-    }
-  }
+  const testManager = new TestManager(app, testRunner, cliServer);
+  ctx.subscriptions.push(testManager);
 
   const testUiCommands = testManager?.getCommands() ?? {};
 
@@ -1021,7 +1012,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(app, cliServer, qs, ideServer),
+    ...getCommands(app, cliServer, qs, languageClient),
     ...getQueryEditorCommands({
       commandManager: app.commands,
       queryRunner: qs,
@@ -1068,21 +1059,21 @@ async function activateWithInstalledDistribution(
   }
 
   void extLogger.log("Starting language server.");
-  await ideServer.start();
+  await languageClient.start();
   ctx.subscriptions.push({
     dispose: () => {
-      void ideServer.stop();
+      void languageClient.stop();
     },
   });
 
-  // Handle visibility changes in the ideserver
+  // Handle visibility changes in the CodeQL language client.
   if (await cliServer.cliConstraints.supportsVisibilityNotifications()) {
     Window.onDidChangeVisibleTextEditors((editors) => {
-      ideServer.notifyVisibilityChange(editors);
+      languageClient.notifyVisibilityChange(editors);
     });
     // Send an inital notification to the language server
     // to set the initial state of the visible editors.
-    ideServer.notifyVisibilityChange(Window.visibleTextEditors);
+    languageClient.notifyVisibilityChange(Window.visibleTextEditors);
   }
 
   // Jump-to-definition and find-references
@@ -1264,7 +1255,7 @@ function getContextStoragePath(ctx: ExtensionContext) {
 async function initializeLogging(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(extLogger);
   ctx.subscriptions.push(queryServerLogger);
-  ctx.subscriptions.push(ideServerLogger);
+  ctx.subscriptions.push(languageServerLogger);
 }
 
 const checkForUpdatesCommand: keyof PreActivationCommands =

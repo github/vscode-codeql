@@ -14,10 +14,10 @@ import type { VariantAnalysis } from "../../../../src/variant-analysis/shared/va
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepos } from "../../../factories/variant-analysis/gh-api/scanned-repositories";
 import {
-  processFailureReason,
-  processScannedRepository,
-  processUpdatedVariantAnalysis,
-} from "../../../../src/variant-analysis/variant-analysis-processor";
+  mapFailureReason,
+  mapScannedRepository,
+  mapUpdatedVariantAnalysis,
+} from "../../../../src/variant-analysis/variant-analysis-mapper";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
@@ -88,7 +88,7 @@ describe("Variant Analysis Monitor", () => {
       expect(onVariantAnalysisChangeSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           status: VariantAnalysisStatus.Failed,
-          failureReason: processFailureReason(
+          failureReason: mapFailureReason(
             mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason,
           ),
         }),
@@ -121,14 +121,14 @@ describe("Variant Analysis Monitor", () => {
         );
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).toBeCalledTimes(succeededRepos.length);
+        expect(mockEecuteCommand).toHaveBeenCalledTimes(succeededRepos.length);
 
         succeededRepos.forEach((succeededRepo, index) => {
           expect(mockEecuteCommand).toHaveBeenNthCalledWith(
             index + 1,
             "codeQL.autoDownloadVariantAnalysisResult",
-            processScannedRepository(succeededRepo),
-            processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
+            mapScannedRepository(succeededRepo),
+            mapUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
           );
         });
       });
@@ -197,8 +197,8 @@ describe("Variant Analysis Monitor", () => {
       it("should trigger a download extension command for each repo", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockGetVariantAnalysis).toBeCalledTimes(4);
-        expect(mockEecuteCommand).toBeCalledTimes(5);
+        expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(4);
+        expect(mockEecuteCommand).toHaveBeenCalledTimes(5);
       });
     });
 
@@ -261,7 +261,7 @@ describe("Variant Analysis Monitor", () => {
       it("should only trigger the warning once per error", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(logger.showWarningMessage).toBeCalledTimes(4);
+        expect(logger.showWarningMessage).toHaveBeenCalledTimes(4);
         expect(logger.showWarningMessage).toHaveBeenNthCalledWith(
           1,
           expect.stringMatching(/No internet connection/),
@@ -291,7 +291,7 @@ describe("Variant Analysis Monitor", () => {
       it("should not try to download any repos", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).not.toBeCalled();
+        expect(mockEecuteCommand).not.toHaveBeenCalled();
       });
     });
 

@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type {
   ModeledMethod,
   ModeledMethodType,
@@ -12,18 +12,10 @@ import type { Method } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import type { Mutable } from "../../common/mutable";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
-import type { QueryLanguage } from "../../common/query-language";
+import { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
-
-const options: Array<{ value: ModeledMethodType; label: string }> = [
-  { value: "none", label: "Unmodeled" },
-  { value: "source", label: "Source" },
-  { value: "sink", label: "Sink" },
-  { value: "summary", label: "Flow summary" },
-  { value: "neutral", label: "Neutral" },
-];
 
 type Props = {
   language: QueryLanguage;
@@ -40,6 +32,21 @@ export const ModelTypeDropdown = ({
   modelingStatus,
   onChange,
 }: Props): JSX.Element => {
+  const options = useMemo(() => {
+    const baseOptions: Array<{ value: ModeledMethodType; label: string }> = [
+      { value: "none", label: "Unmodeled" },
+      { value: "source", label: "Source" },
+      { value: "sink", label: "Sink" },
+      { value: "summary", label: "Flow summary" },
+      { value: "neutral", label: "Neutral" },
+    ];
+    if (language === QueryLanguage.Ruby) {
+      baseOptions.push({ value: "type", label: "Type" });
+    }
+
+    return baseOptions;
+  }, [language]);
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const modelsAsDataLanguage = getModelsAsDataLanguage(language);

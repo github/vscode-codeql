@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.11.1",
+  "version": "1.12.1",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -21,7 +21,6 @@
     "Programming Languages"
   ],
   "extensionDependencies": [
-    "hbenl.vscode-test-explorer",
     "vscode.git"
   ],
   "capabilities": {
@@ -545,6 +544,14 @@
       {
         "command": "codeQL.runVariantAnalysisContextEditor",
         "title": "CodeQL: Run Variant Analysis"
+      },
+      {
+        "command": "codeQL.runVariantAnalysisContextExplorer",
+        "title": "CodeQL: Run Variant Analysis"
+      },
+      {
+        "command": "codeQL.runVariantAnalysisPublishedPack",
+        "title": "CodeQL: Run Variant Analysis against published pack"
       },
       {
         "command": "codeQL.exportSelectedVariantAnalysisResults",
@@ -1323,6 +1330,11 @@
           "when": "resourceScheme != codeql-zip-archive"
         },
         {
+          "command": "codeQL.runVariantAnalysisContextExplorer",
+          "group": "9_qlCommands",
+          "when": "resourceExtname == .ql && config.codeQL.canary && config.codeQL.variantAnalysis.multiQuery"
+        },
+        {
           "command": "codeQL.openReferencedFileContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceExtname == .qlref"
@@ -1397,6 +1409,14 @@
         {
           "command": "codeQL.runVariantAnalysis",
           "when": "editorLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runVariantAnalysisContextExplorer",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runVariantAnalysisPublishedPack",
+          "when": "config.codeQL.canary && config.codeQL.variantAnalysis.multiQuery"
         },
         {
           "command": "codeQL.runVariantAnalysisContextEditor",
@@ -1908,6 +1928,7 @@
     "prepare": "cd ../.. && husky install"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.26.5",
     "@octokit/plugin-retry": "^6.0.1",
     "@octokit/rest": "^20.0.2",
     "@vscode/codicons": "^0.0.35",
@@ -1921,7 +1942,7 @@
     "d3-graphviz": "^5.0.2",
     "fs-extra": "^11.1.1",
     "js-yaml": "^4.1.0",
-    "msw": "^2.0.11",
+    "msw": "^2.0.13",
     "nanoid": "^5.0.1",
     "node-fetch": "^2.6.7",
     "p-queue": "^8.0.1",
@@ -1938,8 +1959,6 @@
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-jsonrpc": "^8.0.2",
     "vscode-languageclient": "^8.0.2",
-    "vscode-test-adapter-api": "^1.7.0",
-    "vscode-test-adapter-util": "^0.7.0",
     "yauzl": "^2.10.0",
     "zip-a-folder": "^3.1.3"
   },
@@ -1953,18 +1972,18 @@
     "@github/markdownlint-github": "^0.6.0",
     "@octokit/plugin-throttling": "^8.0.0",
     "@playwright/test": "^1.40.1",
-    "@storybook/addon-a11y": "^7.4.6",
+    "@storybook/addon-a11y": "^7.6.9",
     "@storybook/addon-actions": "^7.1.0",
     "@storybook/addon-essentials": "^7.1.0",
     "@storybook/addon-interactions": "^7.1.0",
     "@storybook/addon-links": "^7.1.0",
     "@storybook/components": "^7.6.7",
     "@storybook/csf": "^0.1.1",
-    "@storybook/manager-api": "^7.6.6",
+    "@storybook/manager-api": "^7.6.7",
     "@storybook/react": "^7.1.0",
     "@storybook/react-webpack5": "^7.6.7",
-    "@storybook/theming": "^7.6.7",
-    "@testing-library/dom": "^9.3.0",
+    "@storybook/theming": "^7.6.9",
+    "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.5.2",
@@ -1992,15 +2011,15 @@
     "@types/unzipper": "^0.10.1",
     "@types/vscode": "^1.82.0",
     "@types/yauzl": "^2.10.3",
-    "@typescript-eslint/eslint-plugin": "^6.18.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.16.0",
     "@vscode/test-electron": "^2.2.0",
     "@vscode/vsce": "^2.19.0",
     "ansi-colors": "^4.1.1",
-    "applicationinsights": "^2.3.5",
+    "applicationinsights": "^2.9.2",
     "cosmiconfig": "^9.0.0",
     "cross-env": "^7.0.3",
-    "css-loader": "^6.8.1",
+    "css-loader": "^6.9.0",
     "del": "^6.0.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.0.0",
@@ -2009,7 +2028,7 @@
     "eslint-plugin-github": "^4.4.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jest-dom": "^5.0.1",
-    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-react": "^7.31.8",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-storybook": "^0.6.4",
@@ -2029,7 +2048,7 @@
     "mini-css-extract-plugin": "^2.6.1",
     "npm-run-all": "^4.1.5",
     "patch-package": "^8.0.0",
-    "prettier": "^3.0.0",
+    "prettier": "^3.2.4",
     "storybook": "^7.6.7",
     "tar-stream": "^3.0.0",
     "through2": "^4.0.2",

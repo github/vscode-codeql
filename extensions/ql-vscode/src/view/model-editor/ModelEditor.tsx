@@ -95,6 +95,10 @@ export function ModelEditor({
     new Set(),
   );
 
+  const [selectedSignatures, setSelectedSignatures] = useState<Set<string>>(
+    new Set(),
+  );
+
   const [inProgressMethods, setInProgressMethods] = useState<Set<string>>(
     new Set(),
   );
@@ -189,6 +193,19 @@ export function ModelEditor({
     [],
   );
 
+  const onMethodClick = useCallback(
+    (methodSignature: string) => {
+      const newSelectedSignatures = new Set(selectedSignatures);
+      if (selectedSignatures.has(methodSignature)) {
+        newSelectedSignatures.delete(methodSignature);
+      } else {
+        newSelectedSignatures.add(methodSignature);
+      }
+      setSelectedSignatures(newSelectedSignatures);
+    },
+    [selectedSignatures],
+  );
+
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
       t: "refreshMethods",
@@ -198,15 +215,31 @@ export function ModelEditor({
   const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
+      methodSignatures:
+        selectedSignatures.size === 0
+          ? undefined
+          : Array.from(selectedSignatures),
     });
+  }, [selectedSignatures]);
+
+  const onDeselectAllClick = useCallback(() => {
+    setSelectedSignatures(new Set());
   }, []);
 
-  const onSaveModelClick = useCallback((methodSignatures: string[]) => {
-    vscode.postMessage({
-      t: "saveModeledMethods",
-      methodSignatures,
-    });
-  }, []);
+  const onSaveModelClick = useCallback(
+    (methodSignatures: string[]) => {
+      vscode.postMessage({
+        t: "saveModeledMethods",
+        methodSignatures:
+          selectedSignatures.size === 0
+            ? methodSignatures
+            : methodSignatures.filter((signature) =>
+                selectedSignatures.has(signature),
+              ),
+      });
+    },
+    [selectedSignatures],
+  );
 
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
@@ -309,7 +342,14 @@ export function ModelEditor({
                 onClick={onSaveAllClick}
                 disabled={modifiedSignatures.size === 0}
               >
-                Save all
+                {selectedSignatures.size === 0 ? "Save all" : "Save selected"}
+              </VSCodeButton>
+              <VSCodeButton
+                appearance="secondary"
+                onClick={onDeselectAllClick}
+                disabled={selectedSignatures.size === 0}
+              >
+                Deselect all
               </VSCodeButton>
               <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
                 Refresh
@@ -339,11 +379,13 @@ export function ModelEditor({
           methods={methods}
           modeledMethodsMap={modeledMethods}
           modifiedSignatures={modifiedSignatures}
+          selectedSignatures={selectedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
           onChange={onChange}
+          onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
           onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}

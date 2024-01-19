@@ -55,9 +55,9 @@ describe("AstBuilder", () => {
 
     const bqrsPath = path.normalize("/a/b/c/results.bqrs");
     const options = { entities: ["id", "url", "string"] };
-    expect(mockCli.bqrsDecode).toBeCalledWith(bqrsPath, "nodes", options);
-    expect(mockCli.bqrsDecode).toBeCalledWith(bqrsPath, "edges", options);
-    expect(mockCli.bqrsDecode).toBeCalledWith(
+    expect(mockCli.bqrsDecode).toHaveBeenCalledWith(bqrsPath, "nodes", options);
+    expect(mockCli.bqrsDecode).toHaveBeenCalledWith(bqrsPath, "edges", options);
+    expect(mockCli.bqrsDecode).toHaveBeenCalledWith(
       bqrsPath,
       "graphProperties",
       options,
