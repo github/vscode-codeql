@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("run query and open it from history", async ({ page }) => {
-  await page.goto("http://localhost:8080/?folder=/home/coder/project");
+  await page.goto("/?folder=/home/coder/project");
 
   await page.getByRole("tab", { name: "CodeQL" }).locator("a").click();
 
