@@ -276,14 +276,12 @@ describe("Variant Analysis Manager", () => {
       const queryToRun =
         "Security/CWE/CWE-020/ExternalAPIsUsedWithUntrustedData.ql";
 
-      // We only need to preserve queries with extensible predicates if the CLI doesn't support
-      // storing the necessary metadata in the compiled QLX.
-      const needsExtraQueries =
-        !(await cli.cliConstraints.supportsExtensiblePredicateMetadataInQlx());
-
-      const extraQueries = needsExtraQueries
-        ? ["Telemetry/ExtractorInformation.ql"]
-        : [];
+      // Recent versions of the CLI don't preserve queries with extensible predicates in MRVA packs,
+      // because all the necessary info is in the `.packinfo` file.
+      const extraQueries =
+        (await cli.cliConstraints.preservesExtensiblePredicatesInMrvaPack())
+          ? ["Telemetry/ExtractorInformation.ql"]
+          : [];
 
       await doVariantAnalysisTest({
         queryPath: join(
