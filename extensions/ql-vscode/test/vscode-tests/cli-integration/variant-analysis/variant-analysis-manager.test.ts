@@ -275,7 +275,15 @@ describe("Variant Analysis Manager", () => {
 
       const queryToRun =
         "Security/CWE/CWE-020/ExternalAPIsUsedWithUntrustedData.ql";
-      const extraQuery = "Telemetry/ExtractorInformation.ql";
+
+      // We only need to preserve queries with extensible predicates if the CLI doesn't support
+      // storing the necessary metadata in the compiled QLX.
+      const needsExtraQueries =
+        !cli.cliConstraints.supportsExtensiblePredicateMetadataInQlx();
+
+      const extraQueries = needsExtraQueries
+        ? ["Telemetry/ExtractorInformation.ql"]
+        : [];
 
       await doVariantAnalysisTest({
         queryPath: join(
@@ -284,7 +292,7 @@ describe("Variant Analysis Manager", () => {
           queryToRun,
         ),
         expectedPackName: "codeql/java-queries",
-        filesThatExist: [queryToRun, extraQuery],
+        filesThatExist: [queryToRun, ...extraQueries],
         filesThatDoNotExist: [],
         qlxFilesThatExist: [],
         dependenciesToCheck: ["codeql/java-all"],

@@ -1737,6 +1737,9 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_TRIM_CACHE = new SemVer("2.15.1");
 
+  public static CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA_IN_QLX =
+    new SemVer("2.16.1");
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1779,6 +1782,11 @@ export class CliVersionConstraint {
     );
   }
 
+  async supportsExtensiblePredicateMetadataInQlx() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA_IN_QLX,
+    );
+  }
   async supportsMrvaPackCreate(): Promise<boolean> {
     return (await this.cli.getFeatures()).mrvaPackCreate === true;
   }
