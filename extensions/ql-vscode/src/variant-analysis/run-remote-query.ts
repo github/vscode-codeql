@@ -29,7 +29,7 @@ import {
 import type { Repository } from "./shared/repository";
 import type { DbManager } from "../databases/db-manager";
 import {
-  getQlPackPath,
+  getQlPackFilePath,
   FALLBACK_QLPACK_FILENAME,
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
@@ -74,7 +74,7 @@ async function generateQueryPack(
   );
 
   const mustSynthesizePack =
-    (await getQlPackPath(originalPackRoot)) === undefined;
+    (await getQlPackFilePath(originalPackRoot)) === undefined;
   const cliSupportsMrvaPackCreate =
     await cliServer.cliConstraints.supportsMrvaPackCreate();
 
@@ -265,7 +265,7 @@ async function copyExistingQueryPack(
 async function findPackRoot(queryFile: string): Promise<string> {
   // recursively find the directory containing qlpack.yml or codeql-pack.yml
   let dir = dirname(queryFile);
-  while (!(await getQlPackPath(dir))) {
+  while (!(await getQlPackFilePath(dir))) {
     dir = dirname(dir);
     if (isFileSystemRoot(dir)) {
       // there is no qlpack.yml or codeql-pack.yml in this directory or any parent directory.
@@ -440,7 +440,7 @@ async function fixPackFile(
   queryPackDir: string,
   packRelativePath: string,
 ): Promise<void> {
-  const packPath = await getQlPackPath(queryPackDir);
+  const packPath = await getQlPackFilePath(queryPackDir);
 
   // This should not happen since we create the pack ourselves.
   if (!packPath) {
@@ -490,7 +490,7 @@ async function addExtensionPacksAsDependencies(
   queryPackDir: string,
   extensionPacks: string[],
 ): Promise<void> {
-  const qlpackFile = await getQlPackPath(queryPackDir);
+  const qlpackFile = await getQlPackFilePath(queryPackDir);
   if (!qlpackFile) {
     throw new Error(
       `Could not find ${QLPACK_FILENAMES.join(

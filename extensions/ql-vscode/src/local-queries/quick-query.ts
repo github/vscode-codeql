@@ -11,7 +11,7 @@ import { getPrimaryDbscheme, getQlPackForDbscheme } from "../databases/qlpack";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { UserCancellationException } from "../common/vscode/progress";
 import { getErrorMessage } from "../common/helpers-pure";
-import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "../common/ql";
+import { FALLBACK_QLPACK_FILENAME, getQlPackFilePath } from "../common/ql";
 import type { App } from "../common/app";
 import type { ExtensionApp } from "../common/vscode/vscode-app";
 
@@ -119,7 +119,7 @@ export async function displayQuickQuery(
     const dbscheme = await getPrimaryDbscheme(datasetFolder);
     const qlpack = (await getQlPackForDbscheme(cliServer, dbscheme))
       .dbschemePack;
-    const qlPackFile = await getQlPackPath(queriesDir);
+    const qlPackFile = await getQlPackFilePath(queriesDir);
     const qlFile = join(queriesDir, QUICK_QUERY_QUERY_NAME);
     const shouldRewrite = await checkShouldRewrite(qlPackFile, qlpack);
 

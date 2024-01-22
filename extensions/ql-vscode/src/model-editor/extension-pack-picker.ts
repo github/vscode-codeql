@@ -9,7 +9,7 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { UserCancellationException } from "../common/vscode/progress";
 import type { DatabaseItem } from "../databases/local-databases";
-import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
+import { getQlPackFilePath, QLPACK_FILENAMES } from "../common/ql";
 import { getErrorMessage } from "../common/helpers-pure";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { NotificationLogger } from "../common/logging";
@@ -208,7 +208,7 @@ async function readExtensionPack(
   path: string,
   language: string,
 ): Promise<ExtensionPack> {
-  const qlpackPath = await getQlPackPath(path);
+  const qlpackPath = await getQlPackFilePath(path);
   if (!qlpackPath) {
     throw new Error(
       `Could not find any of ${QLPACK_FILENAMES.join(", ")} in ${path}`,

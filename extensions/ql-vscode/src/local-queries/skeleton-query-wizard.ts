@@ -36,7 +36,7 @@ import { redactableError } from "../common/errors";
 import type { App } from "../common/app";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { containsPath, pathsEqual } from "../common/files";
-import { getQlPackPath } from "../common/ql";
+import { getQlPackFilePath } from "../common/ql";
 import { getQlPackLanguage } from "../common/qlpack-language";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
@@ -111,7 +111,7 @@ export class SkeletonQueryWizard {
 
       // Try to detect if there is already a qlpack in this location. We will assume that
       // the user hasn't changed the language of the qlpack.
-      const qlPackPath = await getQlPackPath(this.qlPackStoragePath);
+      const qlPackPath = await getQlPackFilePath(this.qlPackStoragePath);
 
       // If we are creating or using a qlpack in the user's selected folder, we will also
       // create the query in that folder
@@ -248,7 +248,7 @@ export class SkeletonQueryWizard {
 
     const matchingQueryPackPath = matchingQueryPacks[0];
 
-    const qlPackPath = await getQlPackPath(matchingQueryPackPath);
+    const qlPackPath = await getQlPackFilePath(matchingQueryPackPath);
     if (!qlPackPath) {
       return undefined;
     }

@@ -3,7 +3,7 @@ import { glob } from "glob";
 import { basename } from "path";
 import { load } from "js-yaml";
 import { readFile } from "fs-extra";
-import { getQlPackPath } from "../common/ql";
+import { getQlPackFilePath } from "../common/ql";
 import type { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { extLogger } from "../common/logging/vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -31,7 +31,7 @@ async function findDbschemePack(
 ): Promise<{ name: string; isLibraryPack: boolean }> {
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
-      const qlpackPath = await getQlPackPath(packDir);
+      const qlpackPath = await getQlPackFilePath(packDir);
 
       if (qlpackPath !== undefined) {
         const qlpack = load(await readFile(qlpackPath, "utf8")) as {

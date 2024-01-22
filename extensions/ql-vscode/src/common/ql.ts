@@ -8,7 +8,13 @@ export const QLPACK_LOCK_FILENAMES = [
 ];
 export const FALLBACK_QLPACK_FILENAME = QLPACK_FILENAMES[0];
 
-export async function getQlPackPath(
+/**
+ * Gets the path to the QL pack file (a qlpack.yml or
+ * codeql-pack.yml).
+ * @param packRoot The root of the pack.
+ * @returns The path to the qlpack file, or undefined if it doesn't exist.
+ */
+export async function getQlPackFilePath(
   packRoot: string,
 ): Promise<string | undefined> {
   for (const filename of QLPACK_FILENAMES) {
