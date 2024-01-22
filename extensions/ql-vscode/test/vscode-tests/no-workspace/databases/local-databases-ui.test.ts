@@ -7,14 +7,42 @@ import {
   createFileSync,
   pathExistsSync,
 } from "fs-extra";
-import { Uri } from "vscode";
+import { CancellationTokenSource, Uri, window } from "vscode";
+
+import type {
+  DatabaseImportQuickPickItems,
+  DatabaseQuickPickItem,
+  DatabaseSelectionQuickPickItem,
+} from "../../../../src/databases/local-databases-ui";
 
 import { DatabaseUI } from "../../../../src/databases/local-databases-ui";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { QueryLanguage } from "../../../../src/common/query-language";
+import { mockedQuickPickItem, mockedObject } from "../../utils/mocking.helpers";
 
 describe("local-databases-ui", () => {
+  const storageDir = dirSync({ unsafeCleanup: true }).name;
+  const db1 = createDatabase(storageDir, "db1-imported", QueryLanguage.Cpp);
+  const db2 = createDatabase(storageDir, "db2-notimported", QueryLanguage.Cpp);
+  const db3 = createDatabase(storageDir, "db3-invalidlanguage", "hucairz");
+
+  // these two should be deleted
+  const db4 = createDatabase(
+    storageDir,
+    "db2-notimported-with-db-info",
+    QueryLanguage.Cpp,
+    ".dbinfo",
+  );
+  const db5 = createDatabase(
+    storageDir,
+    "db2-notimported-with-codeql-database.yml",
+    QueryLanguage.Cpp,
+    "codeql-database.yml",
+  );
+
+  const app = createMockApp({});
+
   describe("fixDbUri", () => {
     const fixDbUri = (DatabaseUI.prototype as any).fixDbUri;
     it("should choose current directory normally", async () => {
@@ -64,30 +92,6 @@ describe("local-databases-ui", () => {
   });
 
   it("should delete orphaned databases", async () => {
-    const storageDir = dirSync({ unsafeCleanup: true }).name;
-    const db1 = createDatabase(storageDir, "db1-imported", QueryLanguage.Cpp);
-    const db2 = createDatabase(
-      storageDir,
-      "db2-notimported",
-      QueryLanguage.Cpp,
-    );
-    const db3 = createDatabase(storageDir, "db3-invalidlanguage", "hucairz");
-
-    // these two should be deleted
-    const db4 = createDatabase(
-      storageDir,
-      "db2-notimported-with-db-info",
-      QueryLanguage.Cpp,
-      ".dbinfo",
-    );
-    const db5 = createDatabase(
-      storageDir,
-      "db2-notimported-with-codeql-database.yml",
-      QueryLanguage.Cpp,
-      "codeql-database.yml",
-    );
-
-    const app = createMockApp({});
     const databaseUI = new DatabaseUI(
       app,
       {
@@ -98,6 +102,7 @@ describe("local-databases-ui", () => {
         onDidChangeCurrentDatabaseItem: () => {
           /**/
         },
+        setCurrentDatabaseItem: () => {},
       } as any,
       {
         onLanguageContextChanged: () => {
@@ -108,7 +113,6 @@ describe("local-databases-ui", () => {
       storageDir,
       storageDir,
     );
-
     await databaseUI.handleRemoveOrphanedDatabases();
 
     expect(pathExistsSync(db1)).toBe(true);
@@ -119,6 +123,130 @@ describe("local-databases-ui", () => {
     expect(pathExistsSync(db5)).toBe(false);
 
     databaseUI.dispose(testDisposeHandler);
+  });
+
+  describe("getDatabaseItem", () => {
+    const progress = jest.fn();
+    const token = new CancellationTokenSource().token;
+    describe("when there is a current database", () => {
+      const databaseUI = new DatabaseUI(
+        app,
+        {
+          databaseItems: [{ databaseUri: Uri.file(db1) }],
+          onDidChangeDatabaseItem: () => {
+            /**/
+          },
+          onDidChangeCurrentDatabaseItem: () => {
+            /**/
+          },
+          setCurrentDatabaseItem: () => {},
+          currentDatabaseItem: { databaseUri: Uri.file(db1) },
+        } as any,
+        {
+          onLanguageContextChanged: () => {
+            /**/
+          },
+        } as any,
+        {} as any,
+        storageDir,
+        storageDir,
+      );
+
+      it("should return current database", async () => {
+        const databaseItem = await databaseUI.getDatabaseItem(progress, token);
+
+        expect(databaseItem).toEqual({ databaseUri: Uri.file(db1) });
+      });
+    });
+
+    describe("when there is no current database", () => {
+      const databaseManager = {
+        databaseItems: [
+          { databaseUri: Uri.file(db1) },
+          { databaseUri: Uri.file(db2) },
+        ],
+        onDidChangeDatabaseItem: () => {
+          /**/
+        },
+        onDidChangeCurrentDatabaseItem: () => {
+          /**/
+        },
+        setCurrentDatabaseItem: () => {},
+        currentDatabaseItem: undefined,
+      } as any;
+
+      const databaseUI = new DatabaseUI(
+        app,
+        databaseManager,
+        {
+          onLanguageContextChanged: () => {
+            /**/
+          },
+        } as any,
+        {} as any,
+        storageDir,
+        storageDir,
+      );
+
+      it("should prompt for a database and select existing one", async () => {
+        const showQuickPickSpy = jest
+          .spyOn(window, "showQuickPick")
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseSelectionQuickPickItem>({
+                databaseKind: "existing",
+              }),
+            ),
+          )
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseQuickPickItem>({
+                databaseItem: { databaseUri: Uri.file(db2) },
+              }),
+            ),
+          );
+
+        const setCurrentDatabaseItemSpy = jest.spyOn(
+          databaseManager,
+          "setCurrentDatabaseItem",
+        );
+
+        await databaseUI.getDatabaseItem(progress, token);
+
+        expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
+        expect(setCurrentDatabaseItemSpy).toHaveBeenCalledWith({
+          databaseUri: Uri.file(db2),
+        });
+      });
+
+      it("should prompt for a database and import a new one", async () => {
+        const showQuickPickSpy = jest
+          .spyOn(window, "showQuickPick")
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseSelectionQuickPickItem>({
+                databaseKind: "new",
+              }),
+            ),
+          )
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseImportQuickPickItems>({
+                importType: "github",
+              }),
+            ),
+          );
+
+        const handleChooseDatabaseGithubSpy = jest
+          .spyOn(databaseUI as any, "handleChooseDatabaseGithub")
+          .mockResolvedValue(undefined);
+
+        await databaseUI.getDatabaseItem(progress, token);
+
+        expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
+        expect(handleChooseDatabaseGithubSpy).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 
   function createDatabase(
