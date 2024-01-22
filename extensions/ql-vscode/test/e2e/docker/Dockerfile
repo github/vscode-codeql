@@ -7,8 +7,8 @@ RUN apt-get update \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN wget -O /tmp/codeql.zip https://github.com/github/codeql-cli-binaries/releases/download/v2.15.5/codeql-linux64.zip \
-  && unzip /tmp/codeql.zip -d /opt \
+RUN wget -q -O /tmp/codeql.zip https://github.com/github/codeql-cli-binaries/releases/download/v2.15.5/codeql-linux64.zip \
+  && unzip -q /tmp/codeql.zip -d /opt \
   && rm -rf /tmp/codeql.zip
 
 ENV PATH="/opt/codeql:${PATH}"
