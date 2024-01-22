@@ -223,6 +223,9 @@ export class VariantAnalysisManager
       });
 
       const language = await askForLanguage(this.cliServer);
+      if (!language) {
+        return;
+      }
 
       progress({
         maxStep: 8,
