@@ -73,14 +73,14 @@ jobs:
             ISSUE_BODY="issue-body.md"
             printf "E2e tests have failed on the default branch.\n\n@github/code-scanning-secexp-reviewers" > "$ISSUE_BODY"
 
-            ISSUE="$(gh issue create --repo "$GITHUB_REPOSITORY" --label "e2e-test-failure" --title "E2@ test failure" --body-file "$ISSUE_BODY")"
+            ISSUE="$(gh issue create --repo "$GITHUB_REPOSITORY" --label "e2e-test-failure" --title "E2E test failure" --body-file "$ISSUE_BODY")"
             # `gh issue create` returns the full issue URL, not just the number.
             echo "Created issue with URL $ISSUE"
           fi
 
           COMMENT_FILE="comment.md"
           RUN_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
-          printf 'E2@ test [%s](%s) failed on ref `%s`' "$GITHUB_RUN_ID" "$RUN_URL" "$GITHUB_REF" > "$COMMENT_FILE"
+          printf 'E2E test [%s](%s) failed on ref `%s`' "$GITHUB_RUN_ID" "$RUN_URL" "$GITHUB_REF" > "$COMMENT_FILE"
 
           # `gh issue create` returns an issue URL, and `gh issue list | cut -f 1` returns an issue number.
           # Both are accepted here.
