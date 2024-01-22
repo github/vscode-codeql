@@ -275,7 +275,13 @@ describe("Variant Analysis Manager", () => {
 
       const queryToRun =
         "Security/CWE/CWE-020/ExternalAPIsUsedWithUntrustedData.ql";
-      const extraQuery = "Telemetry/ExtractorInformation.ql";
+
+      // Recent versions of the CLI don't preserve queries with extensible predicates in MRVA packs,
+      // because all the necessary info is in the `.packinfo` file.
+      const extraQueries =
+        (await cli.cliConstraints.preservesExtensiblePredicatesInMrvaPack())
+          ? ["Telemetry/ExtractorInformation.ql"]
+          : [];
 
       await doVariantAnalysisTest({
         queryPath: join(
@@ -284,7 +290,7 @@ describe("Variant Analysis Manager", () => {
           queryToRun,
         ),
         expectedPackName: "codeql/java-queries",
-        filesThatExist: [queryToRun, extraQuery],
+        filesThatExist: [queryToRun, ...extraQueries],
         filesThatDoNotExist: [],
         qlxFilesThatExist: [],
         dependenciesToCheck: ["codeql/java-all"],
