@@ -279,7 +279,7 @@ describe("Variant Analysis Manager", () => {
       // We only need to preserve queries with extensible predicates if the CLI doesn't support
       // storing the necessary metadata in the compiled QLX.
       const needsExtraQueries =
-        !cli.cliConstraints.supportsExtensiblePredicateMetadataInQlx();
+        !(await cli.cliConstraints.supportsExtensiblePredicateMetadataInQlx());
 
       const extraQueries = needsExtraQueries
         ? ["Telemetry/ExtractorInformation.ql"]
