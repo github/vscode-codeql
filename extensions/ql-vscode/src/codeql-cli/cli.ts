@@ -1785,9 +1785,9 @@ export class CliVersionConstraint {
 
   async preservesExtensiblePredicatesInMrvaPack() {
     // Negated, because we _stopped_ preserving these in 2.16.1.
-    return !this.isVersionAtLeast(
+    return !(await this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITHOUT_MRVA_EXTENSIBLE_PREDICATE_HACK,
-    );
+    ));
   }
 
   async supportsMrvaPackCreate(): Promise<boolean> {
