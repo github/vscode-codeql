@@ -6,7 +6,9 @@ When running the tests locally on a mac a different processor has to be emulated
 
 Setup
 
+- install playwright if you haven't yet (`npx playwright install`)
 - go to the e2e test folder on your terminal
+- make sure docker is running
 - run `docker-compose build`
 - run `docker-compose up`
 
