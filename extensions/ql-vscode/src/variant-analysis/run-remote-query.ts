@@ -39,6 +39,7 @@ import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 import type { QlPackFile } from "../packaging/qlpack-file";
 import { expandShortPaths } from "../common/short-paths";
+import type { QlPackDetails } from "./ql-pack-details";
 
 /**
  * Well-known names for the query pack used by the server.
@@ -59,9 +60,11 @@ interface GeneratedQueryPack {
  */
 async function generateQueryPack(
   cliServer: CodeQLCliServer,
-  queryFile: string,
+  qlPackDetails: QlPackDetails,
   tmpDir: RemoteQueryTempDir,
 ): Promise<GeneratedQueryPack> {
+  const queryFile = qlPackDetails.queryFile;
+
   const originalPackRoot = await findPackRoot(queryFile);
   const packRelativePath = relative(originalPackRoot, queryFile);
   const workspaceFolders = getOnDiskWorkspaceFolders();
@@ -381,8 +384,12 @@ export async function prepareRemoteQueryRun(
 
   let pack: GeneratedQueryPack;
 
+  const qlPackDetails: QlPackDetails = {
+    queryFile,
+  };
+
   try {
-    pack = await generateQueryPack(cliServer, queryFile, tempDir);
+    pack = await generateQueryPack(cliServer, qlPackDetails, tempDir);
   } finally {
     await tempDir.remoteQueryDir.cleanup();
   }
