@@ -22,6 +22,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import type {
   VariantAnalysis,
+  VariantAnalysisQueries,
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
@@ -88,6 +89,7 @@ import { RequestError } from "@octokit/request-error";
 import { handleRequestError } from "./custom-errors";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { askForLanguage } from "../codeql-cli/query-language";
+import type { QlPackDetails } from "./ql-pack-details";
 
 const maxRetryCount = 3;
 
@@ -266,8 +268,15 @@ export class VariantAnalysisManager
         return;
       }
 
+      // Build up details to pass to the functions that run the variant analysis.
+      // For now, only include the first problem query until we have support
+      // for multiple queries.
+      const qlPackDetails: QlPackDetails = {
+        queryFile: problemQueries[0],
+      };
+
       await this.runVariantAnalysis(
-        problemQueries.map((q) => Uri.file(q)),
+        qlPackDetails,
         (p) =>
           progress({
             ...p,
@@ -298,9 +307,14 @@ export class VariantAnalysisManager
   }
 
   private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
+    // Build up details to pass to the functions that run the variant analysis.
+    const qlPackDetails: QlPackDetails = {
+      queryFile: uri.fsPath,
+    };
+
     return withProgress(
       async (progress, token) => {
-        await this.runVariantAnalysis([uri], progress, token);
+        await this.runVariantAnalysis(qlPackDetails, progress, token);
       },
       {
         title: "Run Variant Analysis",
@@ -310,7 +324,7 @@ export class VariantAnalysisManager
   }
 
   public async runVariantAnalysis(
-    uris: Uri[],
+    qlPackDetails: QlPackDetails,
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
@@ -334,7 +348,7 @@ export class VariantAnalysisManager
     } = await prepareRemoteQueryRun(
       this.cliServer,
       this.app.credentials,
-      uris,
+      qlPackDetails,
       progress,
       token,
       this.dbManager,
@@ -350,12 +364,10 @@ export class VariantAnalysisManager
 
     const queryText = await readFile(queryFile, "utf8");
 
-    const queries =
-      uris.length === 1
-        ? undefined
-        : {
-            language: variantAnalysisLanguage,
-          };
+    // TODO: Once we have basic support multiple queries, and qlPackDetails has
+    // more than 1 queryFile, we should set this to have a proper value
+    // (e.g. { language: variantAnalysisLanguage })
+    const queries: VariantAnalysisQueries | undefined = undefined;
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
       startTime: queryStartTime,

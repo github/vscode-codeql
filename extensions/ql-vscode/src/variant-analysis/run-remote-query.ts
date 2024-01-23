@@ -332,24 +332,14 @@ interface PreparedRemoteQuery {
 export async function prepareRemoteQueryRun(
   cliServer: CodeQLCliServer,
   credentials: Credentials,
-  uris: Uri[],
+  qlPackDetails: QlPackDetails,
   progress: ProgressCallback,
   token: CancellationToken,
   dbManager: DbManager,
 ): Promise<PreparedRemoteQuery> {
-  if (uris.length !== 1) {
-    // For now we only support a single file, but we're aiming
-    // to support multiple files in the near future.
-    throw Error("Exactly one query file must be selected.");
-  }
-
-  const uri = uris[0];
-
-  if (!uri.fsPath.endsWith(".ql")) {
+  if (!qlPackDetails.queryFile.endsWith(".ql")) {
     throw new UserCancellationException("Not a CodeQL query file.");
   }
-
-  const queryFile = uri.fsPath;
 
   progress({
     maxStep: 4,
@@ -384,10 +374,6 @@ export async function prepareRemoteQueryRun(
 
   let pack: GeneratedQueryPack;
 
-  const qlPackDetails: QlPackDetails = {
-    queryFile,
-  };
-
   try {
     pack = await generateQueryPack(cliServer, qlPackDetails, tempDir);
   } finally {
@@ -406,6 +392,7 @@ export async function prepareRemoteQueryRun(
     message: "Sending request",
   });
 
+  const queryFile = qlPackDetails.queryFile;
   const actionBranch = getActionBranch();
   const queryStartTime = Date.now();
   const queryMetadata = await tryGetQueryMetadata(cliServer, queryFile);
