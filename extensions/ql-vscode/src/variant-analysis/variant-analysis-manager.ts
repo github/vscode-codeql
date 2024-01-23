@@ -42,11 +42,7 @@ import type {
   LoadResultsOptions,
   VariantAnalysisResultsManager,
 } from "./variant-analysis-results-manager";
-import {
-  findPackRoot,
-  getQueryName,
-  prepareRemoteQueryRun,
-} from "./run-remote-query";
+import { getQueryName, prepareRemoteQueryRun } from "./run-remote-query";
 import {
   mapVariantAnalysis,
   mapVariantAnalysisRepositoryTask,
@@ -94,6 +90,7 @@ import { handleRequestError } from "./custom-errors";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { askForLanguage } from "../codeql-cli/query-language";
 import type { QlPackDetails } from "./ql-pack-details";
+import { findPackRoot } from "../common/ql";
 
 const maxRetryCount = 3;
 
