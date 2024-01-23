@@ -88,7 +88,7 @@ import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { RequestError } from "@octokit/request-error";
 import { handleRequestError } from "./custom-errors";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
-import { askForLanguage } from "../codeql-cli/query-language";
+import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 import type { QlPackDetails } from "./ql-pack-details";
 import { findPackRoot, getQlPackFilePath } from "../common/ql";
 
@@ -278,6 +278,7 @@ export class VariantAnalysisManager
         queryFile: problemQueries[0],
         qlPackRootPath: packDir,
         qlPackFilePath,
+        language,
       };
 
       await this.runVariantAnalysis(
@@ -315,10 +316,21 @@ export class VariantAnalysisManager
     // Build up details to pass to the functions that run the variant analysis.
     const qlPackRootPath = await findPackRoot(uri.fsPath);
     const qlPackFilePath = await getQlPackFilePath(qlPackRootPath);
+
+    // Open popup to ask for language if not already hardcoded
+    const language = qlPackFilePath
+      ? await findLanguage(this.cliServer, uri)
+      : await askForLanguage(this.cliServer);
+
+    if (!language) {
+      throw new UserCancellationException("Could not determine query language");
+    }
+
     const qlPackDetails: QlPackDetails = {
       queryFile: uri.fsPath,
       qlPackRootPath,
       qlPackFilePath,
+      language,
     };
 
     return withProgress(
@@ -353,7 +365,6 @@ export class VariantAnalysisManager
       queryMetadata,
       controllerRepo,
       queryStartTime,
-      language,
     } = await prepareRemoteQueryRun(
       this.cliServer,
       this.app.credentials,
@@ -364,6 +375,7 @@ export class VariantAnalysisManager
     );
 
     const queryName = getQueryName(queryMetadata, queryFile);
+    const language = qlPackDetails.language;
     const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
     if (variantAnalysisLanguage === undefined) {
       throw new UserCancellationException(
