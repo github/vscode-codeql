@@ -108,6 +108,7 @@ describe("Variant Analysis Manager", () => {
         queryFile: filePath,
         qlPackRootPath,
         qlPackFilePath,
+        language: QueryLanguage.Javascript,
       };
 
       await variantAnalysisManager.runVariantAnalysis(
@@ -135,6 +136,7 @@ describe("Variant Analysis Manager", () => {
         queryFile: filePath,
         qlPackRootPath,
         qlPackFilePath: undefined,
+        language: QueryLanguage.Javascript,
       };
 
       await variantAnalysisManager.runVariantAnalysis(
@@ -167,6 +169,7 @@ describe("Variant Analysis Manager", () => {
         queryFile: filePath,
         qlPackRootPath,
         qlPackFilePath,
+        language: QueryLanguage.Javascript,
       };
 
       await variantAnalysisManager.runVariantAnalysis(
@@ -194,6 +197,7 @@ describe("Variant Analysis Manager", () => {
         queryFile: filePath,
         qlPackRootPath,
         qlPackFilePath: undefined,
+        language: QueryLanguage.Javascript,
       };
 
       const promise = variantAnalysisManager.runVariantAnalysis(
@@ -369,6 +373,7 @@ describe("Variant Analysis Manager", () => {
         queryFile: filePath,
         qlPackRootPath: getFileOrDir(qlPackRootPath),
         qlPackFilePath: qlPackFilePath && getFileOrDir(qlPackFilePath),
+        language: QueryLanguage.Javascript,
       };
 
       await variantAnalysisManager.runVariantAnalysis(

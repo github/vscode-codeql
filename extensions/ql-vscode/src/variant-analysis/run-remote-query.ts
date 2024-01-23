@@ -34,9 +34,7 @@ import {
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
 } from "../common/ql";
-import type { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
-import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 import type { QlPackFile } from "../packaging/qlpack-file";
 import { expandShortPaths } from "../common/short-paths";
 import type { QlPackDetails } from "./ql-pack-details";
@@ -45,11 +43,6 @@ import type { QlPackDetails } from "./ql-pack-details";
  * Well-known names for the query pack used by the server.
  */
 const QUERY_PACK_NAME = "codeql-remote/query";
-
-interface GeneratedQueryPack {
-  base64Pack: string;
-  language: string;
-}
 
 /**
  * Two possibilities:
@@ -62,7 +55,7 @@ async function generateQueryPack(
   cliServer: CodeQLCliServer,
   qlPackDetails: QlPackDetails,
   tmpDir: RemoteQueryTempDir,
-): Promise<GeneratedQueryPack> {
+): Promise<string> {
   const queryFile = qlPackDetails.queryFile;
 
   const originalPackRoot = qlPackDetails.qlPackRootPath;
@@ -77,13 +70,6 @@ async function generateQueryPack(
   const cliSupportsMrvaPackCreate =
     await cliServer.cliConstraints.supportsMrvaPackCreate();
 
-  const language: QueryLanguage | undefined = mustSynthesizePack
-    ? await askForLanguage(cliServer) // open popup to ask for language if not already hardcoded
-    : await findLanguage(cliServer, Uri.file(queryFile));
-  if (!language) {
-    throw new UserCancellationException("Could not determine language");
-  }
-
   let queryPackDir: string;
   let needsInstall: boolean;
   if (mustSynthesizePack) {
@@ -97,7 +83,7 @@ async function generateQueryPack(
     await createNewQueryPack(
       queryFile,
       queryPackDir,
-      language,
+      qlPackDetails.language,
       packRelativePath,
     );
     // Clear the cliServer cache so that the previous qlpack text is purged from the CLI.
@@ -176,10 +162,7 @@ async function generateQueryPack(
     precompilationOpts,
   );
   const base64Pack = (await readFile(bundlePath)).toString("base64");
-  return {
-    base64Pack,
-    language,
-  };
+  return base64Pack;
 }
 
 async function createNewQueryPack(
@@ -305,7 +288,6 @@ interface PreparedRemoteQuery {
   queryMetadata: QueryMetadata | undefined;
   controllerRepo: Repository;
   queryStartTime: number;
-  language: string;
 }
 
 export async function prepareRemoteQueryRun(
@@ -351,15 +333,13 @@ export async function prepareRemoteQueryRun(
 
   const tempDir = await createRemoteQueriesTempDirectory();
 
-  let pack: GeneratedQueryPack;
+  let base64Pack: string;
 
   try {
-    pack = await generateQueryPack(cliServer, qlPackDetails, tempDir);
+    base64Pack = await generateQueryPack(cliServer, qlPackDetails, tempDir);
   } finally {
     await tempDir.remoteQueryDir.cleanup();
   }
-
-  const { base64Pack, language } = pack;
 
   if (token.isCancellationRequested) {
     throw new UserCancellationException("Cancelled");
@@ -384,7 +364,6 @@ export async function prepareRemoteQueryRun(
     queryMetadata,
     controllerRepo,
     queryStartTime,
-    language,
   };
 }
 
