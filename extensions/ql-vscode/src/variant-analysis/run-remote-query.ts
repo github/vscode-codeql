@@ -1,6 +1,6 @@
 import type { CancellationToken } from "vscode";
 import { Uri, window } from "vscode";
-import { relative, join, sep, dirname, parse, basename } from "path";
+import { relative, join, sep, basename } from "path";
 import { dump, load } from "js-yaml";
 import { copy, writeFile, readFile, mkdirp } from "fs-extra";
 import type { DirectoryResult } from "tmp-promise";
@@ -260,26 +260,6 @@ async function copyExistingQueryPack(
   void extLogger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
 
   await fixPackFile(queryPackDir, packRelativePath);
-}
-
-export async function findPackRoot(queryFile: string): Promise<string> {
-  // recursively find the directory containing qlpack.yml or codeql-pack.yml
-  let dir = dirname(queryFile);
-  while (!(await getQlPackFilePath(dir))) {
-    dir = dirname(dir);
-    if (isFileSystemRoot(dir)) {
-      // there is no qlpack.yml or codeql-pack.yml in this directory or any parent directory.
-      // just use the query file's directory as the pack root.
-      return dirname(queryFile);
-    }
-  }
-
-  return dir;
-}
-
-function isFileSystemRoot(dir: string): boolean {
-  const pathObj = parse(dir);
-  return pathObj.root === dir && pathObj.base === "";
 }
 
 interface RemoteQueryTempDir {
