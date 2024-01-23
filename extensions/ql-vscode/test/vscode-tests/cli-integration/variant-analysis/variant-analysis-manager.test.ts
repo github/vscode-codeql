@@ -102,9 +102,12 @@ describe("Variant Analysis Manager", () => {
 
     it("should run a variant analysis that is part of a qlpack", async () => {
       const filePath = getFileOrDir("data-remote-qlpack/in-pack.ql");
+      const qlPackRootPath = getFileOrDir("data-remote-qlpack");
+      const qlPackFilePath = getFileOrDir("data-remote-qlpack/qlpack.yml");
       const qlPackDetails: QlPackDetails = {
         queryFile: filePath,
-        qlPackRootPath: join(baseDir, "data-remote-qlpack"),
+        qlPackRootPath,
+        qlPackFilePath,
       };
 
       await variantAnalysisManager.runVariantAnalysis(
@@ -127,9 +130,11 @@ describe("Variant Analysis Manager", () => {
 
     it("should run a remote query that is not part of a qlpack", async () => {
       const filePath = getFileOrDir("data-remote-no-qlpack/in-pack.ql");
+      const qlPackRootPath = getFileOrDir("data-remote-no-qlpack");
       const qlPackDetails: QlPackDetails = {
         queryFile: filePath,
-        qlPackRootPath: join(baseDir, "data-remote-no-qlpack"),
+        qlPackRootPath,
+        qlPackFilePath: undefined,
       };
 
       await variantAnalysisManager.runVariantAnalysis(
@@ -154,9 +159,14 @@ describe("Variant Analysis Manager", () => {
       const filePath = getFileOrDir(
         "data-remote-qlpack-nested/subfolder/in-pack.ql",
       );
+      const qlPackRootPath = getFileOrDir("data-remote-qlpack-nested");
+      const qlPackFilePath = getFileOrDir(
+        "data-remote-qlpack-nested/codeql-pack.yml",
+      );
       const qlPackDetails: QlPackDetails = {
         queryFile: filePath,
-        qlPackRootPath: join(baseDir, "data-remote-qlpack-nested"),
+        qlPackRootPath,
+        qlPackFilePath,
       };
 
       await variantAnalysisManager.runVariantAnalysis(
@@ -179,9 +189,11 @@ describe("Variant Analysis Manager", () => {
 
     it("should cancel a run before uploading", async () => {
       const filePath = getFileOrDir("data-remote-no-qlpack/in-pack.ql");
+      const qlPackRootPath = getFileOrDir("data-remote-no-qlpack");
       const qlPackDetails: QlPackDetails = {
         queryFile: filePath,
-        qlPackRootPath: join(baseDir, "data-remote-no-qlpack"),
+        qlPackRootPath,
+        qlPackFilePath: undefined,
       };
 
       const promise = variantAnalysisManager.runVariantAnalysis(
@@ -223,6 +235,7 @@ describe("Variant Analysis Manager", () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack/in-pack.ql",
           qlPackRootPath: "data-remote-qlpack",
+          qlPackFilePath: "data-remote-qlpack/qlpack.yml",
           expectedPackName: "github/remote-query-pack",
           filesThatExist: ["in-pack.ql", "lib.qll"],
           filesThatDoNotExist: [],
@@ -234,6 +247,7 @@ describe("Variant Analysis Manager", () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-no-qlpack/in-pack.ql",
           qlPackRootPath: "data-remote-no-qlpack",
+          qlPackFilePath: undefined,
           expectedPackName: "codeql-remote/query",
           filesThatExist: ["in-pack.ql"],
           filesThatDoNotExist: ["lib.qll", "not-in-pack.ql"],
@@ -245,6 +259,7 @@ describe("Variant Analysis Manager", () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
           qlPackRootPath: "data-remote-qlpack-nested",
+          qlPackFilePath: "data-remote-qlpack-nested/codeql-pack.yml",
           expectedPackName: "github/remote-query-pack",
           filesThatExist: ["subfolder/in-pack.ql", "otherfolder/lib.qll"],
           filesThatDoNotExist: ["subfolder/not-in-pack.ql"],
@@ -263,6 +278,7 @@ describe("Variant Analysis Manager", () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
           qlPackRootPath: "data-remote-qlpack-nested",
+          qlPackFilePath: "data-remote-qlpack-nested/codeql-pack.yml",
           expectedPackName: "github/remote-query-pack",
           filesThatExist: [
             "subfolder/in-pack.ql",
@@ -309,9 +325,11 @@ describe("Variant Analysis Manager", () => {
 
       const qlPackRootPath = join(process.env.TEST_CODEQL_PATH, "java/ql/src");
       const queryPath = join(qlPackRootPath, queryToRun);
+      const qlPackFilePath = join(qlPackRootPath, "qlpack.yml");
       await doVariantAnalysisTest({
         queryPath,
         qlPackRootPath,
+        qlPackFilePath,
         expectedPackName: "codeql/java-queries",
         filesThatExist: [queryToRun, ...extraQueries],
         filesThatDoNotExist: [],
@@ -325,6 +343,7 @@ describe("Variant Analysis Manager", () => {
     async function doVariantAnalysisTest({
       queryPath,
       qlPackRootPath,
+      qlPackFilePath,
       expectedPackName,
       filesThatExist,
       qlxFilesThatExist,
@@ -337,6 +356,7 @@ describe("Variant Analysis Manager", () => {
     }: {
       queryPath: string;
       qlPackRootPath: string;
+      qlPackFilePath: string | undefined;
       expectedPackName: string;
       filesThatExist: string[];
       qlxFilesThatExist: string[];
@@ -348,6 +368,7 @@ describe("Variant Analysis Manager", () => {
       const qlPackDetails: QlPackDetails = {
         queryFile: filePath,
         qlPackRootPath: getFileOrDir(qlPackRootPath),
+        qlPackFilePath: qlPackFilePath && getFileOrDir(qlPackFilePath),
       };
 
       await variantAnalysisManager.runVariantAnalysis(

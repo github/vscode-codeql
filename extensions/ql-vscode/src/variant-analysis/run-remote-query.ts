@@ -73,8 +73,7 @@ async function generateQueryPack(
     workspaceFolders,
   );
 
-  const mustSynthesizePack =
-    (await getQlPackFilePath(originalPackRoot)) === undefined;
+  const mustSynthesizePack = qlPackDetails.qlPackFilePath === undefined;
   const cliSupportsMrvaPackCreate =
     await cliServer.cliConstraints.supportsMrvaPackCreate();
 

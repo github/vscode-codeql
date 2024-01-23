@@ -90,7 +90,7 @@ import { handleRequestError } from "./custom-errors";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { askForLanguage } from "../codeql-cli/query-language";
 import type { QlPackDetails } from "./ql-pack-details";
-import { findPackRoot } from "../common/ql";
+import { findPackRoot, getQlPackFilePath } from "../common/ql";
 
 const maxRetryCount = 3;
 
@@ -269,12 +269,15 @@ export class VariantAnalysisManager
         return;
       }
 
+      const qlPackFilePath = await getQlPackFilePath(packDir);
+
       // Build up details to pass to the functions that run the variant analysis.
       // For now, only include the first problem query until we have support
       // for multiple queries.
       const qlPackDetails: QlPackDetails = {
         queryFile: problemQueries[0],
         qlPackRootPath: packDir,
+        qlPackFilePath,
       };
 
       await this.runVariantAnalysis(
@@ -311,9 +314,11 @@ export class VariantAnalysisManager
   private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
     // Build up details to pass to the functions that run the variant analysis.
     const qlPackRootPath = await findPackRoot(uri.fsPath);
+    const qlPackFilePath = await getQlPackFilePath(qlPackRootPath);
     const qlPackDetails: QlPackDetails = {
       queryFile: uri.fsPath,
       qlPackRootPath,
+      qlPackFilePath,
     };
 
     return withProgress(
