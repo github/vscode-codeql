@@ -319,8 +319,8 @@ export class VariantAnalysisManager
 
     // Open popup to ask for language if not already hardcoded
     const language = qlPackFilePath
-      ? await askForLanguage(this.cliServer)
-      : await findLanguage(this.cliServer, uri);
+      ? await findLanguage(this.cliServer, uri)
+      : await askForLanguage(this.cliServer);
 
     if (!language) {
       throw new UserCancellationException("Could not determine query language");
