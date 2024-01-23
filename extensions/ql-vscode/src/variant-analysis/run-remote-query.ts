@@ -65,7 +65,7 @@ async function generateQueryPack(
 ): Promise<GeneratedQueryPack> {
   const queryFile = qlPackDetails.queryFile;
 
-  const originalPackRoot = await findPackRoot(queryFile);
+  const originalPackRoot = qlPackDetails.qlPackRootPath;
   const packRelativePath = relative(originalPackRoot, queryFile);
   const workspaceFolders = getOnDiskWorkspaceFolders();
   const extensionPacks = await getExtensionPacksToInject(
@@ -262,7 +262,7 @@ async function copyExistingQueryPack(
   await fixPackFile(queryPackDir, packRelativePath);
 }
 
-async function findPackRoot(queryFile: string): Promise<string> {
+export async function findPackRoot(queryFile: string): Promise<string> {
   // recursively find the directory containing qlpack.yml or codeql-pack.yml
   let dir = dirname(queryFile);
   while (!(await getQlPackFilePath(dir))) {
