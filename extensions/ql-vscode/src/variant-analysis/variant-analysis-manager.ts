@@ -42,7 +42,11 @@ import type {
   LoadResultsOptions,
   VariantAnalysisResultsManager,
 } from "./variant-analysis-results-manager";
-import { getQueryName, prepareRemoteQueryRun } from "./run-remote-query";
+import {
+  findPackRoot,
+  getQueryName,
+  prepareRemoteQueryRun,
+} from "./run-remote-query";
 import {
   mapVariantAnalysis,
   mapVariantAnalysisRepositoryTask,
@@ -273,6 +277,7 @@ export class VariantAnalysisManager
       // for multiple queries.
       const qlPackDetails: QlPackDetails = {
         queryFile: problemQueries[0],
+        qlPackRootPath: packDir,
       };
 
       await this.runVariantAnalysis(
@@ -308,8 +313,10 @@ export class VariantAnalysisManager
 
   private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
     // Build up details to pass to the functions that run the variant analysis.
+    const qlPackRootPath = await findPackRoot(uri.fsPath);
     const qlPackDetails: QlPackDetails = {
       queryFile: uri.fsPath,
+      qlPackRootPath,
     };
 
     return withProgress(
