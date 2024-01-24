@@ -1971,6 +1971,7 @@
     "@faker-js/faker": "^8.0.2",
     "@github/markdownlint-github": "^0.6.0",
     "@octokit/plugin-throttling": "^8.0.0",
+    "@playwright/test": "^1.40.1",
     "@storybook/addon-a11y": "^7.6.9",
     "@storybook/addon-actions": "^7.1.0",
     "@storybook/addon-essentials": "^7.1.0",
