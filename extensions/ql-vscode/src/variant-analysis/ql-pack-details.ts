@@ -5,14 +5,14 @@ import type { QueryLanguage } from "../common/query-language";
  * a variant analysis.
  */
 export interface QlPackDetails {
-  // The full paths of the query files.
+  // The absolute paths of the query files.
   queryFiles: string[];
 
-  // The path to the QL pack that is used for triggering a variant analysis.
+  // The absolute path to the QL pack that is used for triggering a variant analysis.
   // If there is no query pack, this is the same as the directory of the query files.
   qlPackRootPath: string;
 
-  // The path to the QL pack file (a qlpack.yml or codeql-pack.yml) or undefined if
+  // The absolute path to the QL pack file (a qlpack.yml or codeql-pack.yml) or undefined if
   // it doesn't exist.
   qlPackFilePath: string | undefined;
 

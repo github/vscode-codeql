@@ -380,6 +380,9 @@ export class VariantAnalysisManager
       this.dbManager,
     );
 
+    // For now we get the metadata for the first query in the pack.
+    // and use that in the submission and query history. In the future
+    // we'll need to consider how to handle having multiple queries.
     const firstQueryFile = qlPackDetails.queryFiles[0];
     const queryMetadata = await tryGetQueryMetadata(
       this.cliServer,
