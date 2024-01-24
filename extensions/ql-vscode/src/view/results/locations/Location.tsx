@@ -22,7 +22,7 @@ export function Location({
   databaseUri,
   title,
   onClick,
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   const displayLabel = useMemo(() => convertNonPrintableChars(label), [label]);
 
   if (loc === undefined) {

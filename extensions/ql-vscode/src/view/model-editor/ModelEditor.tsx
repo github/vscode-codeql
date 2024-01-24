@@ -85,7 +85,7 @@ export function ModelEditor({
   initialMethods = [],
   initialModeledMethods = {},
   initialHideModeledMethods = INITIAL_HIDE_MODELED_METHODS_VALUE,
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   const [viewState, setViewState] = useState<ModelEditorViewState | undefined>(
     initialViewState,
   );

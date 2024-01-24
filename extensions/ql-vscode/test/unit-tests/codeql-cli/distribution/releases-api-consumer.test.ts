@@ -115,7 +115,7 @@ describe("Releases API consumer", () => {
 
       await expect(
         consumer.getLatestRelease(new Range("5.*.*")),
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("picked release passes additional compatibility test if an additional compatibility test is specified", async () => {
@@ -140,7 +140,7 @@ describe("Releases API consumer", () => {
             (asset) => asset.name === "otherExampleAsset.txt",
           ),
         ),
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("picked release is the most recent prerelease when includePrereleases is set", async () => {

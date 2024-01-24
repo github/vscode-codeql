@@ -10,7 +10,7 @@ interface Props {
   handleCheckboxChanged: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export function ProblemsViewCheckbox(props: Props): JSX.Element | null {
+export function ProblemsViewCheckbox(props: Props): React.JSX.Element | null {
   const { selectedTable, problemsViewSelected, handleCheckboxChanged } = props;
 
   if (selectedTable !== ALERTS_TABLE_NAME) {

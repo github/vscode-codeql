@@ -23,7 +23,7 @@ export function ClickableLocation({
   label,
   databaseUri,
   onClick: onClick,
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();

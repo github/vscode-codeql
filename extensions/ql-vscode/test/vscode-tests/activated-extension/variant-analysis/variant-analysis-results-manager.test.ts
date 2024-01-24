@@ -154,7 +154,7 @@ describe(VariantAnalysisResultsManager.name, () => {
         async function* generateInParts() {
           const partLength = fileContents.length / 5;
           for (let i = 0; i < 5; i++) {
-            yield fileContents.slice(i * partLength, (i + 1) * partLength);
+            yield fileContents.subarray(i * partLength, (i + 1) * partLength);
           }
         }
 

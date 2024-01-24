@@ -25,7 +25,7 @@ const Message = styled.div`
   padding: 1.5rem;
 `;
 
-export function Compare(_: Record<string, never>): JSX.Element {
+export function Compare(_: Record<string, never>): React.JSX.Element {
   const [queryInfo, setQueryInfo] =
     useState<SetComparisonQueryInfoMessage | null>(null);
   const [comparison, setComparison] = useState<SetComparisonsMessage | null>(
