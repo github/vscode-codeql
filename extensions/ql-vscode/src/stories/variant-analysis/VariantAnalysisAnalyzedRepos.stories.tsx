@@ -125,10 +125,13 @@ Example.args = {
 };
 
 faker.seed(42);
-const uniqueStore = {};
+const uniqueNumbers = [...Array(1000).keys()].sort(() => Math.random() - 0.5);
 
 const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
   const mockedScannedRepo = createMockScannedRepo();
+  const randomInt = uniqueNumbers.pop();
+  const uniqueId =
+    randomInt === undefined ? Math.floor(Math.random() * 100000) : randomInt;
 
   return {
     ...mockedScannedRepo,
@@ -136,13 +139,8 @@ const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
     resultCount: faker.number.int({ min: 0, max: 1000 }),
     repository: {
       ...mockedScannedRepo.repository,
-      // We need to ensure the ID is unique for React keys
-      id: faker.helpers.unique(faker.number.int, [], {
-        store: uniqueStore,
-      }),
-      fullName: `octodemo/${faker.helpers.unique(faker.word.sample, [], {
-        store: uniqueStore,
-      })}`,
+      id: uniqueId,
+      fullName: `octodemo/${uniqueId}`,
     },
   };
 });
