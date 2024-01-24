@@ -1,0 +1,6 @@
+bind-addr: 127.0.0.1:8080
+auth: none
+cert: false
+disable-workspace-trust: true
+disable-telemetry: true
+disable-update-check: true
