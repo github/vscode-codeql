@@ -1,5 +1,4 @@
-import type { Uri } from "vscode";
-import { CancellationTokenSource, commands, window } from "vscode";
+import { CancellationTokenSource, commands, window, Uri } from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
@@ -453,10 +452,11 @@ describe("Variant Analysis Manager", () => {
     }
 
     function getFileOrDir(path: string): string {
+      // Use `Uri.file(path).fsPath` to make sure the path is in the correct format for the OS (i.e. forward/backward slashes).
       if (isAbsolute(path)) {
-        return path;
+        return Uri.file(path).fsPath;
       } else {
-        return join(baseDir, path);
+        return Uri.file(join(baseDir, path)).fsPath;
       }
     }
   });
