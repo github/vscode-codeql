@@ -91,6 +91,7 @@ import { createMultiSelectionCommand } from "../common/vscode/selection-commands
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 import type { QlPackDetails } from "./ql-pack-details";
 import { findPackRoot, getQlPackFilePath } from "../common/ql";
+import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 
 const maxRetryCount = 3;
 
@@ -194,26 +195,22 @@ export class VariantAnalysisManager
       throw new Error("Please select a .ql file to run as a variant analysis");
     }
 
-    await this.runVariantAnalysisCommand(fileUri);
+    await this.runVariantAnalysisCommand([fileUri]);
   }
 
   private async runVariantAnalysisFromContextEditor(uri: Uri) {
-    await this.runVariantAnalysisCommand(uri);
+    await this.runVariantAnalysisCommand([uri]);
   }
 
   private async runVariantAnalysisFromExplorer(fileURIs: Uri[]): Promise<void> {
-    if (fileURIs.length !== 1) {
-      throw new Error("Can only run a single query at a time");
-    }
-
-    return this.runVariantAnalysisCommand(fileURIs[0]);
+    return this.runVariantAnalysisCommand(fileURIs);
   }
 
   private async runVariantAnalysisFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
     if (queryTreeViewItem.path !== undefined) {
-      await this.runVariantAnalysisCommand(Uri.file(queryTreeViewItem.path));
+      await this.runVariantAnalysisCommand([Uri.file(queryTreeViewItem.path)]);
     }
   }
 
@@ -272,10 +269,8 @@ export class VariantAnalysisManager
       const qlPackFilePath = await getQlPackFilePath(packDir);
 
       // Build up details to pass to the functions that run the variant analysis.
-      // For now, only include the first problem query until we have support
-      // for multiple queries.
       const qlPackDetails: QlPackDetails = {
-        queryFile: problemQueries[0],
+        queryFiles: problemQueries,
         qlPackRootPath: packDir,
         qlPackFilePath,
         language,
@@ -312,14 +307,27 @@ export class VariantAnalysisManager
     return problemQueries;
   }
 
-  private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
-    // Build up details to pass to the functions that run the variant analysis.
-    const qlPackRootPath = await findPackRoot(uri.fsPath);
+  private async runVariantAnalysisCommand(queryFiles: Uri[]): Promise<void> {
+    if (queryFiles.length === 0) {
+      throw new Error("Please select a .ql file to run as a variant analysis");
+    }
+
+    const qlPackRootPath = await findPackRoot(queryFiles[0].fsPath);
     const qlPackFilePath = await getQlPackFilePath(qlPackRootPath);
+
+    // Make sure that all remaining queries have the same pack root
+    for (let i = 1; i < queryFiles.length; i++) {
+      const packRoot = await findPackRoot(queryFiles[i].fsPath);
+      if (packRoot !== qlPackRootPath) {
+        throw new Error(
+          "Please select queries that all belong to the same query pack",
+        );
+      }
+    }
 
     // Open popup to ask for language if not already hardcoded
     const language = qlPackFilePath
-      ? await findLanguage(this.cliServer, uri)
+      ? await findLanguage(this.cliServer, queryFiles[0])
       : await askForLanguage(this.cliServer);
 
     if (!language) {
@@ -327,7 +335,7 @@ export class VariantAnalysisManager
     }
 
     const qlPackDetails: QlPackDetails = {
-      queryFile: uri.fsPath,
+      queryFiles: queryFiles.map((uri) => uri.fsPath),
       qlPackRootPath,
       qlPackFilePath,
       language,
@@ -361,8 +369,6 @@ export class VariantAnalysisManager
       actionBranch,
       base64Pack,
       repoSelection,
-      queryFile,
-      queryMetadata,
       controllerRepo,
       queryStartTime,
     } = await prepareRemoteQueryRun(
@@ -374,7 +380,12 @@ export class VariantAnalysisManager
       this.dbManager,
     );
 
-    const queryName = getQueryName(queryMetadata, queryFile);
+    const firstQueryFile = qlPackDetails.queryFiles[0];
+    const queryMetadata = await tryGetQueryMetadata(
+      this.cliServer,
+      firstQueryFile,
+    );
+    const queryName = getQueryName(queryMetadata, firstQueryFile);
     const language = qlPackDetails.language;
     const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
     if (variantAnalysisLanguage === undefined) {
@@ -383,12 +394,14 @@ export class VariantAnalysisManager
       );
     }
 
-    const queryText = await readFile(queryFile, "utf8");
+    const queryText = await readFile(firstQueryFile, "utf8");
 
-    // TODO: Once we have basic support multiple queries, and qlPackDetails has
-    // more than 1 queryFile, we should set this to have a proper value
-    // (e.g. { language: variantAnalysisLanguage })
-    const queries: VariantAnalysisQueries | undefined = undefined;
+    const queries: VariantAnalysisQueries | undefined =
+      qlPackDetails.queryFiles.length === 1
+        ? undefined
+        : {
+            language: qlPackDetails.language,
+          };
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
       startTime: queryStartTime,
@@ -396,7 +409,7 @@ export class VariantAnalysisManager
       controllerRepoId: controllerRepo.id,
       query: {
         name: queryName,
-        filePath: queryFile,
+        filePath: firstQueryFile,
         pack: base64Pack,
         language: variantAnalysisLanguage,
         text: queryText,

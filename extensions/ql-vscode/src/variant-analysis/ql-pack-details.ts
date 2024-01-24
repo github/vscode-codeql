@@ -5,7 +5,8 @@ import type { QueryLanguage } from "../common/query-language";
  * a variant analysis.
  */
 export interface QlPackDetails {
-  queryFile: string;
+  // The full paths of the query files.
+  queryFiles: string[];
 
   // The path to the QL pack that is used for triggering a variant analysis.
   // If there is no query pack, this is the same as the directory of the query files.

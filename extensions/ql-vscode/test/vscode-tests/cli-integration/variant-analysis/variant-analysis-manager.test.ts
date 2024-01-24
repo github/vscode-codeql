@@ -104,7 +104,7 @@ describe("Variant Analysis Manager", () => {
       const qlPackRootPath = getFileOrDir("data-remote-qlpack");
       const qlPackFilePath = getFileOrDir("data-remote-qlpack/qlpack.yml");
       const qlPackDetails: QlPackDetails = {
-        queryFile: filePath,
+        queryFiles: [filePath],
         qlPackRootPath,
         qlPackFilePath,
         language: QueryLanguage.Javascript,
@@ -132,7 +132,7 @@ describe("Variant Analysis Manager", () => {
       const filePath = getFileOrDir("data-remote-no-qlpack/in-pack.ql");
       const qlPackRootPath = getFileOrDir("data-remote-no-qlpack");
       const qlPackDetails: QlPackDetails = {
-        queryFile: filePath,
+        queryFiles: [filePath],
         qlPackRootPath,
         qlPackFilePath: undefined,
         language: QueryLanguage.Javascript,
@@ -165,7 +165,7 @@ describe("Variant Analysis Manager", () => {
         "data-remote-qlpack-nested/codeql-pack.yml",
       );
       const qlPackDetails: QlPackDetails = {
-        queryFile: filePath,
+        queryFiles: [filePath],
         qlPackRootPath,
         qlPackFilePath,
         language: QueryLanguage.Javascript,
@@ -193,7 +193,7 @@ describe("Variant Analysis Manager", () => {
       const filePath = getFileOrDir("data-remote-no-qlpack/in-pack.ql");
       const qlPackRootPath = getFileOrDir("data-remote-no-qlpack");
       const qlPackDetails: QlPackDetails = {
-        queryFile: filePath,
+        queryFiles: [filePath],
         qlPackRootPath,
         qlPackFilePath: undefined,
         language: QueryLanguage.Javascript,
@@ -369,7 +369,7 @@ describe("Variant Analysis Manager", () => {
     }) {
       const filePath = getFileOrDir(queryPath);
       const qlPackDetails: QlPackDetails = {
-        queryFile: filePath,
+        queryFiles: [filePath],
         qlPackRootPath: getFileOrDir(qlPackRootPath),
         qlPackFilePath: qlPackFilePath && getFileOrDir(qlPackFilePath),
         language: QueryLanguage.Javascript,
@@ -464,7 +464,7 @@ describe("Variant Analysis Manager", () => {
   describe("runVariantAnalysisFromPublishedPack", () => {
     // Temporarily disabling this until we add a way to receive multiple queries in the
     // runVariantAnalysis function.
-    it.skip("should download pack for correct language and identify problem queries", async () => {
+    it("should download pack for correct language and identify problem queries", async () => {
       const showQuickPickSpy = jest
         .spyOn(window, "showQuickPick")
         .mockResolvedValue(
@@ -483,15 +483,17 @@ describe("Variant Analysis Manager", () => {
       expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
       expect(runVariantAnalysisMock).toHaveBeenCalledTimes(1);
 
-      const queries: Uri[] = runVariantAnalysisMock.mock.calls[0][0];
+      console.log(runVariantAnalysisMock.mock.calls[0][0]);
+      const queries: string[] =
+        runVariantAnalysisMock.mock.calls[0][0].queryFiles;
       // Should include queries. Just check that at least one known query exists.
       // It doesn't particularly matter which query we check for.
       expect(
-        queries.find((q) => q.fsPath.includes("PostMessageStar.ql")),
+        queries.find((q) => q.includes("PostMessageStar.ql")),
       ).toBeDefined();
       // Should not include non-problem queries.
       expect(
-        queries.find((q) => q.fsPath.includes("LinesOfCode.ql")),
+        queries.find((q) => q.includes("LinesOfCode.ql")),
       ).not.toBeDefined();
     });
   });
