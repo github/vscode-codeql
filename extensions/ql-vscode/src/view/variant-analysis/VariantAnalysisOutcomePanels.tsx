@@ -120,6 +120,9 @@ export const VariantAnalysisOutcomePanels = ({
     return warnings;
   }
 
+  // TODO: include all queries
+  const firstQuery = variantAnalysis.queries[0];
+
   if (!noCodeqlDbRepos?.repositoryCount && !notFoundRepos?.repositoryCount) {
     return (
       <>
@@ -129,7 +132,7 @@ export const VariantAnalysisOutcomePanels = ({
           resultFormatValue={resultFormat}
           onFilterSortChange={setFilterSortState}
           onResultFormatChange={setResultFormat}
-          variantAnalysisQueryKind={variantAnalysis.query.kind}
+          variantAnalysisQueryKind={firstQuery.kind}
         />
         <VariantAnalysisAnalyzedRepos
           variantAnalysis={variantAnalysis}
@@ -152,7 +155,7 @@ export const VariantAnalysisOutcomePanels = ({
         resultFormatValue={resultFormat}
         onFilterSortChange={setFilterSortState}
         onResultFormatChange={setResultFormat}
-        variantAnalysisQueryKind={variantAnalysis.query.kind}
+        variantAnalysisQueryKind={firstQuery.kind}
       />
       <VSCodePanels>
         {scannedReposCount > 0 && (

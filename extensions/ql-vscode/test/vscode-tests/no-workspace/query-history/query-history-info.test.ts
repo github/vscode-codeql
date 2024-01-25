@@ -44,7 +44,7 @@ describe("Query history info", () => {
       const queryName = getRawQueryName(variantAnalysisHistoryItem);
 
       expect(queryName).toBe(
-        variantAnalysisHistoryItem.variantAnalysis.query.name,
+        variantAnalysisHistoryItem.variantAnalysis.queries[0].name,
       );
     });
   });
@@ -76,7 +76,7 @@ describe("Query history info", () => {
       const queryText = getQueryText(variantAnalysisHistoryItem);
 
       expect(queryText).toBe(
-        variantAnalysisHistoryItem.variantAnalysis.query.text,
+        variantAnalysisHistoryItem.variantAnalysis.queries[0].text,
       );
     });
   });

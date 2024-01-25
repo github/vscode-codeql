@@ -15,7 +15,8 @@ export function getRawQueryName(item: QueryHistoryInfo): string {
     case "local":
       return item.getQueryName();
     case "variant-analysis":
-      return item.variantAnalysis.query.name;
+      // TODO: include all queries
+      return item.variantAnalysis.queries[0].name;
     default:
       assertNever(item);
   }
@@ -44,7 +45,8 @@ export function getQueryText(item: QueryHistoryInfo): string {
     case "local":
       return item.initialInfo.queryText;
     case "variant-analysis":
-      return item.variantAnalysis.query.text;
+      // TODO: include all queries
+      return item.variantAnalysis.queries[0].text;
     default:
       assertNever(item);
   }
@@ -55,7 +57,7 @@ export function getLanguage(item: QueryHistoryInfo): QueryLanguage | undefined {
     case "local":
       return item.initialInfo.databaseInfo.language;
     case "variant-analysis":
-      return item.variantAnalysis.query.language;
+      return item.variantAnalysis.language;
     default:
       assertNever(item);
   }

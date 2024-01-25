@@ -65,8 +65,11 @@ export class VariantAnalysisMonitor extends DisposableObject {
   private async _monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
-    const variantAnalysisLabel = `${variantAnalysis.query.name} (${
-      variantAnalysis.query.language
+    // TODO: include all queries
+    const firstQuery = variantAnalysis.queries[0];
+
+    const variantAnalysisLabel = `${firstQuery.name} (${
+      variantAnalysis.language
     }) [${new Date(variantAnalysis.executionStartTime).toLocaleString(
       env.language,
     )}]`;

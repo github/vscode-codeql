@@ -392,7 +392,7 @@ describe("Variant Analysis Manager", () => {
       const request: VariantAnalysisSubmission =
         mockSubmitVariantAnalysis.mock.calls[0][1];
 
-      const packFS = await readBundledPack(request.query.pack);
+      const packFS = await readBundledPack(request.pack);
       filesThatExist.forEach((file) => {
         expect(file).toExistInCodeQLPack(packFS);
       });

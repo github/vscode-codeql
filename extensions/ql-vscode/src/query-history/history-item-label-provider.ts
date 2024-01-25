@@ -94,6 +94,9 @@ export class HistoryItemLabelProvider {
   private getVariantAnalysisInterpolateReplacements(
     item: VariantAnalysisHistoryItem,
   ): InterpolateReplacements {
+    // TODO: include all queries
+    const firstQuery = item.variantAnalysis.queries[0];
+
     const resultCount = item.resultCount
       ? `(${pluralize(item.resultCount, "result", "results")})`
       : "";
@@ -101,11 +104,11 @@ export class HistoryItemLabelProvider {
       t: new Date(item.variantAnalysis.executionStartTime).toLocaleString(
         env.language,
       ),
-      q: `${item.variantAnalysis.query.name} (${item.variantAnalysis.query.language})`,
+      q: `${firstQuery.name} (${item.variantAnalysis.language})`,
       d: buildRepoLabel(item),
       r: resultCount,
       s: humanizeQueryStatus(item.status),
-      f: basename(item.variantAnalysis.query.filePath),
+      f: basename(firstQuery.filePath),
       l: this.getLanguageLabel(item),
       "%": "%",
     };

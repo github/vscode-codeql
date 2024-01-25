@@ -46,6 +46,12 @@ export function mapQueryHistoryVariantAnalysisToDto(
 function mapVariantAnalysisDtoToDto(
   variantAnalysis: VariantAnalysis,
 ): VariantAnalysisDto {
+  const firstQuery = variantAnalysis.queries[0];
+  if (!firstQuery) {
+    throw new Error(
+      "Unable to save query history: variant analysis must have at least one query",
+    );
+  }
   return {
     id: variantAnalysis.id,
     controllerRepo: {
@@ -54,11 +60,11 @@ function mapVariantAnalysisDtoToDto(
       private: variantAnalysis.controllerRepo.private,
     },
     query: {
-      name: variantAnalysis.query.name,
-      filePath: variantAnalysis.query.filePath,
-      language: mapQueryLanguageToDto(variantAnalysis.query.language),
-      text: variantAnalysis.query.text,
-      kind: variantAnalysis.query.kind,
+      name: firstQuery.name,
+      filePath: firstQuery.filePath,
+      language: mapQueryLanguageToDto(variantAnalysis.language),
+      text: firstQuery.text,
+      kind: firstQuery.kind,
     },
     databases: {
       repositories: variantAnalysis.databases.repositories,

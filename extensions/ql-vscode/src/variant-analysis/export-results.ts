@@ -321,10 +321,13 @@ const buildVariantAnalysisGistDescription = (
   );
   const resultLabel = pluralize(resultCount, "result", "results");
 
+  // TODO: include all queries
+  const firstQuery = variantAnalysis.queries[0];
+
   const repositoryLabel = summaries.length
     ? `(${pluralize(summaries.length, "repository", "repositories")})`
     : "";
-  return `${variantAnalysis.query.name} (${variantAnalysis.query.language}) ${resultLabel} ${repositoryLabel}`;
+  return `${firstQuery.name} (${variantAnalysis.language}) ${resultLabel} ${repositoryLabel}`;
 };
 
 /**

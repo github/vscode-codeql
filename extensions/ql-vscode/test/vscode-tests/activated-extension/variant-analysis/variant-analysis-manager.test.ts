@@ -827,7 +827,7 @@ describe("Variant Analysis Manager", () => {
 
       const uri: Uri = openTextDocumentSpy.mock.calls[0][0] as Uri;
       expect(uri.scheme).toEqual("codeql-variant-analysis");
-      expect(uri.path).toEqual(variantAnalysis.query.filePath);
+      expect(uri.path).toEqual(variantAnalysis.queries[0].filePath);
       const params = new URLSearchParams(uri.query);
       expect(Array.from(params.keys())).toEqual(["variantAnalysisId"]);
       expect(params.get("variantAnalysisId")).toEqual(
@@ -874,7 +874,7 @@ describe("Variant Analysis Manager", () => {
       expect(openTextDocumentSpy).toHaveBeenCalledTimes(1);
 
       const filename: string = openTextDocumentSpy.mock.calls[0][0] as string;
-      expect(filename).toEqual(variantAnalysis.query.filePath);
+      expect(filename).toEqual(variantAnalysis.queries[0].filePath);
     });
   });
 });

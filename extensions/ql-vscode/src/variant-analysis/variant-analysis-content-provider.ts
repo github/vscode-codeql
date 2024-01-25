@@ -31,6 +31,9 @@ export const createVariantAnalysisContentProvider = (
       return undefined;
     }
 
-    return SHOW_QUERY_TEXT_MSG + variantAnalysis.query.text;
+    // TODO: include all queries
+    const firstQuery = variantAnalysis.queries[0];
+
+    return SHOW_QUERY_TEXT_MSG + firstQuery.text;
   },
 });

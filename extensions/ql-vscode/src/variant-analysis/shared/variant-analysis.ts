@@ -5,14 +5,8 @@ import { QueryLanguage } from "../../common/query-language";
 export interface VariantAnalysis {
   id: number;
   controllerRepo: Repository;
-  query: {
-    name: string;
-    filePath: string;
-    language: QueryLanguage;
-    text: string;
-    kind?: string;
-  };
-  queries?: VariantAnalysisQueries;
+  language: QueryLanguage;
+  queries: VariantAnalysisQuery[];
   databases: {
     repositories?: string[];
     repositoryLists?: string[];
@@ -27,6 +21,13 @@ export interface VariantAnalysis {
   failureReason?: VariantAnalysisFailureReason;
   scannedRepos?: VariantAnalysisScannedRepository[];
   skippedRepos?: VariantAnalysisSkippedRepositories;
+}
+
+export interface VariantAnalysisQuery {
+  name: string;
+  filePath: string;
+  text: string;
+  kind?: string;
 }
 
 export function parseVariantAnalysisQueryLanguage(
@@ -135,30 +136,15 @@ export interface VariantAnalysisSubmission {
   startTime: number;
   controllerRepoId: number;
   actionRepoRef: string;
-  query: {
-    name: string;
-    filePath: string;
-    language: QueryLanguage;
-    text: string;
-    kind?: string;
-
-    // Base64 encoded query pack.
-    pack: string;
-  };
-  queries?: VariantAnalysisQueries;
+  language: QueryLanguage;
+  /** Base64 encoded query pack. */
+  pack: string;
+  queries: VariantAnalysisQuery[];
   databases: {
     repositories?: string[];
     repositoryLists?: string[];
     repositoryOwners?: string[];
   };
-}
-
-// Experimental information about the queries that are
-// going to be run as part of the variant analysis.
-// For now, this is just the query language, but it's
-// unclear what it will look like in the future.
-export interface VariantAnalysisQueries {
-  language: QueryLanguage;
 }
 
 export async function isVariantAnalysisComplete(

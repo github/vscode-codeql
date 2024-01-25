@@ -22,7 +22,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import type {
   VariantAnalysis,
-  VariantAnalysisQueries,
+  VariantAnalysisQuery,
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
@@ -380,15 +380,6 @@ export class VariantAnalysisManager
       this.dbManager,
     );
 
-    // For now we get the metadata for the first query in the pack.
-    // and use that in the submission and query history. In the future
-    // we'll need to consider how to handle having multiple queries.
-    const firstQueryFile = qlPackDetails.queryFiles[0];
-    const queryMetadata = await tryGetQueryMetadata(
-      this.cliServer,
-      firstQueryFile,
-    );
-    const queryName = getQueryName(queryMetadata, firstQueryFile);
     const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(
       qlPackDetails.language,
     );
@@ -398,27 +389,28 @@ export class VariantAnalysisManager
       );
     }
 
-    const queryText = await readFile(firstQueryFile, "utf8");
-
-    const queries: VariantAnalysisQueries | undefined =
-      qlPackDetails.queryFiles.length === 1
-        ? undefined
-        : {
-            language: qlPackDetails.language,
-          };
+    const queries: VariantAnalysisQuery[] = [];
+    for (const queryFile of qlPackDetails.queryFiles) {
+      const queryMetadata = await tryGetQueryMetadata(
+        this.cliServer,
+        queryFile,
+      );
+      const queryName = getQueryName(queryMetadata, queryFile);
+      const queryText = await readFile(queryFile, "utf8");
+      queries.push({
+        name: queryName,
+        filePath: queryFile,
+        text: queryText,
+        kind: queryMetadata?.kind,
+      });
+    }
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
       startTime: queryStartTime,
       actionRepoRef: actionBranch,
       controllerRepoId: controllerRepo.id,
-      query: {
-        name: queryName,
-        filePath: firstQueryFile,
-        pack: base64Pack,
-        language: variantAnalysisLanguage,
-        text: queryText,
-        kind: queryMetadata?.kind,
-      },
+      language: variantAnalysisLanguage,
+      pack: base64Pack,
       queries,
       databases: {
         repositories: repoSelection.repositories,
@@ -449,10 +441,17 @@ export class VariantAnalysisManager
 
     await this.onVariantAnalysisSubmitted(processedVariantAnalysis);
 
-    void showAndLogInformationMessage(
-      this.app.logger,
-      `Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`,
-    );
+    if (processedVariantAnalysis.queries.length === 1) {
+      void showAndLogInformationMessage(
+        this.app.logger,
+        `Variant analysis ${processedVariantAnalysis.queries[0].name} submitted for processing`,
+      );
+    } else {
+      void showAndLogInformationMessage(
+        this.app.logger,
+        `Variant analysis for ${processedVariantAnalysis.queries.length} queries submitted for processing`,
+      );
+    }
 
     void this.app.commands.execute(
       "codeQL.openVariantAnalysisView",
@@ -548,7 +547,8 @@ export class VariantAnalysisManager
       return;
     }
 
-    const filename = variantAnalysis.query.filePath;
+    // For now, assume this means the first query file
+    const filename = variantAnalysis.queries[0].filePath;
 
     try {
       const params = new URLSearchParams({
@@ -580,15 +580,16 @@ export class VariantAnalysisManager
       return;
     }
 
+    // For now, assume this means the first query file
+    const filename = variantAnalysis.queries[0].filePath;
+
     try {
-      const textDocument = await workspace.openTextDocument(
-        variantAnalysis.query.filePath,
-      );
+      const textDocument = await workspace.openTextDocument(filename);
       await Window.showTextDocument(textDocument, ViewColumn.One);
     } catch (error) {
       void showAndLogWarningMessage(
         this.app.logger,
-        `Could not open file: ${variantAnalysis.query.filePath}`,
+        `Could not open file: ${filename}`,
       );
     }
   }

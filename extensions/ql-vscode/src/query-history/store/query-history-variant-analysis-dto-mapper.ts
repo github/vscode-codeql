@@ -53,13 +53,15 @@ function mapVariantAnalysisToDomainModel(
       fullName: variantAnalysis.controllerRepo.fullName,
       private: variantAnalysis.controllerRepo.private,
     },
-    query: {
-      name: variantAnalysis.query.name,
-      filePath: variantAnalysis.query.filePath,
-      language: mapQueryLanguageToDomainModel(variantAnalysis.query.language),
-      text: variantAnalysis.query.text,
-      kind: variantAnalysis.query.kind,
-    },
+    language: mapQueryLanguageToDomainModel(variantAnalysis.query.language),
+    queries: [
+      {
+        name: variantAnalysis.query.name,
+        filePath: variantAnalysis.query.filePath,
+        text: variantAnalysis.query.text,
+        kind: variantAnalysis.query.kind,
+      },
+    ],
     databases: {
       repositories: variantAnalysis.databases.repositories,
       repositoryLists: variantAnalysis.databases.repositoryLists,

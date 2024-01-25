@@ -31,12 +31,14 @@ export function createMockVariantAnalysis({
         prefix: "",
       })}`,
     },
-    query: {
-      name: "a-query-name",
-      filePath: "a-query-file-path",
-      language,
-      text: "a-query-text",
-    },
+    language,
+    queries: [
+      {
+        name: "a-query-name",
+        filePath: "a-query-file-path",
+        text: "a-query-text",
+      },
+    ],
     databases: {
       repositories: ["1", "2", "3"],
     },

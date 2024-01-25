@@ -29,13 +29,7 @@ export function mapVariantAnalysis(
 ): VariantAnalysis {
   return mapUpdatedVariantAnalysis(
     {
-      query: {
-        name: submission.query.name,
-        filePath: submission.query.filePath,
-        language: submission.query.language,
-        text: submission.query.text,
-        kind: submission.query.kind,
-      },
+      language: submission.language,
       queries: submission.queries,
       databases: submission.databases,
       executionStartTime: submission.startTime,
@@ -47,7 +41,7 @@ export function mapVariantAnalysis(
 export function mapUpdatedVariantAnalysis(
   previousVariantAnalysis: Pick<
     VariantAnalysis,
-    "query" | "queries" | "databases" | "executionStartTime"
+    "language" | "queries" | "databases" | "executionStartTime"
   >,
   response: ApiVariantAnalysis,
 ): VariantAnalysis {
@@ -73,7 +67,7 @@ export function mapUpdatedVariantAnalysis(
       fullName: response.controller_repo.full_name,
       private: response.controller_repo.private,
     },
-    query: previousVariantAnalysis.query,
+    language: previousVariantAnalysis.language,
     queries: previousVariantAnalysis.queries,
     databases: previousVariantAnalysis.databases,
     executionStartTime: previousVariantAnalysis.executionStartTime,

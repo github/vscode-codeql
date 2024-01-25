@@ -114,12 +114,15 @@ export const VariantAnalysisHeader = ({
     );
   }, [filteredRepositories]);
 
+  // TODO: include all queries
+  const firstQuery = variantAnalysis.queries[0];
+
   return (
     <Container>
       <Row>
         <QueryDetails
-          queryName={variantAnalysis.query.name}
-          queryFileName={basename(variantAnalysis.query.filePath)}
+          queryName={firstQuery.name}
+          queryFileName={basename(firstQuery.filePath)}
           onOpenQueryFileClick={onOpenQueryFileClick}
           onViewQueryTextClick={onViewQueryTextClick}
         />

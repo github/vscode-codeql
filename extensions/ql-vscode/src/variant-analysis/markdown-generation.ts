@@ -42,7 +42,7 @@ interface VariantAnalysisMarkdown {
  * Generates markdown files with variant analysis results.
  */
 export async function generateVariantAnalysisMarkdown(
-  variantAnalysis: Pick<VariantAnalysis, "query">,
+  variantAnalysis: Pick<VariantAnalysis, "language" | "queries">,
   results: AsyncIterable<
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
@@ -77,7 +77,7 @@ export async function generateVariantAnalysisMarkdown(
       for (const interpretedResult of result.interpretedResults) {
         const individualResult = generateMarkdownForInterpretedResult(
           interpretedResult,
-          variantAnalysis.query.language,
+          variantAnalysis.language,
         );
         resultsFileContent.push(...individualResult);
       }
@@ -94,7 +94,7 @@ export async function generateVariantAnalysisMarkdown(
 
   // Generate summary file with links to individual files
   const summaryFile: MarkdownFile = generateVariantAnalysisMarkdownSummary(
-    variantAnalysis.query,
+    variantAnalysis.queries,
     summaries,
     linkType,
   );
@@ -106,16 +106,19 @@ export async function generateVariantAnalysisMarkdown(
 }
 
 function generateVariantAnalysisMarkdownSummary(
-  query: VariantAnalysis["query"],
+  query: VariantAnalysis["queries"],
   summaries: RepositorySummary[],
   linkType: MarkdownLinkType,
 ): MarkdownFile {
+  // TODO: include all queries
+  const firstQuery = query[0];
+
   const lines: string[] = [];
   // Title
-  lines.push(`### Results for "${query.name}"`, "");
+  lines.push(`### Results for "${firstQuery.name}"`, "");
 
   // Expandable section containing query text
-  const queryCodeBlock = ["```ql", ...query.text.split("\n"), "```", ""];
+  const queryCodeBlock = ["```ql", ...firstQuery.text.split("\n"), "```", ""];
   lines.push(...buildExpandableMarkdownSection("Query", queryCodeBlock));
 
   // Padding between sections
