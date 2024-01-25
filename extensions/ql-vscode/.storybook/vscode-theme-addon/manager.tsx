@@ -1,5 +1,6 @@
 import * as React from "react";
-import { addons, types } from "@storybook/manager-api";
+import { addons } from "@storybook/manager-api";
+import { Addon_TypesEnum } from "@storybook/types";
 import { ThemeSelector } from "./ThemeSelector";
 
 const ADDON_ID = "vscode-theme-addon";
@@ -7,8 +8,7 @@ const ADDON_ID = "vscode-theme-addon";
 addons.register(ADDON_ID, () => {
   addons.add(ADDON_ID, {
     title: "VSCode Themes",
-    // eslint-disable-next-line deprecation/deprecation
-    type: types.TOOL,
+    type: Addon_TypesEnum.TOOL,
     match: ({ viewMode }) => !!(viewMode && viewMode.match(/^(story|docs)$/)),
     render: () => <ThemeSelector />,
   });
