@@ -1744,7 +1744,7 @@ export class CliVersionConstraint {
   /**
    * CLI version where there is support for multiple queries on the pack create command.
    */
-  public static CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE = new SemVer("2.17.0");
+  public static CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE = new SemVer("2.16.1");
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
