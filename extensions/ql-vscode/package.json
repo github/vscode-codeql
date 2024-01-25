@@ -2000,7 +2000,7 @@
     "@types/node": "18.15.*",
     "@types/node-fetch": "^2.5.2",
     "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.11",
+    "@types/react-dom": "^18.2.18",
     "@types/sarif": "^2.1.2",
     "@types/semver": "^7.2.0",
     "@types/stream-json": "^1.7.1",
