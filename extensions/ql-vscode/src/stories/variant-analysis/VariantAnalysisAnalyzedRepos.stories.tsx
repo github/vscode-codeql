@@ -131,7 +131,7 @@ const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
   const mockedScannedRepo = createMockScannedRepo();
   const randomInt = uniqueNumbers.pop();
   const uniqueId =
-    randomInt === undefined ? Math.floor(Math.random() * 100000) : randomInt;
+    randomInt === undefined ? Math.random() * 8000 + 1001 : randomInt;
 
   return {
     ...mockedScannedRepo,
