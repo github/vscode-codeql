@@ -129,7 +129,7 @@ faker.seed(42);
 
 const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
   const mockedScannedRepo = createMockScannedRepo();
-  const nanoid = customAlphabet("0123456789");
+  const nanoid = customAlphabet("123456789");
   return {
     ...mockedScannedRepo,
     analysisStatus: VariantAnalysisRepoStatus.Succeeded,
