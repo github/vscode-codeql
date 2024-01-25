@@ -389,11 +389,12 @@ export class VariantAnalysisManager
       firstQueryFile,
     );
     const queryName = getQueryName(queryMetadata, firstQueryFile);
-    const language = qlPackDetails.language;
-    const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
+    const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(
+      qlPackDetails.language,
+    );
     if (variantAnalysisLanguage === undefined) {
       throw new UserCancellationException(
-        `Found unsupported language: ${language}`,
+        `Found unsupported language: ${qlPackDetails.language}`,
       );
     }
 
