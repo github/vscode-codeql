@@ -55,7 +55,6 @@ async function generateQueryPack(
   qlPackDetails: QlPackDetails,
   tmpDir: RemoteQueryTempDir,
 ): Promise<string> {
-  const originalPackRoot = qlPackDetails.qlPackRootPath;
   const workspaceFolders = getOnDiskWorkspaceFolders();
   const extensionPacks = await getExtensionPacksToInject(
     cliServer,
@@ -93,7 +92,7 @@ async function generateQueryPack(
     needsInstall = true;
   } else {
     // The CLI supports creating a MRVA query pack directly from the source pack.
-    queryPackDir = originalPackRoot;
+    queryPackDir = qlPackDetails.qlPackRootPath;
     // We expect any dependencies to be available already.
     needsInstall = false;
   }
@@ -135,7 +134,7 @@ async function generateQueryPack(
     if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
       precompilationOpts = ["--qlx"];
     } else {
-      const cache = join(originalPackRoot, ".cache");
+      const cache = join(qlPackDetails.qlPackRootPath, ".cache");
       precompilationOpts = [
         "--qlx",
         "--no-default-compilation-cache",
@@ -195,9 +194,6 @@ async function copyExistingQueryPack(
   qlPackDetails: QlPackDetails,
   queryPackDir: string,
 ) {
-  const originalPackRoot = qlPackDetails.qlPackRootPath;
-  const queryFiles = qlPackDetails.queryFiles;
-
   const toCopy = await cliServer.packPacklist(
     qlPackDetails.qlPackRootPath,
     false,
@@ -209,19 +205,20 @@ async function copyExistingQueryPack(
   if (
     await cliServer.cliConstraints.supportsGenerateExtensiblePredicateMetadata()
   ) {
-    const metadata =
-      await cliServer.generateExtensiblePredicateMetadata(originalPackRoot);
+    const metadata = await cliServer.generateExtensiblePredicateMetadata(
+      qlPackDetails.qlPackRootPath,
+    );
     metadata.extensible_predicates.forEach((predicate) => {
       if (predicate.path.endsWith(".ql")) {
-        toCopy.push(join(originalPackRoot, predicate.path));
+        toCopy.push(join(qlPackDetails.qlPackRootPath, predicate.path));
       }
     });
   }
 
   [
     // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.
-    ...QLPACK_LOCK_FILENAMES.map((f) => join(originalPackRoot, f)),
-    ...queryFiles,
+    ...QLPACK_LOCK_FILENAMES.map((f) => join(qlPackDetails.qlPackRootPath, f)),
+    ...qlPackDetails.queryFiles,
   ].forEach((absolutePath) => {
     if (absolutePath) {
       toCopy.push(absolutePath);
@@ -229,7 +226,7 @@ async function copyExistingQueryPack(
   });
 
   let copiedCount = 0;
-  await copy(originalPackRoot, queryPackDir, {
+  await copy(qlPackDetails.qlPackRootPath, queryPackDir, {
     filter: (file: string) =>
       // copy file if it is in the packlist, or it is a parent directory of a file in the packlist
       !!toCopy.find((f) => {
