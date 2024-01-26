@@ -16,7 +16,9 @@ type Props = {
   initialViewState?: MethodModelingPanelViewState;
 };
 
-export function MethodModelingView({ initialViewState }: Props): JSX.Element {
+export function MethodModelingView({
+  initialViewState,
+}: Props): React.JSX.Element {
   const [viewState, setViewState] = useState<
     MethodModelingPanelViewState | undefined
   >(initialViewState);

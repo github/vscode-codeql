@@ -51,7 +51,7 @@ export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis,
   repoStates: initialRepoStates = [],
   repoResults: initialRepoResults = [],
-}: VariantAnalysisProps): JSX.Element {
+}: VariantAnalysisProps): React.JSX.Element {
   const [variantAnalysis, setVariantAnalysis] = useState<
     VariantAnalysisDomainModel | undefined
   >(initialVariantAnalysis);

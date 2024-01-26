@@ -24,7 +24,7 @@ export const ModelTypeTextbox = ({
   typeInfo,
   onChange,
   ...props
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const [value, setValue] = useState<string | undefined>(
     modeledMethod[typeInfo],
   );

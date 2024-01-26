@@ -22,7 +22,7 @@ const TypeMethodName = (method: Method) => {
   );
 };
 
-export const MethodName = (method: Method): JSX.Element => {
+export const MethodName = (method: Method): React.JSX.Element => {
   return (
     <Name>
       {method.packageName && <>{method.packageName}.</>}

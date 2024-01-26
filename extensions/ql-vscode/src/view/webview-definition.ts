@@ -1,3 +1,3 @@
 export type WebviewDefinition = {
-  component: JSX.Element;
+  component: React.JSX.Element;
 };

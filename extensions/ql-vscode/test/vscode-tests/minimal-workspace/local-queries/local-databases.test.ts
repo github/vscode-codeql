@@ -296,9 +296,7 @@ describe("local databases", () => {
         Uri.parse("file:/sourceArchive-uri/"),
       );
       (db as any).contents.sourceArchiveUri = undefined;
-      expect(() => db.resolveSourceFile("abc")).toThrowError(
-        "Scheme is missing",
-      );
+      expect(() => db.resolveSourceFile("abc")).toThrow("Scheme is missing");
     });
 
     it("should fail to resolve when not a file uri", () => {
@@ -308,7 +306,7 @@ describe("local databases", () => {
         Uri.parse("file:/sourceArchive-uri/"),
       );
       (db as any).contents.sourceArchiveUri = undefined;
-      expect(() => db.resolveSourceFile("http://abc")).toThrowError(
+      expect(() => db.resolveSourceFile("http://abc")).toThrow(
         "Invalid uri scheme",
       );
     });

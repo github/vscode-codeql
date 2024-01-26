@@ -6,7 +6,7 @@ interface Props {
   showRawResults: () => void;
 }
 
-export function AlertTableNoResults(props: Props): JSX.Element {
+export function AlertTableNoResults(props: Props): React.JSX.Element {
   if (props.nonemptyRawResults) {
     return (
       <span>

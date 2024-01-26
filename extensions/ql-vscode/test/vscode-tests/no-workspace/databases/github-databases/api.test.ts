@@ -123,7 +123,7 @@ describe("listDatabases", () => {
       it("throws an error", async () => {
         await expect(
           listDatabases(owner, repo, credentials, config),
-        ).rejects.toThrowError("Not found");
+        ).rejects.toThrow("Not found");
       });
     });
 
@@ -150,7 +150,7 @@ describe("listDatabases", () => {
       it("throws an error", async () => {
         await expect(
           listDatabases(owner, repo, credentials, config),
-        ).rejects.toThrowError("Internal server error");
+        ).rejects.toThrow("Internal server error");
       });
     });
   });
@@ -199,7 +199,7 @@ describe("listDatabases", () => {
         it("throws an error", async () => {
           await expect(
             listDatabases(owner, repo, credentials, config),
-          ).rejects.toThrowError("Internal server error");
+          ).rejects.toThrow("Internal server error");
           expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
         });
       });
@@ -270,7 +270,7 @@ describe("listDatabases", () => {
           it("throws an error", async () => {
             await expect(
               listDatabases(owner, repo, credentials, config),
-            ).rejects.toThrowError("Not found");
+            ).rejects.toThrow("Not found");
           });
         });
 
@@ -297,7 +297,7 @@ describe("listDatabases", () => {
           it("throws an error", async () => {
             await expect(
               listDatabases(owner, repo, credentials, config),
-            ).rejects.toThrowError("Internal server error");
+            ).rejects.toThrow("Internal server error");
           });
         });
       });
