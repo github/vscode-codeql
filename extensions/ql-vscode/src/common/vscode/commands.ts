@@ -13,6 +13,8 @@ import { redactableError } from "../../common/errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
 import type { AppTelemetry } from "../telemetry";
+import { CliError } from "../../codeql-cli/cli-errors";
+import { EOL } from "os";
 
 /**
  * Create a command manager for VSCode, wrapping registerCommandWithErrorHandling
@@ -62,6 +64,16 @@ export function registerCommandWithErrorHandling(
         } else {
           void showAndLogWarningMessage(logger, errorMessage.fullMessage);
         }
+      } else if (e instanceof CliError) {
+        const fullMessage = `${e.commandDescription} failed with args:${EOL}    ${e.commandArgs.join(" ")}${EOL}${
+          e.stderr ?? e.cause
+        }`;
+        void showAndLogExceptionWithTelemetry(logger, telemetry, errorMessage, {
+          fullMessage,
+          extraTelemetryProperties: {
+            command: commandId,
+          },
+        });
       } else {
         // Include the full stack in the error log only.
         const fullMessage = errorMessage.fullMessageWithStack;
