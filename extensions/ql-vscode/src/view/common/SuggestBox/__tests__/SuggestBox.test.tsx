@@ -161,13 +161,57 @@ describe("SuggestBox", () => {
     expect(screen.getByRole("option")).toHaveTextContent("Parameter[1]");
   });
 
-  it("closes the options when selecting an option", async () => {
+  it("selects an option using Enter", async () => {
     render({
       value: "Argument[block].1",
     });
 
     await userEvent.click(screen.getByRole("combobox"));
     await userEvent.keyboard("{Enter}");
+
+    expect(onChange).toHaveBeenCalledWith("Argument[block].Parameter[1]");
+  });
+
+  it("selects an option using Tab", async () => {
+    render({
+      value: "Argument[block].1",
+    });
+
+    await userEvent.click(screen.getByRole("combobox"));
+    await userEvent.keyboard("{Enter}");
+
+    expect(onChange).toHaveBeenCalledWith("Argument[block].Parameter[1]");
+  });
+
+  it("does not select an option using Home", async () => {
+    render({
+      value: "Argument[block].1",
+    });
+
+    await userEvent.click(screen.getByRole("combobox"));
+    await userEvent.keyboard("{Home}");
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("closes the options when selecting an option using Enter", async () => {
+    render({
+      value: "Argument[block].1",
+    });
+
+    await userEvent.click(screen.getByRole("combobox"));
+    await userEvent.keyboard("{Enter}");
+
+    expect(screen.queryByRole("option")).not.toBeInTheDocument();
+  });
+
+  it("closes the options when selecting an option using Tab", async () => {
+    render({
+      value: "Argument[block].1",
+    });
+
+    await userEvent.click(screen.getByRole("combobox"));
+    await userEvent.keyboard("{Tab}");
 
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
   });
