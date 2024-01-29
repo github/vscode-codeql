@@ -22,6 +22,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import type {
   VariantAnalysis,
+  VariantAnalysisQueries,
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
@@ -87,7 +88,10 @@ import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { RequestError } from "@octokit/request-error";
 import { handleRequestError } from "./custom-errors";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
-import { askForLanguage } from "../codeql-cli/query-language";
+import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
+import type { QlPackDetails } from "./ql-pack-details";
+import { findPackRoot, getQlPackFilePath } from "../common/ql";
+import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 
 const maxRetryCount = 3;
 
@@ -191,26 +195,22 @@ export class VariantAnalysisManager
       throw new Error("Please select a .ql file to run as a variant analysis");
     }
 
-    await this.runVariantAnalysisCommand(fileUri);
+    await this.runVariantAnalysisCommand([fileUri]);
   }
 
   private async runVariantAnalysisFromContextEditor(uri: Uri) {
-    await this.runVariantAnalysisCommand(uri);
+    await this.runVariantAnalysisCommand([uri]);
   }
 
   private async runVariantAnalysisFromExplorer(fileURIs: Uri[]): Promise<void> {
-    if (fileURIs.length !== 1) {
-      throw new Error("Can only run a single query at a time");
-    }
-
-    return this.runVariantAnalysisCommand(fileURIs[0]);
+    return this.runVariantAnalysisCommand(fileURIs);
   }
 
   private async runVariantAnalysisFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
     if (queryTreeViewItem.path !== undefined) {
-      await this.runVariantAnalysisCommand(Uri.file(queryTreeViewItem.path));
+      await this.runVariantAnalysisCommand([Uri.file(queryTreeViewItem.path)]);
     }
   }
 
@@ -223,6 +223,9 @@ export class VariantAnalysisManager
       });
 
       const language = await askForLanguage(this.cliServer);
+      if (!language) {
+        return;
+      }
 
       progress({
         maxStep: 8,
@@ -263,8 +266,18 @@ export class VariantAnalysisManager
         return;
       }
 
+      const qlPackFilePath = await getQlPackFilePath(packDir);
+
+      // Build up details to pass to the functions that run the variant analysis.
+      const qlPackDetails: QlPackDetails = {
+        queryFiles: problemQueries,
+        qlPackRootPath: packDir,
+        qlPackFilePath,
+        language,
+      };
+
       await this.runVariantAnalysis(
-        problemQueries.map((q) => Uri.file(q)),
+        qlPackDetails,
         (p) =>
           progress({
             ...p,
@@ -294,10 +307,43 @@ export class VariantAnalysisManager
     return problemQueries;
   }
 
-  private async runVariantAnalysisCommand(uri: Uri): Promise<void> {
+  private async runVariantAnalysisCommand(queryFiles: Uri[]): Promise<void> {
+    if (queryFiles.length === 0) {
+      throw new Error("Please select a .ql file to run as a variant analysis");
+    }
+
+    const qlPackRootPath = await findPackRoot(queryFiles[0].fsPath);
+    const qlPackFilePath = await getQlPackFilePath(qlPackRootPath);
+
+    // Make sure that all remaining queries have the same pack root
+    for (let i = 1; i < queryFiles.length; i++) {
+      const packRoot = await findPackRoot(queryFiles[i].fsPath);
+      if (packRoot !== qlPackRootPath) {
+        throw new Error(
+          "Please select queries that all belong to the same query pack",
+        );
+      }
+    }
+
+    // Open popup to ask for language if not already hardcoded
+    const language = qlPackFilePath
+      ? await findLanguage(this.cliServer, queryFiles[0])
+      : await askForLanguage(this.cliServer);
+
+    if (!language) {
+      throw new UserCancellationException("Could not determine query language");
+    }
+
+    const qlPackDetails: QlPackDetails = {
+      queryFiles: queryFiles.map((uri) => uri.fsPath),
+      qlPackRootPath,
+      qlPackFilePath,
+      language,
+    };
+
     return withProgress(
       async (progress, token) => {
-        await this.runVariantAnalysis([uri], progress, token);
+        await this.runVariantAnalysis(qlPackDetails, progress, token);
       },
       {
         title: "Run Variant Analysis",
@@ -307,7 +353,7 @@ export class VariantAnalysisManager
   }
 
   public async runVariantAnalysis(
-    uris: Uri[],
+    qlPackDetails: QlPackDetails,
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
@@ -323,35 +369,43 @@ export class VariantAnalysisManager
       actionBranch,
       base64Pack,
       repoSelection,
-      queryFile,
-      queryMetadata,
       controllerRepo,
       queryStartTime,
-      language,
     } = await prepareRemoteQueryRun(
       this.cliServer,
       this.app.credentials,
-      uris,
+      qlPackDetails,
       progress,
       token,
       this.dbManager,
     );
 
-    const queryName = getQueryName(queryMetadata, queryFile);
-    const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(language);
+    // For now we get the metadata for the first query in the pack.
+    // and use that in the submission and query history. In the future
+    // we'll need to consider how to handle having multiple queries.
+    const firstQueryFile = qlPackDetails.queryFiles[0];
+    const queryMetadata = await tryGetQueryMetadata(
+      this.cliServer,
+      firstQueryFile,
+    );
+    const queryName = getQueryName(queryMetadata, firstQueryFile);
+    const variantAnalysisLanguage = parseVariantAnalysisQueryLanguage(
+      qlPackDetails.language,
+    );
     if (variantAnalysisLanguage === undefined) {
       throw new UserCancellationException(
-        `Found unsupported language: ${language}`,
+        `Found unsupported language: ${qlPackDetails.language}`,
       );
     }
 
-    const queryText = await readFile(queryFile, "utf8");
+    const queryText = await readFile(firstQueryFile, "utf8");
 
-    const queries =
-      uris.length === 1
+    const queries: VariantAnalysisQueries | undefined =
+      qlPackDetails.queryFiles.length === 1
         ? undefined
         : {
-            language: variantAnalysisLanguage,
+            language: qlPackDetails.language,
+            count: qlPackDetails.queryFiles.length,
           };
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
@@ -360,7 +414,7 @@ export class VariantAnalysisManager
       controllerRepoId: controllerRepo.id,
       query: {
         name: queryName,
-        filePath: queryFile,
+        filePath: firstQueryFile,
         pack: base64Pack,
         language: variantAnalysisLanguage,
         text: queryText,

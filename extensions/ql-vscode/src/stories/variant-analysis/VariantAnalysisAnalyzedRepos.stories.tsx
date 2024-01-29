@@ -1,6 +1,7 @@
 import type { Meta, StoryFn } from "@storybook/react";
 
 import { faker } from "@faker-js/faker";
+import { customAlphabet } from "nanoid";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { VariantAnalysisAnalyzedRepos } from "../../view/variant-analysis/VariantAnalysisAnalyzedRepos";
@@ -125,11 +126,10 @@ Example.args = {
 };
 
 faker.seed(42);
-const uniqueStore = {};
 
 const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
   const mockedScannedRepo = createMockScannedRepo();
-
+  const nanoid = customAlphabet("123456789");
   return {
     ...mockedScannedRepo,
     analysisStatus: VariantAnalysisRepoStatus.Succeeded,
@@ -137,12 +137,8 @@ const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
     repository: {
       ...mockedScannedRepo.repository,
       // We need to ensure the ID is unique for React keys
-      id: faker.helpers.unique(faker.number.int, [], {
-        store: uniqueStore,
-      }),
-      fullName: `octodemo/${faker.helpers.unique(faker.word.sample, [], {
-        store: uniqueStore,
-      })}`,
+      id: parseInt(nanoid()),
+      fullName: `octodemo/${nanoid()}`,
     },
   };
 });

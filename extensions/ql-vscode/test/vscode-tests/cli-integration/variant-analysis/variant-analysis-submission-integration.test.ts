@@ -86,6 +86,14 @@ describe("Variant Analysis Submission Integration", () => {
     it("shows the error message", async () => {
       await showQlDocument("query.ql");
 
+      // Select target language for your query
+      quickPickSpy.mockResolvedValueOnce(
+        mockedQuickPickItem({
+          label: "JavaScript",
+          language: "javascript",
+        }),
+      );
+
       await commandManager.execute("codeQL.runVariantAnalysis");
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(

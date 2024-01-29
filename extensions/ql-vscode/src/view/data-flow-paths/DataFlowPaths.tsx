@@ -32,7 +32,7 @@ export const DataFlowPaths = ({
   dataFlowPaths,
 }: {
   dataFlowPaths: DataFlowPathsDomainModel;
-}): JSX.Element => {
+}): React.JSX.Element => {
   const [selectedCodeFlow, setSelectedCodeFlow] = useState(
     dataFlowPaths.codeFlows[0],
   );

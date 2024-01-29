@@ -64,7 +64,7 @@ export const MethodModeling = ({
   method,
   isModelingInProgress,
   onChange,
-}: MethodModelingProps): JSX.Element => {
+}: MethodModelingProps): React.JSX.Element => {
   return (
     <Container>
       <Title>

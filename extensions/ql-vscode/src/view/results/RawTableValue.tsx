@@ -13,7 +13,7 @@ export default function RawTableValue({
   value,
   databaseUri,
   onSelected,
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   switch (value.type) {
     case "boolean":
       return <span>{value.value.toString()}</span>;

@@ -11,6 +11,7 @@ on:
       - extensions/ql-vscode/src/language-support/**
       - extensions/ql-vscode/src/query-server/**
       - extensions/ql-vscode/supported_cli_versions.json
+      - extensions/ql-vscode/src/variant-analysis/run-remote-query.ts
 
 jobs:
   find-nightly:

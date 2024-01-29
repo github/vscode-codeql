@@ -235,7 +235,7 @@ async function chooseDatabaseDir(byFolder: boolean): Promise<Uri | undefined> {
   return getFirst(chosen);
 }
 
-interface DatabaseSelectionQuickPickItem extends QuickPickItem {
+export interface DatabaseSelectionQuickPickItem extends QuickPickItem {
   databaseKind: "new" | "existing";
 }
 
@@ -243,7 +243,7 @@ export interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
 }
 
-interface DatabaseImportQuickPickItems extends QuickPickItem {
+export interface DatabaseImportQuickPickItems extends QuickPickItem {
   importType: "URL" | "github" | "archive" | "folder";
 }
 

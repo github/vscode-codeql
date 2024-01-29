@@ -2,7 +2,9 @@ interface Props {
   numTruncatedResults: number;
 }
 
-export function AlertTableTruncatedMessage(props: Props): JSX.Element | null {
+export function AlertTableTruncatedMessage(
+  props: Props,
+): React.JSX.Element | null {
   if (props.numTruncatedResults === 0) {
     return null;
   }

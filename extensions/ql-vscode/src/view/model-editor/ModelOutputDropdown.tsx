@@ -27,7 +27,7 @@ export const ModelOutputDropdown = ({
   modeledMethod,
   modelingStatus,
   onChange,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const options = useMemo(() => {
     const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 

@@ -112,7 +112,7 @@ describe("resolveQueries", () => {
           "tags contain": ["ide-contextual-queries/print-ast"],
         },
       ),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       'No my query queries (kind "graph", tagged "ide-contextual-queries/print-ast") could be found in the current library path (tried searching the following packs: my-qlpack). Try upgrading the CodeQL libraries. If that doesn\'t work, then my query queries are not yet available for this language.',
     );
   });

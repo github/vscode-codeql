@@ -9,7 +9,7 @@ export type DataFlowPathsViewProps = {
 
 export function DataFlowPathsView({
   dataFlowPaths: initialDataFlowPaths,
-}: DataFlowPathsViewProps): JSX.Element {
+}: DataFlowPathsViewProps): React.JSX.Element {
   const [dataFlowPaths, setDataFlowPaths] = useState<
     DataFlowPathsDomainModel | undefined
   >(initialDataFlowPaths);

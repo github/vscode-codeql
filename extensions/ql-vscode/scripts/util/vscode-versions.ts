@@ -45,8 +45,9 @@ export async function getVersionInformation(
   vscodeVersion: string,
 ): Promise<VersionInformation> {
   const vsCodePackageJson = await getVsCodePackageJson(vscodeVersion);
-  const electronVersion = minVersion(vsCodePackageJson.devDependencies.electron)
-    ?.version;
+  const electronVersion = minVersion(
+    vsCodePackageJson.devDependencies.electron,
+  )?.version;
   if (!electronVersion) {
     throw new Error("Could not find Electron version");
   }

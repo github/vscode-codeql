@@ -1739,6 +1739,15 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_TRIM_CACHE = new SemVer("2.15.1");
 
+  public static CLI_VERSION_WITHOUT_MRVA_EXTENSIBLE_PREDICATE_HACK = new SemVer(
+    "2.16.1",
+  );
+
+  /**
+   * CLI version where there is support for multiple queries on the pack create command.
+   */
+  public static CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE = new SemVer("2.16.1");
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1778,6 +1787,19 @@ export class CliVersionConstraint {
   async supportsGenerateExtensiblePredicateMetadata() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA,
+    );
+  }
+
+  async preservesExtensiblePredicatesInMrvaPack() {
+    // Negated, because we _stopped_ preserving these in 2.16.1.
+    return !(await this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITHOUT_MRVA_EXTENSIBLE_PREDICATE_HACK,
+    ));
+  }
+
+  async supportsPackCreateWithMultipleQueries() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE,
     );
   }
 

@@ -1,4 +1,4 @@
-import { CancellationTokenSource, commands, Uri, window } from "vscode";
+import { CancellationTokenSource, commands, window, Uri } from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
@@ -26,6 +26,7 @@ import type { ExtensionPackMetadata } from "../../../../src/model-editor/extensi
 import type { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file";
 //import { expect } from "@jest/globals";
 import "../../../matchers/toExistInCodeQLPack";
+import type { QlPackDetails } from "../../../../src/variant-analysis/ql-pack-details";
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
@@ -99,10 +100,18 @@ describe("Variant Analysis Manager", () => {
     });
 
     it("should run a variant analysis that is part of a qlpack", async () => {
-      const fileUri = getFile("data-remote-qlpack/in-pack.ql");
+      const filePath = getFileOrDir("data-remote-qlpack/in-pack.ql");
+      const qlPackRootPath = getFileOrDir("data-remote-qlpack");
+      const qlPackFilePath = getFileOrDir("data-remote-qlpack/qlpack.yml");
+      const qlPackDetails: QlPackDetails = {
+        queryFiles: [filePath],
+        qlPackRootPath,
+        qlPackFilePath,
+        language: QueryLanguage.Javascript,
+      };
 
       await variantAnalysisManager.runVariantAnalysis(
-        [fileUri],
+        qlPackDetails,
         progress,
         cancellationTokenSource.token,
       );
@@ -120,10 +129,17 @@ describe("Variant Analysis Manager", () => {
     });
 
     it("should run a remote query that is not part of a qlpack", async () => {
-      const fileUri = getFile("data-remote-no-qlpack/in-pack.ql");
+      const filePath = getFileOrDir("data-remote-no-qlpack/in-pack.ql");
+      const qlPackRootPath = getFileOrDir("data-remote-no-qlpack");
+      const qlPackDetails: QlPackDetails = {
+        queryFiles: [filePath],
+        qlPackRootPath,
+        qlPackFilePath: undefined,
+        language: QueryLanguage.Javascript,
+      };
 
       await variantAnalysisManager.runVariantAnalysis(
-        [fileUri],
+        qlPackDetails,
         progress,
         cancellationTokenSource.token,
       );
@@ -141,10 +157,22 @@ describe("Variant Analysis Manager", () => {
     });
 
     it("should run a remote query that is nested inside a qlpack", async () => {
-      const fileUri = getFile("data-remote-qlpack-nested/subfolder/in-pack.ql");
+      const filePath = getFileOrDir(
+        "data-remote-qlpack-nested/subfolder/in-pack.ql",
+      );
+      const qlPackRootPath = getFileOrDir("data-remote-qlpack-nested");
+      const qlPackFilePath = getFileOrDir(
+        "data-remote-qlpack-nested/codeql-pack.yml",
+      );
+      const qlPackDetails: QlPackDetails = {
+        queryFiles: [filePath],
+        qlPackRootPath,
+        qlPackFilePath,
+        language: QueryLanguage.Javascript,
+      };
 
       await variantAnalysisManager.runVariantAnalysis(
-        [fileUri],
+        qlPackDetails,
         progress,
         cancellationTokenSource.token,
       );
@@ -162,10 +190,17 @@ describe("Variant Analysis Manager", () => {
     });
 
     it("should cancel a run before uploading", async () => {
-      const fileUri = getFile("data-remote-no-qlpack/in-pack.ql");
+      const filePath = getFileOrDir("data-remote-no-qlpack/in-pack.ql");
+      const qlPackRootPath = getFileOrDir("data-remote-no-qlpack");
+      const qlPackDetails: QlPackDetails = {
+        queryFiles: [filePath],
+        qlPackRootPath,
+        qlPackFilePath: undefined,
+        language: QueryLanguage.Javascript,
+      };
 
       const promise = variantAnalysisManager.runVariantAnalysis(
-        [fileUri],
+        qlPackDetails,
         progress,
         cancellationTokenSource.token,
       );
@@ -202,6 +237,8 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is part of a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack/in-pack.ql",
+          qlPackRootPath: "data-remote-qlpack",
+          qlPackFilePath: "data-remote-qlpack/qlpack.yml",
           expectedPackName: "github/remote-query-pack",
           filesThatExist: ["in-pack.ql", "lib.qll"],
           filesThatDoNotExist: [],
@@ -212,6 +249,8 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is not part of a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-no-qlpack/in-pack.ql",
+          qlPackRootPath: "data-remote-no-qlpack",
+          qlPackFilePath: undefined,
           expectedPackName: "codeql-remote/query",
           filesThatExist: ["in-pack.ql"],
           filesThatDoNotExist: ["lib.qll", "not-in-pack.ql"],
@@ -222,6 +261,8 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is nested inside a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
+          qlPackRootPath: "data-remote-qlpack-nested",
+          qlPackFilePath: "data-remote-qlpack-nested/codeql-pack.yml",
           expectedPackName: "github/remote-query-pack",
           filesThatExist: ["subfolder/in-pack.ql", "otherfolder/lib.qll"],
           filesThatDoNotExist: ["subfolder/not-in-pack.ql"],
@@ -239,6 +280,8 @@ describe("Variant Analysis Manager", () => {
         await cli.setUseExtensionPacks(true);
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
+          qlPackRootPath: "data-remote-qlpack-nested",
+          qlPackFilePath: "data-remote-qlpack-nested/codeql-pack.yml",
           expectedPackName: "github/remote-query-pack",
           filesThatExist: [
             "subfolder/in-pack.ql",
@@ -275,16 +318,23 @@ describe("Variant Analysis Manager", () => {
 
       const queryToRun =
         "Security/CWE/CWE-020/ExternalAPIsUsedWithUntrustedData.ql";
-      const extraQuery = "Telemetry/ExtractorInformation.ql";
 
+      // Recent versions of the CLI don't preserve queries with extensible predicates in MRVA packs,
+      // because all the necessary info is in the `.packinfo` file.
+      const extraQueries =
+        (await cli.cliConstraints.preservesExtensiblePredicatesInMrvaPack())
+          ? ["Telemetry/ExtractorInformation.ql"]
+          : [];
+
+      const qlPackRootPath = join(process.env.TEST_CODEQL_PATH, "java/ql/src");
+      const queryPath = join(qlPackRootPath, queryToRun);
+      const qlPackFilePath = join(qlPackRootPath, "qlpack.yml");
       await doVariantAnalysisTest({
-        queryPath: join(
-          process.env.TEST_CODEQL_PATH,
-          "java/ql/src",
-          queryToRun,
-        ),
+        queryPath,
+        qlPackRootPath,
+        qlPackFilePath,
         expectedPackName: "codeql/java-queries",
-        filesThatExist: [queryToRun, extraQuery],
+        filesThatExist: [queryToRun, ...extraQueries],
         filesThatDoNotExist: [],
         qlxFilesThatExist: [],
         dependenciesToCheck: ["codeql/java-all"],
@@ -295,6 +345,8 @@ describe("Variant Analysis Manager", () => {
 
     async function doVariantAnalysisTest({
       queryPath,
+      qlPackRootPath,
+      qlPackFilePath,
       expectedPackName,
       filesThatExist,
       qlxFilesThatExist,
@@ -306,6 +358,8 @@ describe("Variant Analysis Manager", () => {
       checkVersion = true,
     }: {
       queryPath: string;
+      qlPackRootPath: string;
+      qlPackFilePath: string | undefined;
       expectedPackName: string;
       filesThatExist: string[];
       qlxFilesThatExist: string[];
@@ -313,9 +367,16 @@ describe("Variant Analysis Manager", () => {
       dependenciesToCheck?: string[];
       checkVersion?: boolean;
     }) {
-      const fileUri = getFile(queryPath);
+      const filePath = getFileOrDir(queryPath);
+      const qlPackDetails: QlPackDetails = {
+        queryFiles: [filePath],
+        qlPackRootPath: getFileOrDir(qlPackRootPath),
+        qlPackFilePath: qlPackFilePath && getFileOrDir(qlPackFilePath),
+        language: QueryLanguage.Javascript,
+      };
+
       await variantAnalysisManager.runVariantAnalysis(
-        [fileUri],
+        qlPackDetails,
         progress,
         cancellationTokenSource.token,
       );
@@ -324,7 +385,7 @@ describe("Variant Analysis Manager", () => {
       expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
-          query: expect.objectContaining({ filePath: fileUri.fsPath }),
+          query: expect.objectContaining({ filePath }),
         }),
       );
 
@@ -390,16 +451,19 @@ describe("Variant Analysis Manager", () => {
       );
     }
 
-    function getFile(file: string): Uri {
-      if (isAbsolute(file)) {
-        return Uri.file(file);
+    function getFileOrDir(path: string): string {
+      // Use `Uri.file(path).fsPath` to make sure the path is in the correct format for the OS (i.e. forward/backward slashes).
+      if (isAbsolute(path)) {
+        return Uri.file(path).fsPath;
       } else {
-        return Uri.file(join(baseDir, file));
+        return Uri.file(join(baseDir, path)).fsPath;
       }
     }
   });
 
   describe("runVariantAnalysisFromPublishedPack", () => {
+    // Temporarily disabling this until we add a way to receive multiple queries in the
+    // runVariantAnalysis function.
     it("should download pack for correct language and identify problem queries", async () => {
       const showQuickPickSpy = jest
         .spyOn(window, "showQuickPick")
@@ -419,15 +483,17 @@ describe("Variant Analysis Manager", () => {
       expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
       expect(runVariantAnalysisMock).toHaveBeenCalledTimes(1);
 
-      const queries: Uri[] = runVariantAnalysisMock.mock.calls[0][0];
+      console.log(runVariantAnalysisMock.mock.calls[0][0]);
+      const queries: string[] =
+        runVariantAnalysisMock.mock.calls[0][0].queryFiles;
       // Should include queries. Just check that at least one known query exists.
       // It doesn't particularly matter which query we check for.
       expect(
-        queries.find((q) => q.fsPath.includes("PostMessageStar.ql")),
+        queries.find((q) => q.includes("PostMessageStar.ql")),
       ).toBeDefined();
       // Should not include non-problem queries.
       expect(
-        queries.find((q) => q.fsPath.includes("LinesOfCode.ql")),
+        queries.find((q) => q.includes("LinesOfCode.ql")),
       ).not.toBeDefined();
     });
   });

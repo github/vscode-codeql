@@ -39,7 +39,7 @@ export const MethodModelingInputs = ({
   modelingStatus,
   isModelingInProgress,
   onChange,
-}: MethodModelingInputsProps): JSX.Element => {
+}: MethodModelingInputsProps): React.JSX.Element => {
   const inputProps = {
     language,
     method,

@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  code-server:
+    build:
+      context: docker
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: code-server
+    user: "1000"
+    volumes:
+      - local-data:/home/coder/.local/share/code-server
+      - local-user-data:/home/coder/.local/share/code-server/User
+      - ./docker/config/config.yaml:/home/coder/.config/code-server/config.yaml
+      - ./docker/User/settings.json:/home/coder/.local/share/code-server/User/settings.json
+      - project-data:/home/coder/project
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+    depends_on:
+      code-server-init:
+        condition: service_completed_successfully
+  code-server-init:
+    build:
+      context: docker
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    user: "1000"
+    volumes:
+      - local-data:/home/coder/.local/share/code-server
+      - local-user-data:/home/coder/.local/share/code-server/User
+      - ./docker/config/config.yaml:/home/coder/.config/code-server/config.yaml
+      - ./docker/User/settings.json:/home/coder/.local/share/code-server/User/settings.json
+      - project-data:/home/coder/project
+    entrypoint: |
+      /usr/bin/entrypoint.sh --install-extension GitHub.vscode-codeql
+    restart: "no"
+    depends_on:
+      - files-init
+  files-init:
+    image: alpine:3.19.0
+    restart: "no"
+    # Since we're not running the code-server container using the same user as our host user,
+    # we need to set the permissions on the mounted volumes to match the user inside the container.
+    entrypoint: |
+      /bin/sh -c "chown 1000:1000 /home/coder/.local/share/code-server /home/coder/.local/share/code-server/User /home/coder/project"
+    volumes:
+      - local-data:/home/coder/.local/share/code-server
+      - local-user-data:/home/coder/.local/share/code-server/User
+      - project-data:/home/coder/project
+
+volumes:
+  local-data:
+  local-user-data:
+  project-data:

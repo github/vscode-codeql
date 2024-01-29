@@ -19,3 +19,7 @@ artifacts/
 # CodeQL metadata
 .cache/
 .codeql/
+
+# E2E Reports
+**/playwright-report/**
+**/test-results/**

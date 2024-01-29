@@ -15,12 +15,16 @@ type Props = {
   "aria-label"?: string;
 };
 
+const stopClickPropagation = (e: React.MouseEvent) => {
+  e.stopPropagation();
+};
+
 export const ModelTypeTextbox = ({
   modeledMethod,
   typeInfo,
   onChange,
   ...props
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const [value, setValue] = useState<string | undefined>(
     modeledMethod[typeInfo],
   );
@@ -48,5 +52,12 @@ export const ModelTypeTextbox = ({
     500,
   );
 
-  return <VSCodeTextField value={value} onInput={handleChange} {...props} />;
+  return (
+    <VSCodeTextField
+      value={value}
+      onInput={handleChange}
+      onClick={stopClickPropagation}
+      {...props}
+    />
+  );
 };
