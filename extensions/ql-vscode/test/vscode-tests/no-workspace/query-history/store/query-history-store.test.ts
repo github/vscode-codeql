@@ -3,7 +3,7 @@ import {
   writeQueryHistoryToFile,
 } from "../../../../../src/query-history/store/query-history-store";
 import { join } from "path";
-import { writeFileSync, mkdirpSync, writeFile } from "fs-extra";
+import { writeFileSync, mkdirpSync } from "fs-extra";
 import type { InitialQueryInfo } from "../../../../../src/query-results";
 import { LocalQueryInfo } from "../../../../../src/query-results";
 import type { QueryWithResults } from "../../../../../src/run-queries-shared";
@@ -13,13 +13,18 @@ import type { DatabaseInfo } from "../../../../../src/common/interface-types";
 import type { CancellationTokenSource } from "vscode";
 import { Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
-import type { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
 import type { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
 import { nanoid } from "nanoid";
+import type {
+  QueryHistoryDto,
+  QueryHistoryItemDto,
+} from "../../../../../src/query-history/store/query-history-dto";
+import { mapQueryHistoryToDto } from "../../../../../src/query-history/store/query-history-domain-mapper";
 
 describe("write and read", () => {
   let allHistory: QueryHistoryInfo[];
+  let allHistoryDtos: QueryHistoryItemDto[];
   let expectedHistory: QueryHistoryInfo[];
   let queryPath: string;
   let cnt = 0;
@@ -54,6 +59,8 @@ describe("write and read", () => {
       variantAnalysis1,
       variantAnalysis2,
     ];
+
+    allHistoryDtos = mapQueryHistoryToDto(allHistory);
 
     // the expected results only contains the history with completed queries
     expectedHistory = [
@@ -130,54 +137,50 @@ describe("write and read", () => {
 
   it("should remove remote queries from the history", async () => {
     const path = join(tmpDir.name, "query-history-with-remote.json");
-    await writeFile(
-      path,
-      JSON.stringify({
-        version: 2,
-        queries: [
-          ...allHistory,
-          {
-            t: "remote",
-            status: "InProgress",
-            completed: false,
-            queryId: nanoid(),
-            remoteQuery: {
-              queryName: "query-name",
-              queryFilePath: "query-file.ql",
-              queryText: "select 1",
-              language: "javascript",
-              controllerRepository: {
-                owner: "github",
-                name: "vscode-codeql-integration-tests",
-              },
-              executionStartTime: Date.now(),
-              actionsWorkflowRunId: 1,
-              repositoryCount: 0,
+    writeRawQueryHistory(path, {
+      version: 2,
+      queries: [
+        ...allHistoryDtos,
+        {
+          t: "remote",
+          status: "InProgress",
+          completed: false,
+          queryId: nanoid(),
+          remoteQuery: {
+            queryName: "query-name",
+            queryFilePath: "query-file.ql",
+            queryText: "select 1",
+            language: "javascript",
+            controllerRepository: {
+              owner: "github",
+              name: "vscode-codeql-integration-tests",
             },
+            executionStartTime: Date.now(),
+            actionsWorkflowRunId: 1,
+            repositoryCount: 0,
           },
-          {
-            t: "remote",
-            status: "Completed",
-            completed: true,
-            queryId: nanoid(),
-            remoteQuery: {
-              queryName: "query-name",
-              queryFilePath: "query-file.ql",
-              queryText: "select 1",
-              language: "javascript",
-              controllerRepository: {
-                owner: "github",
-                name: "vscode-codeql-integration-tests",
-              },
-              executionStartTime: Date.now(),
-              actionsWorkflowRunId: 1,
-              repositoryCount: 0,
+        } as unknown as QueryHistoryItemDto,
+        {
+          t: "remote",
+          status: "Completed",
+          completed: true,
+          queryId: nanoid(),
+          remoteQuery: {
+            queryName: "query-name",
+            queryFilePath: "query-file.ql",
+            queryText: "select 1",
+            language: "javascript",
+            controllerRepository: {
+              owner: "github",
+              name: "vscode-codeql-integration-tests",
             },
+            executionStartTime: Date.now(),
+            actionsWorkflowRunId: 1,
+            repositoryCount: 0,
           },
-        ],
-      }),
-      "utf8",
-    );
+        } as unknown as QueryHistoryItemDto,
+      ],
+    });
 
     const actual = await readQueryHistoryFromFile(path);
     expect(actual.length).toEqual(expectedHistory.length);
@@ -185,14 +188,10 @@ describe("write and read", () => {
 
   it("should handle an invalid query history version", async () => {
     const badPath = join(tmpDir.name, "bad-query-history.json");
-    writeFileSync(
-      badPath,
-      JSON.stringify({
-        version: 3,
-        queries: allHistory,
-      }),
-      "utf8",
-    );
+    writeRawQueryHistory(badPath, {
+      version: 3,
+      queries: allHistoryDtos,
+    });
 
     const allHistoryActual = await readQueryHistoryFromFile(badPath);
     // version number is invalid. Should return an empty array.
@@ -264,5 +263,9 @@ describe("write and read", () => {
     };
 
     return result;
+  }
+
+  function writeRawQueryHistory(path: string, queryHistory: QueryHistoryDto) {
+    writeFileSync(path, JSON.stringify(queryHistory), "utf8");
   }
 });
