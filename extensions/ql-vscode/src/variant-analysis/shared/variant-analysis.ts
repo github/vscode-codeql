@@ -158,6 +158,7 @@ export interface VariantAnalysisSubmission {
 // unclear what it will look like in the future.
 export interface VariantAnalysisQueries {
   language: QueryLanguage;
+  count: number;
 }
 
 export async function isVariantAnalysisComplete(
