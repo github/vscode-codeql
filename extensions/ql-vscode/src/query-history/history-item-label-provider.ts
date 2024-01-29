@@ -101,7 +101,7 @@ export class HistoryItemLabelProvider {
       t: new Date(item.variantAnalysis.executionStartTime).toLocaleString(
         env.language,
       ),
-      q: `${item.variantAnalysis.query.name} (${item.variantAnalysis.query.language})`,
+      q: `${item.variantAnalysis.query.name} (${item.variantAnalysis.language})`,
       d: buildRepoLabel(item),
       r: resultCount,
       s: humanizeQueryStatus(item.status),

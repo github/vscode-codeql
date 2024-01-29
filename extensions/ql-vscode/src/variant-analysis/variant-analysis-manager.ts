@@ -411,11 +411,11 @@ export class VariantAnalysisManager
       startTime: queryStartTime,
       actionRepoRef: actionBranch,
       controllerRepoId: controllerRepo.id,
+      language: variantAnalysisLanguage,
+      pack: base64Pack,
       query: {
         name: queryName,
         filePath: firstQueryFile,
-        pack: base64Pack,
-        language: variantAnalysisLanguage,
         text: queryText,
         kind: queryMetadata?.kind,
       },
