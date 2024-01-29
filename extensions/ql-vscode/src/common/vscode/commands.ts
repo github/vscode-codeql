@@ -65,9 +65,9 @@ export function registerCommandWithErrorHandling(
           void showAndLogWarningMessage(logger, errorMessage.fullMessage);
         }
       } else if (e instanceof CliError) {
-        const fullMessage = `${e.commandDescription} failed with args:${EOL}${
+        const fullMessage = `${e.commandDescription} failed with args:${EOL}    ${e.commandArgs.join(" ")}${EOL}${
           e.stderr ?? e.cause
-        } ${e.commandArgs.join(" ")}`;
+        }`;
         void showAndLogExceptionWithTelemetry(logger, telemetry, errorMessage, {
           fullMessage,
           extraTelemetryProperties: {
