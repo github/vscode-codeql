@@ -2,6 +2,7 @@ import { join } from "path";
 
 import {
   containsPath,
+  findCommonParentDir,
   gatherQlFiles,
   getDirectoryNamesInsidePath,
   pathsEqual,
@@ -11,6 +12,7 @@ import {
 import type { DirResult } from "tmp";
 import { dirSync } from "tmp";
 import { ensureDirSync, symlinkSync, writeFileSync } from "fs-extra";
+import "../../matchers/toEqualPath";
 
 describe("files", () => {
   const dataDir = join(__dirname, "../../data");
@@ -62,9 +64,29 @@ describe("files", () => {
       const file4 = join(dataDir, "multiple-result-sets.ql");
       const file5 = join(dataDir, "query.ql");
 
+      const vaDir = join(dataDir, "variant-analysis-query-packs");
+      const file6 = join(vaDir, "workspace1", "dir1", "query1.ql");
+      const file7 = join(vaDir, "workspace1", "pack1", "query1.ql");
+      const file8 = join(vaDir, "workspace1", "pack1", "query2.ql");
+      const file9 = join(vaDir, "workspace1", "pack2", "query1.ql");
+      const file10 = join(vaDir, "workspace1", "query1.ql");
+      const file11 = join(vaDir, "workspace2", "query1.ql");
+
       const result = await gatherQlFiles([dataDir]);
       expect(result.sort()).toEqual([
-        [file1, file2, file3, file4, file5],
+        [
+          file1,
+          file2,
+          file3,
+          file4,
+          file5,
+          file6,
+          file7,
+          file8,
+          file9,
+          file10,
+          file11,
+        ],
         true,
       ]);
     });
@@ -88,10 +110,30 @@ describe("files", () => {
       const file4 = join(dataDir, "multiple-result-sets.ql");
       const file5 = join(dataDir, "query.ql");
 
+      const vaDir = join(dataDir, "variant-analysis-query-packs");
+      const file6 = join(vaDir, "workspace1", "dir1", "query1.ql");
+      const file7 = join(vaDir, "workspace1", "pack1", "query1.ql");
+      const file8 = join(vaDir, "workspace1", "pack1", "query2.ql");
+      const file9 = join(vaDir, "workspace1", "pack2", "query1.ql");
+      const file10 = join(vaDir, "workspace1", "query1.ql");
+      const file11 = join(vaDir, "workspace2", "query1.ql");
+
       const result = await gatherQlFiles([file1, dataDir, file3, file4, file5]);
       result[0].sort();
       expect(result.sort()).toEqual([
-        [file1, file2, file3, file4, file5],
+        [
+          file1,
+          file2,
+          file3,
+          file4,
+          file5,
+          file6,
+          file7,
+          file8,
+          file9,
+          file10,
+          file11,
+        ],
         true,
       ]);
     });
@@ -415,5 +457,43 @@ describe("walkDirectory", () => {
 
     // Only real files should be returned.
     expect(files.sort()).toEqual([file1, file2, file3, file4, file5, file6]);
+  });
+});
+
+describe("findCommonParentDir", () => {
+  it("should find the common parent dir for multiple paths with common parent", () => {
+    const paths = [
+      join("foo", "bar", "baz"),
+      join("foo", "bar", "qux"),
+      join("foo", "bar", "quux"),
+    ];
+
+    const commonDir = findCommonParentDir(...paths);
+
+    expect(commonDir).toEqualPath(join("foo", "bar"));
+  });
+
+  it("should return the root if paths have no common parent other than root", () => {
+    const paths = [
+      join("foo", "bar", "baz"),
+      join("qux", "quux", "corge"),
+      join("grault", "garply"),
+    ];
+
+    const commonDir = findCommonParentDir(...paths);
+
+    expect(commonDir).toEqualPath("");
+  });
+
+  it("should return empty string for relative paths with no common parent", () => {
+    const paths = [
+      join("foo", "bar", "baz"),
+      join("qux", "quux", "corge"),
+      join("grault", "garply"),
+    ];
+
+    const commonDir = findCommonParentDir(...paths);
+
+    expect(commonDir).toEqualPath("");
   });
 });

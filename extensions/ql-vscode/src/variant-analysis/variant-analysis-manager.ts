@@ -90,8 +90,10 @@ import { handleRequestError } from "./custom-errors";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 import type { QlPackDetails } from "./ql-pack-details";
-import { findPackRoot, getQlPackFilePath } from "../common/ql";
+import { getQlPackFilePath } from "../common/ql";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
+import { findVariantAnalysisQlPackRoot } from "./ql";
 
 const maxRetryCount = 3;
 
@@ -312,18 +314,11 @@ export class VariantAnalysisManager
       throw new Error("Please select a .ql file to run as a variant analysis");
     }
 
-    const qlPackRootPath = await findPackRoot(queryFiles[0].fsPath);
+    const qlPackRootPath = await findVariantAnalysisQlPackRoot(
+      queryFiles.map((f) => f.fsPath),
+      getOnDiskWorkspaceFolders(),
+    );
     const qlPackFilePath = await getQlPackFilePath(qlPackRootPath);
-
-    // Make sure that all remaining queries have the same pack root
-    for (let i = 1; i < queryFiles.length; i++) {
-      const packRoot = await findPackRoot(queryFiles[i].fsPath);
-      if (packRoot !== qlPackRootPath) {
-        throw new Error(
-          "Please select queries that all belong to the same query pack",
-        );
-      }
-    }
 
     // Open popup to ask for language if not already hardcoded
     const language = qlPackFilePath

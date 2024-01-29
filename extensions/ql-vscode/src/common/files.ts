@@ -1,5 +1,5 @@
 import { pathExists, stat, readdir, opendir } from "fs-extra";
-import { isAbsolute, join, relative, resolve } from "path";
+import { isAbsolute, join, relative, resolve, sep } from "path";
 import { tmpdir as osTmpdir } from "os";
 
 /**
@@ -131,4 +131,31 @@ export function isIOError(e: any): e is IOError {
 // This function is a wrapper around `os.tmpdir()` to make it easier to mock in tests.
 export function tmpdir(): string {
   return osTmpdir();
+}
+
+/**
+ * Finds the common parent directory of an arbitrary number of paths. If the paths are absolute,
+ * the result is also absolute. If the paths are relative, the result is relative.
+ * @param paths The array of paths.
+ * @returns The common parent directory of the paths.
+ */
+export function findCommonParentDir(...paths: string[]): string {
+  // Split each path into its components
+  const pathParts = paths.map((path) => path.split(sep));
+
+  let commonDir = "";
+  // Iterate over the components of the first path and checks if the same
+  // component exists at the same position in all the other paths. If it does,
+  // add the component to the common directory. If it doesn't, stop the
+  // iteration and returns the common directory found so far.
+  for (let i = 0; i < pathParts[0].length; i++) {
+    const part = pathParts[0][i];
+    if (pathParts.every((parts) => parts[i] === part)) {
+      commonDir = `${commonDir}${part}${sep}`;
+    } else {
+      break;
+    }
+  }
+
+  return commonDir;
 }
