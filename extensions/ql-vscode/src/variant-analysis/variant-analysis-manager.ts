@@ -405,6 +405,7 @@ export class VariantAnalysisManager
         ? undefined
         : {
             language: qlPackDetails.language,
+            count: qlPackDetails.queryFiles.length,
           };
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
