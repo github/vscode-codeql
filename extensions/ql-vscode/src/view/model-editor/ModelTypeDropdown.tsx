@@ -31,7 +31,7 @@ export const ModelTypeDropdown = ({
   modeledMethod,
   modelingStatus,
   onChange,
-}: Props): JSX.Element => {
+}: Props): React.JSX.Element => {
   const options = useMemo(() => {
     const baseOptions: Array<{ value: ModeledMethodType; label: string }> = [
       { value: "none", label: "Unmodeled" },

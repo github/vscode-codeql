@@ -14,7 +14,7 @@ function getResultCount(resultSet: ResultSet): number {
   }
 }
 
-export function ResultCount(props: Props): JSX.Element | null {
+export function ResultCount(props: Props): React.JSX.Element | null {
   if (!props.resultSet) {
     return null;
   }

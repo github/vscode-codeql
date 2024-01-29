@@ -222,10 +222,11 @@ export class VariantAnalysisView
       return `Variant Analysis ${this.variantAnalysisId} - Results`;
     }
 
-    // TODO: include all queries
-    const firstQuery = variantAnalysis.queries[0];
-
-    return `${firstQuery.name} - Variant Analysis Results`;
+    if (variantAnalysis.queries.length > 1) {
+      return `Variant Analysis using multiple queries - Results`;
+    } else {
+      return `${variantAnalysis.queries[0].name} - Variant Analysis Results`;
+    }
   }
 
   private async showDataFlows(dataFlows: DataFlowPaths): Promise<void> {

@@ -28,6 +28,7 @@ const baseConfig = {
     "plugin:@typescript-eslint/recommended",
     "plugin:import/recommended",
     "plugin:import/typescript",
+    "plugin:deprecation/recommended",
   ],
   rules: {
     "@typescript-eslint/await-thenable": "error",

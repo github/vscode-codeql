@@ -18,7 +18,7 @@ const Container = styled.span`
   text-align: center;
 `;
 
-export function EmptyQueryResultsMessage(): JSX.Element {
+export function EmptyQueryResultsMessage(): React.JSX.Element {
   return (
     <Root>
       <Container>
