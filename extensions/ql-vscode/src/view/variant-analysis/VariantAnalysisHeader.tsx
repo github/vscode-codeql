@@ -21,6 +21,7 @@ import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import { ViewTitle } from "../common";
 
 type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
@@ -49,6 +50,29 @@ const Row = styled.div`
   display: flex;
   align-items: center;
 `;
+
+const QueryInfo = ({
+  variantAnalysis,
+  onOpenQueryFileClick,
+  onViewQueryTextClick,
+}: {
+  variantAnalysis: VariantAnalysis;
+  onOpenQueryFileClick: () => void;
+  onViewQueryTextClick: () => void;
+}) => {
+  if (variantAnalysis.queries) {
+    return <ViewTitle>{variantAnalysis.queries?.count} queries</ViewTitle>;
+  } else {
+    return (
+      <QueryDetails
+        queryName={variantAnalysis.query.name}
+        queryFileName={basename(variantAnalysis.query.filePath)}
+        onOpenQueryFileClick={onOpenQueryFileClick}
+        onViewQueryTextClick={onViewQueryTextClick}
+      />
+    );
+  }
+};
 
 export const VariantAnalysisHeader = ({
   variantAnalysis,
@@ -117,9 +141,8 @@ export const VariantAnalysisHeader = ({
   return (
     <Container>
       <Row>
-        <QueryDetails
-          queryName={variantAnalysis.query.name}
-          queryFileName={basename(variantAnalysis.query.filePath)}
+        <QueryInfo
+          variantAnalysis={variantAnalysis}
           onOpenQueryFileClick={onOpenQueryFileClick}
           onViewQueryTextClick={onViewQueryTextClick}
         />

@@ -218,9 +218,14 @@ export class VariantAnalysisView
   }
 
   private getTitle(variantAnalysis: VariantAnalysis | undefined): string {
-    return variantAnalysis
-      ? `${variantAnalysis.query.name} - Variant Analysis Results`
-      : `Variant Analysis ${this.variantAnalysisId} - Results`;
+    if (variantAnalysis) {
+      if (variantAnalysis.queries) {
+        return `Variant Analysis using multiple queries - Results`;
+      }
+
+      return `${variantAnalysis.query.name} - Variant Analysis Results`;
+    }
+    return `Variant Analysis ${this.variantAnalysisId} - Results`;
   }
 
   private async showDataFlows(dataFlows: DataFlowPaths): Promise<void> {
