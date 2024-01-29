@@ -19,15 +19,6 @@ import { createMockVariantAnalysisHistoryItem } from "../../../../factories/quer
 import { nanoid } from "nanoid";
 
 describe("write and read", () => {
-  let infoSuccessRaw: LocalQueryInfo;
-  let infoSuccessInterpreted: LocalQueryInfo;
-  let infoEarlyFailure: LocalQueryInfo;
-  let infoLateFailure: LocalQueryInfo;
-  let infoInProgress: LocalQueryInfo;
-
-  let variantAnalysis1: VariantAnalysisHistoryItem;
-  let variantAnalysis2: VariantAnalysisHistoryItem;
-
   let allHistory: QueryHistoryInfo[];
   let expectedHistory: QueryHistoryInfo[];
   let queryPath: string;
@@ -36,23 +27,23 @@ describe("write and read", () => {
   beforeEach(() => {
     queryPath = join(Uri.file(tmpDir.name).fsPath, `query-${cnt++}`);
 
-    infoSuccessRaw = createMockFullQueryInfo(
+    const infoSuccessRaw = createMockFullQueryInfo(
       "a",
       createMockQueryWithResults(`${queryPath}-a`, false, "/a/b/c/a"),
     );
-    infoSuccessInterpreted = createMockFullQueryInfo(
+    const infoSuccessInterpreted = createMockFullQueryInfo(
       "b",
       createMockQueryWithResults(`${queryPath}-b`, true, "/a/b/c/b"),
     );
-    infoEarlyFailure = createMockFullQueryInfo("c", undefined, true);
-    infoLateFailure = createMockFullQueryInfo(
+    const infoEarlyFailure = createMockFullQueryInfo("c", undefined, true);
+    const infoLateFailure = createMockFullQueryInfo(
       "d",
       createMockQueryWithResults(`${queryPath}-c`, false, "/a/b/c/d"),
     );
-    infoInProgress = createMockFullQueryInfo("e");
+    const infoInProgress = createMockFullQueryInfo("e");
 
-    variantAnalysis1 = createMockVariantAnalysisHistoryItem({});
-    variantAnalysis2 = createMockVariantAnalysisHistoryItem({});
+    const variantAnalysis1 = createMockVariantAnalysisHistoryItem({});
+    const variantAnalysis2 = createMockVariantAnalysisHistoryItem({});
 
     allHistory = [
       infoSuccessRaw,
