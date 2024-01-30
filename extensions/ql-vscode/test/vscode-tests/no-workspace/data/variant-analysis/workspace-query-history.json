@@ -33,7 +33,7 @@
       "status": "Completed",
       "completed": true,
       "variantAnalysis": {
-        "id": 98574321397,
+        "id": 58993265664,
         "controllerRepo": {
           "id": 128321,
           "fullName": "github/codeql",
