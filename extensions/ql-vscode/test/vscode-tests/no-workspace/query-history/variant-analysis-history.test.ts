@@ -25,6 +25,8 @@ import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { LanguageContextStore } from "../../../../src/language-context-store";
+import { mapQueryHistoryVariantAnalysisToDomainModel } from "../../../../src/query-history/store/query-history-variant-analysis-dto-mapper";
+import type { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -41,7 +43,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
   };
 
   let qhm: QueryHistoryManager;
-  let rawQueryHistory: any;
+  let queryHistory: VariantAnalysisHistoryItem[];
   let disposables: DisposableBucket;
 
   const rehydrateVariantAnalysisStub = jest.fn();
@@ -72,9 +74,9 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
     disposables = new DisposableBucket();
 
-    rawQueryHistory = readJSONSync(
+    queryHistory = readJSONSync(
       join(STORAGE_DIR, "workspace-query-history.json"),
-    ).queries;
+    ).queries.map(mapQueryHistoryVariantAnalysisToDomainModel);
 
     const app = createMockApp({});
 
@@ -122,15 +124,15 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     expect(rehydrateVariantAnalysisStub).toHaveBeenCalledTimes(2);
     expect(rehydrateVariantAnalysisStub).toHaveBeenNthCalledWith(
       1,
-      rawQueryHistory[0].variantAnalysis,
+      queryHistory[0].variantAnalysis,
     );
     expect(rehydrateVariantAnalysisStub).toHaveBeenNthCalledWith(
       2,
-      rawQueryHistory[1].variantAnalysis,
+      queryHistory[1].variantAnalysis,
     );
 
-    expect(qhm.treeDataProvider.allHistory[0]).toEqual(rawQueryHistory[0]);
-    expect(qhm.treeDataProvider.allHistory[1]).toEqual(rawQueryHistory[1]);
+    expect(qhm.treeDataProvider.allHistory[0]).toEqual(queryHistory[0]);
+    expect(qhm.treeDataProvider.allHistory[1]).toEqual(queryHistory[1]);
     expect(qhm.treeDataProvider.allHistory.length).toBe(2);
   });
 
@@ -141,12 +143,12 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     await qhm.handleRemoveHistoryItem([qhm.treeDataProvider.allHistory[0]]);
 
     // Add it back to the history
-    qhm.addQuery(rawQueryHistory[0]);
+    qhm.addQuery(queryHistory[0]);
     expect(removeVariantAnalysisStub).toHaveBeenCalledTimes(1);
     expect(rehydrateVariantAnalysisStub).toHaveBeenCalledTimes(2);
     expect(qhm.treeDataProvider.allHistory).toEqual([
-      rawQueryHistory[1],
-      rawQueryHistory[0],
+      queryHistory[1],
+      queryHistory[0],
     ]);
   });
 
@@ -163,11 +165,11 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     expect(removeVariantAnalysisStub).toHaveBeenCalledTimes(2);
     expect(removeVariantAnalysisStub).toHaveBeenNthCalledWith(
       1,
-      rawQueryHistory[1].variantAnalysis,
+      queryHistory[1].variantAnalysis,
     );
     expect(removeVariantAnalysisStub).toHaveBeenNthCalledWith(
       2,
-      rawQueryHistory[0].variantAnalysis,
+      queryHistory[0].variantAnalysis,
     );
     expect(qhm.treeDataProvider.allHistory).toEqual([]);
 
@@ -185,7 +187,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
     await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0]);
     expect(showViewStub).toHaveBeenCalledWith(
-      rawQueryHistory[0].variantAnalysis.id,
+      queryHistory[0].variantAnalysis.id,
     );
   });
 
@@ -194,7 +196,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0]);
 
     expect(openQueryTextSpy).toHaveBeenCalledWith(
-      rawQueryHistory[0].variantAnalysis.id,
+      queryHistory[0].variantAnalysis.id,
     );
   });
 
