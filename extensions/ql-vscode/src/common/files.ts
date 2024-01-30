@@ -1,6 +1,6 @@
 import { pathExists, stat, readdir, opendir } from "fs-extra";
-import { isAbsolute, join, relative, resolve, sep } from "path";
-import { tmpdir as osTmpdir } from "os";
+import { isAbsolute, join, parse, relative, resolve, sep } from "path";
+import { homedir, tmpdir as osTmpdir } from "os";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -134,24 +134,27 @@ export function tmpdir(): string {
 }
 
 /**
- * Finds the common parent directory of an arbitrary number of paths. If the paths are absolute,
- * the result is also absolute. If the paths are relative, the result is relative.
+ * Finds the common parent directory of an arbitrary number of paths. The result
+ * will be an absolute path.
  * @param paths The array of paths.
  * @returns The common parent directory of the paths.
  */
 export function findCommonParentDir(...paths: string[]): string {
-  // Split each path into its components
-  const pathParts = paths.map((path) => path.split(sep));
+  const normalizedPaths = paths.map((path) => normalizePath(path));
 
-  let commonDir = "";
-  // Iterate over the components of the first path and checks if the same
+  // Split each path into its components
+  const pathParts = normalizedPaths.map((path) => path.split(sep));
+
+  // Start with the root directory
+  let commonDir = parse(homedir()).root;
+
+  // Iterate over the components of the first path and check if the same
   // component exists at the same position in all the other paths. If it does,
   // add the component to the common directory. If it doesn't, stop the
   // iteration and returns the common directory found so far.
-  for (let i = 0; i < pathParts[0].length; i++) {
-    const part = pathParts[0][i];
+  for (const [i, part] of pathParts[0].entries()) {
     if (pathParts.every((parts) => parts[i] === part)) {
-      commonDir = `${commonDir}${part}${sep}`;
+      commonDir = join(commonDir, part);
     } else {
       break;
     }
