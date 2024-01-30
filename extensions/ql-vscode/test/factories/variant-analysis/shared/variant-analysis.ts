@@ -31,10 +31,10 @@ export function createMockVariantAnalysis({
         prefix: "",
       })}`,
     },
+    language,
     query: {
       name: "a-query-name",
       filePath: "a-query-file-path",
-      language,
       text: "a-query-text",
     },
     databases: {

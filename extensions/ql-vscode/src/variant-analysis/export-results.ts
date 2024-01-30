@@ -324,7 +324,7 @@ const buildVariantAnalysisGistDescription = (
   const repositoryLabel = summaries.length
     ? `(${pluralize(summaries.length, "repository", "repositories")})`
     : "";
-  return `${variantAnalysis.query.name} (${variantAnalysis.query.language}) ${resultLabel} ${repositoryLabel}`;
+  return `${variantAnalysis.query.name} (${variantAnalysis.language}) ${resultLabel} ${repositoryLabel}`;
 };
 
 /**

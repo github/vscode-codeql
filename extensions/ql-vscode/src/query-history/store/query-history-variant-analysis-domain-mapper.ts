@@ -56,7 +56,7 @@ function mapVariantAnalysisDtoToDto(
     query: {
       name: variantAnalysis.query.name,
       filePath: variantAnalysis.query.filePath,
-      language: mapQueryLanguageToDto(variantAnalysis.query.language),
+      language: mapQueryLanguageToDto(variantAnalysis.language),
       text: variantAnalysis.query.text,
       kind: variantAnalysis.query.kind,
     },

@@ -66,7 +66,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
     const variantAnalysisLabel = `${variantAnalysis.query.name} (${
-      variantAnalysis.query.language
+      variantAnalysis.language
     }) [${new Date(variantAnalysis.executionStartTime).toLocaleString(
       env.language,
     )}]`;

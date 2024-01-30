@@ -14,13 +14,13 @@ export async function submitVariantAnalysis(
 ): Promise<VariantAnalysis> {
   const octokit = await credentials.getOctokit();
 
-  const { actionRepoRef, query, databases, controllerRepoId } =
+  const { actionRepoRef, language, pack, databases, controllerRepoId } =
     submissionDetails;
 
   const data: VariantAnalysisSubmissionRequest = {
     action_repo_ref: actionRepoRef,
-    language: query.language,
-    query_pack: query.pack,
+    language,
+    query_pack: pack,
     repositories: databases.repositories,
     repository_lists: databases.repositoryLists,
     repository_owners: databases.repositoryOwners,
