@@ -42,7 +42,7 @@ interface VariantAnalysisMarkdown {
  * Generates markdown files with variant analysis results.
  */
 export async function generateVariantAnalysisMarkdown(
-  variantAnalysis: Pick<VariantAnalysis, "query">,
+  variantAnalysis: Pick<VariantAnalysis, "language" | "query">,
   results: AsyncIterable<
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
@@ -77,7 +77,7 @@ export async function generateVariantAnalysisMarkdown(
       for (const interpretedResult of result.interpretedResults) {
         const individualResult = generateMarkdownForInterpretedResult(
           interpretedResult,
-          variantAnalysis.query.language,
+          variantAnalysis.language,
         );
         resultsFileContent.push(...individualResult);
       }

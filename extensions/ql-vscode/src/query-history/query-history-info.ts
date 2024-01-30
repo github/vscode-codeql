@@ -55,7 +55,7 @@ export function getLanguage(item: QueryHistoryInfo): QueryLanguage | undefined {
     case "local":
       return item.initialInfo.databaseInfo.language;
     case "variant-analysis":
-      return item.variantAnalysis.query.language;
+      return item.variantAnalysis.language;
     default:
       assertNever(item);
   }

@@ -44,9 +44,9 @@ describe(mapVariantAnalysis.name, () => {
         fullName: mockApiResponse.controller_repo.full_name,
         private: mockApiResponse.controller_repo.private,
       },
+      language: QueryLanguage.Javascript,
       query: {
         filePath: "query-file-path",
-        language: QueryLanguage.Javascript,
         name: "query-name",
         text: mockSubmission.query.text,
         kind: "table",

@@ -20,6 +20,7 @@ import { findMatchingOptions } from "./options";
 import { SuggestBoxItem } from "./SuggestBoxItem";
 import { LabelText } from "./LabelText";
 import type { Diagnostic } from "./diagnostics";
+import { useOpenKey } from "./useOpenKey";
 
 const Input = styled(VSCodeTextField)<{ $error: boolean }>`
   width: 430px;
@@ -152,6 +153,7 @@ export const SuggestBox = <
   const focus = useFocus(context);
   const role = useRole(context, { role: "listbox" });
   const dismiss = useDismiss(context);
+  const openKey = useOpenKey(context);
   const listNav = useListNavigation(context, {
     listRef,
     activeIndex,
@@ -161,7 +163,7 @@ export const SuggestBox = <
   });
 
   const { getReferenceProps, getFloatingProps, getItemProps } = useInteractions(
-    [focus, role, dismiss, listNav],
+    [focus, role, dismiss, openKey, listNav],
   );
 
   const handleInput = useCallback(
@@ -205,9 +207,9 @@ export const SuggestBox = <
           "aria-autocomplete": "list",
           "aria-label": ariaLabel,
           onKeyDown: (event) => {
-            // When the user presses the enter key, select the active item
+            // When the user presses the enter or tab key, select the active item
             if (
-              event.key === "Enter" &&
+              (event.key === "Enter" || event.key === "Tab") &&
               activeIndex !== null &&
               suggestionItems[activeIndex]
             ) {

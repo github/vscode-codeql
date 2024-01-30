@@ -5,10 +5,10 @@ import { QueryLanguage } from "../../common/query-language";
 export interface VariantAnalysis {
   id: number;
   controllerRepo: Repository;
+  language: QueryLanguage;
   query: {
     name: string;
     filePath: string;
-    language: QueryLanguage;
     text: string;
     kind?: string;
   };
@@ -135,15 +135,14 @@ export interface VariantAnalysisSubmission {
   startTime: number;
   controllerRepoId: number;
   actionRepoRef: string;
+  language: QueryLanguage;
+  /** Base64 encoded query pack. */
+  pack: string;
   query: {
     name: string;
     filePath: string;
-    language: QueryLanguage;
     text: string;
     kind?: string;
-
-    // Base64 encoded query pack.
-    pack: string;
   };
   queries?: VariantAnalysisQueries;
   databases: {
@@ -159,6 +158,7 @@ export interface VariantAnalysisSubmission {
 // unclear what it will look like in the future.
 export interface VariantAnalysisQueries {
   language: QueryLanguage;
+  count: number;
 }
 
 export async function isVariantAnalysisComplete(
