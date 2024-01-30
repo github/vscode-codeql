@@ -66,6 +66,7 @@ describe("parseAccessPathSuggestionRowsToOptions", () => {
   ] as AccessPathSuggestionRow[];
 
   it("should parse the AccessPathSuggestionRows", async () => {
+    // Note that the order of these options matters
     const expectedOptions = {
       "Jekyll::Utils#transform_keys": [
         {
@@ -107,49 +108,7 @@ describe("parseAccessPathSuggestionRowsToOptions", () => {
       ],
     };
 
-    const reorderedOptions = {
-      "Jekyll::Utils#transform_keys": [
-        {
-          label: "Argument[self]",
-          value: "Argument[self]",
-          details: "self in transform_keys",
-          icon: "symbol-parameter",
-          followup: [],
-        },
-        {
-          label: "Argument[block]",
-          value: "Argument[block]",
-          details: "yield ...",
-          icon: "symbol-parameter",
-          followup: [
-            {
-              label: "Parameter[0]",
-              value: "Argument[block].Parameter[0]",
-              details: "key",
-              icon: "symbol-parameter",
-              followup: [],
-            },
-          ],
-        },
-        {
-          label: "Argument[0]",
-          value: "Argument[0]",
-          details: "hash",
-          icon: "symbol-parameter",
-          followup: [],
-        },
-        {
-          label: "ReturnValue",
-          value: "ReturnValue",
-          details: "result",
-          icon: "symbol-method",
-          followup: [],
-        },
-      ],
-    };
-
     const options = parseAccessPathSuggestionRowsToOptions(rows);
     expect(options).toEqual(expectedOptions);
-    expect(options).not.toEqual(reorderedOptions);
   });
 });
