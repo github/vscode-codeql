@@ -13,7 +13,6 @@ import type { DirResult } from "tmp";
 import { dirSync } from "tmp";
 import { ensureDirSync, symlinkSync, writeFileSync } from "fs-extra";
 import "../../matchers/toEqualPath";
-import { homedir } from "os";
 
 describe("files", () => {
   const dataDir = join(__dirname, "../../data");
@@ -462,47 +461,39 @@ describe("walkDirectory", () => {
 });
 
 describe("findCommonParentDir", () => {
-  const dataDir = join(__dirname, "../../data");
-  const rootDir = parse(homedir()).root;
-  const sourceDir = join(dataDir, "../..");
+  const rootDir = parse(process.cwd()).root;
 
-  it("should find the common parent dir for multiple relative paths with common parent", () => {
+  it("should fail if not all paths are not absolute", async () => {
     const paths = [
       join("foo", "bar", "baz"),
-      join("foo", "bar", "qux"),
-      join("foo", "bar", "quux"),
+      join("/foo", "bar", "qux"),
+      join("/foo", "bar", "quux"),
     ];
 
-    const commonDir = findCommonParentDir(...paths);
-
-    expect(commonDir).toEqualPath(join("foo", "bar"));
+    expect(() => findCommonParentDir(...paths)).toThrow(
+      "All paths must be absolute",
+    );
   });
 
-  it("should return empty path if relative paths have no common parent", () => {
+  it("should fail if no path are provided", async () => {
+    expect(() => findCommonParentDir()).toThrow(
+      "At least one path must be provided",
+    );
+  });
+
+  it("should find the common parent dir for multiple paths with common parent", () => {
     const paths = [
-      join("foo", "bar", "baz"),
-      join("qux", "quux", "corge"),
-      join("grault", "garply"),
+      join("/foo", "bar", "baz"),
+      join("/foo", "bar", "qux"),
+      join("/foo", "bar", "quux"),
     ];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath("");
+    expect(commonDir).toEqualPath(join("/foo", "bar"));
   });
 
-  it("should find the common parent dir for multiple absolute paths with common parent", () => {
-    const paths = [
-      join(dataDir, "foo", "bar", "baz"),
-      join(dataDir, "foo", "bar", "qux"),
-      join(dataDir, "foo", "bar", "quux"),
-    ];
-
-    const commonDir = findCommonParentDir(...paths);
-
-    expect(commonDir).toEqualPath(join(dataDir, "foo", "bar"));
-  });
-
-  it("should return the root if absolute paths have no common parent other than root", () => {
+  it("should return empty path if paths have no common parent", () => {
     const paths = [
       join("/foo", "bar", "baz"),
       join("/qux", "quux", "corge"),
@@ -514,91 +505,79 @@ describe("findCommonParentDir", () => {
     expect(commonDir).toEqualPath(rootDir);
   });
 
-  it("should handle a mix of absolute and relative paths", async () => {
-    const paths = [
-      join(dataDir, "foo", "bar", "baz"),
-      join("foo", "bar", "qux"),
-      join(dataDir, "foo", "bar", "quux"),
-    ];
-
-    const commonDir = findCommonParentDir(...paths);
-
-    expect(commonDir).toEqualPath(sourceDir);
-  });
-
   it("should handle a mix of dirs and files", async () => {
     const paths = [
-      join(dataDir, "foo", "bar", "baz"),
-      join(dataDir, "foo", "bar", "qux.ql"),
-      join(dataDir, "foo", "bar", "quux"),
+      join("/foo", "bar", "baz"),
+      join("/foo", "bar", "qux.ql"),
+      join("/foo", "bar", "quux"),
     ];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath(join(dataDir, "foo", "bar"));
+    expect(commonDir).toEqualPath(join("/foo", "bar"));
   });
 
   it("should handle dirs that have the same name", async () => {
     const paths = [
-      join("foo", "foo", "bar"),
-      join("foo", "foo", "baz"),
-      join("foo", "foo"),
+      join("/foo", "foo", "bar"),
+      join("/foo", "foo", "baz"),
+      join("/foo", "foo"),
     ];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath(join("foo", "foo"));
+    expect(commonDir).toEqualPath(join("/foo", "foo"));
   });
 
   it("should handle dirs that have the same subdir structure but different base path", async () => {
     const paths = [
-      join("foo", "bar"),
-      join("bar", "foo", "bar"),
-      join("foo", "foo", "bar"),
+      join("/foo", "bar"),
+      join("/bar", "foo", "bar"),
+      join("/foo", "foo", "bar"),
     ];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath("");
+    expect(commonDir).toEqualPath(rootDir);
   });
 
   it("should handle a single path", async () => {
-    const paths = [join("foo", "bar", "baz")];
+    const paths = [join("/foo", "bar", "baz")];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath(join("foo", "bar", "baz"));
+    expect(commonDir).toEqualPath(join("/foo", "bar", "baz"));
   });
 
   it("should return the same path if all paths are identical", () => {
     const paths = [
-      join("foo", "bar", "baz"),
-      join("foo", "bar", "baz"),
-      join("foo", "bar", "baz"),
+      join("/foo", "bar", "baz"),
+      join("/foo", "bar", "baz"),
+      join("/foo", "bar", "baz"),
     ];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath(join("foo", "bar", "baz"));
+    expect(commonDir).toEqualPath(join("/foo", "bar", "baz"));
   });
 
   it("should return the directory path if paths only differ by the file extension", () => {
     const paths = [
-      join("foo", "bar", "baz.txt"),
-      join("foo", "bar", "baz.jpg"),
-      join("foo", "bar", "baz.pdf"),
+      join("/foo", "bar", "baz.txt"),
+      join("/foo", "bar", "baz.jpg"),
+      join("/foo", "bar", "baz.pdf"),
     ];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath(join("foo", "bar"));
+    expect(commonDir).toEqualPath(join("/foo", "bar"));
   });
 
   it("should handle empty paths", () => {
-    const paths = ["", "", ""];
+    const paths = ["/", "/", "/"];
 
     const commonDir = findCommonParentDir(...paths);
 
-    expect(commonDir).toEqualPath("");
+    expect(commonDir).toEqualPath(rootDir);
   });
 });

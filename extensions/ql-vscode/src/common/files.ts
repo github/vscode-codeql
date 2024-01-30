@@ -1,6 +1,6 @@
 import { pathExists, stat, readdir, opendir } from "fs-extra";
-import { isAbsolute, join, parse, relative, resolve, sep } from "path";
-import { homedir, tmpdir as osTmpdir } from "os";
+import { isAbsolute, join, relative, resolve, sep } from "path";
+import { tmpdir as osTmpdir, platform } from "os";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -134,19 +134,24 @@ export function tmpdir(): string {
 }
 
 /**
- * Finds the common parent directory of an arbitrary number of paths. The result
+ * Finds the common parent directory of an arbitrary number of absolute paths. The result
  * will be an absolute path.
  * @param paths The array of paths.
  * @returns The common parent directory of the paths.
  */
 export function findCommonParentDir(...paths: string[]): string {
+  if (paths.length === 0) {
+    throw new Error("At least one path must be provided");
+  }
+  if (paths.some((path) => !isAbsolute(path))) {
+    throw new Error("All paths must be absolute");
+  }
+
   const normalizedPaths = paths.map((path) => normalizePath(path));
 
-  // Split each path into its components
-  const pathParts = normalizedPaths.map((path) => path.split(sep));
+  const pathParts = normalizedPaths.map((path) => getPathParts(path));
 
-  // Start with the root directory
-  let commonDir = parse(homedir()).root;
+  const commonParts = [];
 
   // Iterate over the components of the first path and check if the same
   // component exists at the same position in all the other paths. If it does,
@@ -154,11 +159,28 @@ export function findCommonParentDir(...paths: string[]): string {
   // iteration and returns the common directory found so far.
   for (const [i, part] of pathParts[0].entries()) {
     if (pathParts.every((parts) => parts[i] === part)) {
-      commonDir = join(commonDir, part);
+      commonParts.push(part);
     } else {
       break;
     }
   }
 
-  return commonDir;
+  const commonDir = join(...commonParts);
+  return ensureAbsolutePath(commonDir);
+}
+
+function getPathParts(path: string): string[] {
+  // On Windows, keep the drive letter with the first part of the path
+  if (platform() === "win32" && path.includes(":")) {
+    const [driveLetter, ...restOfPath] = path.split(sep);
+    restOfPath[0] = driveLetter + sep + restOfPath[0];
+    return restOfPath;
+  }
+
+  // On other platforms, just split the path normally
+  return path.split(sep);
+}
+
+function ensureAbsolutePath(path: string): string {
+  return platform() === "win32" ? path : `${sep}${path}`;
 }
