@@ -1,5 +1,5 @@
 import { dirname } from "path";
-import { findCommonParentDir } from "../common/files";
+import { containsPath, findCommonParentDir } from "../common/files";
 import { findPackRoot } from "../common/ql";
 
 /**
@@ -62,26 +62,15 @@ function findQlPackRootForQueriesWithNoPack(
   queryFiles: string[],
   workspaceFolders: string[],
 ): string {
-  const queryFileWorkspaceFolders = queryFiles.map((queryFile) =>
-    workspaceFolders.find((workspaceFolder) =>
-      queryFile.startsWith(workspaceFolder),
-    ),
+  const commonParentDir = findCommonParentDir(...queryFiles);
+
+  for (const workspaceFolder of workspaceFolders) {
+    if (containsPath(workspaceFolder, commonParentDir)) {
+      return commonParentDir;
+    }
+  }
+
+  throw Error(
+    "All queries must be within the workspace and within the same workspace root",
   );
-
-  // Check if any query file is not part of the workspace.
-  if (queryFileWorkspaceFolders.includes(undefined)) {
-    throw Error(
-      "Queries that are not part of a pack need to be part of the workspace",
-    );
-  }
-
-  // Check if query files are not in the same workspace folder.
-  if (new Set(queryFileWorkspaceFolders).size > 1) {
-    throw Error(
-      "Queries that are not part of a pack need to be in the same workspace folder",
-    );
-  }
-
-  // They're in the same workspace folder, so we can find a common parent dir.
-  return findCommonParentDir(...queryFiles);
 }

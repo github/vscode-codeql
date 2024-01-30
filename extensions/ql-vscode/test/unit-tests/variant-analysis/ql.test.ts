@@ -87,7 +87,7 @@ describe("findVariantAnalysisQlPackRoot", () => {
     await expect(
       findVariantAnalysisQlPackRoot(queryFiles, workspaceFolders),
     ).rejects.toThrow(
-      "Queries that are not part of a pack need to be in the same workspace folder",
+      "All queries must be within the workspace and within the same workspace root",
     );
   });
 
@@ -100,7 +100,7 @@ describe("findVariantAnalysisQlPackRoot", () => {
     await expect(
       findVariantAnalysisQlPackRoot(queryFiles, workspaceFolders),
     ).rejects.toThrow(
-      "Queries that are not part of a pack need to be part of the workspace",
+      "All queries must be within the workspace and within the same workspace root",
     );
   });
 
