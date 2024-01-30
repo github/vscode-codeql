@@ -1,6 +1,6 @@
 import { pathExists, stat, readdir, opendir } from "fs-extra";
-import { isAbsolute, join, relative, resolve, sep } from "path";
-import { tmpdir as osTmpdir, platform } from "os";
+import { dirname, isAbsolute, join, relative, resolve } from "path";
+import { tmpdir as osTmpdir } from "os";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -147,40 +147,21 @@ export function findCommonParentDir(...paths: string[]): string {
     throw new Error("All paths must be absolute");
   }
 
-  const normalizedPaths = paths.map((path) => normalizePath(path));
+  paths = paths.map((path) => normalizePath(path));
 
-  const pathParts = normalizedPaths.map((path) => getPathParts(path));
-
-  const commonParts = [];
-
-  // Iterate over the components of the first path and check if the same
-  // component exists at the same position in all the other paths. If it does,
-  // add the component to the common directory. If it doesn't, stop the
-  // iteration and returns the common directory found so far.
-  for (const [i, part] of pathParts[0].entries()) {
-    if (pathParts.every((parts) => parts[i] === part)) {
-      commonParts.push(part);
-    } else {
-      break;
+  let commonDir = paths[0];
+  while (!paths.every((path) => containsPath(commonDir, path))) {
+    if (isTopLevelPath(commonDir)) {
+      throw new Error(
+        "Reached filesystem root and didn't find a common parent directory",
+      );
     }
+    commonDir = dirname(commonDir);
   }
 
-  const commonDir = join(...commonParts);
-  return ensureAbsolutePath(commonDir);
+  return commonDir;
 }
 
-function getPathParts(path: string): string[] {
-  // On Windows, keep the drive letter with the first part of the path
-  if (platform() === "win32" && path.includes(":")) {
-    const [driveLetter, ...restOfPath] = path.split(sep);
-    restOfPath[0] = driveLetter + sep + restOfPath[0];
-    return restOfPath;
-  }
-
-  // On other platforms, just split the path normally
-  return path.split(sep);
-}
-
-function ensureAbsolutePath(path: string): string {
-  return platform() === "win32" ? path : `${sep}${path}`;
+function isTopLevelPath(path: string): boolean {
+  return dirname(path) === path;
 }
