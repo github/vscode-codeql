@@ -207,9 +207,9 @@ export const SuggestBox = <
           "aria-autocomplete": "list",
           "aria-label": ariaLabel,
           onKeyDown: (event) => {
-            // When the user presses the enter key, select the active item
+            // When the user presses the enter or tab key, select the active item
             if (
-              event.key === "Enter" &&
+              (event.key === "Enter" || event.key === "Tab") &&
               activeIndex !== null &&
               suggestionItems[activeIndex]
             ) {
