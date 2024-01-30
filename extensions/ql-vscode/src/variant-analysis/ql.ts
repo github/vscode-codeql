@@ -64,6 +64,9 @@ function findQlPackRootForQueriesWithNoPack(
 ): string {
   const commonParentDir = findCommonParentDir(...queryFiles);
 
+  // Check that all queries are in a workspace folder (the same one),
+  // so that we don't return a pack root that's outside the workspace.
+  // This is to avoid accessing files outside the workspace folders.
   for (const workspaceFolder of workspaceFolders) {
     if (containsPath(workspaceFolder, commonParentDir)) {
       return commonParentDir;
