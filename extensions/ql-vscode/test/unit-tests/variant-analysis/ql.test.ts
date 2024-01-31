@@ -45,15 +45,15 @@ describe("findVariantAnalysisQlPackRoot", () => {
     expect(packRoot).toEqualPath(getFullPath("workspace1"));
   });
 
-  it("should return the pack root of a single query not in a pack or workspace", async () => {
-    const queryFiles = [getFullPath("dir1/query1.ql")];
+  it("should fail if single query not in a pack or workspace", async () => {
+    const queryFiles = [getFullPath("workspace1/query1.ql")];
+    const workspaceFolders = [getFullPath("workspace2")];
 
-    const packRoot = await findVariantAnalysisQlPackRoot(
-      queryFiles,
-      workspaceFolders,
+    await expect(
+      findVariantAnalysisQlPackRoot(queryFiles, workspaceFolders),
+    ).rejects.toThrow(
+      "All queries must be within the workspace and within the same workspace root",
     );
-
-    expect(packRoot).toEqualPath(getFullPath("dir1"));
   });
 
   it("should throw an error if some queries are in a pack and some are not", async () => {

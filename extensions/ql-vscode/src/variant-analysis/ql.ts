@@ -1,4 +1,3 @@
-import { dirname } from "path";
 import { containsPath, findCommonParentDir } from "../common/files";
 import { findPackRoot } from "../common/ql";
 
@@ -9,8 +8,8 @@ import { findPackRoot } from "../common/ql";
  * - If all query files are in the same QL pack, it returns the root directory of that pack.
  * - If the query files are in different QL packs, it throws an error.
  * - If some query files are in a QL pack and some aren't, it throws an error.
- * - If none of the query files are in a QL pack, it returns the common parent directory of the query files. However,
- *   if there are more than one query files and they're not in the same workspace folder, it throws an error.
+ * - If none of the query files are in a QL pack, it returns the common parent directory of the query
+ *   files. However, if the common parent directory is not in a workspace folder, it throws an error.
  *
  * @param queryFiles - An array of file paths for the query files.
  * @param workspaceFolders - An array of workspace folder paths.
@@ -29,10 +28,6 @@ export async function findVariantAnalysisQlPackRoot(
   for (const queryFile of queryFiles) {
     const packRoot = await findPackRoot(queryFile);
     packRoots.push(packRoot);
-  }
-
-  if (queryFiles.length === 1) {
-    return packRoots[0] ?? dirname(queryFiles[0]);
   }
 
   const uniquePackRoots = Array.from(new Set(packRoots));
