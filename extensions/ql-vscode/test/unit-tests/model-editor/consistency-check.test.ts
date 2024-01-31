@@ -14,17 +14,20 @@ describe("checkConsistency", () => {
   });
 
   it("should call missingMethod when method is missing", () => {
+    const modeledMethods = [createSourceModeledMethod()];
+
     checkConsistency(
       [],
       {
         "Microsoft.CodeAnalysis.CSharp.SyntaxFactory.SeparatedList`1(System.Collections.Generic.IEnumerable<TNode>)":
-          [createSourceModeledMethod()],
+          modeledMethods,
       },
       notifier,
     );
 
     expect(notifier.missingMethod).toHaveBeenCalledWith(
       "Microsoft.CodeAnalysis.CSharp.SyntaxFactory.SeparatedList`1(System.Collections.Generic.IEnumerable<TNode>)",
+      modeledMethods,
     );
     expect(notifier.inconsistentSupported).not.toHaveBeenCalled();
   });

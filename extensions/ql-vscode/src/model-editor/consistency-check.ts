@@ -3,7 +3,10 @@ import type { ModeledMethod } from "./modeled-method";
 import type { BaseLogger } from "../common/logging";
 
 interface Notifier {
-  missingMethod(signature: string): void;
+  missingMethod(
+    signature: string,
+    modeledMethods: readonly ModeledMethod[],
+  ): void;
   inconsistentSupported(signature: string, expectedSupported: boolean): void;
 }
 
@@ -21,13 +24,13 @@ export function checkConsistency(
   );
 
   for (const signature in modeledMethods) {
+    const modeledMethodsForSignature = modeledMethods[signature];
+
     const method = methodsBySignature[signature];
     if (!method) {
-      notifier.missingMethod(signature);
+      notifier.missingMethod(signature, modeledMethodsForSignature);
       continue;
     }
-
-    const modeledMethodsForSignature = modeledMethods[signature];
 
     checkMethodConsistency(method, modeledMethodsForSignature, notifier);
   }
@@ -51,9 +54,14 @@ function checkMethodConsistency(
 export class DefaultNotifier implements Notifier {
   constructor(private readonly logger: BaseLogger) {}
 
-  missingMethod(signature: string) {
+  missingMethod(signature: string, modeledMethods: readonly ModeledMethod[]) {
+    const modelTypes = modeledMethods
+      .map((m) => m.type)
+      .filter((t) => t !== "none")
+      .join(", ");
+
     void this.logger.log(
-      `Model editor query consistency check: Missing method ${signature} for method that is modeled.`,
+      `Model editor query consistency check: Missing method ${signature} for method that is modeled as ${modelTypes}`,
     );
   }
 
