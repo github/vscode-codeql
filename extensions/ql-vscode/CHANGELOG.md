@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.12.1 - 31 January 2024
 
 - Enable collection of telemetry for the `codeQL.addingDatabases.addDatabaseSourceToWorkspace` setting. [#3238](https://github.com/github/vscode-codeql/pull/3238)
