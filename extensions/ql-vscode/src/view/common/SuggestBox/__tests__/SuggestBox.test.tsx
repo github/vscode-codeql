@@ -1,4 +1,4 @@
-import { render as reactRender, screen } from "@testing-library/react";
+import { render as reactRender, screen, waitFor } from "@testing-library/react";
 import type { SuggestBoxProps } from "../SuggestBox";
 import { SuggestBox } from "../SuggestBox";
 import { userEvent } from "@testing-library/user-event";
@@ -200,6 +200,9 @@ describe("SuggestBox", () => {
     });
 
     await userEvent.click(screen.getByRole("combobox"));
+
+    expect(screen.getAllByRole("option")).not.toHaveLength(0);
+
     await userEvent.keyboard("{Enter}");
 
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
@@ -211,9 +214,14 @@ describe("SuggestBox", () => {
     });
 
     await userEvent.click(screen.getByRole("combobox"));
+
+    expect(screen.getAllByRole("option")).not.toHaveLength(0);
+
     await userEvent.keyboard("{Tab}");
 
-    expect(screen.queryByRole("option")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole("option")).not.toBeInTheDocument();
+    });
   });
 
   it("shows no suggestions with no matching followup options", async () => {
