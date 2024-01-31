@@ -11,6 +11,7 @@ import {
   rubyMethodSignature,
   rubyPath,
 } from "./access-paths";
+import { parseAccessPathSuggestionsResults } from "./suggestions";
 
 export const ruby: ModelsAsDataLanguage = {
   availableModes: [Mode.Framework],
@@ -167,6 +168,9 @@ export const ruby: ModelsAsDataLanguage = {
       "query path": "queries/modeling/GenerateModel.ql",
     },
     parseResults: parseGenerateModelResults,
+  },
+  accessPathSuggestions: {
+    parseResults: parseAccessPathSuggestionsResults,
   },
   getArgumentOptions: (method) => {
     const argumentsList = getArgumentsList(method.methodParameters).map(
