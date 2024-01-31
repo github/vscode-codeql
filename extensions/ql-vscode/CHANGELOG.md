@@ -1,6 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
 ## [UNRELEASED]
+
 - Stop allowing running MRVA with a query outside of the workspace. [#3302](https://github.com/github/vscode-codeql/pull/3302)
 
 ## 1.12.1 - 31 January 2024
