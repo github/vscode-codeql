@@ -23,8 +23,7 @@ import type { Diagnostic } from "./diagnostics";
 import { useOpenKey } from "./useOpenKey";
 
 const Input = styled(VSCodeTextField)<{ $error: boolean }>`
-  width: 430px;
-
+  width: 100%;
   font-family: var(--vscode-editor-font-family);
 
   ${(props) =>
@@ -36,7 +35,6 @@ const Input = styled(VSCodeTextField)<{ $error: boolean }>`
 `;
 
 const Container = styled.div`
-  width: 430px;
   display: flex;
   flex-direction: column;
   border-radius: 3px;
