@@ -38,6 +38,11 @@ export type AccessPathOption = {
   followup?: AccessPathOption[];
 };
 
+export type AccessPathSuggestionOptions = {
+  input: Record<string, AccessPathOption[]>;
+  output: Record<string, AccessPathOption[]>;
+};
+
 export function isDefinitionType(
   value: string,
 ): value is AccessPathSuggestionDefinitionType {

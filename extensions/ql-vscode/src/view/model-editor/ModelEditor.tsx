@@ -145,7 +145,9 @@ export function ModelEditor({
           }
           case "revealMethod":
             setRevealedMethodSignature(msg.methodSignature);
-
+            break;
+          case "setAccessPathSuggestions":
+            // TODO
             break;
           default:
             assertNever(msg);
