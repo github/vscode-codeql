@@ -1,5 +1,15 @@
+import { parseAccessPathTokens } from "../../shared/access-paths";
+
+const methodTokenRegex = /^Method\[(.+)]$/;
+
 export function parseRubyMethodFromPath(path: string): string {
-  const match = path.match(/Method\[([^\]]+)].*/);
+  const tokens = parseAccessPathTokens(path);
+
+  if (tokens.length === 0) {
+    return "";
+  }
+
+  const match = tokens[0].text.match(methodTokenRegex);
   if (match) {
     return match[1];
   } else {
@@ -11,9 +21,22 @@ export function parseRubyAccessPath(path: string): {
   methodName: string;
   path: string;
 } {
-  const match = path.match(/Method\[([^\]]+)]\.(.*)/);
+  const tokens = parseAccessPathTokens(path);
+
+  if (tokens.length === 0) {
+    return { methodName: "", path: "" };
+  }
+
+  const match = tokens[0].text.match(methodTokenRegex);
+
   if (match) {
-    return { methodName: match[1], path: match[2] };
+    return {
+      methodName: match[1],
+      path: tokens
+        .slice(1)
+        .map((token) => token.text)
+        .join("."),
+    };
   } else {
     return { methodName: "", path: "" };
   }
