@@ -200,6 +200,9 @@ describe("SuggestBox", () => {
     });
 
     await userEvent.click(screen.getByRole("combobox"));
+
+    expect(screen.getAllByRole("option")).not.toHaveLength(0);
+
     await userEvent.keyboard("{Enter}");
 
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
@@ -211,6 +214,9 @@ describe("SuggestBox", () => {
     });
 
     await userEvent.click(screen.getByRole("combobox"));
+
+    expect(screen.getAllByRole("option")).not.toHaveLength(0);
+
     await userEvent.keyboard("{Tab}");
 
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
