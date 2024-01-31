@@ -13,12 +13,133 @@ import { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 import { runSuggestionsQuery } from "../../../../src/model-editor/suggestion-queries";
 
 describe("runSuggestionsQuery", () => {
+  const mockDecodedBqrs = {
+    input: {
+      columns: [
+        {
+          name: "type",
+          kind: "String",
+        },
+        {
+          name: "path",
+          kind: "String",
+        },
+        {
+          name: "value",
+          kind: "String",
+        },
+        {
+          name: "details",
+          kind: "String",
+        },
+        {
+          name: "defType",
+          kind: "String",
+        },
+      ],
+      tuples: [
+        [
+          "Correctness",
+          "Method[assert!]",
+          "Argument[self]",
+          "self in assert!",
+          "parameter",
+        ],
+      ],
+    },
+    output: {
+      columns: [
+        {
+          name: "type",
+          kind: "String",
+        },
+        {
+          name: "path",
+          kind: "String",
+        },
+        {
+          name: "value",
+          kind: "String",
+        },
+        {
+          name: "details",
+          kind: "String",
+        },
+        {
+          name: "defType",
+          kind: "String",
+        },
+      ],
+      tuples: [
+        [
+          "Correctness",
+          "Method[assert!]",
+          "ReturnValue",
+          "call to puts",
+          "return",
+        ],
+        [
+          "Correctness",
+          "Method[assert!]",
+          "Argument[self]",
+          "self in assert!",
+          "parameter",
+        ],
+      ],
+    },
+  };
+  const mockInputSuggestions = [
+    {
+      method: {
+        packageName: "",
+        typeName: "Correctness",
+        methodName: "assert!",
+        methodParameters: "",
+        signature: "Correctness#assert!",
+      },
+      value: "Argument[self]",
+      details: "self in assert!",
+      definitionType: "parameter",
+    },
+  ];
+  const mockOutputSuggestions = [
+    {
+      method: {
+        packageName: "",
+        typeName: "Correctness",
+        methodName: "assert!",
+        methodParameters: "",
+        signature: "Correctness#assert!",
+      },
+      value: "ReturnValue",
+      details: "call to puts",
+      definitionType: "return",
+    },
+    {
+      method: {
+        packageName: "",
+        typeName: "Correctness",
+        methodName: "assert!",
+        methodParameters: "",
+        signature: "Correctness#assert!",
+      },
+      value: "Argument[self]",
+      details: "self in assert!",
+      definitionType: "parameter",
+    },
+  ];
+
   it("should run query", async () => {
     const language = QueryLanguage.Ruby;
     const outputDir = new QueryOutputDir(join((await file()).path, "1"));
 
+    const parseResults = jest
+      .fn()
+      .mockResolvedValueOnce(mockInputSuggestions)
+      .mockResolvedValueOnce(mockOutputSuggestions);
+
     const options = {
-      parseResults: jest.fn().mockResolvedValue([]),
+      parseResults,
       cliServer: mockedObject<CodeQLCliServer>({
         resolveQlpacks: jest.fn().mockResolvedValue({
           "my/extensions": "/a/b/c/",
@@ -33,7 +154,7 @@ describe("runSuggestionsQuery", () => {
             "/a/b/c/qlpack.lock.yml",
             "/a/b/c/qlpack2.yml",
           ]),
-        bqrsDecodeAll: jest.fn().mockResolvedValue([]),
+        bqrsDecodeAll: jest.fn().mockResolvedValue(mockDecodedBqrs),
       }),
       queryRunner: mockedObject<QueryRunner>({
         createQueryRun: jest.fn().mockReturnValue({
@@ -84,5 +205,12 @@ describe("runSuggestionsQuery", () => {
       undefined,
       undefined,
     );
+
+    expect(options.parseResults).toHaveBeenCalledTimes(2);
+
+    expect(result).toEqual({
+      input: mockInputSuggestions,
+      output: mockOutputSuggestions,
+    });
   });
 });
