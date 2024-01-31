@@ -37,3 +37,11 @@ export type AccessPathOption = {
   details?: string;
   followup?: AccessPathOption[];
 };
+
+export function isDefinitionType(
+  value: string,
+): value is AccessPathSuggestionDefinitionType {
+  return Object.values(AccessPathSuggestionDefinitionType).includes(
+    value as AccessPathSuggestionDefinitionType,
+  );
+}
