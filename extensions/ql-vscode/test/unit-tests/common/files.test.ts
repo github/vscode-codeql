@@ -541,14 +541,6 @@ describe("findCommonParentDir", () => {
     expect(commonDir).toEqualPath(rootDir);
   });
 
-  it("should handle a single path", async () => {
-    const paths = [join("/foo", "bar", "baz")];
-
-    const commonDir = findCommonParentDir(...paths);
-
-    expect(commonDir).toEqualPath(join("/foo", "bar", "baz"));
-  });
-
   it("should return the same path if all paths are identical", () => {
     const paths = [
       join("/foo", "bar", "baz"),
@@ -579,5 +571,24 @@ describe("findCommonParentDir", () => {
     const commonDir = findCommonParentDir(...paths);
 
     expect(commonDir).toEqualPath(rootDir);
+  });
+
+  it("should return the parent dir of a single file", async () => {
+    const dataDir = join(__dirname, "../../data");
+    const paths = [dataDir];
+
+    const commonDir = findCommonParentDir(...paths);
+
+    expect(commonDir).toEqualPath(dataDir);
+  });
+
+  it("should return the dir if a single dir is provided", async () => {
+    const dataDir = join(__dirname, "../../data");
+    const filePath = join(dataDir, "query.ql");
+    const paths = [filePath];
+
+    const commonDir = findCommonParentDir(...paths);
+
+    expect(commonDir).toEqualPath(dataDir);
   });
 });

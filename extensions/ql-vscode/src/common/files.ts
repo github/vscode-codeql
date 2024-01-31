@@ -1,4 +1,4 @@
-import { pathExists, stat, readdir, opendir } from "fs-extra";
+import { pathExists, stat, readdir, opendir, lstatSync } from "fs-extra";
 import { dirname, isAbsolute, join, relative, resolve } from "path";
 import { tmpdir as osTmpdir } from "os";
 
@@ -148,6 +148,11 @@ export function findCommonParentDir(...paths: string[]): string {
   }
 
   paths = paths.map((path) => normalizePath(path));
+
+  // If there's only one path and it's a file, return its dirname
+  if (paths.length === 1) {
+    return lstatSync(paths[0]).isFile() ? dirname(paths[0]) : paths[0];
+  }
 
   let commonDir = paths[0];
   while (!paths.every((path) => containsPath(commonDir, path))) {
