@@ -32,16 +32,16 @@ export async function getQlPackFilePath(
  * Recursively find the directory containing qlpack.yml or codeql-pack.yml. If
  * no such directory is found, the directory containing the query file is returned.
  * @param queryFile The query file to start from.
- * @returns The path to the pack root.
+ * @returns The path to the pack root or undefined if it doesn't exist.
  */
-export async function findPackRoot(queryFile: string): Promise<string> {
+export async function findPackRoot(
+  queryFile: string,
+): Promise<string | undefined> {
   let dir = dirname(queryFile);
   while (!(await getQlPackFilePath(dir))) {
     dir = dirname(dir);
     if (isFileSystemRoot(dir)) {
-      // there is no qlpack.yml or codeql-pack.yml in this directory or any parent directory.
-      // just use the query file's directory as the pack root.
-      return dirname(queryFile);
+      return undefined;
     }
   }
 

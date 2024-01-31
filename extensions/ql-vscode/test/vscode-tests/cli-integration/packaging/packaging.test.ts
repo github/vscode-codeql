@@ -127,6 +127,9 @@ describe("Packaging commands", () => {
         expect.objectContaining({
           label: "semmle/targets-extension",
         }),
+        expect.objectContaining({
+          label: "test-queries",
+        }),
       ],
       expect.anything(),
     );
