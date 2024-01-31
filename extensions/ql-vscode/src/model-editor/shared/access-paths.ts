@@ -89,7 +89,7 @@ export function parseAccessPathTokens(path: string): AccessPartToken[] {
 // Regex for a single part of the access path
 const tokenRegex = /^(\w+)(?:\[([^\]]*)])?$/;
 
-type AccessPathDiagnostic = {
+export type AccessPathDiagnostic = {
   range: AccessPathRange;
   message: string;
 };
