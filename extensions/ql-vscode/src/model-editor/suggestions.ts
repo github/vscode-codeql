@@ -25,6 +25,11 @@ export type AccessPathSuggestionRow = {
   details: string;
 };
 
+export type AccessPathSuggestionRows = {
+  input: AccessPathSuggestionRow[];
+  output: AccessPathSuggestionRow[];
+};
+
 export type AccessPathOption = {
   label: string;
   value: string;
