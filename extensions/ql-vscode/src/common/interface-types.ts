@@ -24,6 +24,7 @@ import type {
   Row,
   UrlValueResolvable,
 } from "./raw-result-types";
+import type { AccessPathSuggestionOptions } from "../model-editor/suggestions";
 
 /**
  * This module contains types and code that are shared between
@@ -614,13 +615,19 @@ interface RevealMethodMessage {
   methodSignature: string;
 }
 
+interface SetAccessPathSuggestionsMessage {
+  t: "setAccessPathSuggestions";
+  accessPathSuggestions: AccessPathSuggestionOptions;
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
   | SetModeledMethodsMessage
   | SetModifiedMethodsMessage
   | SetInProgressMethodsMessage
-  | RevealMethodMessage;
+  | RevealMethodMessage
+  | SetAccessPathSuggestionsMessage;
 
 export type FromModelEditorMessage =
   | CommonFromViewMessages

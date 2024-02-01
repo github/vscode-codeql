@@ -1,6 +1,7 @@
 import type { CancellationToken, Tab } from "vscode";
 import {
   CancellationTokenSource,
+  ProgressLocation,
   TabInputWebview,
   Uri,
   ViewColumn,
@@ -53,6 +54,9 @@ import { getModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";
+import type { AccessPathSuggestionOptions } from "./suggestions";
+import { runSuggestionsQuery } from "./suggestion-queries";
+import { parseAccessPathSuggestionRowsToOptions } from "./suggestions-bqrs";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -305,6 +309,17 @@ export class ModelEditorView extends AbstractWebview<
           withProgress((progress) => this.loadMethods(progress), {
             cancellable: false,
           }),
+          // Only load access path suggestions if the feature is enabled
+          this.modelConfig.enableAccessPathSuggestions
+            ? withProgress(
+                (progress) => this.loadAccessPathSuggestions(progress),
+                {
+                  cancellable: false,
+                  location: ProgressLocation.Window,
+                  title: "Loading access path suggestions",
+                },
+              )
+            : undefined,
         ]);
         void telemetryListener?.sendUIInteraction("model-editor-switch-modes");
 
@@ -348,6 +363,14 @@ export class ModelEditorView extends AbstractWebview<
         cancellable: true,
       }),
       this.loadExistingModeledMethods(),
+      // Only load access path suggestions if the feature is enabled
+      this.modelConfig.enableAccessPathSuggestions
+        ? withProgress((progress) => this.loadAccessPathSuggestions(progress), {
+            cancellable: false,
+            location: ProgressLocation.Window,
+            title: "Loading access path suggestions",
+          })
+        : undefined,
     ]);
   }
 
@@ -481,6 +504,60 @@ export class ModelEditorView extends AbstractWebview<
         redactableError(asError(err))`Failed to load results: ${getErrorMessage(
           err,
         )}`,
+      );
+    }
+  }
+
+  protected async loadAccessPathSuggestions(
+    progress: ProgressCallback,
+  ): Promise<void> {
+    const tokenSource = new CancellationTokenSource();
+
+    const mode = this.modelingStore.getMode(this.databaseItem);
+
+    const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
+    const accessPathSuggestions = modelsAsDataLanguage.accessPathSuggestions;
+    if (!accessPathSuggestions) {
+      return;
+    }
+
+    try {
+      const suggestions = await runSuggestionsQuery(mode, {
+        parseResults: (results) =>
+          accessPathSuggestions.parseResults(
+            results,
+            modelsAsDataLanguage,
+            this.app.logger,
+          ),
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        databaseItem: this.databaseItem,
+        progress,
+        token: tokenSource.token,
+        logger: this.app.logger,
+      });
+
+      if (!suggestions) {
+        return;
+      }
+
+      const options: AccessPathSuggestionOptions = {
+        input: parseAccessPathSuggestionRowsToOptions(suggestions.input),
+        output: parseAccessPathSuggestionRowsToOptions(suggestions.output),
+      };
+
+      await this.postMessage({
+        t: "setAccessPathSuggestions",
+        accessPathSuggestions: options,
+      });
+    } catch (e: unknown) {
+      void showAndLogExceptionWithTelemetry(
+        this.app.logger,
+        this.app.telemetry,
+        redactableError(
+          asError(e),
+        )`Failed to fetch access path suggestions: ${getErrorMessage(e)}`,
       );
     }
   }
