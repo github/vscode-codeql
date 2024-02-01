@@ -106,6 +106,10 @@ export type SuggestBoxProps<
   ) => ReactNode;
 };
 
+const stopClickPropagation = (e: React.MouseEvent) => {
+  e.stopPropagation();
+};
+
 export const SuggestBox = <
   T extends Option<T>,
   D extends Diagnostic = Diagnostic,
@@ -196,7 +200,16 @@ export const SuggestBox = <
   }, [disabled]);
 
   return (
-    <>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={stopClickPropagation}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") {
+          event.stopPropagation();
+        }
+      }}
+    >
       {renderInputComponent(
         getReferenceProps({
           ref: refs.setReference,
@@ -270,6 +283,6 @@ export const SuggestBox = <
           )}
         </FloatingPortal>
       )}
-    </>
+    </div>
   );
 };
