@@ -191,7 +191,7 @@ export interface GithubRelease {
  *
  * This type must match the format of the GitHub API and is not intended to be used outside of this file except for tests. Please use the `ReleaseAsset` type instead.
  */
-export interface GithubReleaseAsset {
+interface GithubReleaseAsset {
   id: number;
   name: string;
   size: number;
