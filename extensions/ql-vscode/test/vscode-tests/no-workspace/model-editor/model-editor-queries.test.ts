@@ -27,6 +27,15 @@ describe("setUpPack", () => {
     return { language: lang as QueryLanguage, query };
   });
 
+  if (languages.length === 0) {
+    // If we currently don't have any bundled queries, skip this test, but ensure there's still at least one test.
+    test("should not have any bundled queries", () => {
+      expect(languages).toHaveLength(0);
+    });
+
+    return;
+  }
+
   describe.each(languages)("for language $language", ({ language, query }) => {
     test("should create the files when not found", async () => {
       const cliServer = mockedObject<CodeQLCliServer>({

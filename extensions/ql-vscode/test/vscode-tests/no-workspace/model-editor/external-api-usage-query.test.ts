@@ -7,22 +7,20 @@ import type { DatabaseItem } from "../../../../src/databases/local-databases";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { dirSync, file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/messages";
-import { fetchExternalApiQueries } from "../../../../src/model-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";
 import type { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
-import type { QueryLanguage } from "../../../../src/common/query-language";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { Mode } from "../../../../src/model-editor/shared/mode";
 import { join } from "path";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { QueryRunner } from "../../../../src/query-server";
 import { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
+import { SUPPORTED_LANGUAGES } from "../../../../src/model-editor/supported-languages";
 
 describe("runModelEditorQueries", () => {
-  const language = Object.keys(fetchExternalApiQueries)[
-    Math.floor(Math.random() * Object.keys(fetchExternalApiQueries).length)
-  ] as QueryLanguage;
+  const language =
+    SUPPORTED_LANGUAGES[Math.floor(Math.random() * SUPPORTED_LANGUAGES.length)];
 
   const queryDir = dirSync({ unsafeCleanup: true }).name;
 
@@ -32,11 +30,6 @@ describe("runModelEditorQueries", () => {
     > = jest.spyOn(log, "showAndLogExceptionWithTelemetry");
 
     const outputDir = new QueryOutputDir(join((await file()).path, "1"));
-
-    const query = fetchExternalApiQueries[language];
-    if (!query) {
-      throw new Error(`No query found for language ${language}`);
-    }
 
     const options = {
       cliServer: mockedObject<CodeQLCliServer>({
@@ -95,11 +88,6 @@ describe("runModelEditorQueries", () => {
 
   it("should run query for random language", async () => {
     const outputDir = new QueryOutputDir(join((await file()).path, "1"));
-
-    const query = fetchExternalApiQueries[language];
-    if (!query) {
-      throw new Error(`No query found for language ${language}`);
-    }
 
     const options = {
       cliServer: mockedObject<CodeQLCliServer>({
