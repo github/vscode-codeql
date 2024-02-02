@@ -14,7 +14,7 @@
   },
   "engines": {
     "vscode": "^1.82.0",
-    "node": "^18.15.0",
+    "node": "^18.17.1",
     "npm": ">=7.20.6"
   },
   "categories": [
@@ -1997,7 +1997,7 @@
     "@types/jest": "^29.0.2",
     "@types/js-yaml": "^4.0.6",
     "@types/nanoid": "^3.0.0",
-    "@types/node": "18.15.*",
+    "@types/node": "18.17.*",
     "@types/node-fetch": "^2.5.2",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.2.18",
