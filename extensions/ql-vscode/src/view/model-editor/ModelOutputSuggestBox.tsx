@@ -13,6 +13,7 @@ import {
   parseAccessPathTokens,
   validateAccessPath,
 } from "../../model-editor/shared/access-paths";
+import { ModelSuggestionIcon } from "./ModelSuggestionIcon";
 
 type Props = {
   modeledMethod: ModeledMethod | undefined;
@@ -22,6 +23,12 @@ type Props = {
 
 const parseValueToTokens = (value: string) =>
   parseAccessPathTokens(value).map((t) => t.text);
+
+const getIcon = (option: AccessPathOption) => (
+  <ModelSuggestionIcon name={option.icon} />
+);
+
+const getDetails = (option: AccessPathOption) => option.details;
 
 export const ModelOutputSuggestBox = ({
   modeledMethod,
@@ -84,6 +91,8 @@ export const ModelOutputSuggestBox = ({
       onChange={setValue}
       parseValueToTokens={parseValueToTokens}
       validateValue={validateAccessPath}
+      getIcon={getIcon}
+      getDetails={getDetails}
       aria-label="Output"
     />
   );
