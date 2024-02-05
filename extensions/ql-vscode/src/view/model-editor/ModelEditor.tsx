@@ -18,6 +18,7 @@ import { percentFormatter } from "./formatters";
 import { Mode } from "../../model-editor/shared/mode";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hide-modeled-methods";
+import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -122,6 +123,10 @@ export function ModelEditor({
     Record<string, ModeledMethod[]>
   >(initialModeledMethods);
 
+  const [accessPathSuggestions, setAccessPathSuggestions] = useState<
+    AccessPathSuggestionOptions | undefined
+  >(undefined);
+
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
@@ -147,7 +152,7 @@ export function ModelEditor({
             setRevealedMethodSignature(msg.methodSignature);
             break;
           case "setAccessPathSuggestions":
-            // TODO
+            setAccessPathSuggestions(msg.accessPathSuggestions);
             break;
           default:
             assertNever(msg);
@@ -386,6 +391,7 @@ export function ModelEditor({
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
+          accessPathSuggestions={accessPathSuggestions}
           onChange={onChange}
           onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}

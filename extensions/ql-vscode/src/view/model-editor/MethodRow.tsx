@@ -33,6 +33,9 @@ import { DataGridCell, DataGridRow } from "../common/DataGrid";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "../method-modeling/ModeledMethodAlert";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
+import type { AccessPathOption } from "../../model-editor/suggestions";
+import { ModelInputSuggestBox } from "./ModelInputSuggestBox";
+import { ModelOutputSuggestBox } from "./ModelOutputSuggestBox";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -74,6 +77,8 @@ export type MethodRowProps = {
   modelingInProgress: boolean;
   viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
+  inputAccessPathSuggestions?: AccessPathOption[];
+  outputAccessPathSuggestions?: AccessPathOption[];
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
 };
@@ -108,6 +113,8 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       methodIsSelected,
       viewState,
       revealedMethodSignature,
+      inputAccessPathSuggestions,
+      outputAccessPathSuggestions,
       onChange,
       onMethodClick,
     } = props;
@@ -259,22 +266,38 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   />
                 </DataGridCell>
                 <DataGridCell>
-                  <ModelInputDropdown
-                    language={viewState.language}
-                    method={method}
-                    modeledMethod={modeledMethod}
-                    modelingStatus={modelingStatus}
-                    onChange={modeledMethodChangedHandlers[index]}
-                  />
+                  {inputAccessPathSuggestions === undefined ? (
+                    <ModelInputDropdown
+                      language={viewState.language}
+                      method={method}
+                      modeledMethod={modeledMethod}
+                      modelingStatus={modelingStatus}
+                      onChange={modeledMethodChangedHandlers[index]}
+                    />
+                  ) : (
+                    <ModelInputSuggestBox
+                      modeledMethod={modeledMethod}
+                      suggestions={inputAccessPathSuggestions}
+                      onChange={modeledMethodChangedHandlers[index]}
+                    />
+                  )}
                 </DataGridCell>
                 <DataGridCell>
-                  <ModelOutputDropdown
-                    language={viewState.language}
-                    method={method}
-                    modeledMethod={modeledMethod}
-                    modelingStatus={modelingStatus}
-                    onChange={modeledMethodChangedHandlers[index]}
-                  />
+                  {outputAccessPathSuggestions === undefined ? (
+                    <ModelOutputDropdown
+                      language={viewState.language}
+                      method={method}
+                      modeledMethod={modeledMethod}
+                      modelingStatus={modelingStatus}
+                      onChange={modeledMethodChangedHandlers[index]}
+                    />
+                  ) : (
+                    <ModelOutputSuggestBox
+                      modeledMethod={modeledMethod}
+                      suggestions={outputAccessPathSuggestions}
+                      onChange={modeledMethodChangedHandlers[index]}
+                    />
+                  )}
                 </DataGridCell>
                 <DataGridCell>
                   <ModelKindDropdown

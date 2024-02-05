@@ -8,6 +8,7 @@ import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
 import { DataGrid, DataGridCell } from "../common/DataGrid";
+import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 
 export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
   "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
@@ -21,6 +22,7 @@ export type ModeledMethodDataGridProps = {
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
+  accessPathSuggestions?: AccessPathSuggestionOptions;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
 };
@@ -34,6 +36,7 @@ export const ModeledMethodDataGrid = ({
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
+  accessPathSuggestions,
   onChange,
   onMethodClick,
 }: ModeledMethodDataGridProps) => {
@@ -77,6 +80,10 @@ export const ModeledMethodDataGrid = ({
           </DataGridCell>
           {methodsWithModelability.map(({ method, methodCanBeModeled }) => {
             const modeledMethods = modeledMethodsMap[method.signature] ?? [];
+            const inputAccessPathSuggestions =
+              accessPathSuggestions?.input?.[method.signature];
+            const outputAccessPathSuggestions =
+              accessPathSuggestions?.output?.[method.signature];
             return (
               <MethodRow
                 key={method.signature}
@@ -88,6 +95,8 @@ export const ModeledMethodDataGrid = ({
                 modelingInProgress={inProgressMethods.has(method.signature)}
                 viewState={viewState}
                 revealedMethodSignature={revealedMethodSignature}
+                inputAccessPathSuggestions={inputAccessPathSuggestions}
+                outputAccessPathSuggestions={outputAccessPathSuggestions}
                 onChange={onChange}
                 onMethodClick={onMethodClick}
               />
