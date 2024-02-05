@@ -20,6 +20,9 @@ type Props = {
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
+const parseValueToTokens = (value: string) =>
+  parseAccessPathTokens(value).map((t) => t.text);
+
 export const ModelInputSuggestBox = ({
   modeledMethod,
   suggestions,
@@ -73,9 +76,7 @@ export const ModelInputSuggestBox = ({
       value={value}
       onChange={setValue}
       options={suggestions}
-      parseValueToTokens={(value) =>
-        parseAccessPathTokens(value).map((t) => t.text)
-      }
+      parseValueToTokens={parseValueToTokens}
       validateValue={validateAccessPath}
       disabled={!enabled}
       aria-label="Input"
