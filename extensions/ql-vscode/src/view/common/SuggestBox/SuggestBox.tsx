@@ -200,16 +200,9 @@ export const SuggestBox = <
   }, [disabled]);
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={stopClickPropagation}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          event.stopPropagation();
-        }
-      }}
-    >
+    // Disabled because the div is used to stop click propagation, it's not a button
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div onClick={stopClickPropagation}>
       {renderInputComponent(
         getReferenceProps({
           ref: refs.setReference,
