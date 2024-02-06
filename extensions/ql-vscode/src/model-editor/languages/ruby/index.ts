@@ -12,6 +12,7 @@ import {
   rubyPath,
 } from "./access-paths";
 import { parseAccessPathSuggestionsResults } from "./suggestions";
+import { modeTag } from "../../mode-tag";
 
 export const ruby: ModelsAsDataLanguage = {
   availableModes: [Mode.Framework],
@@ -170,6 +171,10 @@ export const ruby: ModelsAsDataLanguage = {
     parseResults: parseGenerateModelResults,
   },
   accessPathSuggestions: {
+    queryConstraints: (mode) => ({
+      kind: "table",
+      "tags contain all": ["modeleditor", "access-paths", modeTag(mode)],
+    }),
     parseResults: parseAccessPathSuggestionsResults,
   },
   getArgumentOptions: (method) => {

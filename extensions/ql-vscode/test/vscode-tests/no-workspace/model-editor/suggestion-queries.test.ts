@@ -1,3 +1,5 @@
+import { load } from "js-yaml";
+import { readFile } from "fs-extra";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import type { DatabaseItem } from "../../../../src/databases/local-databases";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
@@ -138,15 +140,21 @@ describe("runSuggestionsQuery", () => {
       .mockResolvedValueOnce(mockInputSuggestions)
       .mockResolvedValueOnce(mockOutputSuggestions);
 
+    const resolveQueriesInSuite = jest
+      .fn()
+      .mockResolvedValue(["/a/b/c/FrameworkModeAccessPathSuggestions.ql"]);
+
     const options = {
       parseResults,
+      queryConstraints: {
+        kind: "table",
+        "tags all": ["modeleditor", "access-paths", "ruby", "foo"],
+      },
       cliServer: mockedObject<CodeQLCliServer>({
         resolveQlpacks: jest.fn().mockResolvedValue({
           "my/extensions": "/a/b/c/",
         }),
-        resolveQueriesInSuite: jest
-          .fn()
-          .mockResolvedValue(["/a/b/c/FrameworkModeAccessPathSuggestions.ql"]),
+        resolveQueriesInSuite,
         packPacklist: jest
           .fn()
           .mockResolvedValue([
@@ -205,6 +213,20 @@ describe("runSuggestionsQuery", () => {
       undefined,
       undefined,
     );
+    expect(options.cliServer.resolveQueriesInSuite).toHaveBeenCalledTimes(1);
+
+    expect(
+      load(await readFile(resolveQueriesInSuite.mock.calls[0][0], "utf-8")),
+    ).toEqual([
+      {
+        from: "codeql/ruby-queries",
+        include: {
+          kind: "table",
+          "tags all": ["modeleditor", "access-paths", "ruby", "foo"],
+        },
+        queries: ".",
+      },
+    ]);
 
     expect(options.parseResults).toHaveBeenCalledTimes(2);
 

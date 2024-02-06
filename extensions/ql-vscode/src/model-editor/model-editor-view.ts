@@ -529,6 +529,7 @@ export class ModelEditorView extends AbstractWebview<
             modelsAsDataLanguage,
             this.app.logger,
           ),
+        queryConstraints: accessPathSuggestions.queryConstraints(mode),
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         queryStorageDir: this.queryStorageDir,
