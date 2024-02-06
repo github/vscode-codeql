@@ -106,6 +106,10 @@ export type SuggestBoxProps<
   ) => ReactNode;
 };
 
+const stopClickPropagation = (e: React.MouseEvent) => {
+  e.stopPropagation();
+};
+
 export const SuggestBox = <
   T extends Option<T>,
   D extends Diagnostic = Diagnostic,
@@ -196,7 +200,9 @@ export const SuggestBox = <
   }, [disabled]);
 
   return (
-    <>
+    // Disabled because the div is used to stop click propagation, it's not a button
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    <div onClick={stopClickPropagation}>
       {renderInputComponent(
         getReferenceProps({
           ref: refs.setReference,
@@ -270,6 +276,6 @@ export const SuggestBox = <
           )}
         </FloatingPortal>
       )}
-    </>
+    </div>
   );
 };
