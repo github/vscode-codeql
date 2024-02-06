@@ -1,9 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import type { ModeledMethod } from "../../model-editor/modeled-method";
-import {
-  calculateNewProvenance,
-  modeledMethodSupportsOutput,
-} from "../../model-editor/modeled-method";
+import { useEffect, useState } from "react";
+import type { TypeModeledMethod } from "../../model-editor/modeled-method";
 import type { AccessPathOption } from "../../model-editor/suggestions";
 import { SuggestBox } from "../common/SuggestBox";
 import { useDebounceCallback } from "../common/useDebounceCallback";
@@ -13,12 +9,11 @@ import {
   validateAccessPath,
 } from "../../model-editor/shared/access-paths";
 import { ModelSuggestionIcon } from "./ModelSuggestionIcon";
-import { ModelTypeTextbox } from "./ModelTypeTextbox";
 
 type Props = {
-  modeledMethod: ModeledMethod | undefined;
+  modeledMethod: TypeModeledMethod;
   suggestions: AccessPathOption[];
-  onChange: (modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: TypeModeledMethod) => void;
 };
 
 const parseValueToTokens = (value: string) =>
@@ -30,72 +25,44 @@ const getIcon = (option: AccessPathOption) => (
 
 const getDetails = (option: AccessPathOption) => option.details;
 
-export const ModelOutputSuggestBox = ({
+export const ModelTypePathSuggestBox = ({
   modeledMethod,
   suggestions,
   onChange,
 }: Props) => {
-  const [value, setValue] = useState<string | undefined>(
-    modeledMethod && modeledMethodSupportsOutput(modeledMethod)
-      ? modeledMethod.output
-      : undefined,
-  );
+  const [value, setValue] = useState<string | undefined>(modeledMethod.path);
 
   useEffect(() => {
-    if (modeledMethod && modeledMethodSupportsOutput(modeledMethod)) {
-      setValue(modeledMethod.output);
-    }
+    setValue(modeledMethod.path);
   }, [modeledMethod]);
 
   // Debounce the callback to avoid updating the model too often.
   // Not doing this results in a lot of lag when typing.
   useDebounceCallback(
     value,
-    (output: string | undefined) => {
-      if (
-        !modeledMethod ||
-        !modeledMethodSupportsOutput(modeledMethod) ||
-        output === undefined
-      ) {
+    (path: string | undefined) => {
+      if (path === undefined) {
         return;
       }
 
       onChange({
         ...modeledMethod,
-        provenance: calculateNewProvenance(modeledMethod),
-        output,
+        path,
       });
     },
     500,
   );
 
-  const enabled = useMemo(
-    () => modeledMethod && modeledMethodSupportsOutput(modeledMethod),
-    [modeledMethod],
-  );
-
-  if (modeledMethod?.type === "type") {
-    return (
-      <ModelTypeTextbox
-        modeledMethod={modeledMethod}
-        typeInfo="relatedTypeName"
-        onChange={onChange}
-        aria-label="Related type name"
-      />
-    );
-  }
-
   return (
     <SuggestBox<AccessPathOption, AccessPathDiagnostic>
       value={value}
       options={suggestions}
-      disabled={!enabled}
       onChange={setValue}
       parseValueToTokens={parseValueToTokens}
       validateValue={validateAccessPath}
       getIcon={getIcon}
       getDetails={getDetails}
-      aria-label="Output"
+      aria-label="Path"
     />
   );
 };

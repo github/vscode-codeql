@@ -278,6 +278,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     <ModelInputSuggestBox
                       modeledMethod={modeledMethod}
                       suggestions={inputAccessPathSuggestions}
+                      typePathSuggestions={outputAccessPathSuggestions ?? []}
                       onChange={modeledMethodChangedHandlers[index]}
                     />
                   )}

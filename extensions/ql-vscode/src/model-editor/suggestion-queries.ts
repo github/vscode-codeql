@@ -1,7 +1,7 @@
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { Mode } from "./shared/mode";
+import type { QueryConstraints } from "../local-queries";
 import { resolveQueriesFromPacks } from "../local-queries";
-import { modeTag } from "./mode-tag";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import type { NotificationLogger } from "../common/logging";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
@@ -22,6 +22,7 @@ type RunQueryOptions = {
   parseResults: (
     results: DecodedBqrsChunk,
   ) => AccessPathSuggestionRow[] | Promise<AccessPathSuggestionRow[]>;
+  queryConstraints: QueryConstraints;
 
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
@@ -39,6 +40,7 @@ export async function runSuggestionsQuery(
   mode: Mode,
   {
     parseResults,
+    queryConstraints,
     cliServer,
     queryRunner,
     logger,
@@ -68,6 +70,7 @@ export async function runSuggestionsQuery(
     cliServer,
     databaseItem.language,
     mode,
+    queryConstraints,
   );
   if (!queryPath) {
     void showAndLogExceptionWithTelemetry(
@@ -141,6 +144,7 @@ export async function runSuggestionsQuery(
  * @param cliServer The CodeQL CLI server to use.
  * @param language The language of the query pack to use.
  * @param mode The mode to resolve the query for.
+ * @param queryConstraints Constraints to apply to the query.
  * @param additionalPackNames Additional pack names to search.
  * @param additionalPackPaths Additional pack paths to search.
  */
@@ -148,6 +152,7 @@ async function resolveSuggestionsQuery(
   cliServer: CodeQLCliServer,
   language: string,
   mode: Mode,
+  queryConstraints: QueryConstraints,
   additionalPackNames: string[] = [],
   additionalPackPaths: string[] = [],
 ): Promise<string | undefined> {
@@ -156,14 +161,7 @@ async function resolveSuggestionsQuery(
   const queries = await resolveQueriesFromPacks(
     cliServer,
     packsToSearch,
-    {
-      kind: "table",
-      "tags contain all": [
-        "modeleditor",
-        "access-path-suggestions",
-        modeTag(mode),
-      ],
-    },
+    queryConstraints,
     additionalPackPaths,
   );
   if (queries.length > 1) {
