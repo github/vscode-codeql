@@ -243,7 +243,7 @@ type WorkflowRunListItem = {
 async function replaceAsync(
   str: string,
   regex: RegExp,
-  replacer: (substring: string, ...args: any[]) => Promise<string>,
+  replacer: (substring: string, ...args: string[]) => Promise<string>,
 ) {
   const promises: Array<Promise<string>> = [];
   str.replace(regex, (match, ...args) => {
