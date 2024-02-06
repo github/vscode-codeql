@@ -40,7 +40,7 @@ const baseConfig = {
         ignoreRestSiblings: false,
       },
     ],
-    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: true }],
     "@typescript-eslint/no-invalid-this": "off",
     "@typescript-eslint/no-shadow": "off",
