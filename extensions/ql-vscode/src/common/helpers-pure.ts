@@ -69,6 +69,20 @@ export function asError(e: unknown): Error {
 }
 
 /**
+ * Converts a unknown value to a string, using `toString` if possible,
+ * or returning the human-readable strings "null" or "undefined".
+ */
+export function asString(x: unknown): string {
+  if (x === null) {
+    return "null";
+  } else if (x === undefined) {
+    return "undefined";
+  } else {
+    return x.toString();
+  }
+}
+
+/**
  * Get error message when the error may have come from a method from the `child_process` module.
  */
 export function getChildProcessErrorMessage(e: unknown): string {

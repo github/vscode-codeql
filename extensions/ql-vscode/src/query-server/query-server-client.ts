@@ -18,6 +18,7 @@ import type { ProgressCallback, ProgressTask } from "../common/vscode/progress";
 import { withProgress } from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
 import type { App } from "../common/app";
+import { asString } from "../common/helpers-pure";
 
 type ServerOpts = {
   logger: Logger;
@@ -214,7 +215,7 @@ export class QueryServerClient extends DisposableObject {
       args,
       this.logger,
       (data) =>
-        this.activeQueryLogger.log(data.toString(), {
+        this.activeQueryLogger.log(asString(data), {
           trailingNewline: false,
         }),
       undefined, // no listener for stdout
