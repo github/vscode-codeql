@@ -1,9 +1,38 @@
 import type { BaseLogger } from "../../../common/logging";
-import type { DecodedBqrsChunk } from "../../../common/bqrs-cli-types";
+import type {
+  BqrsCellValue,
+  BqrsEntityValue,
+  DecodedBqrsChunk,
+} from "../../../common/bqrs-cli-types";
 import type { ModelsAsDataLanguage } from "../models-as-data";
 import type { AccessPathSuggestionRow } from "../../suggestions";
 import { isDefinitionType } from "../../suggestions";
 import { parseRubyMethodFromPath, rubyMethodSignature } from "./access-paths";
+
+function checkTupleFormat(
+  tuple: BqrsCellValue[],
+): tuple is [string, string, string, BqrsEntityValue, string] {
+  if (tuple.length !== 5) {
+    return false;
+  }
+
+  const [type, methodName, value, node, definitionType] = tuple;
+  if (
+    typeof type !== "string" ||
+    typeof methodName !== "string" ||
+    typeof value !== "string" ||
+    typeof node !== "object" ||
+    typeof definitionType !== "string"
+  ) {
+    return false;
+  }
+
+  if (Array.isArray(node)) {
+    return false;
+  }
+
+  return true;
+}
 
 export function parseAccessPathSuggestionsResults(
   bqrs: DecodedBqrsChunk,
@@ -12,22 +41,18 @@ export function parseAccessPathSuggestionsResults(
 ): AccessPathSuggestionRow[] {
   return bqrs.tuples
     .map((tuple, index): AccessPathSuggestionRow | null => {
-      const row = tuple.filter(
-        (value): value is string => typeof value === "string",
-      );
-
-      if (row.length !== 5) {
+      if (!checkTupleFormat(tuple)) {
         void logger.log(
-          `Skipping result ${index} because it has the wrong length`,
+          `Skipping result ${index} because it has the wrong format`,
         );
         return null;
       }
 
-      const type = row[0];
-      const methodName = parseRubyMethodFromPath(row[1]);
-      const value = row[2];
-      const details = row[3];
-      const definitionType = row[4];
+      const type = tuple[0];
+      const methodName = parseRubyMethodFromPath(tuple[1]);
+      const value = tuple[2];
+      const node = tuple[3];
+      const definitionType = tuple[4];
 
       if (!isDefinitionType(definitionType)) {
         void logger.log(
@@ -45,7 +70,7 @@ export function parseAccessPathSuggestionsResults(
           signature: rubyMethodSignature(type, methodName),
         },
         value,
-        details,
+        details: node.label ?? "",
         definitionType,
       };
     })

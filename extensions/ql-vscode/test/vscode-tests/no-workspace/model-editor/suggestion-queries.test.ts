@@ -31,8 +31,8 @@ describe("runSuggestionsQuery", () => {
           kind: "String",
         },
         {
-          name: "details",
-          kind: "String",
+          name: "node",
+          kind: "Entity",
         },
         {
           name: "defType",
@@ -44,7 +44,9 @@ describe("runSuggestionsQuery", () => {
           "Correctness",
           "Method[assert!]",
           "Argument[self]",
-          "self in assert!",
+          {
+            label: "self in assert!",
+          },
           "parameter",
         ],
       ],
@@ -64,8 +66,8 @@ describe("runSuggestionsQuery", () => {
           kind: "String",
         },
         {
-          name: "details",
-          kind: "String",
+          name: "node",
+          kind: "Entity",
         },
         {
           name: "defType",
@@ -77,14 +79,18 @@ describe("runSuggestionsQuery", () => {
           "Correctness",
           "Method[assert!]",
           "ReturnValue",
-          "call to puts",
+          {
+            label: "call to puts",
+          },
           "return",
         ],
         [
           "Correctness",
           "Method[assert!]",
           "Argument[self]",
-          "self in assert!",
+          {
+            label: "self in assert!",
+          },
           "parameter",
         ],
       ],
