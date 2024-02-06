@@ -7,20 +7,28 @@ function toCanonicalResult(result: Result): Result {
 
   if (canonicalResult.locations) {
     canonicalResult.locations = canonicalResult.locations.map((location) => {
-      const canonicalLocation = {
-        ...location,
-      };
+      if (location.physicalLocation?.artifactLocation?.index !== undefined) {
+        const canonicalLocation = {
+          ...location,
+        };
 
-      if (canonicalLocation.physicalLocation?.artifactLocation) {
+        canonicalLocation.physicalLocation = {
+          ...canonicalLocation.physicalLocation,
+        };
+
         canonicalLocation.physicalLocation.artifactLocation = {
           ...canonicalLocation.physicalLocation.artifactLocation,
         };
+
         // The index is dependent on the result of the SARIF file and usually doesn't really tell
         // us anything useful, so we remove it from the comparison.
         delete canonicalLocation.physicalLocation.artifactLocation.index;
+
+        return canonicalLocation;
       }
 
-      return canonicalLocation;
+      // Don't create a new object if we don't need to
+      return location;
     });
   }
 
