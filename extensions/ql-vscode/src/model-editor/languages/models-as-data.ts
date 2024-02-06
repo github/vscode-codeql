@@ -44,6 +44,7 @@ type ModelsAsDataLanguageModelGeneration = {
 };
 
 type ModelsAsDataLanguageAccessPathSuggestions = {
+  queryConstraints: (mode: Mode) => QueryConstraints;
   parseResults: (
     // The results of a single predicate of the query.
     bqrs: DecodedBqrsChunk,
