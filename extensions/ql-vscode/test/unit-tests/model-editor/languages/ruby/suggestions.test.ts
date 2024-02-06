@@ -20,8 +20,8 @@ describe("parseAccessPathSuggestionsResults", () => {
           kind: "String",
         },
         {
-          name: "details",
-          kind: "String",
+          name: "node",
+          kind: "Entity",
         },
         {
           name: "defType",
@@ -33,7 +33,9 @@ describe("parseAccessPathSuggestionsResults", () => {
           "Correctness",
           "Method[assert!]",
           "Argument[self]",
-          "self in assert!",
+          {
+            label: "self in assert!",
+          },
           "parameter",
         ],
       ],
@@ -59,5 +61,54 @@ describe("parseAccessPathSuggestionsResults", () => {
         definitionType: "parameter",
       },
     ]);
+  });
+
+  it("should not parse an incorrect result format", async () => {
+    const bqrsChunk: DecodedBqrsChunk = {
+      columns: [
+        {
+          name: "type",
+          kind: "String",
+        },
+        {
+          name: "path",
+          kind: "String",
+        },
+        {
+          name: "value",
+          kind: "String",
+        },
+        {
+          name: "details",
+          kind: "String",
+        },
+        {
+          name: "defType",
+          kind: "String",
+        },
+      ],
+      tuples: [
+        [
+          "Correctness",
+          "Method[assert!]",
+          "Argument[self]",
+          "self in assert!",
+          "parameter",
+        ],
+        ["Correctness", "Method[assert!]", "Argument[self]", "parameter"],
+      ],
+    };
+
+    const logger = createMockLogger();
+    expect(parseAccessPathSuggestionsResults(bqrsChunk, ruby, logger)).toEqual(
+      [],
+    );
+    expect(logger.log).toHaveBeenCalledTimes(2);
+    expect(logger.log).toHaveBeenCalledWith(
+      "Skipping result 0 because it has the wrong format",
+    );
+    expect(logger.log).toHaveBeenCalledWith(
+      "Skipping result 1 because it has the wrong format",
+    );
   });
 });
