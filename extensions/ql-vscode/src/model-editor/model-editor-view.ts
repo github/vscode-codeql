@@ -395,7 +395,9 @@ export class ModelEditorView extends AbstractWebview<
     const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
 
     const showGenerateButton =
-      this.modelConfig.flowGeneration && !!modelsAsDataLanguage.modelGeneration;
+      (this.databaseItem.language === "ruby" ||
+        this.modelConfig.flowGeneration) &&
+      !!modelsAsDataLanguage.modelGeneration;
 
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
