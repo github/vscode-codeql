@@ -4,7 +4,6 @@ import {
   calculateNewProvenance,
   modeledMethodSupportsOutput,
 } from "../../model-editor/modeled-method";
-import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import type { AccessPathOption } from "../../model-editor/suggestions";
 import { SuggestBox } from "../common/SuggestBox";
 import { useDebounceCallback } from "../common/useDebounceCallback";
@@ -14,6 +13,7 @@ import {
   validateAccessPath,
 } from "../../model-editor/shared/access-paths";
 import { ModelSuggestionIcon } from "./ModelSuggestionIcon";
+import { ModelTypeTextbox } from "./ModelTypeTextbox";
 
 type Props = {
   modeledMethod: ModeledMethod | undefined;
@@ -76,8 +76,10 @@ export const ModelOutputSuggestBox = ({
 
   if (modeledMethod?.type === "type") {
     return (
-      <ReadonlyDropdown
-        value={modeledMethod.relatedTypeName}
+      <ModelTypeTextbox
+        modeledMethod={modeledMethod}
+        typeInfo="relatedTypeName"
+        onChange={onChange}
         aria-label="Related type name"
       />
     );
