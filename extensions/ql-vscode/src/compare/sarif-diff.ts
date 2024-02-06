@@ -1,5 +1,32 @@
 import type { Result } from "sarif";
 
+function toCanonicalResult(result: Result): Result {
+  const canonicalResult = {
+    ...result,
+  };
+
+  if (canonicalResult.locations) {
+    canonicalResult.locations = canonicalResult.locations.map((location) => {
+      const canonicalLocation = {
+        ...location,
+      };
+
+      if (canonicalLocation.physicalLocation?.artifactLocation) {
+        canonicalLocation.physicalLocation.artifactLocation = {
+          ...canonicalLocation.physicalLocation.artifactLocation,
+        };
+        // The index is dependent on the result of the SARIF file and usually doesn't really tell
+        // us anything useful, so we remove it from the comparison.
+        delete canonicalLocation.physicalLocation.artifactLocation.index;
+      }
+
+      return canonicalLocation;
+    });
+  }
+
+  return canonicalResult;
+}
+
 /**
  * Compare the alerts of two queries. Use deep equality to determine if
  * results have been added or removed across two invocations of a query.
@@ -25,9 +52,12 @@ export function sarifDiff(fromResults: Result[], toResults: Result[]) {
     throw new Error("CodeQL Compare: Target query has no results.");
   }
 
+  const canonicalFromResults = fromResults.map(toCanonicalResult);
+  const canonicalToResults = toResults.map(toCanonicalResult);
+
   const results = {
-    from: arrayDiff(fromResults, toResults),
-    to: arrayDiff(toResults, fromResults),
+    from: arrayDiff(canonicalFromResults, canonicalToResults),
+    to: arrayDiff(canonicalToResults, canonicalFromResults),
   };
 
   if (
