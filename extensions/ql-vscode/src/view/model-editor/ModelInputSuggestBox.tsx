@@ -4,7 +4,6 @@ import {
   calculateNewProvenance,
   modeledMethodSupportsInput,
 } from "../../model-editor/modeled-method";
-import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import type { AccessPathOption } from "../../model-editor/suggestions";
 import { SuggestBox } from "../common/SuggestBox";
 import { useDebounceCallback } from "../common/useDebounceCallback";
@@ -14,10 +13,12 @@ import {
   validateAccessPath,
 } from "../../model-editor/shared/access-paths";
 import { ModelSuggestionIcon } from "./ModelSuggestionIcon";
+import { ModelTypePathSuggestBox } from "./ModelTypePathSuggestBox";
 
 type Props = {
   modeledMethod: ModeledMethod | undefined;
   suggestions: AccessPathOption[];
+  typePathSuggestions: AccessPathOption[];
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
@@ -33,6 +34,7 @@ const getDetails = (option: AccessPathOption) => option.details;
 export const ModelInputSuggestBox = ({
   modeledMethod,
   suggestions,
+  typePathSuggestions,
   onChange,
 }: Props) => {
   const [value, setValue] = useState<string | undefined>(
@@ -75,7 +77,13 @@ export const ModelInputSuggestBox = ({
   );
 
   if (modeledMethod?.type === "type") {
-    return <ReadonlyDropdown value={modeledMethod.path} aria-label="Path" />;
+    return (
+      <ModelTypePathSuggestBox
+        modeledMethod={modeledMethod}
+        suggestions={typePathSuggestions}
+        onChange={onChange}
+      />
+    );
   }
 
   return (
