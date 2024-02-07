@@ -243,6 +243,7 @@ export const SuggestBox = <
               context={context}
               initialFocus={-1}
               visuallyHiddenDismiss
+              returnFocus={false}
             >
               <ListContainer
                 {...getFloatingProps({
