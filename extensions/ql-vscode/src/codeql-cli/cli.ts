@@ -1384,13 +1384,10 @@ export class CodeQLCliServer implements Disposable {
   async packAdd(dir: string, queryLanguage: QueryLanguage) {
     const args = ["--dir", dir];
     args.push(`codeql/${queryLanguage}-all`);
-    return this.runJsonCodeQlCliCommandWithAuthentication(
+    return this.runCodeQlCliCommand(
       ["pack", "add"],
       args,
       `Adding and installing ${queryLanguage} pack dependency.`,
-      {
-        addFormat: false,
-      },
     );
   }
 
