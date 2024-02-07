@@ -243,6 +243,11 @@ export const SuggestBox = <
               context={context}
               initialFocus={-1}
               visuallyHiddenDismiss
+              // The default for returnFocus is true, but this doesn't work when opening
+              // the command palette in a VS Code webview. The focus is returned to the
+              // input element, but this closes the command palette immediately after opening
+              // it. By setting returnFocus to false, the focus is not immediately given to
+              // the input element, so the command palette stays open.
               returnFocus={false}
             >
               <ListContainer
