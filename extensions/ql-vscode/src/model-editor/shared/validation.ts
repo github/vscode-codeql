@@ -25,6 +25,7 @@ function canonicalizeModeledMethod(
   modeledMethod: ModeledMethod,
 ): ModeledMethod {
   const methodSignature: MethodSignature = {
+    endpointType: modeledMethod.endpointType,
     signature: modeledMethod.signature,
     packageName: modeledMethod.packageName,
     typeName: modeledMethod.typeName,

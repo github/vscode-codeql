@@ -7,6 +7,7 @@ export function createEmptyModeledMethod(
   methodSignature: MethodSignature,
 ) {
   const canonicalMethodSignature: MethodSignature = {
+    endpointType: methodSignature.endpointType,
     packageName: methodSignature.packageName,
     typeName: methodSignature.typeName,
     methodName: methodSignature.methodName,

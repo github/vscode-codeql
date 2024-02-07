@@ -6,6 +6,7 @@ import type {
   SummaryModeledMethod,
 } from "../../../src/model-editor/modeled-method";
 import type { MethodSignature } from "../../../src/model-editor/method";
+import { EndpointType } from "../../../src/model-editor/method";
 
 export function createMethodSignature(
   data: Partial<MethodSignature> = {},
@@ -13,6 +14,7 @@ export function createMethodSignature(
   return {
     libraryVersion: "1.6.0",
     signature: "org.sql2o.Connection#createQuery(String)",
+    endpointType: EndpointType.Method,
     packageName: "org.sql2o",
     typeName: "Connection",
     methodName: "createQuery",

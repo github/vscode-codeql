@@ -1,5 +1,8 @@
 import type { Method, Usage } from "../../../src/model-editor/method";
-import { CallClassification } from "../../../src/model-editor/method";
+import {
+  EndpointType,
+  CallClassification,
+} from "../../../src/model-editor/method";
 import type { UrlValueResolvable } from "../../../src/common/raw-result-types";
 
 export function createMethod(data: Partial<Method> = {}): Method {
@@ -10,6 +13,7 @@ export function createMethod(data: Partial<Method> = {}): Method {
     supportedType: "summary",
     usages: [],
     signature: "org.sql2o.Sql2o#open()",
+    endpointType: EndpointType.Method,
     packageName: "org.sql2o",
     typeName: "Sql2o",
     methodName: "open",

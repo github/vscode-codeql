@@ -9,6 +9,7 @@ import type { AutoModelQueriesResult } from "../../../src/model-editor/auto-mode
 import type { Log } from "sarif";
 import { gzipDecode } from "../../../src/common/zlib";
 import type { Method } from "../../../src/model-editor/method";
+import { EndpointType } from "../../../src/model-editor/method";
 import type { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
 describe("createAutoModelRequest", () => {
@@ -90,6 +91,7 @@ describe("getCandidates", () => {
       {
         library: "my.jar",
         signature: "org.my.A#x()",
+        endpointType: EndpointType.Method,
         packageName: "org.my",
         typeName: "A",
         methodName: "x",
@@ -106,6 +108,7 @@ describe("getCandidates", () => {
           kind: "sink",
           provenance: "manual",
           signature: "org.my.A#x()",
+          endpointType: EndpointType.Method,
           packageName: "org.my",
           typeName: "A",
           methodName: "x",
@@ -122,6 +125,7 @@ describe("getCandidates", () => {
       {
         library: "my.jar",
         signature: "org.my.A#x()",
+        endpointType: EndpointType.Method,
         packageName: "org.my",
         typeName: "A",
         methodName: "x",
@@ -141,6 +145,7 @@ describe("getCandidates", () => {
     methods.push({
       library: "my.jar",
       signature: "org.my.A#x()",
+      endpointType: EndpointType.Method,
       packageName: "org.my",
       typeName: "A",
       methodName: "x",
