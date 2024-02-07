@@ -355,7 +355,7 @@ describe(RepoRow.name, () => {
       );
     });
 
-    expect((window as any).vsCodeApi.postMessage).toHaveBeenCalledWith({
+    expect(window.vsCodeApi.postMessage).toHaveBeenCalledWith({
       t: "requestRepositoryResults",
       repositoryFullName: "octodemo/hello-world-1",
     });
