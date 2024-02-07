@@ -103,7 +103,7 @@ export class EvaluationLogScannerSet {
       p.createScanner(problemReporter),
     );
 
-    await readJsonlFile(jsonSummaryLocation, async (obj) => {
+    await readJsonlFile<SummaryEvent>(jsonSummaryLocation, async (obj) => {
       scanners.forEach((scanner) => {
         scanner.onEvent(obj);
       });
