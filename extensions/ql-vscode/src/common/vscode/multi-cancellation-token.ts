@@ -16,7 +16,7 @@ export class MultiCancellationToken implements CancellationToken {
     return this.tokens.some((t) => t.isCancellationRequested);
   }
 
-  onCancellationRequested<T>(listener: (e: T) => any): Disposable {
+  onCancellationRequested<T>(listener: (e: T) => void): Disposable {
     return new DisposableObject(
       ...this.tokens.map((t) => t.onCancellationRequested(listener)),
     );
