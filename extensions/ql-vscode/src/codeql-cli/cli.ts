@@ -1605,8 +1605,8 @@ export function spawnServer(
   command: string[],
   commandArgs: string[],
   logger: Logger,
-  stderrListener: (data: any) => void,
-  stdoutListener?: (data: any) => void,
+  stderrListener: (data: string | Buffer) => void,
+  stdoutListener?: (data: string | Buffer) => void,
   progressReporter?: ProgressReporter,
 ): ChildProcessWithoutNullStreams {
   // Enable verbose logging.
@@ -1626,7 +1626,7 @@ export function spawnServer(
     );
   }
 
-  let lastStdout: any = undefined;
+  let lastStdout: string | Buffer | undefined = undefined;
   child.stdout!.on("data", (data) => {
     lastStdout = data;
   });
