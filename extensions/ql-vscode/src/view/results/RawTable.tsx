@@ -38,7 +38,7 @@ export function RawTable({
 }: RawTableProps) {
   const [selectedItem, setSelectedItem] = useState<TableItem | undefined>();
 
-  const selectedItemRef = useRef<any>();
+  const selectedItemRef = useRef<HTMLTableCellElement>(null);
   useScrollIntoView(selectedItem, selectedItemRef);
 
   const setSelection = useCallback((row: number, column: number): void => {

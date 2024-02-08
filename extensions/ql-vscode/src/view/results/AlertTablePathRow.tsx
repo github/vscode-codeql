@@ -17,7 +17,7 @@ interface Props {
   resultIndex: number;
   currentPathExpanded: boolean;
   selectedItem: undefined | ResultKey;
-  selectedItemRef: React.RefObject<any>;
+  selectedItemRef: React.RefObject<HTMLTableRowElement>;
   databaseUri: string;
   sourceLocationPrefix: string;
   updateSelectionCallback: (

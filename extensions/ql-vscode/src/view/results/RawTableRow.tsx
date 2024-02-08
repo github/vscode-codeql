@@ -8,7 +8,7 @@ interface Props {
   databaseUri: string;
   className?: string;
   selectedColumn?: number;
-  selectedItemRef?: React.Ref<any>;
+  selectedItemRef?: React.Ref<HTMLTableCellElement>;
   onSelected?: (row: number, column: number) => void;
 }
 
