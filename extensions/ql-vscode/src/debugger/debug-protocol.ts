@@ -71,7 +71,7 @@ export interface LaunchConfig {
   /** Run the query without debugging it. */
   noDebug: boolean;
   /** Undocumented: Additional arguments to be passed to the `runQuery` API on the query server. */
-  additionalRunQueryArgs: Record<string, any>;
+  additionalRunQueryArgs: Record<string, unknown>;
 }
 
 export interface LaunchRequest extends Request, DebugProtocol.LaunchRequest {
