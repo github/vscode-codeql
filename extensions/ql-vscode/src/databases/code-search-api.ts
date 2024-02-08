@@ -6,6 +6,7 @@ import type { BaseLogger } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { UserCancellationException } from "../common/vscode/progress";
+import { EndpointDefaults } from "@octokit/types";
 
 export async function getCodeSearchRepositories(
   query: string,
@@ -54,14 +55,17 @@ async function provideOctokitWithThrottling(
   const octokit = new MyOctokit({
     auth,
     throttle: {
-      onRateLimit: (retryAfter: number, options: any): boolean => {
+      onRateLimit: (retryAfter: number, options: EndpointDefaults): boolean => {
         void logger.log(
           `Rate Limit detected for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
         );
 
         return true;
       },
-      onSecondaryRateLimit: (_retryAfter: number, options: any): void => {
+      onSecondaryRateLimit: (
+        _retryAfter: number,
+        options: EndpointDefaults,
+      ): void => {
         void logger.log(
           `Secondary Rate Limit detected for request ${options.method} ${options.url}`,
         );
