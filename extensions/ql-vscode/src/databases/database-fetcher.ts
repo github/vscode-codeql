@@ -590,7 +590,7 @@ export async function convertGithubNwoToDatabaseUrl(
       repo,
     });
 
-    const languages = response.data.map((db: any) => db.language);
+    const languages = response.data.map((db) => db.language);
 
     if (!language || !languages.includes(language)) {
       language = await promptForLanguage(languages, progress);
