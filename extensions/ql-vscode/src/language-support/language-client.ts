@@ -5,7 +5,6 @@ import { LanguageClient, NotificationType } from "vscode-languageclient/node";
 import { shouldDebugLanguageServer, spawnServer } from "../codeql-cli/cli";
 import type { QueryServerConfig } from "../config";
 import { languageServerLogger } from "../common/logging/vscode";
-import { asString } from "../common/helpers-pure";
 
 /**
  * Managing the language client and corresponding server process for CodeQL.
@@ -75,9 +74,9 @@ async function spawnLanguageServer(
         args,
         languageServerLogger,
         (data) =>
-          languageServerLogger.log(asString(data), { trailingNewline: false }),
+          languageServerLogger.log(data.toString(), { trailingNewline: false }),
         (data) =>
-          languageServerLogger.log(asString(data), { trailingNewline: false }),
+          languageServerLogger.log(data.toString(), { trailingNewline: false }),
         progressReporter,
       );
       return { writer: child.stdin!, reader: child.stdout! };

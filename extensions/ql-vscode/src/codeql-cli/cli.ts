@@ -19,7 +19,6 @@ import type { CliConfig } from "../config";
 import type { DistributionProvider } from "./distribution";
 import { FindDistributionResultKind } from "./distribution";
 import {
-  asString,
   assertNever,
   getErrorMessage,
   getErrorStack,
@@ -1606,8 +1605,8 @@ export function spawnServer(
   command: string[],
   commandArgs: string[],
   logger: Logger,
-  stderrListener: (data: unknown) => void,
-  stdoutListener?: (data: unknown) => void,
+  stderrListener: (data: string | Buffer) => void,
+  stdoutListener?: (data: string | Buffer) => void,
   progressReporter?: ProgressReporter,
 ): ChildProcessWithoutNullStreams {
   // Enable verbose logging.
@@ -1627,7 +1626,7 @@ export function spawnServer(
     );
   }
 
-  let lastStdout: unknown = undefined;
+  let lastStdout: string | Buffer | undefined = undefined;
   child.stdout!.on("data", (data) => {
     lastStdout = data;
   });
@@ -1644,7 +1643,7 @@ export function spawnServer(
     // If the process exited abnormally, log the last stdout message,
     // It may be from the jvm.
     if (code !== 0 && lastStdout !== undefined) {
-      void logger.log(`Last stdout was "${asString(lastStdout)}"`);
+      void logger.log(`Last stdout was "${lastStdout.toString()}"`);
     }
   });
   child.stderr!.on("data", stderrListener);
