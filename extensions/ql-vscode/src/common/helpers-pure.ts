@@ -7,6 +7,18 @@
 
 import { RedactableError } from "./errors";
 
+// Matches any type that is not an array. This is useful to help avoid
+// nested arrays, or for cases like createSingleSelectionCommand to avoid T
+// accidentally getting instantiated as DatabaseItem[] instead of DatabaseItem.
+export type NotArray =
+  | string
+  | bigint
+  | number
+  | boolean
+  | (object & {
+      length?: never;
+    });
+
 /**
  * This error is used to indicate a runtime failure of an exhaustivity check enforced at compile time.
  */
