@@ -1,10 +1,10 @@
 import { asError } from "../../common/helpers-pure";
 
 /**
- * A cached mapping from strings to value of type U.
+ * A cached mapping from args of type [string, S] to a value of type Promise<U>.
  */
-export class CachedOperation<U> {
-  private readonly operation: (t: string, ...args: any[]) => Promise<U>;
+export class CachedOperation<S extends unknown[], U> {
+  private readonly operation: (t: string, ...args: S) => Promise<U>;
   private readonly cached: Map<string, U>;
   private readonly lru: string[];
   private readonly inProgressCallbacks: Map<
@@ -13,7 +13,7 @@ export class CachedOperation<U> {
   >;
 
   constructor(
-    operation: (t: string, ...args: any[]) => Promise<U>,
+    operation: (t: string, ...args: S) => Promise<U>,
     private cacheSize = 100,
   ) {
     this.operation = operation;
@@ -25,7 +25,7 @@ export class CachedOperation<U> {
     this.cached = new Map<string, U>();
   }
 
-  async get(t: string, ...args: any[]): Promise<U> {
+  async get(t: string, ...args: S): Promise<U> {
     // Try and retrieve from the cache
     const fromCache = this.cached.get(t);
     if (fromCache !== undefined) {
