@@ -1948,7 +1948,7 @@
     "p-queue": "^8.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "semver": "^7.5.2",
+    "semver": "^7.6.0",
     "source-map": "^0.7.4",
     "source-map-support": "^0.5.21",
     "stream-json": "^1.7.3",
