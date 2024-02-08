@@ -16,14 +16,12 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Used by Primer React
-(window as any).CSS = {
-  supports: jest.fn().mockResolvedValue(false),
-};
+window.CSS.supports = jest.fn().mockResolvedValue(false);
 
 // Store this on the window so we can mock it
-(window as any).vsCodeApi = {
+window.vsCodeApi = {
   postMessage: jest.fn(),
   setState: jest.fn(),
 };
 
-(window as any).acquireVsCodeApi = () => (window as any).vsCodeApi;
+window.acquireVsCodeApi = () => window.vsCodeApi;

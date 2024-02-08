@@ -29,7 +29,7 @@ describe(CodePaths.name, () => {
 
     await userEvent.click(screen.getByText("Show paths"));
 
-    expect((window as any).vsCodeApi.postMessage).toHaveBeenCalledWith({
+    expect(window.vsCodeApi.postMessage).toHaveBeenCalledWith({
       t: "showDataFlowPaths",
       dataFlowPaths: {
         codeFlows: createMockCodeFlows(),
