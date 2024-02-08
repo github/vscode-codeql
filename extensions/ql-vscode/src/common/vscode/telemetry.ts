@@ -20,6 +20,7 @@ import { showBinaryChoiceWithUrlDialog } from "./dialog";
 import type { RedactableError } from "../errors";
 import type { SemVer } from "semver";
 import type { AppTelemetry } from "../telemetry";
+import { EnvelopeTelemetry } from "applicationinsights/out/Declarations/Contracts";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
@@ -132,9 +133,9 @@ export class ExtensionTelemetryListener
     const client = this.reporter["appInsightsClient"] as TelemetryClient;
     if (client) {
       // add a telemetry processor to delete unwanted properties
-      client.addTelemetryProcessor((envelope: any) => {
+      client.addTelemetryProcessor((envelope: EnvelopeTelemetry) => {
         tagsToRemove.forEach((tag) => delete envelope.tags[tag]);
-        const baseDataProperties = (envelope.data as any)?.baseData?.properties;
+        const baseDataProperties = envelope.data.baseData?.properties;
         if (baseDataProperties) {
           baseDataPropertiesToRemove.forEach(
             (prop) => delete baseDataProperties[prop],
