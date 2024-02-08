@@ -8,6 +8,7 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import type { LocalQueries } from "../local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
 import type { LaunchConfig } from "./debug-protocol";
+import type { NotArray } from "../common/helpers-pure";
 import { getErrorMessage } from "../common/helpers-pure";
 import { showAndLogErrorMessage } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
@@ -39,7 +40,7 @@ export type QLDebugConfiguration = DebugConfiguration & QLDebugArgs;
 export type QLResolvedDebugConfiguration = DebugConfiguration & LaunchConfig;
 
 /** If the specified value is a single element, then turn it into an array containing that element. */
-function makeArray<T extends Exclude<unknown, unknown[]>>(value: T | T[]): T[] {
+function makeArray<T extends NotArray>(value: T | T[]): T[] {
   if (Array.isArray(value)) {
     return value;
   } else {

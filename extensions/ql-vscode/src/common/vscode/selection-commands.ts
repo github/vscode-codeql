@@ -3,13 +3,9 @@ import type {
   TreeViewContextMultiSelectionCommandFunction,
   TreeViewContextSingleSelectionCommandFunction,
 } from "../commands";
+import type { NotArray } from "../helpers-pure";
 import type { NotificationLogger } from "../logging";
 import { showAndLogErrorMessage } from "../logging";
-
-// A hack to match types that are not an array, which is useful to help avoid
-// misusing createSingleSelectionCommand, e.g. where T accidentally gets instantiated
-// as DatabaseItem[] instead of DatabaseItem.
-type NotArray = object & { length?: never };
 
 // A way to get the type system to help assert that one type is a supertype of another.
 type CreateSupertypeOf<Super, Sub extends Super> = Sub;
