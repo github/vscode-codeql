@@ -293,7 +293,7 @@ export class ExtensionTelemetryListener
 export let telemetryListener: ExtensionTelemetryListener | undefined;
 
 export async function initializeTelemetry(
-  extension: Extension<any>,
+  extension: Extension<unknown>,
   ctx: ExtensionContext,
 ): Promise<ExtensionTelemetryListener> {
   if (telemetryListener !== undefined) {
