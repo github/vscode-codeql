@@ -38,7 +38,6 @@ export const staticLanguage: ModelsAsDataLanguage = {
       ],
       readModeledMethod: (row) => ({
         type: "source",
-        input: "",
         output: row[6] as string,
         kind: row[7] as string,
         provenance: row[8] as Provenance,
@@ -71,7 +70,6 @@ export const staticLanguage: ModelsAsDataLanguage = {
       readModeledMethod: (row) => ({
         type: "sink",
         input: row[6] as string,
-        output: "",
         kind: row[7] as string,
         provenance: row[8] as Provenance,
         signature: readRowToMethod(row),
@@ -131,8 +129,6 @@ export const staticLanguage: ModelsAsDataLanguage = {
       ],
       readModeledMethod: (row) => ({
         type: "neutral",
-        input: "",
-        output: "",
         kind: row[4] as string,
         provenance: row[5] as Provenance,
         signature: `${row[0]}.${row[1]}#${row[2]}${row[3]}`,

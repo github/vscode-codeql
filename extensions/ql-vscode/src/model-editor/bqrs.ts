@@ -63,6 +63,10 @@ export function decodeBqrsToMethods(
       classification = CallClassification.Unknown;
     }
 
+    if ((type as string) === "") {
+      type = "none";
+    }
+
     if (methodName === "") {
       endpointType = EndpointType.Class;
     }

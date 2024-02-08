@@ -11,6 +11,8 @@ import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 import { runGenerateQueries } from "../../../../src/model-editor/generate";
 import { ruby } from "../../../../src/model-editor/languages/ruby";
+import type { ModeledMethod } from "../../../../src/model-editor/modeled-method";
+import { EndpointType } from "../../../../src/model-editor/method";
 
 describe("runGenerateQueries", () => {
   const modelsAsDataLanguage = ruby;
@@ -137,6 +139,7 @@ describe("runGenerateQueries", () => {
     });
     expect(onResults).toHaveBeenCalledWith([
       {
+        endpointType: EndpointType.Method,
         methodName: "types",
         methodParameters: "",
         packageName: "",
@@ -147,6 +150,7 @@ describe("runGenerateQueries", () => {
         typeName: "SQLite3::ResultSet",
       },
       {
+        endpointType: EndpointType.Method,
         methodName: "columns",
         methodParameters: "",
         packageName: "",
@@ -157,6 +161,7 @@ describe("runGenerateQueries", () => {
         typeName: "SQLite3::ResultSet",
       },
       {
+        endpointType: EndpointType.Method,
         methodName: "types",
         methodParameters: "",
         packageName: "",
@@ -167,6 +172,7 @@ describe("runGenerateQueries", () => {
         typeName: "SQLite3::Statement",
       },
       {
+        endpointType: EndpointType.Method,
         methodName: "columns",
         methodParameters: "",
         packageName: "",
@@ -177,6 +183,7 @@ describe("runGenerateQueries", () => {
         typeName: "SQLite3::Statement",
       },
       {
+        endpointType: EndpointType.Method,
         input: "Argument[self]",
         kind: "value",
         methodName: "create_function",
@@ -189,6 +196,7 @@ describe("runGenerateQueries", () => {
         typeName: "SQLite3::Database",
       },
       {
+        endpointType: EndpointType.Method,
         input: "Argument[1]",
         kind: "value",
         methodName: "new",
@@ -200,7 +208,7 @@ describe("runGenerateQueries", () => {
         type: "summary",
         typeName: "SQLite3::Value!",
       },
-    ]);
+    ] satisfies ModeledMethod[]);
 
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledTimes(1);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(

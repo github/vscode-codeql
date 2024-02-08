@@ -167,13 +167,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
         ...modeledMethods,
         {
           signature: method.signature,
+          endpointType: method.endpointType,
           packageName: method.packageName,
           typeName: method.typeName,
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
         },
-      ]);
+      ] satisfies ModeledMethod[]);
     });
 
     it("changes selection to the newly added modeling", async () => {
@@ -368,6 +369,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
       expect(onChange).toHaveBeenCalledWith(method.signature, [
         {
           signature: method.signature,
+          endpointType: method.endpointType,
           packageName: method.packageName,
           typeName: method.typeName,
           methodName: method.methodName,
@@ -378,7 +380,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           provenance: "manual",
         },
         ...modeledMethods.slice(1),
-      ]);
+      ] satisfies ModeledMethod[]);
     });
 
     it("can update the second modeling", async () => {
@@ -403,6 +405,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         ...modeledMethods.slice(0, 1),
         {
           signature: method.signature,
+          endpointType: method.endpointType,
           packageName: method.packageName,
           typeName: method.typeName,
           methodName: method.methodName,
@@ -412,7 +415,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           kind: "value",
           provenance: "manual",
         },
-      ]);
+      ] satisfies ModeledMethod[]);
     });
 
     it("can delete modeling", async () => {
@@ -449,13 +452,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
         ...modeledMethods,
         {
           signature: method.signature,
+          endpointType: method.endpointType,
           packageName: method.packageName,
           typeName: method.typeName,
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
         },
-      ]);
+      ] satisfies ModeledMethod[]);
     });
 
     it("shows an error when adding a neutral modeling", async () => {
@@ -826,13 +830,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
         ...modeledMethods.slice(0, 1),
         {
           signature: method.signature,
+          endpointType: method.endpointType,
           packageName: method.packageName,
           typeName: method.typeName,
           methodName: method.methodName,
           methodParameters: method.methodParameters,
           type: "none",
         },
-      ]);
+      ] satisfies ModeledMethod[]);
     });
   });
 

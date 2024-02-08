@@ -1194,17 +1194,17 @@ describe("loadDataExtensionYaml", () => {
         {
           input: "Argument[0]",
           kind: "sql",
-          output: "",
           type: "sink",
           provenance: "manual",
           signature: "org.sql2o.Connection#createQuery(String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Connection",
           methodName: "createQuery",
           methodParameters: "(String)",
         },
       ],
-    });
+    } satisfies Record<string, ModeledMethod[]>);
   });
 
   it("returns undefined if given a string", () => {

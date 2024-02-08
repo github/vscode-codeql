@@ -2,6 +2,8 @@ import type { DecodedBqrs } from "../../../../../src/common/bqrs-cli-types";
 import { parseGenerateModelResults } from "../../../../../src/model-editor/languages/ruby/generate";
 import { ruby } from "../../../../../src/model-editor/languages/ruby";
 import { createMockLogger } from "../../../../__mocks__/loggerMock";
+import type { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
+import { EndpointType } from "../../../../../src/model-editor/method";
 
 describe("parseGenerateModelResults", () => {
   it("should return the results", async () => {
@@ -77,6 +79,7 @@ describe("parseGenerateModelResults", () => {
     );
     expect(result).toEqual([
       {
+        endpointType: EndpointType.Method,
         methodName: "types",
         methodParameters: "",
         packageName: "",
@@ -87,6 +90,7 @@ describe("parseGenerateModelResults", () => {
         typeName: "SQLite3::ResultSet",
       },
       {
+        endpointType: EndpointType.Method,
         methodName: "columns",
         methodParameters: "",
         packageName: "",
@@ -97,6 +101,7 @@ describe("parseGenerateModelResults", () => {
         typeName: "SQLite3::ResultSet",
       },
       {
+        endpointType: EndpointType.Method,
         methodName: "types",
         methodParameters: "",
         packageName: "",
@@ -107,6 +112,7 @@ describe("parseGenerateModelResults", () => {
         typeName: "SQLite3::Statement",
       },
       {
+        endpointType: EndpointType.Method,
         methodName: "columns",
         methodParameters: "",
         packageName: "",
@@ -117,6 +123,7 @@ describe("parseGenerateModelResults", () => {
         typeName: "SQLite3::Statement",
       },
       {
+        endpointType: EndpointType.Method,
         input: "Argument[self]",
         kind: "value",
         methodName: "create_function",
@@ -129,6 +136,7 @@ describe("parseGenerateModelResults", () => {
         typeName: "SQLite3::Database",
       },
       {
+        endpointType: EndpointType.Method,
         input: "Argument[1]",
         kind: "value",
         methodName: "new",
@@ -140,6 +148,6 @@ describe("parseGenerateModelResults", () => {
         type: "summary",
         typeName: "SQLite3::Value!",
       },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 });
