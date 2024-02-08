@@ -128,7 +128,8 @@ export class ExtensionTelemetryListener
     );
     this.push(this.reporter);
 
-    const client = (this.reporter as any).appInsightsClient as TelemetryClient;
+    // The appInsightsClient field is private but we want to access it anyway
+    const client = this.reporter["appInsightsClient"] as TelemetryClient;
     if (client) {
       // add a telemetry processor to delete unwanted properties
       client.addTelemetryProcessor((envelope: any) => {
