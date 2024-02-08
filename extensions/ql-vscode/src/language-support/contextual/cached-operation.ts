@@ -1,3 +1,5 @@
+import { asError } from "../../common/helpers-pure";
+
 /**
  * A cached mapping from strings to value of type U.
  */
@@ -7,7 +9,7 @@ export class CachedOperation<U> {
   private readonly lru: string[];
   private readonly inProgressCallbacks: Map<
     string,
-    Array<[(u: U) => void, (reason?: any) => void]>
+    Array<[(u: U) => void, (reason?: Error) => void]>
   >;
 
   constructor(
@@ -18,7 +20,7 @@ export class CachedOperation<U> {
     this.lru = [];
     this.inProgressCallbacks = new Map<
       string,
-      Array<[(u: U) => void, (reason?: any) => void]>
+      Array<[(u: U) => void, (reason?: Error) => void]>
     >();
     this.cached = new Map<string, U>();
   }
@@ -46,7 +48,7 @@ export class CachedOperation<U> {
     }
 
     // Otherwise compute the new value, but leave a callback to allow sharing work
-    const callbacks: Array<[(u: U) => void, (reason?: any) => void]> = [];
+    const callbacks: Array<[(u: U) => void, (reason?: Error) => void]> = [];
     this.inProgressCallbacks.set(t, callbacks);
     try {
       const result = await this.operation(t, ...args);
@@ -61,7 +63,7 @@ export class CachedOperation<U> {
       return result;
     } catch (e) {
       // Rethrow error on all callbacks
-      callbacks.forEach((f) => f[1](e));
+      callbacks.forEach((f) => f[1](asError(e)));
       throw e;
     } finally {
       this.inProgressCallbacks.delete(t);
