@@ -33,7 +33,7 @@ export function decodeBqrsToMethods(
     let libraryVersion: string | undefined;
     let type: ModeledMethodType;
     let classification: CallClassification;
-    let endpointType = EndpointType.Method;
+    let endpointType: EndpointType | undefined = undefined;
 
     if (mode === Mode.Application) {
       [
@@ -67,8 +67,19 @@ export function decodeBqrsToMethods(
       type = "none";
     }
 
-    if (methodName === "") {
-      endpointType = EndpointType.Class;
+    if (definition.endpointTypeForEndpoint) {
+      endpointType = definition.endpointTypeForEndpoint({
+        endpointType,
+        packageName,
+        typeName,
+        methodName,
+        methodParameters,
+      });
+    }
+
+    if (endpointType === undefined) {
+      endpointType =
+        methodName === "" ? EndpointType.Class : EndpointType.Method;
     }
 
     const signature = definition.createMethodSignature({

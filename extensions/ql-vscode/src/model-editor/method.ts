@@ -17,9 +17,17 @@ export type Usage = Call & {
   readonly classification: CallClassification;
 };
 
+/**
+ * Endpoint types are generic and can be used to represent different types of endpoints in different languages.
+ *
+ * For a reference of symbol kinds used in the LSP protocol (which is a good reference for widely supported features), see
+ * https://github.com/microsoft/vscode-languageserver-node/blob/4c8115f40b52f2e13adab41109c5b1208fc155ab/types/src/main.ts#L2890-L2920
+ */
 export enum EndpointType {
-  Method = "method",
+  Module = "module",
   Class = "class",
+  Method = "method",
+  Constructor = "constructor",
 }
 
 export interface MethodDefinition {

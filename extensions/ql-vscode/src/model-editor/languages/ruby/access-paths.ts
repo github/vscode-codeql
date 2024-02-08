@@ -64,6 +64,27 @@ export function rubyPath(methodName: string, path: string) {
   return `${methodPath}.${path}`;
 }
 
-export function rubyEndpointType(methodName: string) {
-  return methodName === "" ? EndpointType.Class : EndpointType.Method;
+/** For the purpose of the model editor, we are defining the endpoint types as follows:
+ * - Class: A class instance
+ * - Module: The class itself
+ * - Method: A method in a class
+ * - Constructor: A constructor method
+ * @param typeName
+ * @param methodName
+ */
+export function rubyEndpointType(typeName: string, methodName: string) {
+  if (typeName.endsWith("!") && methodName === "new") {
+    // This is a constructor
+    return EndpointType.Constructor;
+  }
+
+  if (typeName.endsWith("!") && methodName === "") {
+    return EndpointType.Module;
+  }
+
+  if (methodName === "") {
+    return EndpointType.Class;
+  }
+
+  return EndpointType.Method;
 }

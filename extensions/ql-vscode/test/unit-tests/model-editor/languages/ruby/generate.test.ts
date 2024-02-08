@@ -136,7 +136,7 @@ describe("parseGenerateModelResults", () => {
         typeName: "SQLite3::Database",
       },
       {
-        endpointType: EndpointType.Method,
+        endpointType: EndpointType.Constructor,
         input: "Argument[1]",
         kind: "value",
         methodName: "new",
