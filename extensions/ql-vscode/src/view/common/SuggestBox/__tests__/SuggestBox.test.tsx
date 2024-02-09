@@ -167,7 +167,7 @@ describe("SuggestBox", () => {
     });
 
     await userEvent.click(screen.getByRole("combobox"));
-    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{ArrowDown}{Enter}");
 
     expect(onChange).toHaveBeenCalledWith("Argument[block].Parameter[1]");
   });
@@ -204,7 +204,7 @@ describe("SuggestBox", () => {
 
     expect(screen.getAllByRole("option")).not.toHaveLength(0);
 
-    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{ArrowDown}{Enter}");
 
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
   });
@@ -244,7 +244,7 @@ describe("SuggestBox", () => {
 
     await userEvent.click(screen.getByRole("combobox"));
     await userEvent.keyboard(
-      "{ArrowDown}{ArrowDown}{ArrowUp}{ArrowDown}{ArrowDown}{Enter}",
+      "{ArrowDown}{ArrowDown}{ArrowDown}{ArrowUp}{ArrowDown}{ArrowDown}{Enter}",
     );
 
     expect(onChange).toHaveBeenCalledWith("Argument[text_rep:]");
@@ -283,7 +283,7 @@ describe("SuggestBox", () => {
     });
 
     await userEvent.click(screen.getByRole("combobox"));
-    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard("{ArrowDown}{Enter}");
 
     expect(screen.queryByRole("option")).not.toBeInTheDocument();
 
