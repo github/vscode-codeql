@@ -1,7 +1,7 @@
 import type { Meta, StoryFn } from "@storybook/react";
 
 import { ModelEditor as ModelEditorComponent } from "../../view/model-editor/ModelEditor";
-import { CallClassification } from "../../model-editor/method";
+import { CallClassification, EndpointType } from "../../model-editor/method";
 import { createMockModelEditorViewState } from "../../../test/factories/model-editor/view-state";
 
 export default {
@@ -34,6 +34,7 @@ ModelEditor.args = {
       library: "sql2o",
       libraryVersion: "1.6.0",
       signature: "org.sql2o.Connection#createQuery(String)",
+      endpointType: EndpointType.Method,
       packageName: "org.sql2o",
       typeName: "Connection",
       methodName: "createQuery",
@@ -56,6 +57,7 @@ ModelEditor.args = {
       library: "sql2o",
       libraryVersion: "1.6.0",
       signature: "org.sql2o.Query#executeScalar(Class)",
+      endpointType: EndpointType.Method,
       packageName: "org.sql2o",
       typeName: "Query",
       methodName: "executeScalar",
@@ -78,6 +80,7 @@ ModelEditor.args = {
       library: "sql2o",
       libraryVersion: "1.6.0",
       signature: "org.sql2o.Sql2o#open()",
+      endpointType: EndpointType.Method,
       packageName: "org.sql2o",
       typeName: "Sql2o",
       methodName: "open",
@@ -99,6 +102,7 @@ ModelEditor.args = {
     {
       library: "rt",
       signature: "java.io.PrintStream#println(String)",
+      endpointType: EndpointType.Method,
       packageName: "java.io",
       typeName: "PrintStream",
       methodName: "println",
@@ -137,6 +141,7 @@ ModelEditor.args = {
       libraryVersion: "3.0.2",
       signature:
         "org.springframework.boot.SpringApplication#run(Class,String[])",
+      endpointType: EndpointType.Method,
       packageName: "org.springframework.boot",
       typeName: "SpringApplication",
       methodName: "run",
@@ -159,6 +164,7 @@ ModelEditor.args = {
       library: "sql2o",
       libraryVersion: "1.6.0",
       signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+      endpointType: EndpointType.Method,
       packageName: "org.sql2o",
       typeName: "Sql2o",
       methodName: "Sql2o",
@@ -181,6 +187,7 @@ ModelEditor.args = {
       library: "sql2o",
       libraryVersion: "1.6.0",
       signature: "org.sql2o.Sql2o#Sql2o(String)",
+      endpointType: EndpointType.Method,
       packageName: "org.sql2o",
       typeName: "Sql2o",
       methodName: "Sql2o",
@@ -221,6 +228,7 @@ ModelEditor.args = {
         kind: "jndi-injection",
         provenance: "df-generated",
         signature: "org.sql2o.Sql2o#Sql2o(String)",
+        endpointType: EndpointType.Method,
         packageName: "org.sql2o",
         typeName: "Sql2o",
         methodName: "Sql2o",
@@ -235,6 +243,7 @@ ModelEditor.args = {
         kind: "taint",
         provenance: "df-manual",
         signature: "org.sql2o.Connection#createQuery(String)",
+        endpointType: EndpointType.Method,
         packageName: "org.sql2o",
         typeName: "Connection",
         methodName: "createQuery",
@@ -249,6 +258,7 @@ ModelEditor.args = {
         kind: "taint",
         provenance: "manual",
         signature: "org.sql2o.Sql2o#open()",
+        endpointType: EndpointType.Method,
         packageName: "org.sql2o",
         typeName: "Sql2o",
         methodName: "open",
@@ -261,6 +271,7 @@ ModelEditor.args = {
         kind: "sink",
         provenance: "df-generated",
         signature: "org.sql2o.Query#executeScalar(Class)",
+        endpointType: EndpointType.Method,
         packageName: "org.sql2o",
         typeName: "Query",
         methodName: "executeScalar",
@@ -273,6 +284,7 @@ ModelEditor.args = {
         kind: "sink",
         provenance: "df-generated",
         signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+        endpointType: EndpointType.Method,
         packageName: "org.sql2o",
         typeName: "Sql2o",
         methodName: "Sql2o",

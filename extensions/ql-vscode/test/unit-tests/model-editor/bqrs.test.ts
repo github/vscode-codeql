@@ -1,6 +1,10 @@
 import { decodeBqrsToMethods } from "../../../src/model-editor/bqrs";
 import type { DecodedBqrsChunk } from "../../../src/common/bqrs-cli-types";
-import { CallClassification } from "../../../src/model-editor/method";
+import type { Method } from "../../../src/model-editor/method";
+import {
+  CallClassification,
+  EndpointType,
+} from "../../../src/model-editor/method";
 import { Mode } from "../../../src/model-editor/shared/mode";
 import { QueryLanguage } from "../../../src/common/query-language";
 
@@ -245,6 +249,7 @@ describe("decodeBqrsToMethods", () => {
             library: "rt",
             libraryVersion: undefined,
             signature: "java.io.PrintStream#println(String)",
+            endpointType: EndpointType.Method,
             packageName: "java.io",
             typeName: "PrintStream",
             methodName: "println",
@@ -271,6 +276,7 @@ describe("decodeBqrsToMethods", () => {
             libraryVersion: "3.0.2",
             signature:
               "org.springframework.boot.SpringApplication#run(Class,String[])",
+            endpointType: EndpointType.Method,
             packageName: "org.springframework.boot",
             typeName: "SpringApplication",
             methodName: "run",
@@ -296,6 +302,7 @@ describe("decodeBqrsToMethods", () => {
             library: "sql2o",
             libraryVersion: "1.6.0",
             signature: "org.sql2o.Connection#createQuery(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Connection",
             methodName: "createQuery",
@@ -333,6 +340,7 @@ describe("decodeBqrsToMethods", () => {
             library: "sql2o",
             libraryVersion: "1.6.0",
             signature: "org.sql2o.Query#executeScalar(Class)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Query",
             methodName: "executeScalar",
@@ -370,6 +378,7 @@ describe("decodeBqrsToMethods", () => {
             library: "sql2o",
             libraryVersion: "1.6.0",
             signature: "org.sql2o.Sql2o#open()",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Sql2o",
             methodName: "open",
@@ -407,6 +416,7 @@ describe("decodeBqrsToMethods", () => {
             library: "sql2o",
             libraryVersion: "1.6.0",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Sql2o",
             methodName: "Sql2o",
@@ -432,6 +442,7 @@ describe("decodeBqrsToMethods", () => {
             library: "sql2o",
             libraryVersion: "1.6.0",
             signature: "org.sql2o.Sql2o#Sql2o(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Sql2o",
             methodName: "Sql2o",
@@ -453,7 +464,7 @@ describe("decodeBqrsToMethods", () => {
               },
             ],
           },
-        ]);
+        ] satisfies Method[]);
       });
     });
 
@@ -519,12 +530,13 @@ describe("decodeBqrsToMethods", () => {
             library: "",
             libraryVersion: undefined,
             signature: "org.example.HelloController#connect(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.example",
             typeName: "HelloController",
             methodName: "connect",
             methodParameters: "(String)",
             supported: false,
-            supportedType: "",
+            supportedType: "none",
             usages: [
               {
                 label: "connect",
@@ -544,6 +556,7 @@ describe("decodeBqrsToMethods", () => {
             library: "",
             libraryVersion: undefined,
             signature: "org.example.HelloController#index(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.example",
             typeName: "HelloController",
             methodName: "index",
@@ -565,7 +578,7 @@ describe("decodeBqrsToMethods", () => {
               },
             ],
           },
-        ]);
+        ] satisfies Method[]);
       });
     });
   });
@@ -619,6 +632,7 @@ describe("decodeBqrsToMethods", () => {
             libraryVersion: "4.0.0.0",
             signature:
               "System.Reflection.RuntimeReflectionExtensions#GetMethodInfo(System.Delegate)",
+            endpointType: EndpointType.Method,
             packageName: "System.Reflection",
             typeName: "RuntimeReflectionExtensions",
             methodName: "GetMethodInfo",
@@ -640,7 +654,7 @@ describe("decodeBqrsToMethods", () => {
               },
             ],
           },
-        ]);
+        ] satisfies Method[]);
       });
     });
 
@@ -687,12 +701,13 @@ describe("decodeBqrsToMethods", () => {
             library: "Times",
             libraryVersion: undefined,
             signature: "Moq.Times#Validate(System.Int32)",
+            endpointType: EndpointType.Method,
             packageName: "Moq",
             typeName: "Times",
             methodName: "Validate",
             methodParameters: "(System.Int32)",
             supported: false,
-            supportedType: "",
+            supportedType: "none",
             usages: [
               {
                 label: "Validate",
@@ -708,7 +723,7 @@ describe("decodeBqrsToMethods", () => {
               },
             ],
           },
-        ]);
+        ] satisfies Method[]);
       });
     });
   });

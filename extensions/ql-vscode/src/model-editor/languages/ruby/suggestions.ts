@@ -7,7 +7,11 @@ import type {
 import type { ModelsAsDataLanguage } from "../models-as-data";
 import type { AccessPathSuggestionRow } from "../../suggestions";
 import { isDefinitionType } from "../../suggestions";
-import { parseRubyMethodFromPath, rubyMethodSignature } from "./access-paths";
+import {
+  parseRubyMethodFromPath,
+  rubyEndpointType,
+  rubyMethodSignature,
+} from "./access-paths";
 
 function checkTupleFormat(
   tuple: BqrsCellValue[],
@@ -64,6 +68,7 @@ export function parseAccessPathSuggestionsResults(
       return {
         method: {
           packageName: "",
+          endpointType: rubyEndpointType(methodName),
           typeName: type,
           methodName,
           methodParameters: "",

@@ -1,4 +1,5 @@
 import { parseAccessPathTokens } from "../../shared/access-paths";
+import { EndpointType } from "../../method";
 
 const methodTokenRegex = /^Method\[(.+)]$/;
 
@@ -61,4 +62,8 @@ export function rubyPath(methodName: string, path: string) {
   }
 
   return `${methodPath}.${path}`;
+}
+
+export function rubyEndpointType(methodName: string) {
+  return methodName === "" ? EndpointType.Class : EndpointType.Method;
 }

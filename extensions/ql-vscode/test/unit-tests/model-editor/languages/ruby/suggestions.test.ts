@@ -2,6 +2,9 @@ import type { DecodedBqrsChunk } from "../../../../../src/common/bqrs-cli-types"
 import { ruby } from "../../../../../src/model-editor/languages/ruby";
 import { createMockLogger } from "../../../../__mocks__/loggerMock";
 import { parseAccessPathSuggestionsResults } from "../../../../../src/model-editor/languages/ruby/suggestions";
+import type { AccessPathSuggestionRow } from "../../../../../src/model-editor/suggestions";
+import { AccessPathSuggestionDefinitionType } from "../../../../../src/model-editor/suggestions";
+import { EndpointType } from "../../../../../src/model-editor/method";
 
 describe("parseAccessPathSuggestionsResults", () => {
   it("should parse the results", async () => {
@@ -50,6 +53,7 @@ describe("parseAccessPathSuggestionsResults", () => {
     expect(result).toEqual([
       {
         method: {
+          endpointType: EndpointType.Method,
           packageName: "",
           typeName: "Correctness",
           methodName: "assert!",
@@ -58,9 +62,9 @@ describe("parseAccessPathSuggestionsResults", () => {
         },
         value: "Argument[self]",
         details: "self in assert!",
-        definitionType: "parameter",
+        definitionType: AccessPathSuggestionDefinitionType.Parameter,
       },
-    ]);
+    ] satisfies AccessPathSuggestionRow[]);
   });
 
   it("should not parse an incorrect result format", async () => {

@@ -4,7 +4,7 @@ import type { DataTuple } from "../../model-extension-file";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { filterFlowModelQueries, parseFlowModelResults } from "./generate";
 import type { MethodArgument } from "../../method";
-import { getArgumentsList } from "../../method";
+import { EndpointType, getArgumentsList } from "../../method";
 
 function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
@@ -38,11 +38,11 @@ export const staticLanguage: ModelsAsDataLanguage = {
       ],
       readModeledMethod: (row) => ({
         type: "source",
-        input: "",
         output: row[6] as string,
         kind: row[7] as string,
         provenance: row[8] as Provenance,
         signature: readRowToMethod(row),
+        endpointType: EndpointType.Method,
         packageName: row[0] as string,
         typeName: row[1] as string,
         methodName: row[3] as string,
@@ -70,10 +70,10 @@ export const staticLanguage: ModelsAsDataLanguage = {
       readModeledMethod: (row) => ({
         type: "sink",
         input: row[6] as string,
-        output: "",
         kind: row[7] as string,
         provenance: row[8] as Provenance,
         signature: readRowToMethod(row),
+        endpointType: EndpointType.Method,
         packageName: row[0] as string,
         typeName: row[1] as string,
         methodName: row[3] as string,
@@ -106,6 +106,7 @@ export const staticLanguage: ModelsAsDataLanguage = {
         kind: row[8] as string,
         provenance: row[9] as Provenance,
         signature: readRowToMethod(row),
+        endpointType: EndpointType.Method,
         packageName: row[0] as string,
         typeName: row[1] as string,
         methodName: row[3] as string,
@@ -128,11 +129,10 @@ export const staticLanguage: ModelsAsDataLanguage = {
       ],
       readModeledMethod: (row) => ({
         type: "neutral",
-        input: "",
-        output: "",
         kind: row[4] as string,
         provenance: row[5] as Provenance,
         signature: `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
+        endpointType: EndpointType.Method,
         packageName: row[0] as string,
         typeName: row[1] as string,
         methodName: row[2] as string,

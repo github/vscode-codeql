@@ -85,12 +85,13 @@ describe(MethodRow.name, () => {
         kind: "value",
         provenance: "manual",
         signature: method.signature,
+        endpointType: method.endpointType,
         packageName: method.packageName,
         typeName: method.typeName,
         methodName: method.methodName,
         methodParameters: method.methodParameters,
       },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 
   it("can change the kind", async () => {
@@ -111,7 +112,7 @@ describe(MethodRow.name, () => {
         ...modeledMethod,
         kind: "value",
       },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 
   it("changes the provenance when the kind is changed", async () => {
@@ -137,7 +138,7 @@ describe(MethodRow.name, () => {
         kind: "value",
         provenance: "df-manual",
       },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 
   it("has the correct input options", () => {
@@ -232,7 +233,7 @@ describe(MethodRow.name, () => {
       { ...modeledMethod, type: "source" },
       { ...modeledMethod, type: "sink", kind: "sql-injection" },
       { ...modeledMethod, type: "summary" },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 
   it("renders an unmodelable method", () => {
@@ -333,12 +334,13 @@ describe(MethodRow.name, () => {
       {
         type: "none",
         signature: method.signature,
+        endpointType: method.endpointType,
         packageName: method.packageName,
         typeName: method.typeName,
         methodName: method.methodName,
         methodParameters: method.methodParameters,
       },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 
   it("cannot delete the first modeled method (but delete second instead)", async () => {
@@ -359,7 +361,7 @@ describe(MethodRow.name, () => {
       { ...modeledMethod, type: "source" },
       { ...modeledMethod, type: "none" },
       { ...modeledMethod, type: "summary" },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 
   it("can delete a modeled method in the middle", async () => {
@@ -380,7 +382,7 @@ describe(MethodRow.name, () => {
       { ...modeledMethod, type: "source" },
       { ...modeledMethod, type: "sink" },
       { ...modeledMethod, type: "summary" },
-    ]);
+    ] satisfies ModeledMethod[]);
   });
 
   it("does not display validation errors when everything is valid", () => {

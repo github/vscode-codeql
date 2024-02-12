@@ -13,6 +13,7 @@ import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
 import type { MethodSignature } from "../../../../src/model-editor/method";
+import { EndpointType } from "../../../../src/model-editor/method";
 import { join } from "path";
 import { pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
@@ -170,6 +171,7 @@ describe("generateCandidateFilterPack", () => {
     const candidateMethods: MethodSignature[] = [
       {
         signature: "org.my.A#x()",
+        endpointType: EndpointType.Method,
         packageName: "org.my",
         typeName: "A",
         methodName: "x",

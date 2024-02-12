@@ -7,6 +7,7 @@ import { getArgumentsList } from "../../method";
 import {
   parseRubyAccessPath,
   parseRubyMethodFromPath,
+  rubyEndpointType,
   rubyMethodPath,
   rubyMethodSignature,
   rubyPath,
@@ -37,11 +38,11 @@ export const ruby: ModelsAsDataLanguage = {
         );
         return {
           type: "source",
-          input: "",
           output,
           kind: row[2] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
+          endpointType: rubyEndpointType(methodName),
           packageName: "",
           typeName,
           methodName,
@@ -70,10 +71,10 @@ export const ruby: ModelsAsDataLanguage = {
         return {
           type: "sink",
           input,
-          output: "",
           kind: row[2] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
+          endpointType: rubyEndpointType(methodName),
           packageName: "",
           typeName,
           methodName,
@@ -104,6 +105,7 @@ export const ruby: ModelsAsDataLanguage = {
           kind: row[4] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
+          endpointType: rubyEndpointType(methodName),
           packageName: "",
           typeName,
           methodName,
@@ -127,11 +129,10 @@ export const ruby: ModelsAsDataLanguage = {
         const methodName = parseRubyMethodFromPath(row[1] as string);
         return {
           type: "neutral",
-          input: "",
-          output: "",
           kind: row[2] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
+          endpointType: rubyEndpointType(methodName),
           packageName: "",
           typeName,
           methodName,
@@ -156,6 +157,7 @@ export const ruby: ModelsAsDataLanguage = {
           relatedTypeName: row[0] as string,
           path,
           signature: rubyMethodSignature(typeName, methodName),
+          endpointType: rubyEndpointType(methodName),
           packageName: "",
           typeName,
           methodName,

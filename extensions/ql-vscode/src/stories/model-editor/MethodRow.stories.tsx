@@ -4,7 +4,7 @@ import type { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
 import type { Method } from "../../model-editor/method";
-import { CallClassification } from "../../model-editor/method";
+import { EndpointType, CallClassification } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS } from "../../view/model-editor/ModeledMethodDataGrid";
 import { DataGrid } from "../../view/common/DataGrid";
@@ -46,6 +46,7 @@ const Template: StoryFn<typeof MethodRowComponent> = (args) => {
 const method: Method = {
   library: "sql2o-1.6.0.jar",
   signature: "org.sql2o.Sql2o#open()",
+  endpointType: EndpointType.Method,
   packageName: "org.sql2o",
   typeName: "Sql2o",
   methodName: "open",
@@ -86,6 +87,7 @@ const modeledMethod: ModeledMethod = {
   kind: "taint",
   provenance: "manual",
   signature: "org.sql2o.Sql2o#open()",
+  endpointType: EndpointType.Method,
   packageName: "org.sql2o",
   typeName: "Sql2o",
   methodName: "open",

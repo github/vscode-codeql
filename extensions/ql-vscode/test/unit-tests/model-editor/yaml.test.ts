@@ -7,7 +7,10 @@ import {
   loadDataExtensionYaml,
 } from "../../../src/model-editor/yaml";
 import type { Method } from "../../../src/model-editor/method";
-import { CallClassification } from "../../../src/model-editor/method";
+import {
+  CallClassification,
+  EndpointType,
+} from "../../../src/model-editor/method";
 import { QueryLanguage } from "../../../src/common/query-language";
 import type { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
@@ -20,6 +23,7 @@ describe("createDataExtensionYaml", () => {
         kind: "sql",
         provenance: "df-generated",
         signature: "org.sql2o.Connection#createQuery(String)",
+        endpointType: EndpointType.Method,
         packageName: "org.sql2o",
         typeName: "Connection",
         methodName: "createQuery",
@@ -87,6 +91,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           library: "sql2o",
           libraryVersion: "1.6.0",
           signature: "org.sql2o.Connection#createQuery(String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Connection",
           methodName: "createQuery",
@@ -124,6 +129,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           library: "sql2o",
           libraryVersion: "1.6.0",
           signature: "org.sql2o.Query#executeScalar(Class)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Query",
           methodName: "executeScalar",
@@ -161,6 +167,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           library: "sql2o",
           libraryVersion: "2.5.0-alpha1",
           signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Sql2o",
           methodName: "Sql2o",
@@ -187,6 +194,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           libraryVersion: "3.0.2",
           signature:
             "org.springframework.boot.SpringApplication#run(Class,String[])",
+          endpointType: EndpointType.Method,
           packageName: "org.springframework.boot",
           typeName: "SpringApplication",
           methodName: "run",
@@ -211,6 +219,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
         {
           library: "rt",
           signature: "java.io.PrintStream#println(String)",
+          endpointType: EndpointType.Method,
           packageName: "java.io",
           typeName: "PrintStream",
           methodName: "println",
@@ -241,6 +250,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Connection",
             methodName: "createQuery",
@@ -254,6 +264,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             provenance: "manual",
             signature:
               "org.springframework.boot.SpringApplication#run(Class,String[])",
+            endpointType: EndpointType.Method,
             packageName: "org.springframework.boot",
             typeName: "SpringApplication",
             methodName: "run",
@@ -266,6 +277,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             input: "Argument[0]",
             kind: "jndi",
             provenance: "manual",
+            endpointType: EndpointType.Method,
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
             packageName: "org.sql2o",
             typeName: "Sql2o",
@@ -334,6 +346,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           library: "sql2o",
           libraryVersion: "1.6.0",
           signature: "org.sql2o.Connection#createQuery(String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Connection",
           methodName: "createQuery",
@@ -371,6 +384,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           library: "sql2o",
           libraryVersion: "1.6.0",
           signature: "org.sql2o.Query#executeScalar(Class)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Query",
           methodName: "executeScalar",
@@ -408,6 +422,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           library: "sql2o",
           libraryVersion: "2.5.0-alpha1",
           signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Sql2o",
           methodName: "Sql2o",
@@ -434,6 +449,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           libraryVersion: "3.0.2",
           signature:
             "org.springframework.boot.SpringApplication#run(Class,String[])",
+          endpointType: EndpointType.Method,
           packageName: "org.springframework.boot",
           typeName: "SpringApplication",
           methodName: "run",
@@ -458,6 +474,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
         {
           library: "rt",
           signature: "java.io.PrintStream#println(String)",
+          endpointType: EndpointType.Method,
           packageName: "java.io",
           typeName: "PrintStream",
           methodName: "println",
@@ -488,6 +505,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Connection",
             methodName: "createQuery",
@@ -501,6 +519,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             provenance: "manual",
             signature:
               "org.springframework.boot.SpringApplication#run(Class,String[])",
+            endpointType: EndpointType.Method,
             packageName: "org.springframework.boot",
             typeName: "SpringApplication",
             methodName: "run",
@@ -514,6 +533,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
             kind: "jndi",
             provenance: "manual",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Sql2o",
             methodName: "Sql2o",
@@ -529,6 +549,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Connection#createQuery(String)",
+              endpointType: EndpointType.Method,
               packageName: "org.sql2o",
               typeName: "Connection",
               methodName: "createQuery",
@@ -541,6 +562,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Query#executeScalar(Class)",
+              endpointType: EndpointType.Method,
               packageName: "org.sql2o",
               typeName: "Query",
               methodName: "executeScalar",
@@ -558,6 +580,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
               provenance: "df-generated",
               signature:
                 "com.google.gson.TypeAdapter#fromJsonTree(JsonElement)",
+              endpointType: EndpointType.Method,
               packageName: "com.google.gson",
               typeName: "TypeAdapter",
               methodName: "fromJsonTree",
@@ -627,6 +650,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         {
           library: "sql2o",
           signature: "org.sql2o.Connection#createQuery(String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Connection",
           methodName: "createQuery",
@@ -663,6 +687,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         {
           library: "sql2o",
           signature: "org.sql2o.Query#executeScalar(Class)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Query",
           methodName: "executeScalar",
@@ -699,6 +724,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         {
           library: "sql2o",
           signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Sql2o",
           methodName: "Sql2o",
@@ -729,6 +755,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Connection",
             methodName: "createQuery",
@@ -742,6 +769,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             kind: "jndi",
             provenance: "manual",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Sql2o",
             methodName: "Sql2o",
@@ -786,6 +814,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         {
           library: "sql2o",
           signature: "org.sql2o.Connection#createQuery(String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Connection",
           methodName: "createQuery",
@@ -822,6 +851,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         {
           library: "sql2o",
           signature: "org.sql2o.Query#executeScalar(Class)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Query",
           methodName: "executeScalar",
@@ -858,6 +888,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         {
           library: "sql2o",
           signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Sql2o",
           methodName: "Sql2o",
@@ -888,6 +919,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             kind: "sql",
             provenance: "df-generated",
             signature: "org.sql2o.Connection#createQuery(String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Connection",
             methodName: "createQuery",
@@ -901,6 +933,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             kind: "jndi",
             provenance: "manual",
             signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+            endpointType: EndpointType.Method,
             packageName: "org.sql2o",
             typeName: "Sql2o",
             methodName: "Sql2o",
@@ -916,6 +949,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Connection#createQuery(String)",
+              endpointType: EndpointType.Method,
               packageName: "org.sql2o",
               typeName: "Connection",
               methodName: "createQuery",
@@ -928,6 +962,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
               kind: "summary",
               provenance: "manual",
               signature: "org.sql2o.Query#executeScalar(Class)",
+              endpointType: EndpointType.Method,
               packageName: "org.sql2o",
               typeName: "Query",
               methodName: "executeScalar",
@@ -945,6 +980,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
               provenance: "df-generated",
               signature:
                 "com.google.gson.TypeAdapter#fromJsonTree(JsonElement)",
+              endpointType: EndpointType.Method,
               packageName: "com.google.gson",
               typeName: "TypeAdapter",
               methodName: "fromJsonTree",
@@ -989,6 +1025,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         library: "HostTestAppDbContext",
         signature:
           "Volo.Abp.TestApp.MongoDb.HostTestAppDbContext#get_FifthDbContextDummyEntity()",
+        endpointType: EndpointType.Method,
         packageName: "Volo.Abp.TestApp.MongoDb",
         typeName: "HostTestAppDbContext",
         methodName: "get_FifthDbContextDummyEntity",
@@ -1001,6 +1038,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         library: "CityRepository",
         signature:
           "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)",
+        endpointType: EndpointType.Method,
         packageName: "Volo.Abp.TestApp.MongoDB",
         typeName: "CityRepository",
         methodName: "FindByNameAsync",
@@ -1020,6 +1058,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             provenance: "df-generated",
             signature:
               "Volo.Abp.TestApp.MongoDb.HostTestAppDbContext#get_FifthDbContextDummyEntity()",
+            endpointType: EndpointType.Method,
             packageName: "Volo.Abp.TestApp.MongoDb",
             typeName: "HostTestAppDbContext",
             methodName: "get_FifthDbContextDummyEntity",
@@ -1034,6 +1073,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
             provenance: "df-generated",
             signature:
               "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)",
+            endpointType: EndpointType.Method,
             packageName: "Volo.Abp.TestApp.MongoDB",
             typeName: "CityRepository",
             methodName: "FindByNameAsync",
@@ -1093,6 +1133,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
                   provenance: "manual",
                   signature:
                     "Volo.Abp.TestApp.MongoDB.CityRepository#FindByNameAsync(System.String)",
+                  endpointType: EndpointType.Method,
                   packageName: "Volo.Abp.TestApp.MongoDB",
                   typeName: "CityRepository",
                   methodName: "FindByNameAsync",
@@ -1153,17 +1194,17 @@ describe("loadDataExtensionYaml", () => {
         {
           input: "Argument[0]",
           kind: "sql",
-          output: "",
           type: "sink",
           provenance: "manual",
           signature: "org.sql2o.Connection#createQuery(String)",
+          endpointType: EndpointType.Method,
           packageName: "org.sql2o",
           typeName: "Connection",
           methodName: "createQuery",
           methodParameters: "(String)",
         },
       ],
-    });
+    } satisfies Record<string, ModeledMethod[]>);
   });
 
   it("returns undefined if given a string", () => {

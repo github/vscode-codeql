@@ -3,7 +3,7 @@ import type {
   BqrsEntityValue,
 } from "../common/bqrs-cli-types";
 import type { Method, Usage } from "./method";
-import { CallClassification } from "./method";
+import { EndpointType, CallClassification } from "./method";
 import type { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
 import { Mode } from "./shared/mode";
@@ -33,6 +33,7 @@ export function decodeBqrsToMethods(
     let libraryVersion: string | undefined;
     let type: ModeledMethodType;
     let classification: CallClassification;
+    let endpointType = EndpointType.Method;
 
     if (mode === Mode.Application) {
       [
@@ -62,7 +63,16 @@ export function decodeBqrsToMethods(
       classification = CallClassification.Unknown;
     }
 
+    if ((type as string) === "") {
+      type = "none";
+    }
+
+    if (methodName === "") {
+      endpointType = EndpointType.Class;
+    }
+
     const signature = definition.createMethodSignature({
+      endpointType,
       packageName,
       typeName,
       methodName,
@@ -93,6 +103,7 @@ export function decodeBqrsToMethods(
         library,
         libraryVersion,
         signature,
+        endpointType,
         packageName,
         typeName,
         methodName,

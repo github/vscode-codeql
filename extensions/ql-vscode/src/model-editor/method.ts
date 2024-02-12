@@ -17,7 +17,13 @@ export type Usage = Call & {
   readonly classification: CallClassification;
 };
 
+export enum EndpointType {
+  Method = "method",
+  Class = "class",
+}
+
 export interface MethodDefinition {
+  readonly endpointType: EndpointType;
   /**
    * The package name in Java, or the namespace in C#, e.g. `org.sql2o` or `System.Net.Http.Headers`.
    *
