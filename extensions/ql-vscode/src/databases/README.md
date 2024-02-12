@@ -1,3 +1,3 @@
 ### Databases
 
-This folder contains tests for the variant analysis repository panel.
+This folder contains code for the (local) databases panel and the variant analysis repositories panel.
