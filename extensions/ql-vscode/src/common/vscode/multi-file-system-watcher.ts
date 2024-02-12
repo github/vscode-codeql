@@ -18,15 +18,11 @@ class WatcherCollection extends DisposableObject {
    *   deleted.
    * @param thisArgs The `this` argument for the event listener.
    */
-  public addWatcher(
-    pattern: GlobPattern,
-    listener: (e: Uri) => any,
-    thisArgs: any,
-  ): void {
+  public addWatcher(pattern: GlobPattern, listener: (e: Uri) => void): void {
     const watcher = workspace.createFileSystemWatcher(pattern);
-    this.push(watcher.onDidCreate(listener, thisArgs));
-    this.push(watcher.onDidChange(listener, thisArgs));
-    this.push(watcher.onDidDelete(listener, thisArgs));
+    this.push(watcher.onDidCreate(listener));
+    this.push(watcher.onDidChange(listener));
+    this.push(watcher.onDidDelete(listener));
   }
 }
 
@@ -54,7 +50,7 @@ export class MultiFileSystemWatcher extends DisposableObject {
    * @param pattern The pattern to watch.
    */
   public addWatch(pattern: GlobPattern): void {
-    this.watchers.addWatcher(pattern, this.handleDidChange, this);
+    this.watchers.addWatcher(pattern, this.handleDidChange.bind(this));
   }
 
   /**
