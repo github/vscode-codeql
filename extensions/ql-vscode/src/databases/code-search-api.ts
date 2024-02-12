@@ -6,7 +6,7 @@ import type { BaseLogger } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { UserCancellationException } from "../common/vscode/progress";
-import { EndpointDefaults } from "@octokit/types";
+import type { EndpointDefaults } from "@octokit/types";
 
 export async function getCodeSearchRepositories(
   query: string,

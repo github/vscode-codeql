@@ -14,7 +14,7 @@ import { getErrorMessage } from "../common/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackFilePath } from "../common/ql";
 import type { App } from "../common/app";
 import type { ExtensionApp } from "../common/vscode/vscode-app";
-import { QlPackFile } from "../packaging/qlpack-file";
+import type { QlPackFile } from "../packaging/qlpack-file";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";
