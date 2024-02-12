@@ -15,6 +15,7 @@ import { pathExists, readJson, writeJson } from "fs-extra";
 import { resolve, relative } from "path";
 
 import type { Octokit } from "@octokit/core";
+import type { EndpointDefaults } from "@octokit/types";
 import type { RestEndpointMethodTypes } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
 
@@ -42,7 +43,7 @@ const octokit = new MyOctokit({
   throttle: {
     onRateLimit: (
       retryAfter: number,
-      options: any,
+      options: EndpointDefaults,
       octokit: Octokit,
     ): boolean => {
       octokit.log.warn(
@@ -53,7 +54,7 @@ const octokit = new MyOctokit({
     },
     onSecondaryRateLimit: (
       _retryAfter: number,
-      options: any,
+      options: EndpointDefaults,
       octokit: Octokit,
     ): void => {
       octokit.log.warn(
