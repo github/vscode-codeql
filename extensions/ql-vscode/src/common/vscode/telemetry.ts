@@ -20,7 +20,7 @@ import { showBinaryChoiceWithUrlDialog } from "./dialog";
 import type { RedactableError } from "../errors";
 import type { SemVer } from "semver";
 import type { AppTelemetry } from "../telemetry";
-import { EnvelopeTelemetry } from "applicationinsights/out/Declarations/Contracts";
+import type { EnvelopeTelemetry } from "applicationinsights/out/Declarations/Contracts";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
