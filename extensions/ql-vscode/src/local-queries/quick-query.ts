@@ -14,6 +14,7 @@ import { getErrorMessage } from "../common/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackFilePath } from "../common/ql";
 import type { App } from "../common/app";
 import type { ExtensionApp } from "../common/vscode/vscode-app";
+import { QlPackFile } from "../packaging/qlpack-file";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";
@@ -125,7 +126,7 @@ export async function displayQuickQuery(
 
     // Only rewrite the qlpack file if the database has changed
     if (shouldRewrite) {
-      const quickQueryQlpackYaml: any = {
+      const quickQueryQlpackYaml: QlPackFile = {
         name: "vscode/quick-query",
         version: "1.0.0",
         dependencies: {
@@ -175,6 +176,6 @@ async function checkShouldRewrite(
   if (!(await pathExists(qlPackFile))) {
     return true;
   }
-  const qlPackContents: any = load(await readFile(qlPackFile, "utf8"));
+  const qlPackContents = load(await readFile(qlPackFile, "utf8")) as QlPackFile;
   return !qlPackContents.dependencies?.[newDependency];
 }
