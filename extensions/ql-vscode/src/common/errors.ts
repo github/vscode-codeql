@@ -84,12 +84,13 @@ export interface ErrorLike {
   stack?: string;
 }
 
-function isErrorLike(error: any): error is ErrorLike {
-  if (
+function isErrorLike(error: unknown): error is ErrorLike {
+  return (
+    error !== undefined &&
+    error !== null &&
+    typeof error === "object" &&
+    "message" in error &&
     typeof error.message === "string" &&
-    (error.stack === undefined || typeof error.stack === "string")
-  ) {
-    return true;
-  }
-  return false;
+    (!("stack" in error) || typeof error.stack === "string")
+  );
 }

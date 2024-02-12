@@ -124,8 +124,14 @@ export interface IOError {
   readonly code: string;
 }
 
-export function isIOError(e: any): e is IOError {
-  return e.code !== undefined && typeof e.code === "string";
+export function isIOError(e: unknown): e is IOError {
+  return (
+    e !== undefined &&
+    e !== null &&
+    typeof e === "object" &&
+    "code" in e &&
+    typeof e.code === "string"
+  );
 }
 
 // This function is a wrapper around `os.tmpdir()` to make it easier to mock in tests.
