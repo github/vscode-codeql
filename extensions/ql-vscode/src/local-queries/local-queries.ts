@@ -600,6 +600,11 @@ export class LocalQueries extends DisposableObject {
   }
 }
 
-function isTabInputText(input: any): input is TabInputText {
-  return input?.uri !== undefined;
+function isTabInputText(input: unknown): input is TabInputText {
+  return (
+    input !== null &&
+    typeof input === "object" &&
+    "uri" in input &&
+    input?.uri !== undefined
+  );
 }
