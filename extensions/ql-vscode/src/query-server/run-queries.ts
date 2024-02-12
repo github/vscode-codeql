@@ -28,7 +28,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   generateEvalLog: boolean,
   additionalPacks: string[],
   extensionPacks: string[] | undefined,
-  additionalRunQueryArgs: Record<string, any>,
+  additionalRunQueryArgs: Record<string, unknown>,
   outputDir: QueryOutputDir,
   progress: ProgressCallback,
   token: CancellationToken,

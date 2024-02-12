@@ -504,7 +504,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   protected customRequest(
     command: string,
     response: CodeQLProtocol.Response,
-    args: any,
+    args: unknown,
     request?: Protocol.Request,
   ): void {
     switch (command) {

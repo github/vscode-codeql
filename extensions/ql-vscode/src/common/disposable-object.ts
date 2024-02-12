@@ -1,7 +1,7 @@
 // Avoid explicitly referencing Disposable type in vscode.
 // This file cannot have dependencies on the vscode API.
 export interface Disposable {
-  dispose(): any;
+  dispose(): unknown;
 }
 
 export type DisposeHandler = (disposable: Disposable) => void;
