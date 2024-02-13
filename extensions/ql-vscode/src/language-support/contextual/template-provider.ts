@@ -50,7 +50,7 @@ import { MultiCancellationToken } from "../../common/vscode/multi-cancellation-t
  */
 
 export class TemplateQueryDefinitionProvider implements DefinitionProvider {
-  private cache: CachedOperation<[CancellationToken], LocationLink[]>;
+  private cache: CachedOperation<typeof this.getDefinitions>;
 
   constructor(
     private cli: CodeQLCliServer,
@@ -110,7 +110,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
  * or from a selected identifier.
  */
 export class TemplateQueryReferenceProvider implements ReferenceProvider {
-  private cache: CachedOperation<[CancellationToken], FullLocationLink[]>;
+  private cache: CachedOperation<typeof this.getReferences>;
 
   constructor(
     private cli: CodeQLCliServer,
@@ -181,10 +181,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
  * source-language files.
  */
 export class TemplatePrintAstProvider {
-  private cache: CachedOperation<
-    [ProgressCallback, CancellationToken],
-    CoreCompletedQuery
-  >;
+  private cache: CachedOperation<typeof this.getAst>;
 
   constructor(
     private cli: CodeQLCliServer,
@@ -280,10 +277,7 @@ export class TemplatePrintAstProvider {
  * source-language files.
  */
 export class TemplatePrintCfgProvider {
-  private cache: CachedOperation<
-    [number, number],
-    [Uri, Record<string, string>]
-  >;
+  private cache: CachedOperation<typeof this.getCfgUri>;
 
   constructor(
     private cli: CodeQLCliServer,
