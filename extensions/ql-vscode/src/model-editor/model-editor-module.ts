@@ -143,7 +143,10 @@ export class ModelEditorModule extends DisposableObject {
 
       const language = db.language;
 
-      if (!isQueryLanguage(language) || !isSupportedLanguage(language)) {
+      if (
+        !isQueryLanguage(language) ||
+        !isSupportedLanguage(language, this.modelConfig)
+      ) {
         void showAndLogErrorMessage(
           this.app.logger,
           `The CodeQL Model Editor is not supported for ${language} databases.`,
