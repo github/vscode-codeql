@@ -50,7 +50,7 @@ import { MultiCancellationToken } from "../../common/vscode/multi-cancellation-t
  */
 
 export class TemplateQueryDefinitionProvider implements DefinitionProvider {
-  private cache: CachedOperation<LocationLink[]>;
+  private cache: CachedOperation<[CancellationToken], LocationLink[]>;
 
   constructor(
     private cli: CodeQLCliServer,
@@ -58,9 +58,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
     private dbm: DatabaseManager,
     private queryStorageDir: string,
   ) {
-    this.cache = new CachedOperation<LocationLink[]>(
-      this.getDefinitions.bind(this),
-    );
+    this.cache = new CachedOperation(this.getDefinitions.bind(this));
   }
 
   async provideDefinition(
@@ -112,7 +110,7 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
  * or from a selected identifier.
  */
 export class TemplateQueryReferenceProvider implements ReferenceProvider {
-  private cache: CachedOperation<FullLocationLink[]>;
+  private cache: CachedOperation<[CancellationToken], FullLocationLink[]>;
 
   constructor(
     private cli: CodeQLCliServer,
@@ -120,9 +118,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     private dbm: DatabaseManager,
     private queryStorageDir: string,
   ) {
-    this.cache = new CachedOperation<FullLocationLink[]>(
-      this.getReferences.bind(this),
-    );
+    this.cache = new CachedOperation(this.getReferences.bind(this));
   }
 
   async provideReferences(
@@ -185,7 +181,10 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
  * source-language files.
  */
 export class TemplatePrintAstProvider {
-  private cache: CachedOperation<CoreCompletedQuery>;
+  private cache: CachedOperation<
+    [ProgressCallback, CancellationToken],
+    CoreCompletedQuery
+  >;
 
   constructor(
     private cli: CodeQLCliServer,
@@ -193,9 +192,7 @@ export class TemplatePrintAstProvider {
     private dbm: DatabaseManager,
     private queryStorageDir: string,
   ) {
-    this.cache = new CachedOperation<CoreCompletedQuery>(
-      this.getAst.bind(this),
-    );
+    this.cache = new CachedOperation(this.getAst.bind(this));
   }
 
   async provideAst(
@@ -283,15 +280,16 @@ export class TemplatePrintAstProvider {
  * source-language files.
  */
 export class TemplatePrintCfgProvider {
-  private cache: CachedOperation<[Uri, Record<string, string>] | undefined>;
+  private cache: CachedOperation<
+    [number, number],
+    [Uri, Record<string, string>]
+  >;
 
   constructor(
     private cli: CodeQLCliServer,
     private dbm: DatabaseManager,
   ) {
-    this.cache = new CachedOperation<[Uri, Record<string, string>] | undefined>(
-      this.getCfgUri.bind(this),
-    );
+    this.cache = new CachedOperation(this.getCfgUri.bind(this));
   }
 
   async provideCfgUri(
