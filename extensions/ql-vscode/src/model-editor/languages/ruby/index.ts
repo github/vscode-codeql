@@ -3,7 +3,7 @@ import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { Mode } from "../../shared/mode";
 import { parseGenerateModelResults } from "./generate";
 import type { MethodArgument } from "../../method";
-import { getArgumentsList } from "../../method";
+import { EndpointType, getArgumentsList } from "../../method";
 import {
   parseRubyAccessPath,
   parseRubyMethodFromPath,
@@ -19,10 +19,13 @@ export const ruby: ModelsAsDataLanguage = {
   availableModes: [Mode.Framework],
   createMethodSignature: ({ typeName, methodName }) =>
     `${typeName}#${methodName}`,
+  endpointTypeForEndpoint: ({ typeName, methodName }) =>
+    rubyEndpointType(typeName, methodName),
   predicates: {
     source: {
       extensiblePredicate: sharedExtensiblePredicates.source,
       supportedKinds: sharedKinds.source,
+      supportedEndpointTypes: [EndpointType.Method, EndpointType.Class],
       // extensible predicate sourceModel(
       //   string type, string path, string kind
       // );
@@ -42,7 +45,7 @@ export const ruby: ModelsAsDataLanguage = {
           kind: row[2] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
-          endpointType: rubyEndpointType(methodName),
+          endpointType: rubyEndpointType(typeName, methodName),
           packageName: "",
           typeName,
           methodName,
@@ -53,6 +56,7 @@ export const ruby: ModelsAsDataLanguage = {
     sink: {
       extensiblePredicate: sharedExtensiblePredicates.sink,
       supportedKinds: sharedKinds.sink,
+      supportedEndpointTypes: [EndpointType.Method, EndpointType.Constructor],
       // extensible predicate sinkModel(
       //   string type, string path, string kind
       // );
@@ -74,7 +78,7 @@ export const ruby: ModelsAsDataLanguage = {
           kind: row[2] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
-          endpointType: rubyEndpointType(methodName),
+          endpointType: rubyEndpointType(typeName, methodName),
           packageName: "",
           typeName,
           methodName,
@@ -85,6 +89,7 @@ export const ruby: ModelsAsDataLanguage = {
     summary: {
       extensiblePredicate: sharedExtensiblePredicates.summary,
       supportedKinds: sharedKinds.summary,
+      supportedEndpointTypes: [EndpointType.Method, EndpointType.Constructor],
       // extensible predicate summaryModel(
       //   string type, string path, string input, string output, string kind
       // );
@@ -105,7 +110,7 @@ export const ruby: ModelsAsDataLanguage = {
           kind: row[4] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
-          endpointType: rubyEndpointType(methodName),
+          endpointType: rubyEndpointType(typeName, methodName),
           packageName: "",
           typeName,
           methodName,
@@ -132,7 +137,7 @@ export const ruby: ModelsAsDataLanguage = {
           kind: row[2] as string,
           provenance: "manual",
           signature: rubyMethodSignature(typeName, methodName),
-          endpointType: rubyEndpointType(methodName),
+          endpointType: rubyEndpointType(typeName, methodName),
           packageName: "",
           typeName,
           methodName,
@@ -157,7 +162,7 @@ export const ruby: ModelsAsDataLanguage = {
           relatedTypeName: row[0] as string,
           path,
           signature: rubyMethodSignature(typeName, methodName),
-          endpointType: rubyEndpointType(methodName),
+          endpointType: rubyEndpointType(typeName, methodName),
           packageName: "",
           typeName,
           methodName,

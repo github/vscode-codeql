@@ -1,4 +1,4 @@
-import type { MethodArgument, MethodDefinition } from "../method";
+import type { EndpointType, MethodArgument, MethodDefinition } from "../method";
 import type {
   ModeledMethod,
   NeutralModeledMethod,
@@ -23,6 +23,11 @@ type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;
 export type ModelsAsDataLanguagePredicate<T> = {
   extensiblePredicate: string;
   supportedKinds?: string[];
+  /**
+   * The endpoint types that this predicate supports. If not specified, the predicate supports all
+   * endpoint types.
+   */
+  supportedEndpointTypes?: EndpointType[];
   generateMethodDefinition: GenerateMethodDefinition<T>;
   readModeledMethod: ReadModeledMethod;
 };
@@ -76,6 +81,18 @@ export type ModelsAsDataLanguage = {
    */
   availableModes?: Mode[];
   createMethodSignature: (method: MethodDefinition) => string;
+  /**
+   * This allows modifying the endpoint type automatically assigned to an endpoint. The default
+   * endpoint type is undefined, and if this method returns undefined, the default endpoint type will
+   * be determined by heuristics.
+   * @param method The method to get the endpoint type for. The endpoint type can be undefined if the
+   *               query does not return an endpoint type.
+   */
+  endpointTypeForEndpoint?: (
+    method: Omit<MethodDefinition, "endpointType"> & {
+      endpointType: EndpointType | undefined;
+    },
+  ) => EndpointType | undefined;
   predicates: ModelsAsDataLanguagePredicates;
   modelGeneration?: ModelsAsDataLanguageModelGeneration;
   accessPathSuggestions?: ModelsAsDataLanguageAccessPathSuggestions;

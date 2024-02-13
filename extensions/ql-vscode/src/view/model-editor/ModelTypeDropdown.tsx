@@ -12,7 +12,8 @@ import type { Method } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import type { Mutable } from "../../common/mutable";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
-import { QueryLanguage } from "../../common/query-language";
+import type { QueryLanguage } from "../../common/query-language";
+import type { ModelsAsDataLanguagePredicates } from "../../model-editor/languages";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
@@ -25,6 +26,16 @@ type Props = {
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
+const typeLabels: Record<keyof ModelsAsDataLanguagePredicates, string> = {
+  source: "Source",
+  sink: "Sink",
+  summary: "Flow summary",
+  neutral: "Neutral",
+  type: "Type",
+};
+
+type Option = { value: ModeledMethodType; label: string };
+
 export const ModelTypeDropdown = ({
   language,
   method,
@@ -33,19 +44,31 @@ export const ModelTypeDropdown = ({
   onChange,
 }: Props): React.JSX.Element => {
   const options = useMemo(() => {
-    const baseOptions: Array<{ value: ModeledMethodType; label: string }> = [
+    const modelsAsDataLanguage = getModelsAsDataLanguage(language);
+
+    const baseOptions: Option[] = [
       { value: "none", label: "Unmodeled" },
-      { value: "source", label: "Source" },
-      { value: "sink", label: "Sink" },
-      { value: "summary", label: "Flow summary" },
-      { value: "neutral", label: "Neutral" },
+      ...Object.entries(modelsAsDataLanguage.predicates)
+        .map(([predicateKey, predicate]): Option | null => {
+          const type = predicateKey as keyof ModelsAsDataLanguagePredicates;
+
+          if (
+            predicate.supportedEndpointTypes &&
+            !predicate.supportedEndpointTypes.includes(method.endpointType)
+          ) {
+            return null;
+          }
+
+          return {
+            value: type,
+            label: typeLabels[type],
+          };
+        })
+        .filter((option): option is Option => option !== null),
     ];
-    if (language === QueryLanguage.Ruby) {
-      baseOptions.push({ value: "type", label: "Type" });
-    }
 
     return baseOptions;
-  }, [language]);
+  }, [language, method.endpointType]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {

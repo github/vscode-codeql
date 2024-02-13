@@ -68,7 +68,7 @@ export function parseAccessPathSuggestionsResults(
       return {
         method: {
           packageName: "",
-          endpointType: rubyEndpointType(methodName),
+          endpointType: rubyEndpointType(type, methodName),
           typeName: type,
           methodName,
           methodParameters: "",
