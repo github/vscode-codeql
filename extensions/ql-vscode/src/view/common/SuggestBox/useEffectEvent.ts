@@ -9,6 +9,7 @@ import { useCallback, useInsertionEffect, useRef } from "react";
  *
  * @param callback The callback to call when the event is triggered.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useEffectEvent<T extends (...args: any[]) => any>(callback: T) {
   const ref = useRef<T>(callback);
 
