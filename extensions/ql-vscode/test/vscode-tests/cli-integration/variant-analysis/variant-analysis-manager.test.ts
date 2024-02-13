@@ -343,6 +343,22 @@ describe("Variant Analysis Manager", () => {
       });
     });
 
+    it("should run multiple queries that are part of the same pack", async () => {
+      await doVariantAnalysisTest({
+        queryPaths: [
+          "data-qlpack-multiple-queries/query1.ql",
+          "data-qlpack-multiple-queries/query2.ql",
+        ],
+        qlPackRootPath: "data-qlpack-multiple-queries",
+        qlPackFilePath: "data-qlpack-multiple-queries/codeql-pack.yml",
+        expectedPackName: "github/remote-query-pack",
+        filesThatExist: ["query1.ql", "query2.ql"],
+        filesThatDoNotExist: [],
+        qlxFilesThatExist: ["query1.qlx", "query2.qlx"],
+        dependenciesToCheck: ["codeql/javascript-all"],
+      });
+    });
+
     async function doVariantAnalysisTest({
       queryPaths,
       qlPackRootPath,
