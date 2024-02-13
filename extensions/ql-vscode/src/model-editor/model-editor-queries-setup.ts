@@ -9,7 +9,7 @@ import {
 } from "./model-editor-queries";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { ModelConfig } from "../config";
-import { Mode } from "./shared/mode";
+import type { Mode } from "./shared/mode";
 import type { NotificationLogger } from "../common/logging";
 
 /**
@@ -31,6 +31,7 @@ import type { NotificationLogger } from "../common/logging";
  * @param queryDir The directory to set up.
  * @param language The language to use for the queries.
  * @param modelConfig The model config to use.
+ * @param initialMode The initial mode to use to check the existence of the queries.
  * @returns true if the setup was successful, false otherwise.
  */
 export async function setUpPack(
@@ -39,6 +40,7 @@ export async function setUpPack(
   queryDir: string,
   language: QueryLanguage,
   modelConfig: ModelConfig,
+  initialMode: Mode,
 ): Promise<boolean> {
   // Download the required query packs
   await cliServer.packDownload([`codeql/${language}-queries`]);
@@ -48,7 +50,7 @@ export async function setUpPack(
   const applicationModeQuery = await resolveEndpointsQuery(
     cliServer,
     language,
-    Mode.Application,
+    initialMode,
     [],
     [],
   );

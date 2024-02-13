@@ -48,7 +48,14 @@ describe("setUpPack", () => {
         llmGeneration: false,
       });
 
-      await setUpPack(cliServer, logger, queryDir, language, modelConfig);
+      await setUpPack(
+        cliServer,
+        logger,
+        queryDir,
+        language,
+        modelConfig,
+        Mode.Application,
+      );
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles).toEqual(
@@ -106,7 +113,14 @@ describe("setUpPack", () => {
         llmGeneration: false,
       });
 
-      await setUpPack(cliServer, logger, queryDir, language, modelConfig);
+      await setUpPack(
+        cliServer,
+        logger,
+        queryDir,
+        language,
+        modelConfig,
+        Mode.Application,
+      );
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles.sort()).toEqual(["codeql-pack.yml"].sort());

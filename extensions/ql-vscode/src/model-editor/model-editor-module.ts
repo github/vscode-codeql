@@ -214,6 +214,7 @@ export class ModelEditorModule extends DisposableObject {
             queryDir,
             language,
             this.modelConfig,
+            initialMode,
           );
           if (!success) {
             await cleanupQueryDir();
