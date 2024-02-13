@@ -40,13 +40,15 @@ export function createVSCodeCommandManager<
  * @param logger The logger to use for error reporting.
  * @param telemetry The telemetry listener to use for error reporting.
  */
-export function registerCommandWithErrorHandling<S extends unknown[], T>(
+export function registerCommandWithErrorHandling<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(
   commandId: string,
-  task: (...args: S) => Promise<T>,
+  task: T,
   logger: NotificationLogger = extLogger,
   telemetry: AppTelemetry | undefined = telemetryListener,
 ): Disposable {
-  return commands.registerCommand(commandId, async (...args: S) => {
+  return commands.registerCommand(commandId, async (...args: Parameters<T>) => {
     const startTime = Date.now();
     let error: Error | undefined;
 
