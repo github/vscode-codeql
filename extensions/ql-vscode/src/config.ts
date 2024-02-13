@@ -716,7 +716,6 @@ const LLM_GENERATION_DEV_ENDPOINT = new Setting(
   MODEL_SETTING,
 );
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
-const ENABLE_RUBY = new Setting("enableRuby", MODEL_SETTING);
 const ENABLE_ACCESS_PATH_SUGGESTIONS = new Setting(
   "enableAccessPathSuggestions",
   MODEL_SETTING,
@@ -726,7 +725,6 @@ export interface ModelConfig {
   flowGeneration: boolean;
   llmGeneration: boolean;
   getExtensionsDirectory(languageId: string): string | undefined;
-  enableRuby: boolean;
   enableAccessPathSuggestions: boolean;
 }
 
@@ -763,10 +761,6 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
     return EXTENSIONS_DIRECTORY.getValue<string>({
       languageId,
     });
-  }
-
-  public get enableRuby(): boolean {
-    return !!ENABLE_RUBY.getValue<boolean>();
   }
 
   public get enableAccessPathSuggestions(): boolean {

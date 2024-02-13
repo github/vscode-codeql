@@ -1,5 +1,5 @@
 import { QueryLanguage } from "../common/query-language";
-import type { ModelConfig } from "../config";
+import { isCanary } from "../config";
 
 /**
  * Languages that are always supported by the model editor. These languages
@@ -10,17 +10,14 @@ export const SUPPORTED_LANGUAGES: QueryLanguage[] = [
   QueryLanguage.CSharp,
 ];
 
-export function isSupportedLanguage(
-  language: QueryLanguage,
-  modelConfig: ModelConfig,
-) {
+export function isSupportedLanguage(language: QueryLanguage) {
   if (SUPPORTED_LANGUAGES.includes(language)) {
     return true;
   }
 
   if (language === QueryLanguage.Ruby) {
-    // Ruby is only enabled when the config setting is set
-    return modelConfig.enableRuby;
+    // Ruby is only enabled when in canary mode
+    return isCanary();
   }
 
   return false;
