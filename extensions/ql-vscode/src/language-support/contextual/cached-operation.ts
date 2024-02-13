@@ -1,7 +1,7 @@
 import { asError } from "../../common/helpers-pure";
 
 /**
- * A cached mapping from args of type [string, S] to a value of type Promise<U>.
+ * A cached mapping from strings to a value of type U.
  */
 export class CachedOperation<S extends unknown[], U> {
   private readonly operation: (t: string, ...args: S) => Promise<U>;
