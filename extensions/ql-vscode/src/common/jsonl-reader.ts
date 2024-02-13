@@ -10,9 +10,9 @@ import { readFile } from "fs-extra";
  * @param path The path to the file.
  * @param handler Callback to be invoked for each top-level JSON object in order.
  */
-export async function readJsonlFile(
+export async function readJsonlFile<T>(
   path: string,
-  handler: (value: any) => Promise<void>,
+  handler: (value: T) => Promise<void>,
 ): Promise<void> {
   const logSummary = await readFile(path, "utf-8");
 
@@ -20,7 +20,7 @@ export async function readJsonlFile(
   const jsonSummaryObjects: string[] = logSummary.split(/\r?\n\r?\n/g);
 
   for (const obj of jsonSummaryObjects) {
-    const jsonObj = JSON.parse(obj);
+    const jsonObj = JSON.parse(obj) as T;
     await handler(jsonObj);
   }
 }

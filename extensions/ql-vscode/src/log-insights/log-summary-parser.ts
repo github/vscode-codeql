@@ -19,7 +19,7 @@ export async function parseViewerData(
 ): Promise<EvalLogData[]> {
   const viewerData: EvalLogData[] = [];
 
-  await readJsonlFile(jsonSummaryPath, async (jsonObj) => {
+  await readJsonlFile<EvalLogData>(jsonSummaryPath, async (jsonObj) => {
     // Only convert log items that have an RA and millis field
     if (jsonObj.ra !== undefined && jsonObj.millis !== undefined) {
       const newLogData: EvalLogData = {

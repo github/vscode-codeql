@@ -40,5 +40,5 @@ export interface Memento {
    * @param key A string.
    * @param value A value. MUST not contain cyclic references.
    */
-  update(key: string, value: any): Thenable<void>;
+  update<T>(key: string, value: T | undefined): Thenable<void>;
 }
