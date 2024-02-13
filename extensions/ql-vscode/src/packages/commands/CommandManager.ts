@@ -10,6 +10,7 @@ import type { Disposable } from "./Disposable";
 /**
  * A command function is a completely untyped command.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type CommandFunction = (...args: any[]) => Promise<unknown>;
 
 /**
