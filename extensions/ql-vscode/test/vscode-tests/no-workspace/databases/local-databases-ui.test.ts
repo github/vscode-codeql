@@ -30,13 +30,13 @@ describe("local-databases-ui", () => {
   // these two should be deleted
   const db4 = createDatabase(
     storageDir,
-    "db2-notimported-with-db-info",
+    "db4-notimported-with-db-info",
     QueryLanguage.Cpp,
     ".dbinfo",
   );
   const db5 = createDatabase(
     storageDir,
-    "db2-notimported-with-codeql-database.yml",
+    "db5-notimported-with-codeql-database.yml",
     QueryLanguage.Cpp,
     "codeql-database.yml",
   );
