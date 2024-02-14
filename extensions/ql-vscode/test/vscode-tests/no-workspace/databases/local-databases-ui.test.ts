@@ -246,6 +246,29 @@ describe("local-databases-ui", () => {
         expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
         expect(handleChooseDatabaseGithubSpy).toHaveBeenCalledTimes(1);
       });
+
+      it("should skip straight to prompting to import a database if there are no existing databases", async () => {
+        databaseManager.databaseItems = [];
+
+        const showQuickPickSpy = jest
+          .spyOn(window, "showQuickPick")
+          .mockResolvedValueOnce(
+            mockedQuickPickItem(
+              mockedObject<DatabaseImportQuickPickItems>({
+                importType: "github",
+              }),
+            ),
+          );
+
+        const handleChooseDatabaseGithubSpy = jest
+          .spyOn(databaseUI as any, "handleChooseDatabaseGithub")
+          .mockResolvedValue(undefined);
+
+        await databaseUI.getDatabaseItem(progress, token);
+
+        expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+        expect(handleChooseDatabaseGithubSpy).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
