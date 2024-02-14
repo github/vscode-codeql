@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.12.2 - 14 February 2024
 
 - Stop allowing running variant analyses with a query outside of the workspace. [#3302](https://github.com/github/vscode-codeql/pull/3302)
