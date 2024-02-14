@@ -79,55 +79,29 @@ export function ResultsApp() {
 
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
-      setState((prevState) => {
-        if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
-          // Display loading message
-          return {
-            ...prevState,
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "Loading results…",
-            },
-            nextResultsInfo: resultsInfo,
-          };
-        } else if (resultsInfo === null) {
-          // No results to display
-          return {
-            ...prevState,
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "No results to display",
-            },
-            nextResultsInfo: resultsInfo,
-          };
-        }
-
-        let results: Results | null = null;
-        let statusText = "";
-        try {
-          const resultSets = getResultSets(resultsInfo);
-          results = {
-            resultSets,
-            database: resultsInfo.database,
-            sortStates: getSortStates(resultsInfo),
-          };
-        } catch (e) {
-          const errorMessage = getErrorMessage(e);
-
-          statusText = `Error loading results: ${errorMessage}`;
-        }
-
-        return {
-          displayedResults: {
-            resultsInfo,
-            results,
-            errorMessage: statusText,
-          },
-          nextResultsInfo: null,
-          isExpectingResultsUpdate: false,
+      let results: Results | null = null;
+      let statusText = "";
+      try {
+        const resultSets = getResultSets(resultsInfo);
+        results = {
+          resultSets,
+          database: resultsInfo.database,
+          sortStates: getSortStates(resultsInfo),
         };
+      } catch (e) {
+        const errorMessage = getErrorMessage(e);
+
+        statusText = `Error loading results: ${errorMessage}`;
+      }
+
+      setState({
+        displayedResults: {
+          resultsInfo,
+          results,
+          errorMessage: statusText,
+        },
+        nextResultsInfo: null,
+        isExpectingResultsUpdate: false,
       });
     },
     [],
