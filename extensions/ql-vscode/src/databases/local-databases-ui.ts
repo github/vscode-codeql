@@ -877,7 +877,7 @@ export class DatabaseUI extends DisposableObject {
       }));
 
     const selectedDatabase = await window.showQuickPick(dbItems, {
-      placeHolder: "Select a database",
+      placeHolder: "Select an existing database from your workspace...",
       ignoreFocusOut: true,
     });
 
@@ -919,7 +919,8 @@ export class DatabaseUI extends DisposableObject {
     ];
     const selectedImportOption =
       await window.showQuickPick<DatabaseImportQuickPickItems>(importOptions, {
-        placeHolder: "Import a database from...",
+        placeHolder:
+          "Import a new database from the cloud or your local machine...",
         ignoreFocusOut: true,
       });
     if (!selectedImportOption) {
