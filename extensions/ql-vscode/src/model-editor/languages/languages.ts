@@ -3,12 +3,14 @@ import type {
   ModelsAsDataLanguage,
   ModelsAsDataLanguagePredicates,
 } from "./models-as-data";
+import { python } from "./python";
 import { ruby } from "./ruby";
 import { staticLanguage } from "./static";
 
 const languages: Partial<Record<QueryLanguage, ModelsAsDataLanguage>> = {
   [QueryLanguage.CSharp]: staticLanguage,
   [QueryLanguage.Java]: staticLanguage,
+  [QueryLanguage.Python]: python,
   [QueryLanguage.Ruby]: ruby,
 };
 
