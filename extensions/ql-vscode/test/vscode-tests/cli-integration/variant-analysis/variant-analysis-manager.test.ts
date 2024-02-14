@@ -344,6 +344,13 @@ describe("Variant Analysis Manager", () => {
     });
 
     it("should run multiple queries that are part of the same pack", async () => {
+      if (!(await cli.cliConstraints.supportsPackCreateWithMultipleQueries())) {
+        console.log(
+          `Skipping test because MRVA with multiple queries is only suppported in CLI version ${CliVersionConstraint.CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE} or later.`,
+        );
+        return;
+      }
+
       await doVariantAnalysisTest({
         queryPaths: [
           "data-qlpack-multiple-queries/query1.ql",
