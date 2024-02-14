@@ -28,7 +28,7 @@ export function compileViewEsbuild() {
 }
 
 export function watchViewEsbuild() {
-  watch(["src/view/**/*.{ts,tsx}"], compileViewEsbuild);
+  watch(["src/**/*.{ts,tsx}"], compileViewEsbuild);
 }
 
 export function checkViewTypeScript() {
@@ -38,5 +38,5 @@ export function checkViewTypeScript() {
 }
 
 export function watchViewCheckTypeScript() {
-  watch(["src/view/**/*.{ts,tsx}"], checkViewTypeScript);
+  watch(["src/**/*.{ts,tsx}"], checkViewTypeScript);
 }
