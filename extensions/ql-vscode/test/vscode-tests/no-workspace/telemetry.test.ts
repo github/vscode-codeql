@@ -18,7 +18,7 @@ jest.setTimeout(10000);
 
 describe("telemetry reporting", () => {
   let originalTelemetryExtension: boolean | undefined;
-  let originalTelemetryGlobal: boolean | undefined;
+  let originalTelemetryGlobal: string | undefined;
   let isCanary: string;
   let ctx: ExtensionContext;
   let telemetryListener: ExtensionTelemetryListener;
@@ -48,7 +48,7 @@ describe("telemetry reporting", () => {
     try {
       // in case a previous test has accidentally activated this extension,
       // need to disable it first.
-      // Accidentaly activation may happen asynchronously due to activationEvents
+      // Accidental activation may happen asynchronously due to activationEvents
       // specified in the package.json.
       globalTelemetryListener?.dispose();
 
@@ -73,7 +73,7 @@ describe("telemetry reporting", () => {
         .get<boolean>("codeQL.telemetry.enableTelemetry");
       originalTelemetryGlobal = workspace
         .getConfiguration()
-        .get<boolean>("telemetry.enableTelemetry");
+        .get<string>("telemetry.telemetryLevel");
       isCanary = (!!workspace
         .getConfiguration()
         .get<boolean>("codeQL.canary")).toString();
@@ -82,7 +82,7 @@ describe("telemetry reporting", () => {
       isTelemetryEnabledSpy = jest
         .spyOn(env, "isTelemetryEnabled", "get")
         .mockReturnValue(true);
-      await enableTelemetry("telemetry", true);
+      await setTelemetryLevel("telemetry", "all");
       await enableTelemetry("codeQL.telemetry", true);
 
       telemetryListener = new ExtensionTelemetryListener(
@@ -101,27 +101,26 @@ describe("telemetry reporting", () => {
     telemetryListener?.dispose();
     // await wait(100);
     try {
-      await enableTelemetry("telemetry", originalTelemetryGlobal);
+      await setTelemetryLevel("telemetry", originalTelemetryGlobal);
       await enableTelemetry("codeQL.telemetry", originalTelemetryExtension);
     } catch (e) {
       console.error(e);
     }
   });
 
-  it("should initialize telemetry when both options are enabled", async () => {
+  it("should initialize telemetry when 'codeQL.telemetry.enableTelemetry' is enabled and global 'telemetry.telemetryLevel' is 'all'", async () => {
     await telemetryListener.initialize();
 
     expect(telemetryListener._reporter).toBeDefined();
-
     const reporter: any = telemetryListener._reporter;
     expect(reporter.extensionId).toBe("my-id");
     expect(reporter.extensionVersion).toBe("1.2.3");
     expect(reporter.userOptIn).toBe(true); // enabled
   });
 
-  it("should initialize telemetry when global option disabled", async () => {
+  it("should initialize telemetry when global 'telemetry.telemetryLevel' is 'off'", async () => {
     isTelemetryEnabledSpy.mockReturnValue(false);
-    await enableTelemetry("telemetry", false);
+    await setTelemetryLevel("telemetry", "off");
     await telemetryListener.initialize();
     expect(telemetryListener._reporter).toBeDefined();
 
@@ -139,7 +138,7 @@ describe("telemetry reporting", () => {
   it("should not initialize telemetry when both options disabled", async () => {
     await enableTelemetry("codeQL.telemetry", false);
     isTelemetryEnabledSpy.mockReturnValue(false);
-    await enableTelemetry("telemetry", false);
+    await setTelemetryLevel("telemetry", "off");
     await telemetryListener.initialize();
     expect(telemetryListener._reporter).toBeUndefined();
   });
@@ -179,14 +178,14 @@ describe("telemetry reporting", () => {
     expect(disposeSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("should set userOprIn to false when global setting changes", async () => {
+  it("should set userOptIn to false when global setting changes", async () => {
     await telemetryListener.initialize();
 
     const reporter: any = telemetryListener._reporter;
     expect(reporter.userOptIn).toBe(true); // enabled
 
     isTelemetryEnabledSpy.mockReturnValue(false);
-    await enableTelemetry("telemetry", false);
+    await setTelemetryLevel("telemetry", "off");
     expect(reporter.userOptIn).toBe(false); // disabled
   });
 
@@ -420,7 +419,7 @@ describe("telemetry reporting", () => {
     // show the dialog.
 
     isTelemetryEnabledSpy.mockReturnValue(false);
-    await enableTelemetry("telemetry", false);
+    await setTelemetryLevel("telemetry", "off");
     await ctx.globalState.update("telemetry-request-viewed", false);
 
     await telemetryListener.initialize();
@@ -431,7 +430,7 @@ describe("telemetry reporting", () => {
 
   // This test is failing because codeQL.canary is not a registered configuration.
   // We do not want to have it registered because we don't want this item
-  // appearing in the settings page. It needs to olny be set by users we tell
+  // appearing in the settings page. It needs to only be set by users we tell
   // about it to.
   // At this point, I see no other way of testing re-requesting permission.
   xit("should request permission again when user changes canary setting", async () => {
@@ -568,6 +567,16 @@ describe("telemetry reporting", () => {
     await workspace
       .getConfiguration(section)
       .update("enableTelemetry", value, ConfigurationTarget.Global);
+
+    // Need to wait some time since the onDidChangeConfiguration listeners fire
+    // asynchronously. Must ensure they to complete in order to have a successful test.
+    await wait(100);
+  }
+
+  async function setTelemetryLevel(section: string, value: string | undefined) {
+    await workspace
+      .getConfiguration(section)
+      .update("telemetryLevel", value, ConfigurationTarget.Global);
 
     // Need to wait some time since the onDidChangeConfiguration listeners fire
     // asynchronously. Must ensure they to complete in order to have a successful test.
