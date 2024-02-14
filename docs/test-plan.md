@@ -58,15 +58,15 @@ choose to go through some of the Optional Test Cases.
 3. Run a local query.
 4. Once the query completes:
    - Chose the `#select` result set from the drop-down
-   - Check that the results table is rendered 
+   - Check that the results table is rendered
    - Check that result locations can be clicked on
 
 #### Test case 4: Can use AST viewer
 
 1. Click on any code location from a previous query to open a source file from a database
-1. Select the highlighted code in the source file
-2. Open the AST viewing panel and click "View AST"
-3. Once the AST is computed:
+2. Select the highlighted code in the source file
+3. Open the AST viewing panel and click "View AST"
+4. Once the AST is computed:
    - Check that it can be navigated
 
 ### MRVA
