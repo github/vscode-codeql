@@ -79,31 +79,7 @@ export function ResultsApp() {
 
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
-      setState((prevState) => {
-        if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
-          // Display loading message
-          return {
-            ...prevState,
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "Loading results…",
-            },
-            nextResultsInfo: resultsInfo,
-          };
-        } else if (resultsInfo === null) {
-          // No results to display
-          return {
-            ...prevState,
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "No results to display",
-            },
-            nextResultsInfo: resultsInfo,
-          };
-        }
-
+      setState(() => {
         let results: Results | null = null;
         let statusText = "";
         try {
