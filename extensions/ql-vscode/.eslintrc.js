@@ -188,5 +188,11 @@ module.exports = {
         "import/no-namespace": ["error", { ignore: ["react"] }],
       },
     },
+    {
+      files: ["test/**/*", "gulpfile.ts/**/*"],
+      rules: {
+        "@typescript-eslint/no-explicit-any": "off",
+      },
+    },
   ],
 };
