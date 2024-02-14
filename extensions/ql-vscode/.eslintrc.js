@@ -40,7 +40,7 @@ const baseConfig = {
         ignoreRestSiblings: false,
       },
     ],
-    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: true }],
     "@typescript-eslint/no-invalid-this": "off",
     "@typescript-eslint/no-shadow": "off",
@@ -186,6 +186,12 @@ module.exports = {
         // Storybook doesn't use the automatic JSX runtime in the addon yet, so we need to allow
         // `React` to be imported.
         "import/no-namespace": ["error", { ignore: ["react"] }],
+      },
+    },
+    {
+      files: ["test/**/*", "gulpfile.ts/**/*"],
+      rules: {
+        "@typescript-eslint/no-explicit-any": "off",
       },
     },
   ],

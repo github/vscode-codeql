@@ -173,7 +173,7 @@ export function ResultsApp() {
               },
               selectedTable: tableName,
             },
-            origResultsPaths: undefined as any, // FIXME: Not used for interpreted, refactor so this is not needed
+            origResultsPaths: undefined as unknown as ResultsPaths, // FIXME: Not used for interpreted, refactor so this is not needed
             sortedResultsMap: new Map(), // FIXME: Not used for interpreted, refactor so this is not needed
             database: msg.database,
             interpretation: msg.interpretation,
