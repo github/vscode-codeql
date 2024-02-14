@@ -57,14 +57,16 @@ choose to go through some of the Optional Test Cases.
 2. Select the `google/brotli` database (or download it if you don't have one already)
 3. Run a local query.
 4. Once the query completes:
+   - Chose the `#select` result set from the drop-down
    - Check that the results table is rendered
    - Check that result locations can be clicked on
 
 #### Test case 4: Can use AST viewer
 
 1. Click on any code location from a previous query to open a source file from a database
-2. Open the AST viewing panel and click "View AST"
-3. Once the AST is computed:
+2. Select the highlighted code in the source file
+3. Open the AST viewing panel and click "View AST"
+4. Once the AST is computed:
    - Check that it can be navigated
 
 ### MRVA
@@ -151,7 +153,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 2. Open the Model Editor with the "CodeQL: Open CodeQL Model Editor" command from the command palette.
    - Check that the editor loads and shows methods to model.
    - Check that methods are grouped per library (e.g. `rocksdbjni@7.7.3` or `asm@6.0`)
-   - Check that the "Open source" link works.
+   - Check that the "Open source" link works (if you have the database source).
    - Check that the 'View' button works and the Method Usage panel highlight the correct method and usage
    - Check that the Method Modeling panel shows the correct method and modeling state
 
