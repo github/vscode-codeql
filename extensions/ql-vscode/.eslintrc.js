@@ -122,15 +122,6 @@ module.exports = {
       },
     },
     {
-      files: ["test/**/*"],
-      parserOptions: {
-        project: resolve(__dirname, "test/tsconfig.json"),
-      },
-      env: {
-        jest: true,
-      },
-    },
-    {
       files: ["test/vscode-tests/**/*"],
       parserOptions: {
         project: resolve(__dirname, "test/tsconfig.json"),
@@ -154,6 +145,18 @@ module.exports = {
             },
           },
         ],
+      },
+    },
+    {
+      files: ["test/**/*"],
+      parserOptions: {
+        project: resolve(__dirname, "test/tsconfig.json"),
+      },
+      env: {
+        jest: true,
+      },
+      rules: {
+        "@typescript-eslint/no-explicit-any": "off",
       },
     },
     {
@@ -186,12 +189,6 @@ module.exports = {
         // Storybook doesn't use the automatic JSX runtime in the addon yet, so we need to allow
         // `React` to be imported.
         "import/no-namespace": ["error", { ignore: ["react"] }],
-      },
-    },
-    {
-      files: ["test/**/*", "gulpfile.ts/**/*"],
-      rules: {
-        "@typescript-eslint/no-explicit-any": "off",
       },
     },
   ],

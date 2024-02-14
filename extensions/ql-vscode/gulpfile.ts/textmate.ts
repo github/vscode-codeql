@@ -3,6 +3,12 @@ import { load } from "js-yaml";
 import { obj } from "through2";
 import PluginError from "plugin-error";
 import type Vinyl from "vinyl";
+import type {
+  ExtendedMatchType,
+  ExtendedTextmateGrammar,
+  Pattern,
+  TextmateGrammar,
+} from "./textmate-grammar";
 
 /**
  * Replaces all rule references with the match pattern of the referenced rule.
@@ -34,7 +40,9 @@ function replaceReferencesWithStrings(
  * @param yaml The root of the YAML document.
  * @returns A map from macro name to replacement text.
  */
-function gatherMacros(yaml: any): Map<string, string> {
+function gatherMacros<T>(
+  yaml: ExtendedTextmateGrammar<T>,
+): Map<string, string> {
   const macros = new Map<string, string>();
   for (const key in yaml.macros) {
     macros.set(key, yaml.macros[key]);
@@ -51,7 +59,7 @@ function gatherMacros(yaml: any): Map<string, string> {
  * @returns The match text for the rule. This is either the value of the rule's `match` property,
  *  or the disjunction of the match text of all of the other rules `include`d by this rule.
  */
-function getNodeMatchText(rule: any): string {
+function getNodeMatchText(rule: Pattern): string {
   if (rule.match !== undefined) {
     // For a match string, just use that string as the replacement.
     return rule.match;
@@ -78,7 +86,7 @@ function getNodeMatchText(rule: any): string {
  * @returns A map whose keys are the names of rules, and whose values are the corresponding match
  *  text of each rule.
  */
-function gatherMatchTextForRules(yaml: any): Map<string, string> {
+function gatherMatchTextForRules(yaml: TextmateGrammar): Map<string, string> {
   const replacements = new Map<string, string>();
   for (const key in yaml.repository) {
     const node = yaml.repository[key];
@@ -94,9 +102,14 @@ function gatherMatchTextForRules(yaml: any): Map<string, string> {
  * @param yaml The root of the YAML document.
  * @param action Callback to invoke on each rule.
  */
-function visitAllRulesInFile(yaml: any, action: (rule: any) => void) {
+function visitAllRulesInFile<T>(
+  yaml: ExtendedTextmateGrammar<T>,
+  action: (rule: Pattern<T>) => void,
+) {
   visitAllRulesInRuleMap(yaml.patterns, action);
-  visitAllRulesInRuleMap(yaml.repository, action);
+  if (yaml.repository) {
+    visitAllRulesInRuleMap(Object.values(yaml.repository), action);
+  }
 }
 
 /**
@@ -107,9 +120,11 @@ function visitAllRulesInFile(yaml: any, action: (rule: any) => void) {
  * @param ruleMap The map or array of rules to visit.
  * @param action Callback to invoke on each rule.
  */
-function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
-  for (const key in ruleMap) {
-    const rule = ruleMap[key];
+function visitAllRulesInRuleMap<T>(
+  ruleMap: Array<Pattern<T>>,
+  action: (rule: Pattern<T>) => void,
+) {
+  for (const rule of ruleMap) {
     if (typeof rule === "object") {
       action(rule);
       if (rule.patterns !== undefined) {
@@ -125,16 +140,22 @@ function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
  * @param rule The rule whose matches are to be transformed.
  * @param action The transformation to make on each match pattern.
  */
-function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
+function visitAllMatchesInRule<T>(rule: Pattern<T>, action: (match: T) => T) {
   for (const key in rule) {
     switch (key) {
       case "begin":
       case "end":
       case "match":
-      case "while":
-        rule[key] = action(rule[key]);
-        break;
+      case "while": {
+        const ruleElement = rule[key];
 
+        if (!ruleElement) {
+          continue;
+        }
+
+        rule[key] = action(ruleElement);
+        break;
+      }
       default:
         break;
     }
@@ -148,14 +169,17 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
  * @param rule Rule to be transformed.
  * @param key Base key of the property to be transformed.
  */
-function expandPatternMatchProperties(rule: any, key: "begin" | "end") {
-  const patternKey = `${key}Pattern`;
-  const capturesKey = `${key}Captures`;
+function expandPatternMatchProperties<T>(
+  rule: Pattern<T>,
+  key: "begin" | "end",
+) {
+  const patternKey = `${key}Pattern` as const;
+  const capturesKey = `${key}Captures` as const;
   const pattern = rule[patternKey];
   if (pattern !== undefined) {
     const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
-    rule[key] = patterns.map((p) => `((?${p}))`).join("|");
-    const captures: { [index: string]: any } = {};
+    rule[key] = patterns.map((p) => `((?${p}))`).join("|") as T;
+    const captures: Pattern["captures"] = {};
     for (const patternIndex in patterns) {
       captures[(Number(patternIndex) + 1).toString()] = {
         patterns: [
@@ -175,7 +199,7 @@ function expandPatternMatchProperties(rule: any, key: "begin" | "end") {
  *
  * @param yaml The root of the YAML document.
  */
-function transformFile(yaml: any) {
+function transformFile(yaml: ExtendedTextmateGrammar<ExtendedMatchType>) {
   const macros = gatherMacros(yaml);
   visitAllRulesInFile(yaml, (rule) => {
     expandPatternMatchProperties(rule, "begin");
@@ -198,24 +222,29 @@ function transformFile(yaml: any) {
 
   yaml.macros = undefined;
 
-  const replacements = gatherMatchTextForRules(yaml);
+  // We have removed all object match properties, so we don't have an extended match type anymore.
+  const macrolessYaml = yaml as ExtendedTextmateGrammar;
+
+  const replacements = gatherMatchTextForRules(macrolessYaml);
   // Expand references in matches.
-  visitAllRulesInFile(yaml, (rule) => {
+  visitAllRulesInFile(macrolessYaml, (rule) => {
     visitAllMatchesInRule(rule, (match) => {
       return replaceReferencesWithStrings(match, replacements);
     });
   });
 
-  if (yaml.regexOptions !== undefined) {
-    const regexOptions = `(?${yaml.regexOptions})`;
-    visitAllRulesInFile(yaml, (rule) => {
+  if (macrolessYaml.regexOptions !== undefined) {
+    const regexOptions = `(?${macrolessYaml.regexOptions})`;
+    visitAllRulesInFile(macrolessYaml, (rule) => {
       visitAllMatchesInRule(rule, (match) => {
         return regexOptions + match;
       });
     });
 
-    yaml.regexOptions = undefined;
+    macrolessYaml.regexOptions = undefined;
   }
+
+  return macrolessYaml;
 }
 
 export function transpileTextMateGrammar() {
@@ -230,8 +259,8 @@ export function transpileTextMateGrammar() {
       } else if (file.isBuffer()) {
         const buf: Buffer = file.contents;
         const yamlText: string = buf.toString("utf8");
-        const jsonData: any = load(yamlText);
-        transformFile(jsonData);
+        const yamlData = load(yamlText) as TextmateGrammar;
+        const jsonData = transformFile(yamlData);
 
         file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), "utf8");
         file.extname = ".json";
