@@ -828,6 +828,12 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async promptForDatabase(): Promise<void> {
+    // If there aren't any existing databases,
+    // don't bother asking the user if they want to pick one.
+    if (this.databaseManager.databaseItems.length === 0) {
+      return this.importNewDatabase();
+    }
+
     const quickPickItems: DatabaseSelectionQuickPickItem[] = [
       {
         label: "$(database) Existing database",
