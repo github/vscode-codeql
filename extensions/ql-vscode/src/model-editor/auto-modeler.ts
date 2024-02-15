@@ -223,7 +223,7 @@ export class AutoModeler {
         void showAndLogExceptionWithTelemetry(
           this.app.logger,
           this.app.telemetry,
-          redactableError(e)`Rate limit hit, please try again soon.`,
+          redactableError`Rate limit hit, please try again soon.`,
         );
         return null;
       } else {
