@@ -41,7 +41,6 @@ import { LocalQueryInfo } from "../query-results";
 import type { WebviewReveal } from "./webview";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
-import { CliVersionConstraint } from "../codeql-cli/cli";
 import type { LocalQueryCommands } from "../common/commands";
 import { DisposableObject } from "../common/disposable-object";
 import { SkeletonQueryWizard } from "./skeleton-query-wizard";
@@ -256,11 +255,6 @@ export class LocalQueries extends DisposableObject {
   private async quickEvalCount(uri: Uri): Promise<void> {
     await withProgress(
       async (progress, token) => {
-        if (!(await this.cliServer.cliConstraints.supportsQuickEvalCount())) {
-          throw new Error(
-            `Quick evaluation count is only supported by CodeQL CLI v${CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT} or later.`,
-          );
-        }
         await this.compileAndRunQuery(
           QuickEvalType.QuickEvalCount,
           uri,
@@ -594,7 +588,7 @@ export class LocalQueries extends DisposableObject {
   public async getDefaultExtensionPacks(
     additionalPacks: string[],
   ): Promise<string[]> {
-    return (await this.cliServer.useExtensionPacks())
+    return this.cliServer.useExtensionPacks()
       ? Object.keys(await this.cliServer.resolveQlpacks(additionalPacks, true))
       : [];
   }

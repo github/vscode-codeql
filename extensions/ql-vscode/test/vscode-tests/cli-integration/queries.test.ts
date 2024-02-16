@@ -20,7 +20,6 @@ import {
   getActivatedExtension,
 } from "../global.helper";
 import type { CodeQLCliServer } from "../../../src/codeql-cli/cli";
-import { CliVersionConstraint } from "../../../src/codeql-cli/cli";
 import { describeWithCodeQL } from "../cli";
 import type {
   CoreCompletedQuery,
@@ -151,23 +150,12 @@ describeWithCodeQL()("Queries", () => {
     );
 
     it("should run a query that has an extension without looking for extensions in the workspace", async () => {
-      if (!(await supportsExtensionPacks())) {
-        console.log(
-          `Skipping test because it is only supported for CodeQL CLI versions >= ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
-        );
-        return;
-      }
-
       await cli.setUseExtensionPacks(false);
       const parsedResults = await runQueryWithExtensions();
       expect(parsedResults).toEqual([1]);
     });
 
     it("should run a query that has an extension and look for extensions in the workspace", async () => {
-      if (!(await supportsExtensionPacks())) {
-        return;
-      }
-
       console.log(`Starting 'extensions' ${mode}`);
       console.log("Setting useExtensionPacks to true");
       await cli.setUseExtensionPacks(true);
@@ -175,16 +163,6 @@ describeWithCodeQL()("Queries", () => {
       console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1, 2, 3, 4]);
     });
-
-    async function supportsExtensionPacks(): Promise<boolean> {
-      if (await qs.cliServer.cliConstraints.supportsQlpacksKind()) {
-        return true;
-      }
-      console.log(
-        `Skipping test because it is only supported for CodeQL CLI versions >= ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
-      );
-      return false;
-    }
 
     async function runQueryWithExtensions() {
       console.log("Calling compileAndRunQuery");

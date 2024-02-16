@@ -1,7 +1,6 @@
 import { ModelEditorView } from "./model-editor-view";
 import type { ModelEditorCommands } from "../common/commands";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
-import { CliVersionConstraint } from "../codeql-cli/cli";
 import type { QueryRunner } from "../query-server";
 import type {
   DatabaseItem,
@@ -168,14 +167,6 @@ export class ModelEditorModule extends DisposableObject {
       return withProgress(
         async (progress, token) => {
           const maxStep = 4;
-
-          if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
-            void showAndLogErrorMessage(
-              this.app.logger,
-              `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
-            );
-            return;
-          }
 
           const modelFile = await pickExtensionPack(
             this.cliServer,

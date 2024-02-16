@@ -271,12 +271,6 @@ describe("Variant Analysis Manager", () => {
       });
 
       it("should run a remote query with extension packs inside a qlpack", async () => {
-        if (!(await cli.cliConstraints.supportsQlpacksKind())) {
-          console.log(
-            `Skipping test because qlpacks kind is only suppported in CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND} or later.`,
-          );
-          return;
-        }
         await cli.setUseExtensionPacks(true);
         await doVariantAnalysisTest({
           queryPaths: ["data-remote-qlpack-nested/subfolder/in-pack.ql"],
