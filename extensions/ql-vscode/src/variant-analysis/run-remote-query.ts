@@ -131,16 +131,7 @@ async function generateQueryPack(
       ...extensionPacks.map((p) => `--extension-pack=${p}@*`),
     ];
   } else {
-    if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
-      precompilationOpts = ["--qlx"];
-    } else {
-      const cache = join(qlPackDetails.qlPackRootPath, ".cache");
-      precompilationOpts = [
-        "--qlx",
-        "--no-default-compilation-cache",
-        `--compilation-cache=${cache}`,
-      ];
-    }
+    precompilationOpts = ["--qlx"];
 
     if (extensionPacks.length > 0) {
       await addExtensionPacksAsDependencies(targetPackPath, extensionPacks);
@@ -408,7 +399,7 @@ async function getExtensionPacksToInject(
   workspaceFolders: string[],
 ): Promise<string[]> {
   const result: string[] = [];
-  if (await cliServer.useExtensionPacks()) {
+  if (cliServer.useExtensionPacks()) {
     const extensionPacks = await cliServer.resolveQlpacks(
       workspaceFolders,
       true,

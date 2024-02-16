@@ -1271,12 +1271,6 @@ export class CodeQLCliServer implements Disposable {
   ): Promise<QlpacksInfo> {
     const args = this.getAdditionalPacksArg(additionalPacks);
     if (extensionPacksOnly) {
-      if (!(await this.cliConstraints.supportsQlpacksKind())) {
-        void this.logger.log(
-          "Warning: Running with extension packs is only supported by CodeQL CLI v2.12.3 or later.",
-        );
-        return {};
-      }
       args.push("--kind", "extension", "--no-recursive");
     } else if (kind) {
       args.push("--kind", kind);
@@ -1412,15 +1406,13 @@ export class CodeQLCliServer implements Disposable {
       args.push("--mode", "update");
     }
     if (workspaceFolders?.length > 0) {
-      if (await this.cliConstraints.supportsAdditionalPacksInstall()) {
-        args.push(
-          // Allow prerelease packs from the ql submodule.
-          "--allow-prerelease",
-          // Allow the use of --additional-packs argument without issueing a warning
-          "--no-strict-mode",
-          ...this.getAdditionalPacksArg(workspaceFolders),
-        );
-      }
+      args.push(
+        // Allow prerelease packs from the ql submodule.
+        "--allow-prerelease",
+        // Allow the use of --additional-packs argument without issueing a warning
+        "--no-strict-mode",
+        ...this.getAdditionalPacksArg(workspaceFolders),
+      );
     }
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "install"],
@@ -1521,15 +1513,7 @@ export class CodeQLCliServer implements Disposable {
         this._versionChangedListeners.forEach((listener) =>
           listener(newVersionAndFeatures),
         );
-
         // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
-        await this.app.commands.execute(
-          "setContext",
-          "codeql.supportsQuickEvalCount",
-          newVersionAndFeatures.version.compare(
-            CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
-          ) >= 0,
-        );
         await this.app.commands.execute(
           "setContext",
           "codeql.supportsTrimCache",
@@ -1573,11 +1557,8 @@ export class CodeQLCliServer implements Disposable {
     return paths.length ? ["--additional-packs", paths.join(delimiter)] : [];
   }
 
-  public async useExtensionPacks(): Promise<boolean> {
-    return (
-      this.cliConfig.useExtensionPacks &&
-      (await this.cliConstraints.supportsQlpacksKind())
-    );
+  public useExtensionPacks(): boolean {
+    return this.cliConfig.useExtensionPacks;
   }
 
   public async setUseExtensionPacks(useExtensionPacks: boolean) {
@@ -1694,26 +1675,7 @@ function shouldDebugCliServer() {
 export class CliVersionConstraint {
   // The oldest version of the CLI that we support. This is used to determine
   // whether to show a warning about the CLI being too old on startup.
-  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.11.6");
-
-  /**
-   * CLI version that supports the `--kind` option for the `resolve qlpacks` command.
-   */
-  public static CLI_VERSION_WITH_QLPACKS_KIND = new SemVer("2.12.3");
-
-  /**
-   * CLI version that supports the `--additional-packs` option for the `pack install` command.
-   */
-  public static CLI_VERSION_WITH_ADDITIONAL_PACKS_INSTALL = new SemVer(
-    "2.12.4",
-  );
-
-  public static CLI_VERSION_GLOBAL_CACHE = new SemVer("2.12.4");
-
-  /**
-   * CLI version where the query server supports quick-eval count mode.
-   */
-  public static CLI_VERSION_WITH_QUICK_EVAL_COUNT = new SemVer("2.13.3");
+  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.13.5");
 
   /**
    * CLI version where the `generate extensible-predicate-metadata`
@@ -1753,31 +1715,9 @@ export class CliVersionConstraint {
     return (await this.cli.getVersion()).compare(v) >= 0;
   }
 
-  async supportsQlpacksKind() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND,
-    );
-  }
-
-  async supportsAdditionalPacksInstall() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_ADDITIONAL_PACKS_INSTALL,
-    );
-  }
-
-  async usesGlobalCompilationCache() {
-    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_GLOBAL_CACHE);
-  }
-
   async supportsVisibilityNotifications() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_VISIBILITY_NOTIFICATIONS,
-    );
-  }
-
-  async supportsQuickEvalCount() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
     );
   }
 

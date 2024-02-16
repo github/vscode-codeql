@@ -1432,7 +1432,7 @@
         },
         {
           "command": "codeQL.quickEvalCount",
-          "when": "editorLangId == ql && codeql.supportsQuickEvalCount"
+          "when": "editorLangId == ql"
         },
         {
           "command": "codeQL.quickEvalContextEditor",
