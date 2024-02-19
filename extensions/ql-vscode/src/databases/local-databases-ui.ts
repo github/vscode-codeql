@@ -843,7 +843,8 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         label: "$(arrow-down) New database",
-        detail: "Import a new database from the cloud or your local machine",
+        detail:
+          "Import a new database from GitHub, a URL, or your local machine...",
         alwaysShow: true,
         databaseKind: "new",
       },
@@ -920,7 +921,7 @@ export class DatabaseUI extends DisposableObject {
     const selectedImportOption =
       await window.showQuickPick<DatabaseImportQuickPickItems>(importOptions, {
         placeHolder:
-          "Import a new database from the cloud or your local machine...",
+          "Import a new database from GitHub, a URL, or your local machine...",
         ignoreFocusOut: true,
       });
     if (!selectedImportOption) {
