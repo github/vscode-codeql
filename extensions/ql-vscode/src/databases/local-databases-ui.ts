@@ -828,6 +828,12 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async promptForDatabase(): Promise<void> {
+    // If there aren't any existing databases,
+    // don't bother asking the user if they want to pick one.
+    if (this.databaseManager.databaseItems.length === 0) {
+      return this.importNewDatabase();
+    }
+
     const quickPickItems: DatabaseSelectionQuickPickItem[] = [
       {
         label: "$(database) Existing database",
@@ -837,7 +843,8 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         label: "$(arrow-down) New database",
-        detail: "Import a new database from the cloud or your local machine",
+        detail:
+          "Import a new database from GitHub, a URL, or your local machine...",
         alwaysShow: true,
         databaseKind: "new",
       },
@@ -871,7 +878,7 @@ export class DatabaseUI extends DisposableObject {
       }));
 
     const selectedDatabase = await window.showQuickPick(dbItems, {
-      placeHolder: "Select a database",
+      placeHolder: "Select an existing database from your workspace...",
       ignoreFocusOut: true,
     });
 
@@ -913,7 +920,8 @@ export class DatabaseUI extends DisposableObject {
     ];
     const selectedImportOption =
       await window.showQuickPick<DatabaseImportQuickPickItems>(importOptions, {
-        placeHolder: "Import a database from...",
+        placeHolder:
+          "Import a new database from GitHub, a URL, or your local machine...",
         ignoreFocusOut: true,
       });
     if (!selectedImportOption) {
