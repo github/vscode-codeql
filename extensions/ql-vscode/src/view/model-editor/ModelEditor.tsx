@@ -148,6 +148,10 @@ export function ModelEditor({
             setInProgressMethods(new Set(msg.methods));
             break;
           }
+          case "setSentToLLMMethods": {
+            // TODO: set state
+            break;
+          }
           case "revealMethod":
             setRevealedMethodSignature(msg.methodSignature);
             break;

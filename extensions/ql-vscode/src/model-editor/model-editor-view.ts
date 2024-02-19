@@ -836,6 +836,17 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
+      this.modelingEvents.onSentToLLMMethodsChanged(async (event) => {
+        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+          await this.postMessage({
+            t: "setSentToLLMMethods",
+            methods: Array.from(event.methods),
+          });
+        }
+      }),
+    );
+
+    this.push(
       this.modelingEvents.onRevealInModelEditor(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.revealMethod(event.method);

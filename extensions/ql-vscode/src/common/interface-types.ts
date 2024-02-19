@@ -543,6 +543,11 @@ interface SetInProgressMethodsMessage {
   methods: string[];
 }
 
+interface SetSentToLLMMethodsMessage {
+  t: "setSentToLLMMethods";
+  methods: string[];
+}
+
 interface SwitchModeMessage {
   t: "switchMode";
   mode: Mode;
@@ -626,6 +631,7 @@ export type ToModelEditorMessage =
   | SetModeledMethodsMessage
   | SetModifiedMethodsMessage
   | SetInProgressMethodsMessage
+  | SetSentToLLMMethodsMessage
   | RevealMethodMessage
   | SetAccessPathSuggestionsMessage;
 

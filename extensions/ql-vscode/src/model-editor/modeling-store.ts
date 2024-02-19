@@ -14,6 +14,7 @@ interface InternalDbModelingState {
   modeledMethods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: Set<string>;
   inProgressMethods: Set<string>;
+  sentToLLMMethods: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
 }
@@ -26,6 +27,7 @@ interface DbModelingState {
   readonly modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>;
   readonly modifiedMethodSignatures: ReadonlySet<string>;
   readonly inProgressMethods: ReadonlySet<string>;
+  readonly sentToLLMMethods: ReadonlySet<string>;
   readonly selectedMethod: Method | undefined;
   readonly selectedUsage: Usage | undefined;
 }
@@ -37,6 +39,7 @@ interface SelectedMethodDetails {
   readonly modeledMethods: readonly ModeledMethod[];
   readonly isModified: boolean;
   readonly isInProgress: boolean;
+  readonly hasBeenSentToLLM: boolean;
 }
 
 export class ModelingStore extends DisposableObject {
@@ -59,6 +62,7 @@ export class ModelingStore extends DisposableObject {
       mode,
       modeledMethods: {},
       modifiedMethodSignatures: new Set(),
+      sentToLLMMethods: new Set(),
       selectedMethod: undefined,
       selectedUsage: undefined,
       inProgressMethods: new Set(),
@@ -301,6 +305,7 @@ export class ModelingStore extends DisposableObject {
     const modeledMethods = dbState.modeledMethods[method.signature] ?? [];
     const isModified = dbState.modifiedMethodSignatures.has(method.signature);
     const isInProgress = dbState.inProgressMethods.has(method.signature);
+    const hasBeenSentToLLM = dbState.sentToLLMMethods.has(method.signature);
     this.modelingEvents.fireSelectedMethodChangedEvent(
       dbItem,
       method,
@@ -308,6 +313,7 @@ export class ModelingStore extends DisposableObject {
       modeledMethods,
       isModified,
       isInProgress,
+      hasBeenSentToLLM,
     );
   }
 
@@ -336,6 +342,15 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
+  public addSentToLLMMethods(dbItem: DatabaseItem, sentToLLMMethods: string[]) {
+    this.changeSentToLLMMethods(dbItem, (state) => {
+      state.sentToLLMMethods = new Set([
+        ...state.sentToLLMMethods,
+        ...sentToLLMMethods,
+      ]);
+    });
+  }
+
   public getSelectedMethodDetails(): SelectedMethodDetails | undefined {
     const dbState = this.getInternalStateForActiveDb();
     if (!dbState) {
@@ -356,6 +371,7 @@ export class ModelingStore extends DisposableObject {
         selectedMethod.signature,
       ),
       isInProgress: dbState.inProgressMethods.has(selectedMethod.signature),
+      hasBeenSentToLLM: dbState.sentToLLMMethods.has(selectedMethod.signature),
     };
   }
 
@@ -410,6 +426,20 @@ export class ModelingStore extends DisposableObject {
     this.modelingEvents.fireInProgressMethodsChangedEvent(
       dbItem.databaseUri.toString(),
       state.inProgressMethods,
+    );
+  }
+
+  private changeSentToLLMMethods(
+    dbItem: DatabaseItem,
+    updateState: (state: InternalDbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.modelingEvents.fireSentToLLMMethodsChangedEvent(
+      dbItem.databaseUri.toString(),
+      state.sentToLLMMethods,
     );
   }
 }
