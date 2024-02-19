@@ -644,7 +644,15 @@ const DEPRECATED_ALLOW_HTTP_SETTING = new Setting(
 
 const ADDING_DATABASES_SETTING = new Setting("addingDatabases", ROOT_SETTING);
 
+const DOWNLOAD_TIMEOUT_SETTING = new Setting(
+  "downloadTimeout",
+  ADDING_DATABASES_SETTING,
+);
 const ALLOW_HTTP_SETTING = new Setting("allowHttp", ADDING_DATABASES_SETTING);
+
+export function downloadTimeout(): number {
+  return DOWNLOAD_TIMEOUT_SETTING.getValue<number>() || 10;
+}
 
 export function allowHttp(): boolean {
   return (

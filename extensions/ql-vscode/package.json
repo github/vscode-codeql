@@ -376,6 +376,11 @@
         "title": "Adding databases",
         "order": 6,
         "properties": {
+          "codeQL.addingDatabases.downloadTimeout": {
+            "type": "integer",
+            "default": 10,
+            "description": "Download timeout in seconds for adding a CodeQL database."
+          },
           "codeQL.addingDatabases.allowHttp": {
             "type": "boolean",
             "default": false,

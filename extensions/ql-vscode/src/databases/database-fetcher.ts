@@ -1,5 +1,5 @@
 import type { Response } from "node-fetch";
-import fetch from "node-fetch";
+import fetch, { AbortError } from "node-fetch";
 import { zip } from "zip-a-folder";
 import type { InputBoxOptions } from "vscode";
 import { Uri, window } from "vscode";
@@ -28,11 +28,16 @@ import {
 } from "../common/github-url-identifier-helper";
 import type { Credentials } from "../common/authentication";
 import type { AppCommandManager } from "../common/commands";
-import { addDatabaseSourceToWorkspace, allowHttp } from "../config";
+import {
+  addDatabaseSourceToWorkspace,
+  allowHttp,
+  downloadTimeout,
+} from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
+import { clearTimeout } from "node:timers";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -478,10 +483,38 @@ async function fetchAndUnzip(
     step: 1,
   });
 
-  const response = await checkForFailingResponse(
-    await fetch(databaseUrl, { headers: requestHeaders }),
-    "Error downloading database",
-  );
+  const abortController = new AbortController();
+
+  const timeout = downloadTimeout() * 1000;
+
+  let timeoutId: NodeJS.Timeout;
+
+  // If we don't get any data within the timeout, abort the download
+  timeoutId = setTimeout(() => {
+    abortController.abort();
+  }, timeout);
+
+  let response: Response;
+  try {
+    response = await checkForFailingResponse(
+      await fetch(databaseUrl, {
+        headers: requestHeaders,
+        signal: abortController.signal,
+      }),
+      "Error downloading database",
+    );
+  } catch (e) {
+    clearTimeout(timeoutId);
+
+    if (e instanceof AbortError) {
+      const thrownError = new AbortError("The request timed out.");
+      thrownError.stack = e.stack;
+      throw thrownError;
+    }
+
+    throw e;
+  }
+
   const archiveFileStream = createWriteStream(archivePath);
 
   const contentLength = response.headers.get("content-length");
@@ -493,12 +526,40 @@ async function fetchAndUnzip(
     progress,
   );
 
-  await new Promise((resolve, reject) =>
-    response.body
-      .pipe(archiveFileStream)
-      .on("finish", resolve)
-      .on("error", reject),
-  );
+  // If we receive any data within the timeout, reset the timeout
+  response.body.on("data", () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, timeout);
+  });
+
+  try {
+    await new Promise((resolve, reject) => {
+      response.body
+        .pipe(archiveFileStream)
+        .on("finish", resolve)
+        .on("error", reject);
+
+      // If an error occurs on the body, we also want to reject the promise (e.g. during a timeout error).
+      response.body.on("error", reject);
+    });
+  } catch (e) {
+    // Close and remove the file if an error occurs
+    archiveFileStream.close(() => {
+      void remove(archivePath);
+    });
+
+    if (e instanceof AbortError) {
+      const thrownError = new AbortError("The download timed out.");
+      thrownError.stack = e.stack;
+      throw thrownError;
+    }
+
+    throw e;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   await readAndUnzip(
     Uri.file(archivePath).toString(true),
