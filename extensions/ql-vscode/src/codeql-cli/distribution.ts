@@ -1,3 +1,4 @@
+import type { WriteStream } from "fs";
 import { createWriteStream, mkdtemp, pathExists, remove } from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
@@ -26,6 +27,8 @@ import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 import type { Release } from "./distribution/release";
 import { ReleasesApiConsumer } from "./distribution/releases-api-consumer";
+import { createTimeoutSignal } from "../common/fetch-stream";
+import { AbortError } from "node-fetch";
 
 /**
  * distribution.ts
@@ -384,15 +387,25 @@ class ExtensionSpecificDistributionManager {
       );
     }
 
-    const assetStream =
-      await this.createReleasesApiConsumer().streamBinaryContentOfAsset(
-        assets[0],
-      );
+    const {
+      signal,
+      onData,
+      dispose: disposeTimeout,
+    } = createTimeoutSignal(this.config.downloadTimeout);
+
     const tmpDirectory = await mkdtemp(join(tmpdir(), "vscode-codeql"));
 
+    let archiveFile: WriteStream | undefined = undefined;
+
     try {
+      const assetStream =
+        await this.createReleasesApiConsumer().streamBinaryContentOfAsset(
+          assets[0],
+          signal,
+        );
+
       const archivePath = join(tmpDirectory, "distributionDownload.zip");
-      const archiveFile = createWriteStream(archivePath);
+      archiveFile = createWriteStream(archivePath);
 
       const contentLength = assetStream.headers.get("content-length");
       const totalNumBytes = contentLength
@@ -405,12 +418,23 @@ class ExtensionSpecificDistributionManager {
         progressCallback,
       );
 
-      await new Promise((resolve, reject) =>
+      assetStream.body.on("data", onData);
+
+      await new Promise((resolve, reject) => {
+        if (!archiveFile) {
+          throw new Error("Invariant violation: archiveFile not set");
+        }
+
         assetStream.body
           .pipe(archiveFile)
           .on("finish", resolve)
-          .on("error", reject),
-      );
+          .on("error", reject);
+
+        // If an error occurs on the body, we also want to reject the promise (e.g. during a timeout error).
+        assetStream.body.on("error", reject);
+      });
+
+      disposeTimeout();
 
       await this.bumpDistributionFolderIndex();
 
@@ -427,7 +451,19 @@ class ExtensionSpecificDistributionManager {
             )
           : undefined,
       );
+    } catch (e) {
+      if (e instanceof AbortError) {
+        const thrownError = new AbortError("The download timed out.");
+        thrownError.stack = e.stack;
+        throw thrownError;
+      }
+
+      throw e;
     } finally {
+      disposeTimeout();
+
+      archiveFile?.close();
+
       await remove(tmpDirectory);
     }
   }

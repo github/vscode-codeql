@@ -37,7 +37,7 @@ import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
-import { clearTimeout } from "node:timers";
+import { createTimeoutSignal } from "../common/fetch-stream";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -483,28 +483,23 @@ async function fetchAndUnzip(
     step: 1,
   });
 
-  const abortController = new AbortController();
-
-  const timeout = downloadTimeout() * 1000;
-
-  let timeoutId: NodeJS.Timeout;
-
-  // If we don't get any data within the timeout, abort the download
-  timeoutId = setTimeout(() => {
-    abortController.abort();
-  }, timeout);
+  const {
+    signal,
+    onData,
+    dispose: disposeTimeout,
+  } = createTimeoutSignal(downloadTimeout());
 
   let response: Response;
   try {
     response = await checkForFailingResponse(
       await fetch(databaseUrl, {
         headers: requestHeaders,
-        signal: abortController.signal,
+        signal,
       }),
       "Error downloading database",
     );
   } catch (e) {
-    clearTimeout(timeoutId);
+    disposeTimeout();
 
     if (e instanceof AbortError) {
       const thrownError = new AbortError("The request timed out.");
@@ -526,13 +521,7 @@ async function fetchAndUnzip(
     progress,
   );
 
-  // If we receive any data within the timeout, reset the timeout
-  response.body.on("data", () => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      abortController.abort();
-    }, timeout);
-  });
+  response.body.on("data", onData);
 
   try {
     await new Promise((resolve, reject) => {
@@ -558,7 +547,7 @@ async function fetchAndUnzip(
 
     throw e;
   } finally {
-    clearTimeout(timeoutId);
+    disposeTimeout();
   }
 
   await readAndUnzip(
