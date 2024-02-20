@@ -354,7 +354,9 @@ export class ModelingStore extends DisposableObject {
       return processedByAutoModelMethods;
     }
     return new Set(
-      Array.from(processedByAutoModelMethods).filter(methodSignatures.includes),
+      Array.from(processedByAutoModelMethods).filter((x) =>
+        methodSignatures.includes(x),
+      ),
     );
   }
 
