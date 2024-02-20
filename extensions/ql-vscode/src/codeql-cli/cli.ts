@@ -362,6 +362,8 @@ export class CodeQLCliServer implements Disposable {
     silent?: boolean,
   ): Promise<string> {
     const stderrBuffers: Buffer[] = [];
+    // The current buffer of stderr of a single line. To be used for logging.
+    let currentLineStderrBuffer: Buffer = Buffer.alloc(0);
     if (this.commandInProcess) {
       throw new Error("runCodeQlCliInternal called while cli was running");
     }
@@ -419,6 +421,38 @@ export class CodeQLCliServer implements Disposable {
           // Listen to stderr
           process.stderr.addListener("data", (newData: Buffer) => {
             stderrBuffers.push(newData);
+
+            if (!silent) {
+              currentLineStderrBuffer = Buffer.concat([
+                currentLineStderrBuffer,
+                newData,
+              ]);
+
+              // Print the stderr to the logger as it comes in. We need to ensure that
+              // we don't split messages on the same line, so we buffer the stderr and
+              // split it on EOLs.
+              const eolBuffer = Buffer.from(EOL);
+
+              let hasCreatedSubarray = false;
+
+              let eolIndex;
+              while (
+                (eolIndex = currentLineStderrBuffer.indexOf(eolBuffer)) !== -1
+              ) {
+                const line = currentLineStderrBuffer.subarray(0, eolIndex);
+                void this.logger.log(line.toString("utf-8"));
+                currentLineStderrBuffer = currentLineStderrBuffer.subarray(
+                  eolIndex + eolBuffer.length,
+                );
+                hasCreatedSubarray = true;
+              }
+
+              // We have created a subarray, which means that the complete original buffer is now referenced
+              // by the subarray. We need to create a new buffer to avoid memory leaks.
+              if (hasCreatedSubarray) {
+                currentLineStderrBuffer = Buffer.from(currentLineStderrBuffer);
+              }
+            }
           });
           // Listen for process exit.
           process.addListener("close", (code) =>
@@ -433,6 +467,8 @@ export class CodeQLCliServer implements Disposable {
         // Make sure we remove the terminator;
         const data = fullBuffer.toString("utf8", 0, fullBuffer.length - 1);
         if (!silent) {
+          void this.logger.log(currentLineStderrBuffer.toString("utf8"));
+          currentLineStderrBuffer = Buffer.alloc(0);
           void this.logger.log("CLI command succeeded.");
         }
         return data;
@@ -452,8 +488,8 @@ export class CodeQLCliServer implements Disposable {
         cliError.stack += getErrorStack(err);
         throw cliError;
       } finally {
-        if (!silent) {
-          void this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
+        if (!silent && currentLineStderrBuffer.length > 0) {
+          void this.logger.log(currentLineStderrBuffer.toString("utf8"));
         }
         // Remove the listeners we set up.
         process.stdout.removeAllListeners("data");
