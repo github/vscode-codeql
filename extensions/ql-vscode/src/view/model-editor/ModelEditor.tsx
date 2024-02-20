@@ -148,7 +148,7 @@ export function ModelEditor({
             setInProgressMethods(new Set(msg.methods));
             break;
           }
-          case "setSentToLLMMethods": {
+          case "setProcessedByAutoModelMethods": {
             // TODO: set state
             break;
           }

@@ -543,8 +543,8 @@ interface SetInProgressMethodsMessage {
   methods: string[];
 }
 
-interface SetSentToLLMMethodsMessage {
-  t: "setSentToLLMMethods";
+interface SetProcessedByAutoModelMethodsMessage {
+  t: "setProcessedByAutoModelMethods";
   methods: string[];
 }
 
@@ -631,7 +631,7 @@ export type ToModelEditorMessage =
   | SetModeledMethodsMessage
   | SetModifiedMethodsMessage
   | SetInProgressMethodsMessage
-  | SetSentToLLMMethodsMessage
+  | SetProcessedByAutoModelMethodsMessage
   | RevealMethodMessage
   | SetAccessPathSuggestionsMessage;
 

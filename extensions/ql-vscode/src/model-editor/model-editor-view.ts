@@ -836,14 +836,16 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingEvents.onSentToLLMMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setSentToLLMMethods",
-            methods: Array.from(event.methods),
-          });
-        }
-      }),
+      this.modelingEvents.onProcessedByAutoModelMethodsChanged(
+        async (event) => {
+          if (event.dbUri === this.databaseItem.databaseUri.toString()) {
+            await this.postMessage({
+              t: "setProcessedByAutoModelMethods",
+              methods: Array.from(event.methods),
+            });
+          }
+        },
+      ),
     );
 
     this.push(

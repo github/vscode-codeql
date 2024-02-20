@@ -42,7 +42,7 @@ interface SelectedMethodChangedEvent {
   readonly modeledMethods: readonly ModeledMethod[];
   readonly isModified: boolean;
   readonly isInProgress: boolean;
-  readonly hasBeenSentToLLM: boolean;
+  readonly processedByAutoModel: boolean;
 }
 
 interface InProgressMethodsChangedEvent {
@@ -50,7 +50,7 @@ interface InProgressMethodsChangedEvent {
   readonly methods: ReadonlySet<string>;
 }
 
-interface SentToLLMMethodsChangedEvent {
+interface ProcessedByAutoModelMethodsChangedEvent {
   readonly dbUri: string;
   readonly methods: ReadonlySet<string>;
 }
@@ -75,7 +75,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
-  public readonly onSentToLLMMethodsChanged: AppEvent<SentToLLMMethodsChangedEvent>;
+  public readonly onProcessedByAutoModelMethodsChanged: AppEvent<ProcessedByAutoModelMethodsChangedEvent>;
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
   public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
 
@@ -89,7 +89,7 @@ export class ModelingEvents extends DisposableObject {
   private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
   private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
-  private readonly onSentToLLMMethodsChangedEventEmitter: AppEventEmitter<SentToLLMMethodsChangedEvent>;
+  private readonly onProcessedByAutoModelMethodsChangedEventEmitter: AppEventEmitter<ProcessedByAutoModelMethodsChangedEvent>;
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
   private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
 
@@ -149,11 +149,11 @@ export class ModelingEvents extends DisposableObject {
     this.onInProgressMethodsChanged =
       this.onInProgressMethodsChangedEventEmitter.event;
 
-    this.onSentToLLMMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<SentToLLMMethodsChangedEvent>(),
+    this.onProcessedByAutoModelMethodsChangedEventEmitter = this.push(
+      app.createEventEmitter<ProcessedByAutoModelMethodsChangedEvent>(),
     );
-    this.onSentToLLMMethodsChanged =
-      this.onSentToLLMMethodsChangedEventEmitter.event;
+    this.onProcessedByAutoModelMethodsChanged =
+      this.onProcessedByAutoModelMethodsChangedEventEmitter.event;
 
     this.onRevealInModelEditorEventEmitter = this.push(
       app.createEventEmitter<RevealInModelEditorEvent>(),
@@ -240,7 +240,7 @@ export class ModelingEvents extends DisposableObject {
     modeledMethods: ModeledMethod[],
     isModified: boolean,
     isInProgress: boolean,
-    hasBeenSentToLLM: boolean,
+    processedByAutoModel: boolean,
   ) {
     this.onSelectedMethodChangedEventEmitter.fire({
       databaseItem,
@@ -249,7 +249,7 @@ export class ModelingEvents extends DisposableObject {
       modeledMethods,
       isModified,
       isInProgress,
-      hasBeenSentToLLM,
+      processedByAutoModel,
     });
   }
 
@@ -263,11 +263,11 @@ export class ModelingEvents extends DisposableObject {
     });
   }
 
-  public fireSentToLLMMethodsChangedEvent(
+  public fireProcessedByAutoModelMethodsChangedEvent(
     dbUri: string,
     methods: ReadonlySet<string>,
   ) {
-    this.onSentToLLMMethodsChangedEventEmitter.fire({
+    this.onProcessedByAutoModelMethodsChangedEventEmitter.fire({
       dbUri,
       methods,
     });

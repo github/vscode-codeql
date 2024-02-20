@@ -14,7 +14,7 @@ interface InternalDbModelingState {
   modeledMethods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: Set<string>;
   inProgressMethods: Set<string>;
-  sentToLLMMethods: Set<string>;
+  processedByAutoModelMethods: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
 }
@@ -27,7 +27,7 @@ interface DbModelingState {
   readonly modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>;
   readonly modifiedMethodSignatures: ReadonlySet<string>;
   readonly inProgressMethods: ReadonlySet<string>;
-  readonly sentToLLMMethods: ReadonlySet<string>;
+  readonly processedByAutoModelMethods: ReadonlySet<string>;
   readonly selectedMethod: Method | undefined;
   readonly selectedUsage: Usage | undefined;
 }
@@ -39,7 +39,7 @@ interface SelectedMethodDetails {
   readonly modeledMethods: readonly ModeledMethod[];
   readonly isModified: boolean;
   readonly isInProgress: boolean;
-  readonly hasBeenSentToLLM: boolean;
+  readonly processedByAutoModel: boolean;
 }
 
 export class ModelingStore extends DisposableObject {
@@ -62,7 +62,7 @@ export class ModelingStore extends DisposableObject {
       mode,
       modeledMethods: {},
       modifiedMethodSignatures: new Set(),
-      sentToLLMMethods: new Set(),
+      processedByAutoModelMethods: new Set(),
       selectedMethod: undefined,
       selectedUsage: undefined,
       inProgressMethods: new Set(),
@@ -305,7 +305,9 @@ export class ModelingStore extends DisposableObject {
     const modeledMethods = dbState.modeledMethods[method.signature] ?? [];
     const isModified = dbState.modifiedMethodSignatures.has(method.signature);
     const isInProgress = dbState.inProgressMethods.has(method.signature);
-    const hasBeenSentToLLM = dbState.sentToLLMMethods.has(method.signature);
+    const processedByAutoModel = dbState.processedByAutoModelMethods.has(
+      method.signature,
+    );
     this.modelingEvents.fireSelectedMethodChangedEvent(
       dbItem,
       method,
@@ -313,7 +315,7 @@ export class ModelingStore extends DisposableObject {
       modeledMethods,
       isModified,
       isInProgress,
-      hasBeenSentToLLM,
+      processedByAutoModel,
     );
   }
 
@@ -342,11 +344,14 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
-  public addSentToLLMMethods(dbItem: DatabaseItem, sentToLLMMethods: string[]) {
-    this.changeSentToLLMMethods(dbItem, (state) => {
-      state.sentToLLMMethods = new Set([
-        ...state.sentToLLMMethods,
-        ...sentToLLMMethods,
+  public addProcessedByAutoModelMethods(
+    dbItem: DatabaseItem,
+    processedByAutoModelMethods: string[],
+  ) {
+    this.changeProcessedByAutoModelMethods(dbItem, (state) => {
+      state.processedByAutoModelMethods = new Set([
+        ...state.processedByAutoModelMethods,
+        ...processedByAutoModelMethods,
       ]);
     });
   }
@@ -371,7 +376,9 @@ export class ModelingStore extends DisposableObject {
         selectedMethod.signature,
       ),
       isInProgress: dbState.inProgressMethods.has(selectedMethod.signature),
-      hasBeenSentToLLM: dbState.sentToLLMMethods.has(selectedMethod.signature),
+      processedByAutoModel: dbState.processedByAutoModelMethods.has(
+        selectedMethod.signature,
+      ),
     };
   }
 
@@ -429,7 +436,7 @@ export class ModelingStore extends DisposableObject {
     );
   }
 
-  private changeSentToLLMMethods(
+  private changeProcessedByAutoModelMethods(
     dbItem: DatabaseItem,
     updateState: (state: InternalDbModelingState) => void,
   ) {
@@ -437,9 +444,9 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireSentToLLMMethodsChangedEvent(
+    this.modelingEvents.fireProcessedByAutoModelMethodsChangedEvent(
       dbItem.databaseUri.toString(),
-      state.sentToLLMMethods,
+      state.processedByAutoModelMethods,
     );
   }
 }

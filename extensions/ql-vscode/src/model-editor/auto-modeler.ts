@@ -161,7 +161,7 @@ export class AutoModeler {
           );
 
           // Let the UI know which methods have been sent to the LLM
-          this.modelingStore.addSentToLLMMethods(
+          this.modelingStore.addProcessedByAutoModelMethods(
             this.databaseItem,
             candidateSignatures,
           );
