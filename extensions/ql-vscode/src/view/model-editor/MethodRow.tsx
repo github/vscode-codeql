@@ -113,6 +113,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       modeledMethods: modeledMethodsProp,
       methodIsUnsaved,
       methodIsSelected,
+      processedByAutoModel,
       viewState,
       revealedMethodSignature,
       inputAccessPathSuggestions,
@@ -260,6 +261,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               const modelPending = isModelPending(
                 modeledMethod,
                 modelingStatus,
+                processedByAutoModel,
               );
 
               return (

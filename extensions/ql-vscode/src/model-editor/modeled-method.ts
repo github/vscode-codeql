@@ -114,7 +114,15 @@ export function modeledMethodSupportsProvenance(
 export function isModelPending(
   modeledMethod: ModeledMethod | undefined,
   modelingStatus: ModelingStatus,
+  processedByAutoModel?: boolean,
 ): boolean {
+  if (
+    (!modeledMethod || modeledMethod.type === "none") &&
+    processedByAutoModel
+  ) {
+    return true;
+  }
+
   if (!modeledMethod) {
     return false;
   }
