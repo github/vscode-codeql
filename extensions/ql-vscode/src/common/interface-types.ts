@@ -543,6 +543,11 @@ interface SetInProgressMethodsMessage {
   methods: string[];
 }
 
+interface SetProcessedByAutoModelMethodsMessage {
+  t: "setProcessedByAutoModelMethods";
+  methods: string[];
+}
+
 interface SwitchModeMessage {
   t: "switchMode";
   mode: Mode;
@@ -626,6 +631,7 @@ export type ToModelEditorMessage =
   | SetModeledMethodsMessage
   | SetModifiedMethodsMessage
   | SetInProgressMethodsMessage
+  | SetProcessedByAutoModelMethodsMessage
   | RevealMethodMessage
   | SetAccessPathSuggestionsMessage;
 

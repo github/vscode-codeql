@@ -42,9 +42,15 @@ interface SelectedMethodChangedEvent {
   readonly modeledMethods: readonly ModeledMethod[];
   readonly isModified: boolean;
   readonly isInProgress: boolean;
+  readonly processedByAutoModel: boolean;
 }
 
 interface InProgressMethodsChangedEvent {
+  readonly dbUri: string;
+  readonly methods: ReadonlySet<string>;
+}
+
+interface ProcessedByAutoModelMethodsChangedEvent {
   readonly dbUri: string;
   readonly methods: ReadonlySet<string>;
 }
@@ -69,6 +75,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
+  public readonly onProcessedByAutoModelMethodsChanged: AppEvent<ProcessedByAutoModelMethodsChangedEvent>;
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
   public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
 
@@ -82,6 +89,7 @@ export class ModelingEvents extends DisposableObject {
   private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
   private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
+  private readonly onProcessedByAutoModelMethodsChangedEventEmitter: AppEventEmitter<ProcessedByAutoModelMethodsChangedEvent>;
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
   private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
 
@@ -140,6 +148,12 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onInProgressMethodsChanged =
       this.onInProgressMethodsChangedEventEmitter.event;
+
+    this.onProcessedByAutoModelMethodsChangedEventEmitter = this.push(
+      app.createEventEmitter<ProcessedByAutoModelMethodsChangedEvent>(),
+    );
+    this.onProcessedByAutoModelMethodsChanged =
+      this.onProcessedByAutoModelMethodsChangedEventEmitter.event;
 
     this.onRevealInModelEditorEventEmitter = this.push(
       app.createEventEmitter<RevealInModelEditorEvent>(),
@@ -226,6 +240,7 @@ export class ModelingEvents extends DisposableObject {
     modeledMethods: ModeledMethod[],
     isModified: boolean,
     isInProgress: boolean,
+    processedByAutoModel: boolean,
   ) {
     this.onSelectedMethodChangedEventEmitter.fire({
       databaseItem,
@@ -234,6 +249,7 @@ export class ModelingEvents extends DisposableObject {
       modeledMethods,
       isModified,
       isInProgress,
+      processedByAutoModel,
     });
   }
 
@@ -242,6 +258,16 @@ export class ModelingEvents extends DisposableObject {
     methods: ReadonlySet<string>,
   ) {
     this.onInProgressMethodsChangedEventEmitter.fire({
+      dbUri,
+      methods,
+    });
+  }
+
+  public fireProcessedByAutoModelMethodsChangedEvent(
+    dbUri: string,
+    methods: ReadonlySet<string>,
+  ) {
+    this.onProcessedByAutoModelMethodsChangedEventEmitter.fire({
       dbUri,
       methods,
     });
