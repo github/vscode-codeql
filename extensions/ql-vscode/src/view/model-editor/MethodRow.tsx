@@ -75,6 +75,7 @@ export type MethodRowProps = {
   methodIsUnsaved: boolean;
   methodIsSelected: boolean;
   modelingInProgress: boolean;
+  processedByAutoModel: boolean;
   viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
   inputAccessPathSuggestions?: AccessPathOption[];
