@@ -116,7 +116,12 @@ describe("getCandidates", () => {
         },
       ],
     };
-    const candidates = getCandidates(Mode.Application, methods, modeledMethods);
+    const candidates = getCandidates(
+      Mode.Application,
+      methods,
+      modeledMethods,
+      new Set(),
+    );
     expect(candidates.length).toEqual(0);
   });
 
@@ -136,7 +141,37 @@ describe("getCandidates", () => {
       },
     ];
     const modeledMethods = {};
-    const candidates = getCandidates(Mode.Application, methods, modeledMethods);
+    const candidates = getCandidates(
+      Mode.Application,
+      methods,
+      modeledMethods,
+      new Set(),
+    );
+    expect(candidates.length).toEqual(0);
+  });
+
+  it("doesn't return methods that are already processed by auto model", () => {
+    const methods: Method[] = [
+      {
+        library: "my.jar",
+        signature: "org.my.A#x()",
+        endpointType: EndpointType.Method,
+        packageName: "org.my",
+        typeName: "A",
+        methodName: "x",
+        methodParameters: "()",
+        supported: false,
+        supportedType: "none",
+        usages: [],
+      },
+    ];
+    const modeledMethods = {};
+    const candidates = getCandidates(
+      Mode.Application,
+      methods,
+      modeledMethods,
+      new Set(["org.my.A#x()"]),
+    );
     expect(candidates.length).toEqual(0);
   });
 
@@ -155,7 +190,12 @@ describe("getCandidates", () => {
       usages: [],
     });
     const modeledMethods = {};
-    const candidates = getCandidates(Mode.Application, methods, modeledMethods);
+    const candidates = getCandidates(
+      Mode.Application,
+      methods,
+      modeledMethods,
+      new Set(),
+    );
     expect(candidates.length).toEqual(1);
   });
 });

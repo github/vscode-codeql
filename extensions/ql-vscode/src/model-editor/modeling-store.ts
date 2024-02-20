@@ -344,6 +344,20 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
+  public getProcessedByAutoModelMethods(
+    dbItem: DatabaseItem,
+    methodSignatures?: string[],
+  ): Set<string> {
+    const processedByAutoModelMethods =
+      this.getState(dbItem).processedByAutoModelMethods;
+    if (!methodSignatures) {
+      return processedByAutoModelMethods;
+    }
+    return new Set(
+      Array.from(processedByAutoModelMethods).filter(methodSignatures.includes),
+    );
+  }
+
   public addProcessedByAutoModelMethods(
     dbItem: DatabaseItem,
     processedByAutoModelMethods: string[],
