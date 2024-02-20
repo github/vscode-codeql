@@ -7,6 +7,7 @@ export interface ModelEditorViewState {
   language: QueryLanguage;
   showGenerateButton: boolean;
   showLlmButton: boolean;
+  showEvaluationUi: boolean;
   mode: Mode;
   showModeSwitchButton: boolean;
   sourceArchiveAvailable: boolean;

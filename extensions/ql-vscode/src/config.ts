@@ -715,6 +715,7 @@ const LLM_GENERATION_DEV_ENDPOINT = new Setting(
   "llmGenerationDevEndpoint",
   MODEL_SETTING,
 );
+const MODEL_EVALUATION = new Setting("evaluation", MODEL_SETTING);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 const ENABLE_PYTHON = new Setting("enablePython", MODEL_SETTING);
 const ENABLE_ACCESS_PATH_SUGGESTIONS = new Setting(
@@ -757,6 +758,10 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
    */
   public get llmGenerationDevEndpoint(): string | undefined {
     return LLM_GENERATION_DEV_ENDPOINT.getValue<string | undefined>();
+  }
+
+  public get modelEvaluation(): boolean {
+    return !!MODEL_EVALUATION.getValue<boolean>();
   }
 
   public getExtensionsDirectory(languageId: string): string | undefined {
