@@ -3,6 +3,7 @@ import type { ToModelEditorMessage } from "../../common/interface-types";
 import {
   VSCodeButton,
   VSCodeCheckbox,
+  VSCodeProgressRing,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
@@ -74,6 +75,12 @@ const ButtonsContainer = styled.div`
   margin-top: 1rem;
 `;
 
+const ProgressRing = styled(VSCodeProgressRing)`
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+`;
+
 const ModelEvaluation = ({
   viewState,
   modeledMethods,
@@ -112,6 +119,7 @@ const ModelEvaluation = ({
   } else {
     return (
       <VSCodeButton onClick={onStopEvaluation} appearance="secondary">
+        <ProgressRing />
         Stop evaluation
       </VSCodeButton>
     );
