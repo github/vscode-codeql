@@ -82,6 +82,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           modeledMethods: selectedMethod.modeledMethods,
           isModified: selectedMethod.isModified,
           isInProgress: selectedMethod.isInProgress,
+          processedByAutoModel: selectedMethod.processedByAutoModel,
         });
       }
 
@@ -200,6 +201,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             modeledMethods: e.modeledMethods,
             isModified: e.isModified,
             isInProgress: e.isInProgress,
+            processedByAutoModel: e.processedByAutoModel,
           });
         }
       }),
@@ -243,6 +245,21 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             await this.postMessage({
               t: "setInProgress",
               inProgress,
+            });
+          }
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingEvents.onProcessedByAutoModelMethodsChanged(async (e) => {
+        if (this.method && this.databaseItem) {
+          const dbUri = this.databaseItem.databaseUri.toString();
+          if (e.dbUri === dbUri) {
+            const processedByAutoModel = e.methods.has(this.method.signature);
+            await this.postMessage({
+              t: "setProcessedByAutoModel",
+              processedByAutoModel,
             });
           }
         }

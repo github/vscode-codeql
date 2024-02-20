@@ -54,6 +54,7 @@ export type MethodModelingProps = {
   method: Method;
   modeledMethods: ModeledMethod[];
   isModelingInProgress: boolean;
+  isProcessedByAutoModel: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
@@ -63,6 +64,7 @@ export const MethodModeling = ({
   modeledMethods,
   method,
   isModelingInProgress,
+  isProcessedByAutoModel,
   onChange,
 }: MethodModelingProps): React.JSX.Element => {
   return (
@@ -81,6 +83,7 @@ export const MethodModeling = ({
         method={method}
         modeledMethods={modeledMethods}
         isModelingInProgress={isModelingInProgress}
+        isProcessedByAutoModel={isProcessedByAutoModel}
         modelingStatus={modelingStatus}
         onChange={onChange}
       />
