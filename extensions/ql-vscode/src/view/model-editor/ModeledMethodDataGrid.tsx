@@ -48,7 +48,12 @@ export const ModeledMethodDataGrid = ({
   ] = useMemo(() => {
     const methodsWithModelability = [];
     let numHiddenMethods = 0;
-    for (const method of sortMethods(methods)) {
+    for (const method of sortMethods(
+      methods,
+      modeledMethodsMap,
+      modifiedSignatures,
+      processedByAutoModelMethods,
+    )) {
       const modeledMethods = modeledMethodsMap[method.signature] ?? [];
       const methodIsUnsaved = modifiedSignatures.has(method.signature);
       const methodCanBeModeled = canMethodBeModeled(
@@ -64,7 +69,13 @@ export const ModeledMethodDataGrid = ({
       }
     }
     return [methodsWithModelability, numHiddenMethods];
-  }, [hideModeledMethods, methods, modeledMethodsMap, modifiedSignatures]);
+  }, [
+    hideModeledMethods,
+    methods,
+    modeledMethodsMap,
+    modifiedSignatures,
+    processedByAutoModelMethods,
+  ]);
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
 

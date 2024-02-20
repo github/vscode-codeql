@@ -50,7 +50,11 @@ export function getCandidates(
   // Sort the same way as the UI so we send the first ones listed in the UI first
   const grouped = groupMethods(candidateMethods, mode);
   const sortedGroupNames = sortGroupNames(grouped);
-  return sortedGroupNames.flatMap((name) => sortMethods(grouped[name]));
+  return sortedGroupNames.flatMap((name) =>
+    // We can safely pass empty sets for `modifiedSignatures` and `processedByAutoModelMethods`
+    // because we've filtered out all methods that are already modeled or have already been processed by auto-model.
+    sortMethods(grouped[name], modeledMethodsBySignature, new Set(), new Set()),
+  );
 }
 
 /**

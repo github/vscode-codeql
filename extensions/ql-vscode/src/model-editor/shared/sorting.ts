@@ -1,4 +1,5 @@
 import type { Method } from "../method";
+import type { ModeledMethod } from "../modeled-method";
 import { Mode } from "./mode";
 import { calculateModeledPercentage } from "./modeled-percentage";
 
@@ -27,10 +28,74 @@ export function sortGroupNames(
   );
 }
 
-export function sortMethods(methods: readonly Method[]): Method[] {
+/**
+ * Primarily sorts methods into the following order:
+ * - Unsaved positive AutoModel predictions
+ * - Negative AutoModel predictions
+ * - Unsaved manual models
+ * - Umodeled
+ * - Modeled and saved (AutoModel and manual)
+ *
+ * Secondary sort order is by number of usages descending, then by method signature ascending.
+ */
+export function sortMethods(
+  methods: readonly Method[],
+  modeledMethodsMap: Record<string, readonly ModeledMethod[]>,
+  modifiedSignatures: ReadonlySet<string>,
+  processedByAutoModelMethods: ReadonlySet<string>,
+): Method[] {
   const sortedMethods = [...methods];
-  sortedMethods.sort((a, b) => compareMethod(a, b));
+  sortedMethods.sort((a, b) => {
+    const methodAPrimarySortOrdinal = getMethodPrimarySortOrdinal(
+      !!modeledMethodsMap[a.signature]?.length,
+      modifiedSignatures.has(a.signature),
+      processedByAutoModelMethods.has(a.signature),
+    );
+    const methodBPrimarySortOrdinal = getMethodPrimarySortOrdinal(
+      !!modeledMethodsMap[b.signature]?.length,
+      modifiedSignatures.has(b.signature),
+      processedByAutoModelMethods.has(b.signature),
+    );
+    if (methodAPrimarySortOrdinal !== methodBPrimarySortOrdinal) {
+      return methodAPrimarySortOrdinal - methodBPrimarySortOrdinal;
+    }
+
+    // Then sort by number of usages descending
+    const usageDifference = b.usages.length - a.usages.length;
+    if (usageDifference !== 0) {
+      return usageDifference;
+    }
+
+    // Then sort by method signature ascending
+    return a.signature.localeCompare(b.signature);
+  });
   return sortedMethods;
+}
+
+/**
+ * Assigns numbers to the following classes of methods:
+ * - Unsaved positive AutoModel predictions => 0
+ * - Negative AutoModel predictions => 1
+ * - Unsaved manual models => 2
+ * - Umodeled => 3
+ * - Modeled and saved (AutoModel and manual) => 4
+ */
+function getMethodPrimarySortOrdinal(
+  isModeled: boolean,
+  isModified: boolean,
+  isProcessedByAutoModel: boolean,
+): number {
+  if (isModeled && isModified && isProcessedByAutoModel) {
+    return 0;
+  } else if (!isModeled && isProcessedByAutoModel) {
+    return 1;
+  } else if (isModeled && isModified) {
+    return 2;
+  } else if (!isModeled) {
+    return 3;
+  } else {
+    return 4;
+  }
 }
 
 function compareGroups(
@@ -68,23 +133,4 @@ function compareGroups(
 
   // Then sort by number of usages descending
   return numberOfUsagesB - numberOfUsagesA;
-}
-
-function compareMethod(a: Method, b: Method): number {
-  // Sort first by supported, putting unmodeled methods first.
-  if (a.supported && !b.supported) {
-    return 1;
-  }
-  if (!a.supported && b.supported) {
-    return -1;
-  }
-
-  // Then sort by number of usages descending
-  const usageDifference = b.usages.length - a.usages.length;
-  if (usageDifference !== 0) {
-    return usageDifference;
-  }
-
-  // Then sort by method signature ascending
-  return a.signature.localeCompare(b.signature);
 }
