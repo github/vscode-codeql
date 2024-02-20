@@ -36,6 +36,7 @@ describe(LibraryRow.name, () => {
         modifiedSignatures={new Set([method.signature])}
         selectedSignatures={new Set()}
         inProgressMethods={new Set()}
+        processedByAutoModelMethods={new Set()}
         viewState={viewState}
         hideModeledMethods={false}
         revealedMethodSignature={null}

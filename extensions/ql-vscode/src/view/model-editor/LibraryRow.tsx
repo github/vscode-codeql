@@ -74,6 +74,7 @@ export type LibraryRowProps = {
   modifiedSignatures: Set<string>;
   selectedSignatures: Set<string>;
   inProgressMethods: Set<string>;
+  processedByAutoModelMethods: Set<string>;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
@@ -98,6 +99,7 @@ export const LibraryRow = ({
   modifiedSignatures,
   selectedSignatures,
   inProgressMethods,
+  processedByAutoModelMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
@@ -237,6 +239,7 @@ export const LibraryRow = ({
             modifiedSignatures={modifiedSignatures}
             selectedSignatures={selectedSignatures}
             inProgressMethods={inProgressMethods}
+            processedByAutoModelMethods={processedByAutoModelMethods}
             viewState={viewState}
             hideModeledMethods={hideModeledMethods}
             revealedMethodSignature={revealedMethodSignature}

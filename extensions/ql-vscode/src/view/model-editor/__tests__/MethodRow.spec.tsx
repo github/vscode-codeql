@@ -43,6 +43,7 @@ describe(MethodRow.name, () => {
         methodIsUnsaved={false}
         methodIsSelected={false}
         modelingInProgress={false}
+        processedByAutoModel={false}
         revealedMethodSignature={null}
         viewState={viewState}
         onChange={onChange}

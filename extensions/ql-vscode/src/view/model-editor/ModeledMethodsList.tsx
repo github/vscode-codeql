@@ -16,6 +16,7 @@ export type ModeledMethodsListProps = {
   modifiedSignatures: Set<string>;
   selectedSignatures: Set<string>;
   inProgressMethods: Set<string>;
+  processedByAutoModelMethods: Set<string>;
   revealedMethodSignature: string | null;
   accessPathSuggestions?: AccessPathSuggestionOptions;
   viewState: ModelEditorViewState;
@@ -42,6 +43,7 @@ export const ModeledMethodsList = ({
   modifiedSignatures,
   selectedSignatures,
   inProgressMethods,
+  processedByAutoModelMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
@@ -91,6 +93,7 @@ export const ModeledMethodsList = ({
           modifiedSignatures={modifiedSignatures}
           selectedSignatures={selectedSignatures}
           inProgressMethods={inProgressMethods}
+          processedByAutoModelMethods={processedByAutoModelMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}

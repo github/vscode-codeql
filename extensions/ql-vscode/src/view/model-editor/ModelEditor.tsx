@@ -103,6 +103,8 @@ export function ModelEditor({
   const [inProgressMethods, setInProgressMethods] = useState<Set<string>>(
     new Set(),
   );
+  const [processedByAutoModelMethods, setProcessedByAutoModelMethods] =
+    useState<Set<string>>(new Set());
 
   const [hideModeledMethods, setHideModeledMethods] = useState(
     initialHideModeledMethods,
@@ -149,7 +151,7 @@ export function ModelEditor({
             break;
           }
           case "setProcessedByAutoModelMethods": {
-            // TODO: set state
+            setProcessedByAutoModelMethods(new Set(msg.methods));
             break;
           }
           case "revealMethod":
@@ -392,6 +394,7 @@ export function ModelEditor({
           modifiedSignatures={modifiedSignatures}
           selectedSignatures={selectedSignatures}
           inProgressMethods={inProgressMethods}
+          processedByAutoModelMethods={processedByAutoModelMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}

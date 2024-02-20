@@ -19,6 +19,7 @@ export type ModeledMethodDataGridProps = {
   modifiedSignatures: Set<string>;
   selectedSignatures: Set<string>;
   inProgressMethods: Set<string>;
+  processedByAutoModelMethods: Set<string>;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
@@ -33,6 +34,7 @@ export const ModeledMethodDataGrid = ({
   modifiedSignatures,
   selectedSignatures,
   inProgressMethods,
+  processedByAutoModelMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
@@ -93,6 +95,9 @@ export const ModeledMethodDataGrid = ({
                 methodIsUnsaved={modifiedSignatures.has(method.signature)}
                 methodIsSelected={selectedSignatures.has(method.signature)}
                 modelingInProgress={inProgressMethods.has(method.signature)}
+                processedByAutoModel={processedByAutoModelMethods.has(
+                  method.signature,
+                )}
                 viewState={viewState}
                 revealedMethodSignature={revealedMethodSignature}
                 inputAccessPathSuggestions={inputAccessPathSuggestions}
