@@ -111,19 +111,19 @@ export function modeledMethodSupportsProvenance(
   );
 }
 
-export function isModelAccepted(
+export function isModelPending(
   modeledMethod: ModeledMethod | undefined,
   modelingStatus: ModelingStatus,
 ): boolean {
   if (!modeledMethod) {
-    return true;
+    return false;
   }
 
   return (
-    modelingStatus !== "unsaved" ||
-    modeledMethod.type === "none" ||
-    !modeledMethodSupportsProvenance(modeledMethod) ||
-    modeledMethod.provenance !== "ai-generated"
+    modelingStatus === "unsaved" &&
+    modeledMethod.type !== "none" &&
+    modeledMethodSupportsProvenance(modeledMethod) &&
+    modeledMethod.provenance === "ai-generated"
   );
 }
 

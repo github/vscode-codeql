@@ -20,7 +20,7 @@ describe(ModelTypeDropdown.name, () => {
       <ModelTypeDropdown
         language={QueryLanguage.Java}
         modeledMethod={modeledMethod}
-        modelingStatus="unsaved"
+        modelPending={false}
         onChange={onChange}
         method={method}
       />,
@@ -42,7 +42,7 @@ describe(ModelTypeDropdown.name, () => {
       <ModelTypeDropdown
         language={QueryLanguage.Ruby}
         modeledMethod={modeledMethod}
-        modelingStatus="unsaved"
+        modelPending={false}
         onChange={onChange}
         method={method}
       />,
@@ -64,7 +64,7 @@ describe(ModelTypeDropdown.name, () => {
       <ModelTypeDropdown
         language={QueryLanguage.Java}
         modeledMethod={modeledMethod}
-        modelingStatus="unsaved"
+        modelPending={false}
         onChange={onChange}
         method={method}
       />,
