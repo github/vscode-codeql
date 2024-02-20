@@ -22,7 +22,13 @@ export function getCandidates(
   mode: Mode,
   methods: readonly Method[],
   modeledMethodsBySignature: Record<string, readonly ModeledMethod[]>,
+  processedByAutoModelMethods: Set<string>,
 ): MethodSignature[] {
+  // Filter out any methods already processed by auto-model
+  methods = methods.filter(
+    (m) => !processedByAutoModelMethods.has(m.signature),
+  );
+
   // Sort the same way as the UI so we send the first ones listed in the UI first
   const grouped = groupMethods(methods, mode);
   const sortedGroupNames = sortGroupNames(grouped);

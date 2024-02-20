@@ -655,11 +655,17 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       methodSignatures,
     );
+    const processedByAutoModelMethods =
+      this.modelingStore.getProcessedByAutoModelMethods(
+        this.databaseItem,
+        methodSignatures,
+      );
     const mode = this.modelingStore.getMode(this.databaseItem);
     await this.autoModeler.startModeling(
       packageName,
       methods,
       modeledMethods,
+      processedByAutoModelMethods,
       mode,
     );
   }

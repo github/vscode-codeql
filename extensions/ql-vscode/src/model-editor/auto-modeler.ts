@@ -58,6 +58,7 @@ export class AutoModeler {
     packageName: string,
     methods: readonly Method[],
     modeledMethods: Record<string, readonly ModeledMethod[]>,
+    processedByAutoModelMethods: Set<string>,
     mode: Mode,
   ): Promise<void> {
     if (this.jobs.has(packageName)) {
@@ -72,6 +73,7 @@ export class AutoModeler {
         packageName,
         methods,
         modeledMethods,
+        processedByAutoModelMethods,
         mode,
         cancellationTokenSource,
       );
@@ -105,6 +107,7 @@ export class AutoModeler {
     packageName: string,
     methods: readonly Method[],
     modeledMethods: Record<string, readonly ModeledMethod[]>,
+    processedByAutoModelMethods: Set<string>,
     mode: Mode,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
@@ -114,7 +117,12 @@ export class AutoModeler {
 
     await withProgress(async (progress) => {
       // Fetch the candidates to send to the model
-      const allCandidateMethods = getCandidates(mode, methods, modeledMethods);
+      const allCandidateMethods = getCandidates(
+        mode,
+        methods,
+        modeledMethods,
+        processedByAutoModelMethods,
+      );
 
       // If there are no candidates, there is nothing to model and we just return
       if (allCandidateMethods.length === 0) {
