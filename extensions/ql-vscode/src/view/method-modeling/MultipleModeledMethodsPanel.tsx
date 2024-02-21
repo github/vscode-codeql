@@ -172,7 +172,11 @@ export const MultipleModeledMethodsPanel = ({
           language={language}
           method={method}
           modeledMethod={undefined}
-          modelPending={false}
+          modelPending={isModelPending(
+            modeledMethods[selectedIndex],
+            modelingStatus,
+            isProcessedByAutoModel,
+          )}
           isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
