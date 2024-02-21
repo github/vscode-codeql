@@ -1,3 +1,4 @@
+import { canMethodBeModeled } from "../method";
 import type { Method } from "../method";
 import type { ModeledMethod } from "../modeled-method";
 import { Mode } from "./mode";
@@ -32,9 +33,9 @@ export function sortGroupNames(
  * Primarily sorts methods into the following order:
  * - Unsaved positive AutoModel predictions
  * - Negative AutoModel predictions
- * - Unsaved manual models
- * - Umodeled
- * - Modeled and saved (AutoModel and manual)
+ * - Unsaved manual models + unmodeled methods
+ * - Saved models from this model pack (AutoModel and manual)
+ * - Methods not modelable in this model pack
  *
  * Secondary sort order is by number of usages descending, then by method signature ascending.
  */
@@ -48,12 +49,14 @@ export function sortMethods(
   sortedMethods.sort((a, b) => {
     // First sort by the type of method
     const methodAPrimarySortOrdinal = getMethodPrimarySortOrdinal(
-      !!modeledMethodsMap[a.signature]?.length,
+      a,
+      modeledMethodsMap[a.signature] ?? [],
       modifiedSignatures.has(a.signature),
       processedByAutoModelMethods.has(a.signature),
     );
     const methodBPrimarySortOrdinal = getMethodPrimarySortOrdinal(
-      !!modeledMethodsMap[b.signature]?.length,
+      b,
+      modeledMethodsMap[b.signature] ?? [],
       modifiedSignatures.has(b.signature),
       processedByAutoModelMethods.has(b.signature),
     );
@@ -77,23 +80,28 @@ export function sortMethods(
  * Assigns numbers to the following classes of methods:
  * - Unsaved positive AutoModel predictions => 0
  * - Negative AutoModel predictions => 1
- * - Unsaved manual models => 2
- * - Umodeled => 3
- * - Modeled and saved (AutoModel and manual) => 4
+ * - Unsaved manual models + unmodeled methods => 2
+ * - Saved models from this model pack (AutoModel and manual) => 3
+ * - Methods not modelable in this model pack => 4
  */
 function getMethodPrimarySortOrdinal(
-  isModeled: boolean,
-  isModified: boolean,
+  method: Method,
+  modeledMethods: readonly ModeledMethod[],
+  isUnsaved: boolean,
   isProcessedByAutoModel: boolean,
 ): number {
-  if (isModeled && isModified && isProcessedByAutoModel) {
-    return 0;
-  } else if (!isModeled && isProcessedByAutoModel) {
-    return 1;
-  } else if (isModeled && isModified) {
-    return 2;
-  } else if (!isModeled) {
-    return 3;
+  const canBeModeled = canMethodBeModeled(method, modeledMethods, isUnsaved);
+  const isModeled = modeledMethods.length > 0;
+  if (canBeModeled) {
+    if (isModeled && isUnsaved && isProcessedByAutoModel) {
+      return 0;
+    } else if (!isModeled && isProcessedByAutoModel) {
+      return 1;
+    } else if ((isModeled && isUnsaved) || !isModeled) {
+      return 2;
+    } else {
+      return 3;
+    }
   } else {
     return 4;
   }
