@@ -94,6 +94,7 @@ import { getQlPackFilePath } from "../common/ql";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { findVariantAnalysisQlPackRoot } from "./ql";
+import { getCodeScanningPack } from "./code-scanning-pack";
 
 const maxRetryCount = 3;
 
@@ -219,7 +220,7 @@ export class VariantAnalysisManager
   public async runVariantAnalysisFromPublishedPack(): Promise<void> {
     return withProgress(async (progress, token) => {
       progress({
-        maxStep: 8,
+        maxStep: 7,
         step: 0,
         message: "Determining query language",
       });
@@ -229,54 +230,12 @@ export class VariantAnalysisManager
         return;
       }
 
-      progress({
-        maxStep: 8,
-        step: 1,
-        message: "Downloading query pack",
-      });
-
-      const packName = `codeql/${language}-queries`;
-      const packDownloadResult = await this.cliServer.packDownload([packName]);
-      const downloadedPack = packDownloadResult.packs[0];
-
-      const packDir = join(
-        packDownloadResult.packDir,
-        downloadedPack.name,
-        downloadedPack.version,
-      );
-
-      progress({
-        maxStep: 8,
-        step: 2,
-        message: "Resolving queries in pack",
-      });
-
-      const suitePath = join(
-        packDir,
-        "codeql-suites",
-        `${language}-code-scanning.qls`,
-      );
-      const resolvedQueries = await this.cliServer.resolveQueries(suitePath);
-
-      const problemQueries =
-        await this.filterToOnlyProblemQueries(resolvedQueries);
-
-      if (problemQueries.length === 0) {
-        void this.app.logger.showErrorMessage(
-          `Unable to trigger variant analysis. No problem queries found in published query pack: ${packName}.`,
-        );
-        return;
-      }
-
-      const qlPackFilePath = await getQlPackFilePath(packDir);
-
       // Build up details to pass to the functions that run the variant analysis.
-      const qlPackDetails: QlPackDetails = {
-        queryFiles: problemQueries,
-        qlPackRootPath: packDir,
-        qlPackFilePath,
+      const qlPackDetails = await getCodeScanningPack(
+        this.app,
+        this.cliServer,
         language,
-      };
+      );
 
       await this.runVariantAnalysis(
         qlPackDetails,
@@ -289,24 +248,6 @@ export class VariantAnalysisManager
         token,
       );
     });
-  }
-
-  private async filterToOnlyProblemQueries(
-    queries: string[],
-  ): Promise<string[]> {
-    const problemQueries: string[] = [];
-    for (const query of queries) {
-      const queryMetadata = await this.cliServer.resolveMetadata(query);
-      if (
-        queryMetadata.kind === "problem" ||
-        queryMetadata.kind === "path-problem"
-      ) {
-        problemQueries.push(query);
-      } else {
-        void this.app.logger.log(`Skipping non-problem query ${query}`);
-      }
-    }
-    return problemQueries;
   }
 
   private async runVariantAnalysisCommand(queryFiles: Uri[]): Promise<void> {

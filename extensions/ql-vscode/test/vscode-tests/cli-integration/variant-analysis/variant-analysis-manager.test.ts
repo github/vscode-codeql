@@ -477,41 +477,4 @@ describe("Variant Analysis Manager", () => {
       }
     }
   });
-
-  describe("runVariantAnalysisFromPublishedPack", () => {
-    // Temporarily disabling this until we add a way to receive multiple queries in the
-    // runVariantAnalysis function.
-    it("should download pack for correct language and identify problem queries", async () => {
-      const showQuickPickSpy = jest
-        .spyOn(window, "showQuickPick")
-        .mockResolvedValue(
-          mockedQuickPickItem({
-            label: "JavaScript",
-            description: "javascript",
-            language: "javascript",
-          }),
-        );
-
-      const runVariantAnalysisMock = jest.fn();
-      variantAnalysisManager.runVariantAnalysis = runVariantAnalysisMock;
-
-      await variantAnalysisManager.runVariantAnalysisFromPublishedPack();
-
-      expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-      expect(runVariantAnalysisMock).toHaveBeenCalledTimes(1);
-
-      console.log(runVariantAnalysisMock.mock.calls[0][0]);
-      const queries: string[] =
-        runVariantAnalysisMock.mock.calls[0][0].queryFiles;
-      // Should include queries. Just check that at least one known query exists.
-      // It doesn't particularly matter which query we check for.
-      expect(
-        queries.find((q) => q.includes("PostMessageStar.ql")),
-      ).toBeDefined();
-      // Should not include non-problem queries.
-      expect(
-        queries.find((q) => q.includes("LinesOfCode.ql")),
-      ).not.toBeDefined();
-    });
-  });
 });
