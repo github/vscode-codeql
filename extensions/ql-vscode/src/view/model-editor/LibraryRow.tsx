@@ -14,6 +14,7 @@ import {
 } from "@vscode/webview-ui-toolkit/react";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
+import { getCandidates } from "../../model-editor/shared/auto-model-candidates";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -186,6 +187,17 @@ export const LibraryRow = ({
     return methods.some((method) => inProgressMethods.has(method.signature));
   }, [methods, inProgressMethods]);
 
+  const modelWithAIDisabled = useMemo(() => {
+    return (
+      getCandidates(
+        viewState.mode,
+        methods,
+        modeledMethodsMap,
+        processedByAutoModelMethods,
+      ).length === 0
+    );
+  }, [methods, modeledMethodsMap, processedByAutoModelMethods, viewState.mode]);
+
   return (
     <LibraryContainer>
       <TitleContainer onClick={toggleExpanded} aria-expanded={isExpanded}>
@@ -205,7 +217,11 @@ export const LibraryRow = ({
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
         {viewState.showLlmButton && !canStopAutoModeling && (
-          <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
+          <VSCodeButton
+            appearance="icon"
+            disabled={modelWithAIDisabled}
+            onClick={handleModelWithAI}
+          >
             <Codicon name="lightbulb-autofix" label="Model with AI" />
             &nbsp;Model with AI
           </VSCodeButton>
