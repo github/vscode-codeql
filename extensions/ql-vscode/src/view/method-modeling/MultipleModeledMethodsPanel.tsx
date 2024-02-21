@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
+import { isModelPending } from "../../model-editor/modeled-method";
 import {
   canAddNewModeledMethod,
   canRemoveModeledMethod,
@@ -156,7 +157,10 @@ export const MultipleModeledMethodsPanel = ({
           language={language}
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
-          modelingStatus={modelingStatus}
+          modelPending={isModelPending(
+            modeledMethods[selectedIndex],
+            modelingStatus,
+          )}
           isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
@@ -165,7 +169,7 @@ export const MultipleModeledMethodsPanel = ({
           language={language}
           method={method}
           modeledMethod={undefined}
-          modelingStatus={modelingStatus}
+          modelPending={false}
           isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />

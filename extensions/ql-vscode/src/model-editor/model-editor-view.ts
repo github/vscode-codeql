@@ -337,6 +337,12 @@ export class ModelEditorView extends AbstractWebview<
         this.setModeledMethods(msg.methodSignature, msg.modeledMethods);
         break;
       }
+      case "startModelEvaluation":
+        this.startModelEvaluation();
+        break;
+      case "stopModelEvaluation":
+        this.stopModelEvaluation();
+        break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
         break;
@@ -402,6 +408,8 @@ export class ModelEditorView extends AbstractWebview<
     const showLlmButton =
       this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
 
+    const showEvaluationUi = this.modelConfig.modelEvaluation;
+
     const sourceArchiveAvailable =
       this.databaseItem.hasSourceArchiveInExplorer();
 
@@ -416,6 +424,7 @@ export class ModelEditorView extends AbstractWebview<
         language: this.language,
         showGenerateButton,
         showLlmButton,
+        showEvaluationUi,
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
@@ -909,5 +918,13 @@ export class ModelEditorView extends AbstractWebview<
       methods,
     );
     this.modelingStore.addModifiedMethod(this.databaseItem, signature);
+  }
+
+  private startModelEvaluation() {
+    // Do nothing for now. This will be fleshed out in the near future.
+  }
+
+  private stopModelEvaluation() {
+    // Do nothing for now. This will be fleshed out in the near future.
   }
 }

@@ -3,13 +3,11 @@ import { useCallback, useMemo } from "react";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import {
   calculateNewProvenance,
-  isModelAccepted,
   modeledMethodSupportsInput,
 } from "../../model-editor/modeled-method";
 import type { Method } from "../../model-editor/method";
 import type { QueryLanguage } from "../../common/query-language";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
-import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
 import { ModelTypeTextbox } from "./ModelTypeTextbox";
 
@@ -17,7 +15,7 @@ type Props = {
   language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  modelingStatus: ModelingStatus;
+  modelPending: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
@@ -25,7 +23,7 @@ export const ModelInputDropdown = ({
   language,
   method,
   modeledMethod,
-  modelingStatus,
+  modelPending,
   onChange,
 }: Props): React.JSX.Element => {
   const options = useMemo(() => {
@@ -77,14 +75,12 @@ export const ModelInputDropdown = ({
     );
   }
 
-  const modelAccepted = isModelAccepted(modeledMethod, modelingStatus);
-
   return (
     <InputDropdown
       value={value}
       options={options}
       disabled={!enabled}
-      $accepted={modelAccepted}
+      $pending={modelPending}
       onChange={handleChange}
       aria-label="Input"
     />

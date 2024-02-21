@@ -590,6 +590,14 @@ interface StopGeneratingMethodsFromLlmMessage {
   packageName: string;
 }
 
+interface StartModelEvaluationMessage {
+  t: "startModelEvaluation";
+}
+
+interface StopModelEvaluationMessage {
+  t: "stopModelEvaluation";
+}
+
 interface ModelDependencyMessage {
   t: "modelDependency";
 }
@@ -648,7 +656,9 @@ export type FromModelEditorMessage =
   | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
   | HideModeledMethodsMessage
-  | SetMultipleModeledMethodsMessage;
+  | SetMultipleModeledMethodsMessage
+  | StartModelEvaluationMessage
+  | StopModelEvaluationMessage;
 
 interface RevealInEditorMessage {
   t: "revealInModelEditor";

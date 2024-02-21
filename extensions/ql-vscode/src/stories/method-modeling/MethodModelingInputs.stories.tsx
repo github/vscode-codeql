@@ -66,5 +66,5 @@ export const ModelingNotAccepted = Template.bind({});
 ModelingNotAccepted.args = {
   method,
   modeledMethod: generatedModeledMethod,
-  modelingStatus: "unsaved",
+  modelPending: true,
 };

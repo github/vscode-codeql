@@ -3,6 +3,7 @@ import type { ToModelEditorMessage } from "../../common/interface-types";
 import {
   VSCodeButton,
   VSCodeCheckbox,
+  VSCodeProgressRing,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
@@ -74,6 +75,57 @@ const ButtonsContainer = styled.div`
   margin-top: 1rem;
 `;
 
+const ProgressRing = styled(VSCodeProgressRing)`
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+`;
+
+const ModelEvaluation = ({
+  viewState,
+  modeledMethods,
+  modifiedSignatures,
+  onStartEvaluation,
+  onStopEvaluation,
+  evaluationInProgress,
+}: {
+  viewState: ModelEditorViewState;
+  modeledMethods: Record<string, ModeledMethod[]>;
+  modifiedSignatures: Set<string>;
+  onStartEvaluation: () => void;
+  onStopEvaluation: () => void;
+  evaluationInProgress: boolean;
+}) => {
+  if (!viewState.showEvaluationUi) {
+    return null;
+  }
+
+  if (!evaluationInProgress) {
+    const customModelsExist = Object.values(modeledMethods).some(
+      (methods) => methods.filter((m) => m.type !== "none").length > 0,
+    );
+
+    const unsavedChanges = modifiedSignatures.size > 0;
+
+    return (
+      <VSCodeButton
+        onClick={onStartEvaluation}
+        appearance="secondary"
+        disabled={!customModelsExist || unsavedChanges}
+      >
+        Evaluate
+      </VSCodeButton>
+    );
+  } else {
+    return (
+      <VSCodeButton onClick={onStopEvaluation} appearance="secondary">
+        <ProgressRing />
+        Stop evaluation
+      </VSCodeButton>
+    );
+  }
+};
+
 type Props = {
   initialViewState?: ModelEditorViewState;
   initialMethods?: Method[];
@@ -113,6 +165,8 @@ export function ModelEditor({
   const [revealedMethodSignature, setRevealedMethodSignature] = useState<
     string | null
   >(null);
+
+  const [evaluationInProgress, setEvaluationInProgress] = useState(false);
 
   useEffect(() => {
     vscode.postMessage({
@@ -254,6 +308,20 @@ export function ModelEditor({
     [selectedSignatures],
   );
 
+  const onStartEvaluation = useCallback(() => {
+    setEvaluationInProgress(true);
+    vscode.postMessage({
+      t: "startModelEvaluation",
+    });
+  }, []);
+
+  const onStopEvaluation = useCallback(() => {
+    setEvaluationInProgress(false);
+    vscode.postMessage({
+      t: "stopModelEvaluation",
+    });
+  }, []);
+
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
       t: "generateMethod",
@@ -373,6 +441,14 @@ export function ModelEditor({
                     Generate
                   </VSCodeButton>
                 )}
+              <ModelEvaluation
+                viewState={viewState}
+                modeledMethods={modeledMethods}
+                modifiedSignatures={modifiedSignatures}
+                onStartEvaluation={onStartEvaluation}
+                onStopEvaluation={onStopEvaluation}
+                evaluationInProgress={evaluationInProgress}
+              />
             </ButtonsContainer>
           </HeaderRow>
         </HeaderColumn>

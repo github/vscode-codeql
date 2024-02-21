@@ -111,19 +111,27 @@ export function modeledMethodSupportsProvenance(
   );
 }
 
-export function isModelAccepted(
+export function isModelPending(
   modeledMethod: ModeledMethod | undefined,
   modelingStatus: ModelingStatus,
+  processedByAutoModel?: boolean,
 ): boolean {
-  if (!modeledMethod) {
+  if (
+    (!modeledMethod || modeledMethod.type === "none") &&
+    processedByAutoModel
+  ) {
     return true;
   }
 
+  if (!modeledMethod) {
+    return false;
+  }
+
   return (
-    modelingStatus !== "unsaved" ||
-    modeledMethod.type === "none" ||
-    !modeledMethodSupportsProvenance(modeledMethod) ||
-    modeledMethod.provenance !== "ai-generated"
+    modelingStatus === "unsaved" &&
+    modeledMethod.type !== "none" &&
+    modeledMethodSupportsProvenance(modeledMethod) &&
+    modeledMethod.provenance === "ai-generated"
   );
 }
 
