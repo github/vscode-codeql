@@ -46,6 +46,7 @@ export function sortMethods(
 ): Method[] {
   const sortedMethods = [...methods];
   sortedMethods.sort((a, b) => {
+    // First sort by the type of method
     const methodAPrimarySortOrdinal = getMethodPrimarySortOrdinal(
       !!modeledMethodsMap[a.signature]?.length,
       modifiedSignatures.has(a.signature),
