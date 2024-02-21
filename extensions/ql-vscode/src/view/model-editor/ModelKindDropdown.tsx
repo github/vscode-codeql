@@ -6,25 +6,23 @@ import type {
 } from "../../model-editor/modeled-method";
 import {
   modeledMethodSupportsKind,
-  isModelAccepted,
   calculateNewProvenance,
 } from "../../model-editor/modeled-method";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import type { QueryLanguage } from "../../common/query-language";
-import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
 
 type Props = {
   language: QueryLanguage;
   modeledMethod: ModeledMethod | undefined;
-  modelingStatus: ModelingStatus;
+  modelPending: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelKindDropdown = ({
   language,
   modeledMethod,
-  modelingStatus,
+  modelPending,
   onChange,
 }: Props) => {
   const predicate = useMemo(() => {
@@ -89,14 +87,12 @@ export const ModelKindDropdown = ({
     }
   }, [modeledMethod, value, kinds, onChangeKind]);
 
-  const modelAccepted = isModelAccepted(modeledMethod, modelingStatus);
-
   return (
     <InputDropdown
       value={value}
       options={options}
       disabled={disabled}
-      $accepted={modelAccepted}
+      $pending={modelPending}
       onChange={handleChange}
       aria-label="Kind"
     />

@@ -4,10 +4,7 @@ import type {
   ModeledMethod,
   ModeledMethodType,
 } from "../../model-editor/modeled-method";
-import {
-  calculateNewProvenance,
-  isModelAccepted,
-} from "../../model-editor/modeled-method";
+import { calculateNewProvenance } from "../../model-editor/modeled-method";
 import type { Method } from "../../model-editor/method";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import type { Mutable } from "../../common/mutable";
@@ -15,14 +12,13 @@ import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import type { QueryLanguage } from "../../common/query-language";
 import type { ModelsAsDataLanguagePredicates } from "../../model-editor/languages";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
-import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import { InputDropdown } from "./InputDropdown";
 
 type Props = {
   language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  modelingStatus: ModelingStatus;
+  modelPending: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
@@ -40,7 +36,7 @@ export const ModelTypeDropdown = ({
   language,
   method,
   modeledMethod,
-  modelingStatus,
+  modelPending,
   onChange,
 }: Props): React.JSX.Element => {
   const options = useMemo(() => {
@@ -114,13 +110,11 @@ export const ModelTypeDropdown = ({
     );
   }
 
-  const modelAccepted = isModelAccepted(modeledMethod, modelingStatus);
-
   return (
     <InputDropdown
       value={modeledMethod?.type ?? "none"}
       options={options}
-      $accepted={modelAccepted}
+      $pending={modelPending}
       onChange={handleChange}
       aria-label="Model type"
     />

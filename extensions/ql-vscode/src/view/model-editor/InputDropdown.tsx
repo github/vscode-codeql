@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
 import { Dropdown } from "../common/Dropdown";
 
-export const InputDropdown = styled(Dropdown)<{ $accepted: boolean }>`
-  font-style: ${(props) => (props.$accepted ? "normal" : "italic")};
+export const InputDropdown = styled(Dropdown)<{ $pending: boolean }>`
+  font-style: ${(props) => (props.$pending ? "italic" : "normal")};
 `;
