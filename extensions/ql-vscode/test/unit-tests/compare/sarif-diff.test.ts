@@ -138,6 +138,364 @@ describe("sarifDiff", () => {
     });
   });
 
+  it("does not take into account the location index when in thread flows or related locations", () => {
+    const result1: Result = {
+      ruleId: "java/static-initialization-vector",
+      ruleIndex: 0,
+      rule: {
+        id: "java/static-initialization-vector",
+        index: 0,
+      },
+      message: {
+        text: "A [static initialization vector](1) should not be used for encryption.",
+      },
+      locations: [
+        {
+          physicalLocation: {
+            artifactLocation: {
+              uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+              uriBaseId: "%SRCROOT%",
+              index: 126,
+            },
+            region: {
+              startLine: 1272,
+              startColumn: 55,
+              endColumn: 61,
+            },
+          },
+        },
+      ],
+      partialFingerprints: {
+        primaryLocationLineHash: "9a2a0c085da38206:3",
+        primaryLocationStartColumnFingerprint: "38",
+      },
+      codeFlows: [
+        {
+          threadFlows: [
+            {
+              locations: [
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 126,
+                      },
+                      region: {
+                        startLine: 1270,
+                        startColumn: 50,
+                        endColumn: 76,
+                      },
+                    },
+                    message: {
+                      text: "new byte[] : byte[]",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/javax/crypto/spec/IvParameterSpec.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 12,
+                      },
+                      region: {
+                        startLine: 52,
+                        startColumn: 28,
+                        endColumn: 37,
+                      },
+                    },
+                    message: {
+                      text: "iv : byte[]",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/javax/crypto/spec/IvParameterSpec.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 12,
+                      },
+                      region: {
+                        startLine: 53,
+                        startColumn: 14,
+                        endColumn: 16,
+                      },
+                    },
+                    message: {
+                      text: "iv : byte[]",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/javax/crypto/spec/IvParameterSpec.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 12,
+                      },
+                      region: {
+                        startLine: 53,
+                        startColumn: 9,
+                        endColumn: 32,
+                      },
+                    },
+                    message: {
+                      text: "this <constr(this)> [post update] : IvParameterSpec",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 126,
+                      },
+                      region: {
+                        startLine: 1270,
+                        startColumn: 30,
+                        endColumn: 77,
+                      },
+                    },
+                    message: {
+                      text: "new IvParameterSpec(...) : IvParameterSpec",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 126,
+                      },
+                      region: {
+                        startLine: 1272,
+                        startColumn: 55,
+                        endColumn: 61,
+                      },
+                    },
+                    message: {
+                      text: "params",
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      relatedLocations: [
+        {
+          id: 1,
+          physicalLocation: {
+            artifactLocation: {
+              uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+              uriBaseId: "%SRCROOT%",
+              index: 126,
+            },
+            region: {
+              startLine: 1270,
+              startColumn: 50,
+              endColumn: 76,
+            },
+          },
+          message: {
+            text: "static initialization vector",
+          },
+        },
+      ],
+    };
+    const result2: Result = {
+      ruleId: "java/static-initialization-vector",
+      ruleIndex: 0,
+      rule: {
+        id: "java/static-initialization-vector",
+        index: 0,
+      },
+      message: {
+        text: "A [static initialization vector](1) should not be used for encryption.",
+      },
+      locations: [
+        {
+          physicalLocation: {
+            artifactLocation: {
+              uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+              uriBaseId: "%SRCROOT%",
+              index: 141,
+            },
+            region: {
+              startLine: 1272,
+              startColumn: 55,
+              endColumn: 61,
+            },
+          },
+        },
+      ],
+      partialFingerprints: {
+        primaryLocationLineHash: "9a2a0c085da38206:3",
+        primaryLocationStartColumnFingerprint: "38",
+      },
+      codeFlows: [
+        {
+          threadFlows: [
+            {
+              locations: [
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 141,
+                      },
+                      region: {
+                        startLine: 1270,
+                        startColumn: 50,
+                        endColumn: 76,
+                      },
+                    },
+                    message: {
+                      text: "new byte[] : byte[]",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/javax/crypto/spec/IvParameterSpec.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 12,
+                      },
+                      region: {
+                        startLine: 52,
+                        startColumn: 28,
+                        endColumn: 37,
+                      },
+                    },
+                    message: {
+                      text: "iv : byte[]",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/javax/crypto/spec/IvParameterSpec.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 12,
+                      },
+                      region: {
+                        startLine: 53,
+                        startColumn: 14,
+                        endColumn: 16,
+                      },
+                    },
+                    message: {
+                      text: "iv : byte[]",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/javax/crypto/spec/IvParameterSpec.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 12,
+                      },
+                      region: {
+                        startLine: 53,
+                        startColumn: 9,
+                        endColumn: 32,
+                      },
+                    },
+                    message: {
+                      text: "this <constr(this)> [post update] : IvParameterSpec",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 141,
+                      },
+                      region: {
+                        startLine: 1270,
+                        startColumn: 30,
+                        endColumn: 77,
+                      },
+                    },
+                    message: {
+                      text: "new IvParameterSpec(...) : IvParameterSpec",
+                    },
+                  },
+                },
+                {
+                  location: {
+                    physicalLocation: {
+                      artifactLocation: {
+                        uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+                        uriBaseId: "%SRCROOT%",
+                        index: 141,
+                      },
+                      region: {
+                        startLine: 1272,
+                        startColumn: 55,
+                        endColumn: 61,
+                      },
+                    },
+                    message: {
+                      text: "params",
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      relatedLocations: [
+        {
+          id: 1,
+          physicalLocation: {
+            artifactLocation: {
+              uri: "src/java.base/share/classes/sun/security/ssl/SSLCipher.java",
+              uriBaseId: "%SRCROOT%",
+              index: 141,
+            },
+            region: {
+              startLine: 1270,
+              startColumn: 50,
+              endColumn: 76,
+            },
+          },
+          message: {
+            text: "static initialization vector",
+          },
+        },
+      ],
+    };
+
+    expect(sarifDiff([result1], [result2])).toEqual({
+      from: [],
+      to: [],
+    });
+  });
+
   it("does not modify the input", () => {
     const result1: Result = {
       message: {

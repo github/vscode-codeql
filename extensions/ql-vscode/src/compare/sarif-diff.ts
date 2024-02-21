@@ -1,4 +1,29 @@
-import type { Result } from "sarif";
+import type { Location, Result } from "sarif";
+
+function toCanonicalLocation(location: Location): Location {
+  if (location.physicalLocation?.artifactLocation?.index !== undefined) {
+    const canonicalLocation = {
+      ...location,
+    };
+
+    canonicalLocation.physicalLocation = {
+      ...canonicalLocation.physicalLocation,
+    };
+
+    canonicalLocation.physicalLocation.artifactLocation = {
+      ...canonicalLocation.physicalLocation.artifactLocation,
+    };
+
+    // The index is dependent on the result of the SARIF file and usually doesn't really tell
+    // us anything useful, so we remove it from the comparison.
+    delete canonicalLocation.physicalLocation.artifactLocation.index;
+
+    return canonicalLocation;
+  }
+
+  // Don't create a new object if we don't need to
+  return location;
+}
 
 function toCanonicalResult(result: Result): Result {
   const canonicalResult = {
@@ -6,29 +31,45 @@ function toCanonicalResult(result: Result): Result {
   };
 
   if (canonicalResult.locations) {
-    canonicalResult.locations = canonicalResult.locations.map((location) => {
-      if (location.physicalLocation?.artifactLocation?.index !== undefined) {
-        const canonicalLocation = {
-          ...location,
+    canonicalResult.locations =
+      canonicalResult.locations.map(toCanonicalLocation);
+  }
+
+  if (canonicalResult.relatedLocations) {
+    canonicalResult.relatedLocations =
+      canonicalResult.relatedLocations.map(toCanonicalLocation);
+  }
+
+  if (canonicalResult.codeFlows) {
+    canonicalResult.codeFlows = canonicalResult.codeFlows.map((codeFlow) => {
+      if (codeFlow.threadFlows) {
+        return {
+          ...codeFlow,
+          threadFlows: codeFlow.threadFlows.map((threadFlow) => {
+            if (threadFlow.locations) {
+              return {
+                ...threadFlow,
+                locations: threadFlow.locations.map((threadFlowLocation) => {
+                  if (threadFlowLocation.location) {
+                    return {
+                      ...threadFlowLocation,
+                      location: toCanonicalLocation(
+                        threadFlowLocation.location,
+                      ),
+                    };
+                  }
+
+                  return threadFlowLocation;
+                }),
+              };
+            }
+
+            return threadFlow;
+          }),
         };
-
-        canonicalLocation.physicalLocation = {
-          ...canonicalLocation.physicalLocation,
-        };
-
-        canonicalLocation.physicalLocation.artifactLocation = {
-          ...canonicalLocation.physicalLocation.artifactLocation,
-        };
-
-        // The index is dependent on the result of the SARIF file and usually doesn't really tell
-        // us anything useful, so we remove it from the comparison.
-        delete canonicalLocation.physicalLocation.artifactLocation.index;
-
-        return canonicalLocation;
       }
 
-      // Don't create a new object if we don't need to
-      return location;
+      return codeFlow;
     });
   }
 
