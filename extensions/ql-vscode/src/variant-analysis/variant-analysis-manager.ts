@@ -94,7 +94,7 @@ import { getQlPackFilePath } from "../common/ql";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { findVariantAnalysisQlPackRoot } from "./ql";
-import { getCodeScanningPack } from "./code-scanning-pack";
+import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
 
 const maxRetryCount = 3;
 
@@ -230,9 +230,15 @@ export class VariantAnalysisManager
         return;
       }
 
+      progress({
+        maxStep: 7,
+        step: 2,
+        message: "Downloading query pack and resolving queries",
+      });
+
       // Build up details to pass to the functions that run the variant analysis.
-      const qlPackDetails = await getCodeScanningPack(
-        this.app,
+      const qlPackDetails = await resolveCodeScanningQueryPack(
+        this.app.logger,
         this.cliServer,
         language,
       );

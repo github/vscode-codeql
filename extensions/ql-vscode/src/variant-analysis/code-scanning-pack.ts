@@ -1,17 +1,17 @@
 import { join } from "path";
-import type { App } from "../common/app";
+import type { BaseLogger } from "../common/logging";
 import type { QueryLanguage } from "../common/query-language";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { QlPackDetails } from "./ql-pack-details";
 import { getQlPackFilePath } from "../common/ql";
 
-export async function getCodeScanningPack(
-  app: App,
+export async function resolveCodeScanningQueryPack(
+  logger: BaseLogger,
   cliServer: CodeQLCliServer,
   language: QueryLanguage,
 ): Promise<QlPackDetails> {
   // Get pack
-  void app.logger.log(`Downloading pack for language: ${language}`);
+  void logger.log(`Downloading pack for language: ${language}`);
   const packName = `codeql/${language}-queries`;
   const packDownloadResult = await cliServer.packDownload([packName]);
   const downloadedPack = packDownloadResult.packs[0];
@@ -23,7 +23,7 @@ export async function getCodeScanningPack(
   );
 
   // Resolve queries
-  void app.logger.log(`Resolving queries for pack: ${packName}`);
+  void logger.log(`Resolving queries for pack: ${packName}`);
   const suitePath = join(
     packDir,
     "codeql-suites",
@@ -32,7 +32,7 @@ export async function getCodeScanningPack(
   const resolvedQueries = await cliServer.resolveQueries(suitePath);
 
   const problemQueries = await filterToOnlyProblemQueries(
-    app,
+    logger,
     cliServer,
     resolvedQueries,
   );
@@ -57,7 +57,7 @@ export async function getCodeScanningPack(
 }
 
 async function filterToOnlyProblemQueries(
-  app: App,
+  logger: BaseLogger,
   cliServer: CodeQLCliServer,
   queries: string[],
 ): Promise<string[]> {
@@ -70,7 +70,7 @@ async function filterToOnlyProblemQueries(
     ) {
       problemQueries.push(query);
     } else {
-      void app.logger.log(`Skipping non-problem query ${query}`);
+      void logger.log(`Skipping non-problem query ${query}`);
     }
   }
   return problemQueries;
