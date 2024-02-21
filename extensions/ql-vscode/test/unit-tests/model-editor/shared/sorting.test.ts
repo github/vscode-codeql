@@ -22,8 +22,12 @@ describe("sortMethods", () => {
       signature: "org.sql2o.Sql2o#unsavedManualModel()",
       supported: false,
     });
-    const unmodeledMethod = createMethod({
-      signature: "org.sql2o.Sql2o#unmodeledMethod()",
+    const unmodeledMethodWithEarlierSignature = createMethod({
+      signature: "org.sql2o.Sql2o#aaa_unmodeledMethodWithEarlierSignature()",
+      supported: false,
+    });
+    const unmodeledMethodWithLaterSignature = createMethod({
+      signature: "org.sql2o.Sql2o#zzz_unmodeledMethodWithLaterSignature()",
       supported: false,
     });
     const savedAutoModelPrediction = createMethod({
@@ -43,7 +47,8 @@ describe("sortMethods", () => {
       unsavedPositiveAutoModelPrediction,
       negativeAutoModelPrediction,
       unsavedManualModel,
-      unmodeledMethod,
+      unmodeledMethodWithEarlierSignature,
+      unmodeledMethodWithLaterSignature,
       savedAutoModelPrediction,
       savedManualModel,
       supportedMethod,
@@ -82,8 +87,9 @@ describe("sortMethods", () => {
     ).toEqual([
       unsavedPositiveAutoModelPrediction,
       negativeAutoModelPrediction,
+      unmodeledMethodWithEarlierSignature,
       unsavedManualModel,
-      unmodeledMethod,
+      unmodeledMethodWithLaterSignature,
       savedAutoModelPrediction,
       savedManualModel,
       supportedMethod,
