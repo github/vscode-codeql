@@ -25,6 +25,7 @@ import type {
   UrlValueResolvable,
 } from "./raw-result-types";
 import type { AccessPathSuggestionOptions } from "../model-editor/suggestions";
+import type { ModelEvaluationRun } from "../model-editor/model-evaluation-run";
 
 /**
  * This module contains types and code that are shared between
@@ -633,6 +634,11 @@ interface SetAccessPathSuggestionsMessage {
   accessPathSuggestions: AccessPathSuggestionOptions;
 }
 
+interface SetModelEvaluationRunMessage {
+  t: "setModelEvaluationRun";
+  run: ModelEvaluationRun | undefined;
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
@@ -641,7 +647,8 @@ export type ToModelEditorMessage =
   | SetInProgressMethodsMessage
   | SetProcessedByAutoModelMethodsMessage
   | RevealMethodMessage
-  | SetAccessPathSuggestionsMessage;
+  | SetAccessPathSuggestionsMessage
+  | SetModelEvaluationRunMessage;
 
 export type FromModelEditorMessage =
   | CommonFromViewMessages
