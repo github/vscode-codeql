@@ -11,31 +11,31 @@ import { shuffle } from "../../../vscode-tests/utils/list-helpers";
 describe("sortMethods", () => {
   it("uses primary sort order", () => {
     const unsavedPositiveAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#open1()",
+      signature: "org.sql2o.Sql2o#unsavedPositiveAutoModelPrediction()",
       supported: false,
     });
     const negativeAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#open2()",
+      signature: "org.sql2o.Sql2o#negativeAutoModelPrediction()",
       supported: false,
     });
     const unsavedManualModel = createMethod({
-      signature: "org.sql2o.Sql2o#open3()",
+      signature: "org.sql2o.Sql2o#unsavedManualModel()",
       supported: false,
     });
     const unmodeledMethod = createMethod({
-      signature: "org.sql2o.Sql2o#open4()",
+      signature: "org.sql2o.Sql2o#unmodeledMethod()",
       supported: false,
     });
     const savedAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#open5()",
+      signature: "org.sql2o.Sql2o#savedAutoModelPrediction()",
       supported: false,
     });
     const savedManualModel = createMethod({
-      signature: "org.sql2o.Sql2o#open6()",
+      signature: "org.sql2o.Sql2o#savedManualModel()",
       supported: false,
     });
     const supportedMethod = createMethod({
-      signature: "org.sql2o.Sql2o#open7()",
+      signature: "org.sql2o.Sql2o#supportedMethod()",
       supported: true,
     });
 
@@ -92,29 +92,29 @@ describe("sortMethods", () => {
 
   it("uses secondary sort order based on usages and signature", () => {
     const negativeAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#negative()",
+      signature: "org.sql2o.Sql2o#negativeAutoModelPrediction()",
       supported: false,
       usages: [],
     });
 
     const unmodeledMethodWithTwoUsages = createMethod({
-      signature: "org.sql2o.Sql2o#two()",
+      signature: "org.sql2o.Sql2o#unmodeledMethodWithTwoUsages()",
       supported: false,
       usages: [createUsage(), createUsage()],
     });
     const unmodeledMethodWithOneUsage = createMethod({
-      signature: "org.sql2o.Sql2o#one()",
+      signature: "org.sql2o.Sql2o#unmodeledMethodWithOneUsage()",
       supported: false,
       usages: [createUsage()],
     });
 
     const unmodeledMethodWithEarlierSignature = createMethod({
-      signature: "org.sql2o.Sql2o#aaa()",
+      signature: "org.sql2o.Sql2o#aaa_unmodeledMethodWithEarlierSignature()",
       supported: false,
       usages: [],
     });
     const unmodeledMethodWithLaterSignature = createMethod({
-      signature: "org.sql2o.Sql2o#bbb()",
+      signature: "org.sql2o.Sql2o#bbb_unmodeledMethodWithLaterSignature()",
       supported: false,
       usages: [],
     });
