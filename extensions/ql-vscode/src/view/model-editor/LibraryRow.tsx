@@ -14,7 +14,7 @@ import {
 } from "@vscode/webview-ui-toolkit/react";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
-import { getCandidates } from "../../model-editor/auto-model";
+import { getCandidates } from "../../model-editor/shared/auto-model-candidates";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
