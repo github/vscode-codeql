@@ -6,11 +6,15 @@ import type { Method, Usage } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { Mode } from "./shared/mode";
 
-interface MethodsChangedEvent {
-  readonly methods: readonly Method[];
+interface ModelingStateChangedEvent {
   readonly dbUri: string;
   readonly databaseItem: DatabaseItem;
   readonly isActiveDb: boolean;
+  readonly methods?: readonly Method[];
+  readonly modeledMethods?: Readonly<Record<string, ModeledMethod[]>>;
+  readonly modifiedMethodSignatures?: ReadonlySet<string>;
+  readonly inProgressMethodSignatures?: ReadonlySet<string>;
+  readonly processedByAutoModelMethodSignatures?: ReadonlySet<string>;
 }
 
 interface HideModeledMethodsChangedEvent {
@@ -23,19 +27,6 @@ interface ModeChangedEvent {
   readonly isActiveDb: boolean;
 }
 
-interface ModeledMethodsChangedEvent {
-  readonly modeledMethods: Readonly<Record<string, ModeledMethod[]>>;
-  readonly modifiedMethodSignatures: ReadonlySet<string>;
-  readonly dbUri: string;
-  readonly isActiveDb: boolean;
-}
-
-interface ModifiedMethodsChangedEvent {
-  readonly modifiedMethods: ReadonlySet<string>;
-  readonly dbUri: string;
-  readonly isActiveDb: boolean;
-}
-
 interface SelectedMethodChangedEvent {
   readonly databaseItem: DatabaseItem;
   readonly method: Method;
@@ -44,16 +35,6 @@ interface SelectedMethodChangedEvent {
   readonly isModified: boolean;
   readonly isInProgress: boolean;
   readonly processedByAutoModel: boolean;
-}
-
-interface InProgressMethodsChangedEvent {
-  readonly dbUri: string;
-  readonly methods: ReadonlySet<string>;
-}
-
-interface ProcessedByAutoModelMethodsChangedEvent {
-  readonly dbUri: string;
-  readonly methods: ReadonlySet<string>;
 }
 
 interface RevealInModelEditorEvent {
@@ -69,28 +50,20 @@ export class ModelingEvents extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
   public readonly onDbOpened: AppEvent<DatabaseItem>;
   public readonly onDbClosed: AppEvent<string>;
-  public readonly onMethodsChanged: AppEvent<MethodsChangedEvent>;
+  public readonly onModelingStateChanged: AppEvent<ModelingStateChangedEvent>;
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
   public readonly onModeChanged: AppEvent<ModeChangedEvent>;
-  public readonly onModeledMethodsChanged: AppEvent<ModeledMethodsChangedEvent>;
-  public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
-  public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
-  public readonly onProcessedByAutoModelMethodsChanged: AppEvent<ProcessedByAutoModelMethodsChangedEvent>;
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
   public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
   private readonly onDbOpenedEventEmitter: AppEventEmitter<DatabaseItem>;
   private readonly onDbClosedEventEmitter: AppEventEmitter<string>;
-  private readonly onMethodsChangedEventEmitter: AppEventEmitter<MethodsChangedEvent>;
+  private readonly onModelingStateChangedEventEmitter: AppEventEmitter<ModelingStateChangedEvent>;
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
   private readonly onModeChangedEventEmitter: AppEventEmitter<ModeChangedEvent>;
-  private readonly onModeledMethodsChangedEventEmitter: AppEventEmitter<ModeledMethodsChangedEvent>;
-  private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
-  private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
-  private readonly onProcessedByAutoModelMethodsChangedEventEmitter: AppEventEmitter<ProcessedByAutoModelMethodsChangedEvent>;
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
   private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
 
@@ -110,10 +83,10 @@ export class ModelingEvents extends DisposableObject {
     this.onDbClosedEventEmitter = this.push(app.createEventEmitter<string>());
     this.onDbClosed = this.onDbClosedEventEmitter.event;
 
-    this.onMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<MethodsChangedEvent>(),
+    this.onModelingStateChangedEventEmitter = this.push(
+      app.createEventEmitter<ModelingStateChangedEvent>(),
     );
-    this.onMethodsChanged = this.onMethodsChangedEventEmitter.event;
+    this.onModelingStateChanged = this.onModelingStateChangedEventEmitter.event;
 
     this.onHideModeledMethodsChangedEventEmitter = this.push(
       app.createEventEmitter<HideModeledMethodsChangedEvent>(),
@@ -126,35 +99,11 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onModeChanged = this.onModeChangedEventEmitter.event;
 
-    this.onModeledMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ModeledMethodsChangedEvent>(),
-    );
-    this.onModeledMethodsChanged =
-      this.onModeledMethodsChangedEventEmitter.event;
-
-    this.onModifiedMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ModifiedMethodsChangedEvent>(),
-    );
-    this.onModifiedMethodsChanged =
-      this.onModifiedMethodsChangedEventEmitter.event;
-
     this.onSelectedMethodChangedEventEmitter = this.push(
       app.createEventEmitter<SelectedMethodChangedEvent>(),
     );
     this.onSelectedMethodChanged =
       this.onSelectedMethodChangedEventEmitter.event;
-
-    this.onInProgressMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<InProgressMethodsChangedEvent>(),
-    );
-    this.onInProgressMethodsChanged =
-      this.onInProgressMethodsChangedEventEmitter.event;
-
-    this.onProcessedByAutoModelMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ProcessedByAutoModelMethodsChangedEvent>(),
-    );
-    this.onProcessedByAutoModelMethodsChanged =
-      this.onProcessedByAutoModelMethodsChangedEventEmitter.event;
 
     this.onRevealInModelEditorEventEmitter = this.push(
       app.createEventEmitter<RevealInModelEditorEvent>(),
@@ -179,18 +128,8 @@ export class ModelingEvents extends DisposableObject {
     this.onDbClosedEventEmitter.fire(dbUri);
   }
 
-  public fireMethodsChangedEvent(
-    methods: Method[],
-    dbUri: string,
-    databaseItem: DatabaseItem,
-    isActiveDb: boolean,
-  ) {
-    this.onMethodsChangedEventEmitter.fire({
-      methods,
-      databaseItem,
-      dbUri,
-      isActiveDb,
-    });
+  public fireModelingStateChangedEvent(event: ModelingStateChangedEvent) {
+    this.onModelingStateChangedEventEmitter.fire(event);
   }
 
   public fireHideModeledMethodsChangedEvent(
@@ -206,32 +145,6 @@ export class ModelingEvents extends DisposableObject {
   public fireModeChangedEvent(mode: Mode, isActiveDb: boolean) {
     this.onModeChangedEventEmitter.fire({
       mode,
-      isActiveDb,
-    });
-  }
-
-  public fireModeledMethodsChangedEvent(
-    modeledMethods: Record<string, ModeledMethod[]>,
-    modifiedMethodSignatures: ReadonlySet<string>,
-    dbUri: string,
-    isActiveDb: boolean,
-  ) {
-    this.onModeledMethodsChangedEventEmitter.fire({
-      modeledMethods,
-      modifiedMethodSignatures,
-      dbUri,
-      isActiveDb,
-    });
-  }
-
-  public fireModifiedMethodsChangedEvent(
-    modifiedMethods: ReadonlySet<string>,
-    dbUri: string,
-    isActiveDb: boolean,
-  ) {
-    this.onModifiedMethodsChangedEventEmitter.fire({
-      modifiedMethods,
-      dbUri,
       isActiveDb,
     });
   }
@@ -253,26 +166,6 @@ export class ModelingEvents extends DisposableObject {
       isModified,
       isInProgress,
       processedByAutoModel,
-    });
-  }
-
-  public fireInProgressMethodsChangedEvent(
-    dbUri: string,
-    methods: ReadonlySet<string>,
-  ) {
-    this.onInProgressMethodsChangedEventEmitter.fire({
-      dbUri,
-      methods,
-    });
-  }
-
-  public fireProcessedByAutoModelMethodsChangedEvent(
-    dbUri: string,
-    methods: ReadonlySet<string>,
-  ) {
-    this.onProcessedByAutoModelMethodsChangedEventEmitter.fire({
-      dbUri,
-      methods,
     });
   }
 

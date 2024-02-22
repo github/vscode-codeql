@@ -807,61 +807,27 @@ export class ModelEditorView extends AbstractWebview<
 
   private registerToModelingEvents() {
     this.push(
-      this.modelingEvents.onMethodsChanged(async (event) => {
+      this.modelingEvents.onModelingStateChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
             t: "setModelEditorState",
             methods: event.methods,
-          });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setModelEditorState",
             modeledMethods: event.modeledMethods,
-            modifiedMethodSignatures: [...event.modifiedMethodSignatures],
+            modifiedMethodSignatures:
+              event.modifiedMethodSignatures === undefined
+                ? undefined
+                : [...event.modifiedMethodSignatures],
+            inProgressMethodSignatures:
+              event.inProgressMethodSignatures === undefined
+                ? undefined
+                : [...event.inProgressMethodSignatures],
+            processedByAutoModelMethodSignatures:
+              event.processedByAutoModelMethodSignatures === undefined
+                ? undefined
+                : [...event.processedByAutoModelMethodSignatures],
           });
         }
       }),
-    );
-
-    this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setModelEditorState",
-            modifiedMethodSignatures: [...event.modifiedMethods],
-          });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onInProgressMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setModelEditorState",
-            inProgressMethodSignatures: Array.from(event.methods),
-          });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onProcessedByAutoModelMethodsChanged(
-        async (event) => {
-          if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-            await this.postMessage({
-              t: "setModelEditorState",
-              processedByAutoModelMethodSignatures: Array.from(event.methods),
-            });
-          }
-        },
-      ),
     );
 
     this.push(

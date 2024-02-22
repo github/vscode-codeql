@@ -108,16 +108,18 @@ export class ModelEditorModule extends DisposableObject {
     );
 
     this.push(
-      this.modelingEvents.onMethodsChanged((event) => {
-        const modeledMethods = this.modelingStore.getModeledMethods(
-          event.databaseItem,
-        );
+      this.modelingEvents.onModelingStateChanged((event) => {
+        if (event.methods !== undefined) {
+          const modeledMethods = this.modelingStore.getModeledMethods(
+            event.databaseItem,
+          );
 
-        checkConsistency(
-          event.methods,
-          modeledMethods,
-          new DefaultNotifier(this.app.logger),
-        );
+          checkConsistency(
+            event.methods,
+            modeledMethods,
+            new DefaultNotifier(this.app.logger),
+          );
+        }
       }),
     );
   }

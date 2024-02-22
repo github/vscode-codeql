@@ -80,7 +80,7 @@ export class MethodsUsagePanel extends DisposableObject {
     );
 
     this.push(
-      this.modelingEvents.onMethodsChanged(async (event) => {
+      this.modelingEvents.onModelingStateChanged(async (event) => {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
         }
@@ -97,14 +97,6 @@ export class MethodsUsagePanel extends DisposableObject {
 
     this.push(
       this.modelingEvents.onModeChanged(async (event) => {
-        if (event.isActiveDb) {
-          await this.handleStateChangeEvent();
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (event) => {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
         }

@@ -159,15 +159,17 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
   private registerToModelingEvents(): void {
     this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (e) => {
+      this.modelingEvents.onModelingStateChanged(async (e) => {
         if (this.webviewView && e.isActiveDb && this.method) {
-          const modeledMethods = e.modeledMethods[this.method.signature];
-          if (modeledMethods) {
-            await this.postMessage({
-              t: "setMultipleModeledMethods",
-              methodSignature: this.method.signature,
-              modeledMethods,
-            });
+          if (e.modeledMethods !== undefined) {
+            const modeledMethods = e.modeledMethods[this.method.signature];
+            if (modeledMethods) {
+              await this.postMessage({
+                t: "setMultipleModeledMethods",
+                methodSignature: this.method.signature,
+                modeledMethods,
+              });
+            }
           }
 
           if (e.modifiedMethodSignatures !== undefined) {
@@ -176,18 +178,25 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
               isModified: e.modifiedMethodSignatures.has(this.method.signature),
             });
           }
-        }
-      }),
-    );
 
-    this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (e) => {
-        if (this.webviewView && e.isActiveDb && this.method) {
-          const isModified = e.modifiedMethods.has(this.method.signature);
-          await this.postMessage({
-            t: "setMethodModified",
-            isModified,
-          });
+          if (e.inProgressMethodSignatures !== undefined) {
+            const inProgress = e.inProgressMethodSignatures.has(
+              this.method.signature,
+            );
+            await this.postMessage({
+              t: "setInProgress",
+              inProgress,
+            });
+          }
+
+          if (e.processedByAutoModelMethodSignatures !== undefined) {
+            const processedByAutoModel =
+              e.processedByAutoModelMethodSignatures.has(this.method.signature);
+            await this.postMessage({
+              t: "setProcessedByAutoModel",
+              processedByAutoModel,
+            });
+          }
         }
       }),
     );
@@ -236,36 +245,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
         if (dbUri === this.databaseItem?.databaseUri.toString()) {
           await this.setMethod(undefined, undefined);
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onInProgressMethodsChanged(async (e) => {
-        if (this.method && this.databaseItem) {
-          const dbUri = this.databaseItem.databaseUri.toString();
-          if (e.dbUri === dbUri) {
-            const inProgress = e.methods.has(this.method.signature);
-            await this.postMessage({
-              t: "setInProgress",
-              inProgress,
-            });
-          }
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onProcessedByAutoModelMethodsChanged(async (e) => {
-        if (this.method && this.databaseItem) {
-          const dbUri = this.databaseItem.databaseUri.toString();
-          if (e.dbUri === dbUri) {
-            const processedByAutoModel = e.methods.has(this.method.signature);
-            await this.postMessage({
-              t: "setProcessedByAutoModel",
-              processedByAutoModel,
-            });
-          }
         }
       }),
     );

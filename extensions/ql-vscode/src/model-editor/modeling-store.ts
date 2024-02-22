@@ -156,12 +156,12 @@ export class ModelingStore extends DisposableObject {
 
     dbState.methods = [...methods];
 
-    this.modelingEvents.fireMethodsChangedEvent(
-      methods,
+    this.modelingEvents.fireModelingStateChangedEvent({
       dbUri,
-      dbItem,
-      dbUri === this.activeDb,
-    );
+      databaseItem: dbItem,
+      isActiveDb: dbUri === this.activeDb,
+      methods,
+    });
   }
 
   public setHideModeledMethods(
@@ -408,11 +408,12 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireModifiedMethodsChangedEvent(
-      state.modifiedMethodSignatures,
-      dbItem.databaseUri.toString(),
-      dbItem.databaseUri.toString() === this.activeDb,
-    );
+    this.modelingEvents.fireModelingStateChangedEvent({
+      dbUri: dbItem.databaseUri.toString(),
+      databaseItem: dbItem,
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+      modifiedMethodSignatures: state.modifiedMethodSignatures,
+    });
   }
 
   private changeModeledMethods(
@@ -423,12 +424,13 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireModeledMethodsChangedEvent(
-      state.modeledMethods,
-      state.modifiedMethodSignatures,
-      dbItem.databaseUri.toString(),
-      dbItem.databaseUri.toString() === this.activeDb,
-    );
+    this.modelingEvents.fireModelingStateChangedEvent({
+      dbUri: dbItem.databaseUri.toString(),
+      databaseItem: dbItem,
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+      modeledMethods: state.modeledMethods,
+      modifiedMethodSignatures: state.modifiedMethodSignatures,
+    });
   }
 
   private changeInProgressMethods(
@@ -439,10 +441,12 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireInProgressMethodsChangedEvent(
-      dbItem.databaseUri.toString(),
-      state.inProgressMethods,
-    );
+    this.modelingEvents.fireModelingStateChangedEvent({
+      dbUri: dbItem.databaseUri.toString(),
+      databaseItem: dbItem,
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+      inProgressMethodSignatures: state.inProgressMethods,
+    });
   }
 
   private changeProcessedByAutoModelMethods(
@@ -453,9 +457,11 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireProcessedByAutoModelMethodsChangedEvent(
-      dbItem.databaseUri.toString(),
-      state.processedByAutoModelMethods,
-    );
+    this.modelingEvents.fireModelingStateChangedEvent({
+      dbUri: dbItem.databaseUri.toString(),
+      databaseItem: dbItem,
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+      processedByAutoModelMethodSignatures: state.processedByAutoModelMethods,
+    });
   }
 }
