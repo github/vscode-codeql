@@ -216,7 +216,7 @@ export class ModelingStore extends DisposableObject {
     methods: Record<string, ModeledMethod[]>,
     setModified: boolean,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledMethods(dbItem, setModified, (state) => {
       const newModeledMethods = {
         ...methods,
         // Keep all methods that are already modeled in some form in the state
@@ -227,18 +227,22 @@ export class ModelingStore extends DisposableObject {
         ),
       };
       state.modeledMethods = newModeledMethods;
-    });
 
-    if (setModified) {
-      this.addModifiedMethods(dbItem, new Set(Object.keys(methods)));
-    }
+      if (setModified) {
+        const newModifiedMethods = new Set([
+          ...state.modifiedMethodSignatures,
+          ...new Set(Object.keys(methods)),
+        ]);
+        state.modifiedMethodSignatures = newModifiedMethods;
+      }
+    });
   }
 
   public setModeledMethods(
     dbItem: DatabaseItem,
     methods: Record<string, ModeledMethod[]>,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledMethods(dbItem, false, (state) => {
       state.modeledMethods = { ...methods };
     });
   }
@@ -249,27 +253,18 @@ export class ModelingStore extends DisposableObject {
     modeledMethods: ModeledMethod[],
     setModified: boolean,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledMethods(dbItem, setModified, (state) => {
       const newModeledMethods = { ...state.modeledMethods };
       newModeledMethods[signature] = modeledMethods;
       state.modeledMethods = newModeledMethods;
-    });
 
-    if (setModified) {
-      this.addModifiedMethods(dbItem, [signature]);
-    }
-  }
-
-  public addModifiedMethods(
-    dbItem: DatabaseItem,
-    methodSignatures: Iterable<string>,
-  ) {
-    this.changeModifiedMethods(dbItem, (state) => {
-      const newModifiedMethods = new Set([
-        ...state.modifiedMethodSignatures,
-        ...methodSignatures,
-      ]);
-      state.modifiedMethodSignatures = newModifiedMethods;
+      if (setModified) {
+        const newModifiedMethods = new Set([
+          ...state.modifiedMethodSignatures,
+          signature,
+        ]);
+        state.modifiedMethodSignatures = newModifiedMethods;
+      }
     });
   }
 
@@ -422,6 +417,7 @@ export class ModelingStore extends DisposableObject {
 
   private changeModeledMethods(
     dbItem: DatabaseItem,
+    modifiedMethodsChanged: boolean,
     updateState: (state: InternalDbModelingState) => void,
   ) {
     const state = this.getState(dbItem);
@@ -433,6 +429,14 @@ export class ModelingStore extends DisposableObject {
       dbItem.databaseUri.toString(),
       dbItem.databaseUri.toString() === this.activeDb,
     );
+
+    if (modifiedMethodsChanged) {
+      this.modelingEvents.fireModifiedMethodsChangedEvent(
+        state.modifiedMethodSignatures,
+        dbItem.databaseUri.toString(),
+        dbItem.databaseUri.toString() === this.activeDb,
+      );
+    }
   }
 
   private changeInProgressMethods(
