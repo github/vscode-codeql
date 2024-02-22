@@ -977,6 +977,7 @@ async function activateWithInstalledDistribution(
   const modelEditorModule = await ModelEditorModule.initialize(
     app,
     dbm,
+    variantAnalysisManager,
     cliServer,
     qs,
     tmpDir.name,

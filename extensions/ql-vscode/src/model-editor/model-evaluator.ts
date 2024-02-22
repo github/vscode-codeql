@@ -3,14 +3,24 @@ import type { ModelingEvents } from "./modeling-events";
 import type { DatabaseItem } from "../databases/local-databases";
 import type { ModelEvaluationRun } from "./model-evaluation-run";
 import { DisposableObject } from "../common/disposable-object";
-import { sleep } from "../common/time";
 import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
+import type { BaseLogger } from "../common/logging";
+import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
+import type { QueryLanguage } from "../common/query-language";
+import { resolveCodeScanningQueryPack } from "../variant-analysis/code-scanning-pack";
+import { withProgress } from "../common/vscode/progress";
+import type { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 
 export class ModelEvaluator extends DisposableObject {
   public constructor(
+    private readonly logger: BaseLogger,
+    private readonly cliServer: CodeQLCliServer,
     private readonly modelingStore: ModelingStore,
     private readonly modelingEvents: ModelingEvents,
+    private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly dbItem: DatabaseItem,
+    private readonly language: QueryLanguage,
     private readonly updateView: (
       run: ModelEvaluationRunState,
     ) => Promise<void>,
@@ -28,18 +38,48 @@ export class ModelEvaluator extends DisposableObject {
     };
     this.modelingStore.updateModelEvaluationRun(this.dbItem, evaluationRun);
 
-    // For now, just wait 5 seconds and then update the store.
-    // In the future, this will be replaced with the actual evaluation process.
-    void sleep(5000).then(() => {
-      const completedEvaluationRun: ModelEvaluationRun = {
-        isPreparing: false,
-        variantAnalysisId: undefined,
-      };
-      this.modelingStore.updateModelEvaluationRun(
-        this.dbItem,
-        completedEvaluationRun,
-      );
-    });
+    // Build pack
+    const qlPack = await resolveCodeScanningQueryPack(
+      this.logger,
+      this.cliServer,
+      this.language,
+    );
+
+    if (!qlPack) {
+      this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
+      throw new Error("Unable to trigger evaluation run");
+    }
+
+    // Submit varfiant analysis and monitor progress
+    return withProgress(
+      async (progress, token) => {
+        let variantAnalysisId: number | undefined = undefined;
+        try {
+          variantAnalysisId =
+            await this.variantAnalysisManager.runVariantAnalysis(
+              qlPack,
+              progress,
+              token,
+            );
+        } catch (e) {
+          this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
+          throw e;
+        }
+
+        if (variantAnalysisId) {
+          this.monitorVariantAnalysis(variantAnalysisId);
+        } else {
+          this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
+          throw new Error(
+            "Unable to trigger variant analysis for evaluation run",
+          );
+        }
+      },
+      {
+        title: "Run Variant Analysis",
+        cancellable: true,
+      },
+    );
   }
 
   public async stopEvaluation() {
@@ -59,15 +99,43 @@ export class ModelEvaluator extends DisposableObject {
           event.evaluationRun &&
           event.dbUri === this.dbItem.databaseUri.toString()
         ) {
+          const variantAnalysis = await this.getVariantAnalysisForRun(
+            event.evaluationRun,
+          );
           const run: ModelEvaluationRunState = {
             isPreparing: event.evaluationRun.isPreparing,
-
-            // TODO: Get variant analysis from id.
-            variantAnalysis: undefined,
+            variantAnalysis,
           };
           await this.updateView(run);
         }
       }),
+    );
+  }
+
+  private async getVariantAnalysisForRun(
+    evaluationRun: ModelEvaluationRun,
+  ): Promise<VariantAnalysis | undefined> {
+    if (evaluationRun.variantAnalysisId) {
+      return await this.variantAnalysisManager.getVariantAnalysis(
+        evaluationRun.variantAnalysisId,
+      );
+    }
+    return undefined;
+  }
+
+  private monitorVariantAnalysis(variantAnalysisId: number) {
+    this.push(
+      this.variantAnalysisManager.onVariantAnalysisStatusUpdated(
+        async (variantAnalysis) => {
+          // Make sure it's the variant analysis we're interested in
+          if (variantAnalysisId === variantAnalysis.id) {
+            await this.updateView({
+              isPreparing: false,
+              variantAnalysis,
+            });
+          }
+        },
+      ),
     );
   }
 }
