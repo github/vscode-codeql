@@ -57,12 +57,15 @@ import { LSPErrorCodes } from "vscode-languageclient";
 import type { AccessPathSuggestionOptions } from "./suggestions";
 import { runSuggestionsQuery } from "./suggestion-queries";
 import { parseAccessPathSuggestionRowsToOptions } from "./suggestions-bqrs";
+import { ModelEvaluator } from "./model-evaluator";
+import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
   FromModelEditorMessage
 > {
   private readonly autoModeler: AutoModeler;
+  private readonly modelEvaluator: ModelEvaluator;
   private readonly languageDefinition: ModelsAsDataLanguage;
 
   public constructor(
@@ -101,6 +104,14 @@ export class ModelEditorView extends AbstractWebview<
       },
     );
     this.languageDefinition = getModelsAsDataLanguage(language);
+
+    this.modelEvaluator = new ModelEvaluator(
+      modelingStore,
+      modelingEvents,
+      databaseItem,
+      this.updateModelEvaluationRun.bind(this),
+    );
+    this.push(this.modelEvaluator);
   }
 
   public async openView() {
@@ -338,10 +349,10 @@ export class ModelEditorView extends AbstractWebview<
         break;
       }
       case "startModelEvaluation":
-        this.startModelEvaluation();
+        await this.modelEvaluator.startEvaluation();
         break;
       case "stopModelEvaluation":
-        this.stopModelEvaluation();
+        await this.modelEvaluator.stopEvaluation();
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
@@ -920,11 +931,10 @@ export class ModelEditorView extends AbstractWebview<
     this.modelingStore.addModifiedMethod(this.databaseItem, signature);
   }
 
-  private startModelEvaluation() {
-    // Do nothing for now. This will be fleshed out in the near future.
-  }
-
-  private stopModelEvaluation() {
-    // Do nothing for now. This will be fleshed out in the near future.
+  private async updateModelEvaluationRun(run: ModelEvaluationRunState) {
+    await this.postMessage({
+      t: "setModelEvaluationRun",
+      run,
+    });
   }
 }

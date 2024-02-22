@@ -20,6 +20,8 @@ import { Mode } from "../../model-editor/shared/mode";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hide-modeled-methods";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
+import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-evaluation-run-state";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -87,20 +89,20 @@ const ModelEvaluation = ({
   modifiedSignatures,
   onStartEvaluation,
   onStopEvaluation,
-  evaluationInProgress,
+  evaluationRun,
 }: {
   viewState: ModelEditorViewState;
   modeledMethods: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   onStartEvaluation: () => void;
   onStopEvaluation: () => void;
-  evaluationInProgress: boolean;
+  evaluationRun: ModelEvaluationRunState | undefined;
 }) => {
   if (!viewState.showEvaluationUi) {
     return null;
   }
 
-  if (!evaluationInProgress) {
+  if (!evaluationRun || !modelEvaluationRunIsRunning(evaluationRun)) {
     const customModelsExist = Object.values(modeledMethods).some(
       (methods) => methods.filter((m) => m.type !== "none").length > 0,
     );
@@ -166,7 +168,9 @@ export function ModelEditor({
     string | null
   >(null);
 
-  const [evaluationInProgress, setEvaluationInProgress] = useState(false);
+  const [evaluationRun, setEvaluationRun] = useState<
+    ModelEvaluationRunState | undefined
+  >(undefined);
 
   useEffect(() => {
     vscode.postMessage({
@@ -213,6 +217,9 @@ export function ModelEditor({
             break;
           case "setAccessPathSuggestions":
             setAccessPathSuggestions(msg.accessPathSuggestions);
+            break;
+          case "setModelEvaluationRun":
+            setEvaluationRun(msg.run);
             break;
           default:
             assertNever(msg);
@@ -309,14 +316,12 @@ export function ModelEditor({
   );
 
   const onStartEvaluation = useCallback(() => {
-    setEvaluationInProgress(true);
     vscode.postMessage({
       t: "startModelEvaluation",
     });
   }, []);
 
   const onStopEvaluation = useCallback(() => {
-    setEvaluationInProgress(false);
     vscode.postMessage({
       t: "stopModelEvaluation",
     });
@@ -447,7 +452,7 @@ export function ModelEditor({
                 modifiedSignatures={modifiedSignatures}
                 onStartEvaluation={onStartEvaluation}
                 onStopEvaluation={onStopEvaluation}
-                evaluationInProgress={evaluationInProgress}
+                evaluationRun={evaluationRun}
               />
             </ButtonsContainer>
           </HeaderRow>

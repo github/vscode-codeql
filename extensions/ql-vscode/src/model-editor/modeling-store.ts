@@ -1,6 +1,7 @@
 import { DisposableObject } from "../common/disposable-object";
 import type { DatabaseItem } from "../databases/local-databases";
 import type { Method, Usage } from "./method";
+import type { ModelEvaluationRun } from "./model-evaluation-run";
 import type { ModeledMethod } from "./modeled-method";
 import type { ModelingEvents } from "./modeling-events";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
@@ -17,6 +18,7 @@ interface InternalDbModelingState {
   processedByAutoModelMethods: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
+  modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
 interface DbModelingState {
@@ -30,6 +32,7 @@ interface DbModelingState {
   readonly processedByAutoModelMethods: ReadonlySet<string>;
   readonly selectedMethod: Method | undefined;
   readonly selectedUsage: Usage | undefined;
+  readonly modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
 interface SelectedMethodDetails {
@@ -66,6 +69,7 @@ export class ModelingStore extends DisposableObject {
       selectedMethod: undefined,
       selectedUsage: undefined,
       inProgressMethods: new Set(),
+      modelEvaluationRun: undefined,
     });
 
     this.modelingEvents.fireDbOpenedEvent(databaseItem);
@@ -372,6 +376,15 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
+  public updateModelEvaluationRun(
+    dbItem: DatabaseItem,
+    evaluationRun: ModelEvaluationRun,
+  ) {
+    this.changeModelEvaluationRun(dbItem, (state) => {
+      state.modelEvaluationRun = evaluationRun;
+    });
+  }
+
   public getSelectedMethodDetails(): SelectedMethodDetails | undefined {
     const dbState = this.getInternalStateForActiveDb();
     if (!dbState) {
@@ -463,6 +476,20 @@ export class ModelingStore extends DisposableObject {
     this.modelingEvents.fireProcessedByAutoModelMethodsChangedEvent(
       dbItem.databaseUri.toString(),
       state.processedByAutoModelMethods,
+    );
+  }
+
+  private changeModelEvaluationRun(
+    dbItem: DatabaseItem,
+    updateState: (state: InternalDbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.modelingEvents.fireModelEvaluationRunChangedEvent(
+      dbItem.databaseUri.toString(),
+      state.modelEvaluationRun,
     );
   }
 }
