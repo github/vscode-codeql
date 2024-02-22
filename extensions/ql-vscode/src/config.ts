@@ -93,6 +93,10 @@ const PERSONAL_ACCESS_TOKEN_SETTING = new Setting(
   "personalAccessToken",
   DISTRIBUTION_SETTING,
 );
+const CLI_DOWNLOAD_TIMEOUT_SETTING = new Setting(
+  "downloadTimeout",
+  DISTRIBUTION_SETTING,
+);
 const CLI_CHANNEL_SETTING = new Setting("channel", DISTRIBUTION_SETTING);
 
 // Query History configuration
@@ -118,6 +122,7 @@ export interface DistributionConfig {
   updateCustomCodeQlPath: (newPath: string | undefined) => Promise<void>;
   includePrerelease: boolean;
   personalAccessToken?: string;
+  downloadTimeout: number;
   channel: CLIChannel;
   onDidChangeConfiguration?: Event<void>;
 }
@@ -270,6 +275,10 @@ export class DistributionConfigListener
 
   public get personalAccessToken(): string | undefined {
     return PERSONAL_ACCESS_TOKEN_SETTING.getValue() || undefined;
+  }
+
+  public get downloadTimeout(): number {
+    return CLI_DOWNLOAD_TIMEOUT_SETTING.getValue() || 10;
   }
 
   public async updateCustomCodeQlPath(newPath: string | undefined) {
@@ -644,7 +653,15 @@ const DEPRECATED_ALLOW_HTTP_SETTING = new Setting(
 
 const ADDING_DATABASES_SETTING = new Setting("addingDatabases", ROOT_SETTING);
 
+const DOWNLOAD_TIMEOUT_SETTING = new Setting(
+  "downloadTimeout",
+  ADDING_DATABASES_SETTING,
+);
 const ALLOW_HTTP_SETTING = new Setting("allowHttp", ADDING_DATABASES_SETTING);
+
+export function downloadTimeout(): number {
+  return DOWNLOAD_TIMEOUT_SETTING.getValue<number>() || 10;
+}
 
 export function allowHttp(): boolean {
   return (

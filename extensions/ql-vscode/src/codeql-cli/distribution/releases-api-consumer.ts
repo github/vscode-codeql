@@ -90,21 +90,28 @@ export class ReleasesApiConsumer {
 
   public async streamBinaryContentOfAsset(
     asset: ReleaseAsset,
+    signal?: AbortSignal,
   ): Promise<Response> {
     const apiPath = `/repos/${this.repositoryNwo}/releases/assets/${asset.id}`;
 
-    return await this.makeApiCall(apiPath, {
-      accept: "application/octet-stream",
-    });
+    return await this.makeApiCall(
+      apiPath,
+      {
+        accept: "application/octet-stream",
+      },
+      signal,
+    );
   }
 
   protected async makeApiCall(
     apiPath: string,
     additionalHeaders: { [key: string]: string } = {},
+    signal?: AbortSignal,
   ): Promise<Response> {
     const response = await this.makeRawRequest(
       ReleasesApiConsumer.apiBase + apiPath,
       Object.assign({}, this.defaultHeaders, additionalHeaders),
+      signal,
     );
 
     if (!response.ok) {
@@ -129,11 +136,13 @@ export class ReleasesApiConsumer {
   private async makeRawRequest(
     requestUrl: string,
     headers: { [key: string]: string },
+    signal?: AbortSignal,
     redirectCount = 0,
   ): Promise<Response> {
     const response = await fetch(requestUrl, {
       headers,
       redirect: "manual",
+      signal,
     });
 
     const redirectUrl = response.headers.get("location");
@@ -153,7 +162,12 @@ export class ReleasesApiConsumer {
         // mechanism is provided.
         delete headers["authorization"];
       }
-      return await this.makeRawRequest(redirectUrl, headers, redirectCount + 1);
+      return await this.makeRawRequest(
+        redirectUrl,
+        headers,
+        signal,
+        redirectCount + 1,
+      );
     }
 
     return response;
