@@ -13,6 +13,7 @@ describe(MethodModeling.name, () => {
     const method = createMethod();
     const modeledMethod = createSinkModeledMethod();
     const isModelingInProgress = false;
+    const isProcessedByAutoModel = false;
     const onChange = jest.fn();
 
     render({
@@ -21,6 +22,7 @@ describe(MethodModeling.name, () => {
       method,
       modeledMethods: [modeledMethod],
       isModelingInProgress,
+      isProcessedByAutoModel,
       onChange,
     });
 

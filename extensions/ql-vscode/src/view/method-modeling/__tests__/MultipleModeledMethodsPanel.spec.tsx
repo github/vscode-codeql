@@ -18,6 +18,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
   const language = QueryLanguage.Java;
   const method = createMethod();
   const isModelingInProgress = false;
+  const isProcessedByAutoModel = false;
   const modelingStatus = "unmodeled";
   const onChange = jest.fn<void, [string, ModeledMethod[]]>();
 
@@ -31,6 +32,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -49,6 +51,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -71,6 +74,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -102,6 +106,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -120,6 +125,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -141,6 +147,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -158,6 +165,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -184,6 +192,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         modeledMethods,
         modelingStatus,
         isModelingInProgress,
+        isProcessedByAutoModel,
         onChange,
       });
 
@@ -197,6 +206,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -222,6 +232,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -240,6 +251,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -255,6 +267,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -275,6 +288,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -312,6 +326,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -324,6 +339,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={[modeledMethods[1]]}
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -343,6 +359,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -356,6 +373,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -389,6 +407,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -424,6 +443,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -442,6 +462,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -468,6 +489,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -482,6 +504,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -503,6 +526,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -522,6 +546,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -539,6 +564,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -555,6 +581,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -589,6 +616,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -680,6 +708,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -692,6 +721,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={modeledMethods.slice(0, 2)}
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -706,6 +736,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -720,6 +751,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={modeledMethods.slice(0, 2)}
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -748,6 +780,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -763,6 +796,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -781,6 +815,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -800,6 +835,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -818,6 +854,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
           method={method}
           modeledMethods={modeledMethods.slice(0, 1)}
           isModelingInProgress={isModelingInProgress}
+          isProcessedByAutoModel={isProcessedByAutoModel}
           modelingStatus={modelingStatus}
           onChange={onChange}
         />,
@@ -857,6 +894,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });
@@ -870,6 +908,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
         method,
         modeledMethods,
         isModelingInProgress,
+        isProcessedByAutoModel,
         modelingStatus,
         onChange,
       });

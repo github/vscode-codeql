@@ -23,6 +23,7 @@ export type MultipleModeledMethodsPanelProps = {
   modeledMethods: ModeledMethod[];
   modelingStatus: ModelingStatus;
   isModelingInProgress: boolean;
+  isProcessedByAutoModel: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
@@ -64,6 +65,7 @@ export const MultipleModeledMethodsPanel = ({
   modeledMethods,
   modelingStatus,
   isModelingInProgress,
+  isProcessedByAutoModel,
   onChange,
 }: MultipleModeledMethodsPanelProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -160,6 +162,7 @@ export const MultipleModeledMethodsPanel = ({
           modelPending={isModelPending(
             modeledMethods[selectedIndex],
             modelingStatus,
+            isProcessedByAutoModel,
           )}
           isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
@@ -169,7 +172,11 @@ export const MultipleModeledMethodsPanel = ({
           language={language}
           method={method}
           modeledMethod={undefined}
-          modelPending={false}
+          modelPending={isModelPending(
+            modeledMethods[selectedIndex],
+            modelingStatus,
+            isProcessedByAutoModel,
+          )}
           isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
