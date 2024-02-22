@@ -25,7 +25,7 @@ import type {
   UrlValueResolvable,
 } from "./raw-result-types";
 import type { AccessPathSuggestionOptions } from "../model-editor/suggestions";
-import type { ModelEvaluationRun } from "../model-editor/model-evaluation-run";
+import type { ModelEvaluationRunState } from "../model-editor/shared/model-evaluation-run-state";
 
 /**
  * This module contains types and code that are shared between
@@ -636,7 +636,7 @@ interface SetAccessPathSuggestionsMessage {
 
 interface SetModelEvaluationRunMessage {
   t: "setModelEvaluationRun";
-  run: ModelEvaluationRun | undefined;
+  run: ModelEvaluationRunState | undefined;
 }
 
 export type ToModelEditorMessage =

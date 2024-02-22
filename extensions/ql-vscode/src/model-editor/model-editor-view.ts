@@ -58,6 +58,7 @@ import type { AccessPathSuggestionOptions } from "./suggestions";
 import { runSuggestionsQuery } from "./suggestion-queries";
 import { parseAccessPathSuggestionRowsToOptions } from "./suggestions-bqrs";
 import { ModelEvaluator } from "./model-evaluator";
+import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -104,7 +105,13 @@ export class ModelEditorView extends AbstractWebview<
     );
     this.languageDefinition = getModelsAsDataLanguage(language);
 
-    this.modelEvaluator = new ModelEvaluator(modelingStore, databaseItem);
+    this.modelEvaluator = new ModelEvaluator(
+      modelingStore,
+      modelingEvents,
+      databaseItem,
+      this.updateModelEvaluationRun.bind(this),
+    );
+    this.push(this.modelEvaluator);
   }
 
   public async openView() {
@@ -882,17 +889,6 @@ export class ModelEditorView extends AbstractWebview<
         }
       }),
     );
-
-    this.push(
-      this.modelingEvents.onModelEvaluationRunChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setModelEvaluationRun",
-            run: event.evaluationRun,
-          });
-        }
-      }),
-    );
   }
 
   private registerToModelConfigEvents() {
@@ -933,5 +929,12 @@ export class ModelEditorView extends AbstractWebview<
       methods,
     );
     this.modelingStore.addModifiedMethod(this.databaseItem, signature);
+  }
+
+  private async updateModelEvaluationRun(run: ModelEvaluationRunState) {
+    await this.postMessage({
+      t: "setModelEvaluationRun",
+      run,
+    });
   }
 }

@@ -20,8 +20,8 @@ import { Mode } from "../../model-editor/shared/mode";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hide-modeled-methods";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
-import type { ModelEvaluationRun } from "../../model-editor/model-evaluation-run";
-import { evaluationRunIsRunning } from "../../model-editor/model-evaluation-run";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
+import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-evaluation-run-state";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -96,14 +96,14 @@ const ModelEvaluation = ({
   modifiedSignatures: Set<string>;
   onStartEvaluation: () => void;
   onStopEvaluation: () => void;
-  evaluationRun: ModelEvaluationRun | undefined;
+  evaluationRun: ModelEvaluationRunState | undefined;
 }) => {
   if (!viewState.showEvaluationUi) {
     return null;
   }
 
   console.log("***** check evaluationRun", evaluationRun);
-  if (!evaluationRun || !evaluationRunIsRunning(evaluationRun)) {
+  if (!evaluationRun || !modelEvaluationRunIsRunning(evaluationRun)) {
     const customModelsExist = Object.values(modeledMethods).some(
       (methods) => methods.filter((m) => m.type !== "none").length > 0,
     );
@@ -170,7 +170,7 @@ export function ModelEditor({
   >(null);
 
   const [evaluationRun, setEvaluationRun] = useState<
-    ModelEvaluationRun | undefined
+    ModelEvaluationRunState | undefined
   >(undefined);
 
   useEffect(() => {
