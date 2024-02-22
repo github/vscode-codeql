@@ -824,6 +824,13 @@ export class ModelEditorView extends AbstractWebview<
             t: "setModeledMethods",
             methods: event.modeledMethods,
           });
+
+          if (event.modifiedMethodSignatures !== undefined) {
+            await this.postMessage({
+              t: "setModifiedMethods",
+              methodSignatures: [...event.modifiedMethodSignatures],
+            });
+          }
         }
       }),
     );

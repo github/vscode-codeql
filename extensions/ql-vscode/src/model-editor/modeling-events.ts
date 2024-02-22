@@ -25,6 +25,7 @@ interface ModeChangedEvent {
 
 interface ModeledMethodsChangedEvent {
   readonly modeledMethods: Readonly<Record<string, ModeledMethod[]>>;
+  readonly modifiedMethodSignatures: ReadonlySet<string>;
   readonly dbUri: string;
   readonly isActiveDb: boolean;
 }
@@ -211,11 +212,13 @@ export class ModelingEvents extends DisposableObject {
 
   public fireModeledMethodsChangedEvent(
     modeledMethods: Record<string, ModeledMethod[]>,
+    modifiedMethodSignatures: ReadonlySet<string>,
     dbUri: string,
     isActiveDb: boolean,
   ) {
     this.onModeledMethodsChangedEventEmitter.fire({
       modeledMethods,
+      modifiedMethodSignatures,
       dbUri,
       isActiveDb,
     });
