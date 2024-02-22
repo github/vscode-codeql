@@ -13,6 +13,7 @@ import { runGenerateQueries } from "../../../../src/model-editor/generate";
 import { ruby } from "../../../../src/model-editor/languages/ruby";
 import type { ModeledMethod } from "../../../../src/model-editor/modeled-method";
 import { EndpointType } from "../../../../src/model-editor/method";
+import { Mode } from "../../../../src/model-editor/shared/mode";
 
 describe("runGenerateQueries", () => {
   const modelsAsDataLanguage = ruby;
@@ -125,7 +126,7 @@ describe("runGenerateQueries", () => {
     };
 
     await runGenerateQueries({
-      queryConstraints: modelGeneration.queryConstraints,
+      queryConstraints: modelGeneration.queryConstraints(Mode.Framework),
       filterQueries: modelGeneration.filterQueries,
       parseResults: (queryPath, results) =>
         modelGeneration.parseResults(
