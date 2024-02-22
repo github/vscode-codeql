@@ -33,7 +33,7 @@ export type ModelsAsDataLanguagePredicate<T> = {
 };
 
 type ModelsAsDataLanguageModelGeneration = {
-  queryConstraints: QueryConstraints;
+  queryConstraints: (mode: Mode) => QueryConstraints;
   filterQueries?: (queryPath: string) => boolean;
   parseResults: (
     // The path to the query that generated the results.

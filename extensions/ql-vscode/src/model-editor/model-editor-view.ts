@@ -619,7 +619,7 @@ export class ModelEditorView extends AbstractWebview<
 
         try {
           await runGenerateQueries({
-            queryConstraints: modelGeneration.queryConstraints,
+            queryConstraints: modelGeneration.queryConstraints(mode),
             filterQueries: modelGeneration.filterQueries,
             parseResults: (queryPath, results) =>
               modelGeneration.parseResults(

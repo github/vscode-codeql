@@ -172,9 +172,10 @@ export const ruby: ModelsAsDataLanguage = {
     },
   },
   modelGeneration: {
-    queryConstraints: {
-      "query path": "queries/modeling/GenerateModel.ql",
-    },
+    queryConstraints: (mode) => ({
+      kind: "table",
+      "tags contain all": ["modeleditor", "generate-model", modeTag(mode)],
+    }),
     parseResults: parseGenerateModelResults,
   },
   accessPathSuggestions: {
