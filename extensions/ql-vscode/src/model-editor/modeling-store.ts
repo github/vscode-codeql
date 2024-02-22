@@ -214,6 +214,7 @@ export class ModelingStore extends DisposableObject {
   public addModeledMethods(
     dbItem: DatabaseItem,
     methods: Record<string, ModeledMethod[]>,
+    setModified: boolean,
   ) {
     this.changeModeledMethods(dbItem, (state) => {
       const newModeledMethods = {
@@ -227,6 +228,10 @@ export class ModelingStore extends DisposableObject {
       };
       state.modeledMethods = newModeledMethods;
     });
+
+    if (setModified) {
+      this.addModifiedMethods(dbItem, new Set(Object.keys(methods)));
+    }
   }
 
   public setModeledMethods(
@@ -242,12 +247,17 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     signature: string,
     modeledMethods: ModeledMethod[],
+    setModified: boolean,
   ) {
     this.changeModeledMethods(dbItem, (state) => {
       const newModeledMethods = { ...state.modeledMethods };
       newModeledMethods[signature] = modeledMethods;
       state.modeledMethods = newModeledMethods;
     });
+
+    if (setModified) {
+      this.addModifiedMethods(dbItem, [signature]);
+    }
   }
 
   public addModifiedMethods(
@@ -261,10 +271,6 @@ export class ModelingStore extends DisposableObject {
       ]);
       state.modifiedMethodSignatures = newModifiedMethods;
     });
-  }
-
-  public addModifiedMethod(dbItem: DatabaseItem, methodSignature: string) {
-    this.addModifiedMethods(dbItem, [methodSignature]);
   }
 
   public removeModifiedMethods(

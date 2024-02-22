@@ -124,10 +124,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           this.databaseItem,
           msg.methodSignature,
           msg.modeledMethods,
-        );
-        this.modelingStore.addModifiedMethod(
-          this.databaseItem,
-          msg.methodSignature,
+          true,
         );
         break;
       }

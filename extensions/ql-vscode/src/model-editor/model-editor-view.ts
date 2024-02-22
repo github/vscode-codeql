@@ -889,11 +889,10 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private addModeledMethods(modeledMethods: Record<string, ModeledMethod[]>) {
-    this.modelingStore.addModeledMethods(this.databaseItem, modeledMethods);
-
-    this.modelingStore.addModifiedMethods(
+    this.modelingStore.addModeledMethods(
       this.databaseItem,
-      new Set(Object.keys(modeledMethods)),
+      modeledMethods,
+      true,
     );
   }
 
@@ -916,8 +915,8 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       signature,
       methods,
+      true,
     );
-    this.modelingStore.addModifiedMethod(this.databaseItem, signature);
   }
 
   private startModelEvaluation() {
