@@ -196,6 +196,7 @@ export function ModelEditor({
             break;
           case "setModeledMethods":
             setModeledMethods(msg.methods);
+            setModifiedSignatures(new Set(msg.modifiedMethodSignatures));
             break;
           case "setModifiedMethods":
             setModifiedSignatures(new Set(msg.methodSignatures));

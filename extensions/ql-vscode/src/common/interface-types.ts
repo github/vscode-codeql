@@ -531,6 +531,7 @@ interface SetMethodsMessage {
 interface SetModeledMethodsMessage {
   t: "setModeledMethods";
   methods: Record<string, ModeledMethod[]>;
+  modifiedMethodSignatures: string[];
 }
 
 interface SetModifiedMethodsMessage {
