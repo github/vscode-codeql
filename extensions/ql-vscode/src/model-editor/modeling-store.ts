@@ -6,6 +6,7 @@ import type { ModeledMethod } from "./modeled-method";
 import type { ModelingEvents } from "./modeling-events";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import type { Mode } from "./shared/mode";
+import { sortMethods } from "./shared/sorting";
 
 interface InternalDbModelingState {
   databaseItem: DatabaseItem;
@@ -155,17 +156,25 @@ export class ModelingStore extends DisposableObject {
   }
 
   public setMethods(dbItem: DatabaseItem, methods: Method[]) {
-    const dbState = this.getState(dbItem);
-    const dbUri = dbItem.databaseUri.toString();
+    this.changeMethods(dbItem, (state) => {
+      state.methods = sortMethods(
+        methods,
+        state.modeledMethods,
+        state.modifiedMethodSignatures,
+        state.processedByAutoModelMethods,
+      );
+    });
+  }
 
-    dbState.methods = [...methods];
-
-    this.modelingEvents.fireMethodsChangedEvent(
-      methods,
-      dbUri,
-      dbItem,
-      dbUri === this.activeDb,
-    );
+  public updateMethodSorting(dbItem: DatabaseItem) {
+    this.changeMethods(dbItem, (state) => {
+      state.methods = sortMethods(
+        state.methods,
+        state.modeledMethods,
+        state.modifiedMethodSignatures,
+        state.processedByAutoModelMethods,
+      );
+    });
   }
 
   public setHideModeledMethods(
@@ -374,6 +383,7 @@ export class ModelingStore extends DisposableObject {
         ...processedByAutoModelMethods,
       ]);
     });
+    this.updateMethodSorting(dbItem);
   }
 
   public updateModelEvaluationRun(
@@ -419,6 +429,22 @@ export class ModelingStore extends DisposableObject {
     }
 
     return this.state.get(databaseItem.databaseUri.toString())!;
+  }
+
+  private changeMethods(
+    dbItem: DatabaseItem,
+    updateState: (state: InternalDbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.modelingEvents.fireMethodsChangedEvent(
+      state.methods,
+      dbItem.databaseUri.toString(),
+      dbItem,
+      dbItem.databaseUri.toString() === this.activeDb,
+    );
   }
 
   private changeModifiedMethods(

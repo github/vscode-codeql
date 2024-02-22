@@ -273,6 +273,8 @@ export class ModelEditorView extends AbstractWebview<
             Object.keys(modeledMethods),
           );
 
+          this.modelingStore.updateMethodSorting(this.databaseItem);
+
           void telemetryListener?.sendUIInteraction(
             "model-editor-save-modeled-methods",
           );
