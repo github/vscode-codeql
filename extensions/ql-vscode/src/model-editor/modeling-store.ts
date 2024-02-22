@@ -250,15 +250,6 @@ export class ModelingStore extends DisposableObject {
     });
   }
 
-  public setModifiedMethods(
-    dbItem: DatabaseItem,
-    methodSignatures: Set<string>,
-  ) {
-    this.changeModifiedMethods(dbItem, (state) => {
-      state.modifiedMethodSignatures = new Set(methodSignatures);
-    });
-  }
-
   public addModifiedMethods(
     dbItem: DatabaseItem,
     methodSignatures: Iterable<string>,
