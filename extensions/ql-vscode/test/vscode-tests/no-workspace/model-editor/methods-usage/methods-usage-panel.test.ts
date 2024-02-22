@@ -28,6 +28,7 @@ describe("MethodsUsagePanel", () => {
     const methods: Method[] = [createMethod()];
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
+    const processedByAutoModelMethods: Set<string> = new Set();
 
     it("should update the tree view with the correct batch number", async () => {
       const mockTreeView = {
@@ -50,6 +51,7 @@ describe("MethodsUsagePanel", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
+        processedByAutoModelMethods,
       );
 
       expect(mockTreeView.badge?.value).toBe(1);
@@ -65,6 +67,7 @@ describe("MethodsUsagePanel", () => {
     const mode = Mode.Application;
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
+    const processedByAutoModelMethods: Set<string> = new Set();
     const usage = createUsage();
 
     beforeEach(() => {
@@ -95,6 +98,7 @@ describe("MethodsUsagePanel", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
+        processedByAutoModelMethods,
       );
 
       await panel.revealItem(method.signature, usage);
@@ -122,6 +126,7 @@ describe("MethodsUsagePanel", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
+        processedByAutoModelMethods,
       );
 
       await panel.revealItem(method.signature, usage);

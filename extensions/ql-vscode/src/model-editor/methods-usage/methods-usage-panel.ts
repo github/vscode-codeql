@@ -39,6 +39,7 @@ export class MethodsUsagePanel extends DisposableObject {
     mode: Mode,
     modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
     modifiedMethodSignatures: ReadonlySet<string>,
+    processedByAutoModelMethods: ReadonlySet<string>,
   ): Promise<void> {
     await this.dataProvider.setState(
       methods,
@@ -47,6 +48,7 @@ export class MethodsUsagePanel extends DisposableObject {
       mode,
       modeledMethods,
       modifiedMethodSignatures,
+      processedByAutoModelMethods,
     );
     const numOfApis = hideModeledMethods
       ? methods.filter((api) => !api.supported).length
@@ -120,6 +122,7 @@ export class MethodsUsagePanel extends DisposableObject {
         activeState.mode,
         activeState.modeledMethods,
         activeState.modifiedMethodSignatures,
+        activeState.processedByAutoModelMethods,
       );
     }
   }

@@ -19,7 +19,7 @@ import {
   createMockLocalQueryInfo,
   createMockQueryWithResults,
 } from "../../../factories/query-history/local-query-history-item";
-import { shuffleHistoryItems } from "../../utils/query-history-helpers";
+import { shuffle } from "../../utils/list-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import type { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-history/query-status";
@@ -138,10 +138,7 @@ describe("QueryHistoryManager", () => {
         variantAnalysisStatus: VariantAnalysisStatus.InProgress,
       }),
     ];
-    allHistory = shuffleHistoryItems([
-      ...localQueryHistory,
-      ...variantAnalysisHistory,
-    ]);
+    allHistory = shuffle([...localQueryHistory, ...variantAnalysisHistory]);
   });
 
   afterEach(async () => {

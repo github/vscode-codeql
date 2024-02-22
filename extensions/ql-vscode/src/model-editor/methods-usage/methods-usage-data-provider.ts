@@ -63,6 +63,7 @@ export class MethodsUsageDataProvider
     mode: Mode,
     modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
     modifiedMethodSignatures: ReadonlySet<string>,
+    processedByAutoModelMethods: ReadonlySet<string>,
   ): Promise<void> {
     if (
       this.methods !== methods ||
@@ -74,7 +75,13 @@ export class MethodsUsageDataProvider
     ) {
       this.methods = methods;
       this.sortedTreeItems = createTreeItems(
-        sortMethodsInGroups(methods, mode),
+        sortMethodsInGroups(
+          methods,
+          modeledMethods,
+          mode,
+          modifiedMethodSignatures,
+          processedByAutoModelMethods,
+        ),
       );
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
@@ -246,7 +253,13 @@ function urlValueResolvablesAreEqual(
   return false;
 }
 
-function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {
+function sortMethodsInGroups(
+  methods: readonly Method[],
+  modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
+  mode: Mode,
+  modifiedMethodSignatures: ReadonlySet<string>,
+  processedByAutoModelMethods: ReadonlySet<string>,
+): Method[] {
   const grouped = groupMethods(methods, mode);
 
   const sortedGroupNames = sortGroupNames(grouped);
@@ -254,7 +267,12 @@ function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {
   return sortedGroupNames.flatMap((groupName) => {
     const group = grouped[groupName];
 
-    return sortMethods(group);
+    return sortMethods(
+      group,
+      modeledMethods,
+      modifiedMethodSignatures,
+      processedByAutoModelMethods,
+    );
   });
 }
 
