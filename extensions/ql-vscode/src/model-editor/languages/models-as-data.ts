@@ -32,20 +32,34 @@ export type ModelsAsDataLanguagePredicate<T> = {
   readModeledMethod: ReadModeledMethod;
 };
 
+type ParseGenerationResults = (
+  // The path to the query that generated the results.
+  queryPath: string,
+  // The results of the query.
+  bqrs: DecodedBqrs,
+  // The language-specific predicate that was used to generate the results. This is passed to allow
+  // sharing of code between different languages.
+  modelsAsDataLanguage: ModelsAsDataLanguage,
+  // The logger to use for logging.
+  logger: BaseLogger,
+) => ModeledMethod[];
+
 type ModelsAsDataLanguageModelGeneration = {
   queryConstraints: (mode: Mode) => QueryConstraints;
   filterQueries?: (queryPath: string) => boolean;
-  parseResults: (
-    // The path to the query that generated the results.
-    queryPath: string,
-    // The results of the query.
-    bqrs: DecodedBqrs,
-    // The language-specific predicate that was used to generate the results. This is passed to allow
-    // sharing of code between different languages.
-    modelsAsDataLanguage: ModelsAsDataLanguage,
-    // The logger to use for logging.
-    logger: BaseLogger,
-  ) => ModeledMethod[];
+  parseResults: ParseGenerationResults;
+  /**
+   * If autoRun is not undefined, the query will be run automatically when the user starts the
+   * model editor.
+   *
+   * This only applies to framework mode. Application mode will never run the query automatically.
+   */
+  autoRun?: {
+    /**
+     * If defined, will use a custom parsing function when the query is run automatically.
+     */
+    parseResults?: ParseGenerationResults;
+  };
 };
 
 type ModelsAsDataLanguageAccessPathSuggestions = {
