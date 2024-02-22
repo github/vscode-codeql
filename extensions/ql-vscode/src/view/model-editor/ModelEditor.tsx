@@ -102,7 +102,6 @@ const ModelEvaluation = ({
     return null;
   }
 
-  console.log("***** check evaluationRun", evaluationRun);
   if (!evaluationRun || !modelEvaluationRunIsRunning(evaluationRun)) {
     const customModelsExist = Object.values(modeledMethods).some(
       (methods) => methods.filter((m) => m.type !== "none").length > 0,
@@ -220,7 +219,6 @@ export function ModelEditor({
             setAccessPathSuggestions(msg.accessPathSuggestions);
             break;
           case "setModelEvaluationRun":
-            console.log("**** setModelEvaluationRun", msg.run);
             setEvaluationRun(msg.run);
             break;
           default:

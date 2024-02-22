@@ -28,7 +28,7 @@ export class ModelEvaluator extends DisposableObject {
     };
     this.modelingStore.updateModelEvaluationRun(this.dbItem, evaluationRun);
 
-    // For now, just wait 5 seconds and then update the store with the succeeded status.
+    // For now, just wait 5 seconds and then update the store.
     // In the future, this will be replaced with the actual evaluation process.
     void sleep(5000).then(() => {
       const completedEvaluationRun: ModelEvaluationRun = {
@@ -43,7 +43,7 @@ export class ModelEvaluator extends DisposableObject {
   }
 
   public async stopEvaluation() {
-    // For now just update the store with the canceled status.
+    // For now just update the store.
     // This will be fleshed out in the near future.
     const evaluationRun: ModelEvaluationRun = {
       isPreparing: false,

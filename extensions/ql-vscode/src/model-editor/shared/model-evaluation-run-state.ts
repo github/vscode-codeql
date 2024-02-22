@@ -13,7 +13,7 @@ export function modelEvaluationRunIsRunning(
     run.isPreparing ||
     !!(
       run.variantAnalysis &&
-      run.variantAnalysis.status !== VariantAnalysisStatus.InProgress
+      run.variantAnalysis.status === VariantAnalysisStatus.InProgress
     )
   );
 }
