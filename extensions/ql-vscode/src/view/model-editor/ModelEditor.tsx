@@ -191,24 +191,25 @@ export function ModelEditor({
           case "setModelEditorViewState":
             setViewState(msg.viewState);
             break;
-          case "setMethods":
-            setMethods(msg.methods);
+          case "setModelEditorState":
+            if (msg.methods !== undefined) {
+              setMethods(msg.methods);
+            }
+            if (msg.modeledMethods !== undefined) {
+              setModeledMethods(msg.modeledMethods);
+            }
+            if (msg.modifiedMethodSignatures !== undefined) {
+              setModifiedSignatures(new Set(msg.modifiedMethodSignatures));
+            }
+            if (msg.inProgressMethodSignatures !== undefined) {
+              setInProgressMethods(new Set(msg.inProgressMethodSignatures));
+            }
+            if (msg.processedByAutoModelMethodSignatures !== undefined) {
+              setProcessedByAutoModelMethods(
+                new Set(msg.processedByAutoModelMethodSignatures),
+              );
+            }
             break;
-          case "setModeledMethods":
-            setModeledMethods(msg.methods);
-            setModifiedSignatures(new Set(msg.modifiedMethodSignatures));
-            break;
-          case "setModifiedMethods":
-            setModifiedSignatures(new Set(msg.methodSignatures));
-            break;
-          case "setInProgressMethods": {
-            setInProgressMethods(new Set(msg.methods));
-            break;
-          }
-          case "setProcessedByAutoModelMethods": {
-            setProcessedByAutoModelMethods(new Set(msg.methods));
-            break;
-          }
           case "revealMethod":
             setRevealedMethodSignature(msg.methodSignature);
             break;

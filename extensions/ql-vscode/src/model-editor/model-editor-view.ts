@@ -302,7 +302,7 @@ export class ModelEditorView extends AbstractWebview<
         this.modelingStore.setMethods(this.databaseItem, []);
         await Promise.all([
           this.postMessage({
-            t: "setMethods",
+            t: "setModelEditorState",
             methods: [],
           }),
           this.setViewState(),
@@ -810,7 +810,7 @@ export class ModelEditorView extends AbstractWebview<
       this.modelingEvents.onMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setMethods",
+            t: "setModelEditorState",
             methods: event.methods,
           });
         }
@@ -821,8 +821,8 @@ export class ModelEditorView extends AbstractWebview<
       this.modelingEvents.onModeledMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setModeledMethods",
-            methods: event.modeledMethods,
+            t: "setModelEditorState",
+            modeledMethods: event.modeledMethods,
             modifiedMethodSignatures: [...event.modifiedMethodSignatures],
           });
         }
@@ -833,8 +833,8 @@ export class ModelEditorView extends AbstractWebview<
       this.modelingEvents.onModifiedMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setModifiedMethods",
-            methodSignatures: [...event.modifiedMethods],
+            t: "setModelEditorState",
+            modifiedMethodSignatures: [...event.modifiedMethods],
           });
         }
       }),
@@ -844,8 +844,8 @@ export class ModelEditorView extends AbstractWebview<
       this.modelingEvents.onInProgressMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setInProgressMethods",
-            methods: Array.from(event.methods),
+            t: "setModelEditorState",
+            inProgressMethodSignatures: Array.from(event.methods),
           });
         }
       }),
@@ -856,8 +856,8 @@ export class ModelEditorView extends AbstractWebview<
         async (event) => {
           if (event.dbUri === this.databaseItem.databaseUri.toString()) {
             await this.postMessage({
-              t: "setProcessedByAutoModelMethods",
-              methods: Array.from(event.methods),
+              t: "setModelEditorState",
+              processedByAutoModelMethodSignatures: Array.from(event.methods),
             });
           }
         },

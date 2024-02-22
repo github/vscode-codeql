@@ -523,32 +523,6 @@ interface SetExtensionPackStateMessage {
   viewState: ModelEditorViewState;
 }
 
-interface SetMethodsMessage {
-  t: "setMethods";
-  methods: Method[];
-}
-
-interface SetModeledMethodsMessage {
-  t: "setModeledMethods";
-  methods: Record<string, ModeledMethod[]>;
-  modifiedMethodSignatures: string[];
-}
-
-interface SetModifiedMethodsMessage {
-  t: "setModifiedMethods";
-  methodSignatures: string[];
-}
-
-interface SetInProgressMethodsMessage {
-  t: "setInProgressMethods";
-  methods: string[];
-}
-
-interface SetProcessedByAutoModelMethodsMessage {
-  t: "setProcessedByAutoModelMethods";
-  methods: string[];
-}
-
 interface SwitchModeMessage {
   t: "switchMode";
   mode: Mode;
@@ -639,13 +613,18 @@ interface SetAccessPathSuggestionsMessage {
   accessPathSuggestions: AccessPathSuggestionOptions;
 }
 
+interface SetModelEditorStateMessage {
+  t: "setModelEditorState";
+  methods?: Method[];
+  modeledMethods?: Record<string, ModeledMethod[]>;
+  modifiedMethodSignatures?: string[];
+  inProgressMethodSignatures?: string[];
+  processedByAutoModelMethodSignatures?: string[];
+}
+
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
-  | SetMethodsMessage
-  | SetModeledMethodsMessage
-  | SetModifiedMethodsMessage
-  | SetInProgressMethodsMessage
-  | SetProcessedByAutoModelMethodsMessage
+  | SetModelEditorStateMessage
   | RevealMethodMessage
   | SetAccessPathSuggestionsMessage;
 
