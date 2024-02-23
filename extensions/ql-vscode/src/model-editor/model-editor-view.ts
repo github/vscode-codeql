@@ -40,8 +40,13 @@ import type { Method } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { ModelConfigListener } from "../config";
+import { isCanary } from "../config";
 import { Mode } from "./shared/mode";
-import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
+import {
+  GENERATED_MODELS_SUFFIX,
+  loadModeledMethods,
+  saveModeledMethods,
+} from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
 import type { QueryLanguage } from "../common/query-language";
 import { getLanguageDisplayName } from "../common/query-language";
@@ -60,6 +65,10 @@ import { parseAccessPathSuggestionRowsToOptions } from "./suggestions-bqrs";
 import { ModelEvaluator } from "./model-evaluator";
 import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
+import type { ModelExtensionFile } from "./model-extension-file";
+import { modelExtensionFileToYaml } from "./yaml";
+import { outputFile } from "fs-extra";
+import { join } from "path";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -645,14 +654,18 @@ export class ModelEditorView extends AbstractWebview<
           await runGenerateQueries({
             queryConstraints: modelGeneration.queryConstraints(mode),
             filterQueries: modelGeneration.filterQueries,
-            parseResults: (queryPath, results) =>
-              modelGeneration.parseResults(
+            onResults: async (queryPath, results) => {
+              const modeledMethods = modelGeneration.parseResults(
                 queryPath,
                 results,
                 modelsAsDataLanguage,
                 this.app.logger,
-              ),
-            onResults: async (modeledMethods) => {
+                {
+                  mode,
+                  isCanary: isCanary(),
+                },
+              );
+
               this.addModeledMethodsFromArray(modeledMethods);
             },
             cliServer: this.cliServer,
@@ -678,15 +691,17 @@ export class ModelEditorView extends AbstractWebview<
 
   protected async generateModeledMethodsOnStartup(): Promise<void> {
     const mode = this.modelingStore.getMode(this.databaseItem);
-    if (mode !== Mode.Framework) {
+    const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
+    const autoModelGeneration = modelsAsDataLanguage.autoModelGeneration;
+
+    if (autoModelGeneration === undefined) {
       return;
     }
 
-    const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
-    const modelGeneration = modelsAsDataLanguage.modelGeneration;
-    const autoRun = modelGeneration?.autoRun;
-
-    if (modelGeneration === undefined || autoRun === undefined) {
+    if (
+      autoModelGeneration.enabled &&
+      !autoModelGeneration.enabled({ mode, isCanary: isCanary() })
+    ) {
       return;
     }
 
@@ -698,22 +713,23 @@ export class ModelEditorView extends AbstractWebview<
           message: "Generating models",
         });
 
-        const parseResults =
-          autoRun.parseResults ?? modelGeneration.parseResults;
+        const extensionFile: ModelExtensionFile = {
+          extensions: [],
+        };
 
         try {
           await runGenerateQueries({
-            queryConstraints: modelGeneration.queryConstraints(mode),
-            filterQueries: modelGeneration.filterQueries,
-            parseResults: (queryPath, results) =>
-              parseResults(
+            queryConstraints: autoModelGeneration.queryConstraints(mode),
+            filterQueries: autoModelGeneration.filterQueries,
+            onResults: (queryPath, results) => {
+              const extensions = autoModelGeneration.parseResultsToYaml(
                 queryPath,
                 results,
                 modelsAsDataLanguage,
                 this.app.logger,
-              ),
-            onResults: async (modeledMethods) => {
-              this.addModeledMethodsFromArray(modeledMethods);
+              );
+
+              extensionFile.extensions.push(...extensions);
             },
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
@@ -730,7 +746,25 @@ export class ModelEditorView extends AbstractWebview<
               asError(e),
             )`Failed to auto-run generating models: ${getErrorMessage(e)}`,
           );
+          return;
         }
+
+        progress({
+          step: 4000,
+          maxStep: 4000,
+          message: "Saving generated models",
+        });
+
+        const fileContents = `# This file was automatically generated based from ${this.databaseItem.name}. Manual changes will not persist.\n\n${modelExtensionFileToYaml(extensionFile)}`;
+        const filePath = join(
+          this.extensionPack.path,
+          "models",
+          `${this.language}${GENERATED_MODELS_SUFFIX}`,
+        );
+
+        await outputFile(filePath, fileContents);
+
+        void this.app.logger.log(`Saved generated model file to ${filePath}`);
       },
       {
         cancellable: false,

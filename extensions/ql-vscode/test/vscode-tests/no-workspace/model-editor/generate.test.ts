@@ -128,14 +128,20 @@ describe("runGenerateQueries", () => {
     await runGenerateQueries({
       queryConstraints: modelGeneration.queryConstraints(Mode.Framework),
       filterQueries: modelGeneration.filterQueries,
-      parseResults: (queryPath, results) =>
-        modelGeneration.parseResults(
-          queryPath,
-          results,
-          modelsAsDataLanguage,
-          createMockLogger(),
-        ),
-      onResults,
+      onResults: (queryPath, results) => {
+        onResults(
+          modelGeneration.parseResults(
+            queryPath,
+            results,
+            modelsAsDataLanguage,
+            createMockLogger(),
+            {
+              isCanary: true,
+              mode: Mode.Framework,
+            },
+          ),
+        );
+      },
       ...options,
     });
     expect(onResults).toHaveBeenCalledWith([

@@ -12,6 +12,9 @@ import { load as loadYaml } from "js-yaml";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
 import type { QueryLanguage } from "../common/query-language";
+import { isCanary } from "../config";
+
+export const GENERATED_MODELS_SUFFIX = ".model.generated.yml";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
@@ -118,6 +121,11 @@ export async function listModelFiles(
   for (const [path, extensions] of Object.entries(result.data)) {
     if (pathsEqual(path, extensionPackPath)) {
       for (const extension of extensions) {
+        // We only load generated models in canary mode
+        if (!isCanary() && extension.file.endsWith(GENERATED_MODELS_SUFFIX)) {
+          continue;
+        }
+
         modelFiles.add(relative(extensionPackPath, extension.file));
       }
     }

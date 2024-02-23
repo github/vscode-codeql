@@ -1,6 +1,9 @@
 import type { BaseLogger } from "../../../common/logging";
 import type { DecodedBqrs } from "../../../common/bqrs-cli-types";
-import type { ModelsAsDataLanguage } from "../models-as-data";
+import type {
+  GenerationContext,
+  ModelsAsDataLanguage,
+} from "../models-as-data";
 import type { ModeledMethod } from "../../modeled-method";
 import type { DataTuple } from "../../model-extension-file";
 
@@ -9,10 +12,21 @@ export function parseGenerateModelResults(
   bqrs: DecodedBqrs,
   modelsAsDataLanguage: ModelsAsDataLanguage,
   logger: BaseLogger,
+  { isCanary }: GenerationContext,
 ): ModeledMethod[] {
   const modeledMethods: ModeledMethod[] = [];
 
   for (const resultSetName in bqrs) {
+    if (
+      resultSetName ===
+        modelsAsDataLanguage.predicates.type?.extensiblePredicate &&
+      !isCanary
+    ) {
+      // Don't load generated type results in non-canary mode. These are already automatically
+      // generated on start-up.
+      continue;
+    }
+
     const definition = Object.values(modelsAsDataLanguage.predicates).find(
       (definition) => definition.extensiblePredicate === resultSetName,
     );

@@ -337,7 +337,7 @@ function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
  *
  * @param data The data extension file
  */
-function modelExtensionFileToYaml(data: ModelExtensionFile) {
+export function modelExtensionFileToYaml(data: ModelExtensionFile) {
   const extensions = data.extensions
     .map((extension) => {
       const data =

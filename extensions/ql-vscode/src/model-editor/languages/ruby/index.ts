@@ -177,28 +177,39 @@ export const ruby: ModelsAsDataLanguage = {
       "tags contain all": ["modeleditor", "generate-model", modeTag(mode)],
     }),
     parseResults: parseGenerateModelResults,
-    autoRun: {
-      parseResults: (queryPath, bqrs, modelsAsDataLanguage, logger) => {
-        // Only type models are generated automatically
-        const typePredicate = modelsAsDataLanguage.predicates.type;
-        if (!typePredicate) {
-          throw new Error("Type predicate not found");
-        }
+  },
+  autoModelGeneration: {
+    queryConstraints: (mode) => ({
+      kind: "table",
+      "tags contain all": ["modeleditor", "generate-model", modeTag(mode)],
+    }),
+    parseResultsToYaml: (_queryPath, bqrs, modelsAsDataLanguage) => {
+      const typePredicate = modelsAsDataLanguage.predicates.type;
+      if (!typePredicate) {
+        throw new Error("Type predicate not found");
+      }
 
-        const filteredBqrs = Object.fromEntries(
-          Object.entries(bqrs).filter(
-            ([key]) => key === typePredicate.extensiblePredicate,
-          ),
-        );
+      const typeTuples = bqrs[typePredicate.extensiblePredicate];
+      if (!typeTuples) {
+        return [];
+      }
 
-        return parseGenerateModelResults(
-          queryPath,
-          filteredBqrs,
-          modelsAsDataLanguage,
-          logger,
-        );
-      },
+      return [
+        {
+          addsTo: {
+            pack: "codeql/ruby-all",
+            extensible: typePredicate.extensiblePredicate,
+          },
+          data: typeTuples.tuples.filter((tuple): tuple is string[] => {
+            return (
+              tuple.filter((x) => typeof x === "string").length === tuple.length
+            );
+          }),
+        },
+      ];
     },
+    // Only enabled for framework mode in non-canary
+    enabled: ({ mode, isCanary }) => mode === Mode.Framework && !isCanary,
   },
   accessPathSuggestions: {
     queryConstraints: (mode) => ({
