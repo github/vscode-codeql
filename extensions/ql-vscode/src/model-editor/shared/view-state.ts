@@ -11,8 +11,10 @@ export interface ModelEditorViewState {
   mode: Mode;
   showModeSwitchButton: boolean;
   sourceArchiveAvailable: boolean;
+  isCanary: boolean;
 }
 
 export interface MethodModelingPanelViewState {
   language: QueryLanguage | undefined;
+  isCanary: boolean;
 }

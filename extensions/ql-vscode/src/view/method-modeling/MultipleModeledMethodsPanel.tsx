@@ -19,6 +19,7 @@ import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
+  isCanary: boolean;
   method: Method;
   modeledMethods: ModeledMethod[];
   modelingStatus: ModelingStatus;
@@ -61,6 +62,7 @@ const ModificationActions = styled.div`
 
 export const MultipleModeledMethodsPanel = ({
   language,
+  isCanary,
   method,
   modeledMethods,
   modelingStatus,
@@ -157,6 +159,7 @@ export const MultipleModeledMethodsPanel = ({
       {modeledMethods.length > 0 ? (
         <MethodModelingInputs
           language={language}
+          isCanary={isCanary}
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
           modelPending={isModelPending(
@@ -170,6 +173,7 @@ export const MultipleModeledMethodsPanel = ({
       ) : (
         <MethodModelingInputs
           language={language}
+          isCanary={isCanary}
           method={method}
           modeledMethod={undefined}
           modelPending={isModelPending(

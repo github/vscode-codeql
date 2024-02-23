@@ -15,6 +15,7 @@ export function createMockModelEditorViewState(
     showModeSwitchButton: true,
     extensionPack: createMockExtensionPack(),
     sourceArchiveAvailable: true,
+    isCanary: false,
     ...data,
   };
 }

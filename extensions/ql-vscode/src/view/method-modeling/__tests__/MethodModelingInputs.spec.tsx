@@ -19,6 +19,7 @@ describe(MethodModelingInputs.name, () => {
   const modeledMethod = createSinkModeledMethod();
   const modelPending = false;
   const isModelingInProgress = false;
+  const isCanary = false;
   const onChange = jest.fn();
 
   it("renders the method modeling inputs", () => {
@@ -28,6 +29,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress,
+      isCanary,
       onChange,
     });
 
@@ -55,6 +57,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress,
+      isCanary,
       onChange,
     });
 
@@ -78,6 +81,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress,
+      isCanary,
       onChange,
     });
 
@@ -93,6 +97,7 @@ describe(MethodModelingInputs.name, () => {
         modeledMethod={updatedModeledMethod}
         modelPending={modelPending}
         isModelingInProgress={isModelingInProgress}
+        isCanary={isCanary}
         onChange={onChange}
       />,
     );
@@ -123,6 +128,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress: true,
+      isCanary,
       onChange,
     });
 

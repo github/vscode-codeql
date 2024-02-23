@@ -19,6 +19,10 @@ import type { AccessPathSuggestionRow } from "../suggestions";
 
 type GenerateMethodDefinition<T> = (method: T) => DataTuple[];
 type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;
+type IsHiddenContext = {
+  method: MethodDefinition;
+  isCanary: boolean;
+};
 
 export type ModelsAsDataLanguagePredicate<T> = {
   extensiblePredicate: string;
@@ -30,6 +34,14 @@ export type ModelsAsDataLanguagePredicate<T> = {
   supportedEndpointTypes?: EndpointType[];
   generateMethodDefinition: GenerateMethodDefinition<T>;
   readModeledMethod: ReadModeledMethod;
+
+  /**
+   * Controls whether this predicate is hidden for a certain method. This only applies to the UI.
+   * If not specified, the predicate is visible for all methods.
+   *
+   * @param method The method to check if the predicate is hidden for.
+   */
+  isHidden?: (context: IsHiddenContext) => boolean;
 };
 
 type ParseGenerationResults = (

@@ -40,6 +40,7 @@ import type { Method } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { ModelConfigListener } from "../config";
+import { isCanary } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
@@ -450,6 +451,7 @@ export class ModelEditorView extends AbstractWebview<
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
+        isCanary: isCanary(),
       },
     });
   }

@@ -116,6 +116,7 @@ export function MethodModelingView({
   return (
     <MethodModeling
       language={viewState?.language}
+      isCanary={viewState?.isCanary ?? false}
       modelingStatus={modelingStatus}
       method={method}
       modeledMethods={modeledMethods}

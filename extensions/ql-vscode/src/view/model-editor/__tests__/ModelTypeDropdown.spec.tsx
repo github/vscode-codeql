@@ -23,6 +23,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
+        isCanary={false}
       />,
     );
 
@@ -34,7 +35,7 @@ describe(ModelTypeDropdown.name, () => {
     );
   });
 
-  it("allows changing the type to 'Type' for Ruby", async () => {
+  it("allows changing the type to 'Type' for Ruby in canary mode", async () => {
     const method = createMethod();
     const modeledMethod = createNoneModeledMethod();
 
@@ -45,6 +46,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
+        isCanary={true}
       />,
     );
 
@@ -54,6 +56,26 @@ describe(ModelTypeDropdown.name, () => {
         type: "type",
       }),
     );
+  });
+
+  it("does not allow changing the type to 'Type' for Ruby in non-canary mode", async () => {
+    const method = createMethod();
+    const modeledMethod = createNoneModeledMethod();
+
+    render(
+      <ModelTypeDropdown
+        language={QueryLanguage.Ruby}
+        modeledMethod={modeledMethod}
+        modelPending={false}
+        onChange={onChange}
+        method={method}
+        isCanary={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("option", { name: "Type" }),
+    ).not.toBeInTheDocument();
   });
 
   it("does not allow changing the type to 'Type' for Java", async () => {
@@ -67,6 +89,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
+        isCanary={false}
       />,
     );
 

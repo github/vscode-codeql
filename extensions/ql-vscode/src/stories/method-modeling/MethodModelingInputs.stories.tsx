@@ -34,6 +34,7 @@ const Template: StoryFn<typeof MethodModelingInputsComponent> = (args) => {
       language={QueryLanguage.Java}
       modeledMethod={m}
       onChange={onChange}
+      isCanary={true}
     />
   );
 };

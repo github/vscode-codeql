@@ -169,6 +169,8 @@ export const ruby: ModelsAsDataLanguage = {
           methodParameters: "",
         };
       },
+      // Hide for all non-canary users
+      isHidden: ({ isCanary }) => !isCanary,
     },
   },
   modelGeneration: {

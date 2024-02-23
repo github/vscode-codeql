@@ -50,6 +50,7 @@ const UnsavedTag = ({ modelingStatus }: { modelingStatus: ModelingStatus }) => (
 
 export type MethodModelingProps = {
   language: QueryLanguage;
+  isCanary: boolean;
   modelingStatus: ModelingStatus;
   method: Method;
   modeledMethods: ModeledMethod[];
@@ -60,6 +61,7 @@ export type MethodModelingProps = {
 
 export const MethodModeling = ({
   language,
+  isCanary,
   modelingStatus,
   modeledMethods,
   method,
@@ -80,6 +82,7 @@ export const MethodModeling = ({
       </DependencyContainer>
       <MultipleModeledMethodsPanel
         language={language}
+        isCanary={isCanary}
         method={method}
         modeledMethods={modeledMethods}
         isModelingInProgress={isModelingInProgress}

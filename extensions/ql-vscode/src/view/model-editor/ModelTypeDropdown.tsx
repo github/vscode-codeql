@@ -16,6 +16,7 @@ import { InputDropdown } from "./InputDropdown";
 
 type Props = {
   language: QueryLanguage;
+  isCanary: boolean;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   modelPending: boolean;
@@ -34,6 +35,7 @@ type Option = { value: ModeledMethodType; label: string };
 
 export const ModelTypeDropdown = ({
   language,
+  isCanary,
   method,
   modeledMethod,
   modelPending,
@@ -55,6 +57,10 @@ export const ModelTypeDropdown = ({
             return null;
           }
 
+          if (predicate.isHidden && predicate.isHidden({ method, isCanary })) {
+            return null;
+          }
+
           return {
             value: type,
             label: typeLabels[type],
@@ -64,7 +70,7 @@ export const ModelTypeDropdown = ({
     ];
 
     return baseOptions;
-  }, [language, method.endpointType]);
+  }, [language, isCanary, method]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {

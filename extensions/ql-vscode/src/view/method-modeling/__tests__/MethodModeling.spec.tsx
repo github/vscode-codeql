@@ -18,6 +18,7 @@ describe(MethodModeling.name, () => {
 
     render({
       language: QueryLanguage.Java,
+      isCanary: false,
       modelingStatus: "saved",
       method,
       modeledMethods: [modeledMethod],

@@ -24,6 +24,7 @@ const Name = styled.span`
 
 export type MethodModelingInputsProps = {
   language: QueryLanguage;
+  isCanary: boolean;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   modelPending: boolean;
@@ -33,6 +34,7 @@ export type MethodModelingInputsProps = {
 
 export const MethodModelingInputs = ({
   language,
+  isCanary,
   method,
   modeledMethod,
   modelPending,
@@ -55,7 +57,7 @@ export const MethodModelingInputs = ({
           {isModelingInProgress ? (
             <InProgressDropdown />
           ) : (
-            <ModelTypeDropdown {...inputProps} />
+            <ModelTypeDropdown isCanary={isCanary} {...inputProps} />
           )}
         </Input>
       </Container>
