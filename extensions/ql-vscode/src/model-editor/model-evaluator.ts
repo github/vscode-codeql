@@ -50,7 +50,7 @@ export class ModelEvaluator extends DisposableObject {
       throw new Error("Unable to trigger evaluation run");
     }
 
-    // Submit varfiant analysis and monitor progress
+    // Submit variant analysis and monitor progress
     return withProgress(
       async (progress, token) => {
         let variantAnalysisId: number | undefined = undefined;
@@ -95,18 +95,22 @@ export class ModelEvaluator extends DisposableObject {
   private registerToModelingEvents() {
     this.push(
       this.modelingEvents.onModelEvaluationRunChanged(async (event) => {
-        if (
-          event.evaluationRun &&
-          event.dbUri === this.dbItem.databaseUri.toString()
-        ) {
-          const variantAnalysis = await this.getVariantAnalysisForRun(
-            event.evaluationRun,
-          );
-          const run: ModelEvaluationRunState = {
-            isPreparing: event.evaluationRun.isPreparing,
-            variantAnalysis,
-          };
-          await this.updateView(run);
+        if (event.dbUri === this.dbItem.databaseUri.toString()) {
+          if (!event.evaluationRun) {
+            await this.updateView({
+              isPreparing: false,
+              variantAnalysis: undefined,
+            });
+          } else {
+            const variantAnalysis = await this.getVariantAnalysisForRun(
+              event.evaluationRun,
+            );
+            const run: ModelEvaluationRunState = {
+              isPreparing: event.evaluationRun.isPreparing,
+              variantAnalysis,
+            };
+            await this.updateView(run);
+          }
         }
       }),
     );
