@@ -4,7 +4,7 @@ import { Uri, window } from "vscode";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import {
-  importArchiveDatabase,
+  importLocalDatabase,
   promptImportInternetDatabase,
 } from "../../../../src/databases/database-fetcher";
 import {
@@ -13,6 +13,7 @@ import {
   DB_URL,
   getActivatedExtension,
   storagePath,
+  testprojLoc,
 } from "../../global.helper";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 import { remove } from "fs-extra";
@@ -46,12 +47,29 @@ describe("database-fetcher", () => {
     await remove(storagePath);
   });
 
-  describe("importArchiveDatabase", () => {
-    it("should add a database from a folder", async () => {
+  describe("importLocalDatabase", () => {
+    it("should add a database from an archive", async () => {
       const uri = Uri.file(dbLoc);
-      let dbItem = await importArchiveDatabase(
+      let dbItem = await importLocalDatabase(
         createMockCommandManager(),
         uri.toString(true),
+        databaseManager,
+        storagePath,
+        progressCallback,
+        cli,
+      );
+      expect(dbItem).toBe(databaseManager.currentDatabaseItem);
+      expect(dbItem).toBe(databaseManager.databaseItems[0]);
+      expect(dbItem).toBeDefined();
+      dbItem = dbItem!;
+      expect(dbItem.name).toBe("db");
+      expect(dbItem.databaseUri.fsPath).toBe(join(storagePath, "db", "db"));
+    });
+
+    it("should import a testproj database", async () => {
+      let dbItem = await importLocalDatabase(
+        createMockCommandManager(),
+        Uri.file(testprojLoc).toString(true),
         databaseManager,
         storagePath,
         progressCallback,

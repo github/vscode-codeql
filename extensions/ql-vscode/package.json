@@ -739,6 +739,10 @@
         "title": "CodeQL: Set Current Database"
       },
       {
+        "command": "codeQL.importTestDatabase",
+        "title": "CodeQL: (Re-)Import Test Database"
+      },
+      {
         "command": "codeQL.getCurrentDatabase",
         "title": "CodeQL: Get Current Database"
       },
@@ -1322,7 +1326,12 @@
         {
           "command": "codeQL.setCurrentDatabase",
           "group": "9_qlCommands",
-          "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zip"
+          "when": "resourceExtname != .testproj && (resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zipz)"
+        },
+        {
+          "command": "codeQL.importTestDatabase",
+          "group": "9_qlCommands",
+          "when": "explorerResourceIsFolder && resourceExtname == .testproj"
         },
         {
           "command": "codeQL.viewAstContextExplorer",
@@ -1474,6 +1483,10 @@
         },
         {
           "command": "codeQL.setCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.importTestDatabase",
           "when": "false"
         },
         {
@@ -2068,7 +2081,8 @@
     "ts-loader": "^9.4.2",
     "ts-node": "^10.7.0",
     "ts-unused-exports": "^10.0.0",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "unzipper": "^0.10.14"
   },
   "lint-staged": {
     "./**/*.{json,css,scss}": [

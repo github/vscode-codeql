@@ -220,6 +220,7 @@ export type LocalDatabasesCommands = {
 
   // Explorer context menu
   "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;
+  "codeQL.importTestDatabase": (uri: Uri) => Promise<void>;
 
   // Database panel view title commands
   "codeQLDatabases.chooseDatabaseFolder": () => Promise<void>;

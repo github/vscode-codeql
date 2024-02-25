@@ -12,6 +12,7 @@ import {
   remove,
   stat,
   readdir,
+  copy,
 } from "fs-extra";
 import { basename, join } from "path";
 import type { Octokit } from "@octokit/rest";
@@ -61,7 +62,7 @@ export async function promptImportInternetDatabase(
 
   validateUrl(databaseUrl);
 
-  const item = await databaseArchiveFetcher(
+  const item = await fetchDatabaseToWorkspaceStorage(
     databaseUrl,
     {},
     databaseManager,
@@ -254,7 +255,7 @@ export async function downloadGitHubDatabaseFromUrl(
    * We only need the actual token string.
    */
   const octokitToken = ((await octokit.auth()) as { token: string })?.token;
-  return await databaseArchiveFetcher(
+  return await fetchDatabaseToWorkspaceStorage(
     databaseUrl,
     {
       Accept: "application/zip",
@@ -278,14 +279,15 @@ export async function downloadGitHubDatabaseFromUrl(
 }
 
 /**
- * Imports a database from a local archive.
+ * Imports a database from a local archive or a test database that is in a folder
+ * ending with `.testproj`.
  *
- * @param databaseUrl the file url of the archive to import
+ * @param databaseUrl the file url of the archive or directory to import
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
  * @param cli the CodeQL CLI server
  */
-export async function importArchiveDatabase(
+export async function importLocalDatabase(
   commandManager: AppCommandManager,
   databaseUrl: string,
   databaseManager: DatabaseManager,
@@ -294,16 +296,18 @@ export async function importArchiveDatabase(
   cli: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
   try {
-    const item = await databaseArchiveFetcher(
+    const origin: DatabaseOrigin = {
+      type: databaseUrl.endsWith(".testproj") ? "testproj" : "archive",
+      // TODO validate that archive origins can use a file path, not a URI
+      path: Uri.parse(databaseUrl).fsPath,
+    };
+    const item = await fetchDatabaseToWorkspaceStorage(
       databaseUrl,
       {},
       databaseManager,
       storagePath,
       undefined,
-      {
-        type: "archive",
-        path: databaseUrl,
-      },
+      origin,
       progress,
       cli,
     );
@@ -328,10 +332,10 @@ export async function importArchiveDatabase(
 }
 
 /**
- * Fetches an archive database. The database might be on the internet
+ * Fetches a database into workspace storage. The database might be on the internet
  * or in the local filesystem.
  *
- * @param databaseUrl URL from which to grab the database
+ * @param databaseUrl URL from which to grab the database. This could be a local archive file, a local directory, or a remote URL.
  * @param requestHeaders Headers to send with the request
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
@@ -342,7 +346,7 @@ export async function importArchiveDatabase(
  * @param makeSelected make the new database selected in the databases panel (default: true)
  * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
  */
-async function databaseArchiveFetcher(
+async function fetchDatabaseToWorkspaceStorage(
   databaseUrl: string,
   requestHeaders: { [key: string]: string },
   databaseManager: DatabaseManager,
@@ -366,7 +370,11 @@ async function databaseArchiveFetcher(
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
 
   if (isFile(databaseUrl)) {
-    await readAndUnzip(databaseUrl, unzipPath, cli, progress);
+    if (origin.type == "testproj") {
+      await copyDatabase(origin.path, unzipPath, progress);
+    } else {
+      await readAndUnzip(databaseUrl, unzipPath, cli, progress);
+    }
   } else {
     await fetchAndUnzip(databaseUrl, requestHeaders, unzipPath, cli, progress);
   }
@@ -416,6 +424,8 @@ async function getStorageFolder(storagePath: string, urlStr: string) {
   let lastName = basename(url.path).substring(0, 250);
   if (lastName.endsWith(".zip")) {
     lastName = lastName.substring(0, lastName.length - 4);
+  } else if (lastName.endsWith(".testproj")) {
+    lastName = lastName.substring(0, lastName.length - 9);
   }
 
   const realpath = await fs_realpath(storagePath);
@@ -444,6 +454,26 @@ function validateUrl(databaseUrl: string) {
   if (!allowHttp() && uri.scheme !== "https") {
     throw new Error("Must use https for downloading a database.");
   }
+}
+
+/**
+ * Copies a database folder from the file system into the workspace storage.
+ * @param scrDir the original location of the database
+ * @param destDir the location to copy the database to. This should be a folder in the workspace storage.
+ * @param progress callback to send progress messages to
+ */
+async function copyDatabase(
+  scrDir: string,
+  destDir: string,
+  progress?: ProgressCallback,
+) {
+  progress?.({
+    maxStep: 10,
+    step: 9,
+    message: `Copying database ${basename(destDir)} into the workspace`,
+  });
+  await ensureDir(destDir);
+  await copy(scrDir, destDir);
 }
 
 async function readAndUnzip(

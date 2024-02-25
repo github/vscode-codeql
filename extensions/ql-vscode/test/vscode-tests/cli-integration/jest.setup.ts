@@ -7,8 +7,10 @@ import {
 } from "../jest.activated-extension.setup";
 import { createWriteStream, existsSync, mkdirpSync } from "fs-extra";
 import { dirname } from "path";
-import { DB_URL, dbLoc } from "../global.helper";
+import { DB_URL, dbLoc, testprojLoc } from "../global.helper";
 import fetch from "node-fetch";
+import { createReadStream, renameSync } from "fs";
+import { Extract } from "unzipper";
 
 beforeAll(async () => {
   // ensure the test database is downloaded
@@ -28,6 +30,18 @@ beforeAll(async () => {
         });
       });
     });
+
+    // unzip the database from dbLoc to testprojLoc
+    if (!existsSync(testprojLoc)) {
+      console.log(`Unzipping test database to ${testprojLoc}`);
+      const dbDir = dirname(testprojLoc);
+      mkdirpSync(dbDir);
+      console.log(`Unzipping test database to ${testprojLoc}`);
+      createReadStream(dbLoc)
+        .pipe(Extract({ path: dirname(dbDir) }))
+        .on("close", () => console.log("Unzip completed."));
+    }
+    renameSync(dbLoc, testprojLoc);
   }
 
   await beforeAllAction();

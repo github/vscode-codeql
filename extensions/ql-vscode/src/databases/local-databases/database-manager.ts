@@ -160,6 +160,23 @@ export class DatabaseManager extends DisposableObject {
   }
 
   /**
+   * Finds a test database that was originally imported from `uri`.
+   * A test database is creeated by the `codeql test run` command
+   * and ends with `.testproj`.
+   * @param uri The original location of the database
+   * @returns The first database item found that matches the uri
+   */
+  public findTestDatabase(uri: vscode.Uri): DatabaseItem | undefined {
+    const originPath = uri.fsPath;
+    for (const item of this._databaseItems) {
+      if (item.origin?.type === "testproj" && item.origin.path === originPath) {
+        return item
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Adds a {@link DatabaseItem} to the list of open databases, if that database is not already on
    * the list.
    *

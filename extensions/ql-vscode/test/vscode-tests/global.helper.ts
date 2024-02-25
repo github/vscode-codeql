@@ -7,7 +7,7 @@ import type {
 } from "../../src/databases/local-databases";
 import type { CodeQLCliServer } from "../../src/codeql-cli/cli";
 import type { CodeQLExtensionInterface } from "../../src/extension";
-import { importArchiveDatabase } from "../../src/databases/database-fetcher";
+import { importLocalDatabase } from "../../src/databases/database-fetcher";
 import { createMockCommandManager } from "../__mocks__/commandsMock";
 
 // This file contains helpers shared between tests that work with an activated extension.
@@ -21,6 +21,12 @@ export const dbLoc = join(
   realpathSync(join(__dirname, "../../../")),
   "build/tests/db.zip",
 );
+
+export const testprojLoc = join(
+  realpathSync(join(__dirname, "../../../")),
+  "build/tests/db.zip",
+);
+
 // eslint-disable-next-line import/no-mutable-exports
 export let storagePath: string;
 
@@ -34,7 +40,7 @@ export async function ensureTestDatabase(
   // Add a database, but make sure the database manager is empty first
   await cleanDatabases(databaseManager);
   const uri = Uri.file(dbLoc);
-  const maybeDbItem = await importArchiveDatabase(
+  const maybeDbItem = await importLocalDatabase(
     createMockCommandManager(),
     uri.toString(true),
     databaseManager,
