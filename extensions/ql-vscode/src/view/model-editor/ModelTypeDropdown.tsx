@@ -10,12 +10,16 @@ import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empt
 import type { Mutable } from "../../common/mutable";
 import { ReadonlyDropdown } from "../common/ReadonlyDropdown";
 import type { QueryLanguage } from "../../common/query-language";
-import type { ModelsAsDataLanguagePredicates } from "../../model-editor/languages";
+import type {
+  ModelConfig,
+  ModelsAsDataLanguagePredicates,
+} from "../../model-editor/languages";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { InputDropdown } from "./InputDropdown";
 
 type Props = {
   language: QueryLanguage;
+  modelConfig: ModelConfig;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
   modelPending: boolean;
@@ -34,6 +38,7 @@ type Option = { value: ModeledMethodType; label: string };
 
 export const ModelTypeDropdown = ({
   language,
+  modelConfig,
   method,
   modeledMethod,
   modelPending,
@@ -55,6 +60,13 @@ export const ModelTypeDropdown = ({
             return null;
           }
 
+          if (
+            predicate.isHidden &&
+            predicate.isHidden({ method, config: modelConfig })
+          ) {
+            return null;
+          }
+
           return {
             value: type,
             label: typeLabels[type],
@@ -64,7 +76,7 @@ export const ModelTypeDropdown = ({
     ];
 
     return baseOptions;
-  }, [language, method.endpointType]);
+  }, [language, modelConfig, method]);
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {

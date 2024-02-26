@@ -17,8 +17,36 @@ import type {
 import type { BaseLogger } from "../../common/logging";
 import type { AccessPathSuggestionRow } from "../suggestions";
 
+// This is a subset of the model config that doesn't import the vscode module.
+// It only includes settings that are actually used.
+export type ModelConfig = {
+  showTypeModels: boolean;
+};
+
+/**
+ * This function creates a new model config object from the given model config object.
+ * The new model config object is a deep copy of the given model config object.
+ *
+ * @param modelConfig The model config object to create a new model config object from.
+ *                    In most cases, this is a `ModelConfigListener`.
+ */
+export function createModelConfig(modelConfig: ModelConfig): ModelConfig {
+  return {
+    showTypeModels: modelConfig.showTypeModels,
+  };
+}
+
+export const defaultModelConfig: ModelConfig = {
+  showTypeModels: false,
+};
+
 type GenerateMethodDefinition<T> = (method: T) => DataTuple[];
 type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;
+
+type IsHiddenContext = {
+  method: MethodDefinition;
+  config: ModelConfig;
+};
 
 export type ModelsAsDataLanguagePredicate<T> = {
   extensiblePredicate: string;
@@ -30,6 +58,14 @@ export type ModelsAsDataLanguagePredicate<T> = {
   supportedEndpointTypes?: EndpointType[];
   generateMethodDefinition: GenerateMethodDefinition<T>;
   readModeledMethod: ReadModeledMethod;
+
+  /**
+   * Controls whether this predicate is hidden for a certain method. This only applies to the UI.
+   * If not specified, the predicate is visible for all methods.
+   *
+   * @param method The method to check if the predicate is hidden for.
+   */
+  isHidden?: (context: IsHiddenContext) => boolean;
 };
 
 export type GenerationContext = {

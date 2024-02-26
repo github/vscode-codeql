@@ -16,9 +16,11 @@ import type { QueryLanguage } from "../../common/query-language";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { sendTelemetry } from "../common/telemetry";
 import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
+import type { ModelConfig } from "../../model-editor/languages";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
+  modelConfig: ModelConfig;
   method: Method;
   modeledMethods: ModeledMethod[];
   modelingStatus: ModelingStatus;
@@ -61,6 +63,7 @@ const ModificationActions = styled.div`
 
 export const MultipleModeledMethodsPanel = ({
   language,
+  modelConfig,
   method,
   modeledMethods,
   modelingStatus,
@@ -157,6 +160,7 @@ export const MultipleModeledMethodsPanel = ({
       {modeledMethods.length > 0 ? (
         <MethodModelingInputs
           language={language}
+          modelConfig={modelConfig}
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
           modelPending={isModelPending(
@@ -170,6 +174,7 @@ export const MultipleModeledMethodsPanel = ({
       ) : (
         <MethodModelingInputs
           language={language}
+          modelConfig={modelConfig}
           method={method}
           modeledMethod={undefined}
           modelPending={isModelPending(

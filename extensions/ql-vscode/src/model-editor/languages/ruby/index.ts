@@ -169,6 +169,7 @@ export const ruby: ModelsAsDataLanguage = {
           methodParameters: "",
         };
       },
+      isHidden: ({ config }) => !config.showTypeModels,
     },
   },
   modelGeneration: {

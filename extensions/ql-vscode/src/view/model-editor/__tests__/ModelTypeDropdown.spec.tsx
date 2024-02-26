@@ -4,6 +4,7 @@ import { createNoneModeledMethod } from "../../../../test/factories/model-editor
 import { QueryLanguage } from "../../../common/query-language";
 import { ModelTypeDropdown } from "../ModelTypeDropdown";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
+import { defaultModelConfig } from "../../../model-editor/languages";
 
 describe(ModelTypeDropdown.name, () => {
   const onChange = jest.fn();
@@ -23,6 +24,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
+        modelConfig={defaultModelConfig}
       />,
     );
 
@@ -34,7 +36,7 @@ describe(ModelTypeDropdown.name, () => {
     );
   });
 
-  it("allows changing the type to 'Type' for Ruby", async () => {
+  it("allows changing the type to 'Type' for Ruby when type models are shown", async () => {
     const method = createMethod();
     const modeledMethod = createNoneModeledMethod();
 
@@ -45,6 +47,10 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
+        modelConfig={{
+          ...defaultModelConfig,
+          showTypeModels: true,
+        }}
       />,
     );
 
@@ -54,6 +60,26 @@ describe(ModelTypeDropdown.name, () => {
         type: "type",
       }),
     );
+  });
+
+  it("does not allow changing the type to 'Type' for Ruby when type models are not shown", async () => {
+    const method = createMethod();
+    const modeledMethod = createNoneModeledMethod();
+
+    render(
+      <ModelTypeDropdown
+        language={QueryLanguage.Ruby}
+        modeledMethod={modeledMethod}
+        modelPending={false}
+        onChange={onChange}
+        method={method}
+        modelConfig={defaultModelConfig}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("option", { name: "Type" }),
+    ).not.toBeInTheDocument();
   });
 
   it("does not allow changing the type to 'Type' for Java", async () => {
@@ -67,6 +93,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
+        modelConfig={defaultModelConfig}
       />,
     );
 

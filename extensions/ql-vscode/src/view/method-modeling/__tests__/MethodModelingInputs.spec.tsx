@@ -9,6 +9,7 @@ import {
 } from "../../../../test/factories/model-editor/modeled-method-factories";
 import { QueryLanguage } from "../../../common/query-language";
 import { createEmptyModeledMethod } from "../../../model-editor/modeled-method-empty";
+import { defaultModelConfig } from "../../../model-editor/languages";
 
 describe(MethodModelingInputs.name, () => {
   const render = (props: MethodModelingInputsProps) =>
@@ -19,6 +20,7 @@ describe(MethodModelingInputs.name, () => {
   const modeledMethod = createSinkModeledMethod();
   const modelPending = false;
   const isModelingInProgress = false;
+  const modelConfig = defaultModelConfig;
   const onChange = jest.fn();
 
   it("renders the method modeling inputs", () => {
@@ -28,6 +30,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress,
+      modelConfig,
       onChange,
     });
 
@@ -55,6 +58,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress,
+      modelConfig,
       onChange,
     });
 
@@ -78,6 +82,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress,
+      modelConfig,
       onChange,
     });
 
@@ -93,6 +98,7 @@ describe(MethodModelingInputs.name, () => {
         modeledMethod={updatedModeledMethod}
         modelPending={modelPending}
         isModelingInProgress={isModelingInProgress}
+        modelConfig={modelConfig}
         onChange={onChange}
       />,
     );
@@ -123,6 +129,7 @@ describe(MethodModelingInputs.name, () => {
       modeledMethod,
       modelPending,
       isModelingInProgress: true,
+      modelConfig,
       onChange,
     });
 
