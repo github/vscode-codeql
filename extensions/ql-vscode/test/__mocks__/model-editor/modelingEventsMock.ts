@@ -7,7 +7,8 @@ export function createMockModelingEvents({
   onMethodsChanged = jest.fn(),
   onHideModeledMethodsChanged = jest.fn(),
   onModeChanged = jest.fn(),
-  onModeledMethodsChanged = jest.fn(),
+  onModeledAndModifiedMethodsChanged:
+    onModeledAndModifiedMethodsChanged = jest.fn(),
   onModifiedMethodsChanged = jest.fn(),
   onInProgressMethodsChanged = jest.fn(),
   onProcessedByAutoModelMethodsChanged = jest.fn(),
@@ -20,7 +21,7 @@ export function createMockModelingEvents({
   onMethodsChanged?: ModelingEvents["onMethodsChanged"];
   onHideModeledMethodsChanged?: ModelingEvents["onHideModeledMethodsChanged"];
   onModeChanged?: ModelingEvents["onModeChanged"];
-  onModeledMethodsChanged?: ModelingEvents["onModeledMethodsChanged"];
+  onModeledAndModifiedMethodsChanged?: ModelingEvents["onModeledAndModifiedMethodsChanged"];
   onModifiedMethodsChanged?: ModelingEvents["onModifiedMethodsChanged"];
   onInProgressMethodsChanged?: ModelingEvents["onInProgressMethodsChanged"];
   onProcessedByAutoModelMethodsChanged?: ModelingEvents["onProcessedByAutoModelMethodsChanged"];
@@ -34,7 +35,7 @@ export function createMockModelingEvents({
     onMethodsChanged,
     onHideModeledMethodsChanged,
     onModeChanged,
-    onModeledMethodsChanged,
+    onModeledAndModifiedMethodsChanged,
     onModifiedMethodsChanged,
     onInProgressMethodsChanged,
     onProcessedByAutoModelMethodsChanged,

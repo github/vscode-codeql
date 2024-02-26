@@ -910,10 +910,10 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (event) => {
+      this.modelingEvents.onModeledAndModifiedMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setModeledMethods",
+            t: "setModeledAndModifiedMethods",
             methods: event.modeledMethods,
             modifiedMethodSignatures: [...event.modifiedMethodSignatures],
           });

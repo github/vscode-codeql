@@ -229,7 +229,7 @@ export class ModelingStore extends DisposableObject {
     methods: Record<string, ModeledMethod[]>,
     setModified: boolean,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       const newModeledMethods = {
         ...methods,
         // Keep all methods that are already modeled in some form in the state
@@ -255,7 +255,7 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     methods: Record<string, ModeledMethod[]>,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       state.modeledMethods = { ...methods };
     });
   }
@@ -266,7 +266,7 @@ export class ModelingStore extends DisposableObject {
     modeledMethods: ModeledMethod[],
     setModified: boolean,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       const newModeledMethods = { ...state.modeledMethods };
       newModeledMethods[signature] = modeledMethods;
       state.modeledMethods = newModeledMethods;
@@ -454,7 +454,7 @@ export class ModelingStore extends DisposableObject {
     );
   }
 
-  private changeModeledMethods(
+  private changeModeledAndModifiedMethods(
     dbItem: DatabaseItem,
     updateState: (state: InternalDbModelingState) => void,
   ) {
@@ -462,7 +462,7 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireModeledMethodsChangedEvent(
+    this.modelingEvents.fireModeledAndModifiedMethodsChangedEvent(
       state.modeledMethods,
       state.modifiedMethodSignatures,
       dbItem.databaseUri.toString(),

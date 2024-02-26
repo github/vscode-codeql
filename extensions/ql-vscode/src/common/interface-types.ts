@@ -529,8 +529,8 @@ interface SetMethodsMessage {
   methods: Method[];
 }
 
-interface SetModeledMethodsMessage {
-  t: "setModeledMethods";
+interface SetModeledAndModifiedMethodsMessage {
+  t: "setModeledAndModifiedMethods";
   methods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: string[];
 }
@@ -648,7 +648,7 @@ interface SetModelEvaluationRunMessage {
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
-  | SetModeledMethodsMessage
+  | SetModeledAndModifiedMethodsMessage
   | SetModifiedMethodsMessage
   | SetInProgressMethodsMessage
   | SetProcessedByAutoModelMethodsMessage

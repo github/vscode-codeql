@@ -161,7 +161,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
   private registerToModelingEvents(): void {
     this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (e) => {
+      this.modelingEvents.onModeledAndModifiedMethodsChanged(async (e) => {
         if (this.webviewView && e.isActiveDb && this.method) {
           const modeledMethods = e.modeledMethods[this.method.signature];
           if (modeledMethods) {
