@@ -40,7 +40,6 @@ import type { Method } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { ModelConfigListener } from "../config";
-import { isCanary } from "../config";
 import { Mode } from "./shared/mode";
 import {
   GENERATED_MODELS_SUFFIX,
@@ -273,6 +272,7 @@ export class ModelEditorView extends AbstractWebview<
                 modeledMethods,
                 mode,
                 this.cliServer,
+                this.modelConfig,
                 this.app.logger,
               );
 
@@ -490,6 +490,7 @@ export class ModelEditorView extends AbstractWebview<
         this.extensionPack,
         this.language,
         this.cliServer,
+        this.modelConfig,
         this.app.logger,
       );
       this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
@@ -663,7 +664,7 @@ export class ModelEditorView extends AbstractWebview<
                 this.app.logger,
                 {
                   mode,
-                  isCanary: isCanary(),
+                  config: this.modelConfig,
                 },
               );
 
@@ -701,7 +702,7 @@ export class ModelEditorView extends AbstractWebview<
 
     if (
       autoModelGeneration.enabled &&
-      !autoModelGeneration.enabled({ mode, isCanary: isCanary() })
+      !autoModelGeneration.enabled({ mode, config: this.modelConfig })
     ) {
       return;
     }

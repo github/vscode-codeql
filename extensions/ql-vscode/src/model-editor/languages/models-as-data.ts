@@ -70,7 +70,7 @@ export type ModelsAsDataLanguagePredicate<T> = {
 
 export type GenerationContext = {
   mode: Mode;
-  isCanary: boolean;
+  config: ModelConfig;
 };
 
 type ParseGenerationResults = (

@@ -5,6 +5,7 @@ import { createMockLogger } from "../../../../__mocks__/loggerMock";
 import type { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 import { EndpointType } from "../../../../../src/model-editor/method";
 import { Mode } from "../../../../../src/model-editor/shared/mode";
+import { defaultModelConfig } from "../../../../../src/model-editor/languages";
 
 describe("parseGenerateModelResults", () => {
   it("should return the results", async () => {
@@ -78,8 +79,11 @@ describe("parseGenerateModelResults", () => {
       ruby,
       createMockLogger(),
       {
-        isCanary: true,
         mode: Mode.Framework,
+        config: {
+          ...defaultModelConfig,
+          showTypeModels: true,
+        },
       },
     );
     expect(result).toEqual([

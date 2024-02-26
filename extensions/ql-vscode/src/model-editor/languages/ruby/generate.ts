@@ -12,7 +12,7 @@ export function parseGenerateModelResults(
   bqrs: DecodedBqrs,
   modelsAsDataLanguage: ModelsAsDataLanguage,
   logger: BaseLogger,
-  { isCanary }: GenerationContext,
+  { config }: GenerationContext,
 ): ModeledMethod[] {
   const modeledMethods: ModeledMethod[] = [];
 
@@ -20,10 +20,10 @@ export function parseGenerateModelResults(
     if (
       resultSetName ===
         modelsAsDataLanguage.predicates.type?.extensiblePredicate &&
-      !isCanary
+      !config.showTypeModels
     ) {
-      // Don't load generated type results in non-canary mode. These are already automatically
-      // generated on start-up.
+      // Don't load generated type results when type models are hidden. These are already
+      // automatically generated on start-up.
       continue;
     }
 

@@ -14,6 +14,7 @@ import { ruby } from "../../../../src/model-editor/languages/ruby";
 import type { ModeledMethod } from "../../../../src/model-editor/modeled-method";
 import { EndpointType } from "../../../../src/model-editor/method";
 import { Mode } from "../../../../src/model-editor/shared/mode";
+import { defaultModelConfig } from "../../../../src/model-editor/languages";
 
 describe("runGenerateQueries", () => {
   const modelsAsDataLanguage = ruby;
@@ -136,8 +137,11 @@ describe("runGenerateQueries", () => {
             modelsAsDataLanguage,
             createMockLogger(),
             {
-              isCanary: true,
               mode: Mode.Framework,
+              config: {
+                ...defaultModelConfig,
+                showTypeModels: true,
+              },
             },
           ),
         );

@@ -209,8 +209,9 @@ export const ruby: ModelsAsDataLanguage = {
         },
       ];
     },
-    // Only enabled for framework mode in non-canary
-    enabled: ({ mode, isCanary }) => mode === Mode.Framework && !isCanary,
+    // Only enabled for framework mode when type models are hidden
+    enabled: ({ mode, config }) =>
+      mode === Mode.Framework && !config.showTypeModels,
   },
   accessPathSuggestions: {
     queryConstraints: (mode) => ({
