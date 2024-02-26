@@ -10,33 +10,45 @@ import { MultipleModeledMethodsPanel } from "../MultipleModeledMethodsPanel";
 import { userEvent } from "@testing-library/user-event";
 import type { ModeledMethod } from "../../../model-editor/modeled-method";
 import { QueryLanguage } from "../../../common/query-language";
+import type { ModelingStatus } from "../../../model-editor/shared/modeling-status";
 
 describe(MultipleModeledMethodsPanel.name, () => {
-  const render = (props: MultipleModeledMethodsPanelProps) =>
-    reactRender(<MultipleModeledMethodsPanel {...props} />);
-
   const language = QueryLanguage.Java;
-  const isCanary = false;
   const method = createMethod();
   const isModelingInProgress = false;
   const isProcessedByAutoModel = false;
-  const modelingStatus = "unmodeled";
+  const modelingStatus: ModelingStatus = "unmodeled";
   const onChange = jest.fn<void, [string, ModeledMethod[]]>();
+  const isCanary = false;
+
+  const baseProps = {
+    language,
+    method,
+    modelingStatus,
+    isModelingInProgress,
+    isCanary,
+    isProcessedByAutoModel,
+    onChange,
+  };
+
+  const createRender =
+    (modeledMethods: ModeledMethod[]) =>
+    (props: Partial<MultipleModeledMethodsPanelProps> = {}) =>
+      reactRender(
+        <MultipleModeledMethodsPanel
+          {...baseProps}
+          modeledMethods={modeledMethods}
+          {...props}
+        />,
+      );
 
   describe("with no modeled methods", () => {
     const modeledMethods: ModeledMethod[] = [];
 
+    const render = createRender(modeledMethods);
+
     it("renders the method modeling inputs once", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      render();
 
       expect(screen.getAllByRole("combobox")).toHaveLength(4);
       expect(
@@ -47,16 +59,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("disables all pagination", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      render();
 
       expect(
         screen
@@ -71,16 +74,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("cannot add or delete modeling", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      render();
 
       expect(
         screen
@@ -103,17 +97,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
       }),
     ];
 
+    const render = createRender(modeledMethods);
+
     it("renders the method modeling inputs once", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      render();
 
       expect(screen.getAllByRole("combobox")).toHaveLength(4);
       expect(
@@ -124,16 +111,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("disables all pagination", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      render();
 
       expect(
         screen
@@ -147,16 +125,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("cannot delete modeling", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      render();
 
       expect(
         screen
@@ -166,16 +135,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can add modeling", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      render();
 
       await userEvent.click(screen.getByLabelText("Add modeling"));
 
@@ -194,31 +154,16 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("changes selection to the newly added modeling", async () => {
-      const { rerender } = render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        modelingStatus,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        onChange,
-      });
+      const { rerender } = render();
 
       await userEvent.click(screen.getByLabelText("Add modeling"));
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -236,17 +181,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
       }),
     ];
 
+    const render = createRender(modeledMethods);
+
     it("renders the method modeling inputs once", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(screen.getAllByRole("combobox")).toHaveLength(4);
       expect(
@@ -257,16 +195,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("renders the pagination", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(screen.getByLabelText("Previous modeling")).toBeInTheDocument();
       expect(screen.getByLabelText("Next modeling")).toBeInTheDocument();
@@ -274,16 +203,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("disables the correct pagination", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(
         screen
@@ -296,16 +216,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can use the pagination", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       await userEvent.click(screen.getByLabelText("Next modeling"));
 
@@ -335,29 +246,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("correctly updates selected pagination index when the number of models decreases", async () => {
-      const { rerender } = render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      const { rerender } = render();
 
       await userEvent.click(screen.getByLabelText("Next modeling"));
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={[modeledMethods[1]]}
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -370,31 +266,13 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("does not show errors", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it("can update the first modeling", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       const modelTypeDropdown = screen.getByRole("combobox", {
         name: "Model type",
@@ -420,16 +298,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can update the second modeling", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       await userEvent.click(screen.getByLabelText("Next modeling"));
 
@@ -457,16 +326,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can delete modeling", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       await userEvent.click(screen.getByLabelText("Delete modeling"));
 
@@ -477,16 +337,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can add modeling", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       await userEvent.click(screen.getByLabelText("Add modeling"));
 
@@ -505,31 +356,16 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("shows an error when adding a neutral modeling", async () => {
-      const { rerender } = render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      const { rerender } = render();
 
       await userEvent.click(screen.getByLabelText("Add modeling"));
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -543,16 +379,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -564,16 +394,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -584,16 +408,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("changes selection to the newly added modeling", async () => {
-      const { rerender } = render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      const { rerender } = render();
 
       expect(screen.getByText("1/2")).toBeInTheDocument();
 
@@ -601,16 +416,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={
             onChange.mock.calls[onChange.mock.calls.length - 1][1]
           }
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -637,17 +446,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
       }),
     ];
 
+    const render = createRender(modeledMethods);
+
     it("can use the pagination", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(
         screen
@@ -731,29 +533,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("preserves selection when a modeling other than the selected modeling is removed", async () => {
-      const { rerender } = render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      const { rerender } = render();
 
       expect(screen.getByText("1/3")).toBeInTheDocument();
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={modeledMethods.slice(0, 2)}
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -761,16 +548,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("reduces selection when the selected modeling is removed", async () => {
-      const { rerender } = render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      const { rerender } = render();
 
       await userEvent.click(screen.getByLabelText("Next modeling"));
       await userEvent.click(screen.getByLabelText("Next modeling"));
@@ -778,14 +556,8 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={modeledMethods.slice(0, 2)}
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -806,17 +578,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
       }),
     ];
 
+    const render = createRender(modeledMethods);
+
     it("can add modeling", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(
         screen.getByLabelText("Add modeling").getElementsByTagName("input")[0],
@@ -824,16 +589,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can delete first modeling", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       await userEvent.click(screen.getByLabelText("Delete modeling"));
 
@@ -844,16 +600,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can delete second modeling", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       await userEvent.click(screen.getByLabelText("Next modeling"));
       await userEvent.click(screen.getByLabelText("Delete modeling"));
@@ -865,16 +612,7 @@ describe(MultipleModeledMethodsPanel.name, () => {
     });
 
     it("can add modeling after deleting second modeling", async () => {
-      const { rerender } = render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      const { rerender } = render();
 
       await userEvent.click(screen.getByLabelText("Next modeling"));
       await userEvent.click(screen.getByLabelText("Delete modeling"));
@@ -886,14 +624,8 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
       rerender(
         <MultipleModeledMethodsPanel
-          language={language}
-          isCanary={isCanary}
-          method={method}
+          {...baseProps}
           modeledMethods={modeledMethods.slice(0, 1)}
-          isModelingInProgress={isModelingInProgress}
-          isProcessedByAutoModel={isProcessedByAutoModel}
-          modelingStatus={modelingStatus}
-          onChange={onChange}
         />,
       );
 
@@ -925,32 +657,16 @@ describe(MultipleModeledMethodsPanel.name, () => {
       }),
     ];
 
+    const render = createRender(modeledMethods);
+
     it("shows errors", () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(screen.getByRole("alert")).toBeInTheDocument();
     });
 
     it("shows the correct error message", async () => {
-      render({
-        language,
-        isCanary,
-        method,
-        modeledMethods,
-        isModelingInProgress,
-        isProcessedByAutoModel,
-        modelingStatus,
-        onChange,
-      });
+      render();
 
       expect(
         screen.getByText("Error: Duplicated classification"),

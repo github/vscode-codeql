@@ -60,6 +60,7 @@ import { runSuggestionsQuery } from "./suggestion-queries";
 import { parseAccessPathSuggestionRowsToOptions } from "./suggestions-bqrs";
 import { ModelEvaluator } from "./model-evaluator";
 import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
+import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -78,6 +79,7 @@ export class ModelEditorView extends AbstractWebview<
     private readonly modelingEvents: ModelingEvents,
     private readonly modelConfig: ModelConfigListener,
     private readonly databaseManager: DatabaseManager,
+    private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
@@ -116,9 +118,13 @@ export class ModelEditorView extends AbstractWebview<
     this.languageDefinition = getModelsAsDataLanguage(language);
 
     this.modelEvaluator = new ModelEvaluator(
+      this.app.logger,
+      this.cliServer,
       modelingStore,
       modelingEvents,
+      this.variantAnalysisManager,
       databaseItem,
+      language,
       this.updateModelEvaluationRun.bind(this),
     );
     this.push(this.modelEvaluator);
@@ -803,6 +809,7 @@ export class ModelEditorView extends AbstractWebview<
         this.modelingEvents,
         this.modelConfig,
         this.databaseManager,
+        this.variantAnalysisManager,
         this.cliServer,
         this.queryRunner,
         this.queryStorageDir,

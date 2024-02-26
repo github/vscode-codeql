@@ -12,6 +12,7 @@ import { createMockModelingStore } from "../../../__mocks__/model-editor/modelin
 import type { ModelConfigListener } from "../../../../src/config";
 import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
 import { QueryLanguage } from "../../../../src/common/query-language";
+import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
@@ -21,6 +22,7 @@ describe("ModelEditorView", () => {
     onDidChangeConfiguration: jest.fn(),
   });
   const databaseManager = mockEmptyDatabaseManager();
+  const variantAnalysisManager = mockedObject<VariantAnalysisManager>({});
   const cliServer = mockedObject<CodeQLCliServer>({});
   const queryRunner = mockedObject<QueryRunner>({});
   const queryStorageDir = "/a/b/c/d";
@@ -48,6 +50,7 @@ describe("ModelEditorView", () => {
       modelingEvents,
       modelConfig,
       databaseManager,
+      variantAnalysisManager,
       cliServer,
       queryRunner,
       queryStorageDir,

@@ -16,7 +16,10 @@ import type {
 import { getModelsAsDataLanguage } from "./languages";
 import { Mode } from "./shared/mode";
 import { assertNever } from "../common/helpers-pure";
-import type { ModelExtensionFile } from "./model-extension-file";
+import type {
+  ModelExtension,
+  ModelExtensionFile,
+} from "./model-extension-file";
 import type { QueryLanguage } from "../common/query-language";
 
 import modelExtensionFileSchema from "./model-extension-file.schema.json";
@@ -24,38 +27,22 @@ import modelExtensionFileSchema from "./model-extension-file.schema.json";
 const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
 
-function createDataProperty<T>(
-  methods: readonly T[],
-  definition: ModelsAsDataLanguagePredicate<T>,
-) {
-  if (methods.length === 0) {
-    return " []";
-  }
-
-  return `\n${methods
-    .map(
-      (method) =>
-        `      - ${JSON.stringify(
-          definition.generateMethodDefinition(method),
-        )}`,
-    )
-    .join("\n")}`;
-}
-
 function createExtensions<T>(
   language: QueryLanguage,
   methods: readonly T[],
   definition: ModelsAsDataLanguagePredicate<T> | undefined,
-) {
+): ModelExtension | undefined {
   if (!definition) {
-    return "";
+    return undefined;
   }
 
-  return `  - addsTo:
-      pack: codeql/${language}-all
-      extensible: ${definition.extensiblePredicate}
-    data:${createDataProperty(methods, definition)}
-`;
+  return {
+    addsTo: {
+      pack: `codeql/${language}-all`,
+      extensible: definition.extensiblePredicate,
+    },
+    data: methods.map((method) => definition.generateMethodDefinition(method)),
+  };
 }
 
 export function createDataExtensionYaml(
@@ -99,7 +86,7 @@ export function createDataExtensionYaml(
   }
 
   const extensions = Object.keys(methodsByType)
-    .map((typeKey) => {
+    .map((typeKey): ModelExtension | undefined => {
       const type = typeKey as keyof ModelsAsDataLanguagePredicates;
 
       switch (type) {
@@ -137,10 +124,11 @@ export function createDataExtensionYaml(
           assertNever(type);
       }
     })
-    .filter((extensions) => extensions !== "");
+    .filter(
+      (extension): extension is ModelExtension => extension !== undefined,
+    );
 
-  return `extensions:
-${extensions.join("\n")}`;
+  return modelExtensionFileToYaml({ extensions });
 }
 
 export function createDataExtensionYamls(
@@ -339,6 +327,36 @@ function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
   }
 
   return true;
+}
+
+/**
+ * Creates a string for the data extension YAML file from the
+ * structure of the data extension file. This should be used
+ * instead of creating a JSON string directly or dumping the
+ * YAML directly to ensure that the file is formatted correctly.
+ *
+ * @param data The data extension file
+ */
+function modelExtensionFileToYaml(data: ModelExtensionFile) {
+  const extensions = data.extensions
+    .map((extension) => {
+      const data =
+        extension.data.length === 0
+          ? " []"
+          : `\n${extension.data
+              .map((row) => `      - ${JSON.stringify(row)}`)
+              .join("\n")}`;
+
+      return `  - addsTo:
+      pack: ${extension.addsTo.pack}
+      extensible: ${extension.addsTo.extensible}
+    data:${data}
+`;
+    })
+    .filter((extensions) => extensions !== "");
+
+  return `extensions:
+${extensions.join("\n")}`;
 }
 
 export function loadDataExtensionYaml(

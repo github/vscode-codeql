@@ -378,7 +378,7 @@ export class ModelingStore extends DisposableObject {
 
   public updateModelEvaluationRun(
     dbItem: DatabaseItem,
-    evaluationRun: ModelEvaluationRun,
+    evaluationRun: ModelEvaluationRun | undefined,
   ) {
     this.changeModelEvaluationRun(dbItem, (state) => {
       state.modelEvaluationRun = evaluationRun;
