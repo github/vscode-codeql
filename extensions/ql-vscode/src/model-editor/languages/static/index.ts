@@ -141,9 +141,9 @@ export const staticLanguage: ModelsAsDataLanguage = {
     },
   },
   modelGeneration: {
-    queryConstraints: {
+    queryConstraints: () => ({
       "tags contain": ["modelgenerator"],
-    },
+    }),
     filterQueries: filterFlowModelQueries,
     parseResults: parseFlowModelResults,
   },

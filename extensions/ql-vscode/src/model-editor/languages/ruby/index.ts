@@ -169,13 +169,37 @@ export const ruby: ModelsAsDataLanguage = {
           methodParameters: "",
         };
       },
+      isHidden: ({ config }) => !config.showTypeModels,
     },
   },
   modelGeneration: {
-    queryConstraints: {
-      "query path": "queries/modeling/GenerateModel.ql",
-    },
+    queryConstraints: (mode) => ({
+      kind: "table",
+      "tags contain all": ["modeleditor", "generate-model", modeTag(mode)],
+    }),
     parseResults: parseGenerateModelResults,
+    autoRun: {
+      parseResults: (queryPath, bqrs, modelsAsDataLanguage, logger) => {
+        // Only type models are generated automatically
+        const typePredicate = modelsAsDataLanguage.predicates.type;
+        if (!typePredicate) {
+          throw new Error("Type predicate not found");
+        }
+
+        const filteredBqrs = Object.fromEntries(
+          Object.entries(bqrs).filter(
+            ([key]) => key === typePredicate.extensiblePredicate,
+          ),
+        );
+
+        return parseGenerateModelResults(
+          queryPath,
+          filteredBqrs,
+          modelsAsDataLanguage,
+          logger,
+        );
+      },
+    },
   },
   accessPathSuggestions: {
     queryConstraints: (mode) => ({

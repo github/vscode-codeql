@@ -1,7 +1,7 @@
 import type { Method, MethodSignature } from "../method";
 import type { ModeledMethod } from "../modeled-method";
 import type { Mode } from "./mode";
-import { groupMethods, sortGroupNames, sortMethods } from "./sorting";
+import { groupMethods, sortGroupNames } from "./sorting";
 
 /**
  * Return the candidates that the model should be run on. This includes limiting the number of
@@ -44,10 +44,5 @@ export function getCandidates(
 
   // Sort the same way as the UI so we send the first ones listed in the UI first
   const grouped = groupMethods(candidateMethods, mode);
-  const sortedGroupNames = sortGroupNames(grouped);
-  return sortedGroupNames.flatMap((name) =>
-    // We can safely pass empty sets for `modifiedSignatures` and `processedByAutoModelMethods`
-    // because we've filtered out all methods that are already modeled or have already been processed by auto-model.
-    sortMethods(grouped[name], modeledMethodsBySignature, new Set(), new Set()),
-  );
+  return sortGroupNames(grouped).flatMap((name) => grouped[name]);
 }

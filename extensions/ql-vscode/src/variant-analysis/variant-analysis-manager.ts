@@ -298,7 +298,7 @@ export class VariantAnalysisManager
     qlPackDetails: QlPackDetails,
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<void> {
+  ): Promise<number | undefined> {
     await saveBeforeStart();
 
     progress({
@@ -379,7 +379,7 @@ export class VariantAnalysisManager
     } catch (e: unknown) {
       // If the error is handled by the handleRequestError function, we don't need to throw
       if (e instanceof RequestError && handleRequestError(e, this.app.logger)) {
-        return;
+        return undefined;
       }
 
       throw e;
@@ -405,6 +405,8 @@ export class VariantAnalysisManager
       "codeQL.monitorNewVariantAnalysis",
       processedVariantAnalysis,
     );
+
+    return processedVariantAnalysis.id;
   }
 
   public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {

@@ -3,6 +3,7 @@ import { DisposableObject } from "../common/disposable-object";
 import type { AppEvent, AppEventEmitter } from "../common/events";
 import type { DatabaseItem } from "../databases/local-databases";
 import type { Method, Usage } from "./method";
+import type { ModelEvaluationRun } from "./model-evaluation-run";
 import type { ModeledMethod } from "./modeled-method";
 import type { Mode } from "./shared/mode";
 
@@ -56,6 +57,11 @@ interface ProcessedByAutoModelMethodsChangedEvent {
   readonly methods: ReadonlySet<string>;
 }
 
+interface ModelEvaluationRunChangedEvent {
+  readonly dbUri: string;
+  readonly evaluationRun: ModelEvaluationRun | undefined;
+}
+
 interface RevealInModelEditorEvent {
   dbUri: string;
   method: Method;
@@ -77,6 +83,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
   public readonly onProcessedByAutoModelMethodsChanged: AppEvent<ProcessedByAutoModelMethodsChangedEvent>;
+  public readonly onModelEvaluationRunChanged: AppEvent<ModelEvaluationRunChangedEvent>;
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
   public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
 
@@ -91,6 +98,7 @@ export class ModelingEvents extends DisposableObject {
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
   private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
   private readonly onProcessedByAutoModelMethodsChangedEventEmitter: AppEventEmitter<ProcessedByAutoModelMethodsChangedEvent>;
+  private readonly onModelEvaluationRunChangedEventEmitter: AppEventEmitter<ModelEvaluationRunChangedEvent>;
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
   private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
 
@@ -155,6 +163,12 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onProcessedByAutoModelMethodsChanged =
       this.onProcessedByAutoModelMethodsChangedEventEmitter.event;
+
+    this.onModelEvaluationRunChangedEventEmitter = this.push(
+      app.createEventEmitter<ModelEvaluationRunChangedEvent>(),
+    );
+    this.onModelEvaluationRunChanged =
+      this.onModelEvaluationRunChangedEventEmitter.event;
 
     this.onRevealInModelEditorEventEmitter = this.push(
       app.createEventEmitter<RevealInModelEditorEvent>(),
@@ -273,6 +287,16 @@ export class ModelingEvents extends DisposableObject {
     this.onProcessedByAutoModelMethodsChangedEventEmitter.fire({
       dbUri,
       methods,
+    });
+  }
+
+  public fireModelEvaluationRunChangedEvent(
+    dbUri: string,
+    evaluationRun: ModelEvaluationRun | undefined,
+  ) {
+    this.onModelEvaluationRunChangedEventEmitter.fire({
+      dbUri,
+      evaluationRun,
     });
   }
 

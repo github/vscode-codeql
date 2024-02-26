@@ -7,7 +7,7 @@ export type DataTuple = boolean | number | string;
 
 type DataRow = DataTuple[];
 
-type ModelExtension = {
+export type ModelExtension = {
   addsTo: ExtensibleReference;
   data: DataRow[];
 };

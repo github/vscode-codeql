@@ -50,20 +50,27 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import type { ModelingStore } from "./modeling-store";
 import type { ModelingEvents } from "./modeling-events";
 import type { ModelsAsDataLanguage } from "./languages";
-import { getModelsAsDataLanguage } from "./languages";
+import { createModelConfig, getModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";
 import type { AccessPathSuggestionOptions } from "./suggestions";
 import { runSuggestionsQuery } from "./suggestion-queries";
 import { parseAccessPathSuggestionRowsToOptions } from "./suggestions-bqrs";
+import { ModelEvaluator } from "./model-evaluator";
+import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
+import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
   FromModelEditorMessage
 > {
   private readonly autoModeler: AutoModeler;
+  private readonly modelEvaluator: ModelEvaluator;
   private readonly languageDefinition: ModelsAsDataLanguage;
+  // Cancellation token source that can be used for passing into long-running operations. Should only
+  // be cancelled when the view is closed
+  private readonly cancellationTokenSource = new CancellationTokenSource();
 
   public constructor(
     protected readonly app: App,
@@ -71,6 +78,7 @@ export class ModelEditorView extends AbstractWebview<
     private readonly modelingEvents: ModelingEvents,
     private readonly modelConfig: ModelConfigListener,
     private readonly databaseManager: DatabaseManager,
+    private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
@@ -82,6 +90,12 @@ export class ModelEditorView extends AbstractWebview<
     initialMode: Mode,
   ) {
     super(app);
+
+    this.push({
+      dispose: () => {
+        this.cancellationTokenSource.cancel();
+      },
+    });
 
     this.modelingStore.initializeStateForDb(databaseItem, initialMode);
     this.registerToModelingEvents();
@@ -101,6 +115,18 @@ export class ModelEditorView extends AbstractWebview<
       },
     );
     this.languageDefinition = getModelsAsDataLanguage(language);
+
+    this.modelEvaluator = new ModelEvaluator(
+      this.app.logger,
+      this.cliServer,
+      modelingStore,
+      modelingEvents,
+      this.variantAnalysisManager,
+      databaseItem,
+      language,
+      this.updateModelEvaluationRun.bind(this),
+    );
+    this.push(this.modelEvaluator);
   }
 
   public async openView() {
@@ -262,6 +288,8 @@ export class ModelEditorView extends AbstractWebview<
             Object.keys(modeledMethods),
           );
 
+          this.modelingStore.updateMethodSorting(this.databaseItem);
+
           void telemetryListener?.sendUIInteraction(
             "model-editor-save-modeled-methods",
           );
@@ -338,10 +366,10 @@ export class ModelEditorView extends AbstractWebview<
         break;
       }
       case "startModelEvaluation":
-        this.startModelEvaluation();
+        await this.modelEvaluator.startEvaluation();
         break;
       case "stopModelEvaluation":
-        this.stopModelEvaluation();
+        await this.modelEvaluator.stopEvaluation();
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
@@ -367,6 +395,8 @@ export class ModelEditorView extends AbstractWebview<
       this.setViewState(),
       withProgress((progress, token) => this.loadMethods(progress, token), {
         cancellable: true,
+      }).then(async () => {
+        await this.generateModeledMethodsOnStartup();
       }),
       this.loadExistingModeledMethods(),
       // Only load access path suggestions if the feature is enabled
@@ -428,6 +458,7 @@ export class ModelEditorView extends AbstractWebview<
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
+        modelConfig: createModelConfig(this.modelConfig),
       },
     });
   }
@@ -471,7 +502,7 @@ export class ModelEditorView extends AbstractWebview<
 
     try {
       if (!token) {
-        token = new CancellationTokenSource().token;
+        token = this.cancellationTokenSource.token;
       }
       const queryResult = await runModelEditorQueries(mode, {
         cliServer: this.cliServer,
@@ -522,8 +553,6 @@ export class ModelEditorView extends AbstractWebview<
   protected async loadAccessPathSuggestions(
     progress: ProgressCallback,
   ): Promise<void> {
-    const tokenSource = new CancellationTokenSource();
-
     const mode = this.modelingStore.getMode(this.databaseItem);
 
     const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
@@ -546,7 +575,7 @@ export class ModelEditorView extends AbstractWebview<
         queryStorageDir: this.queryStorageDir,
         databaseItem: this.databaseItem,
         progress,
-        token: tokenSource.token,
+        token: this.cancellationTokenSource.token,
         logger: this.app.logger,
       });
 
@@ -577,8 +606,6 @@ export class ModelEditorView extends AbstractWebview<
   protected async generateModeledMethods(): Promise<void> {
     await withProgress(
       async (progress) => {
-        const tokenSource = new CancellationTokenSource();
-
         const mode = this.modelingStore.getMode(this.databaseItem);
 
         const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
@@ -619,7 +646,7 @@ export class ModelEditorView extends AbstractWebview<
 
         try {
           await runGenerateQueries({
-            queryConstraints: modelGeneration.queryConstraints,
+            queryConstraints: modelGeneration.queryConstraints(mode),
             filterQueries: modelGeneration.filterQueries,
             parseResults: (queryPath, results) =>
               modelGeneration.parseResults(
@@ -636,7 +663,7 @@ export class ModelEditorView extends AbstractWebview<
             queryStorageDir: this.queryStorageDir,
             databaseItem: addedDatabase ?? this.databaseItem,
             progress,
-            token: tokenSource.token,
+            token: this.cancellationTokenSource.token,
           });
         } catch (e: unknown) {
           void showAndLogExceptionWithTelemetry(
@@ -649,6 +676,70 @@ export class ModelEditorView extends AbstractWebview<
         }
       },
       { cancellable: false },
+    );
+  }
+
+  protected async generateModeledMethodsOnStartup(): Promise<void> {
+    const mode = this.modelingStore.getMode(this.databaseItem);
+    if (mode !== Mode.Framework) {
+      return;
+    }
+
+    const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
+    const modelGeneration = modelsAsDataLanguage.modelGeneration;
+    const autoRun = modelGeneration?.autoRun;
+
+    if (modelGeneration === undefined || autoRun === undefined) {
+      return;
+    }
+
+    await withProgress(
+      async (progress) => {
+        progress({
+          step: 0,
+          maxStep: 4000,
+          message: "Generating models",
+        });
+
+        const parseResults =
+          autoRun.parseResults ?? modelGeneration.parseResults;
+
+        try {
+          await runGenerateQueries({
+            queryConstraints: modelGeneration.queryConstraints(mode),
+            filterQueries: modelGeneration.filterQueries,
+            parseResults: (queryPath, results) =>
+              parseResults(
+                queryPath,
+                results,
+                modelsAsDataLanguage,
+                this.app.logger,
+              ),
+            onResults: async (modeledMethods) => {
+              this.addModeledMethodsFromArray(modeledMethods);
+            },
+            cliServer: this.cliServer,
+            queryRunner: this.queryRunner,
+            queryStorageDir: this.queryStorageDir,
+            databaseItem: this.databaseItem,
+            progress,
+            token: this.cancellationTokenSource.token,
+          });
+        } catch (e: unknown) {
+          void showAndLogExceptionWithTelemetry(
+            this.app.logger,
+            this.app.telemetry,
+            redactableError(
+              asError(e),
+            )`Failed to auto-run generating models: ${getErrorMessage(e)}`,
+          );
+        }
+      },
+      {
+        cancellable: false,
+        location: ProgressLocation.Window,
+        title: "Generating models",
+      },
     );
   }
 
@@ -719,6 +810,7 @@ export class ModelEditorView extends AbstractWebview<
         this.modelingEvents,
         this.modelConfig,
         this.databaseManager,
+        this.variantAnalysisManager,
         this.cliServer,
         this.queryRunner,
         this.queryStorageDir,
@@ -920,11 +1012,10 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
-  private startModelEvaluation() {
-    // Do nothing for now. This will be fleshed out in the near future.
-  }
-
-  private stopModelEvaluation() {
-    // Do nothing for now. This will be fleshed out in the near future.
+  private async updateModelEvaluationRun(run: ModelEvaluationRunState) {
+    await this.postMessage({
+      t: "setModelEvaluationRun",
+      run,
+    });
   }
 }

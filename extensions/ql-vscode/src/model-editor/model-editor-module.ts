@@ -31,6 +31,7 @@ import { getModelsAsDataLanguage } from "./languages";
 import { INITIAL_MODE } from "./shared/mode";
 import { isSupportedLanguage } from "./supported-languages";
 import { DefaultNotifier, checkConsistency } from "./consistency-check";
+import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
@@ -43,6 +44,7 @@ export class ModelEditorModule extends DisposableObject {
   private constructor(
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
+    private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     baseQueryStorageDir: string,
@@ -65,6 +67,7 @@ export class ModelEditorModule extends DisposableObject {
   public static async initialize(
     app: App,
     databaseManager: DatabaseManager,
+    variantAnalysisManager: VariantAnalysisManager,
     cliServer: CodeQLCliServer,
     queryRunner: QueryRunner,
     queryStorageDir: string,
@@ -72,6 +75,7 @@ export class ModelEditorModule extends DisposableObject {
     const modelEditorModule = new ModelEditorModule(
       app,
       databaseManager,
+      variantAnalysisManager,
       cliServer,
       queryRunner,
       queryStorageDir,
@@ -240,6 +244,7 @@ export class ModelEditorModule extends DisposableObject {
             this.modelingEvents,
             this.modelConfig,
             this.databaseManager,
+            this.variantAnalysisManager,
             this.cliServer,
             this.queryRunner,
             this.queryStorageDir,

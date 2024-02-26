@@ -8,6 +8,7 @@ import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { ReviewInEditorButton } from "./ReviewInEditorButton";
 import { MultipleModeledMethodsPanel } from "./MultipleModeledMethodsPanel";
 import type { QueryLanguage } from "../../common/query-language";
+import type { ModelConfig } from "../../model-editor/languages";
 
 const Container = styled.div`
   padding-top: 0.5rem;
@@ -50,6 +51,7 @@ const UnsavedTag = ({ modelingStatus }: { modelingStatus: ModelingStatus }) => (
 
 export type MethodModelingProps = {
   language: QueryLanguage;
+  modelConfig: ModelConfig;
   modelingStatus: ModelingStatus;
   method: Method;
   modeledMethods: ModeledMethod[];
@@ -60,6 +62,7 @@ export type MethodModelingProps = {
 
 export const MethodModeling = ({
   language,
+  modelConfig,
   modelingStatus,
   modeledMethods,
   method,
@@ -80,6 +83,7 @@ export const MethodModeling = ({
       </DependencyContainer>
       <MultipleModeledMethodsPanel
         language={language}
+        modelConfig={modelConfig}
         method={method}
         modeledMethods={modeledMethods}
         isModelingInProgress={isModelingInProgress}

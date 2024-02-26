@@ -178,6 +178,11 @@
             "type": "string",
             "default": "",
             "markdownDescription": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.exe` on Windows. If empty, the extension will look for a CodeQL executable on your shell PATH, or if CodeQL is not on your PATH, download and manage its own CodeQL executable (note: if you later introduce CodeQL on your PATH, the extension will prefer a CodeQL executable it has downloaded itself)."
+          },
+          "codeQL.cli.downloadTimeout": {
+            "type": "integer",
+            "default": 10,
+            "description": "Download timeout in seconds for downloading the CLI distribution."
           }
         }
       },
@@ -376,6 +381,11 @@
         "title": "Adding databases",
         "order": 6,
         "properties": {
+          "codeQL.addingDatabases.downloadTimeout": {
+            "type": "integer",
+            "default": 10,
+            "description": "Download timeout in seconds for adding a CodeQL database."
+          },
           "codeQL.addingDatabases.allowHttp": {
             "type": "boolean",
             "default": false,
@@ -1937,7 +1947,7 @@
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
     "child-process-promise": "^2.2.1",
-    "chokidar": "^3.5.3",
+    "chokidar": "^3.6.0",
     "d3": "^7.6.1",
     "d3-graphviz": "^5.0.2",
     "fs-extra": "^11.1.1",
@@ -1968,7 +1978,7 @@
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-react": "^7.18.6",
     "@babel/preset-typescript": "^7.21.4",
-    "@faker-js/faker": "^8.0.2",
+    "@faker-js/faker": "^8.4.1",
     "@github/markdownlint-github": "^0.6.0",
     "@octokit/plugin-throttling": "^8.0.0",
     "@playwright/test": "^1.40.1",
@@ -1977,7 +1987,7 @@
     "@storybook/addon-essentials": "^7.1.0",
     "@storybook/addon-interactions": "^7.1.0",
     "@storybook/addon-links": "^7.1.0",
-    "@storybook/components": "^7.6.7",
+    "@storybook/components": "^7.6.17",
     "@storybook/csf": "^0.1.1",
     "@storybook/manager-api": "^7.6.7",
     "@storybook/react": "^7.1.0",
@@ -1985,7 +1995,7 @@
     "@storybook/theming": "^7.6.12",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/react": "^14.0.0",
+    "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/child-process-promise": "^2.2.1",
     "@types/d3": "^7.4.0",
@@ -2012,7 +2022,7 @@
     "@types/vscode": "^1.82.0",
     "@types/yauzl": "^2.10.3",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.16.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vscode/test-electron": "^2.2.0",
     "@vscode/vsce": "^2.19.0",
     "ansi-colors": "^4.1.1",

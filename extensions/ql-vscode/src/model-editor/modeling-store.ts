@@ -1,10 +1,12 @@
 import { DisposableObject } from "../common/disposable-object";
 import type { DatabaseItem } from "../databases/local-databases";
 import type { Method, Usage } from "./method";
+import type { ModelEvaluationRun } from "./model-evaluation-run";
 import type { ModeledMethod } from "./modeled-method";
 import type { ModelingEvents } from "./modeling-events";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import type { Mode } from "./shared/mode";
+import { sortMethods } from "./shared/sorting";
 
 interface InternalDbModelingState {
   databaseItem: DatabaseItem;
@@ -17,6 +19,7 @@ interface InternalDbModelingState {
   processedByAutoModelMethods: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
+  modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
 interface DbModelingState {
@@ -30,6 +33,7 @@ interface DbModelingState {
   readonly processedByAutoModelMethods: ReadonlySet<string>;
   readonly selectedMethod: Method | undefined;
   readonly selectedUsage: Usage | undefined;
+  readonly modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
 interface SelectedMethodDetails {
@@ -66,6 +70,7 @@ export class ModelingStore extends DisposableObject {
       selectedMethod: undefined,
       selectedUsage: undefined,
       inProgressMethods: new Set(),
+      modelEvaluationRun: undefined,
     });
 
     this.modelingEvents.fireDbOpenedEvent(databaseItem);
@@ -151,17 +156,25 @@ export class ModelingStore extends DisposableObject {
   }
 
   public setMethods(dbItem: DatabaseItem, methods: Method[]) {
-    const dbState = this.getState(dbItem);
-    const dbUri = dbItem.databaseUri.toString();
+    this.changeMethods(dbItem, (state) => {
+      state.methods = sortMethods(
+        methods,
+        state.modeledMethods,
+        state.modifiedMethodSignatures,
+        state.processedByAutoModelMethods,
+      );
+    });
+  }
 
-    dbState.methods = [...methods];
-
-    this.modelingEvents.fireMethodsChangedEvent(
-      methods,
-      dbUri,
-      dbItem,
-      dbUri === this.activeDb,
-    );
+  public updateMethodSorting(dbItem: DatabaseItem) {
+    this.changeMethods(dbItem, (state) => {
+      state.methods = sortMethods(
+        state.methods,
+        state.modeledMethods,
+        state.modifiedMethodSignatures,
+        state.processedByAutoModelMethods,
+      );
+    });
   }
 
   public setHideModeledMethods(
@@ -362,6 +375,16 @@ export class ModelingStore extends DisposableObject {
         ...processedByAutoModelMethods,
       ]);
     });
+    this.updateMethodSorting(dbItem);
+  }
+
+  public updateModelEvaluationRun(
+    dbItem: DatabaseItem,
+    evaluationRun: ModelEvaluationRun | undefined,
+  ) {
+    this.changeModelEvaluationRun(dbItem, (state) => {
+      state.modelEvaluationRun = evaluationRun;
+    });
   }
 
   public getSelectedMethodDetails(): SelectedMethodDetails | undefined {
@@ -398,6 +421,22 @@ export class ModelingStore extends DisposableObject {
     }
 
     return this.state.get(databaseItem.databaseUri.toString())!;
+  }
+
+  private changeMethods(
+    dbItem: DatabaseItem,
+    updateState: (state: InternalDbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.modelingEvents.fireMethodsChangedEvent(
+      state.methods,
+      dbItem.databaseUri.toString(),
+      dbItem,
+      dbItem.databaseUri.toString() === this.activeDb,
+    );
   }
 
   private changeModifiedMethods(
@@ -456,6 +495,20 @@ export class ModelingStore extends DisposableObject {
     this.modelingEvents.fireProcessedByAutoModelMethodsChangedEvent(
       dbItem.databaseUri.toString(),
       state.processedByAutoModelMethods,
+    );
+  }
+
+  private changeModelEvaluationRun(
+    dbItem: DatabaseItem,
+    updateState: (state: InternalDbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+
+    this.modelingEvents.fireModelEvaluationRunChangedEvent(
+      dbItem.databaseUri.toString(),
+      state.modelEvaluationRun,
     );
   }
 }

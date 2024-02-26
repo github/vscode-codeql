@@ -3,7 +3,6 @@ import type { Method } from "../../model-editor/method";
 import { canMethodBeModeled } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
-import { sortMethods } from "../../model-editor/shared/sorting";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
@@ -48,12 +47,7 @@ export const ModeledMethodDataGrid = ({
   ] = useMemo(() => {
     const methodsWithModelability = [];
     let numHiddenMethods = 0;
-    for (const method of sortMethods(
-      methods,
-      modeledMethodsMap,
-      modifiedSignatures,
-      processedByAutoModelMethods,
-    )) {
+    for (const method of methods) {
       const modeledMethods = modeledMethodsMap[method.signature] ?? [];
       const methodIsUnsaved = modifiedSignatures.has(method.signature);
       const methodCanBeModeled = canMethodBeModeled(
@@ -69,13 +63,7 @@ export const ModeledMethodDataGrid = ({
       }
     }
     return [methodsWithModelability, numHiddenMethods];
-  }, [
-    hideModeledMethods,
-    methods,
-    modeledMethodsMap,
-    modifiedSignatures,
-    processedByAutoModelMethods,
-  ]);
+  }, [hideModeledMethods, methods, modeledMethodsMap, modifiedSignatures]);
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
 
