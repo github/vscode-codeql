@@ -392,7 +392,7 @@ describe("MethodsUsageDataProvider", () => {
           }),
         ];
 
-        it("should sort methods", async () => {
+        it("should not change sort methods of methods", async () => {
           await dataProvider.setState(
             methods,
             dbItem,
@@ -407,11 +407,7 @@ describe("MethodsUsageDataProvider", () => {
               .map(
                 (item) => (item as MethodsUsageTreeViewItem).method.signature,
               ),
-          ).toEqual(["b.a.C.d()", "b.a.C.b()", "b.a.C.a()", "a.b.C.d()"]);
-          // reasoning for sort order:
-          // b.a.C.d() has more usages than b.a.C.b()
-          // b.a.C.b() is supported, b.a.C.a() is not
-          // b.a.C.a() is in a more unsupported library, a.b.C.d() is in a more supported library
+          ).toEqual(["b.a.C.a()", "b.a.C.b()", "b.a.C.d()", "a.b.C.d()"]);
         });
       });
     });
