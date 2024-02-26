@@ -7,8 +7,7 @@ export function createMockModelingEvents({
   onMethodsChanged = jest.fn(),
   onHideModeledMethodsChanged = jest.fn(),
   onModeChanged = jest.fn(),
-  onModeledAndModifiedMethodsChanged:
-    onModeledAndModifiedMethodsChanged = jest.fn(),
+  onModeledAndModifiedMethodsChanged = jest.fn(),
   onInProgressMethodsChanged = jest.fn(),
   onProcessedByAutoModelMethodsChanged = jest.fn(),
   onRevealInModelEditor = jest.fn(),
