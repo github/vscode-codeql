@@ -126,10 +126,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           this.databaseItem,
           msg.methodSignature,
           msg.modeledMethods,
-        );
-        this.modelingStore.addModifiedMethod(
-          this.databaseItem,
-          msg.methodSignature,
+          true,
         );
         break;
       }
@@ -164,7 +161,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
   private registerToModelingEvents(): void {
     this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (e) => {
+      this.modelingEvents.onModeledAndModifiedMethodsChanged(async (e) => {
         if (this.webviewView && e.isActiveDb && this.method) {
           const modeledMethods = e.modeledMethods[this.method.signature];
           if (modeledMethods) {
@@ -174,17 +171,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
               modeledMethods,
             });
           }
-        }
-      }),
-    );
 
-    this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (e) => {
-        if (this.webviewView && e.isActiveDb && this.method) {
-          const isModified = e.modifiedMethods.has(this.method.signature);
           await this.postMessage({
             t: "setMethodModified",
-            isModified,
+            isModified: e.modifiedMethodSignatures.has(this.method.signature),
           });
         }
       }),

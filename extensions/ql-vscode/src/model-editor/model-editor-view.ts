@@ -910,22 +910,12 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (event) => {
+      this.modelingEvents.onModeledAndModifiedMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setModeledMethods",
+            t: "setModeledAndModifiedMethods",
             methods: event.modeledMethods,
-          });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setModifiedMethods",
-            methodSignatures: [...event.modifiedMethods],
+            modifiedMethodSignatures: [...event.modifiedMethodSignatures],
           });
         }
       }),
@@ -981,11 +971,10 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private addModeledMethods(modeledMethods: Record<string, ModeledMethod[]>) {
-    this.modelingStore.addModeledMethods(this.databaseItem, modeledMethods);
-
-    this.modelingStore.addModifiedMethods(
+    this.modelingStore.addModeledMethods(
       this.databaseItem,
-      new Set(Object.keys(modeledMethods)),
+      modeledMethods,
+      true,
     );
   }
 
@@ -1008,8 +997,8 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       signature,
       methods,
+      true,
     );
-    this.modelingStore.addModifiedMethod(this.databaseItem, signature);
   }
 
   private async updateModelEvaluationRun(run: ModelEvaluationRunState) {
