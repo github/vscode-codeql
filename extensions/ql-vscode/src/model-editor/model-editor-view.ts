@@ -50,7 +50,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import type { ModelingStore } from "./modeling-store";
 import type { ModelingEvents } from "./modeling-events";
 import type { ModelsAsDataLanguage } from "./languages";
-import { getModelsAsDataLanguage } from "./languages";
+import { createModelConfig, getModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";
@@ -456,6 +456,7 @@ export class ModelEditorView extends AbstractWebview<
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
+        modelConfig: createModelConfig(this.modelConfig),
       },
     });
   }
