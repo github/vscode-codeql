@@ -34,6 +34,7 @@ import {
   isVariantAnalysisComplete,
   parseVariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisStatus,
 } from "./shared/variant-analysis";
 import { getErrorMessage } from "../common/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
@@ -611,8 +612,20 @@ export class VariantAnalysisManager
       return;
     }
 
-    if (!this.variantAnalyses.has(variantAnalysis.id)) {
+    const originalVariantAnalysis = this.variantAnalyses.get(
+      variantAnalysis.id,
+    );
+
+    if (!originalVariantAnalysis) {
       return;
+    }
+
+    // Maintain the canceling status if we are still canceling.
+    if (
+      originalVariantAnalysis.status === VariantAnalysisStatus.Canceling &&
+      variantAnalysis.status === VariantAnalysisStatus.InProgress
+    ) {
+      variantAnalysis.status = VariantAnalysisStatus.Canceling;
     }
 
     await this.setVariantAnalysis(variantAnalysis);
@@ -838,6 +851,11 @@ export class VariantAnalysisManager
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
+    await this.onVariantAnalysisUpdated({
+      ...variantAnalysis,
+      status: VariantAnalysisStatus.Canceling,
+    });
+
     if (!variantAnalysis.actionsWorkflowRunId) {
       throw new Error(
         `No workflow run id for variant analysis with id: ${variantAnalysis.id}`,
@@ -848,7 +866,17 @@ export class VariantAnalysisManager
       this.app.logger,
       "Cancelling variant analysis. This may take a while.",
     );
-    await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
+    try {
+      await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
+    } catch (e) {
+      if (variantAnalysis.status === VariantAnalysisStatus.Canceling) {
+        await this.onVariantAnalysisUpdated({
+          ...variantAnalysis,
+          status: VariantAnalysisStatus.InProgress,
+        });
+      }
+      throw e;
+    }
   }
 
   public async openVariantAnalysisLogs(variantAnalysisId: number) {
