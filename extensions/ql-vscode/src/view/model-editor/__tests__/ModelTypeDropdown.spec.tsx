@@ -36,7 +36,7 @@ describe(ModelTypeDropdown.name, () => {
     );
   });
 
-  it("allows changing the type to 'Type' for Ruby in canary mode", async () => {
+  it("allows changing the type to 'Type' for Ruby when type models are shown", async () => {
     const method = createMethod();
     const modeledMethod = createNoneModeledMethod();
 
@@ -62,7 +62,7 @@ describe(ModelTypeDropdown.name, () => {
     );
   });
 
-  it("does not allow changing the type to 'Type' for Ruby in non-canary mode", async () => {
+  it("does not allow changing the type to 'Type' for Ruby when type models are not shown", async () => {
     const method = createMethod();
     const modeledMethod = createNoneModeledMethod();
 
