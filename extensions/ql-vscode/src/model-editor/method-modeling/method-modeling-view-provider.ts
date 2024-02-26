@@ -172,12 +172,10 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             });
           }
 
-          if (e.modifiedMethodSignatures !== undefined) {
-            await this.postMessage({
-              t: "setMethodModified",
-              isModified: e.modifiedMethodSignatures.has(this.method.signature),
-            });
-          }
+          await this.postMessage({
+            t: "setMethodModified",
+            isModified: e.modifiedMethodSignatures.has(this.method.signature),
+          });
         }
       }),
     );
