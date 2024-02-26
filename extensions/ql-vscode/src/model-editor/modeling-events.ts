@@ -31,12 +31,6 @@ interface ModeledAndModifiedMethodsChangedEvent {
   readonly isActiveDb: boolean;
 }
 
-interface ModifiedMethodsChangedEvent {
-  readonly modifiedMethods: ReadonlySet<string>;
-  readonly dbUri: string;
-  readonly isActiveDb: boolean;
-}
-
 interface SelectedMethodChangedEvent {
   readonly databaseItem: DatabaseItem;
   readonly method: Method;
@@ -79,7 +73,6 @@ export class ModelingEvents extends DisposableObject {
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
   public readonly onModeChanged: AppEvent<ModeChangedEvent>;
   public readonly onModeledAndModifiedMethodsChanged: AppEvent<ModeledAndModifiedMethodsChangedEvent>;
-  public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
   public readonly onProcessedByAutoModelMethodsChanged: AppEvent<ProcessedByAutoModelMethodsChangedEvent>;
@@ -94,7 +87,6 @@ export class ModelingEvents extends DisposableObject {
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
   private readonly onModeChangedEventEmitter: AppEventEmitter<ModeChangedEvent>;
   private readonly onModeledAndModifiedMethodsChangedEventEmitter: AppEventEmitter<ModeledAndModifiedMethodsChangedEvent>;
-  private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
   private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
   private readonly onProcessedByAutoModelMethodsChangedEventEmitter: AppEventEmitter<ProcessedByAutoModelMethodsChangedEvent>;
@@ -139,12 +131,6 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onModeledAndModifiedMethodsChanged =
       this.onModeledAndModifiedMethodsChangedEventEmitter.event;
-
-    this.onModifiedMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ModifiedMethodsChangedEvent>(),
-    );
-    this.onModifiedMethodsChanged =
-      this.onModifiedMethodsChangedEventEmitter.event;
 
     this.onSelectedMethodChangedEventEmitter = this.push(
       app.createEventEmitter<SelectedMethodChangedEvent>(),
@@ -233,18 +219,6 @@ export class ModelingEvents extends DisposableObject {
     this.onModeledAndModifiedMethodsChangedEventEmitter.fire({
       modeledMethods,
       modifiedMethodSignatures,
-      dbUri,
-      isActiveDb,
-    });
-  }
-
-  public fireModifiedMethodsChangedEvent(
-    modifiedMethods: ReadonlySet<string>,
-    dbUri: string,
-    isActiveDb: boolean,
-  ) {
-    this.onModifiedMethodsChangedEventEmitter.fire({
-      modifiedMethods,
       dbUri,
       isActiveDb,
     });

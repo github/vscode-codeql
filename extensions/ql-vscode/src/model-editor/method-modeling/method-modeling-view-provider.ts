@@ -181,18 +181,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     );
 
     this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (e) => {
-        if (this.webviewView && e.isActiveDb && this.method) {
-          const isModified = e.modifiedMethods.has(this.method.signature);
-          await this.postMessage({
-            t: "setMethodModified",
-            isModified,
-          });
-        }
-      }),
-    );
-
-    this.push(
       this.modelingEvents.onSelectedMethodChanged(async (e) => {
         if (this.webviewView) {
           this.method = e.method;

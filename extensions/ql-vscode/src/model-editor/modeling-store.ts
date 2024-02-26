@@ -285,7 +285,7 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     methodSignatures: string[],
   ) {
-    this.changeModifiedMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       const newModifiedMethods = Array.from(
         state.modifiedMethodSignatures,
       ).filter((s) => !methodSignatures.includes(s));
@@ -435,21 +435,6 @@ export class ModelingStore extends DisposableObject {
       state.methods,
       dbItem.databaseUri.toString(),
       dbItem,
-      dbItem.databaseUri.toString() === this.activeDb,
-    );
-  }
-
-  private changeModifiedMethods(
-    dbItem: DatabaseItem,
-    updateState: (state: InternalDbModelingState) => void,
-  ) {
-    const state = this.getState(dbItem);
-
-    updateState(state);
-
-    this.modelingEvents.fireModifiedMethodsChangedEvent(
-      state.modifiedMethodSignatures,
-      dbItem.databaseUri.toString(),
       dbItem.databaseUri.toString() === this.activeDb,
     );
   }
