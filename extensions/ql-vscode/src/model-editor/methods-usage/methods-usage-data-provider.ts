@@ -73,9 +73,7 @@ export class MethodsUsageDataProvider
       this.modifiedMethodSignatures !== modifiedMethodSignatures
     ) {
       this.methods = methods;
-      this.sortedTreeItems = createTreeItems(
-        sortMethodsInGroups(methods, mode),
-      );
+      this.sortedTreeItems = createTreeItems(createGroups(methods, mode));
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
@@ -246,7 +244,7 @@ function urlValueResolvablesAreEqual(
   return false;
 }
 
-function sortMethodsInGroups(methods: readonly Method[], mode: Mode): Method[] {
+function createGroups(methods: readonly Method[], mode: Mode): Method[] {
   const grouped = groupMethods(methods, mode);
   return sortGroupNames(grouped).flatMap((groupName) => grouped[groupName]);
 }
