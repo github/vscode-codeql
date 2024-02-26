@@ -16,7 +16,7 @@ import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../shared/hide-modeled-metho
 import { getModelingStatus } from "../shared/modeling-status";
 import { assertNever } from "../../common/helpers-pure";
 import type { ModeledMethod } from "../modeled-method";
-import { groupMethods, sortGroupNames, sortMethods } from "../shared/sorting";
+import { groupMethods, sortGroupNames } from "../shared/sorting";
 import type { Mode } from "../shared/mode";
 import { INITIAL_MODE } from "../shared/mode";
 import type { UrlValueResolvable } from "../../common/raw-result-types";
@@ -63,7 +63,6 @@ export class MethodsUsageDataProvider
     mode: Mode,
     modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
     modifiedMethodSignatures: ReadonlySet<string>,
-    processedByAutoModelMethods: ReadonlySet<string>,
   ): Promise<void> {
     if (
       this.methods !== methods ||
@@ -74,15 +73,7 @@ export class MethodsUsageDataProvider
       this.modifiedMethodSignatures !== modifiedMethodSignatures
     ) {
       this.methods = methods;
-      this.sortedTreeItems = createTreeItems(
-        sortMethodsInGroups(
-          methods,
-          modeledMethods,
-          mode,
-          modifiedMethodSignatures,
-          processedByAutoModelMethods,
-        ),
-      );
+      this.sortedTreeItems = createTreeItems(createGroups(methods, mode));
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
@@ -253,27 +244,9 @@ function urlValueResolvablesAreEqual(
   return false;
 }
 
-function sortMethodsInGroups(
-  methods: readonly Method[],
-  modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
-  mode: Mode,
-  modifiedMethodSignatures: ReadonlySet<string>,
-  processedByAutoModelMethods: ReadonlySet<string>,
-): Method[] {
+function createGroups(methods: readonly Method[], mode: Mode): Method[] {
   const grouped = groupMethods(methods, mode);
-
-  const sortedGroupNames = sortGroupNames(grouped);
-
-  return sortedGroupNames.flatMap((groupName) => {
-    const group = grouped[groupName];
-
-    return sortMethods(
-      group,
-      modeledMethods,
-      modifiedMethodSignatures,
-      processedByAutoModelMethods,
-    );
-  });
+  return sortGroupNames(grouped).flatMap((groupName) => grouped[groupName]);
 }
 
 function createTreeItems(methods: readonly Method[]): MethodTreeViewItem[] {
