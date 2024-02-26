@@ -4,6 +4,7 @@ import { createNoneModeledMethod } from "../../../../test/factories/model-editor
 import { QueryLanguage } from "../../../common/query-language";
 import { ModelTypeDropdown } from "../ModelTypeDropdown";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
+import { defaultModelConfig } from "../../../model-editor/languages";
 
 describe(ModelTypeDropdown.name, () => {
   const onChange = jest.fn();
@@ -23,7 +24,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
-        isCanary={false}
+        modelConfig={defaultModelConfig}
       />,
     );
 
@@ -46,7 +47,10 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
-        isCanary={true}
+        modelConfig={{
+          ...defaultModelConfig,
+          showTypeModels: true,
+        }}
       />,
     );
 
@@ -69,7 +73,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
-        isCanary={false}
+        modelConfig={defaultModelConfig}
       />,
     );
 
@@ -89,7 +93,7 @@ describe(ModelTypeDropdown.name, () => {
         modelPending={false}
         onChange={onChange}
         method={method}
-        isCanary={false}
+        modelConfig={defaultModelConfig}
       />,
     );
 

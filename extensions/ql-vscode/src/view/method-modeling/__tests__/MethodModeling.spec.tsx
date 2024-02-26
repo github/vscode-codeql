@@ -4,6 +4,7 @@ import { MethodModeling } from "../MethodModeling";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { createSinkModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
 import { QueryLanguage } from "../../../common/query-language";
+import { defaultModelConfig } from "../../../model-editor/languages";
 
 describe(MethodModeling.name, () => {
   const render = (props: MethodModelingProps) =>
@@ -18,7 +19,7 @@ describe(MethodModeling.name, () => {
 
     render({
       language: QueryLanguage.Java,
-      isCanary: false,
+      modelConfig: defaultModelConfig,
       modelingStatus: "saved",
       method,
       modeledMethods: [modeledMethod],

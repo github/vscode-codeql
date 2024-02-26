@@ -11,6 +11,7 @@ import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
 import type { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
 import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
+import { defaultModelConfig } from "../../model-editor/languages";
 
 type Props = {
   initialViewState?: MethodModelingPanelViewState;
@@ -116,7 +117,7 @@ export function MethodModelingView({
   return (
     <MethodModeling
       language={viewState?.language}
-      isCanary={viewState?.isCanary ?? false}
+      modelConfig={viewState?.modelConfig ?? defaultModelConfig}
       modelingStatus={modelingStatus}
       method={method}
       modeledMethods={modeledMethods}

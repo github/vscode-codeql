@@ -40,7 +40,6 @@ import type { Method } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { ModelConfigListener } from "../config";
-import { isCanary } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
@@ -51,7 +50,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import type { ModelingStore } from "./modeling-store";
 import type { ModelingEvents } from "./modeling-events";
 import type { ModelsAsDataLanguage } from "./languages";
-import { getModelsAsDataLanguage } from "./languages";
+import { createModelConfig, getModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";
@@ -457,7 +456,7 @@ export class ModelEditorView extends AbstractWebview<
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
-        isCanary: isCanary(),
+        modelConfig: createModelConfig(this.modelConfig),
       },
     });
   }

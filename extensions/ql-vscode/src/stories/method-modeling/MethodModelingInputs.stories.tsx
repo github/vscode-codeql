@@ -6,6 +6,7 @@ import { createSinkModeledMethod } from "../../../test/factories/model-editor/mo
 import { useState } from "react";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { QueryLanguage } from "../../common/query-language";
+import { defaultModelConfig } from "../../model-editor/languages";
 
 export default {
   title: "Method Modeling/Method Modeling Inputs",
@@ -34,7 +35,7 @@ const Template: StoryFn<typeof MethodModelingInputsComponent> = (args) => {
       language={QueryLanguage.Java}
       modeledMethod={m}
       onChange={onChange}
-      isCanary={true}
+      modelConfig={defaultModelConfig}
     />
   );
 };

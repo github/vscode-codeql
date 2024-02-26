@@ -17,11 +17,35 @@ import type {
 import type { BaseLogger } from "../../common/logging";
 import type { AccessPathSuggestionRow } from "../suggestions";
 
+// This is a subset of the model config that doesn't import the vscode module.
+// It only includes settings that are actually used.
+export type ModelConfig = {
+  showTypeModels: boolean;
+};
+
+/**
+ * This function creates a new model config object from the given model config object.
+ * The new model config object is a deep copy of the given model config object.
+ *
+ * @param modelConfig The model config object to create a new model config object from.
+ *                    In most cases, this is a `ModelConfigListener`.
+ */
+export function createModelConfig(modelConfig: ModelConfig): ModelConfig {
+  return {
+    showTypeModels: modelConfig.showTypeModels,
+  };
+}
+
+export const defaultModelConfig: ModelConfig = {
+  showTypeModels: false,
+};
+
 type GenerateMethodDefinition<T> = (method: T) => DataTuple[];
 type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;
+
 type IsHiddenContext = {
   method: MethodDefinition;
-  isCanary: boolean;
+  config: ModelConfig;
 };
 
 export type ModelsAsDataLanguagePredicate<T> = {

@@ -211,7 +211,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
 
           return !predicate.isHidden?.({
             method,
-            isCanary: viewState.isCanary,
+            config: viewState.modelConfig,
           });
         }),
         method,
@@ -298,7 +298,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   <DataGridCell>
                     <ModelTypeDropdown
                       language={viewState.language}
-                      isCanary={viewState.isCanary}
+                      modelConfig={viewState.modelConfig}
                       method={method}
                       modeledMethod={modeledMethod}
                       modelPending={modelPending}

@@ -1,6 +1,7 @@
 import type { ExtensionPack } from "./extension-pack";
 import type { Mode } from "./mode";
 import type { QueryLanguage } from "../../common/query-language";
+import type { ModelConfig } from "../languages";
 
 export interface ModelEditorViewState {
   extensionPack: ExtensionPack;
@@ -11,10 +12,10 @@ export interface ModelEditorViewState {
   mode: Mode;
   showModeSwitchButton: boolean;
   sourceArchiveAvailable: boolean;
-  isCanary: boolean;
+  modelConfig: ModelConfig;
 }
 
 export interface MethodModelingPanelViewState {
   language: QueryLanguage | undefined;
-  isCanary: boolean;
+  modelConfig: ModelConfig;
 }

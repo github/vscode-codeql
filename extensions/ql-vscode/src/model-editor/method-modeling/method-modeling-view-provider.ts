@@ -11,11 +11,11 @@ import type { ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
 import type { ModelConfigListener } from "../../config";
-import { isCanary } from "../../config";
 import type { DatabaseItem } from "../../databases/local-databases";
 import type { ModelingEvents } from "../modeling-events";
 import type { QueryLanguage } from "../../common/query-language";
 import { tryGetQueryLanguage } from "../../common/query-language";
+import { createModelConfig } from "../languages";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -47,7 +47,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       t: "setMethodModelingPanelViewState",
       viewState: {
         language: this.language,
-        isCanary: isCanary(),
+        modelConfig: createModelConfig(this.modelConfig),
       },
     });
   }
