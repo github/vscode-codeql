@@ -385,28 +385,28 @@ export class VariantAnalysisManager
       throw e;
     }
 
-    const processedVariantAnalysis = mapVariantAnalysis(
+    const mappedVariantAnalysis = mapVariantAnalysis(
       variantAnalysisSubmission,
       variantAnalysisResponse,
     );
 
-    await this.onVariantAnalysisSubmitted(processedVariantAnalysis);
+    await this.onVariantAnalysisSubmitted(mappedVariantAnalysis);
 
     void showAndLogInformationMessage(
       this.app.logger,
-      `Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`,
+      `Variant analysis ${mappedVariantAnalysis.query.name} submitted for processing`,
     );
 
     void this.app.commands.execute(
       "codeQL.openVariantAnalysisView",
-      processedVariantAnalysis.id,
+      mappedVariantAnalysis.id,
     );
     void this.app.commands.execute(
       "codeQL.monitorNewVariantAnalysis",
-      processedVariantAnalysis,
+      mappedVariantAnalysis,
     );
 
-    return processedVariantAnalysis.id;
+    return mappedVariantAnalysis.id;
   }
 
   public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {
