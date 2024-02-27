@@ -103,6 +103,11 @@ export const VariantAnalysisActions = ({
           Stop query
         </Button>
       )}
+      {variantAnalysisStatus === VariantAnalysisStatus.Canceling && (
+        <Button appearance="secondary" disabled={true}>
+          Stopping query
+        </Button>
+      )}
     </Container>
   );
 };

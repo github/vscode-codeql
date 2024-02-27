@@ -39,6 +39,7 @@ export enum VariantAnalysisStatus {
   InProgress = "inProgress",
   Succeeded = "succeeded",
   Failed = "failed",
+  Canceling = "canceling",
   Canceled = "canceled",
 }
 

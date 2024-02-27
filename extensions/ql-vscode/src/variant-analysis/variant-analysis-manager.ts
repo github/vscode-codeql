@@ -34,6 +34,7 @@ import {
   isVariantAnalysisComplete,
   parseVariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisStatus,
 } from "./shared/variant-analysis";
 import { getErrorMessage } from "../common/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
@@ -145,6 +146,7 @@ export class VariantAnalysisManager
       new VariantAnalysisMonitor(
         app,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
+        this.getVariantAnalysisStatus.bind(this),
       ),
     );
     this.variantAnalysisMonitor.onVariantAnalysisChange(
@@ -604,6 +606,19 @@ export class VariantAnalysisManager
     return !this.variantAnalyses.has(variantAnalysisId);
   }
 
+  private getVariantAnalysisStatus(
+    variantAnalysisId: number,
+  ): VariantAnalysisStatus {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(
+        `No variant analysis found with id: ${variantAnalysisId}.`,
+      );
+    }
+
+    return variantAnalysis.status;
+  }
+
   public async onVariantAnalysisUpdated(
     variantAnalysis: VariantAnalysis | undefined,
   ): Promise<void> {
@@ -611,7 +626,11 @@ export class VariantAnalysisManager
       return;
     }
 
-    if (!this.variantAnalyses.has(variantAnalysis.id)) {
+    const originalVariantAnalysis = this.variantAnalyses.get(
+      variantAnalysis.id,
+    );
+
+    if (!originalVariantAnalysis) {
       return;
     }
 
@@ -844,11 +863,24 @@ export class VariantAnalysisManager
       );
     }
 
+    await this.onVariantAnalysisUpdated({
+      ...variantAnalysis,
+      status: VariantAnalysisStatus.Canceling,
+    });
+
     void showAndLogInformationMessage(
       this.app.logger,
       "Cancelling variant analysis. This may take a while.",
     );
-    await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
+    try {
+      await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
+    } catch (e) {
+      await this.onVariantAnalysisUpdated({
+        ...variantAnalysis,
+        status: VariantAnalysisStatus.InProgress,
+      });
+      throw e;
+    }
   }
 
   public async openVariantAnalysisLogs(variantAnalysisId: number) {

@@ -5,6 +5,7 @@ import { RequestError } from "@octokit/request-error";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
+  VariantAnalysisStatus,
 } from "./shared/variant-analysis";
 import {
   isFinalVariantAnalysisStatus,
@@ -36,6 +37,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
     private readonly shouldCancelMonitor: (
       variantAnalysisId: number,
     ) => Promise<boolean>,
+    private readonly getVariantAnalysisStatus: (
+      variantAnalysisId: number,
+    ) => VariantAnalysisStatus,
   ) {
     super();
   }
@@ -119,8 +123,13 @@ export class VariantAnalysisMonitor extends DisposableObject {
         continue;
       }
 
+      // Get the current status of the variant analysis as known by the rest
+      // of the app, because it may have been changed by the user and this code
+      // may not be aware of it yet.
+      const currentStatus = this.getVariantAnalysisStatus(variantAnalysis.id);
       variantAnalysis = mapUpdatedVariantAnalysis(
         variantAnalysis,
+        currentStatus,
         variantAnalysisSummary,
       );
 
