@@ -24,14 +24,9 @@ interface ModeChangedEvent {
   readonly isActiveDb: boolean;
 }
 
-interface ModeledMethodsChangedEvent {
+interface ModeledAndModifiedMethodsChangedEvent {
   readonly modeledMethods: Readonly<Record<string, ModeledMethod[]>>;
-  readonly dbUri: string;
-  readonly isActiveDb: boolean;
-}
-
-interface ModifiedMethodsChangedEvent {
-  readonly modifiedMethods: ReadonlySet<string>;
+  readonly modifiedMethodSignatures: ReadonlySet<string>;
   readonly dbUri: string;
   readonly isActiveDb: boolean;
 }
@@ -77,8 +72,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onMethodsChanged: AppEvent<MethodsChangedEvent>;
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
   public readonly onModeChanged: AppEvent<ModeChangedEvent>;
-  public readonly onModeledMethodsChanged: AppEvent<ModeledMethodsChangedEvent>;
-  public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
+  public readonly onModeledAndModifiedMethodsChanged: AppEvent<ModeledAndModifiedMethodsChangedEvent>;
   public readonly onSelectedMethodChanged: AppEvent<SelectedMethodChangedEvent>;
   public readonly onInProgressMethodsChanged: AppEvent<InProgressMethodsChangedEvent>;
   public readonly onProcessedByAutoModelMethodsChanged: AppEvent<ProcessedByAutoModelMethodsChangedEvent>;
@@ -92,8 +86,7 @@ export class ModelingEvents extends DisposableObject {
   private readonly onMethodsChangedEventEmitter: AppEventEmitter<MethodsChangedEvent>;
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
   private readonly onModeChangedEventEmitter: AppEventEmitter<ModeChangedEvent>;
-  private readonly onModeledMethodsChangedEventEmitter: AppEventEmitter<ModeledMethodsChangedEvent>;
-  private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
+  private readonly onModeledAndModifiedMethodsChangedEventEmitter: AppEventEmitter<ModeledAndModifiedMethodsChangedEvent>;
   private readonly onSelectedMethodChangedEventEmitter: AppEventEmitter<SelectedMethodChangedEvent>;
   private readonly onInProgressMethodsChangedEventEmitter: AppEventEmitter<InProgressMethodsChangedEvent>;
   private readonly onProcessedByAutoModelMethodsChangedEventEmitter: AppEventEmitter<ProcessedByAutoModelMethodsChangedEvent>;
@@ -133,17 +126,11 @@ export class ModelingEvents extends DisposableObject {
     );
     this.onModeChanged = this.onModeChangedEventEmitter.event;
 
-    this.onModeledMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ModeledMethodsChangedEvent>(),
+    this.onModeledAndModifiedMethodsChangedEventEmitter = this.push(
+      app.createEventEmitter<ModeledAndModifiedMethodsChangedEvent>(),
     );
-    this.onModeledMethodsChanged =
-      this.onModeledMethodsChangedEventEmitter.event;
-
-    this.onModifiedMethodsChangedEventEmitter = this.push(
-      app.createEventEmitter<ModifiedMethodsChangedEvent>(),
-    );
-    this.onModifiedMethodsChanged =
-      this.onModifiedMethodsChangedEventEmitter.event;
+    this.onModeledAndModifiedMethodsChanged =
+      this.onModeledAndModifiedMethodsChangedEventEmitter.event;
 
     this.onSelectedMethodChangedEventEmitter = this.push(
       app.createEventEmitter<SelectedMethodChangedEvent>(),
@@ -223,25 +210,15 @@ export class ModelingEvents extends DisposableObject {
     });
   }
 
-  public fireModeledMethodsChangedEvent(
+  public fireModeledAndModifiedMethodsChangedEvent(
     modeledMethods: Record<string, ModeledMethod[]>,
+    modifiedMethodSignatures: ReadonlySet<string>,
     dbUri: string,
     isActiveDb: boolean,
   ) {
-    this.onModeledMethodsChangedEventEmitter.fire({
+    this.onModeledAndModifiedMethodsChangedEventEmitter.fire({
       modeledMethods,
-      dbUri,
-      isActiveDb,
-    });
-  }
-
-  public fireModifiedMethodsChangedEvent(
-    modifiedMethods: ReadonlySet<string>,
-    dbUri: string,
-    isActiveDb: boolean,
-  ) {
-    this.onModifiedMethodsChangedEventEmitter.fire({
-      modifiedMethods,
+      modifiedMethodSignatures,
       dbUri,
       isActiveDb,
     });

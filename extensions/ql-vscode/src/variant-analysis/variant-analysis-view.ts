@@ -96,7 +96,7 @@ export class VariantAnalysisView
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
-    const variantAnalysis = await this.manager.getVariantAnalysis(
+    const variantAnalysis = await this.manager.tryGetVariantAnalysis(
       this.variantAnalysisId,
     );
 
@@ -178,7 +178,7 @@ export class VariantAnalysisView
 
     void this.app.logger.log("Variant analysis view loaded");
 
-    const variantAnalysis = await this.manager.getVariantAnalysis(
+    const variantAnalysis = await this.manager.tryGetVariantAnalysis(
       this.variantAnalysisId,
     );
 

@@ -50,7 +50,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import type { ModelingStore } from "./modeling-store";
 import type { ModelingEvents } from "./modeling-events";
 import type { ModelsAsDataLanguage } from "./languages";
-import { getModelsAsDataLanguage } from "./languages";
+import { createModelConfig, getModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";
@@ -288,6 +288,8 @@ export class ModelEditorView extends AbstractWebview<
             Object.keys(modeledMethods),
           );
 
+          this.modelingStore.updateMethodSorting(this.databaseItem);
+
           void telemetryListener?.sendUIInteraction(
             "model-editor-save-modeled-methods",
           );
@@ -456,6 +458,7 @@ export class ModelEditorView extends AbstractWebview<
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
+        modelConfig: createModelConfig(this.modelConfig),
       },
     });
   }
@@ -907,22 +910,12 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (event) => {
+      this.modelingEvents.onModeledAndModifiedMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setModeledMethods",
+            t: "setModeledAndModifiedMethods",
             methods: event.modeledMethods,
-          });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setModifiedMethods",
-            methodSignatures: [...event.modifiedMethods],
+            modifiedMethodSignatures: [...event.modifiedMethodSignatures],
           });
         }
       }),
@@ -978,11 +971,10 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private addModeledMethods(modeledMethods: Record<string, ModeledMethod[]>) {
-    this.modelingStore.addModeledMethods(this.databaseItem, modeledMethods);
-
-    this.modelingStore.addModifiedMethods(
+    this.modelingStore.addModeledMethods(
       this.databaseItem,
-      new Set(Object.keys(modeledMethods)),
+      modeledMethods,
+      true,
     );
   }
 
@@ -1005,8 +997,8 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       signature,
       methods,
+      true,
     );
-    this.modelingStore.addModifiedMethod(this.databaseItem, signature);
   }
 
   private async updateModelEvaluationRun(run: ModelEvaluationRunState) {

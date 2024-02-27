@@ -37,6 +37,7 @@ import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empt
 import type { AccessPathOption } from "../../model-editor/suggestions";
 import { ModelInputSuggestBox } from "./ModelInputSuggestBox";
 import { ModelOutputSuggestBox } from "./ModelOutputSuggestBox";
+import { getModelsAsDataLanguage } from "../../model-editor/languages";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -192,9 +193,37 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       [method],
     );
 
-    const modelingStatus = getModelingStatus(modeledMethods, methodIsUnsaved);
+    // Only show modeled methods that are non-hidden. These are also the ones that are
+    // used for determining the modeling status.
+    const shownModeledMethods = useMemo(() => {
+      const modelsAsDataLanguage = getModelsAsDataLanguage(viewState.language);
 
-    const addModelButtonDisabled = !canAddNewModeledMethod(modeledMethods);
+      return modeledMethodsToDisplay(
+        modeledMethods.filter((modeledMethod) => {
+          if (modeledMethod.type === "none") {
+            return true;
+          }
+
+          const predicate = modelsAsDataLanguage.predicates[modeledMethod.type];
+          if (!predicate) {
+            return true;
+          }
+
+          return !predicate.isHidden?.({
+            method,
+            config: viewState.modelConfig,
+          });
+        }),
+        method,
+      );
+    }, [method, modeledMethods, viewState]);
+
+    const modelingStatus = getModelingStatus(
+      shownModeledMethods,
+      methodIsUnsaved,
+    );
+
+    const addModelButtonDisabled = !canAddNewModeledMethod(shownModeledMethods);
 
     return (
       <DataGridRow
@@ -206,7 +235,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         }}
       >
         <DataGridCell
-          gridRow={`span ${modeledMethods.length + validationErrors.length}`}
+          gridRow={`span ${shownModeledMethods.length + validationErrors.length}`}
           ref={ref}
         >
           <ApiOrMethodRow>
@@ -257,7 +286,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         )}
         {!props.modelingInProgress && (
           <>
-            {modeledMethods.map((modeledMethod, index) => {
+            {shownModeledMethods.map((modeledMethod, index) => {
               const modelPending = isModelPending(
                 modeledMethod,
                 modelingStatus,
@@ -269,6 +298,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   <DataGridCell>
                     <ModelTypeDropdown
                       language={viewState.language}
+                      modelConfig={viewState.modelConfig}
                       method={method}
                       modeledMethod={modeledMethod}
                       modelPending={modelPending}

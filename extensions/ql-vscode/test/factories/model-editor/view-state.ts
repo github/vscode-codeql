@@ -2,6 +2,7 @@ import type { ModelEditorViewState } from "../../../src/model-editor/shared/view
 import { Mode } from "../../../src/model-editor/shared/mode";
 import { createMockExtensionPack } from "./extension-pack";
 import { QueryLanguage } from "../../../src/common/query-language";
+import { defaultModelConfig } from "../../../src/model-editor/languages";
 
 export function createMockModelEditorViewState(
   data: Partial<ModelEditorViewState> = {},
@@ -15,6 +16,7 @@ export function createMockModelEditorViewState(
     showModeSwitchButton: true,
     extensionPack: createMockExtensionPack(),
     sourceArchiveAvailable: true,
+    modelConfig: defaultModelConfig,
     ...data,
   };
 }
