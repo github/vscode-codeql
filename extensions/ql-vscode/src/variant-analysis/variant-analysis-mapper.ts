@@ -40,6 +40,7 @@ export function mapVariantAnalysis(
       databases: submission.databases,
       executionStartTime: submission.startTime,
     },
+    undefined,
     response,
   );
 }
@@ -49,6 +50,7 @@ export function mapUpdatedVariantAnalysis(
     VariantAnalysis,
     "language" | "query" | "queries" | "databases" | "executionStartTime"
   >,
+  currentStatus: VariantAnalysisStatus | undefined,
   response: ApiVariantAnalysis,
 ): VariantAnalysis {
   let scannedRepos: VariantAnalysisScannedRepository[] = [];
@@ -66,6 +68,13 @@ export function mapUpdatedVariantAnalysis(
     );
   }
 
+  // Maintain the canceling status if we are still canceling.
+  const status =
+    currentStatus === VariantAnalysisStatus.Canceling &&
+    response.status === "in_progress"
+      ? VariantAnalysisStatus.Canceling
+      : mapApiStatus(response.status);
+
   const variantAnalysis: VariantAnalysis = {
     id: response.id,
     controllerRepo: {
@@ -80,7 +89,7 @@ export function mapUpdatedVariantAnalysis(
     executionStartTime: previousVariantAnalysis.executionStartTime,
     createdAt: response.created_at,
     updatedAt: response.updated_at,
-    status: mapApiStatus(response.status),
+    status,
     completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
     scannedRepos,

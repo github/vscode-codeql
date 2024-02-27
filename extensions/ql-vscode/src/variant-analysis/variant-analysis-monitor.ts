@@ -5,6 +5,7 @@ import { RequestError } from "@octokit/request-error";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
+  VariantAnalysisStatus,
 } from "./shared/variant-analysis";
 import {
   isFinalVariantAnalysisStatus,
@@ -36,6 +37,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
     private readonly shouldCancelMonitor: (
       variantAnalysisId: number,
     ) => Promise<boolean>,
+    private readonly getVariantAnalysisStatus: (
+      variantAnalysisId: number,
+    ) => VariantAnalysisStatus,
   ) {
     super();
   }
@@ -121,6 +125,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       variantAnalysis = mapUpdatedVariantAnalysis(
         variantAnalysis,
+        this.getVariantAnalysisStatus(variantAnalysis.id),
         variantAnalysisSummary,
       );
 

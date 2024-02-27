@@ -146,6 +146,7 @@ export class VariantAnalysisManager
       new VariantAnalysisMonitor(
         app,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
+        this.getVariantAnalysisStatus.bind(this),
       ),
     );
     this.variantAnalysisMonitor.onVariantAnalysisChange(
@@ -605,6 +606,19 @@ export class VariantAnalysisManager
     return !this.variantAnalyses.has(variantAnalysisId);
   }
 
+  private getVariantAnalysisStatus(
+    variantAnalysisId: number,
+  ): VariantAnalysisStatus {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(
+        `No variant analysis found with id: ${variantAnalysisId}.`,
+      );
+    }
+
+    return variantAnalysis.status;
+  }
+
   public async onVariantAnalysisUpdated(
     variantAnalysis: VariantAnalysis | undefined,
   ): Promise<void> {
@@ -618,14 +632,6 @@ export class VariantAnalysisManager
 
     if (!originalVariantAnalysis) {
       return;
-    }
-
-    // Maintain the canceling status if we are still canceling.
-    if (
-      originalVariantAnalysis.status === VariantAnalysisStatus.Canceling &&
-      variantAnalysis.status === VariantAnalysisStatus.InProgress
-    ) {
-      variantAnalysis.status = VariantAnalysisStatus.Canceling;
     }
 
     await this.setVariantAnalysis(variantAnalysis);
@@ -851,16 +857,16 @@ export class VariantAnalysisManager
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    await this.onVariantAnalysisUpdated({
-      ...variantAnalysis,
-      status: VariantAnalysisStatus.Canceling,
-    });
-
     if (!variantAnalysis.actionsWorkflowRunId) {
       throw new Error(
         `No workflow run id for variant analysis with id: ${variantAnalysis.id}`,
       );
     }
+
+    await this.onVariantAnalysisUpdated({
+      ...variantAnalysis,
+      status: VariantAnalysisStatus.Canceling,
+    });
 
     void showAndLogInformationMessage(
       this.app.logger,
@@ -869,12 +875,10 @@ export class VariantAnalysisManager
     try {
       await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
     } catch (e) {
-      if (variantAnalysis.status === VariantAnalysisStatus.Canceling) {
-        await this.onVariantAnalysisUpdated({
-          ...variantAnalysis,
-          status: VariantAnalysisStatus.InProgress,
-        });
-      }
+      await this.onVariantAnalysisUpdated({
+        ...variantAnalysis,
+        status: VariantAnalysisStatus.InProgress,
+      });
       throw e;
     }
   }
