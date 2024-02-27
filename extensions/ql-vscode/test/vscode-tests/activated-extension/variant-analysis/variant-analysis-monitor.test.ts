@@ -32,6 +32,7 @@ describe("Variant Analysis Monitor", () => {
   >;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let shouldCancelMonitor: jest.Mock<Promise<boolean>, [number]>;
+  let mockGetVariantAnalysisStatus: jest.Mock<VariantAnalysisStatus, [number]>;
   let variantAnalysis: VariantAnalysis;
 
   const onVariantAnalysisChangeSpy = jest.fn();
@@ -43,6 +44,7 @@ describe("Variant Analysis Monitor", () => {
     variantAnalysis = createMockVariantAnalysis({});
 
     shouldCancelMonitor = jest.fn();
+    mockGetVariantAnalysisStatus = jest.fn();
 
     logger = createMockLogger();
 
@@ -54,6 +56,7 @@ describe("Variant Analysis Monitor", () => {
         logger,
       }),
       shouldCancelMonitor,
+      mockGetVariantAnalysisStatus,
     );
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
 
@@ -128,7 +131,11 @@ describe("Variant Analysis Monitor", () => {
             index + 1,
             "codeQL.autoDownloadVariantAnalysisResult",
             mapScannedRepository(succeededRepo),
-            mapUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
+            mapUpdatedVariantAnalysis(
+              variantAnalysis,
+              variantAnalysis.status,
+              mockApiResponse,
+            ),
           );
         });
       });
@@ -333,6 +340,24 @@ describe("Variant Analysis Monitor", () => {
         expect(logger.showWarningMessage).toHaveBeenCalledTimes(1);
         expect(logger.showWarningMessage).toHaveBeenCalledWith(
           expect.stringMatching(/not found/i),
+        );
+      });
+    });
+
+    describe("cancelation", () => {
+      it("should maintain canceling status", async () => {
+        mockGetVariantAnalysisStatus.mockReturnValueOnce(
+          VariantAnalysisStatus.Canceling,
+        );
+        mockApiResponse = createMockApiResponse("in_progress");
+        mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
+
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
+
+        expect(onVariantAnalysisChangeSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: VariantAnalysisStatus.Canceling,
+          }),
         );
       });
     });
