@@ -109,9 +109,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.tryGetVariantAnalysis(
-            variantAnalysis.id,
-          ),
+          variantAnalysisManager.tryGetVariantAnalysis(variantAnalysis.id),
         ).toEqual(variantAnalysis);
       });
 
@@ -119,7 +117,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getRepoStates(variantAnalysis.id),
+          variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual([]);
       });
 
@@ -147,7 +145,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getRepoStates(variantAnalysis.id),
+          variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual(
           expect.arrayContaining([
             {
