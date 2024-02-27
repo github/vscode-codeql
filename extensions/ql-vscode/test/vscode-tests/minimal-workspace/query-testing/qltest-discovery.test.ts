@@ -1,99 +1,269 @@
-import type { WorkspaceFolder } from "vscode";
-import { Uri } from "vscode";
-import { remove } from "fs-extra";
-import { join } from "path";
-
+import { createMockApp } from "../../../__mocks__/appMock";
+import type { QueryPackDiscoverer } from "../../../../src/query-testing/qltest-discovery";
 import { QLTestDiscovery } from "../../../../src/query-testing/qltest-discovery";
-import type { DirectoryResult } from "tmp-promise";
-import { dir } from "tmp-promise";
+import { EventEmitter, Uri, workspace } from "vscode";
+import { dirSync } from "tmp";
+import { join } from "path";
+import {
+  FileTreeDirectory,
+  FileTreeLeaf,
+} from "../../../../src/common/file-tree-nodes";
+import { outputFile } from "fs-extra";
+import { containsPath } from "../../../../src/common/files";
 
-import "../../../matchers/toEqualPath";
-import { mockedObject } from "../../utils/mocking.helpers";
+describe("QLTest discovery", () => {
+  let tmpDir: string;
+  let tmpDirRemoveCallback: (() => void) | undefined;
 
-describe("qltest-discovery", () => {
-  describe("discoverTests", () => {
-    let directory: DirectoryResult;
+  let workspacePath: string;
 
-    let baseDir: string;
-    let cDir: string;
-    let dFile: string;
-    let eFile: string;
-    let hDir: string;
-    let iFile: string;
-    let qlTestDiscover: QLTestDiscovery;
+  const app = createMockApp({});
+  const env = app.environment;
 
-    beforeEach(async () => {
-      directory = await dir({
-        unsafeCleanup: true,
+  const getTestsPathForFile = jest.fn();
+  const onDidChangeQueryPacks = new EventEmitter<void>();
+
+  let queryPackDiscoverer: QueryPackDiscoverer;
+  let discovery: QLTestDiscovery;
+
+  beforeEach(async () => {
+    const t = dirSync({
+      unsafeCleanup: true,
+    });
+    tmpDir = t.name;
+    tmpDirRemoveCallback = t.removeCallback;
+
+    const workspaceFolder = {
+      uri: Uri.file(join(tmpDir, "workspace")),
+      name: "workspace",
+      index: 0,
+    };
+    workspacePath = workspaceFolder.uri.fsPath;
+    jest
+      .spyOn(workspace, "workspaceFolders", "get")
+      .mockReturnValue([workspaceFolder]);
+
+    queryPackDiscoverer = {
+      getTestsPathForFile,
+      onDidChangeQueryPacks: onDidChangeQueryPacks.event,
+    };
+    discovery = new QLTestDiscovery(app, queryPackDiscoverer);
+  });
+
+  afterEach(() => {
+    tmpDirRemoveCallback?.();
+    discovery.dispose();
+  });
+
+  describe("buildTestTree", () => {
+    it("returns undefined before initial refresh has been done", async () => {
+      expect(discovery.buildTestTree()).toEqual(undefined);
+    });
+
+    it("returns an empty tree when there are no test files", async () => {
+      await makeTestFile(join(workspacePath, "my-query.expected"));
+      await makeTestFile(join(workspacePath, "__test-query.qlref"));
+
+      await discovery.initialRefresh();
+
+      expect(discovery.buildTestTree()).toEqual([]);
+    });
+
+    it("handles when no tests directory is defined and expected file does not exist", async () => {
+      await makeTestFile(join(workspacePath, "query.qlref"));
+
+      await discovery.initialRefresh();
+
+      expect(discovery.buildTestTree()).toEqual([]);
+    });
+
+    it("handles when no tests directory is defined and expected file exists", async () => {
+      await makeTestFile(join(workspacePath, "query.qlref"));
+      await makeTestFile(join(workspacePath, "query.expected"));
+
+      await discovery.initialRefresh();
+
+      expect(discovery.buildTestTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeLeaf(join(workspacePath, "query.qlref"), "query.qlref"),
+        ]),
+      ]);
+    });
+
+    it("handles mix of tests directory and non-tests directory with collapsed directory structure", async () => {
+      await makeTestFile(join(workspacePath, "query.qlref"));
+      await makeTestFile(join(workspacePath, "query.expected"));
+
+      await makeTestFile(
+        join(workspacePath, "my-query-pack", "lib", "query.ql"),
+      );
+      await makeTestFile(
+        join(workspacePath, "my-query-pack", "lib", "query.expected"),
+      );
+      await makeTestFile(
+        join(workspacePath, "my-query-pack", "test", "query.qlref"),
+      );
+
+      await makeTestFile(
+        join(workspacePath, "packs", "another-query-pack", "lib", "query.ql"),
+      );
+      await makeTestFile(
+        join(
+          workspacePath,
+          "packs",
+          "another-query-pack",
+          "test",
+          "query.qlref",
+        ),
+      );
+      await makeTestFile(
+        join(
+          workspacePath,
+          "packs",
+          "yet-another-query-pack",
+          "tests",
+          "query.qlref",
+        ),
+      );
+
+      getTestsPathForFile.mockImplementation((path) => {
+        if (containsPath(join(workspacePath, "my-query-pack"), path)) {
+          return join(workspacePath, "my-query-pack", "test");
+        }
+        if (
+          containsPath(join(workspacePath, "packs", "another-query-pack"), path)
+        ) {
+          return join(workspacePath, "packs", "another-query-pack", "test");
+        }
+        if (
+          containsPath(
+            join(workspacePath, "packs", "yet-another-query-pack"),
+            path,
+          )
+        ) {
+          return join(
+            workspacePath,
+            "packs",
+            "yet-another-query-pack",
+            "tests",
+          );
+        }
+
+        return undefined;
       });
 
-      const baseUri = Uri.file(directory.path);
-      baseDir = directory.path;
-      cDir = join(baseDir, "c");
-      dFile = join(cDir, "d.ql");
-      eFile = join(cDir, "e.ql");
-      hDir = join(cDir, "f/g/h");
-      iFile = join(hDir, "i.ql");
+      await discovery.initialRefresh();
 
-      qlTestDiscover = new QLTestDiscovery(
-        mockedObject<WorkspaceFolder>({
-          uri: baseUri,
-          name: "My tests",
-        }),
-        {
-          resolveTests() {
-            return [dFile, eFile, iFile];
-          },
-        } as any,
+      expect(discovery.buildTestTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeDirectory(
+            join(workspacePath, "my-query-pack/test"),
+            "my-query-pack / test",
+            env,
+            [
+              new FileTreeLeaf(
+                join(workspacePath, "my-query-pack", "test", "query.qlref"),
+                "query.qlref",
+              ),
+            ],
+          ),
+          new FileTreeDirectory(join(workspacePath, "packs"), "packs", env, [
+            new FileTreeDirectory(
+              join(workspacePath, "packs", "another-query-pack", "test"),
+              "another-query-pack / test",
+              env,
+              [
+                new FileTreeLeaf(
+                  join(
+                    workspacePath,
+                    "packs",
+                    "another-query-pack",
+                    "test",
+                    "query.qlref",
+                  ),
+                  "query.qlref",
+                ),
+              ],
+            ),
+            new FileTreeDirectory(
+              join(workspacePath, "packs", "yet-another-query-pack", "tests"),
+              "yet-another-query-pack / tests",
+              env,
+              [
+                new FileTreeLeaf(
+                  join(
+                    workspacePath,
+                    "packs",
+                    "yet-another-query-pack",
+                    "tests",
+                    "query.qlref",
+                  ),
+                  "query.qlref",
+                ),
+              ],
+            ),
+          ]),
+          new FileTreeLeaf(join(workspacePath, "query.qlref"), "query.qlref"),
+        ]),
+      ]);
+    });
+
+    it("ignores .testproj directory when named correctly", async () => {
+      await makeTestFile(
+        join(
+          workspacePath,
+          "my-query-pack",
+          "test",
+          "my-query-pack",
+          "query.qlref",
+        ),
       );
-    });
+      await makeTestFile(
+        join(
+          workspacePath,
+          "my-query-pack",
+          "test",
+          "my-query-pack",
+          "my-query-pack.testproj",
+          "query.ql",
+        ),
+      );
 
-    afterEach(async () => {
-      await directory.cleanup();
-    });
+      getTestsPathForFile.mockImplementation((path) => {
+        if (containsPath(join(workspacePath, "my-query-pack"), path)) {
+          return join(workspacePath, "my-query-pack", "test");
+        }
 
-    it("should run discovery", async () => {
-      await qlTestDiscover.refresh();
-      const testDirectory = qlTestDiscover.testDirectory;
-      expect(testDirectory).toBeDefined();
+        return undefined;
+      });
 
-      expect(testDirectory!.path).toEqualPath(baseDir);
-      expect(testDirectory!.name).toBe("My tests");
+      await discovery.initialRefresh();
 
-      let children = testDirectory!.children;
-      expect(children.length).toBe(1);
-
-      expect(children[0].path).toEqualPath(cDir);
-      expect(children[0].name).toBe("c");
-
-      children = children[0].children;
-      expect(children.length).toBe(3);
-
-      expect(children[0].path).toEqualPath(dFile);
-      expect(children[0].name).toBe("d.ql");
-      expect(children[1].path).toEqualPath(eFile);
-      expect(children[1].name).toBe("e.ql");
-
-      // A merged foler
-      expect(children[2].path).toEqualPath(hDir);
-      expect(children[2].name).toBe("f / g / h");
-
-      children = children[2].children;
-      expect(children[0].path).toEqualPath(iFile);
-      expect(children[0].name).toBe("i.ql");
-    });
-
-    it("should avoid discovery if a folder does not exist", async () => {
-      await remove(baseDir);
-
-      await qlTestDiscover.refresh();
-      const testDirectory = qlTestDiscover.testDirectory;
-      expect(testDirectory).toBeDefined();
-
-      expect(testDirectory!.path).toEqualPath(baseDir);
-      expect(testDirectory!.name).toBe("My tests");
-
-      expect(testDirectory!.children.length).toBe(0);
+      expect(discovery.buildTestTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeDirectory(
+            join(workspacePath, "my-query-pack", "test", "my-query-pack"),
+            "my-query-pack / test / my-query-pack",
+            env,
+            [
+              new FileTreeLeaf(
+                join(
+                  workspacePath,
+                  "my-query-pack",
+                  "test",
+                  "my-query-pack",
+                  "query.qlref",
+                ),
+                "query.qlref",
+              ),
+            ],
+          ),
+        ]),
+      ]);
     });
   });
 });
+
+async function makeTestFile(path: string) {
+  await outputFile(path, "");
+}

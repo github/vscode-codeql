@@ -1,3 +1,4 @@
+import { dirname } from "path";
 import { Discovery } from "../discovery";
 import type { Event, Uri, WorkspaceFoldersChangeEvent } from "vscode";
 import { EventEmitter, RelativePattern, workspace } from "vscode";
@@ -26,8 +27,17 @@ interface PathData {
  *
  * Can configure which changes it watches for, which files are considered
  * relevant, and what extra data to compute for each file.
+ *
+ * In addition, this class provides a mechanism for computing extra data about
+ * a certain directory which is being watched. This is useful for cases where
+ * some data is expensive to compute, but can be computed once for a directory
+ * and then reused for all files in that directory. This is exposed as the
+ * `Context` type parameter and the `computeContext` method.
  */
-export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
+export abstract class FilePathDiscovery<
+  T extends PathData,
+  Context = undefined,
+> extends Discovery {
   /**
    * Has `discover` been called. This allows distinguishing between
    * "no paths found" and not having scanned yet.
@@ -89,8 +99,13 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
   /**
    * Compute any extra data to be stored regarding the given path.
+   * When `undefined` is returned, the path is considered to not be relevant
+   * and will be removed regardless of what {@link #pathIsRelevant} returns.
    */
-  protected abstract getDataForPath(path: string): Promise<T>;
+  protected abstract getDataForPath(
+    path: string,
+    context: Context | undefined,
+  ): Promise<T | undefined>;
 
   /**
    * Is the given path relevant to this discovery operation?
@@ -106,12 +121,43 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   ): boolean;
 
   /**
+   * Compute the context for a given path. This is used to compute extra data
+   * for a directory which is being watched. This is useful for cases where
+   * some data is expensive to compute, but can be computed once for a directory
+   * and then reused for all files in that directory. The returned value will be
+   * passed to the `getDataForPath` method for all files in the directory.
+   * @param _path Path to compute the context for. This is guaranteed to be a
+   *  directory.
+   */
+  protected computeContext(
+    _path: string,
+  ): Promise<Context | undefined> | Context | undefined {
+    return undefined;
+  }
+
+  /**
    * Update the data for every path by calling `getDataForPath`.
    */
   protected async recomputeAllData() {
-    this.pathData = await Promise.all(
-      this.pathData.map((p) => this.getDataForPath(p.path)),
+    const workspaceFolders = getOnDiskWorkspaceFolders();
+
+    const contexts = await Promise.all(
+      workspaceFolders.map((workspaceFolder) =>
+        this.computeContext(workspaceFolder),
+      ),
     );
+
+    this.pathData = (
+      await Promise.all(
+        this.pathData.map((p) => {
+          const context = contexts.find((_, i) =>
+            containsPath(workspaceFolders[i], p.path),
+          );
+
+          return this.getDataForPath(p.path, context);
+        }),
+      )
+    ).filter((v): v is Awaited<T> => v !== undefined);
     this.onDidChangePathDataEmitter.fire();
   }
 
@@ -220,13 +266,25 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   }
 
   private async handleChangedDirectory(path: string): Promise<boolean> {
+    const context = await this.computeContext(path);
+
     const newPaths = await workspace.findFiles(
       new RelativePattern(path, this.fileWatchPattern),
     );
 
     let pathsUpdated = false;
     for (const path of newPaths) {
-      if (await this.addOrUpdatePath(path.fsPath)) {
+      // We don't enforce that `pathIsRelevant` is equal to checking the
+      // fileWatchPattern, so we need to check it here as well. If it isn't
+      // relevant, we treat it as if it doesn't exist.
+      if (!this.pathIsRelevant(path.fsPath)) {
+        if (await this.addOrUpdatePathWithData(path.fsPath, undefined)) {
+          pathsUpdated = true;
+        }
+        continue;
+      }
+
+      if (await this.addOrUpdatePath(path.fsPath, context)) {
         pathsUpdated = true;
       }
     }
@@ -234,20 +292,35 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   }
 
   private async handleChangedFile(path: string): Promise<boolean> {
+    const context = await this.computeContext(dirname(path));
+
     if (this.pathIsRelevant(path)) {
-      return await this.addOrUpdatePath(path);
+      return await this.addOrUpdatePath(path, context);
     } else {
       return false;
     }
   }
 
-  private async addOrUpdatePath(path: string): Promise<boolean> {
-    const data = await this.getDataForPath(path);
+  private async addOrUpdatePath(
+    path: string,
+    context: Context | undefined,
+  ): Promise<boolean> {
+    const data = await this.getDataForPath(path, context);
+    return this.addOrUpdatePathWithData(path, data);
+  }
+
+  private async addOrUpdatePathWithData(
+    path: string,
+    data: T | undefined,
+  ): Promise<boolean> {
     const existingPathDataIndex = this.pathData.findIndex(
       (existingPathData) => existingPathData.path === path,
     );
     if (existingPathDataIndex !== -1) {
-      if (
+      if (data === undefined) {
+        this.pathData.splice(existingPathDataIndex, 1);
+        return true;
+      } else if (
         this.shouldOverwriteExistingData(
           data,
           this.pathData[existingPathDataIndex],
@@ -258,9 +331,11 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
       } else {
         return false;
       }
-    } else {
+    } else if (data !== undefined) {
       this.pathData.push(data);
       return true;
+    } else {
+      return false;
     }
   }
 }

@@ -33,7 +33,6 @@ describe("test-runner", () => {
   const renameDatabaseItemSpy = jest.fn();
   const setCurrentDatabaseItemSpy = jest.fn();
   let runTestsSpy: jest.Mock<any, any>;
-  const resolveTestsSpy = jest.fn();
   const resolveQlpacksSpy = jest.fn();
 
   const preTestDatabaseItem = new DatabaseItemImpl(
@@ -59,7 +58,6 @@ describe("test-runner", () => {
     renameDatabaseItemSpy.mockResolvedValue(undefined);
     setCurrentDatabaseItemSpy.mockResolvedValue(undefined);
     resolveQlpacksSpy.mockResolvedValue({});
-    resolveTestsSpy.mockResolvedValue([]);
     fakeDatabaseManager = mockedObject<DatabaseManager>(
       {
         openDatabase: openDatabaseSpy,
