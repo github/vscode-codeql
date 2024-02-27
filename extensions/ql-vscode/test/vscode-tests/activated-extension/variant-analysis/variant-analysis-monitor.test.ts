@@ -36,7 +36,7 @@ describe("Variant Analysis Monitor", () => {
   let variantAnalysis: VariantAnalysis;
 
   const onVariantAnalysisChangeSpy = jest.fn();
-  const mockEecuteCommand = jest.fn();
+  const mockExecuteCommand = jest.fn();
 
   let logger: NotificationLogger;
 
@@ -51,7 +51,7 @@ describe("Variant Analysis Monitor", () => {
     variantAnalysisMonitor = new VariantAnalysisMonitor(
       createMockApp({
         commands: createMockCommandManager({
-          executeCommand: mockEecuteCommand,
+          executeCommand: mockExecuteCommand,
         }),
         logger,
       }),
@@ -124,10 +124,10 @@ describe("Variant Analysis Monitor", () => {
         );
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).toHaveBeenCalledTimes(succeededRepos.length);
+        expect(mockExecuteCommand).toHaveBeenCalledTimes(succeededRepos.length);
 
         succeededRepos.forEach((succeededRepo, index) => {
-          expect(mockEecuteCommand).toHaveBeenNthCalledWith(
+          expect(mockExecuteCommand).toHaveBeenNthCalledWith(
             index + 1,
             "codeQL.autoDownloadVariantAnalysisResult",
             mapScannedRepository(succeededRepo),
@@ -153,7 +153,7 @@ describe("Variant Analysis Monitor", () => {
       it("should succeed and not download any repos via a command", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).not.toHaveBeenCalled();
+        expect(mockExecuteCommand).not.toHaveBeenCalled();
       });
     });
 
@@ -205,7 +205,7 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
         expect(mockGetVariantAnalysisFromApi).toHaveBeenCalledTimes(4);
-        expect(mockEecuteCommand).toHaveBeenCalledTimes(5);
+        expect(mockExecuteCommand).toHaveBeenCalledTimes(5);
       });
     });
 
@@ -298,7 +298,7 @@ describe("Variant Analysis Monitor", () => {
       it("should not try to download any repos", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).not.toHaveBeenCalled();
+        expect(mockExecuteCommand).not.toHaveBeenCalled();
       });
     });
 
