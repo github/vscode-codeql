@@ -160,6 +160,12 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.getByText("Failed")).toBeInTheDocument();
   });
 
+  it("renders 'Stopping' text when the variant analysis status is canceling", () => {
+    render({ variantAnalysisStatus: VariantAnalysisStatus.Canceling });
+
+    expect(screen.getByText("Canceling")).toBeInTheDocument();
+  });
+
   it("renders 'Stopped' text when the variant analysis status is canceled", () => {
     render({ variantAnalysisStatus: VariantAnalysisStatus.Canceled });
 

@@ -45,6 +45,24 @@ describe(VariantAnalysisActions.name, () => {
     expect(onStopQueryClick).toHaveBeenCalledTimes(1);
   });
 
+  it("renders the stopping query disabled button when canceling", async () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Canceling,
+    });
+
+    const button = screen.getByText("Stopping query");
+    expect(button).toBeInTheDocument();
+    expect(button.getElementsByTagName("input")[0]).toBeDisabled();
+  });
+
+  it("does not render a stop query button when canceling", async () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Canceling,
+    });
+
+    expect(screen.queryByText("Stop query")).not.toBeInTheDocument();
+  });
+
   it("renders 3 buttons when in progress with results", async () => {
     const { container } = render({
       variantAnalysisStatus: VariantAnalysisStatus.InProgress,

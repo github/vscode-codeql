@@ -17,6 +17,8 @@ export function variantAnalysisStatusToQueryStatus(
       return QueryStatus.Failed;
     case VariantAnalysisStatus.InProgress:
       return QueryStatus.InProgress;
+    case VariantAnalysisStatus.Canceling:
+      return QueryStatus.InProgress;
     case VariantAnalysisStatus.Canceled:
       return QueryStatus.Completed;
     default:

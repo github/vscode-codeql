@@ -195,6 +195,11 @@ function mapVariantAnalysisStatusToDto(
       return VariantAnalysisStatusDto.Succeeded;
     case VariantAnalysisStatus.Failed:
       return VariantAnalysisStatusDto.Failed;
+    case VariantAnalysisStatus.Canceling:
+      // The canceling state shouldn't be persisted. We can just
+      // assume that the analysis is still in progress, since the
+      // canceling state is very short-lived.
+      return VariantAnalysisStatusDto.InProgress;
     case VariantAnalysisStatus.Canceled:
       return VariantAnalysisStatusDto.Canceled;
     default:
