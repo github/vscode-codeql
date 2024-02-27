@@ -109,7 +109,9 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getVariantAnalysis(variantAnalysis.id),
+          await variantAnalysisManager.tryGetVariantAnalysis(
+            variantAnalysis.id,
+          ),
         ).toEqual(variantAnalysis);
       });
 

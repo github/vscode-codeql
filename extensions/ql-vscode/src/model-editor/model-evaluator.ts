@@ -120,7 +120,7 @@ export class ModelEvaluator extends DisposableObject {
     evaluationRun: ModelEvaluationRun,
   ): Promise<VariantAnalysis | undefined> {
     if (evaluationRun.variantAnalysisId) {
-      return await this.variantAnalysisManager.getVariantAnalysis(
+      return await this.variantAnalysisManager.tryGetVariantAnalysis(
         evaluationRun.variantAnalysisId,
       );
     }

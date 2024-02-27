@@ -19,7 +19,7 @@ export interface VariantAnalysisViewManager<
   unregisterView(view: T): void;
   getView(variantAnalysisId: number): T | undefined;
 
-  getVariantAnalysis(
+  tryGetVariantAnalysis(
     variantAnalysisId: number,
   ): Promise<VariantAnalysis | undefined>;
   getRepoStates(
