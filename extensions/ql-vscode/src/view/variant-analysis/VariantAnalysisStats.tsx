@@ -48,6 +48,10 @@ export const VariantAnalysisStats = ({
       return "Failed";
     }
 
+    if (variantAnalysisStatus === VariantAnalysisStatus.Canceling) {
+      return "Canceling";
+    }
+
     if (variantAnalysisStatus === VariantAnalysisStatus.Canceled) {
       return "Stopped";
     }

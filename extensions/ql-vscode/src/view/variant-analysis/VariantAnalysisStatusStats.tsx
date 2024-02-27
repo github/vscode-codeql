@@ -28,7 +28,8 @@ export const VariantAnalysisStatusStats = ({
 }: VariantAnalysisStatusStatsProps) => {
   return (
     <Container>
-      {variantAnalysisStatus === VariantAnalysisStatus.InProgress ? (
+      {variantAnalysisStatus === VariantAnalysisStatus.InProgress ||
+      variantAnalysisStatus === VariantAnalysisStatus.Canceling ? (
         <div>
           <Icon className="codicon codicon-loading codicon-modifier-spin" />
         </div>
