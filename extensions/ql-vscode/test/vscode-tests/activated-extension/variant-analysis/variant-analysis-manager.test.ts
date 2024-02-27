@@ -109,9 +109,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.tryGetVariantAnalysis(
-            variantAnalysis.id,
-          ),
+          variantAnalysisManager.tryGetVariantAnalysis(variantAnalysis.id),
         ).toEqual(variantAnalysis);
       });
 
@@ -119,7 +117,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getRepoStates(variantAnalysis.id),
+          variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual([]);
       });
 
@@ -147,7 +145,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getRepoStates(variantAnalysis.id),
+          variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual(
           expect.arrayContaining([
             {
@@ -621,8 +619,9 @@ describe("Variant Analysis Manager", () => {
     it("should set the status to canceling", async () => {
       await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
 
-      const updatedAnalysis =
-        await variantAnalysisManager.tryGetVariantAnalysis(variantAnalysis.id);
+      const updatedAnalysis = variantAnalysisManager.tryGetVariantAnalysis(
+        variantAnalysis.id,
+      );
       expect(updatedAnalysis?.status).toBe(VariantAnalysisStatus.Canceling);
     });
 
@@ -635,8 +634,9 @@ describe("Variant Analysis Manager", () => {
         variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id),
       ).rejects.toThrow("Error when cancelling");
 
-      const updatedAnalysis =
-        await variantAnalysisManager.tryGetVariantAnalysis(variantAnalysis.id);
+      const updatedAnalysis = variantAnalysisManager.tryGetVariantAnalysis(
+        variantAnalysis.id,
+      );
       expect(updatedAnalysis?.status).toBe(VariantAnalysisStatus.InProgress);
     });
   });

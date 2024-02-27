@@ -486,7 +486,7 @@ export class VariantAnalysisManager
   }
 
   public async openQueryText(variantAnalysisId: number): Promise<void> {
-    const variantAnalysis = await this.tryGetVariantAnalysis(variantAnalysisId);
+    const variantAnalysis = this.tryGetVariantAnalysis(variantAnalysisId);
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
         this.app.logger,
@@ -517,7 +517,7 @@ export class VariantAnalysisManager
   }
 
   public async openQueryFile(variantAnalysisId: number): Promise<void> {
-    const variantAnalysis = await this.tryGetVariantAnalysis(variantAnalysisId);
+    const variantAnalysis = this.tryGetVariantAnalysis(variantAnalysisId);
 
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
@@ -559,15 +559,15 @@ export class VariantAnalysisManager
     return this.views.get(variantAnalysisId);
   }
 
-  public async tryGetVariantAnalysis(
+  public tryGetVariantAnalysis(
     variantAnalysisId: number,
-  ): Promise<VariantAnalysis | undefined> {
+  ): VariantAnalysis | undefined {
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
-  public async getRepoStates(
+  public getRepoStates(
     variantAnalysisId: number,
-  ): Promise<VariantAnalysisScannedRepositoryState[]> {
+  ): VariantAnalysisScannedRepositoryState[] {
     return Object.values(this.repoStates.get(variantAnalysisId) ?? {});
   }
 
