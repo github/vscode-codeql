@@ -124,7 +124,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
       }
 
       // Get the current status of the variant analysis as known by the rest
-      // of the app, because it may have changed by the user, but the API
+      // of the app, because it may have been changed by the user and this code
       // may not be aware of it yet.
       const currentStatus = this.getVariantAnalysisStatus(variantAnalysis.id);
       variantAnalysis = mapUpdatedVariantAnalysis(
