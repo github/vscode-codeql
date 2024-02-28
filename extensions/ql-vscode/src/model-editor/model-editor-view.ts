@@ -757,7 +757,7 @@ export class ModelEditorView extends AbstractWebview<
           message: "Saving generated models",
         });
 
-        const fileContents = `# This file was automatically generated based from ${this.databaseItem.name}. Manual changes will not persist.\n\n${modelExtensionFileToYaml(extensionFile)}`;
+        const fileContents = `# This file was automatically generated from ${this.databaseItem.name}. Manual changes will not persist.\n\n${modelExtensionFileToYaml(extensionFile)}`;
         const filePath = join(
           this.extensionPack.path,
           "models",
