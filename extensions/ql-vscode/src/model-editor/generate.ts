@@ -5,19 +5,15 @@ import type { QueryRunner } from "../query-server";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import type { ModeledMethod } from "./modeled-method";
 import { runQuery } from "../local-queries/run-query";
 import type { QueryConstraints } from "../local-queries";
 import { resolveQueries } from "../local-queries";
 import type { DecodedBqrs } from "../common/bqrs-cli-types";
+
 type GenerateQueriesOptions = {
   queryConstraints: QueryConstraints;
   filterQueries?: (queryPath: string) => boolean;
-  parseResults: (
-    queryPath: string,
-    results: DecodedBqrs,
-  ) => ModeledMethod[] | Promise<ModeledMethod[]>;
-  onResults: (results: ModeledMethod[]) => void | Promise<void>;
+  onResults: (queryPath: string, results: DecodedBqrs) => void | Promise<void>;
 
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
@@ -28,7 +24,7 @@ type GenerateQueriesOptions = {
 };
 
 export async function runGenerateQueries(options: GenerateQueriesOptions) {
-  const { queryConstraints, filterQueries, parseResults, onResults } = options;
+  const { queryConstraints, filterQueries, onResults } = options;
 
   options.progress({
     message: "Resolving queries",
@@ -55,7 +51,7 @@ export async function runGenerateQueries(options: GenerateQueriesOptions) {
 
     const bqrs = await runSingleGenerateQuery(queryPath, i, maxStep, options);
     if (bqrs) {
-      await onResults(await parseResults(queryPath, bqrs));
+      await onResults(queryPath, bqrs);
     }
   }
 }
