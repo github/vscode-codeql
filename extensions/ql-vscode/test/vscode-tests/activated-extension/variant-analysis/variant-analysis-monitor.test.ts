@@ -32,7 +32,7 @@ describe("Variant Analysis Monitor", () => {
   >;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let shouldCancelMonitor: jest.Mock<Promise<boolean>, [number]>;
-  let mockGetVariantAnalysisStatus: jest.Mock<VariantAnalysisStatus, [number]>;
+  let mockGetVariantAnalysis: jest.Mock<VariantAnalysis, [number]>;
   let variantAnalysis: VariantAnalysis;
 
   const onVariantAnalysisChangeSpy = jest.fn();
@@ -44,7 +44,7 @@ describe("Variant Analysis Monitor", () => {
     variantAnalysis = createMockVariantAnalysis({});
 
     shouldCancelMonitor = jest.fn();
-    mockGetVariantAnalysisStatus = jest.fn();
+    mockGetVariantAnalysis = jest.fn();
 
     logger = createMockLogger();
 
@@ -56,13 +56,15 @@ describe("Variant Analysis Monitor", () => {
         logger,
       }),
       shouldCancelMonitor,
-      mockGetVariantAnalysisStatus,
+      mockGetVariantAnalysis,
     );
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
 
     mockGetVariantAnalysisFromApi = jest
       .spyOn(ghApiClient, "getVariantAnalysis")
       .mockRejectedValue(new Error("Not mocked"));
+
+    mockGetVariantAnalysis.mockReturnValue(variantAnalysis);
 
     limitNumberOfAttemptsToMonitor();
   });
@@ -342,9 +344,11 @@ describe("Variant Analysis Monitor", () => {
 
     describe("cancelation", () => {
       it("should maintain canceling status", async () => {
-        mockGetVariantAnalysisStatus.mockReturnValueOnce(
-          VariantAnalysisStatus.Canceling,
-        );
+        mockGetVariantAnalysis.mockReturnValueOnce({
+          ...variantAnalysis,
+          status: VariantAnalysisStatus.Canceling,
+        });
+
         mockApiResponse = createMockApiResponse("in_progress");
         mockGetVariantAnalysisFromApi.mockResolvedValue(mockApiResponse);
 
