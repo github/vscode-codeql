@@ -9,10 +9,22 @@ import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import type { QueryLanguage } from "../common/query-language";
 import { resolveCodeScanningQueryPack } from "../variant-analysis/code-scanning-pack";
-import { withProgress } from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
+import {
+  UserCancellationException,
+  withProgress,
+} from "../common/vscode/progress";
 import type { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
+import type { CancellationToken } from "vscode";
+import { CancellationTokenSource } from "vscode";
+import type { QlPackDetails } from "../variant-analysis/ql-pack-details";
 
 export class ModelEvaluator extends DisposableObject {
+  // Cancellation token source to allow cancelling of the current run
+  // before a variant analysis has been submitted. Once it has been
+  // submitted, we use the variant analysis manager's cancellation support.
+  private cancellationSource: CancellationTokenSource;
+
   public constructor(
     private readonly logger: BaseLogger,
     private readonly cliServer: CodeQLCliServer,
@@ -28,6 +40,8 @@ export class ModelEvaluator extends DisposableObject {
     super();
 
     this.registerToModelingEvents();
+
+    this.cancellationSource = new CancellationTokenSource();
   }
 
   public async startEvaluation() {
@@ -52,29 +66,12 @@ export class ModelEvaluator extends DisposableObject {
 
     // Submit variant analysis and monitor progress
     return withProgress(
-      async (progress, token) => {
-        let variantAnalysisId: number | undefined = undefined;
-        try {
-          variantAnalysisId =
-            await this.variantAnalysisManager.runVariantAnalysis(
-              qlPack,
-              progress,
-              token,
-            );
-        } catch (e) {
-          this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
-          throw e;
-        }
-
-        if (variantAnalysisId) {
-          this.monitorVariantAnalysis(variantAnalysisId);
-        } else {
-          this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
-          throw new Error(
-            "Unable to trigger variant analysis for evaluation run",
-          );
-        }
-      },
+      (progress) =>
+        this.runVariantAnalysis(
+          qlPack,
+          progress,
+          this.cancellationSource.token,
+        ),
       {
         title: "Run Variant Analysis",
         cancellable: true,
@@ -83,13 +80,29 @@ export class ModelEvaluator extends DisposableObject {
   }
 
   public async stopEvaluation() {
-    // For now just update the store.
-    // This will be fleshed out in the near future.
-    const evaluationRun: ModelEvaluationRun = {
-      isPreparing: false,
-      variantAnalysisId: undefined,
-    };
-    this.modelingStore.updateModelEvaluationRun(this.dbItem, evaluationRun);
+    const evaluationRun = this.modelingStore.getModelEvaluationRun(this.dbItem);
+    if (!evaluationRun) {
+      void this.logger.log("No active evaluation run to stop");
+      return;
+    }
+
+    this.cancellationSource.cancel();
+
+    if (evaluationRun.variantAnalysisId === undefined) {
+      // If the variant analysis has not been submitted yet, we can just
+      // update the store.
+      this.modelingStore.updateModelEvaluationRun(this.dbItem, {
+        ...evaluationRun,
+        isPreparing: false,
+      });
+    } else {
+      // If the variant analysis has been submitted, we need to cancel it. We
+      // don't need to update the store here, as the event handler for
+      // onVariantAnalysisStatusUpdated will do that for us.
+      await this.variantAnalysisManager.cancelVariantAnalysis(
+        evaluationRun.variantAnalysisId,
+      );
+    }
   }
 
   private registerToModelingEvents() {
@@ -125,6 +138,55 @@ export class ModelEvaluator extends DisposableObject {
       );
     }
     return undefined;
+  }
+
+  private async runVariantAnalysis(
+    qlPack: QlPackDetails,
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<number | void> {
+    let result: number | void = undefined;
+    try {
+      // Use Promise.race to make sure to stop the variant analysis processing when the
+      // user has stopped the evaluation run. We can't simply rely on the cancellation token
+      // because we haven't fully implemented cancellation support for variant analysis.
+      // Using this approach we make sure that the process is stopped from a user's point
+      // of view (the notification goes away too). It won't necessarily stop any tasks
+      // that are not aware of the cancellation token.
+      result = await Promise.race([
+        this.variantAnalysisManager.runVariantAnalysis(qlPack, progress, token),
+        new Promise<void>((_, reject) => {
+          token.onCancellationRequested(() =>
+            reject(new UserCancellationException(undefined, true)),
+          );
+        }),
+      ]);
+    } catch (e) {
+      this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
+      if (!(e instanceof UserCancellationException)) {
+        throw e;
+      } else {
+        return;
+      }
+    } finally {
+      // Renew the cancellation token source for the new evaluation run.
+      // This is necessary because we don't want the next evaluation run
+      // to start as cancelled.
+      this.cancellationSource = new CancellationTokenSource();
+    }
+
+    // If the result is a number, it means the variant analysis was successfully submitted,
+    // so we need to update the store and start up the monitor.
+    if (typeof result === "number") {
+      this.modelingStore.updateModelEvaluationRun(this.dbItem, {
+        isPreparing: true,
+        variantAnalysisId: result,
+      });
+      this.monitorVariantAnalysis(result);
+    } else {
+      this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
+      throw new Error("Unable to trigger variant analysis for evaluation run");
+    }
   }
 
   private monitorVariantAnalysis(variantAnalysisId: number) {

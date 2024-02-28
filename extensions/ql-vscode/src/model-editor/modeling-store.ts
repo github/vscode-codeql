@@ -423,6 +423,12 @@ export class ModelingStore extends DisposableObject {
     return this.state.get(databaseItem.databaseUri.toString())!;
   }
 
+  public getModelEvaluationRun(
+    dbItem: DatabaseItem,
+  ): ModelEvaluationRun | undefined {
+    return this.getState(dbItem).modelEvaluationRun;
+  }
+
   private changeMethods(
     dbItem: DatabaseItem,
     updateState: (state: InternalDbModelingState) => void,
