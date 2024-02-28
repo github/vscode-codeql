@@ -45,7 +45,7 @@ import type {
 } from "./variant-analysis-results-manager";
 import { getQueryName, prepareRemoteQueryRun } from "./run-remote-query";
 import {
-  mapVariantAnalysis,
+  mapVariantAnalysisFromSubmission,
   mapVariantAnalysisRepositoryTask,
 } from "./variant-analysis-mapper";
 import PQueue from "p-queue";
@@ -387,7 +387,7 @@ export class VariantAnalysisManager
       throw e;
     }
 
-    const mappedVariantAnalysis = mapVariantAnalysis(
+    const mappedVariantAnalysis = mapVariantAnalysisFromSubmission(
       variantAnalysisSubmission,
       variantAnalysisResponse,
     );
