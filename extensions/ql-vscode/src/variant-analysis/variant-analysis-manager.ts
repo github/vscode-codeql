@@ -146,7 +146,7 @@ export class VariantAnalysisManager
       new VariantAnalysisMonitor(
         app,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
-        this.getVariantAnalysisStatus.bind(this),
+        this.getVariantAnalysis.bind(this),
       ),
     );
     this.variantAnalysisMonitor.onVariantAnalysisChange(
@@ -606,17 +606,14 @@ export class VariantAnalysisManager
     return !this.variantAnalyses.has(variantAnalysisId);
   }
 
-  private getVariantAnalysisStatus(
-    variantAnalysisId: number,
-  ): VariantAnalysisStatus {
-    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+  private getVariantAnalysis(variantAnalysisId: number): VariantAnalysis {
+    const variantAnalysis = this.tryGetVariantAnalysis(variantAnalysisId);
+
     if (!variantAnalysis) {
-      throw new Error(
-        `No variant analysis found with id: ${variantAnalysisId}.`,
-      );
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    return variantAnalysis.status;
+    return variantAnalysis;
   }
 
   public async onVariantAnalysisUpdated(
