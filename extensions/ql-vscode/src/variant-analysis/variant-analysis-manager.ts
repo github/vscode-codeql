@@ -309,21 +309,6 @@ export class VariantAnalysisManager
       message: "Getting credentials",
     });
 
-    const {
-      actionBranch,
-      base64Pack,
-      repoSelection,
-      controllerRepo,
-      queryStartTime,
-    } = await prepareRemoteQueryRun(
-      this.cliServer,
-      this.app.credentials,
-      qlPackDetails,
-      progress,
-      token,
-      this.dbManager,
-    );
-
     // For now we get the metadata for the first query in the pack.
     // and use that in the submission and query history. In the future
     // we'll need to consider how to handle having multiple queries.
@@ -341,6 +326,21 @@ export class VariantAnalysisManager
         `Found unsupported language: ${qlPackDetails.language}`,
       );
     }
+
+    const {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      controllerRepo,
+      queryStartTime,
+    } = await prepareRemoteQueryRun(
+      this.cliServer,
+      this.app.credentials,
+      qlPackDetails,
+      progress,
+      token,
+      this.dbManager,
+    );
 
     const queryText = await readFile(firstQueryFile, "utf8");
 
