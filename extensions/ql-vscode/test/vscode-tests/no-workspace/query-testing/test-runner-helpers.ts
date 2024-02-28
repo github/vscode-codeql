@@ -11,6 +11,7 @@ export const mockTestsInfo = {
   dPath: Uri.parse("file:/ab/c/d.ql").fsPath,
   gPath: Uri.parse("file:/ab/c/e/f/g.ql").fsPath,
   hPath: Uri.parse("file:/ab/c/e/f/h.ql").fsPath,
+  kPath: Uri.parse("file:/ab/c/e/f/k.ql").fsPath,
 };
 
 /**
@@ -88,6 +89,28 @@ function mockRunTests(): jest.Mock<any, any> {
         compilationMs: 5000,
         evaluationMs: 6000,
         messages: [],
+      });
+      yield Promise.resolve({
+        test: mockTestsInfo.kPath,
+        pass: false,
+        diff: ["jkh", "tuv"],
+        failureStage: "RESULT",
+        compilationMs: 7000,
+        evaluationMs: 8000,
+        // a warning in an otherwise successful test
+        messages: [
+          {
+            position: {
+              fileName: mockTestsInfo.kPath,
+              line: 1,
+              column: 1,
+              endLine: 2,
+              endColumn: 2,
+            },
+            message: "abc",
+            severity: "WARNING",
+          },
+        ],
       });
     })(),
   );
