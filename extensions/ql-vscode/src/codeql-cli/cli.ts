@@ -156,9 +156,17 @@ type ResolvedQueries = string[];
 type ResolvedTests = string[];
 
 /**
- * A compilation message for a test message (either an error or a warning)
+ * The severity of a compilation message for a test message.
  */
-interface CompilationMessage {
+export enum CompilationMessageSeverity {
+  Error = "ERROR",
+  Warning = "WARNING",
+}
+
+/**
+ * A compilation message for a test message (either an error or a warning).
+ */
+export interface CompilationMessage {
   /**
    * The text of the message
    */
@@ -170,7 +178,7 @@ interface CompilationMessage {
   /**
    * The severity of the message
    */
-  severity: number;
+  severity: CompilationMessageSeverity;
 }
 
 /**
