@@ -1,6 +1,7 @@
 import type { TestItem, TestItemCollection, TestRun } from "vscode";
 import {
   CancellationTokenSource,
+  Location,
   Range,
   TestRunRequest,
   Uri,
@@ -75,6 +76,11 @@ describe("test-adapter", () => {
         id: `test ${mockTestsInfo.hPath}`,
         uri: Uri.file(mockTestsInfo.hPath),
       } as TestItem,
+      {
+        children: { size: 0 } as TestItemCollection,
+        id: `test ${mockTestsInfo.kPath}`,
+        uri: Uri.file(mockTestsInfo.kPath),
+      } as TestItem,
     ];
     const childElements: IdTestItemPair[] = childItems.map((childItem) => [
       childItem.id,
@@ -87,7 +93,7 @@ describe("test-adapter", () => {
       id: `dir ${mockTestsInfo.testsPath}`,
       uri: Uri.file(mockTestsInfo.testsPath),
       children: {
-        size: 3,
+        size: 4,
         [Symbol.iterator]: childIteratorFunc,
       } as TestItemCollection,
     } as TestItem;
@@ -95,7 +101,7 @@ describe("test-adapter", () => {
     const request = new TestRunRequest([rootItem]);
     await testManager.run(request, new CancellationTokenSource().token);
 
-    expect(enqueuedSpy).toHaveBeenCalledTimes(3);
+    expect(enqueuedSpy).toHaveBeenCalledTimes(4);
     expect(passedSpy).toHaveBeenCalledTimes(1);
     expect(passedSpy).toHaveBeenCalledWith(childItems[0], 3000);
     expect(erroredSpy).toHaveBeenCalledTimes(1);
@@ -112,6 +118,7 @@ describe("test-adapter", () => {
       ],
       4000,
     );
+    expect(failedSpy).toHaveBeenCalledTimes(2);
     expect(failedSpy).toHaveBeenCalledWith(
       childItems[2],
       [
@@ -121,7 +128,22 @@ describe("test-adapter", () => {
       ],
       11000,
     );
-    expect(failedSpy).toHaveBeenCalledTimes(1);
+    expect(failedSpy).toHaveBeenCalledWith(
+      childItems[3],
+      [
+        {
+          message: "Test failed",
+        },
+        {
+          message: "abc",
+          location: new Location(
+            Uri.file(mockTestsInfo.kPath),
+            new Range(0, 0, 1, 1),
+          ),
+        },
+      ],
+      15000,
+    );
     expect(endSpy).toHaveBeenCalledTimes(1);
   });
 });
