@@ -4,7 +4,7 @@ import type { VariantAnalysisScannedRepository } from "../../../src/variant-anal
 import { VariantAnalysisRepoStatus } from "../../../src/variant-analysis/shared/variant-analysis";
 import {
   mapScannedRepository,
-  mapVariantAnalysis,
+  mapVariantAnalysisFromSubmission,
   mapVariantAnalysisRepositoryTask,
 } from "../../../src/variant-analysis/variant-analysis-mapper";
 import {
@@ -17,7 +17,7 @@ import { createMockSubmission } from "../../factories/variant-analysis/shared/va
 import { createMockVariantAnalysisRepoTask } from "../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 import { QueryLanguage } from "../../../src/common/query-language";
 
-describe(mapVariantAnalysis.name, () => {
+describe(mapVariantAnalysisFromSubmission.name, () => {
   const scannedRepos = createMockScannedRepos();
   const skippedRepos = createMockSkippedRepos();
   const mockApiResponse = createMockApiResponse(
@@ -28,7 +28,10 @@ describe(mapVariantAnalysis.name, () => {
   const mockSubmission = createMockSubmission();
 
   it("should map an API response and return a variant analysis", () => {
-    const result = mapVariantAnalysis(mockSubmission, mockApiResponse);
+    const result = mapVariantAnalysisFromSubmission(
+      mockSubmission,
+      mockApiResponse,
+    );
 
     const {
       access_mismatch_repos,

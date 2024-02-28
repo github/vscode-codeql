@@ -23,11 +23,11 @@ import {
   VariantAnalysisRepoStatus,
 } from "./shared/variant-analysis";
 
-export function mapVariantAnalysis(
+export function mapVariantAnalysisFromSubmission(
   submission: VariantAnalysisSubmission,
-  response: ApiVariantAnalysis,
+  apiVariantAnalysis: ApiVariantAnalysis,
 ): VariantAnalysis {
-  return mapUpdatedVariantAnalysis(
+  return mapVariantAnalysis(
     {
       language: submission.language,
       query: {
@@ -41,12 +41,23 @@ export function mapVariantAnalysis(
       executionStartTime: submission.startTime,
     },
     undefined,
-    response,
+    apiVariantAnalysis,
   );
 }
 
 export function mapUpdatedVariantAnalysis(
-  previousVariantAnalysis: Pick<
+  currentVariantAnalysis: VariantAnalysis,
+  apiVariantAnalysis: ApiVariantAnalysis,
+): VariantAnalysis {
+  return mapVariantAnalysis(
+    currentVariantAnalysis,
+    currentVariantAnalysis.status,
+    apiVariantAnalysis,
+  );
+}
+
+function mapVariantAnalysis(
+  currentVariantAnalysis: Pick<
     VariantAnalysis,
     "language" | "query" | "queries" | "databases" | "executionStartTime"
   >,
@@ -82,11 +93,11 @@ export function mapUpdatedVariantAnalysis(
       fullName: response.controller_repo.full_name,
       private: response.controller_repo.private,
     },
-    language: previousVariantAnalysis.language,
-    query: previousVariantAnalysis.query,
-    queries: previousVariantAnalysis.queries,
-    databases: previousVariantAnalysis.databases,
-    executionStartTime: previousVariantAnalysis.executionStartTime,
+    language: currentVariantAnalysis.language,
+    query: currentVariantAnalysis.query,
+    queries: currentVariantAnalysis.queries,
+    databases: currentVariantAnalysis.databases,
+    executionStartTime: currentVariantAnalysis.executionStartTime,
     createdAt: response.created_at,
     updatedAt: response.updated_at,
     status,

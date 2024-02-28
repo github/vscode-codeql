@@ -131,11 +131,7 @@ describe("Variant Analysis Monitor", () => {
             index + 1,
             "codeQL.autoDownloadVariantAnalysisResult",
             mapScannedRepository(succeededRepo),
-            mapUpdatedVariantAnalysis(
-              variantAnalysis,
-              variantAnalysis.status,
-              mockApiResponse,
-            ),
+            mapUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
           );
         });
       });

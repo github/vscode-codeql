@@ -128,8 +128,10 @@ export class VariantAnalysisMonitor extends DisposableObject {
       // may not be aware of it yet.
       const currentStatus = this.getVariantAnalysisStatus(variantAnalysis.id);
       variantAnalysis = mapUpdatedVariantAnalysis(
-        variantAnalysis,
-        currentStatus,
+        {
+          ...variantAnalysis,
+          status: currentStatus,
+        },
         variantAnalysisSummary,
       );
 
