@@ -327,6 +327,17 @@ export class VariantAnalysisManager
       );
     }
 
+    // It's not possible to interpret a BQRS file to SARIF without an id property.
+    if (
+      queryMetadata?.kind &&
+      ["problem", "path-problem"].includes(queryMetadata.kind) &&
+      !queryMetadata.id
+    ) {
+      throw new UserCancellationException(
+        `${firstQueryFile} does not have the required @id property for a ${queryMetadata.kind} query.`,
+      );
+    }
+
     const {
       actionBranch,
       base64Pack,
