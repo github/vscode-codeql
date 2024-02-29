@@ -2026,7 +2026,7 @@
     "@vscode/test-electron": "^2.2.0",
     "@vscode/vsce": "^2.19.0",
     "ansi-colors": "^4.1.1",
-    "applicationinsights": "^2.9.2",
+    "applicationinsights": "^2.9.4",
     "cosmiconfig": "^9.0.0",
     "cross-env": "^7.0.3",
     "css-loader": "^6.10.0",
