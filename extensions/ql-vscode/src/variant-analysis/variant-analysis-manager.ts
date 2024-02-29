@@ -300,6 +300,7 @@ export class VariantAnalysisManager
     qlPackDetails: QlPackDetails,
     progress: ProgressCallback,
     token: CancellationToken,
+    openViewAfterSubmission = true,
   ): Promise<number | undefined> {
     await saveBeforeStart();
 
@@ -399,10 +400,13 @@ export class VariantAnalysisManager
       `Variant analysis ${mappedVariantAnalysis.query.name} submitted for processing`,
     );
 
-    void this.app.commands.execute(
-      "codeQL.openVariantAnalysisView",
-      mappedVariantAnalysis.id,
-    );
+    if (openViewAfterSubmission) {
+      void this.app.commands.execute(
+        "codeQL.openVariantAnalysisView",
+        mappedVariantAnalysis.id,
+      );
+    }
+
     void this.app.commands.execute(
       "codeQL.monitorNewVariantAnalysis",
       mappedVariantAnalysis,

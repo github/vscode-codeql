@@ -73,8 +73,8 @@ export class ModelEvaluator extends DisposableObject {
           this.cancellationSource.token,
         ),
       {
-        title: "Run Variant Analysis",
-        cancellable: true,
+        title: "Run model evaluation",
+        cancellable: false,
       },
     );
   }
@@ -154,7 +154,12 @@ export class ModelEvaluator extends DisposableObject {
       // of view (the notification goes away too). It won't necessarily stop any tasks
       // that are not aware of the cancellation token.
       result = await Promise.race([
-        this.variantAnalysisManager.runVariantAnalysis(qlPack, progress, token),
+        this.variantAnalysisManager.runVariantAnalysis(
+          qlPack,
+          progress,
+          token,
+          false,
+        ),
         new Promise<void>((_, reject) => {
           token.onCancellationRequested(() =>
             reject(new UserCancellationException(undefined, true)),
