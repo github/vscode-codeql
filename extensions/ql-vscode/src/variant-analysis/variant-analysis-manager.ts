@@ -96,6 +96,7 @@ import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { findVariantAnalysisQlPackRoot } from "./ql";
 import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
+import { isSarifResultsQueryKind } from "../common/query-metadata";
 
 const maxRetryCount = 3;
 
@@ -330,7 +331,7 @@ export class VariantAnalysisManager
     // It's not possible to interpret a BQRS file to SARIF without an id property.
     if (
       queryMetadata?.kind &&
-      ["problem", "path-problem"].includes(queryMetadata.kind) &&
+      isSarifResultsQueryKind(queryMetadata.kind) &&
       !queryMetadata.id
     ) {
       throw new UserCancellationException(
