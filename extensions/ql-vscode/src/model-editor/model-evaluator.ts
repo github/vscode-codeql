@@ -60,6 +60,7 @@ export class ModelEvaluator extends DisposableObject {
               qlPack,
               progress,
               token,
+              false,
             );
         } catch (e) {
           this.modelingStore.updateModelEvaluationRun(this.dbItem, undefined);
