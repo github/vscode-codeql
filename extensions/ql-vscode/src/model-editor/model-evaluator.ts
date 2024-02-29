@@ -77,8 +77,8 @@ export class ModelEvaluator extends DisposableObject {
         }
       },
       {
-        title: "Run Variant Analysis",
-        cancellable: true,
+        title: "Run model evaluation",
+        cancellable: false,
       },
     );
   }
