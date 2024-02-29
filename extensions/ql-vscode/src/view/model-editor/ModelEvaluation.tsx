@@ -5,6 +5,15 @@ import type { ModelEvaluationRunState } from "../../model-editor/shared/model-ev
 import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-evaluation-run-state";
 import { ModelEditorProgressRing } from "./ModelEditorProgressRing";
 
+type Props = {
+  viewState: ModelEditorViewState;
+  modeledMethods: Record<string, ModeledMethod[]>;
+  modifiedSignatures: Set<string>;
+  onStartEvaluation: () => void;
+  onStopEvaluation: () => void;
+  evaluationRun: ModelEvaluationRunState | undefined;
+};
+
 export const ModelEvaluation = ({
   viewState,
   modeledMethods,
@@ -12,14 +21,7 @@ export const ModelEvaluation = ({
   onStartEvaluation,
   onStopEvaluation,
   evaluationRun,
-}: {
-  viewState: ModelEditorViewState;
-  modeledMethods: Record<string, ModeledMethod[]>;
-  modifiedSignatures: Set<string>;
-  onStartEvaluation: () => void;
-  onStopEvaluation: () => void;
-  evaluationRun: ModelEvaluationRunState | undefined;
-}) => {
+}: Props) => {
   if (!viewState.showEvaluationUi) {
     return null;
   }
