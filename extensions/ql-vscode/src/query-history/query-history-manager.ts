@@ -418,6 +418,11 @@ export class QueryHistoryManager extends DisposableObject {
             });
             await this.refreshTreeView();
           } else {
+            if (variantAnalysis.queries !== undefined) {
+              // This is a variant analysis that contains multiple queries, which
+              // is not fully supported yet. So we ignore it from the query history.
+              return;
+            }
             void this.app.logger.log(
               "Variant analysis status update event received for unknown variant analysis",
             );
