@@ -9,8 +9,8 @@ import { createWriteStream, existsSync, mkdirpSync } from "fs-extra";
 import { dirname, join } from "path";
 import { DB_URL, dbLoc, testprojLoc } from "../global.helper";
 import fetch from "node-fetch";
-import { createReadStream, renameSync } from "fs";
-import { Extract } from "unzipper";
+import { renameSync } from "fs";
+import { unzipToDirectoryConcurrently } from "../../../src/common/unzip-concurrently";
 
 beforeAll(async () => {
   // ensure the test database is downloaded
@@ -36,18 +36,9 @@ beforeAll(async () => {
   // unzip the database from dbLoc to testprojLoc
   if (!existsSync(testprojLoc)) {
     console.log(`Unzipping test database to ${testprojLoc}`);
-
-    await new Promise((resolve, reject) => {
-      createReadStream(dbLoc)
-        .pipe(Extract({ path: dbParentDir }))
-        .on("close", () => {
-          console.log("Unzip completed.");
-          resolve(undefined);
-        })
-        .on("error", (e) => reject(e));
-    });
-
+    await unzipToDirectoryConcurrently(dbLoc, dbParentDir);
     renameSync(join(dbParentDir, "db"), testprojLoc);
+    console.log("Unzip completed.");
   }
 
   await beforeAllAction();

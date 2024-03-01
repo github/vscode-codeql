@@ -24,7 +24,7 @@ interface DatabaseOriginDebugger {
   type: "debugger";
 }
 
-export interface DatabaseOriginTestProj {
+interface DatabaseOriginTestProj {
   type: "testproj";
   path: string;
 }
