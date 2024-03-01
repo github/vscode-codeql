@@ -370,7 +370,7 @@ async function fetchDatabaseToWorkspaceStorage(
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
 
   if (isFile(databaseUrl)) {
-    if (origin.type == "testproj") {
+    if (origin.type === "testproj") {
       await copyDatabase(origin.path, unzipPath, progress);
     } else {
       await readAndUnzip(databaseUrl, unzipPath, cli, progress);
