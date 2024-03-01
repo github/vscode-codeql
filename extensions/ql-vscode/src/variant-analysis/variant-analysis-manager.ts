@@ -96,6 +96,7 @@ import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { findVariantAnalysisQlPackRoot } from "./ql";
 import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
+import { isSarifResultsQueryKind } from "../common/query-metadata";
 
 const maxRetryCount = 3;
 
@@ -310,21 +311,6 @@ export class VariantAnalysisManager
       message: "Getting credentials",
     });
 
-    const {
-      actionBranch,
-      base64Pack,
-      repoSelection,
-      controllerRepo,
-      queryStartTime,
-    } = await prepareRemoteQueryRun(
-      this.cliServer,
-      this.app.credentials,
-      qlPackDetails,
-      progress,
-      token,
-      this.dbManager,
-    );
-
     // For now we get the metadata for the first query in the pack.
     // and use that in the submission and query history. In the future
     // we'll need to consider how to handle having multiple queries.
@@ -342,6 +328,32 @@ export class VariantAnalysisManager
         `Found unsupported language: ${qlPackDetails.language}`,
       );
     }
+
+    // It's not possible to interpret a BQRS file to SARIF without an id property.
+    if (
+      queryMetadata?.kind &&
+      isSarifResultsQueryKind(queryMetadata.kind) &&
+      !queryMetadata.id
+    ) {
+      throw new UserCancellationException(
+        `${firstQueryFile} does not have the required @id property for a ${queryMetadata.kind} query.`,
+      );
+    }
+
+    const {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      controllerRepo,
+      queryStartTime,
+    } = await prepareRemoteQueryRun(
+      this.cliServer,
+      this.app.credentials,
+      qlPackDetails,
+      progress,
+      token,
+      this.dbManager,
+    );
 
     const queryText = await readFile(firstQueryFile, "utf8");
 

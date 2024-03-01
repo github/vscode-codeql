@@ -4,6 +4,7 @@ import type { QueryLanguage } from "../common/query-language";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { QlPackDetails } from "./ql-pack-details";
 import { getQlPackFilePath } from "../common/ql";
+import { isSarifResultsQueryKind } from "../common/query-metadata";
 
 export async function resolveCodeScanningQueryPack(
   logger: BaseLogger,
@@ -64,10 +65,7 @@ async function filterToOnlyProblemQueries(
   const problemQueries: string[] = [];
   for (const query of queries) {
     const queryMetadata = await cliServer.resolveMetadata(query);
-    if (
-      queryMetadata.kind === "problem" ||
-      queryMetadata.kind === "path-problem"
-    ) {
+    if (isSarifResultsQueryKind(queryMetadata.kind)) {
       problemQueries.push(query);
     } else {
       void logger.log(`Skipping non-problem query ${query}`);
