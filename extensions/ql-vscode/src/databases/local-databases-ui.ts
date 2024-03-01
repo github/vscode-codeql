@@ -146,7 +146,8 @@ class DatabaseTreeDataProvider
       item.iconPath = new ThemeIcon("error", new ThemeColor("errorForeground"));
     }
     item.tooltip = element.databaseUri.fsPath;
-    item.description = element.language;
+    item.description =
+      element.language + (element.origin?.type === "testproj" ? " (test)" : "");
     return item;
   }
 

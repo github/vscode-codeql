@@ -1,4 +1,4 @@
-import { window } from "vscode";
+import { window, Uri } from "vscode";
 import type { CancellationToken, MessageItem } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { ProgressCallback } from "../common/vscode/progress";
@@ -63,8 +63,21 @@ export interface CoreQueryRun {
 export type CoreCompletedQuery = CoreQueryResults &
   Omit<CoreQueryRun, "evaluate">;
 
+type OnQueryRunStargingListener = (dbPath: Uri) => Promise<void>;
 export class QueryRunner {
   constructor(public readonly qs: QueryServerClient) {}
+
+  // Event handlers that get notified whenever a query is about to start running.
+  // Can't use vscode EventEmitters since they are not asynchronous.
+  private readonly onQueryRunStartingListeners: OnQueryRunStargingListener[] =
+    [];
+  public onQueryRunStarting(listener: OnQueryRunStargingListener) {
+    this.onQueryRunStartingListeners.push(listener);
+  }
+
+  private async fireQueryRunStarting(dbPath: Uri) {
+    await Promise.all(this.onQueryRunStartingListeners.map((l) => l(dbPath)));
+  }
 
   get cliServer(): CodeQLCliServer {
     return this.qs.cliServer;
@@ -138,6 +151,8 @@ export class QueryRunner {
     templates: Record<string, string> | undefined,
     logger: BaseLogger,
   ): Promise<CoreQueryResults> {
+    await this.fireQueryRunStarting(Uri.file(dbPath));
+
     return await compileAndRunQueryAgainstDatabaseCore(
       this.qs,
       dbPath,

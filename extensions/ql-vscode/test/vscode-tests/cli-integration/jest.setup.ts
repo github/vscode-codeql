@@ -6,7 +6,7 @@ import {
   beforeEachAction,
 } from "../jest.activated-extension.setup";
 import { createWriteStream, existsSync, mkdirpSync } from "fs-extra";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import { DB_URL, dbLoc, testprojLoc } from "../global.helper";
 import fetch from "node-fetch";
 import { createReadStream, renameSync } from "fs";
@@ -14,7 +14,8 @@ import { Extract } from "unzipper";
 
 beforeAll(async () => {
   // ensure the test database is downloaded
-  mkdirpSync(dirname(dbLoc));
+  const dbParentDir = dirname(dbLoc);
+  mkdirpSync(dbParentDir);
   if (!existsSync(dbLoc)) {
     console.log(`Downloading test database to ${dbLoc}`);
 
@@ -30,18 +31,23 @@ beforeAll(async () => {
         });
       });
     });
+  }
 
-    // unzip the database from dbLoc to testprojLoc
-    if (!existsSync(testprojLoc)) {
-      console.log(`Unzipping test database to ${testprojLoc}`);
-      const dbDir = dirname(testprojLoc);
-      mkdirpSync(dbDir);
-      console.log(`Unzipping test database to ${testprojLoc}`);
+  // unzip the database from dbLoc to testprojLoc
+  if (!existsSync(testprojLoc)) {
+    console.log(`Unzipping test database to ${testprojLoc}`);
+
+    await new Promise((resolve, reject) => {
       createReadStream(dbLoc)
-        .pipe(Extract({ path: dirname(dbDir) }))
-        .on("close", () => console.log("Unzip completed."));
-    }
-    renameSync(dbLoc, testprojLoc);
+        .pipe(Extract({ path: dbParentDir }))
+        .on("close", () => {
+          console.log("Unzip completed.");
+          resolve(undefined);
+        })
+        .on("error", (e) => reject(e));
+    });
+
+    renameSync(join(dbParentDir, "db"), testprojLoc);
   }
 
   await beforeAllAction();
