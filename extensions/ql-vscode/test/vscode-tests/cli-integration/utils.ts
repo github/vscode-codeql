@@ -7,3 +7,7 @@ import { join } from "path";
 export function getDataFolderFilePath(path: string): string {
   return join(workspace.workspaceFolders![0].uri.fsPath, path);
 }
+
+export async function wait(ms = 1000) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

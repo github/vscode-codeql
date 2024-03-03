@@ -101,6 +101,9 @@ describe("local databases", () => {
         onStart: () => {
           /**/
         },
+        onQueryRunStarting: () => {
+          /**/
+        },
       }),
       mockedObject<CodeQLCliServer>({
         resolveDatabase: resolveDatabaseSpy,
