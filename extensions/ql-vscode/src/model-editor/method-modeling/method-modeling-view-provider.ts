@@ -16,6 +16,7 @@ import type { ModelingEvents } from "../modeling-events";
 import type { QueryLanguage } from "../../common/query-language";
 import { tryGetQueryLanguage } from "../../common/query-language";
 import { createModelConfig } from "../languages";
+import type { ModeledMethod } from "../modeled-method";
 
 export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   ToMethodModelingMessage,
@@ -78,6 +79,28 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         method,
       });
     }
+  }
+
+  private async setSelectedMethod(
+    databaseItem: DatabaseItem,
+    method: Method,
+    modeledMethods: readonly ModeledMethod[],
+    isModified: boolean,
+    isInProgress: boolean,
+    processedByAutoModel: boolean,
+  ): Promise<void> {
+    this.method = method;
+    this.databaseItem = databaseItem;
+    this.language = tryGetQueryLanguage(databaseItem.language);
+
+    await this.postMessage({
+      t: "setSelectedMethod",
+      method,
+      modeledMethods,
+      isModified,
+      isInProgress,
+      processedByAutoModel,
+    });
   }
 
   private async setInitialState(): Promise<void> {
@@ -195,18 +218,14 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     this.push(
       this.modelingEvents.onSelectedMethodChanged(async (e) => {
         if (this.webviewView) {
-          this.method = e.method;
-          this.databaseItem = e.databaseItem;
-          this.language = tryGetQueryLanguage(e.databaseItem.language);
-
-          await this.postMessage({
-            t: "setSelectedMethod",
-            method: e.method,
-            modeledMethods: e.modeledMethods,
-            isModified: e.isModified,
-            isInProgress: e.isInProgress,
-            processedByAutoModel: e.processedByAutoModel,
-          });
+          await this.setSelectedMethod(
+            e.databaseItem,
+            e.method,
+            e.modeledMethods,
+            e.isModified,
+            e.isInProgress,
+            e.processedByAutoModel,
+          );
         }
       }),
     );
