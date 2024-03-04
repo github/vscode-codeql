@@ -6,19 +6,12 @@ import type { ModeledMethod } from "../../../model-editor/modeled-method";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
 import { VariantAnalysisStatus } from "../../../variant-analysis/shared/variant-analysis";
+import { createSummaryModeledMethod } from "../../../../test/factories/model-editor/modeled-method-factories";
 
 describe(ModelEvaluation.name, () => {
   const method = createMethod();
-  const modeledMethod: ModeledMethod = {
-    ...method,
-    type: "summary",
-    input: "Argument[0]",
-    output: "ReturnValue",
-    kind: "taint",
-    provenance: "manual",
-  };
   const modeledMethodsMap: Record<string, ModeledMethod[]> = {};
-  modeledMethodsMap[method.signature] = [modeledMethod];
+  modeledMethodsMap[method.signature] = [createSummaryModeledMethod(method)];
 
   const render = (props: Partial<Props> = {}) =>
     reactRender(
