@@ -62,6 +62,13 @@ export function MethodModelingView({
           case "setMethodModified":
             setIsMethodModified(msg.isModified);
             break;
+          case "setNoMethodSelected":
+            setMethod(undefined);
+            setModeledMethods([]);
+            setIsMethodModified(false);
+            setIsModelingInProgress(false);
+            setIsProcessedByAutoModel(false);
+            break;
           case "setSelectedMethod":
             setMethod(msg.method);
             setModeledMethods(msg.modeledMethods);

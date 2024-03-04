@@ -242,7 +242,9 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         }
 
         if (dbUri === this.databaseItem?.databaseUri.toString()) {
-          await this.setMethod(undefined, undefined);
+          await this.postMessage({
+            t: "setNoMethodSelected",
+          });
         }
       }),
     );

@@ -703,6 +703,10 @@ interface SetMethodModifiedMessage {
   isModified: boolean;
 }
 
+interface SetNoMethodSelectedMessage {
+  t: "setNoMethodSelected";
+}
+
 interface SetSelectedMethodMessage {
   t: "setSelectedMethod";
   method: Method;
@@ -717,6 +721,7 @@ export type ToMethodModelingMessage =
   | SetMethodMessage
   | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
+  | SetNoMethodSelectedMessage
   | SetSelectedMethodMessage
   | SetInModelingModeMessage
   | SetInProgressMessage
