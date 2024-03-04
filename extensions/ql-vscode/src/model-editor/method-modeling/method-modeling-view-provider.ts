@@ -52,6 +52,18 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     });
   }
 
+  private async setDatabaseItem(databaseItem: DatabaseItem): Promise<void> {
+    this.databaseItem = databaseItem;
+
+    await this.postMessage({
+      t: "setInModelingMode",
+      inModelingMode: true,
+    });
+
+    this.language = tryGetQueryLanguage(databaseItem.language);
+    await this.setViewState();
+  }
+
   public async setMethod(
     databaseItem: DatabaseItem | undefined,
     method: Method | undefined,
@@ -201,15 +213,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
 
     this.push(
       this.modelingEvents.onDbOpened(async (databaseItem) => {
-        this.databaseItem = databaseItem;
-
-        await this.postMessage({
-          t: "setInModelingMode",
-          inModelingMode: true,
-        });
-
-        this.language = tryGetQueryLanguage(databaseItem.language);
-        await this.setViewState();
+        await this.setDatabaseItem(databaseItem);
       }),
     );
 
