@@ -65,22 +65,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     await this.setViewState();
   }
 
-  public async setMethod(
-    databaseItem: DatabaseItem | undefined,
-    method: Method | undefined,
-  ): Promise<void> {
-    this.method = method;
-    this.databaseItem = databaseItem;
-    this.language = databaseItem && tryGetQueryLanguage(databaseItem.language);
-
-    if (this.isShowingView) {
-      await this.postMessage({
-        t: "setMethod",
-        method,
-      });
-    }
-  }
-
   private async setSelectedMethod(
     databaseItem: DatabaseItem,
     method: Method,

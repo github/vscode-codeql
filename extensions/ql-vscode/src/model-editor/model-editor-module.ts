@@ -38,7 +38,6 @@ export class ModelEditorModule extends DisposableObject {
   private readonly modelingStore: ModelingStore;
   private readonly modelingEvents: ModelingEvents;
   private readonly methodsUsagePanel: MethodsUsagePanel;
-  private readonly methodModelingPanel: MethodModelingPanel;
   private readonly modelConfig: ModelConfigListener;
 
   private constructor(
@@ -56,7 +55,7 @@ export class ModelEditorModule extends DisposableObject {
     this.methodsUsagePanel = this.push(
       new MethodsUsagePanel(this.modelingStore, this.modelingEvents, cliServer),
     );
-    this.methodModelingPanel = this.push(
+    this.push(
       new MethodModelingPanel(app, this.modelingStore, this.modelingEvents),
     );
     this.modelConfig = this.push(new ModelConfigListener());
@@ -132,7 +131,6 @@ export class ModelEditorModule extends DisposableObject {
     usage: Usage,
   ): Promise<void> {
     await this.methodsUsagePanel.revealItem(method.signature, usage);
-    await this.methodModelingPanel.setMethod(databaseItem, method);
     await showResolvableLocation(usage.url, databaseItem, this.app.logger);
   }
 

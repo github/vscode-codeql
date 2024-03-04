@@ -53,9 +53,6 @@ export function MethodModelingView({
           case "setInModelingMode":
             setInModelingMode(msg.inModelingMode);
             break;
-          case "setMethod":
-            setMethod(msg.method);
-            break;
           case "setMultipleModeledMethods":
             setModeledMethods(msg.modeledMethods);
             break;
