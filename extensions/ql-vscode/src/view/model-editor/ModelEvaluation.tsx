@@ -6,7 +6,7 @@ import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-eva
 import { ModelEditorProgressRing } from "./ModelEditorProgressRing";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
 
-type Props = {
+export type Props = {
   viewState: ModelEditorViewState;
   modeledMethods: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
