@@ -277,7 +277,9 @@ export function ModelEditor({
   }, []);
 
   const openModelAlertsView = useCallback(() => {
-    // TODO
+    vscode.postMessage({
+      t: "openModelAlertsView",
+    });
   }, []);
 
   const onGenerateFromSourceClick = useCallback(() => {

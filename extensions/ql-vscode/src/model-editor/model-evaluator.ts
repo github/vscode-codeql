@@ -4,7 +4,6 @@ import type { DatabaseItem } from "../databases/local-databases";
 import type { ModelEvaluationRun } from "./model-evaluation-run";
 import { DisposableObject } from "../common/disposable-object";
 import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
-import type { BaseLogger } from "../common/logging";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import type { QueryLanguage } from "../common/query-language";
@@ -18,6 +17,8 @@ import type { VariantAnalysis } from "../variant-analysis/shared/variant-analysi
 import type { CancellationToken } from "vscode";
 import { CancellationTokenSource } from "vscode";
 import type { QlPackDetails } from "../variant-analysis/ql-pack-details";
+import type { App } from "../common/app";
+import { ModelAlertsView } from "./model-alerts/model-alerts-view";
 
 export class ModelEvaluator extends DisposableObject {
   // Cancellation token source to allow cancelling of the current run
@@ -26,7 +27,7 @@ export class ModelEvaluator extends DisposableObject {
   private cancellationSource: CancellationTokenSource;
 
   public constructor(
-    private readonly logger: BaseLogger,
+    private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly modelingStore: ModelingStore,
     private readonly modelingEvents: ModelingEvents,
@@ -54,7 +55,7 @@ export class ModelEvaluator extends DisposableObject {
 
     // Build pack
     const qlPack = await resolveCodeScanningQueryPack(
-      this.logger,
+      this.app.logger,
       this.cliServer,
       this.language,
     );
@@ -82,7 +83,7 @@ export class ModelEvaluator extends DisposableObject {
   public async stopEvaluation() {
     const evaluationRun = this.modelingStore.getModelEvaluationRun(this.dbItem);
     if (!evaluationRun) {
-      void this.logger.log("No active evaluation run to stop");
+      void this.app.logger.log("No active evaluation run to stop");
       return;
     }
 
@@ -103,6 +104,11 @@ export class ModelEvaluator extends DisposableObject {
         evaluationRun.variantAnalysisId,
       );
     }
+  }
+
+  public async openModelAlertsView() {
+    const view = new ModelAlertsView(this.app);
+    await view.showView();
   }
 
   private registerToModelingEvents() {
