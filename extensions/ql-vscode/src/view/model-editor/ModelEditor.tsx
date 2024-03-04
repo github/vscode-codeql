@@ -276,6 +276,10 @@ export function ModelEditor({
     });
   }, []);
 
+  const openModelAlertsView = useCallback(() => {
+    // TODO
+  }, []);
+
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
       t: "generateMethod",
@@ -401,6 +405,7 @@ export function ModelEditor({
                 modifiedSignatures={modifiedSignatures}
                 onStartEvaluation={onStartEvaluation}
                 onStopEvaluation={onStopEvaluation}
+                openModelAlertsView={openModelAlertsView}
                 evaluationRun={evaluationRun}
               />
             </ButtonsContainer>
