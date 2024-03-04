@@ -105,7 +105,11 @@ export class ModelEditorModule extends DisposableObject {
   private registerToModelingEvents(): void {
     this.push(
       this.modelingEvents.onSelectedMethodChanged(async (event) => {
-        await this.showMethod(event.databaseItem, event.usage);
+        await showResolvableLocation(
+          event.usage.url,
+          event.databaseItem,
+          this.app.logger,
+        );
       }),
     );
 
@@ -122,13 +126,6 @@ export class ModelEditorModule extends DisposableObject {
         );
       }),
     );
-  }
-
-  private async showMethod(
-    databaseItem: DatabaseItem,
-    usage: Usage,
-  ): Promise<void> {
-    await showResolvableLocation(usage.url, databaseItem, this.app.logger);
   }
 
   private async openModelEditor(): Promise<void> {
