@@ -37,7 +37,6 @@ export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
   private readonly modelingStore: ModelingStore;
   private readonly modelingEvents: ModelingEvents;
-  private readonly methodsUsagePanel: MethodsUsagePanel;
   private readonly modelConfig: ModelConfigListener;
 
   private constructor(
@@ -52,7 +51,7 @@ export class ModelEditorModule extends DisposableObject {
     this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
     this.modelingEvents = new ModelingEvents(app);
     this.modelingStore = new ModelingStore(this.modelingEvents);
-    this.methodsUsagePanel = this.push(
+    this.push(
       new MethodsUsagePanel(this.modelingStore, this.modelingEvents, cliServer),
     );
     this.push(
@@ -106,7 +105,7 @@ export class ModelEditorModule extends DisposableObject {
   private registerToModelingEvents(): void {
     this.push(
       this.modelingEvents.onSelectedMethodChanged(async (event) => {
-        await this.showMethod(event.databaseItem, event.method, event.usage);
+        await this.showMethod(event.databaseItem, event.usage);
       }),
     );
 
@@ -127,10 +126,8 @@ export class ModelEditorModule extends DisposableObject {
 
   private async showMethod(
     databaseItem: DatabaseItem,
-    method: Method,
     usage: Usage,
   ): Promise<void> {
-    await this.methodsUsagePanel.revealItem(method.signature, usage);
     await showResolvableLocation(usage.url, databaseItem, this.app.logger);
   }
 

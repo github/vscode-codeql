@@ -1,5 +1,5 @@
 import type { TreeView } from "vscode";
-import { window } from "vscode";
+import { EventEmitter, window } from "vscode";
 import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import type { Method } from "../../../../../src/model-editor/method";
 import { MethodsUsagePanel } from "../../../../../src/model-editor/methods-usage/methods-usage-panel";
@@ -66,6 +66,8 @@ describe("MethodsUsagePanel", () => {
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
     const usage = createUsage();
+    const selectedMethodChangedEmitter: ModelingEvents["onSelectedMethodChangedEventEmitter"] =
+      new EventEmitter();
 
     beforeEach(() => {
       mockTreeView = mockedObject<TreeView<unknown>>({
@@ -74,7 +76,9 @@ describe("MethodsUsagePanel", () => {
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
       modelingStore = createMockModelingStore();
-      modelingEvents = createMockModelingEvents();
+      modelingEvents = createMockModelingEvents({
+        onSelectedMethodChanged: selectedMethodChangedEmitter.event,
+      });
     });
 
     it("should reveal the correct item in the tree view", async () => {
@@ -97,7 +101,15 @@ describe("MethodsUsagePanel", () => {
         modifiedMethodSignatures,
       );
 
-      await panel.revealItem(method.signature, usage);
+      selectedMethodChangedEmitter.fire({
+        databaseItem: dbItem,
+        method,
+        usage,
+        modeledMethods: modeledMethods[method.signature],
+        isModified: modifiedMethodSignatures.has(method.signature),
+        isInProgress: false,
+        processedByAutoModel: false,
+      });
 
       expect(mockTreeView.reveal).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -124,7 +136,15 @@ describe("MethodsUsagePanel", () => {
         modifiedMethodSignatures,
       );
 
-      await panel.revealItem(method.signature, usage);
+      selectedMethodChangedEmitter.fire({
+        databaseItem: dbItem,
+        method,
+        usage,
+        modeledMethods: modeledMethods[method.signature],
+        isModified: modifiedMethodSignatures.has(method.signature),
+        isInProgress: false,
+        processedByAutoModel: false,
+      });
 
       expect(mockTreeView.reveal).not.toHaveBeenCalled();
     });

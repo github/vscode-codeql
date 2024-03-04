@@ -57,7 +57,7 @@ export class MethodsUsagePanel extends DisposableObject {
     };
   }
 
-  public async revealItem(
+  private async revealItem(
     methodSignature: string,
     usage: Usage,
   ): Promise<void> {
@@ -106,6 +106,12 @@ export class MethodsUsagePanel extends DisposableObject {
         if (event.isActiveDb) {
           await this.handleStateChangeEvent();
         }
+      }),
+    );
+
+    this.push(
+      this.modelingEvents.onSelectedMethodChanged(async (event) => {
+        await this.revealItem(event.method.signature, event.usage);
       }),
     );
   }
