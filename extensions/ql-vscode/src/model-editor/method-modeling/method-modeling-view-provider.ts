@@ -38,7 +38,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   }
 
   protected override async onWebViewLoaded(): Promise<void> {
-    await Promise.all([this.setViewState(), this.setInitialState()]);
+    await this.setInitialState();
     this.registerToModelingEvents();
     this.registerToModelConfigEvents();
   }
@@ -104,29 +104,25 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
   }
 
   private async setInitialState(): Promise<void> {
-    if (this.modelingStore.hasStateForActiveDb()) {
-      const selectedMethod = this.modelingStore.getSelectedMethodDetails();
-      if (selectedMethod) {
-        this.databaseItem = selectedMethod.databaseItem;
-        this.language = tryGetQueryLanguage(
-          selectedMethod.databaseItem.language,
-        );
-        this.method = selectedMethod.method;
+    await this.setViewState();
 
-        await this.postMessage({
-          t: "setSelectedMethod",
-          method: selectedMethod.method,
-          modeledMethods: selectedMethod.modeledMethods,
-          isModified: selectedMethod.isModified,
-          isInProgress: selectedMethod.isInProgress,
-          processedByAutoModel: selectedMethod.processedByAutoModel,
-        });
-      }
+    const stateForActiveDb = this.modelingStore.getStateForActiveDb();
+    if (!stateForActiveDb) {
+      return;
+    }
 
-      await this.postMessage({
-        t: "setInModelingMode",
-        inModelingMode: true,
-      });
+    await this.setDatabaseItem(stateForActiveDb.databaseItem);
+
+    const selectedMethod = this.modelingStore.getSelectedMethodDetails();
+    if (selectedMethod) {
+      await this.setSelectedMethod(
+        stateForActiveDb.databaseItem,
+        selectedMethod.method,
+        selectedMethod.modeledMethods,
+        selectedMethod.isModified,
+        selectedMethod.isInProgress,
+        selectedMethod.processedByAutoModel,
+      );
     }
   }
 
