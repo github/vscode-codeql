@@ -114,7 +114,7 @@ interface DataGridCellProps {
   gridRow?: string | number;
   gridColumn?: string | number;
   className?: string;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 /**

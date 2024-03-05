@@ -8,9 +8,10 @@ import type { ModelEditorViewState } from "../../model-editor/shared/view-state"
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
 import { DataGrid, DataGridCell } from "../common/DataGrid";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
-  "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
+  "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content max-content";
 
 export type ModeledMethodDataGridProps = {
   methods: Method[];
@@ -23,6 +24,7 @@ export type ModeledMethodDataGridProps = {
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
   accessPathSuggestions?: AccessPathSuggestionOptions;
+  evaluationRun: ModelEvaluationRunState | undefined;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
 };
@@ -38,6 +40,7 @@ export const ModeledMethodDataGrid = ({
   hideModeledMethods,
   revealedMethodSignature,
   accessPathSuggestions,
+  evaluationRun,
   onChange,
   onMethodClick,
 }: ModeledMethodDataGridProps) => {
@@ -101,6 +104,7 @@ export const ModeledMethodDataGrid = ({
                 revealedMethodSignature={revealedMethodSignature}
                 inputAccessPathSuggestions={inputAccessPathSuggestions}
                 outputAccessPathSuggestions={outputAccessPathSuggestions}
+                evaluationRun={evaluationRun}
                 onChange={onChange}
                 onMethodClick={onMethodClick}
               />

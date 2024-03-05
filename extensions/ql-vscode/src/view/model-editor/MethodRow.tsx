@@ -38,6 +38,8 @@ import type { AccessPathOption } from "../../model-editor/suggestions";
 import { ModelInputSuggestBox } from "./ModelInputSuggestBox";
 import { ModelOutputSuggestBox } from "./ModelOutputSuggestBox";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
+import { ModelAlertsIndicator } from "./ModelAlertsIndicator";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -82,6 +84,7 @@ export type MethodRowProps = {
   revealedMethodSignature: string | null;
   inputAccessPathSuggestions?: AccessPathOption[];
   outputAccessPathSuggestions?: AccessPathOption[];
+  evaluationRun: ModelEvaluationRunState | undefined;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
 };
@@ -119,6 +122,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       revealedMethodSignature,
       inputAccessPathSuggestions,
       outputAccessPathSuggestions,
+      evaluationRun,
       onChange,
       onMethodClick,
     } = props;
@@ -277,6 +281,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <DataGridCell>
               <InProgressDropdown />
             </DataGridCell>
+            <DataGridCell></DataGridCell>
             <DataGridCell>
               <CodiconRow appearance="icon" disabled={true}>
                 <Codicon name="add" label="Add new model" />
@@ -349,6 +354,13 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     />
                   </DataGridCell>
                   <DataGridCell>
+                    <ModelAlertsIndicator
+                      viewState={viewState}
+                      modeledMethod={modeledMethod}
+                      evaluationRun={evaluationRun}
+                    ></ModelAlertsIndicator>
+                  </DataGridCell>
+                  <DataGridCell>
                     {index === 0 ? (
                       <CodiconRow
                         appearance="icon"
@@ -378,7 +390,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
               );
             })}
             {validationErrors.map((error, index) => (
-              <DataGridCell gridColumn="span 5" key={index}>
+              <DataGridCell gridColumn="span 6" key={index}>
                 <ModeledMethodAlert
                   error={error}
                   setSelectedIndex={setFocusedIndex}
