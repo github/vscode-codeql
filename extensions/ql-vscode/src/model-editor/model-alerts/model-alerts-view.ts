@@ -4,8 +4,8 @@ import { AbstractWebview } from "../../common/vscode/abstract-webview";
 import { assertNever } from "../../common/helpers-pure";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import type {
-  FromDataFlowPathsMessage,
-  ToDataFlowPathsMessage,
+  FromModelAlertsMessage,
+  ToModelAlertsMessage,
 } from "../../common/interface-types";
 import type { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
@@ -13,8 +13,8 @@ import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 
 export class ModelAlertsView extends AbstractWebview<
-  ToDataFlowPathsMessage,
-  FromDataFlowPathsMessage
+  ToModelAlertsMessage,
+  FromModelAlertsMessage
 > {
   public static readonly viewType = "codeQL.modelAlerts";
 
@@ -43,7 +43,7 @@ export class ModelAlertsView extends AbstractWebview<
     // Nothing to dispose
   }
 
-  protected async onMessage(msg: FromDataFlowPathsMessage): Promise<void> {
+  protected async onMessage(msg: FromModelAlertsMessage): Promise<void> {
     switch (msg.t) {
       case "viewLoaded":
         this.onWebViewLoaded();

@@ -726,3 +726,11 @@ export type ToMethodModelingMessage =
   | SetInModelingModeMessage
   | SetInProgressMessage
   | SetProcessedByAutoModelMessage;
+
+interface SetModelAlertsMessage {
+  t: "setModelAlerts";
+}
+
+export type ToModelAlertsMessage = SetModelAlertsMessage;
+
+export type FromModelAlertsMessage = CommonFromViewMessages;
