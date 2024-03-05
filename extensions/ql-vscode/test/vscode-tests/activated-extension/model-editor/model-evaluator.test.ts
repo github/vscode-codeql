@@ -1,4 +1,5 @@
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import type { App } from "../../../../src/common/app";
 import type { BaseLogger } from "../../../../src/common/logging";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import type { DatabaseItem } from "../../../../src/databases/local-databases";
@@ -15,6 +16,7 @@ import { mockedObject } from "../../../mocked-object";
 describe("Model Evaluator", () => {
   let modelEvaluator: ModelEvaluator;
   let logger: BaseLogger;
+  let app: App;
   let cliServer: CodeQLCliServer;
   let modelingStore: ModelingStore;
   let modelingEvents: ModelingEvents;
@@ -26,6 +28,7 @@ describe("Model Evaluator", () => {
 
   beforeEach(() => {
     logger = createMockLogger();
+    app = mockedObject<App>({ logger });
     cliServer = mockedObject<CodeQLCliServer>({});
     getModelEvaluationRunMock = jest.fn();
     modelingStore = createMockModelingStore({
@@ -40,7 +43,7 @@ describe("Model Evaluator", () => {
     updateView = jest.fn();
 
     modelEvaluator = new ModelEvaluator(
-      logger,
+      app,
       cliServer,
       modelingStore,
       modelingEvents,

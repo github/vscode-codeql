@@ -125,7 +125,7 @@ export class ModelEditorView extends AbstractWebview<
     this.languageDefinition = getModelsAsDataLanguage(language);
 
     this.modelEvaluator = new ModelEvaluator(
-      this.app.logger,
+      this.app,
       this.cliServer,
       modelingStore,
       modelingEvents,
@@ -379,6 +379,9 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "stopModelEvaluation":
         await this.modelEvaluator.stopEvaluation();
+        break;
+      case "openModelAlertsView":
+        await this.modelEvaluator.openModelAlertsView();
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);

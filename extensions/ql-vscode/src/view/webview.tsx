@@ -11,6 +11,7 @@ import methodModelingView from "./method-modeling";
 import modelEditorView from "./model-editor";
 import resultsView from "./results";
 import variantAnalysisView from "./variant-analysis";
+import modelAlertsView from "./model-alerts";
 
 // Allow all views to use Codicons
 import "@vscode/codicons/dist/codicon.css";
@@ -22,6 +23,7 @@ const views: Record<string, WebviewDefinition> = {
   "model-editor": modelEditorView,
   results: resultsView,
   "variant-analysis": variantAnalysisView,
+  "model-alerts": modelAlertsView,
 };
 
 const render = () => {
