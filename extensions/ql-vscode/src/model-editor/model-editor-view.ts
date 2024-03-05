@@ -917,10 +917,9 @@ export class ModelEditorView extends AbstractWebview<
     // imported to the query server, so we need to register it to our workspace.
     const makeSelected = false;
     const addedDatabase = await promptImportGithubDatabase(
-      this.app.commands,
+      this.app,
       this.databaseManager,
       this.app.workspaceStoragePath ?? this.app.globalStoragePath,
-      this.app.credentials,
       progress,
       this.cliServer,
       this.databaseItem.language,

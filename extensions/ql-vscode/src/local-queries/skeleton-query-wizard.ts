@@ -2,7 +2,6 @@ import { dirname, join } from "path";
 import { Uri, window, window as Window, workspace } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
-import type { Credentials } from "../common/authentication";
 import type { QueryLanguage } from "../common/query-language";
 import { getLanguageDisplayName } from "../common/query-language";
 import {
@@ -61,7 +60,6 @@ export class SkeletonQueryWizard {
   constructor(
     private readonly cliServer: CodeQLCliServer,
     private readonly progress: ProgressCallback,
-    private readonly credentials: Credentials | undefined,
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseStoragePath: string | undefined,
@@ -388,9 +386,9 @@ export class SkeletonQueryWizard {
 
     await downloadGitHubDatabase(
       chosenRepo,
+      this.app,
       this.databaseManager,
       this.databaseStoragePath,
-      this.credentials,
       progress,
       this.cliServer,
       this.language,

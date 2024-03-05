@@ -26,18 +26,19 @@ import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
 } from "../common/github-url-identifier-helper";
-import type { Credentials } from "../common/authentication";
 import type { AppCommandManager } from "../common/commands";
 import {
   addDatabaseSourceToWorkspace,
   allowHttp,
   downloadTimeout,
+  isCanary,
 } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
 import { getLanguageDisplayName } from "../common/query-language";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
 import { createTimeoutSignal } from "../common/fetch-stream";
+import type { App } from "../common/app";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -90,9 +91,9 @@ export async function promptImportInternetDatabase(
  * User enters a GitHub repository and then the user is asked which language
  * to download (if there is more than one)
  *
+ * @param app the App
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
- * @param credentials the credentials to use to authenticate with GitHub
  * @param progress the progress callback
  * @param cli the CodeQL CLI server
  * @param language the language to download. If undefined, the user will be prompted to choose a language.
@@ -100,10 +101,9 @@ export async function promptImportInternetDatabase(
  * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
  */
 export async function promptImportGithubDatabase(
-  commandManager: AppCommandManager,
+  app: App,
   databaseManager: DatabaseManager,
   storagePath: string,
-  credentials: Credentials | undefined,
   progress: ProgressCallback,
   cli: CodeQLCliServer,
   language?: string,
@@ -117,9 +117,9 @@ export async function promptImportGithubDatabase(
 
   const databaseItem = await downloadGitHubDatabase(
     githubRepo,
+    app,
     databaseManager,
     storagePath,
-    credentials,
     progress,
     cli,
     language,
@@ -129,7 +129,7 @@ export async function promptImportGithubDatabase(
 
   if (databaseItem) {
     if (makeSelected) {
-      await commandManager.execute("codeQLDatabases.focus");
+      await app.commands.execute("codeQLDatabases.focus");
     }
     void showAndLogInformationMessage(
       extLogger,
@@ -169,9 +169,9 @@ export async function askForGitHubRepo(
  * Downloads a database from GitHub
  *
  * @param githubRepo the GitHub repository to download the database from
+ * @param app the App
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
- * @param credentials the credentials to use to authenticate with GitHub
  * @param progress the progress callback
  * @param cli the CodeQL CLI server
  * @param language the language to download. If undefined, the user will be prompted to choose a language.
@@ -180,9 +180,9 @@ export async function askForGitHubRepo(
  **/
 export async function downloadGitHubDatabase(
   githubRepo: string,
+  app: App,
   databaseManager: DatabaseManager,
   storagePath: string,
-  credentials: Credentials | undefined,
   progress: ProgressCallback,
   cli: CodeQLCliServer,
   language?: string,
@@ -193,6 +193,8 @@ export async function downloadGitHubDatabase(
   if (!isValidGitHubNwo(nwo)) {
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
+
+  const credentials = isCanary() ? app.credentials : undefined;
 
   const octokit = credentials
     ? await credentials.getOctokit()
