@@ -53,11 +53,11 @@ choose to go through some of the Optional Test Cases.
 
 #### Test case 3: Running a non-problem query and viewing results
 
-1. Open the [cpp FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
+1. Open the [cpp HubClasses query](https://github.com/github/codeql/blob/main/cpp/ql/src/Architecture/General%20Class-Level%20Information/HubClasses.ql).
 2. Select the `google/brotli` database (or download it if you don't have one already)
 3. Run a local query.
 4. Once the query completes:
-   - Chose the `#select` result set from the drop-down
+   - Check that the `#select` result set is shown
    - Check that the results table is rendered
    - Check that result locations can be clicked on
 
