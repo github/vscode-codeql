@@ -21,8 +21,7 @@ import type {
   SortedResultSetInfo,
 } from "../../../src/common/interface-types";
 import type { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
-import type { CancellationTokenSource } from "vscode";
-import { Uri } from "vscode";
+import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/tmp-dir";
 import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";
@@ -462,11 +461,7 @@ describe("query-results", () => {
         id: `some-id-${dbName}`,
         outputDir: new QueryOutputDir("path/to/output/dir"),
       } as InitialQueryInfo,
-      {
-        dispose: () => {
-          /**/
-        },
-      } as CancellationTokenSource,
+      new CancellationTokenSource(),
     );
 
     if (queryWithResults) {

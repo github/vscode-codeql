@@ -10,8 +10,7 @@ import type { QueryWithResults } from "../../../../../src/run-queries-shared";
 import { QueryEvaluationInfo } from "../../../../../src/run-queries-shared";
 import { QueryOutputDir } from "../../../../../src/local-queries/query-output-dir";
 import type { DatabaseInfo } from "../../../../../src/common/interface-types";
-import type { CancellationTokenSource } from "vscode";
-import { Uri } from "vscode";
+import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
 import type { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
@@ -220,11 +219,7 @@ describe("write and read", () => {
         id: `some-id-${dbName}`,
         outputDir: outputDir ? outputDir : undefined,
       } as InitialQueryInfo,
-      {
-        dispose: () => {
-          /**/
-        },
-      } as CancellationTokenSource,
+      new CancellationTokenSource(),
     );
 
     if (queryWithResults) {

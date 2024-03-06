@@ -6,7 +6,7 @@ import type {
   QueryWithResults,
 } from "../../../src/run-queries-shared";
 import { QueryOutputDir } from "../../../src/local-queries/query-output-dir";
-import type { CancellationTokenSource } from "vscode";
+import { CancellationTokenSource } from "vscode";
 import type { QueryMetadata } from "../../../src/common/interface-types";
 import type { QueryLanguage } from "../../../src/common/query-language";
 
@@ -31,12 +31,6 @@ export function createMockLocalQueryInfo({
   language?: QueryLanguage;
   outputDir?: QueryOutputDir | undefined;
 }): LocalQueryInfo {
-  const cancellationToken = {
-    dispose: () => {
-      /**/
-    },
-  } as CancellationTokenSource;
-
   const initialQueryInfo = {
     queryText: "select 1",
     isQuickQuery: false,
@@ -54,7 +48,10 @@ export function createMockLocalQueryInfo({
     outputDir,
   } as InitialQueryInfo;
 
-  const localQuery = new LocalQueryInfo(initialQueryInfo, cancellationToken);
+  const localQuery = new LocalQueryInfo(
+    initialQueryInfo,
+    new CancellationTokenSource(),
+  );
 
   localQuery.failureReason = failureReason;
   localQuery.cancel = () => {
