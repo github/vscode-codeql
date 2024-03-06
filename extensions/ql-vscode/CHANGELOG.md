@@ -7,6 +7,7 @@
 - Update variant analysis view to show when cancelation is in progress. [#3405](https://github.com/github/vscode-codeql/pull/3405)
 - Remove support for CodeQL CLI versions older than 2.13.5. [#3371](https://github.com/github/vscode-codeql/pull/3371)
 - Add a timeout to downloading databases and the CodeQL CLI. These can be changed using the `codeQL.addingDatabases.downloadTimeout` and `codeQL.cli.downloadTimeout` settings respectively. [#3373](https://github.com/github/vscode-codeql/pull/3373)
+- When downloading a CodeQL database through the model editor, only use credentials when in canary mode. [#3440](https://github.com/github/vscode-codeql/pull/3440)
 
 ## 1.12.2 - 14 February 2024
 
