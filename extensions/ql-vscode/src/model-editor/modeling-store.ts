@@ -22,7 +22,7 @@ interface InternalDbModelingState {
   modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
-interface DbModelingState {
+export interface DbModelingState {
   readonly databaseItem: DatabaseItem;
   readonly methods: readonly Method[];
   readonly hideModeledMethods: boolean;
@@ -36,7 +36,7 @@ interface DbModelingState {
   readonly modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
-interface SelectedMethodDetails {
+export interface SelectedMethodDetails {
   readonly databaseItem: DatabaseItem;
   readonly method: Method;
   readonly usage: Usage | undefined;

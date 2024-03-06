@@ -3,6 +3,7 @@ import type { ModelingEvents } from "../../../src/model-editor/modeling-events";
 
 export function createMockModelingEvents({
   onActiveDbChanged = jest.fn(),
+  onDbOpened = jest.fn(),
   onDbClosed = jest.fn(),
   onSelectedMethodChanged = jest.fn(),
   onMethodsChanged = jest.fn(),
@@ -16,6 +17,7 @@ export function createMockModelingEvents({
   onModelEvaluationRunChanged = jest.fn(),
 }: {
   onActiveDbChanged?: ModelingEvents["onActiveDbChanged"];
+  onDbOpened?: ModelingEvents["onDbOpened"];
   onDbClosed?: ModelingEvents["onDbClosed"];
   onSelectedMethodChanged?: ModelingEvents["onSelectedMethodChanged"];
   onMethodsChanged?: ModelingEvents["onMethodsChanged"];
@@ -30,6 +32,7 @@ export function createMockModelingEvents({
 } = {}): ModelingEvents {
   return mockedObject<ModelingEvents>({
     onActiveDbChanged,
+    onDbOpened,
     onDbClosed,
     onSelectedMethodChanged,
     onMethodsChanged,
