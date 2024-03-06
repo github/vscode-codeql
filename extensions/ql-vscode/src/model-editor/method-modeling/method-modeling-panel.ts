@@ -2,10 +2,8 @@ import { window } from "vscode";
 import type { App } from "../../common/app";
 import { DisposableObject } from "../../common/disposable-object";
 import { MethodModelingViewProvider } from "./method-modeling-view-provider";
-import type { Method } from "../method";
 import type { ModelingStore } from "../modeling-store";
 import { ModelConfigListener } from "../../config";
-import type { DatabaseItem } from "../../databases/local-databases";
 import type { ModelingEvents } from "../modeling-events";
 
 export class MethodModelingPanel extends DisposableObject {
@@ -35,12 +33,5 @@ export class MethodModelingPanel extends DisposableObject {
         this.provider,
       ),
     );
-  }
-
-  public async setMethod(
-    databaseItem: DatabaseItem,
-    method: Method,
-  ): Promise<void> {
-    await this.provider.setMethod(databaseItem, method);
   }
 }

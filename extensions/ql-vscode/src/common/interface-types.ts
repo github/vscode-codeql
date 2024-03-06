@@ -698,14 +698,13 @@ interface SetMethodModelingPanelViewStateMessage {
   viewState: MethodModelingPanelViewState;
 }
 
-interface SetMethodMessage {
-  t: "setMethod";
-  method: Method | undefined;
-}
-
 interface SetMethodModifiedMessage {
   t: "setMethodModified";
   isModified: boolean;
+}
+
+interface SetNoMethodSelectedMessage {
+  t: "setNoMethodSelected";
 }
 
 interface SetSelectedMethodMessage {
@@ -719,9 +718,9 @@ interface SetSelectedMethodMessage {
 
 export type ToMethodModelingMessage =
   | SetMethodModelingPanelViewStateMessage
-  | SetMethodMessage
   | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
+  | SetNoMethodSelectedMessage
   | SetSelectedMethodMessage
   | SetInModelingModeMessage
   | SetInProgressMessage
