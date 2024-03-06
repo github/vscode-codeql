@@ -1,5 +1,5 @@
 import type { CancellationToken, ExtensionContext, Range } from "vscode";
-import { Uri } from "vscode";
+import { CancellationTokenSource, Uri } from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -125,11 +125,7 @@ describeWithCodeQL()("Queries", () => {
     safeDel(qlFile);
     safeDel(qlpackFile);
 
-    token = {
-      onCancellationRequested: (_) => {
-        void _;
-      },
-    } as CancellationToken;
+    token = new CancellationTokenSource().token;
 
     dbItem = await ensureTestDatabase(databaseManager, cli);
   });
