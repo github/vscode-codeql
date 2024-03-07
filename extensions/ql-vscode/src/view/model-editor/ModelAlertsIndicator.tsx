@@ -11,7 +11,7 @@ const ModelAlertsButton = styled.button`
   cursor: pointer;
 `;
 
-type Props = {
+export type Props = {
   viewState: ModelEditorViewState;
   modeledMethod: ModeledMethod;
   evaluationRun: ModelEvaluationRunState | undefined;
