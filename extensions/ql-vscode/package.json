@@ -53,10 +53,10 @@
     "configurationDefaults": {
       "[ql]": {
         "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
-        "editor.wordBasedSuggestions": false
+        "editor.wordBasedSuggestions": "off"
       },
       "[dbscheme]": {
-        "editor.wordBasedSuggestions": false
+        "editor.wordBasedSuggestions": "off"
       }
     },
     "debuggers": [
