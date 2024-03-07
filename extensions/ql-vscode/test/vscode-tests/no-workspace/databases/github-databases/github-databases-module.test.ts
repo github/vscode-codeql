@@ -68,7 +68,12 @@ describe("GitHubDatabasesModule", () => {
       databaseManager = mockEmptyDatabaseManager();
       databaseStoragePath = "/a/b/some-path";
       cliServer = mockedObject<CodeQLCliServer>({});
-      databaseFetcher = new DatabaseFetcher();
+      databaseFetcher = new DatabaseFetcher(
+        app,
+        databaseManager,
+        databaseStoragePath,
+        cliServer,
+      );
       config = mockedObject<GitHubDatabaseConfig>({
         download: "ask",
         update: "ask",
@@ -78,8 +83,6 @@ describe("GitHubDatabasesModule", () => {
         app,
         databaseManager,
         databaseFetcher,
-        databaseStoragePath,
-        cliServer,
         config,
       );
 
@@ -129,8 +132,6 @@ describe("GitHubDatabasesModule", () => {
         app,
         databaseManager,
         databaseFetcher,
-        databaseStoragePath,
-        cliServer,
         config,
       );
 
@@ -211,10 +212,7 @@ describe("GitHubDatabasesModule", () => {
         owner,
         repo,
         databases,
-        databaseManager,
         databaseFetcher,
-        databaseStoragePath,
-        cliServer,
         app.commands,
       );
     });
@@ -257,8 +255,6 @@ describe("GitHubDatabasesModule", () => {
         databaseUpdates,
         databaseManager,
         databaseFetcher,
-        databaseStoragePath,
-        cliServer,
         app.commands,
       );
     });

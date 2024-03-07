@@ -14,7 +14,6 @@ import {
 } from "./download";
 import type { GitHubDatabaseConfig } from "../../config";
 import type { DatabaseManager } from "../local-databases";
-import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import type { CodeqlDatabase, ListDatabasesResult } from "./api";
 import { listDatabases } from "./api";
 import type { DatabaseUpdate } from "./updates";
@@ -35,8 +34,6 @@ export class GitHubDatabasesModule extends DisposableObject {
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseFetcher: DatabaseFetcher,
-    private readonly databaseStoragePath: string,
-    private readonly cliServer: CodeQLCliServer,
     private readonly config: GitHubDatabaseConfig,
   ) {
     super();
@@ -46,16 +43,12 @@ export class GitHubDatabasesModule extends DisposableObject {
     app: App,
     databaseManager: DatabaseManager,
     databaseFetcher: DatabaseFetcher,
-    databaseStoragePath: string,
-    cliServer: CodeQLCliServer,
     config: GitHubDatabaseConfig,
   ): Promise<GitHubDatabasesModule> {
     const githubDatabasesModule = new GitHubDatabasesModule(
       app,
       databaseManager,
       databaseFetcher,
-      databaseStoragePath,
-      cliServer,
       config,
     );
     app.subscriptions.push(githubDatabasesModule);
@@ -189,10 +182,7 @@ export class GitHubDatabasesModule extends DisposableObject {
       owner,
       repo,
       databases,
-      this.databaseManager,
       this.databaseFetcher,
-      this.databaseStoragePath,
-      this.cliServer,
       this.app.commands,
     );
   }
@@ -218,8 +208,6 @@ export class GitHubDatabasesModule extends DisposableObject {
       databaseUpdates,
       this.databaseManager,
       this.databaseFetcher,
-      this.databaseStoragePath,
-      this.cliServer,
       this.app.commands,
     );
   }

@@ -116,7 +116,12 @@ describe("SkeletonQueryWizard", () => {
       },
     ] as WorkspaceFolder[]);
 
-    databaseFetcher = new DatabaseFetcher();
+    databaseFetcher = new DatabaseFetcher(
+      mockApp,
+      mockDatabaseManager,
+      storagePath,
+      mockCli,
+    );
 
     quickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValueOnce(
       mockedQuickPickItem({
@@ -149,7 +154,6 @@ describe("SkeletonQueryWizard", () => {
       mockApp,
       mockDatabaseManager,
       databaseFetcher,
-      storagePath,
       selectedItems,
     );
 
@@ -177,7 +181,6 @@ describe("SkeletonQueryWizard", () => {
         mockApp,
         mockDatabaseManager,
         databaseFetcher,
-        storagePath,
         selectedItems,
         QueryLanguage.Swift,
       );
@@ -326,7 +329,6 @@ describe("SkeletonQueryWizard", () => {
             mockApp,
             mockDatabaseManagerWithItems,
             databaseFetcher,
-            storagePath,
             selectedItems,
           );
         });
@@ -376,7 +378,6 @@ describe("SkeletonQueryWizard", () => {
             mockApp,
             mockDatabaseManagerWithItems,
             databaseFetcher,
-            storagePath,
             selectedItems,
           );
         });
@@ -512,7 +513,6 @@ describe("SkeletonQueryWizard", () => {
         mockApp,
         mockDatabaseManager,
         databaseFetcher,
-        storagePath,
         selectedItems,
         QueryLanguage.Javascript,
       );
@@ -734,7 +734,6 @@ describe("SkeletonQueryWizard", () => {
             mockApp,
             mockDatabaseManager,
             databaseFetcher,
-            storagePath,
             selectedItems,
           );
         });
@@ -764,7 +763,6 @@ describe("SkeletonQueryWizard", () => {
             mockApp,
             mockDatabaseManager,
             databaseFetcher,
-            storagePath,
             selectedItems,
           );
         });
@@ -798,7 +796,6 @@ describe("SkeletonQueryWizard", () => {
             mockApp,
             mockDatabaseManager,
             databaseFetcher,
-            storagePath,
             selectedItems,
             QueryLanguage.Swift,
           );
@@ -842,7 +839,6 @@ describe("SkeletonQueryWizard", () => {
             mockApp,
             mockDatabaseManager,
             databaseFetcher,
-            storagePath,
             selectedItems,
           );
         });

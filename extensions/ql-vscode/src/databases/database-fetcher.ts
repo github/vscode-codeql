@@ -26,7 +26,6 @@ import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
 } from "../common/github-url-identifier-helper";
-import type { AppCommandManager } from "../common/commands";
 import {
   addDatabaseSourceToWorkspace,
   allowHttp,
@@ -48,17 +47,23 @@ const DUPLICATE_FILENAMES_TRIES = 10_000;
 
 export class DatabaseFetcher {
   /**
-   * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
-   *
+   * @param app the App
    * @param databaseManager the DatabaseManager
    * @param storagePath where to store the unzipped database.
+   * @param cli the CodeQL CLI server
+   **/
+  constructor(
+    private readonly app: App,
+    private readonly databaseManager: DatabaseManager,
+    private readonly storagePath: string,
+    private readonly cli: CodeQLCliServer,
+  ) {}
+
+  /**
+   * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
    */
   public async promptImportInternetDatabase(
-    commandManager: AppCommandManager,
-    databaseManager: DatabaseManager,
-    storagePath: string,
     progress: ProgressCallback,
-    cli: CodeQLCliServer,
   ): Promise<DatabaseItem | undefined> {
     const databaseUrl = await window.showInputBox({
       prompt: "Enter URL of zipfile of database to download",
@@ -72,19 +77,16 @@ export class DatabaseFetcher {
     const item = await this.databaseArchiveFetcher(
       databaseUrl,
       {},
-      databaseManager,
-      storagePath,
       undefined,
       {
         type: "url",
         url: databaseUrl,
       },
       progress,
-      cli,
     );
 
     if (item) {
-      await commandManager.execute("codeQLDatabases.focus");
+      await this.app.commands.execute("codeQLDatabases.focus");
       void showAndLogInformationMessage(
         extLogger,
         "Database downloaded and imported successfully.",
@@ -98,21 +100,13 @@ export class DatabaseFetcher {
    * User enters a GitHub repository and then the user is asked which language
    * to download (if there is more than one)
    *
-   * @param app the App
-   * @param databaseManager the DatabaseManager
-   * @param storagePath where to store the unzipped database.
    * @param progress the progress callback
-   * @param cli the CodeQL CLI server
    * @param language the language to download. If undefined, the user will be prompted to choose a language.
    * @param makeSelected make the new database selected in the databases panel (default: true)
    * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
    */
   public async promptImportGithubDatabase(
-    app: App,
-    databaseManager: DatabaseManager,
-    storagePath: string,
     progress: ProgressCallback,
-    cli: CodeQLCliServer,
     language?: string,
     makeSelected = true,
     addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
@@ -124,11 +118,7 @@ export class DatabaseFetcher {
 
     const databaseItem = await this.downloadGitHubDatabase(
       githubRepo,
-      app,
-      databaseManager,
-      storagePath,
       progress,
-      cli,
       language,
       makeSelected,
       addSourceArchiveFolder,
@@ -136,7 +126,7 @@ export class DatabaseFetcher {
 
     if (databaseItem) {
       if (makeSelected) {
-        await app.commands.execute("codeQLDatabases.focus");
+        await this.app.commands.execute("codeQLDatabases.focus");
       }
       void showAndLogInformationMessage(
         extLogger,
@@ -176,22 +166,14 @@ export class DatabaseFetcher {
    * Downloads a database from GitHub
    *
    * @param githubRepo the GitHub repository to download the database from
-   * @param app the App
-   * @param databaseManager the DatabaseManager
-   * @param storagePath where to store the unzipped database.
    * @param progress the progress callback
-   * @param cli the CodeQL CLI server
    * @param language the language to download. If undefined, the user will be prompted to choose a language.
    * @param makeSelected make the new database selected in the databases panel (default: true)
    * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
    **/
   public async downloadGitHubDatabase(
     githubRepo: string,
-    app: App,
-    databaseManager: DatabaseManager,
-    storagePath: string,
     progress: ProgressCallback,
-    cli: CodeQLCliServer,
     language?: string,
     makeSelected = true,
     addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
@@ -201,7 +183,7 @@ export class DatabaseFetcher {
       throw new Error(`Invalid GitHub repository: ${githubRepo}`);
     }
 
-    const credentials = isCanary() ? app.credentials : undefined;
+    const credentials = isCanary() ? this.app.credentials : undefined;
 
     const octokit = credentials
       ? await credentials.getOctokit()
@@ -235,9 +217,6 @@ export class DatabaseFetcher {
       name,
       octokit,
       progress,
-      databaseManager,
-      storagePath,
-      cli,
       makeSelected,
       addSourceArchiveFolder,
     );
@@ -252,9 +231,6 @@ export class DatabaseFetcher {
     name: string,
     octokit: Octokit,
     progress: ProgressCallback,
-    databaseManager: DatabaseManager,
-    storagePath: string,
-    cli: CodeQLCliServer,
     makeSelected = true,
     addSourceArchiveFolder = true,
   ): Promise<DatabaseItem | undefined> {
@@ -275,8 +251,6 @@ export class DatabaseFetcher {
         Accept: "application/zip",
         Authorization: octokitToken ? `Bearer ${octokitToken}` : "",
       },
-      databaseManager,
-      storagePath,
       `${owner}/${name}`,
       {
         type: "github",
@@ -286,7 +260,6 @@ export class DatabaseFetcher {
         commitOid,
       },
       progress,
-      cli,
       makeSelected,
       addSourceArchiveFolder,
     );
@@ -296,34 +269,24 @@ export class DatabaseFetcher {
    * Imports a database from a local archive.
    *
    * @param databaseUrl the file url of the archive to import
-   * @param databaseManager the DatabaseManager
-   * @param storagePath where to store the unzipped database.
-   * @param cli the CodeQL CLI server
    */
   public async importArchiveDatabase(
-    commandManager: AppCommandManager,
     databaseUrl: string,
-    databaseManager: DatabaseManager,
-    storagePath: string,
     progress: ProgressCallback,
-    cli: CodeQLCliServer,
   ): Promise<DatabaseItem | undefined> {
     try {
       const item = await this.databaseArchiveFetcher(
         databaseUrl,
         {},
-        databaseManager,
-        storagePath,
         undefined,
         {
           type: "archive",
           path: databaseUrl,
         },
         progress,
-        cli,
       );
       if (item) {
-        await commandManager.execute("codeQLDatabases.focus");
+        await this.app.commands.execute("codeQLDatabases.focus");
         void showAndLogInformationMessage(
           extLogger,
           "Database unzipped and imported successfully.",
@@ -348,24 +311,18 @@ export class DatabaseFetcher {
    *
    * @param databaseUrl URL from which to grab the database
    * @param requestHeaders Headers to send with the request
-   * @param databaseManager the DatabaseManager
-   * @param storagePath where to store the unzipped database.
    * @param nameOverride a name for the database that overrides the default
    * @param origin the origin of the database
    * @param progress callback to send progress messages to
-   * @param cli the CodeQL CLI server
    * @param makeSelected make the new database selected in the databases panel (default: true)
    * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
    */
   private async databaseArchiveFetcher(
     databaseUrl: string,
     requestHeaders: { [key: string]: string },
-    databaseManager: DatabaseManager,
-    storagePath: string,
     nameOverride: string | undefined,
     origin: DatabaseOrigin,
     progress: ProgressCallback,
-    cli: CodeQLCliServer,
     makeSelected = true,
     addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
   ): Promise<DatabaseItem> {
@@ -374,24 +331,19 @@ export class DatabaseFetcher {
       step: 1,
       maxStep: 4,
     });
-    if (!storagePath) {
+    if (!this.storagePath) {
       throw new Error("No storage path specified.");
     }
-    await ensureDir(storagePath);
-    const unzipPath = await this.getStorageFolder(
-      storagePath,
-      databaseUrl,
-      nameOverride,
-    );
+    await ensureDir(this.storagePath);
+    const unzipPath = await this.getStorageFolder(databaseUrl, nameOverride);
 
     if (this.isFile(databaseUrl)) {
-      await this.readAndUnzip(databaseUrl, unzipPath, cli, progress);
+      await this.readAndUnzip(databaseUrl, unzipPath, progress);
     } else {
       await this.fetchAndUnzip(
         databaseUrl,
         requestHeaders,
         unzipPath,
-        cli,
         progress,
       );
     }
@@ -416,7 +368,7 @@ export class DatabaseFetcher {
       });
       await this.ensureZippedSourceLocation(dbPath);
 
-      const item = await databaseManager.openDatabase(
+      const item = await this.databaseManager.openDatabase(
         Uri.file(dbPath),
         origin,
         makeSelected,
@@ -432,11 +384,7 @@ export class DatabaseFetcher {
     }
   }
 
-  private async getStorageFolder(
-    storagePath: string,
-    urlStr: string,
-    nameOverrride?: string,
-  ) {
+  private async getStorageFolder(urlStr: string, nameOverrride?: string) {
     let lastName: string;
 
     if (nameOverrride) {
@@ -454,7 +402,7 @@ export class DatabaseFetcher {
       }
     }
 
-    const realpath = await fs_realpath(storagePath);
+    const realpath = await fs_realpath(this.storagePath);
     let folderName = lastName;
 
     // get all existing files instead of calling pathExists on every
@@ -500,7 +448,6 @@ export class DatabaseFetcher {
   private async readAndUnzip(
     zipUrl: string,
     unzipPath: string,
-    cli: CodeQLCliServer,
     progress?: ProgressCallback,
   ) {
     const zipFile = Uri.parse(zipUrl).fsPath;
@@ -510,14 +457,13 @@ export class DatabaseFetcher {
       message: `Unzipping into ${basename(unzipPath)}`,
     });
 
-    await cli.databaseUnbundle(zipFile, unzipPath);
+    await this.cli.databaseUnbundle(zipFile, unzipPath);
   }
 
   private async fetchAndUnzip(
     databaseUrl: string,
     requestHeaders: { [key: string]: string },
     unzipPath: string,
-    cli: CodeQLCliServer,
     progress?: ProgressCallback,
   ) {
     // Although it is possible to download and stream directly to an unzipped directory,
@@ -606,7 +552,6 @@ export class DatabaseFetcher {
     await this.readAndUnzip(
       Uri.file(archivePath).toString(true),
       unzipPath,
-      cli,
       progress,
     );
 

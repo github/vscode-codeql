@@ -326,13 +326,18 @@ export class LocalQueries extends DisposableObject {
         const contextStoragePath =
           this.app.workspaceStoragePath || this.app.globalStoragePath;
         const language = this.languageContextStore.selectedLanguage;
+        const databaseFetcher = new DatabaseFetcher(
+          this.app,
+          this.databaseManager,
+          contextStoragePath,
+          this.cliServer,
+        );
         const skeletonQueryWizard = new SkeletonQueryWizard(
           this.cliServer,
           progress,
           this.app,
           this.databaseManager,
-          new DatabaseFetcher(),
-          contextStoragePath,
+          databaseFetcher,
           this.selectedQueryTreeViewItems,
           language,
         );

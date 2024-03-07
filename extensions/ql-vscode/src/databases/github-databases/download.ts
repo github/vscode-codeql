@@ -4,8 +4,6 @@ import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import { getLanguageDisplayName } from "../../common/query-language";
 import type { DatabaseFetcher } from "../database-fetcher";
 import { withProgress } from "../../common/vscode/progress";
-import type { DatabaseManager } from "../local-databases";
-import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import type { AppCommandManager } from "../../common/commands";
 import type { GitHubDatabaseConfig } from "../../config";
 import type { CodeqlDatabase } from "./api";
@@ -58,10 +56,7 @@ export async function downloadDatabaseFromGitHub(
   owner: string,
   repo: string,
   databases: CodeqlDatabase[],
-  databaseManager: DatabaseManager,
   databaseFetcher: DatabaseFetcher,
-  storagePath: string,
-  cliServer: CodeQLCliServer,
   commandManager: AppCommandManager,
 ): Promise<void> {
   const selectedDatabases = await promptForDatabases(databases);
@@ -82,9 +77,6 @@ export async function downloadDatabaseFromGitHub(
             repo,
             octokit,
             progress,
-            databaseManager,
-            storagePath,
-            cliServer,
             true,
             false,
           );

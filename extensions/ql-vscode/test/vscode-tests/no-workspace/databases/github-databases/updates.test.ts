@@ -11,7 +11,6 @@ import type { CodeqlDatabase } from "../../../../../src/databases/github-databas
 import type { DatabaseManager } from "../../../../../src/databases/local-databases";
 import type { GitHubDatabaseConfig } from "../../../../../src/config";
 import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
 import { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../../src/common/vscode/dialog";
 import type { DatabaseUpdate } from "../../../../../src/databases/github-databases/updates";
@@ -20,6 +19,7 @@ import {
   downloadDatabaseUpdateFromGitHub,
   isNewerDatabaseAvailable,
 } from "../../../../../src/databases/github-databases/updates";
+import { createMockApp } from "../../../../__mocks__/appMock";
 
 describe("isNewerDatabaseAvailable", () => {
   const owner = "github";
@@ -347,7 +347,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
   let databaseFetcher: DatabaseFetcher;
   const storagePath = "/a/b/c/d";
   let cliServer: CodeQLCliServer;
-  const commandManager = createMockCommandManager();
+  const app = createMockApp();
 
   let updates: DatabaseUpdate[] = [
     {
@@ -377,8 +377,13 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
     databaseManager = mockedObject<DatabaseManager>({
       currentDatabaseItem: mockDatabaseItem(),
     });
-    databaseFetcher = new DatabaseFetcher();
     cliServer = mockedObject<CodeQLCliServer>({});
+    databaseFetcher = new DatabaseFetcher(
+      app,
+      databaseManager,
+      storagePath,
+      cliServer,
+    );
 
     showQuickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValue(
       mockedQuickPickItem([
@@ -400,9 +405,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
       updates,
       databaseManager,
       databaseFetcher,
-      storagePath,
-      cliServer,
-      commandManager,
+      app.commands,
     );
 
     expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledTimes(1);
@@ -415,9 +418,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
       repo,
       octokit,
       expect.anything(),
-      databaseManager,
-      storagePath,
-      cliServer,
       false,
       false,
     );
@@ -480,9 +480,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         updates,
         databaseManager,
         databaseFetcher,
-        storagePath,
-        cliServer,
-        commandManager,
+        app.commands,
       );
 
       expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledTimes(1);
@@ -495,9 +493,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         octokit,
         expect.anything(),
-        databaseManager,
-        storagePath,
-        cliServer,
         true,
         true,
       );
@@ -537,9 +532,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         updates,
         databaseManager,
         databaseFetcher,
-        storagePath,
-        cliServer,
-        commandManager,
+        app.commands,
       );
 
       expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledTimes(2);
@@ -552,9 +545,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         octokit,
         expect.anything(),
-        databaseManager,
-        storagePath,
-        cliServer,
         false,
         false,
       );
@@ -567,9 +557,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         octokit,
         expect.anything(),
-        databaseManager,
-        storagePath,
-        cliServer,
         true,
         true,
       );
@@ -603,9 +590,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
           updates,
           databaseManager,
           databaseFetcher,
-          storagePath,
-          cliServer,
-          commandManager,
+          app.commands,
         );
 
         expect(downloadGitHubDatabaseFromUrlSpy).not.toHaveBeenCalled();

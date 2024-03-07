@@ -916,17 +916,18 @@ export class ModelEditorView extends AbstractWebview<
     // the user to import the library database. We need to have the database
     // imported to the query server, so we need to register it to our workspace.
     const makeSelected = false;
-    const addedDatabase =
-      await new DatabaseFetcher().promptImportGithubDatabase(
-        this.app,
-        this.databaseManager,
-        this.app.workspaceStoragePath ?? this.app.globalStoragePath,
-        progress,
-        this.cliServer,
-        this.databaseItem.language,
-        makeSelected,
-        false,
-      );
+    const databaseFetcher = new DatabaseFetcher(
+      this.app,
+      this.databaseManager,
+      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+      this.cliServer,
+    );
+    const addedDatabase = await databaseFetcher.promptImportGithubDatabase(
+      progress,
+      this.databaseItem.language,
+      makeSelected,
+      false,
+    );
     if (!addedDatabase) {
       void this.app.logger.log("No database chosen");
       return;

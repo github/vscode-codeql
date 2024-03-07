@@ -1,7 +1,6 @@
 import type { CodeqlDatabase } from "./api";
 import type { DatabaseItem, DatabaseManager } from "../local-databases";
 import type { Octokit } from "@octokit/rest";
-import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import type { AppCommandManager } from "../../common/commands";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
@@ -157,8 +156,6 @@ export async function downloadDatabaseUpdateFromGitHub(
   updates: DatabaseUpdate[],
   databaseManager: DatabaseManager,
   databaseFetcher: DatabaseFetcher,
-  storagePath: string,
-  cliServer: CodeQLCliServer,
   commandManager: AppCommandManager,
 ): Promise<void> {
   const selectedDatabases = await promptForDatabases(
@@ -190,9 +187,6 @@ export async function downloadDatabaseUpdateFromGitHub(
               repo,
               octokit,
               progress,
-              databaseManager,
-              storagePath,
-              cliServer,
               databaseManager.currentDatabaseItem === update.databaseItem,
               update.databaseItem.hasSourceArchiveInExplorer(),
             );

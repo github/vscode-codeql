@@ -536,13 +536,13 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseInternet(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await new DatabaseFetcher().promptImportInternetDatabase(
-          this.app.commands,
+        const databaseFetcher = new DatabaseFetcher(
+          this.app,
           this.databaseManager,
           this.storagePath,
-          progress,
           this.queryServer.cliServer,
         );
+        await databaseFetcher.promptImportInternetDatabase(progress);
       },
       {
         title: "Adding database from URL",
@@ -553,13 +553,13 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await new DatabaseFetcher().promptImportGithubDatabase(
+        const databaseFetcher = new DatabaseFetcher(
           this.app,
           this.databaseManager,
           this.storagePath,
-          progress,
           this.queryServer.cliServer,
         );
+        await databaseFetcher.promptImportGithubDatabase(progress);
       },
       {
         title: "Adding database from GitHub",
@@ -708,13 +708,15 @@ export class DatabaseUI extends DisposableObject {
         try {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
-            await new DatabaseFetcher().importArchiveDatabase(
-              this.app.commands,
-              uri.toString(true),
+            const databaseFetcher = new DatabaseFetcher(
+              this.app,
               this.databaseManager,
               this.storagePath,
-              progress,
               this.queryServer.cliServer,
+            );
+            await databaseFetcher.importArchiveDatabase(
+              uri.toString(true),
+              progress,
             );
           } else {
             await this.databaseManager.openDatabase(uri, {
@@ -955,13 +957,15 @@ export class DatabaseUI extends DisposableObject {
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area
           // before importing.
-          return await new DatabaseFetcher().importArchiveDatabase(
-            this.app.commands,
-            uri.toString(true),
+          const databaseFetcher = new DatabaseFetcher(
+            this.app,
             this.databaseManager,
             this.storagePath,
-            progress,
             this.queryServer.cliServer,
+          );
+          return await databaseFetcher.importArchiveDatabase(
+            uri.toString(true),
+            progress,
           );
         }
       },

@@ -60,7 +60,6 @@ export class SkeletonQueryWizard {
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseFetcher: DatabaseFetcher,
-    private readonly databaseStoragePath: string | undefined,
     private readonly selectedItems: readonly QueryTreeViewItem[],
     private language: QueryLanguage | undefined = undefined,
   ) {}
@@ -361,10 +360,6 @@ export class SkeletonQueryWizard {
   }
 
   private async downloadDatabase(progress: ProgressCallback) {
-    if (this.databaseStoragePath === undefined) {
-      throw new Error("Database storage path is undefined");
-    }
-
     if (this.language === undefined) {
       throw new Error("Language is undefined");
     }
@@ -387,11 +382,7 @@ export class SkeletonQueryWizard {
 
     await this.databaseFetcher.downloadGitHubDatabase(
       chosenRepo,
-      this.app,
-      this.databaseManager,
-      this.databaseStoragePath,
       progress,
-      this.cliServer,
       this.language,
     );
   }

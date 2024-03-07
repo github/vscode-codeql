@@ -882,9 +882,7 @@ async function activateWithInstalledDistribution(
   await GitHubDatabasesModule.initialize(
     app,
     dbm,
-    new DatabaseFetcher(),
-    getContextStoragePath(ctx),
-    cliServer,
+    new DatabaseFetcher(app, dbm, getContextStoragePath(ctx), cliServer),
     githubDatabaseConfigListener,
   );
 

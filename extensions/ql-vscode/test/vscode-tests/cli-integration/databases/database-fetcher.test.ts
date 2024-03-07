@@ -11,8 +11,8 @@ import {
   getActivatedExtension,
   storagePath,
 } from "../../global.helper";
-import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 import { remove } from "fs-extra";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 /**
  * Run various integration tests for databases
@@ -46,13 +46,15 @@ describe("database-fetcher", () => {
   describe("importArchiveDatabase", () => {
     it("should add a database from a folder", async () => {
       const uri = Uri.file(dbLoc);
-      let dbItem = await new DatabaseFetcher().importArchiveDatabase(
-        createMockCommandManager(),
-        uri.toString(true),
+      const databaseFetcher = new DatabaseFetcher(
+        createMockApp(),
         databaseManager,
         storagePath,
-        progressCallback,
         cli,
+      );
+      let dbItem = await databaseFetcher.importArchiveDatabase(
+        uri.toString(true),
+        progressCallback,
       );
       expect(dbItem).toBe(databaseManager.currentDatabaseItem);
       expect(dbItem).toBe(databaseManager.databaseItems[0]);
@@ -68,13 +70,14 @@ describe("database-fetcher", () => {
       // Provide a database URL when prompted
       inputBoxStub.mockResolvedValue(DB_URL);
 
-      let dbItem = await new DatabaseFetcher().promptImportInternetDatabase(
-        createMockCommandManager(),
+      const databaseFetcher = new DatabaseFetcher(
+        createMockApp(),
         databaseManager,
         storagePath,
-        progressCallback,
         cli,
       );
+      let dbItem =
+        await databaseFetcher.promptImportInternetDatabase(progressCallback);
       expect(dbItem).toBeDefined();
       dbItem = dbItem!;
       expect(dbItem.name).toBe("db");

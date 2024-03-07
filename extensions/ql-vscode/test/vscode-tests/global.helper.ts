@@ -8,7 +8,7 @@ import type {
 import type { CodeQLCliServer } from "../../src/codeql-cli/cli";
 import type { CodeQLExtensionInterface } from "../../src/extension";
 import { DatabaseFetcher } from "../../src/databases/database-fetcher";
-import { createMockCommandManager } from "../__mocks__/commandsMock";
+import { createMockApp } from "../__mocks__/appMock";
 
 // This file contains helpers shared between tests that work with an activated extension.
 
@@ -34,15 +34,17 @@ export async function ensureTestDatabase(
   // Add a database, but make sure the database manager is empty first
   await cleanDatabases(databaseManager);
   const uri = Uri.file(dbLoc);
-  const maybeDbItem = await new DatabaseFetcher().importArchiveDatabase(
-    createMockCommandManager(),
-    uri.toString(true),
+  const databaseFetcher = new DatabaseFetcher(
+    createMockApp(),
     databaseManager,
     storagePath,
+    cli,
+  );
+  const maybeDbItem = await databaseFetcher.importArchiveDatabase(
+    uri.toString(true),
     (_p) => {
       /**/
     },
-    cli,
   );
 
   if (!maybeDbItem) {
