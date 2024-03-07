@@ -10,8 +10,6 @@ import {
   pathExists,
   createWriteStream,
   remove,
-  stat,
-  readdir,
 } from "fs-extra";
 import { basename, join } from "path";
 import type { Octokit } from "@octokit/rest";
@@ -39,6 +37,7 @@ import { getLanguageDisplayName } from "../common/query-language";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import type { App } from "../common/app";
+import { findDirWithFile } from "../common/files";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -586,36 +585,6 @@ async function checkForFailingResponse(
 
 function isFile(databaseUrl: string) {
   return Uri.parse(databaseUrl).scheme === "file";
-}
-
-/**
- * Recursively looks for a file in a directory. If the file exists, then returns the directory containing the file.
- *
- * @param dir The directory to search
- * @param toFind The file to recursively look for in this directory
- *
- * @returns the directory containing the file, or undefined if not found.
- */
-// exported for testing
-export async function findDirWithFile(
-  dir: string,
-  ...toFind: string[]
-): Promise<string | undefined> {
-  if (!(await stat(dir)).isDirectory()) {
-    return;
-  }
-  const files = await readdir(dir);
-  if (toFind.some((file) => files.includes(file))) {
-    return dir;
-  }
-  for (const file of files) {
-    const newPath = join(dir, file);
-    const result = await findDirWithFile(newPath, ...toFind);
-    if (result) {
-      return result;
-    }
-  }
-  return;
 }
 
 export async function convertGithubNwoToDatabaseUrl(

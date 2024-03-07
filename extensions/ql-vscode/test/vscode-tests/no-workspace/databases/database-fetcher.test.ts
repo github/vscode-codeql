@@ -1,13 +1,6 @@
-import { join } from "path";
-import { createFileSync, mkdirSync } from "fs-extra";
-import type { DirResult } from "tmp";
-import { dirSync } from "tmp";
 import { window } from "vscode";
 
-import {
-  convertGithubNwoToDatabaseUrl,
-  findDirWithFile,
-} from "../../../../src/databases/database-fetcher";
+import { convertGithubNwoToDatabaseUrl } from "../../../../src/databases/database-fetcher";
 import type { Octokit } from "@octokit/rest";
 import {
   mockedObject,
@@ -200,54 +193,5 @@ describe("database-fetcher", () => {
         expect(quickPickSpy).toHaveBeenCalled();
       });
     });
-  });
-
-  describe("findDirWithFile", () => {
-    let dir: DirResult;
-    beforeEach(() => {
-      dir = dirSync({ unsafeCleanup: true });
-      createFile("a");
-      createFile("b");
-      createFile("c");
-
-      createDir("dir1");
-      createFile("dir1", "d");
-      createFile("dir1", "e");
-      createFile("dir1", "f");
-
-      createDir("dir2");
-      createFile("dir2", "g");
-      createFile("dir2", "h");
-      createFile("dir2", "i");
-
-      createDir("dir2", "dir3");
-      createFile("dir2", "dir3", "j");
-      createFile("dir2", "dir3", "k");
-      createFile("dir2", "dir3", "l");
-    });
-
-    it("should find files", async () => {
-      expect(await findDirWithFile(dir.name, "k")).toBe(
-        join(dir.name, "dir2", "dir3"),
-      );
-      expect(await findDirWithFile(dir.name, "h")).toBe(join(dir.name, "dir2"));
-      expect(await findDirWithFile(dir.name, "z", "a")).toBe(dir.name);
-      // there's some slight indeterminism when more than one name exists
-      // but in general, this will find files in the current directory before
-      // finding files in sub-dirs
-      expect(await findDirWithFile(dir.name, "k", "a")).toBe(dir.name);
-    });
-
-    it("should not find files", async () => {
-      expect(await findDirWithFile(dir.name, "x", "y", "z")).toBeUndefined();
-    });
-
-    function createFile(...segments: string[]) {
-      createFileSync(join(dir.name, ...segments));
-    }
-
-    function createDir(...segments: string[]) {
-      mkdirSync(join(dir.name, ...segments));
-    }
   });
 });

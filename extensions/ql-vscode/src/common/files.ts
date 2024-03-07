@@ -176,3 +176,32 @@ export function findCommonParentDir(...paths: string[]): string {
 function isTopLevelPath(path: string): boolean {
   return dirname(path) === path;
 }
+
+/**
+ * Recursively looks for a file in a directory. If the file exists, then returns the directory containing the file.
+ *
+ * @param dir The directory to search
+ * @param toFind The file to recursively look for in this directory
+ *
+ * @returns the directory containing the file, or undefined if not found.
+ */
+export async function findDirWithFile(
+  dir: string,
+  ...toFind: string[]
+): Promise<string | undefined> {
+  if (!(await stat(dir)).isDirectory()) {
+    return;
+  }
+  const files = await readdir(dir);
+  if (toFind.some((file) => files.includes(file))) {
+    return dir;
+  }
+  for (const file of files) {
+    const newPath = join(dir, file);
+    const result = await findDirWithFile(newPath, ...toFind);
+    if (result) {
+      return result;
+    }
+  }
+  return;
+}
