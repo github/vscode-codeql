@@ -925,6 +925,7 @@ export class ModelEditorView extends AbstractWebview<
     const addedDatabase = await databaseFetcher.promptImportGithubDatabase(
       progress,
       this.databaseItem.language,
+      undefined,
       makeSelected,
       false,
     );

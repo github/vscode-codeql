@@ -56,11 +56,8 @@ describe("SkeletonQueryWizard", () => {
   let createExampleQlFileSpy: jest.SpiedFunction<
     typeof QlPackGenerator.prototype.createExampleQlFile
   >;
-  let downloadGitHubDatabaseSpy: jest.SpiedFunction<
-    DatabaseFetcher["downloadGitHubDatabase"]
-  >;
-  let askForGitHubRepoSpy: jest.SpiedFunction<
-    DatabaseFetcher["askForGitHubRepo"]
+  let promptImportGithubDatabaseSpy: jest.SpiedFunction<
+    DatabaseFetcher["promptImportGithubDatabase"]
   >;
   let openTextDocumentSpy: jest.SpiedFunction<
     typeof workspace.openTextDocument
@@ -141,8 +138,8 @@ describe("SkeletonQueryWizard", () => {
     createExampleQlFileSpy = jest
       .spyOn(QlPackGenerator.prototype, "createExampleQlFile")
       .mockResolvedValue(undefined);
-    downloadGitHubDatabaseSpy = jest
-      .spyOn(databaseFetcher, "downloadGitHubDatabase")
+    promptImportGithubDatabaseSpy = jest
+      .spyOn(databaseFetcher, "promptImportGithubDatabase")
       .mockResolvedValue(undefined);
     openTextDocumentSpy = jest
       .spyOn(workspace, "openTextDocument")
@@ -156,10 +153,6 @@ describe("SkeletonQueryWizard", () => {
       databaseFetcher,
       selectedItems,
     );
-
-    askForGitHubRepoSpy = jest
-      .spyOn(databaseFetcher, "askForGitHubRepo")
-      .mockResolvedValue(QUERY_LANGUAGE_TO_DATABASE_REPO[chosenLanguage]);
   });
 
   afterEach(async () => {
@@ -210,7 +203,7 @@ describe("SkeletonQueryWizard", () => {
           title: "Download database",
         }),
       );
-      expect(downloadGitHubDatabaseSpy).not.toHaveBeenCalled();
+      expect(promptImportGithubDatabaseSpy).not.toHaveBeenCalled();
     });
 
     it("should download database for selected language when selecting download in prompt", async () => {
@@ -227,7 +220,7 @@ describe("SkeletonQueryWizard", () => {
       await wizard.execute();
       await wizard.waitForDownload();
 
-      expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
+      expect(promptImportGithubDatabaseSpy).toHaveBeenCalled();
     });
 
     it("should open the query file", async () => {
@@ -336,7 +329,7 @@ describe("SkeletonQueryWizard", () => {
         it("should not download a new database for language", async () => {
           await wizard.execute();
 
-          expect(downloadGitHubDatabaseSpy).not.toHaveBeenCalled();
+          expect(promptImportGithubDatabaseSpy).not.toHaveBeenCalled();
         });
 
         it("should not select the database", async () => {
@@ -385,7 +378,7 @@ describe("SkeletonQueryWizard", () => {
         it("should not download a new database for language", async () => {
           await wizard.execute();
 
-          expect(downloadGitHubDatabaseSpy).not.toHaveBeenCalled();
+          expect(promptImportGithubDatabaseSpy).not.toHaveBeenCalled();
         });
 
         it("should select an existing database", async () => {
@@ -417,54 +410,23 @@ describe("SkeletonQueryWizard", () => {
     });
 
     describe("if database is missing", () => {
-      describe("if the user chooses to downloaded the suggested database from GitHub", () => {
-        beforeEach(() => {
-          showInformationMessageSpy.mockImplementation(
-            async (_message, options, item) => {
-              if (item === undefined) {
-                return options as MessageItem;
-              }
+      beforeEach(() => {
+        showInformationMessageSpy.mockImplementation(
+          async (_message, options, item) => {
+            if (item === undefined) {
+              return options as MessageItem;
+            }
 
-              return item;
-            },
-          );
-        });
-
-        it("should download a new database for language", async () => {
-          await wizard.execute();
-          await wizard.waitForDownload();
-
-          expect(askForGitHubRepoSpy).toHaveBeenCalled();
-          expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
-        });
+            return item;
+          },
+        );
       });
 
-      describe("if the user choses to download a different database from GitHub than the one suggested", () => {
-        beforeEach(() => {
-          showInformationMessageSpy.mockImplementation(
-            async (_message, options, item) => {
-              if (item === undefined) {
-                return options as MessageItem;
-              }
+      it("should download a new database for language", async () => {
+        await wizard.execute();
+        await wizard.waitForDownload();
 
-              return item;
-            },
-          );
-
-          const chosenGitHubRepo = "pickles-owner/pickles-repo";
-
-          askForGitHubRepoSpy = jest
-            .spyOn(databaseFetcher, "askForGitHubRepo")
-            .mockResolvedValue(chosenGitHubRepo);
-        });
-
-        it("should download the newly chosen database", async () => {
-          await wizard.execute();
-          await wizard.waitForDownload();
-
-          expect(askForGitHubRepoSpy).toHaveBeenCalled();
-          expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
-        });
+        expect(promptImportGithubDatabaseSpy).toHaveBeenCalled();
       });
     });
   });

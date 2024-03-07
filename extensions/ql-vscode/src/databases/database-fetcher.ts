@@ -108,10 +108,11 @@ export class DatabaseFetcher {
   public async promptImportGithubDatabase(
     progress: ProgressCallback,
     language?: string,
+    suggestedRepoNwo?: string,
     makeSelected = true,
     addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
   ): Promise<DatabaseItem | undefined> {
-    const githubRepo = await this.askForGitHubRepo(progress);
+    const githubRepo = await this.askForGitHubRepo(progress, suggestedRepoNwo);
     if (!githubRepo) {
       return;
     }
@@ -138,7 +139,7 @@ export class DatabaseFetcher {
     return;
   }
 
-  public async askForGitHubRepo(
+  private async askForGitHubRepo(
     progress?: ProgressCallback,
     suggestedValue?: string,
   ): Promise<string | undefined> {
@@ -171,7 +172,7 @@ export class DatabaseFetcher {
    * @param makeSelected make the new database selected in the databases panel (default: true)
    * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
    **/
-  public async downloadGitHubDatabase(
+  private async downloadGitHubDatabase(
     githubRepo: string,
     progress: ProgressCallback,
     language?: string,

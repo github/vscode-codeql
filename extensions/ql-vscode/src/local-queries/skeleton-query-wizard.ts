@@ -371,19 +371,10 @@ export class SkeletonQueryWizard {
     });
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
-    const chosenRepo = await this.databaseFetcher.askForGitHubRepo(
-      undefined,
-      githubRepoNwo,
-    );
-
-    if (!chosenRepo) {
-      throw new UserCancellationException("No GitHub repository provided");
-    }
-
-    await this.databaseFetcher.downloadGitHubDatabase(
-      chosenRepo,
+    await this.databaseFetcher.promptImportGithubDatabase(
       progress,
       this.language,
+      githubRepoNwo,
     );
   }
 
