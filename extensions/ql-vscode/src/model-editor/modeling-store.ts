@@ -498,4 +498,8 @@ export class ModelingStore extends DisposableObject {
       state.modelEvaluationRun,
     );
   }
+
+  public isModelAlertsViewOpen(evaluationRun: ModelEvaluationRun): boolean {
+    return evaluationRun.isModelAlertsViewOpen ?? false;
+  }
 }

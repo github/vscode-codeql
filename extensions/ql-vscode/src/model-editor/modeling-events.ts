@@ -65,6 +65,10 @@ interface FocusModelEditorEvent {
   dbUri: string;
 }
 
+interface FocusModelAlertsViewEvent {
+  dbUri: string;
+}
+
 export class ModelingEvents extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
   public readonly onDbOpened: AppEvent<DatabaseItem>;
@@ -79,6 +83,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onModelEvaluationRunChanged: AppEvent<ModelEvaluationRunChangedEvent>;
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
   public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
+  public readonly onFocusModelAlertsView: AppEvent<FocusModelAlertsViewEvent>;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
   private readonly onDbOpenedEventEmitter: AppEventEmitter<DatabaseItem>;
@@ -93,6 +98,7 @@ export class ModelingEvents extends DisposableObject {
   private readonly onModelEvaluationRunChangedEventEmitter: AppEventEmitter<ModelEvaluationRunChangedEvent>;
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
   private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
+  private readonly onFocusModelAlertsViewEventEmitter: AppEventEmitter<FocusModelAlertsViewEvent>;
 
   constructor(app: App) {
     super();
@@ -165,6 +171,11 @@ export class ModelingEvents extends DisposableObject {
       app.createEventEmitter<FocusModelEditorEvent>(),
     );
     this.onFocusModelEditor = this.onFocusModelEditorEventEmitter.event;
+
+    this.onFocusModelAlertsViewEventEmitter = this.push(
+      app.createEventEmitter<FocusModelAlertsViewEvent>(),
+    );
+    this.onFocusModelAlertsView = this.onFocusModelAlertsViewEventEmitter.event;
   }
 
   public fireActiveDbChangedEvent() {
@@ -285,5 +296,9 @@ export class ModelingEvents extends DisposableObject {
     this.onFocusModelEditorEventEmitter.fire({
       dbUri,
     });
+  }
+
+  public fireFocusModelAlertsViewEvent(dbUri: string) {
+    this.onFocusModelAlertsViewEventEmitter.fire({ dbUri });
   }
 }
