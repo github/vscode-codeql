@@ -23,7 +23,7 @@ import type {
   DatabaseManager,
   FullDatabaseOptions,
 } from "../../../../src/databases/local-databases";
-import { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
+import type { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
 import { createMockDB } from "../../../factories/databases/databases";
 import { asError } from "../../../../src/common/helpers-pure";
 import { Setting } from "../../../../src/config";
@@ -56,9 +56,7 @@ describe("SkeletonQueryWizard", () => {
   let createExampleQlFileSpy: jest.SpiedFunction<
     typeof QlPackGenerator.prototype.createExampleQlFile
   >;
-  let promptImportGithubDatabaseSpy: jest.SpiedFunction<
-    DatabaseFetcher["promptImportGithubDatabase"]
-  >;
+  let promptImportGithubDatabaseMock: jest.Mock<DatabaseItem | undefined>;
   let openTextDocumentSpy: jest.SpiedFunction<
     typeof workspace.openTextDocument
   >;
@@ -113,12 +111,10 @@ describe("SkeletonQueryWizard", () => {
       },
     ] as WorkspaceFolder[]);
 
-    databaseFetcher = new DatabaseFetcher(
-      mockApp,
-      mockDatabaseManager,
-      storagePath,
-      mockCli,
-    );
+    promptImportGithubDatabaseMock = jest.fn().mockReturnValue(undefined);
+    databaseFetcher = mockedObject<DatabaseFetcher>({
+      promptImportGithubDatabase: promptImportGithubDatabaseMock,
+    });
 
     quickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValueOnce(
       mockedQuickPickItem({
@@ -137,9 +133,6 @@ describe("SkeletonQueryWizard", () => {
       .mockResolvedValue(undefined);
     createExampleQlFileSpy = jest
       .spyOn(QlPackGenerator.prototype, "createExampleQlFile")
-      .mockResolvedValue(undefined);
-    promptImportGithubDatabaseSpy = jest
-      .spyOn(databaseFetcher, "promptImportGithubDatabase")
       .mockResolvedValue(undefined);
     openTextDocumentSpy = jest
       .spyOn(workspace, "openTextDocument")
@@ -203,7 +196,7 @@ describe("SkeletonQueryWizard", () => {
           title: "Download database",
         }),
       );
-      expect(promptImportGithubDatabaseSpy).not.toHaveBeenCalled();
+      expect(promptImportGithubDatabaseMock).not.toHaveBeenCalled();
     });
 
     it("should download database for selected language when selecting download in prompt", async () => {
@@ -220,7 +213,7 @@ describe("SkeletonQueryWizard", () => {
       await wizard.execute();
       await wizard.waitForDownload();
 
-      expect(promptImportGithubDatabaseSpy).toHaveBeenCalled();
+      expect(promptImportGithubDatabaseMock).toHaveBeenCalled();
     });
 
     it("should open the query file", async () => {
@@ -329,7 +322,7 @@ describe("SkeletonQueryWizard", () => {
         it("should not download a new database for language", async () => {
           await wizard.execute();
 
-          expect(promptImportGithubDatabaseSpy).not.toHaveBeenCalled();
+          expect(promptImportGithubDatabaseMock).not.toHaveBeenCalled();
         });
 
         it("should not select the database", async () => {
@@ -378,7 +371,7 @@ describe("SkeletonQueryWizard", () => {
         it("should not download a new database for language", async () => {
           await wizard.execute();
 
-          expect(promptImportGithubDatabaseSpy).not.toHaveBeenCalled();
+          expect(promptImportGithubDatabaseMock).not.toHaveBeenCalled();
         });
 
         it("should select an existing database", async () => {
@@ -426,7 +419,7 @@ describe("SkeletonQueryWizard", () => {
         await wizard.execute();
         await wizard.waitForDownload();
 
-        expect(promptImportGithubDatabaseSpy).toHaveBeenCalled();
+        expect(promptImportGithubDatabaseMock).toHaveBeenCalled();
       });
     });
   });
