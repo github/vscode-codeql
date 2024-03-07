@@ -337,7 +337,7 @@ export class DatabaseFetcher {
     await ensureDir(this.storagePath);
     const unzipPath = await this.getStorageFolder(databaseUrl, nameOverride);
 
-    if (this.isFile(databaseUrl)) {
+    if (Uri.parse(databaseUrl).scheme === "file") {
       await this.readAndUnzip(databaseUrl, unzipPath, progress);
     } else {
       await this.fetchAndUnzip(
@@ -578,10 +578,6 @@ export class DatabaseFetcher {
       msg = text;
     }
     throw new Error(`${errorMessage}.\n\nReason: ${msg}`);
-  }
-
-  private isFile(databaseUrl: string) {
-    return Uri.parse(databaseUrl).scheme === "file";
   }
 
   /**
