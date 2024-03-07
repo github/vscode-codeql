@@ -3,13 +3,6 @@ import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 
-const ModelAlertsButtonContainer = styled.div`
-  min-height: calc(var(--input-height) * 1px);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
 const ModelAlertsButton = styled.button`
   color: var(--vscode-editor-foreground);
   background-color: var(--vscode-input-background);
@@ -42,14 +35,12 @@ export const ModelAlertsIndicator = ({
   const number = Math.floor(Math.random() * 10);
 
   return (
-    <ModelAlertsButtonContainer>
-      <ModelAlertsButton
-        onClick={(event: React.MouseEvent) => {
-          event.stopPropagation();
-        }}
-      >
-        {number}
-      </ModelAlertsButton>
-    </ModelAlertsButtonContainer>
+    <ModelAlertsButton
+      onClick={(event: React.MouseEvent) => {
+        event.stopPropagation();
+      }}
+    >
+      {number}
+    </ModelAlertsButton>
   );
 };

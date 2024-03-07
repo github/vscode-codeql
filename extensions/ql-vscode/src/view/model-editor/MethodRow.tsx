@@ -49,6 +49,14 @@ const ApiOrMethodRow = styled.div`
   gap: 0.5em;
 `;
 
+const ButtonsContainer = styled.div`
+  min-height: calc(var(--input-height) * 1px);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1em;
+`;
+
 const UsagesButton = styled.button`
   color: var(--vscode-editor-foreground);
   background-color: var(--vscode-input-background);
@@ -281,7 +289,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             <DataGridCell>
               <InProgressDropdown />
             </DataGridCell>
-            <DataGridCell></DataGridCell>
             <DataGridCell>
               <CodiconRow appearance="icon" disabled={true}>
                 <Codicon name="add" label="Add new model" />
@@ -354,43 +361,43 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     />
                   </DataGridCell>
                   <DataGridCell>
-                    <ModelAlertsIndicator
-                      viewState={viewState}
-                      modeledMethod={modeledMethod}
-                      evaluationRun={evaluationRun}
-                    ></ModelAlertsIndicator>
-                  </DataGridCell>
-                  <DataGridCell>
-                    {index === 0 ? (
-                      <CodiconRow
-                        appearance="icon"
-                        aria-label="Add new model"
-                        onClick={(event: React.MouseEvent) => {
-                          event.stopPropagation();
-                          handleAddModelClick();
-                        }}
-                        disabled={addModelButtonDisabled}
-                      >
-                        <Codicon name="add" />
-                      </CodiconRow>
-                    ) : (
-                      <CodiconRow
-                        appearance="icon"
-                        aria-label="Remove model"
-                        onClick={(event: React.MouseEvent) => {
-                          event.stopPropagation();
-                          removeModelClickedHandlers[index]();
-                        }}
-                      >
-                        <Codicon name="trash" />
-                      </CodiconRow>
-                    )}
+                    <ButtonsContainer>
+                      <ModelAlertsIndicator
+                        viewState={viewState}
+                        modeledMethod={modeledMethod}
+                        evaluationRun={evaluationRun}
+                      ></ModelAlertsIndicator>
+                      {index === 0 ? (
+                        <CodiconRow
+                          appearance="icon"
+                          aria-label="Add new model"
+                          onClick={(event: React.MouseEvent) => {
+                            event.stopPropagation();
+                            handleAddModelClick();
+                          }}
+                          disabled={addModelButtonDisabled}
+                        >
+                          <Codicon name="add" />
+                        </CodiconRow>
+                      ) : (
+                        <CodiconRow
+                          appearance="icon"
+                          aria-label="Remove model"
+                          onClick={(event: React.MouseEvent) => {
+                            event.stopPropagation();
+                            removeModelClickedHandlers[index]();
+                          }}
+                        >
+                          <Codicon name="trash" />
+                        </CodiconRow>
+                      )}
+                    </ButtonsContainer>
                   </DataGridCell>
                 </DataGridRow>
               );
             })}
             {validationErrors.map((error, index) => (
-              <DataGridCell gridColumn="span 6" key={index}>
+              <DataGridCell gridColumn="span 5" key={index}>
                 <ModeledMethodAlert
                   error={error}
                   setSelectedIndex={setFocusedIndex}

@@ -11,7 +11,7 @@ import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
-  "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content max-content";
+  "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
 
 export type ModeledMethodDataGridProps = {
   methods: Method[];
