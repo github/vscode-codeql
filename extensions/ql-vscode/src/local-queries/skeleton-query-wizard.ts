@@ -19,10 +19,7 @@ import {
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
-import {
-  askForGitHubRepo,
-  downloadGitHubDatabase,
-} from "../databases/database-fetcher";
+import type { DatabaseFetcher } from "../databases/database-fetcher";
 import {
   getQlPackLocation,
   isCodespacesTemplate,
@@ -62,6 +59,7 @@ export class SkeletonQueryWizard {
     private readonly progress: ProgressCallback,
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
+    private readonly databaseFetcher: DatabaseFetcher,
     private readonly databaseStoragePath: string | undefined,
     private readonly selectedItems: readonly QueryTreeViewItem[],
     private language: QueryLanguage | undefined = undefined,
@@ -378,13 +376,16 @@ export class SkeletonQueryWizard {
     });
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
-    const chosenRepo = await askForGitHubRepo(undefined, githubRepoNwo);
+    const chosenRepo = await this.databaseFetcher.askForGitHubRepo(
+      undefined,
+      githubRepoNwo,
+    );
 
     if (!chosenRepo) {
       throw new UserCancellationException("No GitHub repository provided");
     }
 
-    await downloadGitHubDatabase(
+    await this.databaseFetcher.downloadGitHubDatabase(
       chosenRepo,
       this.app,
       this.databaseManager,

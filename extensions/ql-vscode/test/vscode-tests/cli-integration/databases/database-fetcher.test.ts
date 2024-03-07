@@ -3,10 +3,7 @@ import { Uri, window } from "vscode";
 
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { DatabaseManager } from "../../../../src/databases/local-databases";
-import {
-  importArchiveDatabase,
-  promptImportInternetDatabase,
-} from "../../../../src/databases/database-fetcher";
+import { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
 import {
   cleanDatabases,
   dbLoc,
@@ -49,7 +46,7 @@ describe("database-fetcher", () => {
   describe("importArchiveDatabase", () => {
     it("should add a database from a folder", async () => {
       const uri = Uri.file(dbLoc);
-      let dbItem = await importArchiveDatabase(
+      let dbItem = await new DatabaseFetcher().importArchiveDatabase(
         createMockCommandManager(),
         uri.toString(true),
         databaseManager,
@@ -71,7 +68,7 @@ describe("database-fetcher", () => {
       // Provide a database URL when prompted
       inputBoxStub.mockResolvedValue(DB_URL);
 
-      let dbItem = await promptImportInternetDatabase(
+      let dbItem = await new DatabaseFetcher().promptImportInternetDatabase(
         createMockCommandManager(),
         databaseManager,
         storagePath,

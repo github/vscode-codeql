@@ -24,6 +24,7 @@ import {
   isNewerDatabaseAvailable,
 } from "./updates";
 import type { Octokit } from "@octokit/rest";
+import type { DatabaseFetcher } from "../database-fetcher";
 
 export class GitHubDatabasesModule extends DisposableObject {
   /**
@@ -33,6 +34,7 @@ export class GitHubDatabasesModule extends DisposableObject {
   constructor(
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
+    private readonly databaseFetcher: DatabaseFetcher,
     private readonly databaseStoragePath: string,
     private readonly cliServer: CodeQLCliServer,
     private readonly config: GitHubDatabaseConfig,
@@ -43,6 +45,7 @@ export class GitHubDatabasesModule extends DisposableObject {
   public static async initialize(
     app: App,
     databaseManager: DatabaseManager,
+    databaseFetcher: DatabaseFetcher,
     databaseStoragePath: string,
     cliServer: CodeQLCliServer,
     config: GitHubDatabaseConfig,
@@ -50,6 +53,7 @@ export class GitHubDatabasesModule extends DisposableObject {
     const githubDatabasesModule = new GitHubDatabasesModule(
       app,
       databaseManager,
+      databaseFetcher,
       databaseStoragePath,
       cliServer,
       config,
@@ -186,6 +190,7 @@ export class GitHubDatabasesModule extends DisposableObject {
       repo,
       databases,
       this.databaseManager,
+      this.databaseFetcher,
       this.databaseStoragePath,
       this.cliServer,
       this.app.commands,
@@ -212,6 +217,7 @@ export class GitHubDatabasesModule extends DisposableObject {
       repo,
       databaseUpdates,
       this.databaseManager,
+      this.databaseFetcher,
       this.databaseStoragePath,
       this.cliServer,
       this.app.commands,

@@ -23,7 +23,7 @@ import type {
   DatabaseManager,
   FullDatabaseOptions,
 } from "../../../../src/databases/local-databases";
-import * as databaseFetcher from "../../../../src/databases/database-fetcher";
+import { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
 import { createMockDB } from "../../../factories/databases/databases";
 import { asError } from "../../../../src/common/helpers-pure";
 import { Setting } from "../../../../src/config";
@@ -42,6 +42,7 @@ describe("SkeletonQueryWizard", () => {
   let mockApp: App;
   let wizard: SkeletonQueryWizard;
   let mockDatabaseManager: DatabaseManager;
+  let databaseFetcher: DatabaseFetcher;
   let dir: DirResult;
   let storagePath: string;
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
@@ -56,10 +57,10 @@ describe("SkeletonQueryWizard", () => {
     typeof QlPackGenerator.prototype.createExampleQlFile
   >;
   let downloadGitHubDatabaseSpy: jest.SpiedFunction<
-    typeof databaseFetcher.downloadGitHubDatabase
+    DatabaseFetcher["downloadGitHubDatabase"]
   >;
   let askForGitHubRepoSpy: jest.SpiedFunction<
-    typeof databaseFetcher.askForGitHubRepo
+    DatabaseFetcher["askForGitHubRepo"]
   >;
   let openTextDocumentSpy: jest.SpiedFunction<
     typeof workspace.openTextDocument
@@ -115,6 +116,8 @@ describe("SkeletonQueryWizard", () => {
       },
     ] as WorkspaceFolder[]);
 
+    databaseFetcher = new DatabaseFetcher();
+
     quickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValueOnce(
       mockedQuickPickItem({
         label: chosenLanguage,
@@ -145,6 +148,7 @@ describe("SkeletonQueryWizard", () => {
       jest.fn(),
       mockApp,
       mockDatabaseManager,
+      databaseFetcher,
       storagePath,
       selectedItems,
     );
@@ -172,6 +176,7 @@ describe("SkeletonQueryWizard", () => {
         jest.fn(),
         mockApp,
         mockDatabaseManager,
+        databaseFetcher,
         storagePath,
         selectedItems,
         QueryLanguage.Swift,
@@ -320,6 +325,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManagerWithItems,
+            databaseFetcher,
             storagePath,
             selectedItems,
           );
@@ -369,6 +375,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManagerWithItems,
+            databaseFetcher,
             storagePath,
             selectedItems,
           );
@@ -504,6 +511,7 @@ describe("SkeletonQueryWizard", () => {
         jest.fn(),
         mockApp,
         mockDatabaseManager,
+        databaseFetcher,
         storagePath,
         selectedItems,
         QueryLanguage.Javascript,
@@ -725,6 +733,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
+            databaseFetcher,
             storagePath,
             selectedItems,
           );
@@ -754,6 +763,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
+            databaseFetcher,
             storagePath,
             selectedItems,
           );
@@ -787,6 +797,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
+            databaseFetcher,
             storagePath,
             selectedItems,
             QueryLanguage.Swift,
@@ -830,6 +841,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
+            databaseFetcher,
             storagePath,
             selectedItems,
           );

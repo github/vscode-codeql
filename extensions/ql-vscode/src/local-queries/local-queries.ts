@@ -51,6 +51,7 @@ import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { tryGetQueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 import type { ExtensionApp } from "../common/vscode/vscode-app";
+import { DatabaseFetcher } from "../databases/database-fetcher";
 
 export enum QuickEvalType {
   None,
@@ -330,6 +331,7 @@ export class LocalQueries extends DisposableObject {
           progress,
           this.app,
           this.databaseManager,
+          new DatabaseFetcher(),
           contextStoragePath,
           this.selectedQueryTreeViewItems,
           language,

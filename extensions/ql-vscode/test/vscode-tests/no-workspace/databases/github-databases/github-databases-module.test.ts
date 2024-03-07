@@ -16,6 +16,7 @@ import * as githubDatabasesApi from "../../../../../src/databases/github-databas
 import * as githubDatabasesDownload from "../../../../../src/databases/github-databases/download";
 import * as githubDatabasesUpdates from "../../../../../src/databases/github-databases/updates";
 import type { DatabaseUpdate } from "../../../../../src/databases/github-databases/updates";
+import { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 
 describe("GitHubDatabasesModule", () => {
   describe("promptGitHubRepositoryDownload", () => {
@@ -23,6 +24,7 @@ describe("GitHubDatabasesModule", () => {
     let databaseManager: DatabaseManager;
     let databaseStoragePath: string;
     let cliServer: CodeQLCliServer;
+    let databaseFetcher: DatabaseFetcher;
     let config: GitHubDatabaseConfig;
     let gitHubDatabasesModule: GitHubDatabasesModule;
 
@@ -66,6 +68,7 @@ describe("GitHubDatabasesModule", () => {
       databaseManager = mockEmptyDatabaseManager();
       databaseStoragePath = "/a/b/some-path";
       cliServer = mockedObject<CodeQLCliServer>({});
+      databaseFetcher = new DatabaseFetcher();
       config = mockedObject<GitHubDatabaseConfig>({
         download: "ask",
         update: "ask",
@@ -74,6 +77,7 @@ describe("GitHubDatabasesModule", () => {
       gitHubDatabasesModule = new GitHubDatabasesModule(
         app,
         databaseManager,
+        databaseFetcher,
         databaseStoragePath,
         cliServer,
         config,
@@ -124,6 +128,7 @@ describe("GitHubDatabasesModule", () => {
       gitHubDatabasesModule = new GitHubDatabasesModule(
         app,
         databaseManager,
+        databaseFetcher,
         databaseStoragePath,
         cliServer,
         config,
@@ -207,6 +212,7 @@ describe("GitHubDatabasesModule", () => {
         repo,
         databases,
         databaseManager,
+        databaseFetcher,
         databaseStoragePath,
         cliServer,
         app.commands,
@@ -250,6 +256,7 @@ describe("GitHubDatabasesModule", () => {
         repo,
         databaseUpdates,
         databaseManager,
+        databaseFetcher,
         databaseStoragePath,
         cliServer,
         app.commands,

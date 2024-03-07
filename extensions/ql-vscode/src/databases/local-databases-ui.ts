@@ -42,11 +42,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
 } from "../common/logging";
-import {
-  importArchiveDatabase,
-  promptImportGithubDatabase,
-  promptImportInternetDatabase,
-} from "./database-fetcher";
+import { DatabaseFetcher } from "./database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
 import type { QueryRunner } from "../query-server";
 import type { App } from "../common/app";
@@ -540,7 +536,7 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseInternet(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await promptImportInternetDatabase(
+        await new DatabaseFetcher().promptImportInternetDatabase(
           this.app.commands,
           this.databaseManager,
           this.storagePath,
@@ -557,7 +553,7 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await promptImportGithubDatabase(
+        await new DatabaseFetcher().promptImportGithubDatabase(
           this.app,
           this.databaseManager,
           this.storagePath,
@@ -712,7 +708,7 @@ export class DatabaseUI extends DisposableObject {
         try {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
-            await importArchiveDatabase(
+            await new DatabaseFetcher().importArchiveDatabase(
               this.app.commands,
               uri.toString(true),
               this.databaseManager,
@@ -959,7 +955,7 @@ export class DatabaseUI extends DisposableObject {
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area
           // before importing.
-          return await importArchiveDatabase(
+          return await new DatabaseFetcher().importArchiveDatabase(
             this.app.commands,
             uri.toString(true),
             this.databaseManager,

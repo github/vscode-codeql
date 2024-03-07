@@ -133,6 +133,7 @@ import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referen
 import { LanguageContextStore } from "./language-context-store";
 import { LanguageSelectionPanel } from "./language-selection-panel/language-selection-panel";
 import { GitHubDatabasesModule } from "./databases/github-databases";
+import { DatabaseFetcher } from "./databases/database-fetcher";
 
 /**
  * extension.ts
@@ -881,6 +882,7 @@ async function activateWithInstalledDistribution(
   await GitHubDatabasesModule.initialize(
     app,
     dbm,
+    new DatabaseFetcher(),
     getContextStoragePath(ctx),
     cliServer,
     githubDatabaseConfigListener,

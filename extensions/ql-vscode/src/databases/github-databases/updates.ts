@@ -5,7 +5,7 @@ import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import type { AppCommandManager } from "../../common/commands";
 import { getLanguageDisplayName } from "../../common/query-language";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
-import { downloadGitHubDatabaseFromUrl } from "../database-fetcher";
+import type { DatabaseFetcher } from "../database-fetcher";
 import { withProgress } from "../../common/vscode/progress";
 import { window } from "vscode";
 import type { GitHubDatabaseConfig } from "../../config";
@@ -156,6 +156,7 @@ export async function downloadDatabaseUpdateFromGitHub(
   repo: string,
   updates: DatabaseUpdate[],
   databaseManager: DatabaseManager,
+  databaseFetcher: DatabaseFetcher,
   storagePath: string,
   cliServer: CodeQLCliServer,
   commandManager: AppCommandManager,
@@ -179,21 +180,22 @@ export async function downloadDatabaseUpdateFromGitHub(
 
       return withProgress(
         async (progress) => {
-          const newDatabase = await downloadGitHubDatabaseFromUrl(
-            database.url,
-            database.id,
-            database.created_at,
-            database.commit_oid ?? null,
-            owner,
-            repo,
-            octokit,
-            progress,
-            databaseManager,
-            storagePath,
-            cliServer,
-            databaseManager.currentDatabaseItem === update.databaseItem,
-            update.databaseItem.hasSourceArchiveInExplorer(),
-          );
+          const newDatabase =
+            await databaseFetcher.downloadGitHubDatabaseFromUrl(
+              database.url,
+              database.id,
+              database.created_at,
+              database.commit_oid ?? null,
+              owner,
+              repo,
+              octokit,
+              progress,
+              databaseManager,
+              storagePath,
+              cliServer,
+              databaseManager.currentDatabaseItem === update.databaseItem,
+              update.databaseItem.hasSourceArchiveInExplorer(),
+            );
           if (newDatabase === undefined) {
             return;
           }

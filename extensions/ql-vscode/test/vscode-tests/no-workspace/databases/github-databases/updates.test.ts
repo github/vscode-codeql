@@ -12,7 +12,7 @@ import type { DatabaseManager } from "../../../../../src/databases/local-databas
 import type { GitHubDatabaseConfig } from "../../../../../src/config";
 import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
-import * as databaseFetcher from "../../../../../src/databases/database-fetcher";
+import { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../../src/common/vscode/dialog";
 import type { DatabaseUpdate } from "../../../../../src/databases/github-databases/updates";
 import {
@@ -344,6 +344,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
   const owner = "github";
   const repo = "codeql";
   let databaseManager: DatabaseManager;
+  let databaseFetcher: DatabaseFetcher;
   const storagePath = "/a/b/c/d";
   let cliServer: CodeQLCliServer;
   const commandManager = createMockCommandManager();
@@ -368,7 +369,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
 
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let downloadGitHubDatabaseFromUrlSpy: jest.SpiedFunction<
-    typeof databaseFetcher.downloadGitHubDatabaseFromUrl
+    DatabaseFetcher["downloadGitHubDatabaseFromUrl"]
   >;
 
   beforeEach(() => {
@@ -376,6 +377,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
     databaseManager = mockedObject<DatabaseManager>({
       currentDatabaseItem: mockDatabaseItem(),
     });
+    databaseFetcher = new DatabaseFetcher();
     cliServer = mockedObject<CodeQLCliServer>({});
 
     showQuickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValue(
@@ -397,6 +399,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
       repo,
       updates,
       databaseManager,
+      databaseFetcher,
       storagePath,
       cliServer,
       commandManager,
@@ -476,6 +479,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         updates,
         databaseManager,
+        databaseFetcher,
         storagePath,
         cliServer,
         commandManager,
@@ -532,6 +536,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         updates,
         databaseManager,
+        databaseFetcher,
         storagePath,
         cliServer,
         commandManager,
@@ -597,6 +602,7 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
           repo,
           updates,
           databaseManager,
+          databaseFetcher,
           storagePath,
           cliServer,
           commandManager,

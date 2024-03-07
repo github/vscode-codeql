@@ -14,7 +14,7 @@ import type { DatabaseManager } from "../../../../../src/databases/local-databas
 import type { GitHubDatabaseConfig } from "../../../../../src/config";
 import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
-import * as databaseFetcher from "../../../../../src/databases/database-fetcher";
+import { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../../src/common/vscode/dialog";
 import type { CodeqlDatabase } from "../../../../../src/databases/github-databases/api";
 
@@ -97,6 +97,7 @@ describe("downloadDatabaseFromGitHub", () => {
   const owner = "github";
   const repo = "codeql";
   let databaseManager: DatabaseManager;
+  let databaseFetcher: DatabaseFetcher;
 
   const storagePath = "/a/b/c/d";
   let cliServer: CodeQLCliServer;
@@ -117,12 +118,13 @@ describe("downloadDatabaseFromGitHub", () => {
 
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let downloadGitHubDatabaseFromUrlSpy: jest.SpiedFunction<
-    typeof databaseFetcher.downloadGitHubDatabaseFromUrl
+    DatabaseFetcher["downloadGitHubDatabaseFromUrl"]
   >;
 
   beforeEach(() => {
     octokit = mockedObject<Octokit>({});
     databaseManager = mockedObject<DatabaseManager>({});
+    databaseFetcher = new DatabaseFetcher();
     cliServer = mockedObject<CodeQLCliServer>({});
 
     showQuickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValue(
@@ -144,6 +146,7 @@ describe("downloadDatabaseFromGitHub", () => {
       repo,
       databases,
       databaseManager,
+      databaseFetcher,
       storagePath,
       cliServer,
       commandManager,
@@ -208,6 +211,7 @@ describe("downloadDatabaseFromGitHub", () => {
         repo,
         databases,
         databaseManager,
+        databaseFetcher,
         storagePath,
         cliServer,
         commandManager,
@@ -264,6 +268,7 @@ describe("downloadDatabaseFromGitHub", () => {
         repo,
         databases,
         databaseManager,
+        databaseFetcher,
         storagePath,
         cliServer,
         commandManager,
@@ -329,6 +334,7 @@ describe("downloadDatabaseFromGitHub", () => {
           repo,
           databases,
           databaseManager,
+          databaseFetcher,
           storagePath,
           cliServer,
           commandManager,

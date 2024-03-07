@@ -29,7 +29,7 @@ import type {
 } from "../databases/local-databases";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
-import { promptImportGithubDatabase } from "../databases/database-fetcher";
+import { DatabaseFetcher } from "../databases/database-fetcher";
 import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import {
@@ -916,16 +916,17 @@ export class ModelEditorView extends AbstractWebview<
     // the user to import the library database. We need to have the database
     // imported to the query server, so we need to register it to our workspace.
     const makeSelected = false;
-    const addedDatabase = await promptImportGithubDatabase(
-      this.app,
-      this.databaseManager,
-      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
-      progress,
-      this.cliServer,
-      this.databaseItem.language,
-      makeSelected,
-      false,
-    );
+    const addedDatabase =
+      await new DatabaseFetcher().promptImportGithubDatabase(
+        this.app,
+        this.databaseManager,
+        this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+        progress,
+        this.cliServer,
+        this.databaseItem.language,
+        makeSelected,
+        false,
+      );
     if (!addedDatabase) {
       void this.app.logger.log("No database chosen");
       return;
