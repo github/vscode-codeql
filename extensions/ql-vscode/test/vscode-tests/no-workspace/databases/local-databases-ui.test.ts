@@ -20,6 +20,7 @@ import { testDisposeHandler } from "../../test-dispose-handler";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import { mockedQuickPickItem, mockedObject } from "../../utils/mocking.helpers";
+import type { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
 
 describe("local-databases-ui", () => {
   const storageDir = dirSync({ unsafeCleanup: true }).name;
@@ -104,6 +105,7 @@ describe("local-databases-ui", () => {
         },
         setCurrentDatabaseItem: () => {},
       } as any,
+      mockedObject<DatabaseFetcher>({}),
       {
         onLanguageContextChanged: () => {
           /**/
@@ -142,6 +144,7 @@ describe("local-databases-ui", () => {
           setCurrentDatabaseItem: () => {},
           currentDatabaseItem: { databaseUri: Uri.file(db1) },
         } as any,
+        mockedObject<DatabaseFetcher>({}),
         {
           onLanguageContextChanged: () => {
             /**/
@@ -178,6 +181,7 @@ describe("local-databases-ui", () => {
       const databaseUI = new DatabaseUI(
         app,
         databaseManager,
+        mockedObject<DatabaseFetcher>({}),
         {
           onLanguageContextChanged: () => {
             /**/

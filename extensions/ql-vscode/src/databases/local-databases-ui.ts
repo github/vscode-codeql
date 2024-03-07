@@ -42,7 +42,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
 } from "../common/logging";
-import { DatabaseFetcher } from "./database-fetcher";
+import type { DatabaseFetcher } from "./database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
 import type { QueryRunner } from "../query-server";
 import type { App } from "../common/app";
@@ -248,6 +248,7 @@ export class DatabaseUI extends DisposableObject {
   public constructor(
     private app: App,
     private databaseManager: DatabaseManager,
+    private readonly databaseFetcher: DatabaseFetcher,
     languageContext: LanguageContextStore,
     private readonly queryServer: QueryRunner,
     private readonly storagePath: string,
@@ -536,13 +537,7 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseInternet(): Promise<void> {
     return withProgress(
       async (progress) => {
-        const databaseFetcher = new DatabaseFetcher(
-          this.app,
-          this.databaseManager,
-          this.storagePath,
-          this.queryServer.cliServer,
-        );
-        await databaseFetcher.promptImportInternetDatabase(progress);
+        await this.databaseFetcher.promptImportInternetDatabase(progress);
       },
       {
         title: "Adding database from URL",
@@ -553,13 +548,7 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
       async (progress) => {
-        const databaseFetcher = new DatabaseFetcher(
-          this.app,
-          this.databaseManager,
-          this.storagePath,
-          this.queryServer.cliServer,
-        );
-        await databaseFetcher.promptImportGithubDatabase(progress);
+        await this.databaseFetcher.promptImportGithubDatabase(progress);
       },
       {
         title: "Adding database from GitHub",
@@ -708,13 +697,7 @@ export class DatabaseUI extends DisposableObject {
         try {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
-            const databaseFetcher = new DatabaseFetcher(
-              this.app,
-              this.databaseManager,
-              this.storagePath,
-              this.queryServer.cliServer,
-            );
-            await databaseFetcher.importArchiveDatabase(
+            await this.databaseFetcher.importArchiveDatabase(
               uri.toString(true),
               progress,
             );
@@ -957,13 +940,7 @@ export class DatabaseUI extends DisposableObject {
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area
           // before importing.
-          const databaseFetcher = new DatabaseFetcher(
-            this.app,
-            this.databaseManager,
-            this.storagePath,
-            this.queryServer.cliServer,
-          );
-          return await databaseFetcher.importArchiveDatabase(
+          return await this.databaseFetcher.importArchiveDatabase(
             uri.toString(true),
             progress,
           );

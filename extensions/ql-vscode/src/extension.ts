@@ -800,12 +800,20 @@ async function activateWithInstalledDistribution(
   // Let this run async.
   void dbm.loadPersistedState();
 
+  const databaseFetcher = new DatabaseFetcher(
+    app,
+    dbm,
+    getContextStoragePath(ctx),
+    cliServer,
+  );
+
   ctx.subscriptions.push(dbm);
 
   void extLogger.log("Initializing database panel.");
   const databaseUI = new DatabaseUI(
     app,
     dbm,
+    databaseFetcher,
     languageContext,
     qs,
     getContextStoragePath(ctx),
@@ -882,7 +890,7 @@ async function activateWithInstalledDistribution(
   await GitHubDatabasesModule.initialize(
     app,
     dbm,
-    new DatabaseFetcher(app, dbm, getContextStoragePath(ctx), cliServer),
+    databaseFetcher,
     githubDatabaseConfigListener,
   );
 
@@ -953,6 +961,7 @@ async function activateWithInstalledDistribution(
     qs,
     qhm,
     dbm,
+    databaseFetcher,
     cliServer,
     databaseUI,
     localQueryResultsView,
@@ -977,6 +986,7 @@ async function activateWithInstalledDistribution(
   const modelEditorModule = await ModelEditorModule.initialize(
     app,
     dbm,
+    databaseFetcher,
     variantAnalysisManager,
     cliServer,
     qs,
