@@ -2023,7 +2023,7 @@
     "@types/yauzl": "^2.10.3",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vscode/test-electron": "^2.2.0",
+    "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^2.19.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.9.4",
