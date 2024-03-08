@@ -535,6 +535,7 @@ export class CodeQLCliServer implements Disposable {
     let stdoutListener: ((newData: Buffer) => void) | undefined = undefined;
     let stderrListener: ((newData: Buffer) => void) | undefined = undefined;
     let closeListener: ((code: number | null) => void) | undefined = undefined;
+    let errorListener: ((err: Error) => void) | undefined = undefined;
 
     try {
       // The array of fragments of stdout
@@ -618,6 +619,9 @@ export class CodeQLCliServer implements Disposable {
             }
           }
         };
+        errorListener = (err) => {
+          reject(err);
+        };
 
         // Start listening to stdout
         process.stdout.addListener("data", stdoutListener);
@@ -625,6 +629,8 @@ export class CodeQLCliServer implements Disposable {
         process.stderr.addListener("data", stderrListener);
         // Listen for process exit.
         process.addListener("close", closeListener);
+        // Listen for errors
+        process.addListener("error", errorListener);
 
         onListenStart?.(process);
       });
@@ -667,6 +673,9 @@ export class CodeQLCliServer implements Disposable {
       }
       if (closeListener) {
         process.removeListener("close", closeListener);
+      }
+      if (errorListener) {
+        process.removeListener("error", errorListener);
       }
     }
   }
