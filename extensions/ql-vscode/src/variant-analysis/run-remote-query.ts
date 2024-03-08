@@ -54,6 +54,7 @@ async function generateQueryPack(
   cliServer: CodeQLCliServer,
   qlPackDetails: QlPackDetails,
   tmpDir: RemoteQueryTempDir,
+  token: CancellationToken,
 ): Promise<string> {
   const workspaceFolders = getOnDiskWorkspaceFolders();
   const extensionPacks = await getExtensionPacksToInject(
@@ -148,6 +149,7 @@ async function generateQueryPack(
     bundlePath,
     tmpDir.compiledPackDir,
     precompilationOpts,
+    token,
   );
   const base64Pack = (await readFile(bundlePath)).toString("base64");
   return base64Pack;
@@ -331,7 +333,12 @@ export async function prepareRemoteQueryRun(
   let base64Pack: string;
 
   try {
-    base64Pack = await generateQueryPack(cliServer, qlPackDetails, tempDir);
+    base64Pack = await generateQueryPack(
+      cliServer,
+      qlPackDetails,
+      tempDir,
+      token,
+    );
   } finally {
     await tempDir.remoteQueryDir.cleanup();
   }

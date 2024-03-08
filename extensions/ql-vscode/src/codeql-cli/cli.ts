@@ -36,6 +36,7 @@ import type { Position } from "../query-server/messages";
 import { LOGGING_FLAGS } from "./cli-command";
 import type { CliFeatures, VersionAndFeatures } from "./cli-version";
 import { ExitCodeError, getCliError } from "./cli-errors";
+import { UserCancellationException } from "../common/vscode/progress";
 
 /**
  * The version of the SARIF format that we are using.
@@ -230,6 +231,15 @@ type RunOptions = {
    * If true, don't print logs to the CodeQL extension log.
    */
   silent?: boolean;
+  /**
+   * If true, run this command in a new process rather than in the CLI server.
+   */
+  runInNewProcess?: boolean;
+  /**
+   * If runInNewProcess is true, allows cancelling the command. If runInNewProcess
+   * is false or not specified, this option is ignored.
+   */
+  token?: CancellationToken;
 };
 
 type JsonRunOptions = RunOptions & {
@@ -435,6 +445,67 @@ export class CodeQLCliServer implements Disposable {
       this.commandInProcess = false;
       // start running the next command immediately
       this.runNext();
+    }
+  }
+
+  private async runCodeQlCliInNewProcess(
+    command: string[],
+    commandArgs: string[],
+    description: string,
+    onLine?: OnLineCallback,
+    silent?: boolean,
+    token?: CancellationToken,
+  ): Promise<string> {
+    const codeqlPath = await this.getCodeQlPath();
+
+    const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
+    const argsString = args.join(" ");
+
+    // If we are running silently, we don't want to print anything to the console.
+    if (!silent) {
+      void this.logger.log(`${description} using CodeQL CLI: ${argsString}...`);
+    }
+
+    const process = spawnChildProcess(codeqlPath, args);
+    if (!process || !process.pid) {
+      throw new Error(
+        `Failed to start ${description} using command ${codeqlPath} ${argsString}.`,
+      );
+    }
+
+    let cancellationRegistration: Disposable | undefined = undefined;
+    try {
+      cancellationRegistration = token?.onCancellationRequested((_e) => {
+        tk(process.pid || 0);
+      });
+
+      return await this.handleProcessOutput(process, {
+        handleNullTerminator: true,
+        onListenStart: (process) => {
+          // Write the command followed by a null terminator.
+          process.stdin.write(JSON.stringify(args), "utf8");
+          process.stdin.write(this.nullBuffer);
+        },
+        description,
+        args,
+        silent,
+        onLine,
+      });
+    } catch (e) {
+      // If cancellation was requested, the error is probably just because the process was exited with SIGTERM.
+      if (token?.isCancellationRequested) {
+        void this.logger.log(
+          `The process was cancelled and exited with: ${getErrorMessage(e)}`,
+        );
+        throw new UserCancellationException(
+          `Command ${argsString} was cancelled.`,
+          true, // Don't show a warning message when the user manually cancelled the command.
+        );
+      }
+
+      throw e;
+    } finally {
+      cancellationRegistration?.dispose();
     }
   }
 
@@ -714,16 +785,36 @@ export class CodeQLCliServer implements Disposable {
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
    * @param onLine Used for responding to interactive output on stdout/stdin.
    * @param silent If true, don't print logs to the CodeQL extension log.
+   * @param runInNewProcess If true, run this command in a new process rather than in the CLI server.
+   * @param token If runInNewProcess is true, allows cancelling the command. If runInNewProcess
+   *              is false or not specified, this option is ignored.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   runCodeQlCliCommand(
     command: string[],
     commandArgs: string[],
     description: string,
-    { progressReporter, onLine, silent = false }: RunOptions = {},
+    {
+      progressReporter,
+      onLine,
+      silent = false,
+      runInNewProcess = false,
+      token,
+    }: RunOptions = {},
   ): Promise<string> {
     if (progressReporter) {
       progressReporter.report({ message: description });
+    }
+
+    if (runInNewProcess) {
+      return this.runCodeQlCliInNewProcess(
+        command,
+        commandArgs,
+        description,
+        onLine,
+        silent,
+        token,
+      );
     }
 
     return new Promise((resolve, reject) => {
@@ -1537,6 +1628,7 @@ export class CodeQLCliServer implements Disposable {
    * @param outputBundleFile The path to the output bundle file.
    * @param outputPackDir The directory to contain the unbundled output pack.
    * @param moreOptions Additional options to be passed to `codeql pack bundle`.
+   * @param token Cancellation token for the operation.
    */
   async packBundle(
     sourcePackDir: string,
@@ -1544,6 +1636,7 @@ export class CodeQLCliServer implements Disposable {
     outputBundleFile: string,
     outputPackDir: string,
     moreOptions: string[],
+    token?: CancellationToken,
   ): Promise<void> {
     const args = [
       "-o",
@@ -1559,6 +1652,10 @@ export class CodeQLCliServer implements Disposable {
       ["pack", "bundle"],
       args,
       "Bundling pack",
+      {
+        runInNewProcess: true,
+        token,
+      },
     );
   }
 

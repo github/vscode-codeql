@@ -221,42 +221,48 @@ export class VariantAnalysisManager
   }
 
   public async runVariantAnalysisFromPublishedPack(): Promise<void> {
-    return withProgress(async (progress, token) => {
-      progress({
-        maxStep: 7,
-        step: 0,
-        message: "Determining query language",
-      });
+    return withProgress(
+      async (progress, token) => {
+        progress({
+          maxStep: 7,
+          step: 0,
+          message: "Determining query language",
+        });
 
-      const language = await askForLanguage(this.cliServer);
-      if (!language) {
-        return;
-      }
+        const language = await askForLanguage(this.cliServer);
+        if (!language) {
+          return;
+        }
 
-      progress({
-        maxStep: 7,
-        step: 2,
-        message: "Downloading query pack and resolving queries",
-      });
+        progress({
+          maxStep: 7,
+          step: 2,
+          message: "Downloading query pack and resolving queries",
+        });
 
-      // Build up details to pass to the functions that run the variant analysis.
-      const qlPackDetails = await resolveCodeScanningQueryPack(
-        this.app.logger,
-        this.cliServer,
-        language,
-      );
+        // Build up details to pass to the functions that run the variant analysis.
+        const qlPackDetails = await resolveCodeScanningQueryPack(
+          this.app.logger,
+          this.cliServer,
+          language,
+        );
 
-      await this.runVariantAnalysis(
-        qlPackDetails,
-        (p) =>
-          progress({
-            ...p,
-            maxStep: p.maxStep + 3,
-            step: p.step + 3,
-          }),
-        token,
-      );
-    });
+        await this.runVariantAnalysis(
+          qlPackDetails,
+          (p) =>
+            progress({
+              ...p,
+              maxStep: p.maxStep + 3,
+              step: p.step + 3,
+            }),
+          token,
+        );
+      },
+      {
+        title: "Run Variant Analysis",
+        cancellable: true,
+      },
+    );
   }
 
   private async runVariantAnalysisCommand(queryFiles: Uri[]): Promise<void> {

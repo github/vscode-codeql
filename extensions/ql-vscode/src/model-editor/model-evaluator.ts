@@ -75,7 +75,7 @@ export class ModelEvaluator extends DisposableObject {
         ),
       {
         title: "Run model evaluation",
-        cancellable: false,
+        cancellable: true,
       },
     );
   }
