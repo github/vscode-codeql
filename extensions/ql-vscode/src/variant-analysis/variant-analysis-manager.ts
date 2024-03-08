@@ -229,7 +229,7 @@ export class VariantAnalysisManager
           message: "Determining query language",
         });
 
-        const language = await askForLanguage(this.cliServer);
+        const language = await askForLanguage(this.cliServer, true, token);
         if (!language) {
           return;
         }
