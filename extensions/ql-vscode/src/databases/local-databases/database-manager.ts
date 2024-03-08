@@ -82,6 +82,10 @@ function eventFired<T>(
 }
 
 type OpenDatabaseOptions = {
+  /**
+   * A location that is managed by the extension.
+   */
+  extensionManagedLocation?: string;
   isTutorialDatabase?: boolean;
   /**
    * Whether to add a workspace folder containing the source archive to the workspace. Default is true.
@@ -141,6 +145,7 @@ export class DatabaseManager extends DisposableObject {
     makeSelected = true,
     displayName?: string,
     {
+      extensionManagedLocation,
       isTutorialDatabase = false,
       addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
     }: OpenDatabaseOptions = {},
@@ -149,6 +154,7 @@ export class DatabaseManager extends DisposableObject {
       uri,
       origin,
       displayName,
+      extensionManagedLocation,
     );
 
     return await this.addExistingDatabaseItem(
@@ -202,6 +208,7 @@ export class DatabaseManager extends DisposableObject {
     uri: vscode.Uri,
     origin: DatabaseOrigin | undefined,
     displayName: string | undefined,
+    extensionManagedLocation?: string,
   ): Promise<DatabaseItemImpl> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
     const fullOptions: FullDatabaseOptions = {
@@ -210,6 +217,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded: Date.now(),
       language: await this.getPrimaryLanguage(uri.fsPath),
       origin,
+      extensionManagedLocation,
     };
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions);
 
@@ -370,6 +378,7 @@ export class DatabaseManager extends DisposableObject {
     let dateAdded = undefined;
     let language = undefined;
     let origin = undefined;
+    let extensionManagedLocation = undefined;
     if (state.options) {
       if (typeof state.options.displayName === "string") {
         displayName = state.options.displayName;
@@ -379,6 +388,7 @@ export class DatabaseManager extends DisposableObject {
       }
       language = state.options.language;
       origin = state.options.origin;
+      extensionManagedLocation = state.options.extensionManagedLocation;
     }
 
     const dbBaseUri = vscode.Uri.parse(state.uri, true);
@@ -392,6 +402,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded,
       language,
       origin,
+      extensionManagedLocation,
     };
     const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions);
 
@@ -583,15 +594,20 @@ export class DatabaseManager extends DisposableObject {
     // Remove this database item from the allow-list
     await this.deregisterDatabase(item);
 
+    // Find whether we know directly which directory we should remove
+    const directoryToRemove = item.extensionManagedLocation
+      ? vscode.Uri.file(item.extensionManagedLocation)
+      : item.databaseUri;
+
     // Delete folder from file system only if it is controlled by the extension
-    if (this.isExtensionControlledLocation(item.databaseUri)) {
+    if (this.isExtensionControlledLocation(directoryToRemove)) {
       void extLogger.log("Deleting database from filesystem.");
-      await remove(item.databaseUri.fsPath).then(
-        () => void extLogger.log(`Deleted '${item.databaseUri.fsPath}'`),
+      await remove(directoryToRemove.fsPath).then(
+        () => void extLogger.log(`Deleted '${directoryToRemove.fsPath}'`),
         (e: unknown) =>
           void extLogger.log(
             `Failed to delete '${
-              item.databaseUri.fsPath
+              directoryToRemove.fsPath
             }'. Reason: ${getErrorMessage(e)}`,
           ),
       );

@@ -14,6 +14,7 @@ export function mockDbOptions(): FullDatabaseOptions {
     origin: {
       type: "folder",
     },
+    extensionManagedLocation: undefined,
   };
 }
 

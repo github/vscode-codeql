@@ -604,6 +604,7 @@ describe("local databases", () => {
         origin: {
           type: "folder",
         },
+        extensionManagedLocation: undefined,
       };
       mockDbItem = createMockDB(dir, options);
 

@@ -400,6 +400,7 @@ async function databaseArchiveFetcher(
       nameOverride,
       {
         addSourceArchiveFolder,
+        extensionManagedLocation: unzipPath,
       },
     );
     return item;
