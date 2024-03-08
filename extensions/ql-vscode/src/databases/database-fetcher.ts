@@ -15,6 +15,7 @@ import {
 } from "fs-extra";
 import { basename, join } from "path";
 import type { Octokit } from "@octokit/rest";
+import { nanoid } from "nanoid";
 
 import type { DatabaseManager, DatabaseItem } from "./local-databases";
 import { tmpDir } from "../tmp-dir";
@@ -365,7 +366,11 @@ async function databaseArchiveFetcher(
     throw new Error("No storage path specified.");
   }
   await ensureDir(storagePath);
-  const unzipPath = await getStorageFolder(storagePath, databaseUrl);
+  const unzipPath = await getStorageFolder(
+    storagePath,
+    databaseUrl,
+    nameOverride,
+  );
 
   if (isFile(databaseUrl)) {
     await readAndUnzip(databaseUrl, unzipPath, cli, progress);
@@ -408,16 +413,41 @@ async function databaseArchiveFetcher(
   }
 }
 
-async function getStorageFolder(storagePath: string, urlStr: string) {
-  // we need to generate a folder name for the unzipped archive,
-  // this needs to be human readable since we may use this name as the initial
-  // name for the database
-  const url = Uri.parse(urlStr);
-  // MacOS has a max filename length of 255
-  // and remove a few extra chars in case we need to add a counter at the end.
-  let lastName = basename(url.path).substring(0, 250);
-  if (lastName.endsWith(".zip")) {
-    lastName = lastName.substring(0, lastName.length - 4);
+async function getStorageFolder(
+  storagePath: string,
+  urlStr: string,
+  nameOverrride?: string,
+) {
+  let lastName: string;
+
+  if (nameOverrride) {
+    // Lowercase everything
+    let name = nameOverrride.toLowerCase();
+
+    // Replace all spaces, dots, underscores, and forward slashes with hyphens
+    name = name.replaceAll(/[\s._/]+/g, "-");
+
+    // Replace all characters which are not allowed by empty strings
+    name = name.replaceAll(/[^a-z0-9-]/g, "");
+
+    // Remove any leading or trailing hyphens
+    name = name.replaceAll(/^-|-$/g, "");
+
+    // Remove any duplicate hyphens
+    name = name.replaceAll(/-{2,}/g, "-");
+
+    lastName = name;
+  } else {
+    // we need to generate a folder name for the unzipped archive,
+    // this needs to be human readable since we may use this name as the initial
+    // name for the database
+    const url = Uri.parse(urlStr);
+    // MacOS has a max filename length of 255
+    // and remove a few extra chars in case we need to add a counter at the end.
+    lastName = basename(url.path).substring(0, 250);
+    if (lastName.endsWith(".zip")) {
+      lastName = lastName.substring(0, lastName.length - 4);
+    }
   }
 
   const realpath = await fs_realpath(storagePath);
@@ -429,6 +459,11 @@ async function getStorageFolder(storagePath: string, urlStr: string) {
     counter++;
     folderName = join(realpath, `${lastName}-${counter}`);
     if (counter > 100) {
+      // If there are more than 100 similarly named databases,
+      // give up on using a counter and use a random string instead.
+      folderName = join(realpath, `${lastName}-${nanoid()}`);
+    }
+    if (counter > 200) {
       throw new Error("Could not find a unique name for downloaded database.");
     }
   }
