@@ -9,16 +9,18 @@ import type { QlPackDetails } from "./ql-pack-details";
 import { getQlPackFilePath } from "../common/ql";
 import type { SuiteInstruction } from "../packaging/suite-instruction";
 import { SARIF_RESULTS_QUERY_KINDS } from "../common/query-metadata";
+import type { CancellationToken } from "vscode";
 
 export async function resolveCodeScanningQueryPack(
   logger: BaseLogger,
   cliServer: CodeQLCliServer,
   language: QueryLanguage,
+  token: CancellationToken,
 ): Promise<QlPackDetails> {
   // Get pack
   void logger.log(`Downloading pack for language: ${language}`);
   const packName = `codeql/${language}-queries`;
-  const packDownloadResult = await cliServer.packDownload([packName]);
+  const packDownloadResult = await cliServer.packDownload([packName], token);
   const downloadedPack = packDownloadResult.packs[0];
 
   const packDir = join(

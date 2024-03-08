@@ -245,6 +245,7 @@ export class VariantAnalysisManager
           this.app.logger,
           this.cliServer,
           language,
+          token,
         );
 
         await this.runVariantAnalysis(

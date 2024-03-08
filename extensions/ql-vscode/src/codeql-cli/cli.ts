@@ -480,12 +480,7 @@ export class CodeQLCliServer implements Disposable {
       });
 
       return await this.handleProcessOutput(process, {
-        handleNullTerminator: true,
-        onListenStart: (process) => {
-          // Write the command followed by a null terminator.
-          process.stdin.write(JSON.stringify(args), "utf8");
-          process.stdin.write(this.nullBuffer);
-        },
+        handleNullTerminator: false,
         description,
         args,
         silent,
@@ -1587,12 +1582,20 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Downloads a specified pack.
    * @param packs The `<package-scope/name[@version]>` of the packs to download.
+   * @param token The cancellation token. If not specified, the command will be run in the CLI server.
    */
-  async packDownload(packs: string[]): Promise<PackDownloadResult> {
+  async packDownload(
+    packs: string[],
+    token?: CancellationToken,
+  ): Promise<PackDownloadResult> {
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "download"],
       packs,
       "Downloading packs",
+      {
+        runInNewProcess: !!token, // Only run in a new process if a token is provided
+        token,
+      },
     );
   }
 

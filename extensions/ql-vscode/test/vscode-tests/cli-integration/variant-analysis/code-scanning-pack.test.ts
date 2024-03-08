@@ -1,3 +1,4 @@
+import { CancellationTokenSource } from "vscode";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { App } from "../../../../src/common/app";
 import { QueryLanguage } from "../../../../src/common/query-language";
@@ -20,6 +21,7 @@ describe("Code Scanning pack", () => {
       app.logger,
       cli,
       QueryLanguage.Javascript,
+      new CancellationTokenSource().token,
     );
     // Should include queries. Just check that at least one known query exists.
     // It doesn't particularly matter which query we check for.
