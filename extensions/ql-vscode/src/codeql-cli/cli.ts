@@ -217,6 +217,28 @@ type VersionChangedListener = (
   newVersionAndFeatures: VersionAndFeatures | undefined,
 ) => void;
 
+type RunOptions = {
+  /**
+   * Used to output progress messages, e.g. to the status bar.
+   */
+  progressReporter?: ProgressReporter;
+  /**
+   * Used for responding to interactive output on stdout/stdin.
+   */
+  onLine?: OnLineCallback;
+  /**
+   * If true, don't print logs to the CodeQL extension log.
+   */
+  silent?: boolean;
+};
+
+type JsonRunOptions = RunOptions & {
+  /**
+   * Whether to add commandline arguments to specify the format as JSON.
+   */
+  addFormat?: boolean;
+};
+
 /**
  * This class manages a cli server started by `codeql execute cli-server` to
  * run commands without the overhead of starting a new java
@@ -691,21 +713,14 @@ export class CodeQLCliServer implements Disposable {
    * @param description Description of the action being run, to be shown in log and error messages.
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
    * @param onLine Used for responding to interactive output on stdout/stdin.
+   * @param silent If true, don't print logs to the CodeQL extension log.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   runCodeQlCliCommand(
     command: string[],
     commandArgs: string[],
     description: string,
-    {
-      progressReporter,
-      onLine,
-      silent = false,
-    }: {
-      progressReporter?: ProgressReporter;
-      onLine?: OnLineCallback;
-      silent?: boolean;
-    } = {},
+    { progressReporter, onLine, silent = false }: RunOptions = {},
   ): Promise<string> {
     if (progressReporter) {
       progressReporter.report({ message: description });
@@ -743,24 +758,13 @@ export class CodeQLCliServer implements Disposable {
    * @param description Description of the action being run, to be shown in log and error messages.
    * @param addFormat Whether or not to add commandline arguments to specify the format as JSON.
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
-   * @param onLine Used for responding to interactive output on stdout/stdin.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   async runJsonCodeQlCliCommand<OutputType>(
     command: string[],
     commandArgs: string[],
     description: string,
-    {
-      addFormat = true,
-      progressReporter,
-      onLine,
-      silent = false,
-    }: {
-      addFormat?: boolean;
-      progressReporter?: ProgressReporter;
-      onLine?: OnLineCallback;
-      silent?: boolean;
-    } = {},
+    { addFormat = true, ...runOptions }: JsonRunOptions = {},
   ): Promise<OutputType> {
     let args: string[] = [];
     if (addFormat) {
@@ -768,11 +772,12 @@ export class CodeQLCliServer implements Disposable {
       args = args.concat(["--format", "json"]);
     }
     args = args.concat(commandArgs);
-    const result = await this.runCodeQlCliCommand(command, args, description, {
-      progressReporter,
-      onLine,
-      silent,
-    });
+    const result = await this.runCodeQlCliCommand(
+      command,
+      args,
+      description,
+      runOptions,
+    );
     try {
       return JSON.parse(result) as OutputType;
     } catch (err) {
@@ -800,21 +805,14 @@ export class CodeQLCliServer implements Disposable {
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
    * @param description Description of the action being run, to be shown in log and error messages.
-   * @param addFormat Whether or not to add commandline arguments to specify the format as JSON.
-   * @param progressReporter Used to output progress messages, e.g. to the status bar.
+   * @param runOptions Options for running the command.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   async runJsonCodeQlCliCommandWithAuthentication<OutputType>(
     command: string[],
     commandArgs: string[],
     description: string,
-    {
-      addFormat,
-      progressReporter,
-    }: {
-      addFormat?: boolean;
-      progressReporter?: ProgressReporter;
-    } = {},
+    runOptions: Omit<JsonRunOptions, "onLine"> = {},
   ): Promise<OutputType> {
     const accessToken = await this.app.credentials.getExistingAccessToken();
 
@@ -825,8 +823,7 @@ export class CodeQLCliServer implements Disposable {
       [...extraArgs, ...commandArgs],
       description,
       {
-        addFormat,
-        progressReporter,
+        ...runOptions,
         onLine: async (line) => {
           if (line.startsWith("Enter value for --github-auth-stdin")) {
             try {
