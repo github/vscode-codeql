@@ -111,6 +111,9 @@
         "description": {
           "type": "string"
         },
+        "import": {
+          "type": "string"
+        },
         "from": {
           "type": "string"
         }
