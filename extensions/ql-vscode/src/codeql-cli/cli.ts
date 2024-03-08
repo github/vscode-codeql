@@ -500,6 +500,11 @@ export class CodeQLCliServer implements Disposable {
 
       throw e;
     } finally {
+      process.stdin.end();
+      process.kill();
+      process.stdout.destroy();
+      process.stderr.destroy();
+
       cancellationRegistration?.dispose();
     }
   }
