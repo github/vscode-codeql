@@ -298,7 +298,6 @@ export async function importLocalDatabase(
   try {
     const origin: DatabaseOrigin = {
       type: databaseUrl.endsWith(".testproj") ? "testproj" : "archive",
-      // TODO validate that archive origins can use a file path, not a URI
       path: Uri.parse(databaseUrl).fsPath,
     };
     const item = await fetchDatabaseToWorkspaceStorage(
@@ -371,7 +370,7 @@ async function fetchDatabaseToWorkspaceStorage(
 
   if (isFile(databaseUrl)) {
     if (origin.type === "testproj") {
-      await copyDatabase(origin.path, unzipPath, progress);
+      await copyDatabase(databaseUrl, unzipPath, progress);
     } else {
       await readAndUnzip(databaseUrl, unzipPath, cli, progress);
     }
@@ -458,12 +457,12 @@ function validateUrl(databaseUrl: string) {
 
 /**
  * Copies a database folder from the file system into the workspace storage.
- * @param scrDir the original location of the database
+ * @param scrDirURL the original location of the database as a URL string
  * @param destDir the location to copy the database to. This should be a folder in the workspace storage.
  * @param progress callback to send progress messages to
  */
 async function copyDatabase(
-  scrDir: string,
+  srcDirURL: string,
   destDir: string,
   progress?: ProgressCallback,
 ) {
@@ -473,7 +472,7 @@ async function copyDatabase(
     message: `Copying database ${basename(destDir)} into the workspace`,
   });
   await ensureDir(destDir);
-  await copy(scrDir, destDir);
+  await copy(Uri.parse(srcDirURL).fsPath, destDir);
 }
 
 async function readAndUnzip(

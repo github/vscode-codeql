@@ -12,7 +12,7 @@ import fetch from "node-fetch";
 import { renameSync } from "fs";
 import { unzipToDirectoryConcurrently } from "../../../src/common/unzip-concurrently";
 import { platform } from "os";
-import { wait } from "./utils";
+import { sleep } from "../../../src/common/time";
 
 beforeAll(async () => {
   // ensure the test database is downloaded
@@ -42,7 +42,7 @@ beforeAll(async () => {
     // On Windows, wait a few seconds to make sure all background processes
     // release their lock on the files before renaming the directory.
     if (platform() === "win32") {
-      await wait(3000);
+      await sleep(3000);
     }
     renameSync(join(dbParentDir, "db"), testprojLoc);
     console.log("Unzip completed.");

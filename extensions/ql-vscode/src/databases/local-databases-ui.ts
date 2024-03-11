@@ -750,7 +750,6 @@ export class DatabaseUI extends DisposableObject {
     return withProgress(
       async (progress) => {
         try {
-          // Assume user has selected an archive if the file has a .zip extension
           if (!uri.path.endsWith(".testproj")) {
             throw new Error(
               "Please select a valid test database to import. Test databases end with `.testproj`.",

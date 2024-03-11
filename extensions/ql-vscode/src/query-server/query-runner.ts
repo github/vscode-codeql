@@ -63,15 +63,15 @@ export interface CoreQueryRun {
 export type CoreCompletedQuery = CoreQueryResults &
   Omit<CoreQueryRun, "evaluate">;
 
-type OnQueryRunStargingListener = (dbPath: Uri) => Promise<void>;
+type OnQueryRunStartingListener = (dbPath: Uri) => Promise<void>;
 export class QueryRunner {
   constructor(public readonly qs: QueryServerClient) {}
 
   // Event handlers that get notified whenever a query is about to start running.
   // Can't use vscode EventEmitters since they are not asynchronous.
-  private readonly onQueryRunStartingListeners: OnQueryRunStargingListener[] =
+  private readonly onQueryRunStartingListeners: OnQueryRunStartingListener[] =
     [];
-  public onQueryRunStarting(listener: OnQueryRunStargingListener) {
+  public onQueryRunStarting(listener: OnQueryRunStartingListener) {
     this.onQueryRunStartingListeners.push(listener);
   }
 

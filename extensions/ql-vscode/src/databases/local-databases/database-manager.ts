@@ -221,10 +221,15 @@ export class DatabaseManager extends DisposableObject {
       "codeql-database.yml",
     );
 
-    // TODO add error handling if one does not exist.
-    const originStat = await stat(originDbYml);
-    const importedStat = await stat(importedDbYml);
-    return originStat.mtimeMs > importedStat.mtimeMs;
+    try {
+      const originStat = await stat(originDbYml);
+      const importedStat = await stat(importedDbYml);
+      return originStat.mtimeMs > importedStat.mtimeMs;
+    } catch (e) {
+      // If either of the files does not exist, we assume the origin is newer.
+      // This shouldn't happen unless the user manually deleted one of the files.
+      return true;
+    }
   }
 
   /**
