@@ -10,7 +10,6 @@ import {
   pathExists,
   createWriteStream,
   remove,
-  stat,
   readdir,
 } from "fs-extra";
 import { basename, join } from "path";
@@ -36,11 +35,12 @@ import {
 } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
-import { getLanguageDisplayName } from "../common/query-language";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import type { App } from "../common/app";
 import { createFilenameFromString } from "../common/filenames";
+import { findDirWithFile } from "../common/files";
+import { convertGithubNwoToDatabaseUrl } from "./github-databases/api";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -406,6 +406,7 @@ async function databaseArchiveFetcher(
       nameOverride,
       {
         addSourceArchiveFolder,
+        extensionManagedLocation: unzipPath,
       },
     );
     return item;
@@ -615,125 +616,6 @@ async function checkForFailingResponse(
 
 function isFile(databaseUrl: string) {
   return Uri.parse(databaseUrl).scheme === "file";
-}
-
-/**
- * Recursively looks for a file in a directory. If the file exists, then returns the directory containing the file.
- *
- * @param dir The directory to search
- * @param toFind The file to recursively look for in this directory
- *
- * @returns the directory containing the file, or undefined if not found.
- */
-// exported for testing
-export async function findDirWithFile(
-  dir: string,
-  ...toFind: string[]
-): Promise<string | undefined> {
-  if (!(await stat(dir)).isDirectory()) {
-    return;
-  }
-  const files = await readdir(dir);
-  if (toFind.some((file) => files.includes(file))) {
-    return dir;
-  }
-  for (const file of files) {
-    const newPath = join(dir, file);
-    const result = await findDirWithFile(newPath, ...toFind);
-    if (result) {
-      return result;
-    }
-  }
-  return;
-}
-
-export async function convertGithubNwoToDatabaseUrl(
-  nwo: string,
-  octokit: Octokit,
-  progress: ProgressCallback,
-  language?: string,
-): Promise<
-  | {
-      databaseUrl: string;
-      owner: string;
-      name: string;
-      databaseId: number;
-      databaseCreatedAt: string;
-      commitOid: string | null;
-    }
-  | undefined
-> {
-  try {
-    const [owner, repo] = nwo.split("/");
-
-    const response = await octokit.rest.codeScanning.listCodeqlDatabases({
-      owner,
-      repo,
-    });
-
-    const languages = response.data.map((db) => db.language);
-
-    if (!language || !languages.includes(language)) {
-      language = await promptForLanguage(languages, progress);
-      if (!language) {
-        return;
-      }
-    }
-
-    const databaseForLanguage = response.data.find(
-      (db) => db.language === language,
-    );
-    if (!databaseForLanguage) {
-      throw new Error(`No database found for language '${language}'`);
-    }
-
-    return {
-      databaseUrl: databaseForLanguage.url,
-      owner,
-      name: repo,
-      databaseId: databaseForLanguage.id,
-      databaseCreatedAt: databaseForLanguage.created_at,
-      commitOid: databaseForLanguage.commit_oid ?? null,
-    };
-  } catch (e) {
-    void extLogger.log(`Error: ${getErrorMessage(e)}`);
-    throw new Error(`Unable to get database for '${nwo}'`);
-  }
-}
-
-export async function promptForLanguage(
-  languages: string[],
-  progress: ProgressCallback | undefined,
-): Promise<string | undefined> {
-  progress?.({
-    message: "Choose language",
-    step: 2,
-    maxStep: 2,
-  });
-  if (!languages.length) {
-    throw new Error("No databases found");
-  }
-  if (languages.length === 1) {
-    return languages[0];
-  }
-
-  const items = languages
-    .map((language) => ({
-      label: getLanguageDisplayName(language),
-      description: language,
-      language,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-
-  const selectedItem = await window.showQuickPick(items, {
-    placeHolder: "Select the database language to download:",
-    ignoreFocusOut: true,
-  });
-  if (!selectedItem) {
-    return undefined;
-  }
-
-  return selectedItem.language;
 }
 
 /**
