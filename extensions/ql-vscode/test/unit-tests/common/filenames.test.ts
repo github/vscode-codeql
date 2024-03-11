@@ -58,6 +58,11 @@ describe("createFilenameFromString", () => {
       filename: "unetworking-uwebsockets.js",
       filenameWithoutDots: "unetworking-uwebsockets-js",
     },
+    {
+      input: "github/.vscode-codeql",
+      filename: "github-.vscode-codeql",
+      filenameWithoutDots: "github-vscode-codeql",
+    },
   ];
 
   test.each(testCases)(

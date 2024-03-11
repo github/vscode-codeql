@@ -30,14 +30,15 @@ export function createFilenameFromString(
   // Remove any leading or trailing hyphens or dots
   fileName = fileName.replaceAll(/^[.-]+|[.-]+$/g, "");
 
+  // Replace dots by hyphens if dots are not allowed
+  if (removeDots) {
+    fileName = fileName.replaceAll(/\./g, "-");
+  }
+
   // Remove any duplicate hyphens
   fileName = fileName.replaceAll(/-{2,}/g, "-");
   // Remove any duplicate dots
   fileName = fileName.replaceAll(/\.{2,}/g, ".");
-
-  if (removeDots) {
-    fileName = fileName.replaceAll(/\./g, "-");
-  }
 
   return fileName;
 }
