@@ -19,7 +19,7 @@ export function mockDbOptions(): FullDatabaseOptions {
 }
 
 export function createMockDB(
-  dir: DirResult,
+  dir: DirResult | string,
   dbOptions = mockDbOptions(),
   // source archive location must be a real(-ish) location since
   // tests will add this to the workspace location
@@ -39,10 +39,18 @@ export function createMockDB(
   );
 }
 
-export function sourceLocationUri(dir: DirResult) {
+export function sourceLocationUri(dir: DirResult | string) {
+  if (typeof dir === "string") {
+    return Uri.file(join(dir, "src.zip"));
+  }
+
   return Uri.file(join(dir.name, "src.zip"));
 }
 
-export function dbLocationUri(dir: DirResult) {
+export function dbLocationUri(dir: DirResult | string) {
+  if (typeof dir === "string") {
+    return Uri.file(join(dir, "db"));
+  }
+
   return Uri.file(join(dir.name, "db"));
 }
