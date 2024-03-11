@@ -456,7 +456,7 @@ async function getStorageFolder(
     if (counter <= DUPLICATE_FILENAMES_TRIES) {
       // First try to use a counter to make the name unique.
       folderName = `${lastName}-${counter}`;
-    } else if (counter <= 2 * DUPLICATE_FILENAMES_TRIES) {
+    } else if (counter <= DUPLICATE_FILENAMES_TRIES + 5) {
       // If there are more than 10,000 similarly named databases,
       // give up on using a counter and use a random string instead.
       folderName = `${lastName}-${nanoid()}`;
