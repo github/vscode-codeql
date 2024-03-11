@@ -5,6 +5,11 @@ import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import type { GitHubDatabaseConfig } from "../../config";
 import type { Credentials } from "../../common/authentication";
 import { AppOctokit } from "../../common/octokit";
+import type { ProgressCallback } from "../../common/vscode/progress";
+import { getErrorMessage } from "../../common/helpers-pure";
+import { getLanguageDisplayName } from "../../common/query-language";
+import { window } from "vscode";
+import { extLogger } from "../../common/logging/vscode";
 
 export type CodeqlDatabase =
   RestEndpointMethodTypes["codeScanning"]["listCodeqlDatabases"]["response"]["data"][number];
@@ -107,4 +112,93 @@ export async function listDatabases(
     databases,
     octokit,
   };
+}
+
+export async function convertGithubNwoToDatabaseUrl(
+  nwo: string,
+  octokit: Octokit,
+  progress: ProgressCallback,
+  language?: string,
+): Promise<
+  | {
+      databaseUrl: string;
+      owner: string;
+      name: string;
+      databaseId: number;
+      databaseCreatedAt: string;
+      commitOid: string | null;
+    }
+  | undefined
+> {
+  try {
+    const [owner, repo] = nwo.split("/");
+
+    const response = await octokit.rest.codeScanning.listCodeqlDatabases({
+      owner,
+      repo,
+    });
+
+    const languages = response.data.map((db) => db.language);
+
+    if (!language || !languages.includes(language)) {
+      language = await promptForLanguage(languages, progress);
+      if (!language) {
+        return;
+      }
+    }
+
+    const databaseForLanguage = response.data.find(
+      (db) => db.language === language,
+    );
+    if (!databaseForLanguage) {
+      throw new Error(`No database found for language '${language}'`);
+    }
+
+    return {
+      databaseUrl: databaseForLanguage.url,
+      owner,
+      name: repo,
+      databaseId: databaseForLanguage.id,
+      databaseCreatedAt: databaseForLanguage.created_at,
+      commitOid: databaseForLanguage.commit_oid ?? null,
+    };
+  } catch (e) {
+    void extLogger.log(`Error: ${getErrorMessage(e)}`);
+    throw new Error(`Unable to get database for '${nwo}'`);
+  }
+}
+
+async function promptForLanguage(
+  languages: string[],
+  progress: ProgressCallback | undefined,
+): Promise<string | undefined> {
+  progress?.({
+    message: "Choose language",
+    step: 2,
+    maxStep: 2,
+  });
+  if (!languages.length) {
+    throw new Error("No databases found");
+  }
+  if (languages.length === 1) {
+    return languages[0];
+  }
+
+  const items = languages
+    .map((language) => ({
+      label: getLanguageDisplayName(language),
+      description: language,
+      language,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const selectedItem = await window.showQuickPick(items, {
+    placeHolder: "Select the database language to download:",
+    ignoreFocusOut: true,
+  });
+  if (!selectedItem) {
+    return undefined;
+  }
+
+  return selectedItem.language;
 }
