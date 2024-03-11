@@ -14,6 +14,7 @@ import type { Method } from "../model-editor/method";
 import type { ModeledMethod } from "../model-editor/modeled-method";
 import type {
   MethodModelingPanelViewState,
+  ModelAlertsViewState,
   ModelEditorViewState,
 } from "../model-editor/shared/view-state";
 import type { Mode } from "../model-editor/shared/mode";
@@ -726,10 +727,11 @@ export type ToMethodModelingMessage =
   | SetInProgressMessage
   | SetProcessedByAutoModelMessage;
 
-interface SetModelAlertsMessage {
-  t: "setModelAlerts";
+interface SetModelAlertsViewStateMessage {
+  t: "setModelAlertsViewState";
+  viewState: ModelAlertsViewState;
 }
 
-export type ToModelAlertsMessage = SetModelAlertsMessage;
+export type ToModelAlertsMessage = SetModelAlertsViewStateMessage;
 
 export type FromModelAlertsMessage = CommonFromViewMessages;
