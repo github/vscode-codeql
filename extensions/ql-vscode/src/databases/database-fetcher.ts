@@ -437,23 +437,31 @@ async function getStorageFolder(
   }
 
   const realpath = await fs_realpath(storagePath);
-  let folderName = join(realpath, lastName);
+  let folderName = lastName;
+
+  // get all existing files instead of calling pathExists on every
+  // single combination of realpath and folderName
+  const existingFiles = await readdir(realpath);
 
   // avoid overwriting existing folders
   let counter = 0;
-  while (await pathExists(folderName)) {
+  while (existingFiles.includes(basename(folderName))) {
     counter++;
-    folderName = join(realpath, `${lastName}-${counter}`);
-    if (counter > 100) {
-      // If there are more than 100 similarly named databases,
+    folderName = `${lastName}-${counter}`;
+    if (counter > 10_000) {
+      // If there are more than 10,000 similarly named databases,
       // give up on using a counter and use a random string instead.
-      folderName = join(realpath, `${lastName}-${nanoid()}`);
+      folderName = `${lastName}-${nanoid()}`;
     }
-    if (counter > 200) {
-      throw new Error("Could not find a unique name for downloaded database.");
+    if (counter > 20_000) {
+      // This should never happen, but just in case, we don't want to
+      // get stuck in an infinite loop.
+      throw new Error(
+        "Could not find a unique name for downloaded database. Please remove some databases and try again.",
+      );
     }
   }
-  return folderName;
+  return join(realpath, folderName);
 }
 
 function validateUrl(databaseUrl: string) {
