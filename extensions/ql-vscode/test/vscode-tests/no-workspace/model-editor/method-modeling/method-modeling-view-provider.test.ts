@@ -1,10 +1,5 @@
-import type {
-  Uri,
-  Webview,
-  WebviewView,
-  WebviewViewResolveContext,
-} from "vscode";
-import { CancellationTokenSource, EventEmitter } from "vscode";
+import type { Uri, Webview, WebviewView } from "vscode";
+import { EventEmitter } from "vscode";
 import type { ModelConfigListener } from "../../../../../src/config";
 import { MethodModelingViewProvider } from "../../../../../src/model-editor/method-modeling/method-modeling-view-provider";
 import { createMockApp } from "../../../../__mocks__/appMock";
@@ -88,11 +83,7 @@ describe("method modeling view provider", () => {
       onDidDispose: jest.fn(),
     });
 
-    viewProvider.resolveWebviewView(
-      webviewView,
-      mockedObject<WebviewViewResolveContext>({}),
-      new CancellationTokenSource().token,
-    );
+    viewProvider.resolveWebviewView(webviewView);
 
     expect(onDidReceiveMessage).toBeDefined();
   });

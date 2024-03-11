@@ -1,9 +1,4 @@
-import type {
-  CancellationToken,
-  WebviewView,
-  WebviewViewProvider,
-  WebviewViewResolveContext,
-} from "vscode";
+import type { WebviewView, WebviewViewProvider } from "vscode";
 import { Uri } from "vscode";
 import type { WebviewKind, WebviewMessage } from "./webview-html";
 import { getHtmlForWebview } from "./webview-html";
@@ -28,11 +23,7 @@ export abstract class AbstractWebviewViewProvider<
    * This is called when a view first becomes visible. This may happen when the view is
    * first loaded or when the user hides and then shows a view again.
    */
-  public resolveWebviewView(
-    webviewView: WebviewView,
-    _context: WebviewViewResolveContext,
-    _token: CancellationToken,
-  ) {
+  public resolveWebviewView(webviewView: WebviewView) {
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [Uri.file(this.app.extensionPath)],
