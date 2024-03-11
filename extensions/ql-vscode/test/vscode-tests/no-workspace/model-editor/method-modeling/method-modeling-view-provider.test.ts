@@ -11,6 +11,7 @@ import { DisposableObject } from "../../../../../src/common/disposable-object";
 import type { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
 import type {
   DbModelingState,
+  ModelingStore,
   SelectedMethodDetails,
 } from "../../../../../src/model-editor/modeling-store";
 import { mockDatabaseItem } from "../../../utils/mocking.helpers";
@@ -21,10 +22,11 @@ import {
 
 describe("method modeling view provider", () => {
   // Modeling store
-  let getStateForActiveDb: jest.Mock<DbModelingState | undefined, []>;
-  let getSelectedMethodDetails: jest.Mock<
-    SelectedMethodDetails | undefined,
-    []
+  let getStateForActiveDb: jest.MockedFunction<
+    ModelingStore["getStateForActiveDb"]
+  >;
+  let getSelectedMethodDetails: jest.MockedFunction<
+    ModelingStore["getSelectedMethodDetails"]
   >;
 
   // Modeling events
