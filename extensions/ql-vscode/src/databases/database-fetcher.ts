@@ -415,6 +415,10 @@ async function databaseArchiveFetcher(
   }
 }
 
+// The number of tries to use when generating a unique filename before
+// giving up and using a nanoid.
+const DUPLICATE_FILENAMES_TRIES = 10_000;
+
 async function getStorageFolder(
   storagePath: string,
   urlStr: string,
@@ -448,14 +452,16 @@ async function getStorageFolder(
   let counter = 0;
   while (existingFiles.includes(basename(folderName))) {
     counter++;
-    folderName = `${lastName}-${counter}`;
-    if (counter > 10_000) {
+
+    if (counter <= DUPLICATE_FILENAMES_TRIES) {
+      // First try to use a counter to make the name unique.
+      folderName = `${lastName}-${counter}`;
+    } else if (counter <= 2 * DUPLICATE_FILENAMES_TRIES) {
       // If there are more than 10,000 similarly named databases,
       // give up on using a counter and use a random string instead.
       folderName = `${lastName}-${nanoid()}`;
-    }
-    if (counter > 20_000) {
-      // This should never happen, but just in case, we don't want to
+    } else {
+      // This should almost never happen, but just in case, we don't want to
       // get stuck in an infinite loop.
       throw new Error(
         "Could not find a unique name for downloaded database. Please remove some databases and try again.",
