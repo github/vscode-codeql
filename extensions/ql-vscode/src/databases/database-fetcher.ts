@@ -10,9 +10,11 @@ import {
   pathExists,
   createWriteStream,
   remove,
+  readdir,
 } from "fs-extra";
 import { basename, join } from "path";
 import type { Octokit } from "@octokit/rest";
+import { nanoid } from "nanoid";
 
 import type { DatabaseManager, DatabaseItem } from "./local-databases";
 import { tmpDir } from "../tmp-dir";
@@ -36,6 +38,7 @@ import { AppOctokit } from "../common/octokit";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import type { App } from "../common/app";
+import { createFilenameFromString } from "../common/filenames";
 import { findDirWithFile } from "../common/files";
 import { convertGithubNwoToDatabaseUrl } from "./github-databases/api";
 
@@ -364,7 +367,11 @@ async function databaseArchiveFetcher(
     throw new Error("No storage path specified.");
   }
   await ensureDir(storagePath);
-  const unzipPath = await getStorageFolder(storagePath, databaseUrl);
+  const unzipPath = await getStorageFolder(
+    storagePath,
+    databaseUrl,
+    nameOverride,
+  );
 
   if (isFile(databaseUrl)) {
     await readAndUnzip(databaseUrl, unzipPath, cli, progress);
@@ -408,31 +415,60 @@ async function databaseArchiveFetcher(
   }
 }
 
-async function getStorageFolder(storagePath: string, urlStr: string) {
-  // we need to generate a folder name for the unzipped archive,
-  // this needs to be human readable since we may use this name as the initial
-  // name for the database
-  const url = Uri.parse(urlStr);
-  // MacOS has a max filename length of 255
-  // and remove a few extra chars in case we need to add a counter at the end.
-  let lastName = basename(url.path).substring(0, 250);
-  if (lastName.endsWith(".zip")) {
-    lastName = lastName.substring(0, lastName.length - 4);
+// The number of tries to use when generating a unique filename before
+// giving up and using a nanoid.
+const DUPLICATE_FILENAMES_TRIES = 10_000;
+
+async function getStorageFolder(
+  storagePath: string,
+  urlStr: string,
+  nameOverrride?: string,
+) {
+  let lastName: string;
+
+  if (nameOverrride) {
+    lastName = createFilenameFromString(nameOverrride);
+  } else {
+    // we need to generate a folder name for the unzipped archive,
+    // this needs to be human readable since we may use this name as the initial
+    // name for the database
+    const url = Uri.parse(urlStr);
+    // MacOS has a max filename length of 255
+    // and remove a few extra chars in case we need to add a counter at the end.
+    lastName = basename(url.path).substring(0, 250);
+    if (lastName.endsWith(".zip")) {
+      lastName = lastName.substring(0, lastName.length - 4);
+    }
   }
 
   const realpath = await fs_realpath(storagePath);
-  let folderName = join(realpath, lastName);
+  let folderName = lastName;
+
+  // get all existing files instead of calling pathExists on every
+  // single combination of realpath and folderName
+  const existingFiles = await readdir(realpath);
 
   // avoid overwriting existing folders
   let counter = 0;
-  while (await pathExists(folderName)) {
+  while (existingFiles.includes(basename(folderName))) {
     counter++;
-    folderName = join(realpath, `${lastName}-${counter}`);
-    if (counter > 100) {
-      throw new Error("Could not find a unique name for downloaded database.");
+
+    if (counter <= DUPLICATE_FILENAMES_TRIES) {
+      // First try to use a counter to make the name unique.
+      folderName = `${lastName}-${counter}`;
+    } else if (counter <= DUPLICATE_FILENAMES_TRIES + 5) {
+      // If there are more than 10,000 similarly named databases,
+      // give up on using a counter and use a random string instead.
+      folderName = `${lastName}-${nanoid()}`;
+    } else {
+      // This should almost never happen, but just in case, we don't want to
+      // get stuck in an infinite loop.
+      throw new Error(
+        "Could not find a unique name for downloaded database. Please remove some databases and try again.",
+      );
     }
   }
-  return folderName;
+  return join(realpath, folderName);
 }
 
 function validateUrl(databaseUrl: string) {
