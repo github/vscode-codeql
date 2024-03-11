@@ -31,6 +31,12 @@ export interface DatabaseItem {
    */
   readonly origin: DatabaseOrigin | undefined;
 
+  /**
+   * The location of the base storage location as managed by the extension, or undefined
+   * if unknown or not managed by the extension.
+   */
+  readonly extensionManagedLocation: string | undefined;
+
   /** If the database is invalid, describes why. */
   readonly error: Error | undefined;
 
