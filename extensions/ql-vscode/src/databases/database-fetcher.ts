@@ -40,6 +40,7 @@ import { getLanguageDisplayName } from "../common/query-language";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import type { App } from "../common/app";
+import { createFilenameFromString } from "../common/filenames";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -421,22 +422,7 @@ async function getStorageFolder(
   let lastName: string;
 
   if (nameOverrride) {
-    // Lowercase everything
-    let name = nameOverrride.toLowerCase();
-
-    // Replace all spaces, dots, underscores, and forward slashes with hyphens
-    name = name.replaceAll(/[\s._/]+/g, "-");
-
-    // Replace all characters which are not allowed by empty strings
-    name = name.replaceAll(/[^a-z0-9-]/g, "");
-
-    // Remove any leading or trailing hyphens
-    name = name.replaceAll(/^-|-$/g, "");
-
-    // Remove any duplicate hyphens
-    name = name.replaceAll(/-{2,}/g, "-");
-
-    lastName = name;
+    lastName = createFilenameFromString(nameOverrride);
   } else {
     // we need to generate a folder name for the unzipped archive,
     // this needs to be human readable since we may use this name as the initial
