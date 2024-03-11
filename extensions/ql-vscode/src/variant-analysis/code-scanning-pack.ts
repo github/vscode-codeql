@@ -29,10 +29,6 @@ export async function resolveCodeScanningQueryPack(
   // Resolve queries
   void logger.log(`Resolving queries for pack: ${packName}`);
 
-  const suiteFile = await file({
-    postfix: ".qls",
-  });
-  const suitePath = suiteFile.path;
   const suiteYaml: SuiteInstruction[] = [
     {
       import: `codeql-suites/${language}-code-scanning.qls`,
@@ -45,11 +41,20 @@ export async function resolveCodeScanningQueryPack(
       },
     },
   ];
-  await outputFile(suitePath, dump(suiteYaml), "utf8");
 
-  const resolvedQueries = await cliServer.resolveQueries(suitePath);
+  let resolvedQueries: string[];
+  const suiteFile = await file({
+    postfix: ".qls",
+  });
+  const suitePath = suiteFile.path;
 
-  await suiteFile.cleanup();
+  try {
+    await outputFile(suitePath, dump(suiteYaml), "utf8");
+
+    resolvedQueries = await cliServer.resolveQueries(suitePath);
+  } finally {
+    await suiteFile.cleanup();
+  }
 
   if (resolvedQueries.length === 0) {
     throw Error(
