@@ -8,6 +8,7 @@ import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { QlPackDetails } from "./ql-pack-details";
 import { getQlPackFilePath } from "../common/ql";
 import type { SuiteInstruction } from "../packaging/suite-instruction";
+import { SARIF_RESULTS_QUERY_KINDS } from "../common/query-metadata";
 
 export async function resolveCodeScanningQueryPack(
   logger: BaseLogger,
@@ -34,10 +35,15 @@ export async function resolveCodeScanningQueryPack(
       import: `codeql-suites/${language}-code-scanning.qls`,
       from: `${downloadedPack.name}@${downloadedPack.version}`,
     },
-    // Exclude any non-problem queries
     {
-      exclude: {
-        kind: ["diagnostic", "metric"],
+      // This is necessary to ensure that the next import filter
+      // is applied correctly
+      exclude: {},
+    },
+    {
+      // Only include problem queries
+      include: {
+        kind: SARIF_RESULTS_QUERY_KINDS,
       },
     },
   ];
