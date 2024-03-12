@@ -755,13 +755,12 @@ export class DatabaseUI extends DisposableObject {
           // Check if the database is already in the workspace. If
           // so, delete it first before importing the new one.
           const existingItem = this.databaseManager.findTestDatabase(uri);
+          const baseName = basename(uri.fsPath);
           if (existingItem !== undefined) {
             progress({
               maxStep: 9,
               step: 1,
-              message: `Removing existing test database ${basename(
-                uri.fsPath,
-              )}`,
+              message: `Removing existing test database ${baseName}`,
             });
             await this.databaseManager.removeDatabaseItem(existingItem);
           }
@@ -774,6 +773,14 @@ export class DatabaseUI extends DisposableObject {
             progress,
             this.queryServer.cliServer,
           );
+
+          if (existingItem !== undefined) {
+            progress({
+              maxStep: 9,
+              step: 9,
+              message: `Successfully re-imported ${baseName}`,
+            });
+          }
         } catch (e) {
           // rethrow and let this be handled by default error handling.
           throw new Error(

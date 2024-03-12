@@ -318,7 +318,9 @@ export async function importLocalDatabase(
       await commandManager.execute("codeQLDatabases.focus");
       void showAndLogInformationMessage(
         extLogger,
-        "Database unzipped and imported successfully.",
+        origin.type === "testproj"
+          ? "Test database imported successfully."
+          : "Database unzipped and imported successfully.",
       );
     }
     return item;

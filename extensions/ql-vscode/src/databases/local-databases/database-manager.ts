@@ -256,6 +256,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded: Date.now(),
       language: dbItem.language,
       origin: dbItem.origin,
+      extensionManagedLocation: dbItem.extensionManagedLocation,
     });
     await this.addDatabaseItem(newDbItem);
     await this.setCurrentDatabaseItem(newDbItem);
