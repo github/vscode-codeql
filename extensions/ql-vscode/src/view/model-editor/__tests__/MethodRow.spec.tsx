@@ -45,6 +45,7 @@ describe(MethodRow.name, () => {
         modelingInProgress={false}
         processedByAutoModel={false}
         revealedMethodSignature={null}
+        evaluationRun={undefined}
         viewState={viewState}
         onChange={onChange}
         onMethodClick={onMethodClick}

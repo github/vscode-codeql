@@ -436,6 +436,7 @@ export function ModelEditor({
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
           accessPathSuggestions={accessPathSuggestions}
+          evaluationRun={evaluationRun}
           onChange={onChange}
           onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}

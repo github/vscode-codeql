@@ -15,6 +15,7 @@ import {
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 import { getCandidates } from "../../model-editor/shared/auto-model-candidates";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -80,6 +81,7 @@ export type LibraryRowProps = {
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
   accessPathSuggestions?: AccessPathSuggestionOptions;
+  evaluationRun: ModelEvaluationRunState | undefined;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
@@ -105,6 +107,7 @@ export const LibraryRow = ({
   hideModeledMethods,
   revealedMethodSignature,
   accessPathSuggestions,
+  evaluationRun,
   onChange,
   onMethodClick,
   onSaveModelClick,
@@ -260,6 +263,7 @@ export const LibraryRow = ({
             hideModeledMethods={hideModeledMethods}
             revealedMethodSignature={revealedMethodSignature}
             accessPathSuggestions={accessPathSuggestions}
+            evaluationRun={evaluationRun}
             onChange={onChange}
             onMethodClick={onMethodClick}
           />
