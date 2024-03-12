@@ -34,7 +34,8 @@ export const ModelEvaluation = ({
 
   const shouldShowStopButton = !shouldShowEvaluateButton;
 
-  const shouldShowEvaluationRunLink = !!evaluationRun;
+  const shouldShowEvaluationRunLink =
+    !!evaluationRun && evaluationRun.variantAnalysis;
 
   const customModelsExist = Object.values(modeledMethods).some(
     (methods) => methods.filter((m) => m.type !== "none").length > 0,
