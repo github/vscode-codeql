@@ -49,7 +49,7 @@ const ApiOrMethodRow = styled.div`
   gap: 0.5em;
 `;
 
-const ButtonsContainer = styled.div`
+const ModelButtonsContainer = styled.div`
   min-height: calc(var(--input-height) * 1px);
   display: flex;
   flex-direction: row;
@@ -361,7 +361,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     />
                   </DataGridCell>
                   <DataGridCell>
-                    <ButtonsContainer>
+                    <ModelButtonsContainer>
                       <ModelAlertsIndicator
                         viewState={viewState}
                         modeledMethod={modeledMethod}
@@ -391,7 +391,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                           <Codicon name="trash" />
                         </CodiconRow>
                       )}
-                    </ButtonsContainer>
+                    </ModelButtonsContainer>
                   </DataGridCell>
                 </DataGridRow>
               );
