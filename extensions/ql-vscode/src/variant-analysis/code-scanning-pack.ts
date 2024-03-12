@@ -1,10 +1,14 @@
 import { join } from "path";
+import { outputFile } from "fs-extra";
+import { dump } from "js-yaml";
+import { file } from "tmp-promise";
 import type { BaseLogger } from "../common/logging";
 import type { QueryLanguage } from "../common/query-language";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { QlPackDetails } from "./ql-pack-details";
 import { getQlPackFilePath } from "../common/ql";
-import { isSarifResultsQueryKind } from "../common/query-metadata";
+import type { SuiteInstruction } from "../packaging/suite-instruction";
+import { SARIF_RESULTS_QUERY_KINDS } from "../common/query-metadata";
 
 export async function resolveCodeScanningQueryPack(
   logger: BaseLogger,
@@ -25,20 +29,40 @@ export async function resolveCodeScanningQueryPack(
 
   // Resolve queries
   void logger.log(`Resolving queries for pack: ${packName}`);
-  const suitePath = join(
-    packDir,
-    "codeql-suites",
-    `${language}-code-scanning.qls`,
-  );
-  const resolvedQueries = await cliServer.resolveQueries(suitePath);
 
-  const problemQueries = await filterToOnlyProblemQueries(
-    logger,
-    cliServer,
-    resolvedQueries,
-  );
+  const suiteYaml: SuiteInstruction[] = [
+    {
+      import: `codeql-suites/${language}-code-scanning.qls`,
+      from: `${downloadedPack.name}@${downloadedPack.version}`,
+    },
+    {
+      // This is necessary to ensure that the next import filter
+      // is applied correctly
+      exclude: {},
+    },
+    {
+      // Only include problem queries
+      include: {
+        kind: SARIF_RESULTS_QUERY_KINDS,
+      },
+    },
+  ];
 
-  if (problemQueries.length === 0) {
+  let resolvedQueries: string[];
+  const suiteFile = await file({
+    postfix: ".qls",
+  });
+  const suitePath = suiteFile.path;
+
+  try {
+    await outputFile(suitePath, dump(suiteYaml), "utf8");
+
+    resolvedQueries = await cliServer.resolveQueries(suitePath);
+  } finally {
+    await suiteFile.cleanup();
+  }
+
+  if (resolvedQueries.length === 0) {
     throw Error(
       `No problem queries found in published query pack: ${packName}.`,
     );
@@ -48,28 +72,11 @@ export async function resolveCodeScanningQueryPack(
   const qlPackFilePath = await getQlPackFilePath(packDir);
 
   const qlPackDetails: QlPackDetails = {
-    queryFiles: problemQueries,
+    queryFiles: resolvedQueries,
     qlPackRootPath: packDir,
     qlPackFilePath,
     language,
   };
 
   return qlPackDetails;
-}
-
-async function filterToOnlyProblemQueries(
-  logger: BaseLogger,
-  cliServer: CodeQLCliServer,
-  queries: string[],
-): Promise<string[]> {
-  const problemQueries: string[] = [];
-  for (const query of queries) {
-    const queryMetadata = await cliServer.resolveMetadata(query);
-    if (isSarifResultsQueryKind(queryMetadata.kind)) {
-      problemQueries.push(query);
-    } else {
-      void logger.log(`Skipping non-problem query ${query}`);
-    }
-  }
-  return problemQueries;
 }
