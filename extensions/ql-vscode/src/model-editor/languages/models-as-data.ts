@@ -7,7 +7,7 @@ import type {
   SummaryModeledMethod,
   TypeModeledMethod,
 } from "../modeled-method";
-import type { DataTuple } from "../model-extension-file";
+import type { DataTuple, ModelExtension } from "../model-extension-file";
 import type { Mode } from "../shared/mode";
 import type { QueryConstraints } from "../../local-queries/query-constraints";
 import type {
@@ -17,8 +17,36 @@ import type {
 import type { BaseLogger } from "../../common/logging";
 import type { AccessPathSuggestionRow } from "../suggestions";
 
+// This is a subset of the model config that doesn't import the vscode module.
+// It only includes settings that are actually used.
+export type ModelConfig = {
+  showTypeModels: boolean;
+};
+
+/**
+ * This function creates a new model config object from the given model config object.
+ * The new model config object is a deep copy of the given model config object.
+ *
+ * @param modelConfig The model config object to create a new model config object from.
+ *                    In most cases, this is a `ModelConfigListener`.
+ */
+export function createModelConfig(modelConfig: ModelConfig): ModelConfig {
+  return {
+    showTypeModels: modelConfig.showTypeModels,
+  };
+}
+
+export const defaultModelConfig: ModelConfig = {
+  showTypeModels: false,
+};
+
 type GenerateMethodDefinition<T> = (method: T) => DataTuple[];
 type ReadModeledMethod = (row: DataTuple[]) => ModeledMethod;
+
+type IsHiddenContext = {
+  method: MethodDefinition;
+  config: ModelConfig;
+};
 
 export type ModelsAsDataLanguagePredicate<T> = {
   extensiblePredicate: string;
@@ -30,6 +58,19 @@ export type ModelsAsDataLanguagePredicate<T> = {
   supportedEndpointTypes?: EndpointType[];
   generateMethodDefinition: GenerateMethodDefinition<T>;
   readModeledMethod: ReadModeledMethod;
+
+  /**
+   * Controls whether this predicate is hidden for a certain method. This only applies to the UI.
+   * If not specified, the predicate is visible for all methods.
+   *
+   * @param method The method to check if the predicate is hidden for.
+   */
+  isHidden?: (context: IsHiddenContext) => boolean;
+};
+
+export type GenerationContext = {
+  mode: Mode;
+  config: ModelConfig;
 };
 
 type ParseGenerationResults = (
@@ -42,24 +83,37 @@ type ParseGenerationResults = (
   modelsAsDataLanguage: ModelsAsDataLanguage,
   // The logger to use for logging.
   logger: BaseLogger,
+  // Context about this invocation of the generation.
+  context: GenerationContext,
 ) => ModeledMethod[];
 
 type ModelsAsDataLanguageModelGeneration = {
   queryConstraints: (mode: Mode) => QueryConstraints;
   filterQueries?: (queryPath: string) => boolean;
   parseResults: ParseGenerationResults;
+};
+
+type ParseResultsToYaml = (
+  // The path to the query that generated the results.
+  queryPath: string,
+  // The results of the query.
+  bqrs: DecodedBqrs,
+  // The language-specific predicate that was used to generate the results. This is passed to allow
+  // sharing of code between different languages.
+  modelsAsDataLanguage: ModelsAsDataLanguage,
+  // The logger to use for logging.
+  logger: BaseLogger,
+) => ModelExtension[];
+
+type ModelsAsDataLanguageAutoModelGeneration = {
+  queryConstraints: (mode: Mode) => QueryConstraints;
+  filterQueries?: (queryPath: string) => boolean;
+  parseResultsToYaml: ParseResultsToYaml;
   /**
-   * If autoRun is not undefined, the query will be run automatically when the user starts the
-   * model editor.
-   *
-   * This only applies to framework mode. Application mode will never run the query automatically.
+   * By default, auto model generation is enabled for all modes. This function can be used to
+   * override that behavior.
    */
-  autoRun?: {
-    /**
-     * If defined, will use a custom parsing function when the query is run automatically.
-     */
-    parseResults?: ParseGenerationResults;
-  };
+  enabled?: (context: GenerationContext) => boolean;
 };
 
 type ModelsAsDataLanguageAccessPathSuggestions = {
@@ -109,6 +163,7 @@ export type ModelsAsDataLanguage = {
   ) => EndpointType | undefined;
   predicates: ModelsAsDataLanguagePredicates;
   modelGeneration?: ModelsAsDataLanguageModelGeneration;
+  autoModelGeneration?: ModelsAsDataLanguageAutoModelGeneration;
   accessPathSuggestions?: ModelsAsDataLanguageAccessPathSuggestions;
   /**
    * Returns the list of valid arguments that can be selected for the given method.

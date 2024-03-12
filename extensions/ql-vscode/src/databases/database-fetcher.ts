@@ -10,12 +10,12 @@ import {
   pathExists,
   createWriteStream,
   remove,
-  stat,
   readdir,
   copy,
 } from "fs-extra";
 import { basename, join } from "path";
 import type { Octokit } from "@octokit/rest";
+import { nanoid } from "nanoid";
 
 import type { DatabaseManager, DatabaseItem } from "./local-databases";
 import { tmpDir } from "../tmp-dir";
@@ -27,18 +27,21 @@ import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
 } from "../common/github-url-identifier-helper";
-import type { Credentials } from "../common/authentication";
 import type { AppCommandManager } from "../common/commands";
 import {
   addDatabaseSourceToWorkspace,
   allowHttp,
   downloadTimeout,
+  isCanary,
 } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 import { AppOctokit } from "../common/octokit";
-import { getLanguageDisplayName } from "../common/query-language";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
 import { createTimeoutSignal } from "../common/fetch-stream";
+import type { App } from "../common/app";
+import { createFilenameFromString } from "../common/filenames";
+import { findDirWithFile } from "../common/files";
+import { convertGithubNwoToDatabaseUrl } from "./github-databases/api";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -91,9 +94,9 @@ export async function promptImportInternetDatabase(
  * User enters a GitHub repository and then the user is asked which language
  * to download (if there is more than one)
  *
+ * @param app the App
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
- * @param credentials the credentials to use to authenticate with GitHub
  * @param progress the progress callback
  * @param cli the CodeQL CLI server
  * @param language the language to download. If undefined, the user will be prompted to choose a language.
@@ -101,10 +104,9 @@ export async function promptImportInternetDatabase(
  * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
  */
 export async function promptImportGithubDatabase(
-  commandManager: AppCommandManager,
+  app: App,
   databaseManager: DatabaseManager,
   storagePath: string,
-  credentials: Credentials | undefined,
   progress: ProgressCallback,
   cli: CodeQLCliServer,
   language?: string,
@@ -118,9 +120,9 @@ export async function promptImportGithubDatabase(
 
   const databaseItem = await downloadGitHubDatabase(
     githubRepo,
+    app,
     databaseManager,
     storagePath,
-    credentials,
     progress,
     cli,
     language,
@@ -130,7 +132,7 @@ export async function promptImportGithubDatabase(
 
   if (databaseItem) {
     if (makeSelected) {
-      await commandManager.execute("codeQLDatabases.focus");
+      await app.commands.execute("codeQLDatabases.focus");
     }
     void showAndLogInformationMessage(
       extLogger,
@@ -170,9 +172,9 @@ export async function askForGitHubRepo(
  * Downloads a database from GitHub
  *
  * @param githubRepo the GitHub repository to download the database from
+ * @param app the App
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
- * @param credentials the credentials to use to authenticate with GitHub
  * @param progress the progress callback
  * @param cli the CodeQL CLI server
  * @param language the language to download. If undefined, the user will be prompted to choose a language.
@@ -181,9 +183,9 @@ export async function askForGitHubRepo(
  **/
 export async function downloadGitHubDatabase(
   githubRepo: string,
+  app: App,
   databaseManager: DatabaseManager,
   storagePath: string,
-  credentials: Credentials | undefined,
   progress: ProgressCallback,
   cli: CodeQLCliServer,
   language?: string,
@@ -194,6 +196,8 @@ export async function downloadGitHubDatabase(
   if (!isValidGitHubNwo(nwo)) {
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
+
+  const credentials = isCanary() ? app.credentials : undefined;
 
   const octokit = credentials
     ? await credentials.getOctokit()
@@ -366,7 +370,11 @@ async function fetchDatabaseToWorkspaceStorage(
     throw new Error("No storage path specified.");
   }
   await ensureDir(storagePath);
-  const unzipPath = await getStorageFolder(storagePath, databaseUrl);
+  const unzipPath = await getStorageFolder(
+    storagePath,
+    databaseUrl,
+    nameOverride,
+  );
 
   if (isFile(databaseUrl)) {
     if (origin.type === "testproj") {
@@ -405,6 +413,7 @@ async function fetchDatabaseToWorkspaceStorage(
       nameOverride,
       {
         addSourceArchiveFolder,
+        extensionManagedLocation: unzipPath,
       },
     );
     return item;
@@ -413,33 +422,62 @@ async function fetchDatabaseToWorkspaceStorage(
   }
 }
 
-async function getStorageFolder(storagePath: string, urlStr: string) {
-  // we need to generate a folder name for the unzipped archive,
-  // this needs to be human readable since we may use this name as the initial
-  // name for the database
-  const url = Uri.parse(urlStr);
-  // MacOS has a max filename length of 255
-  // and remove a few extra chars in case we need to add a counter at the end.
-  let lastName = basename(url.path).substring(0, 250);
-  if (lastName.endsWith(".zip")) {
-    lastName = lastName.substring(0, lastName.length - 4);
-  } else if (lastName.endsWith(".testproj")) {
-    lastName = lastName.substring(0, lastName.length - 9);
+// The number of tries to use when generating a unique filename before
+// giving up and using a nanoid.
+const DUPLICATE_FILENAMES_TRIES = 10_000;
+
+async function getStorageFolder(
+  storagePath: string,
+  urlStr: string,
+  nameOverrride?: string,
+) {
+  let lastName: string;
+
+  if (nameOverrride) {
+    lastName = createFilenameFromString(nameOverrride);
+  } else {
+    // we need to generate a folder name for the unzipped archive,
+    // this needs to be human readable since we may use this name as the initial
+    // name for the database
+    const url = Uri.parse(urlStr);
+    // MacOS has a max filename length of 255
+    // and remove a few extra chars in case we need to add a counter at the end.
+    lastName = basename(url.path).substring(0, 250);
+    if (lastName.endsWith(".zip")) {
+      lastName = lastName.substring(0, lastName.length - 4);
+    } else if (lastName.endsWith(".testproj")) {
+      lastName = lastName.substring(0, lastName.length - 9);
+    }
   }
 
   const realpath = await fs_realpath(storagePath);
-  let folderName = join(realpath, lastName);
+  let folderName = lastName;
+
+  // get all existing files instead of calling pathExists on every
+  // single combination of realpath and folderName
+  const existingFiles = await readdir(realpath);
 
   // avoid overwriting existing folders
   let counter = 0;
-  while (await pathExists(folderName)) {
+  while (existingFiles.includes(basename(folderName))) {
     counter++;
-    folderName = join(realpath, `${lastName}-${counter}`);
-    if (counter > 100) {
-      throw new Error("Could not find a unique name for downloaded database.");
+
+    if (counter <= DUPLICATE_FILENAMES_TRIES) {
+      // First try to use a counter to make the name unique.
+      folderName = `${lastName}-${counter}`;
+    } else if (counter <= DUPLICATE_FILENAMES_TRIES + 5) {
+      // If there are more than 10,000 similarly named databases,
+      // give up on using a counter and use a random string instead.
+      folderName = `${lastName}-${nanoid()}`;
+    } else {
+      // This should almost never happen, but just in case, we don't want to
+      // get stuck in an infinite loop.
+      throw new Error(
+        "Could not find a unique name for downloaded database. Please remove some databases and try again.",
+      );
     }
   }
-  return folderName;
+  return join(realpath, folderName);
 }
 
 function validateUrl(databaseUrl: string) {
@@ -613,125 +651,6 @@ async function checkForFailingResponse(
 
 function isFile(databaseUrl: string) {
   return Uri.parse(databaseUrl).scheme === "file";
-}
-
-/**
- * Recursively looks for a file in a directory. If the file exists, then returns the directory containing the file.
- *
- * @param dir The directory to search
- * @param toFind The file to recursively look for in this directory
- *
- * @returns the directory containing the file, or undefined if not found.
- */
-// exported for testing
-export async function findDirWithFile(
-  dir: string,
-  ...toFind: string[]
-): Promise<string | undefined> {
-  if (!(await stat(dir)).isDirectory()) {
-    return;
-  }
-  const files = await readdir(dir);
-  if (toFind.some((file) => files.includes(file))) {
-    return dir;
-  }
-  for (const file of files) {
-    const newPath = join(dir, file);
-    const result = await findDirWithFile(newPath, ...toFind);
-    if (result) {
-      return result;
-    }
-  }
-  return;
-}
-
-export async function convertGithubNwoToDatabaseUrl(
-  nwo: string,
-  octokit: Octokit,
-  progress: ProgressCallback,
-  language?: string,
-): Promise<
-  | {
-      databaseUrl: string;
-      owner: string;
-      name: string;
-      databaseId: number;
-      databaseCreatedAt: string;
-      commitOid: string | null;
-    }
-  | undefined
-> {
-  try {
-    const [owner, repo] = nwo.split("/");
-
-    const response = await octokit.rest.codeScanning.listCodeqlDatabases({
-      owner,
-      repo,
-    });
-
-    const languages = response.data.map((db) => db.language);
-
-    if (!language || !languages.includes(language)) {
-      language = await promptForLanguage(languages, progress);
-      if (!language) {
-        return;
-      }
-    }
-
-    const databaseForLanguage = response.data.find(
-      (db) => db.language === language,
-    );
-    if (!databaseForLanguage) {
-      throw new Error(`No database found for language '${language}'`);
-    }
-
-    return {
-      databaseUrl: databaseForLanguage.url,
-      owner,
-      name: repo,
-      databaseId: databaseForLanguage.id,
-      databaseCreatedAt: databaseForLanguage.created_at,
-      commitOid: databaseForLanguage.commit_oid ?? null,
-    };
-  } catch (e) {
-    void extLogger.log(`Error: ${getErrorMessage(e)}`);
-    throw new Error(`Unable to get database for '${nwo}'`);
-  }
-}
-
-export async function promptForLanguage(
-  languages: string[],
-  progress: ProgressCallback | undefined,
-): Promise<string | undefined> {
-  progress?.({
-    message: "Choose language",
-    step: 2,
-    maxStep: 2,
-  });
-  if (!languages.length) {
-    throw new Error("No databases found");
-  }
-  if (languages.length === 1) {
-    return languages[0];
-  }
-
-  const items = languages
-    .map((language) => ({
-      label: getLanguageDisplayName(language),
-      description: language,
-      language,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-
-  const selectedItem = await window.showQuickPick(items, {
-    placeHolder: "Select the database language to download:",
-    ignoreFocusOut: true,
-  });
-  if (!selectedItem) {
-    return undefined;
-  }
-
-  return selectedItem.language;
 }
 
 /**

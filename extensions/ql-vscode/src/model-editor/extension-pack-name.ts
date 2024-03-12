@@ -1,3 +1,5 @@
+import { createFilenameFromString } from "../common/filenames";
+
 const packNamePartRegex = /[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 const packNameRegex = new RegExp(
   `^(?<scope>${packNamePartRegex.source})/(?<name>${packNamePartRegex.source})$`,
@@ -23,7 +25,11 @@ export function autoNameExtensionPack(
   }
 
   const parts = packName.split("/");
-  const sanitizedParts = parts.map((part) => sanitizeExtensionPackName(part));
+  const sanitizedParts = parts.map((part) =>
+    createFilenameFromString(part, {
+      removeDots: true,
+    }),
+  );
 
   // If the scope is empty (e.g. if the given name is "-/b"), then we need to still set a scope
   if (sanitizedParts[0].length === 0) {
@@ -35,25 +41,6 @@ export function autoNameExtensionPack(
     // This will ensure there's only 1 slash
     name: sanitizedParts.slice(1).join("-"),
   };
-}
-
-function sanitizeExtensionPackName(name: string) {
-  // Lowercase everything
-  name = name.toLowerCase();
-
-  // Replace all spaces, dots, and underscores with hyphens
-  name = name.replaceAll(/[\s._]+/g, "-");
-
-  // Replace all characters which are not allowed by empty strings
-  name = name.replaceAll(/[^a-z0-9-]/g, "");
-
-  // Remove any leading or trailing hyphens
-  name = name.replaceAll(/^-|-$/g, "");
-
-  // Remove any duplicate hyphens
-  name = name.replaceAll(/-{2,}/g, "-");
-
-  return name;
 }
 
 export function parsePackName(packName: string): ExtensionPackName | undefined {

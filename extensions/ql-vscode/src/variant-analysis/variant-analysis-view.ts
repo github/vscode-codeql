@@ -96,7 +96,7 @@ export class VariantAnalysisView
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
-    const variantAnalysis = await this.manager.getVariantAnalysis(
+    const variantAnalysis = this.manager.tryGetVariantAnalysis(
       this.variantAnalysisId,
     );
 
@@ -178,7 +178,7 @@ export class VariantAnalysisView
 
     void this.app.logger.log("Variant analysis view loaded");
 
-    const variantAnalysis = await this.manager.getVariantAnalysis(
+    const variantAnalysis = this.manager.tryGetVariantAnalysis(
       this.variantAnalysisId,
     );
 
@@ -206,7 +206,7 @@ export class VariantAnalysisView
       filterSortState,
     });
 
-    const repoStates = await this.manager.getRepoStates(this.variantAnalysisId);
+    const repoStates = this.manager.getRepoStates(this.variantAnalysisId);
     if (repoStates.length === 0) {
       return;
     }

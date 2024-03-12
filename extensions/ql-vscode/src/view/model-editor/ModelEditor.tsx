@@ -3,7 +3,6 @@ import type { ToModelEditorMessage } from "../../common/interface-types";
 import {
   VSCodeButton,
   VSCodeCheckbox,
-  VSCodeProgressRing,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
@@ -21,7 +20,7 @@ import { getLanguageDisplayName } from "../../common/query-language";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hide-modeled-methods";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
-import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-evaluation-run-state";
+import { ModelEvaluation } from "./ModelEvaluation";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -76,57 +75,6 @@ const ButtonsContainer = styled.div`
   gap: 0.4em;
   margin-top: 1rem;
 `;
-
-const ProgressRing = styled(VSCodeProgressRing)`
-  width: 16px;
-  height: 16px;
-  margin-right: 5px;
-`;
-
-const ModelEvaluation = ({
-  viewState,
-  modeledMethods,
-  modifiedSignatures,
-  onStartEvaluation,
-  onStopEvaluation,
-  evaluationRun,
-}: {
-  viewState: ModelEditorViewState;
-  modeledMethods: Record<string, ModeledMethod[]>;
-  modifiedSignatures: Set<string>;
-  onStartEvaluation: () => void;
-  onStopEvaluation: () => void;
-  evaluationRun: ModelEvaluationRunState | undefined;
-}) => {
-  if (!viewState.showEvaluationUi) {
-    return null;
-  }
-
-  if (!evaluationRun || !modelEvaluationRunIsRunning(evaluationRun)) {
-    const customModelsExist = Object.values(modeledMethods).some(
-      (methods) => methods.filter((m) => m.type !== "none").length > 0,
-    );
-
-    const unsavedChanges = modifiedSignatures.size > 0;
-
-    return (
-      <VSCodeButton
-        onClick={onStartEvaluation}
-        appearance="secondary"
-        disabled={!customModelsExist || unsavedChanges}
-      >
-        Evaluate
-      </VSCodeButton>
-    );
-  } else {
-    return (
-      <VSCodeButton onClick={onStopEvaluation} appearance="secondary">
-        <ProgressRing />
-        Stop evaluation
-      </VSCodeButton>
-    );
-  }
-};
 
 type Props = {
   initialViewState?: ModelEditorViewState;
@@ -198,8 +146,9 @@ export function ModelEditor({
           case "setMethods":
             setMethods(msg.methods);
             break;
-          case "setModeledMethods":
+          case "setModeledAndModifiedMethods":
             setModeledMethods(msg.methods);
+            setModifiedSignatures(new Set(msg.modifiedMethodSignatures));
             break;
           case "setModifiedMethods":
             setModifiedSignatures(new Set(msg.methodSignatures));
@@ -324,6 +273,12 @@ export function ModelEditor({
   const onStopEvaluation = useCallback(() => {
     vscode.postMessage({
       t: "stopModelEvaluation",
+    });
+  }, []);
+
+  const openModelAlertsView = useCallback(() => {
+    vscode.postMessage({
+      t: "openModelAlertsView",
     });
   }, []);
 
@@ -452,6 +407,7 @@ export function ModelEditor({
                 modifiedSignatures={modifiedSignatures}
                 onStartEvaluation={onStartEvaluation}
                 onStopEvaluation={onStopEvaluation}
+                openModelAlertsView={openModelAlertsView}
                 evaluationRun={evaluationRun}
               />
             </ButtonsContainer>
@@ -480,6 +436,7 @@ export function ModelEditor({
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
           accessPathSuggestions={accessPathSuggestions}
+          evaluationRun={evaluationRun}
           onChange={onChange}
           onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}

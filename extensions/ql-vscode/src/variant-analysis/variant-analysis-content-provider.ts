@@ -22,7 +22,7 @@ export const createVariantAnalysisContentProvider = (
     const variantAnalysisId = parseInt(variantAnalysisIdString);
 
     const variantAnalysis =
-      await variantAnalysisManager.getVariantAnalysis(variantAnalysisId);
+      variantAnalysisManager.tryGetVariantAnalysis(variantAnalysisId);
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
         extLogger,

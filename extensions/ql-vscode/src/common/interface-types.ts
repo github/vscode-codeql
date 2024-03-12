@@ -529,9 +529,10 @@ interface SetMethodsMessage {
   methods: Method[];
 }
 
-interface SetModeledMethodsMessage {
-  t: "setModeledMethods";
+interface SetModeledAndModifiedMethodsMessage {
+  t: "setModeledAndModifiedMethods";
   methods: Record<string, ModeledMethod[]>;
+  modifiedMethodSignatures: string[];
 }
 
 interface SetModifiedMethodsMessage {
@@ -599,6 +600,10 @@ interface StopModelEvaluationMessage {
   t: "stopModelEvaluation";
 }
 
+interface OpenModelAlertsViewMessage {
+  t: "openModelAlertsView";
+}
+
 interface ModelDependencyMessage {
   t: "modelDependency";
 }
@@ -647,7 +652,7 @@ interface SetModelEvaluationRunMessage {
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetMethodsMessage
-  | SetModeledMethodsMessage
+  | SetModeledAndModifiedMethodsMessage
   | SetModifiedMethodsMessage
   | SetInProgressMethodsMessage
   | SetProcessedByAutoModelMethodsMessage
@@ -670,7 +675,8 @@ export type FromModelEditorMessage =
   | HideModeledMethodsMessage
   | SetMultipleModeledMethodsMessage
   | StartModelEvaluationMessage
-  | StopModelEvaluationMessage;
+  | StopModelEvaluationMessage
+  | OpenModelAlertsViewMessage;
 
 interface RevealInEditorMessage {
   t: "revealInModelEditor";
@@ -692,14 +698,13 @@ interface SetMethodModelingPanelViewStateMessage {
   viewState: MethodModelingPanelViewState;
 }
 
-interface SetMethodMessage {
-  t: "setMethod";
-  method: Method | undefined;
-}
-
 interface SetMethodModifiedMessage {
   t: "setMethodModified";
   isModified: boolean;
+}
+
+interface SetNoMethodSelectedMessage {
+  t: "setNoMethodSelected";
 }
 
 interface SetSelectedMethodMessage {
@@ -713,10 +718,18 @@ interface SetSelectedMethodMessage {
 
 export type ToMethodModelingMessage =
   | SetMethodModelingPanelViewStateMessage
-  | SetMethodMessage
   | SetMultipleModeledMethodsMessage
   | SetMethodModifiedMessage
+  | SetNoMethodSelectedMessage
   | SetSelectedMethodMessage
   | SetInModelingModeMessage
   | SetInProgressMessage
   | SetProcessedByAutoModelMessage;
+
+interface SetModelAlertsMessage {
+  t: "setModelAlerts";
+}
+
+export type ToModelAlertsMessage = SetModelAlertsMessage;
+
+export type FromModelAlertsMessage = CommonFromViewMessages;

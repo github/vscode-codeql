@@ -19,12 +19,10 @@ export interface VariantAnalysisViewManager<
   unregisterView(view: T): void;
   getView(variantAnalysisId: number): T | undefined;
 
-  getVariantAnalysis(
-    variantAnalysisId: number,
-  ): Promise<VariantAnalysis | undefined>;
+  tryGetVariantAnalysis(variantAnalysisId: number): VariantAnalysis | undefined;
   getRepoStates(
     variantAnalysisId: number,
-  ): Promise<VariantAnalysisScannedRepositoryState[]>;
+  ): VariantAnalysisScannedRepositoryState[];
   openQueryFile(variantAnalysisId: number): Promise<void>;
   openQueryText(variantAnalysisId: number): Promise<void>;
   cancelVariantAnalysis(variantAnalysisId: number): Promise<void>;

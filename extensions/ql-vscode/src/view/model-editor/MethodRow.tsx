@@ -37,6 +37,9 @@ import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empt
 import type { AccessPathOption } from "../../model-editor/suggestions";
 import { ModelInputSuggestBox } from "./ModelInputSuggestBox";
 import { ModelOutputSuggestBox } from "./ModelOutputSuggestBox";
+import { getModelsAsDataLanguage } from "../../model-editor/languages";
+import { ModelAlertsIndicator } from "./ModelAlertsIndicator";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -44,6 +47,14 @@ const ApiOrMethodRow = styled.div`
   flex-direction: row;
   align-items: center;
   gap: 0.5em;
+`;
+
+const ModelButtonsContainer = styled.div`
+  min-height: calc(var(--input-height) * 1px);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1em;
 `;
 
 const UsagesButton = styled.button`
@@ -81,6 +92,7 @@ export type MethodRowProps = {
   revealedMethodSignature: string | null;
   inputAccessPathSuggestions?: AccessPathOption[];
   outputAccessPathSuggestions?: AccessPathOption[];
+  evaluationRun: ModelEvaluationRunState | undefined;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
 };
@@ -118,6 +130,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       revealedMethodSignature,
       inputAccessPathSuggestions,
       outputAccessPathSuggestions,
+      evaluationRun,
       onChange,
       onMethodClick,
     } = props;
@@ -192,9 +205,37 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       [method],
     );
 
-    const modelingStatus = getModelingStatus(modeledMethods, methodIsUnsaved);
+    // Only show modeled methods that are non-hidden. These are also the ones that are
+    // used for determining the modeling status.
+    const shownModeledMethods = useMemo(() => {
+      const modelsAsDataLanguage = getModelsAsDataLanguage(viewState.language);
 
-    const addModelButtonDisabled = !canAddNewModeledMethod(modeledMethods);
+      return modeledMethodsToDisplay(
+        modeledMethods.filter((modeledMethod) => {
+          if (modeledMethod.type === "none") {
+            return true;
+          }
+
+          const predicate = modelsAsDataLanguage.predicates[modeledMethod.type];
+          if (!predicate) {
+            return true;
+          }
+
+          return !predicate.isHidden?.({
+            method,
+            config: viewState.modelConfig,
+          });
+        }),
+        method,
+      );
+    }, [method, modeledMethods, viewState]);
+
+    const modelingStatus = getModelingStatus(
+      shownModeledMethods,
+      methodIsUnsaved,
+    );
+
+    const addModelButtonDisabled = !canAddNewModeledMethod(shownModeledMethods);
 
     return (
       <DataGridRow
@@ -206,7 +247,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         }}
       >
         <DataGridCell
-          gridRow={`span ${modeledMethods.length + validationErrors.length}`}
+          gridRow={`span ${shownModeledMethods.length + validationErrors.length}`}
           ref={ref}
         >
           <ApiOrMethodRow>
@@ -257,7 +298,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
         )}
         {!props.modelingInProgress && (
           <>
-            {modeledMethods.map((modeledMethod, index) => {
+            {shownModeledMethods.map((modeledMethod, index) => {
               const modelPending = isModelPending(
                 modeledMethod,
                 modelingStatus,
@@ -269,6 +310,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   <DataGridCell>
                     <ModelTypeDropdown
                       language={viewState.language}
+                      modelConfig={viewState.modelConfig}
                       method={method}
                       modeledMethod={modeledMethod}
                       modelPending={modelPending}
@@ -319,30 +361,37 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     />
                   </DataGridCell>
                   <DataGridCell>
-                    {index === 0 ? (
-                      <CodiconRow
-                        appearance="icon"
-                        aria-label="Add new model"
-                        onClick={(event: React.MouseEvent) => {
-                          event.stopPropagation();
-                          handleAddModelClick();
-                        }}
-                        disabled={addModelButtonDisabled}
-                      >
-                        <Codicon name="add" />
-                      </CodiconRow>
-                    ) : (
-                      <CodiconRow
-                        appearance="icon"
-                        aria-label="Remove model"
-                        onClick={(event: React.MouseEvent) => {
-                          event.stopPropagation();
-                          removeModelClickedHandlers[index]();
-                        }}
-                      >
-                        <Codicon name="trash" />
-                      </CodiconRow>
-                    )}
+                    <ModelButtonsContainer>
+                      <ModelAlertsIndicator
+                        viewState={viewState}
+                        modeledMethod={modeledMethod}
+                        evaluationRun={evaluationRun}
+                      ></ModelAlertsIndicator>
+                      {index === 0 ? (
+                        <CodiconRow
+                          appearance="icon"
+                          aria-label="Add new model"
+                          onClick={(event: React.MouseEvent) => {
+                            event.stopPropagation();
+                            handleAddModelClick();
+                          }}
+                          disabled={addModelButtonDisabled}
+                        >
+                          <Codicon name="add" />
+                        </CodiconRow>
+                      ) : (
+                        <CodiconRow
+                          appearance="icon"
+                          aria-label="Remove model"
+                          onClick={(event: React.MouseEvent) => {
+                            event.stopPropagation();
+                            removeModelClickedHandlers[index]();
+                          }}
+                        >
+                          <Codicon name="trash" />
+                        </CodiconRow>
+                      )}
+                    </ModelButtonsContainer>
                   </DataGridCell>
                 </DataGridRow>
               );

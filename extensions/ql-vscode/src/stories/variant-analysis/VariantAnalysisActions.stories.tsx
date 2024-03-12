@@ -70,3 +70,9 @@ Failed.args = {
   ...InProgress.args,
   variantAnalysisStatus: VariantAnalysisStatus.Failed,
 };
+
+export const Canceling = Template.bind({});
+Canceling.args = {
+  ...InProgress.args,
+  variantAnalysisStatus: VariantAnalysisStatus.Canceling,
+};

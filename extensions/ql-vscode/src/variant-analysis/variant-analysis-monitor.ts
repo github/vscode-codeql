@@ -17,6 +17,7 @@ import { sleep } from "../common/time";
 import { getErrorMessage } from "../common/helpers-pure";
 import type { App } from "../common/app";
 import { showAndLogWarningMessage } from "../common/logging";
+import type { QueryLanguage } from "../common/query-language";
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -36,6 +37,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
     private readonly shouldCancelMonitor: (
       variantAnalysisId: number,
     ) => Promise<boolean>,
+    private readonly getVariantAnalysis: (
+      variantAnalysisId: number,
+    ) => VariantAnalysis,
   ) {
     super();
   }
@@ -56,20 +60,28 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
     this.monitoringVariantAnalyses.add(variantAnalysis.id);
     try {
-      await this._monitorVariantAnalysis(variantAnalysis);
+      await this._monitorVariantAnalysis(
+        variantAnalysis.id,
+        variantAnalysis.controllerRepo.id,
+        variantAnalysis.executionStartTime,
+        variantAnalysis.query.name,
+        variantAnalysis.language,
+      );
     } finally {
       this.monitoringVariantAnalyses.delete(variantAnalysis.id);
     }
   }
 
   private async _monitorVariantAnalysis(
-    variantAnalysis: VariantAnalysis,
+    variantAnalysisId: number,
+    controllerRepoId: number,
+    executionStartTime: number,
+    queryName: string,
+    language: QueryLanguage,
   ): Promise<void> {
-    const variantAnalysisLabel = `${variantAnalysis.query.name} (${
-      variantAnalysis.language
-    }) [${new Date(variantAnalysis.executionStartTime).toLocaleString(
-      env.language,
-    )}]`;
+    const variantAnalysisLabel = `${queryName} (${language}) [${new Date(
+      executionStartTime,
+    ).toLocaleString(env.language)}]`;
 
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
@@ -79,7 +91,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
       await sleep(VariantAnalysisMonitor.sleepTime);
 
-      if (await this.shouldCancelMonitor(variantAnalysis.id)) {
+      if (await this.shouldCancelMonitor(variantAnalysisId)) {
         return;
       }
 
@@ -87,8 +99,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
       try {
         variantAnalysisSummary = await getVariantAnalysis(
           this.app.credentials,
-          variantAnalysis.controllerRepo.id,
-          variantAnalysis.id,
+          controllerRepoId,
+          variantAnalysisId,
         );
       } catch (e) {
         const errorMessage = getErrorMessage(e);
@@ -119,8 +131,10 @@ export class VariantAnalysisMonitor extends DisposableObject {
         continue;
       }
 
-      variantAnalysis = mapUpdatedVariantAnalysis(
-        variantAnalysis,
+      const variantAnalysis = mapUpdatedVariantAnalysis(
+        // Get the variant analysis as known by the rest of the app, because it may
+        // have been changed by the user and the monitors may not be aware of it yet.
+        this.getVariantAnalysis(variantAnalysisId),
         variantAnalysisSummary,
       );
 

@@ -11,6 +11,7 @@ import { NotInModelingMode } from "./NotInModelingMode";
 import { NoMethodSelected } from "./NoMethodSelected";
 import type { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
 import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
+import { defaultModelConfig } from "../../model-editor/languages";
 
 type Props = {
   initialViewState?: MethodModelingPanelViewState;
@@ -52,14 +53,18 @@ export function MethodModelingView({
           case "setInModelingMode":
             setInModelingMode(msg.inModelingMode);
             break;
-          case "setMethod":
-            setMethod(msg.method);
-            break;
           case "setMultipleModeledMethods":
             setModeledMethods(msg.modeledMethods);
             break;
           case "setMethodModified":
             setIsMethodModified(msg.isModified);
+            break;
+          case "setNoMethodSelected":
+            setMethod(undefined);
+            setModeledMethods([]);
+            setIsMethodModified(false);
+            setIsModelingInProgress(false);
+            setIsProcessedByAutoModel(false);
             break;
           case "setSelectedMethod":
             setMethod(msg.method);
@@ -116,6 +121,7 @@ export function MethodModelingView({
   return (
     <MethodModeling
       language={viewState?.language}
+      modelConfig={viewState?.modelConfig ?? defaultModelConfig}
       modelingStatus={modelingStatus}
       method={method}
       modeledMethods={modeledMethods}

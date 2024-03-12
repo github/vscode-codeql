@@ -66,6 +66,10 @@ export class DatabaseItemImpl implements DatabaseItem {
     return this.options.origin;
   }
 
+  public get extensionManagedLocation(): string | undefined {
+    return this.options.extensionManagedLocation;
+  }
+
   public resolveSourceFile(uriStr: string | undefined): Uri {
     const sourceArchive = this.sourceArchive;
     const uri = uriStr ? Uri.parse(uriStr, true) : undefined;

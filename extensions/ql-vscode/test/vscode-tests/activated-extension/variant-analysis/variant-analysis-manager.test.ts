@@ -109,7 +109,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getVariantAnalysis(variantAnalysis.id),
+          variantAnalysisManager.tryGetVariantAnalysis(variantAnalysis.id),
         ).toEqual(variantAnalysis);
       });
 
@@ -117,7 +117,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getRepoStates(variantAnalysis.id),
+          variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual([]);
       });
 
@@ -145,7 +145,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(
-          await variantAnalysisManager.getRepoStates(variantAnalysis.id),
+          variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual(
           expect.arrayContaining([
             {
@@ -607,13 +607,37 @@ describe("Variant Analysis Manager", () => {
       }
     });
 
-    it("should return cancel if valid", async () => {
+    it("should make API request to cancel if valid", async () => {
       await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
 
       expect(mockCancelVariantAnalysis).toHaveBeenCalledWith(
         app.credentials,
         variantAnalysis,
       );
+    });
+
+    it("should set the status to canceling", async () => {
+      await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
+
+      const updatedAnalysis = variantAnalysisManager.tryGetVariantAnalysis(
+        variantAnalysis.id,
+      );
+      expect(updatedAnalysis?.status).toBe(VariantAnalysisStatus.Canceling);
+    });
+
+    it("should set the status back to in progress if canceling fails", async () => {
+      mockCancelVariantAnalysis.mockRejectedValueOnce(
+        new Error("Error when cancelling"),
+      );
+
+      await expect(
+        variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id),
+      ).rejects.toThrow("Error when cancelling");
+
+      const updatedAnalysis = variantAnalysisManager.tryGetVariantAnalysis(
+        variantAnalysis.id,
+      );
+      expect(updatedAnalysis?.status).toBe(VariantAnalysisStatus.InProgress);
     });
   });
 

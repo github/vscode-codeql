@@ -34,6 +34,7 @@ import {
   isVariantAnalysisComplete,
   parseVariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisStatus,
 } from "./shared/variant-analysis";
 import { getErrorMessage } from "../common/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
@@ -44,7 +45,7 @@ import type {
 } from "./variant-analysis-results-manager";
 import { getQueryName, prepareRemoteQueryRun } from "./run-remote-query";
 import {
-  mapVariantAnalysis,
+  mapVariantAnalysisFromSubmission,
   mapVariantAnalysisRepositoryTask,
 } from "./variant-analysis-mapper";
 import PQueue from "p-queue";
@@ -95,6 +96,7 @@ import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { findVariantAnalysisQlPackRoot } from "./ql";
 import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
+import { isSarifResultsQueryKind } from "../common/query-metadata";
 
 const maxRetryCount = 3;
 
@@ -145,6 +147,7 @@ export class VariantAnalysisManager
       new VariantAnalysisMonitor(
         app,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
+        this.getVariantAnalysis.bind(this),
       ),
     );
     this.variantAnalysisMonitor.onVariantAnalysisChange(
@@ -298,6 +301,7 @@ export class VariantAnalysisManager
     qlPackDetails: QlPackDetails,
     progress: ProgressCallback,
     token: CancellationToken,
+    openViewAfterSubmission = true,
   ): Promise<number | undefined> {
     await saveBeforeStart();
 
@@ -306,21 +310,6 @@ export class VariantAnalysisManager
       step: 0,
       message: "Getting credentials",
     });
-
-    const {
-      actionBranch,
-      base64Pack,
-      repoSelection,
-      controllerRepo,
-      queryStartTime,
-    } = await prepareRemoteQueryRun(
-      this.cliServer,
-      this.app.credentials,
-      qlPackDetails,
-      progress,
-      token,
-      this.dbManager,
-    );
 
     // For now we get the metadata for the first query in the pack.
     // and use that in the submission and query history. In the future
@@ -339,6 +328,32 @@ export class VariantAnalysisManager
         `Found unsupported language: ${qlPackDetails.language}`,
       );
     }
+
+    // It's not possible to interpret a BQRS file to SARIF without an id property.
+    if (
+      queryMetadata?.kind &&
+      isSarifResultsQueryKind(queryMetadata.kind) &&
+      !queryMetadata.id
+    ) {
+      throw new UserCancellationException(
+        `${firstQueryFile} does not have the required @id property for a ${queryMetadata.kind} query.`,
+      );
+    }
+
+    const {
+      actionBranch,
+      base64Pack,
+      repoSelection,
+      controllerRepo,
+      queryStartTime,
+    } = await prepareRemoteQueryRun(
+      this.cliServer,
+      this.app.credentials,
+      qlPackDetails,
+      progress,
+      token,
+      this.dbManager,
+    );
 
     const queryText = await readFile(firstQueryFile, "utf8");
 
@@ -385,28 +400,31 @@ export class VariantAnalysisManager
       throw e;
     }
 
-    const processedVariantAnalysis = mapVariantAnalysis(
+    const mappedVariantAnalysis = mapVariantAnalysisFromSubmission(
       variantAnalysisSubmission,
       variantAnalysisResponse,
     );
 
-    await this.onVariantAnalysisSubmitted(processedVariantAnalysis);
+    await this.onVariantAnalysisSubmitted(mappedVariantAnalysis);
 
     void showAndLogInformationMessage(
       this.app.logger,
-      `Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`,
+      `Variant analysis ${mappedVariantAnalysis.query.name} submitted for processing`,
     );
 
-    void this.app.commands.execute(
-      "codeQL.openVariantAnalysisView",
-      processedVariantAnalysis.id,
-    );
+    if (openViewAfterSubmission) {
+      void this.app.commands.execute(
+        "codeQL.openVariantAnalysisView",
+        mappedVariantAnalysis.id,
+      );
+    }
+
     void this.app.commands.execute(
       "codeQL.monitorNewVariantAnalysis",
-      processedVariantAnalysis,
+      mappedVariantAnalysis,
     );
 
-    return processedVariantAnalysis.id;
+    return mappedVariantAnalysis.id;
   }
 
   public async rehydrateVariantAnalysis(variantAnalysis: VariantAnalysis) {
@@ -484,7 +502,7 @@ export class VariantAnalysisManager
   }
 
   public async openQueryText(variantAnalysisId: number): Promise<void> {
-    const variantAnalysis = await this.getVariantAnalysis(variantAnalysisId);
+    const variantAnalysis = this.tryGetVariantAnalysis(variantAnalysisId);
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
         this.app.logger,
@@ -515,7 +533,7 @@ export class VariantAnalysisManager
   }
 
   public async openQueryFile(variantAnalysisId: number): Promise<void> {
-    const variantAnalysis = await this.getVariantAnalysis(variantAnalysisId);
+    const variantAnalysis = this.tryGetVariantAnalysis(variantAnalysisId);
 
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
@@ -557,15 +575,15 @@ export class VariantAnalysisManager
     return this.views.get(variantAnalysisId);
   }
 
-  public async getVariantAnalysis(
+  public tryGetVariantAnalysis(
     variantAnalysisId: number,
-  ): Promise<VariantAnalysis | undefined> {
+  ): VariantAnalysis | undefined {
     return this.variantAnalyses.get(variantAnalysisId);
   }
 
-  public async getRepoStates(
+  public getRepoStates(
     variantAnalysisId: number,
-  ): Promise<VariantAnalysisScannedRepositoryState[]> {
+  ): VariantAnalysisScannedRepositoryState[] {
     return Object.values(this.repoStates.get(variantAnalysisId) ?? {});
   }
 
@@ -604,6 +622,16 @@ export class VariantAnalysisManager
     return !this.variantAnalyses.has(variantAnalysisId);
   }
 
+  private getVariantAnalysis(variantAnalysisId: number): VariantAnalysis {
+    const variantAnalysis = this.tryGetVariantAnalysis(variantAnalysisId);
+
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    return variantAnalysis;
+  }
+
   public async onVariantAnalysisUpdated(
     variantAnalysis: VariantAnalysis | undefined,
   ): Promise<void> {
@@ -611,7 +639,11 @@ export class VariantAnalysisManager
       return;
     }
 
-    if (!this.variantAnalyses.has(variantAnalysis.id)) {
+    const originalVariantAnalysis = this.variantAnalyses.get(
+      variantAnalysis.id,
+    );
+
+    if (!originalVariantAnalysis) {
       return;
     }
 
@@ -844,11 +876,24 @@ export class VariantAnalysisManager
       );
     }
 
+    await this.onVariantAnalysisUpdated({
+      ...variantAnalysis,
+      status: VariantAnalysisStatus.Canceling,
+    });
+
     void showAndLogInformationMessage(
       this.app.logger,
       "Cancelling variant analysis. This may take a while.",
     );
-    await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
+    try {
+      await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
+    } catch (e) {
+      await this.onVariantAnalysisUpdated({
+        ...variantAnalysis,
+        status: VariantAnalysisStatus.InProgress,
+      });
+      throw e;
+    }
   }
 
   public async openVariantAnalysisLogs(variantAnalysisId: number) {

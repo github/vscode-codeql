@@ -11,6 +11,7 @@ import { userEvent } from "@testing-library/user-event";
 import type { ModeledMethod } from "../../../model-editor/modeled-method";
 import { QueryLanguage } from "../../../common/query-language";
 import type { ModelingStatus } from "../../../model-editor/shared/modeling-status";
+import { defaultModelConfig } from "../../../model-editor/languages";
 
 describe(MultipleModeledMethodsPanel.name, () => {
   const language = QueryLanguage.Java;
@@ -19,12 +20,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
   const isProcessedByAutoModel = false;
   const modelingStatus: ModelingStatus = "unmodeled";
   const onChange = jest.fn<void, [string, ModeledMethod[]]>();
+  const modelConfig = defaultModelConfig;
 
   const baseProps = {
     language,
     method,
     modelingStatus,
     isModelingInProgress,
+    modelConfig,
     isProcessedByAutoModel,
     onChange,
   };

@@ -18,7 +18,6 @@ import {
   removeSync,
 } from "fs-extra";
 import { dirname, join } from "path";
-import { testCredentialsWithStub } from "../../../factories/authentication";
 import type {
   DatabaseItem,
   DatabaseManager,
@@ -69,7 +68,6 @@ describe("SkeletonQueryWizard", () => {
     typeof CodeQLCliServer.prototype.resolveQlpacks
   >;
 
-  const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
   const selectedItems: QueryTreeViewItem[] = [];
 
@@ -145,7 +143,6 @@ describe("SkeletonQueryWizard", () => {
     wizard = new SkeletonQueryWizard(
       mockCli,
       jest.fn(),
-      credentials,
       mockApp,
       mockDatabaseManager,
       storagePath,
@@ -173,7 +170,6 @@ describe("SkeletonQueryWizard", () => {
       wizard = new SkeletonQueryWizard(
         mockCli,
         jest.fn(),
-        credentials,
         mockApp,
         mockDatabaseManager,
         storagePath,
@@ -322,7 +318,6 @@ describe("SkeletonQueryWizard", () => {
           wizard = new SkeletonQueryWizard(
             mockCli,
             jest.fn(),
-            credentials,
             mockApp,
             mockDatabaseManagerWithItems,
             storagePath,
@@ -372,7 +367,6 @@ describe("SkeletonQueryWizard", () => {
           wizard = new SkeletonQueryWizard(
             mockCli,
             jest.fn(),
-            credentials,
             mockApp,
             mockDatabaseManagerWithItems,
             storagePath,
@@ -508,7 +502,6 @@ describe("SkeletonQueryWizard", () => {
       wizard = new SkeletonQueryWizard(
         mockCli,
         jest.fn(),
-        credentials,
         mockApp,
         mockDatabaseManager,
         storagePath,
@@ -730,7 +723,6 @@ describe("SkeletonQueryWizard", () => {
           wizard = new SkeletonQueryWizard(
             mockCli,
             jest.fn(),
-            credentials,
             mockApp,
             mockDatabaseManager,
             storagePath,
@@ -760,7 +752,6 @@ describe("SkeletonQueryWizard", () => {
           wizard = new SkeletonQueryWizard(
             mockCli,
             jest.fn(),
-            credentials,
             mockApp,
             mockDatabaseManager,
             storagePath,
@@ -794,7 +785,6 @@ describe("SkeletonQueryWizard", () => {
           wizard = new SkeletonQueryWizard(
             mockCli,
             jest.fn(),
-            credentials,
             mockApp,
             mockDatabaseManager,
             storagePath,
@@ -838,7 +828,6 @@ describe("SkeletonQueryWizard", () => {
           wizard = new SkeletonQueryWizard(
             mockCli,
             jest.fn(),
-            credentials,
             mockApp,
             mockDatabaseManager,
             storagePath,

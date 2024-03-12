@@ -42,7 +42,7 @@ export async function exportVariantAnalysisResults(
   await withProgress(
     async (progress: ProgressCallback, token: CancellationToken) => {
       const variantAnalysis =
-        await variantAnalysisManager.getVariantAnalysis(variantAnalysisId);
+        variantAnalysisManager.tryGetVariantAnalysis(variantAnalysisId);
       if (!variantAnalysis) {
         void extLogger.log(
           `Could not find variant analysis with id ${variantAnalysisId}`,
@@ -57,7 +57,7 @@ export async function exportVariantAnalysisResults(
       }
 
       const repoStates =
-        await variantAnalysisManager.getRepoStates(variantAnalysisId);
+        variantAnalysisManager.getRepoStates(variantAnalysisId);
 
       void extLogger.log(
         `Exporting variant analysis results for variant analysis with id ${variantAnalysis.id}`,

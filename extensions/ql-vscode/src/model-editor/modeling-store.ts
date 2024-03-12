@@ -6,6 +6,7 @@ import type { ModeledMethod } from "./modeled-method";
 import type { ModelingEvents } from "./modeling-events";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import type { Mode } from "./shared/mode";
+import { sortMethods } from "./shared/sorting";
 
 interface InternalDbModelingState {
   databaseItem: DatabaseItem;
@@ -21,7 +22,7 @@ interface InternalDbModelingState {
   modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
-interface DbModelingState {
+export interface DbModelingState {
   readonly databaseItem: DatabaseItem;
   readonly methods: readonly Method[];
   readonly hideModeledMethods: boolean;
@@ -35,7 +36,7 @@ interface DbModelingState {
   readonly modelEvaluationRun: ModelEvaluationRun | undefined;
 }
 
-interface SelectedMethodDetails {
+export interface SelectedMethodDetails {
   readonly databaseItem: DatabaseItem;
   readonly method: Method;
   readonly usage: Usage | undefined;
@@ -112,10 +113,6 @@ export class ModelingStore extends DisposableObject {
     return this.state.get(this.activeDb);
   }
 
-  public hasStateForActiveDb(): boolean {
-    return !!this.getStateForActiveDb();
-  }
-
   public anyDbsBeingModeled(): boolean {
     return this.state.size > 0;
   }
@@ -155,17 +152,25 @@ export class ModelingStore extends DisposableObject {
   }
 
   public setMethods(dbItem: DatabaseItem, methods: Method[]) {
-    const dbState = this.getState(dbItem);
-    const dbUri = dbItem.databaseUri.toString();
+    this.changeMethods(dbItem, (state) => {
+      state.methods = sortMethods(
+        methods,
+        state.modeledMethods,
+        state.modifiedMethodSignatures,
+        state.processedByAutoModelMethods,
+      );
+    });
+  }
 
-    dbState.methods = [...methods];
-
-    this.modelingEvents.fireMethodsChangedEvent(
-      methods,
-      dbUri,
-      dbItem,
-      dbUri === this.activeDb,
-    );
+  public updateMethodSorting(dbItem: DatabaseItem) {
+    this.changeMethods(dbItem, (state) => {
+      state.methods = sortMethods(
+        state.methods,
+        state.modeledMethods,
+        state.modifiedMethodSignatures,
+        state.processedByAutoModelMethods,
+      );
+    });
   }
 
   public setHideModeledMethods(
@@ -218,8 +223,9 @@ export class ModelingStore extends DisposableObject {
   public addModeledMethods(
     dbItem: DatabaseItem,
     methods: Record<string, ModeledMethod[]>,
+    setModified: boolean,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       const newModeledMethods = {
         ...methods,
         // Keep all methods that are already modeled in some form in the state
@@ -230,6 +236,14 @@ export class ModelingStore extends DisposableObject {
         ),
       };
       state.modeledMethods = newModeledMethods;
+
+      if (setModified) {
+        const newModifiedMethods = new Set([
+          ...state.modifiedMethodSignatures,
+          ...new Set(Object.keys(methods)),
+        ]);
+        state.modifiedMethodSignatures = newModifiedMethods;
+      }
     });
   }
 
@@ -237,7 +251,7 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     methods: Record<string, ModeledMethod[]>,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       state.modeledMethods = { ...methods };
     });
   }
@@ -246,45 +260,28 @@ export class ModelingStore extends DisposableObject {
     dbItem: DatabaseItem,
     signature: string,
     modeledMethods: ModeledMethod[],
+    setModified: boolean,
   ) {
-    this.changeModeledMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       const newModeledMethods = { ...state.modeledMethods };
       newModeledMethods[signature] = modeledMethods;
       state.modeledMethods = newModeledMethods;
-    });
-  }
 
-  public setModifiedMethods(
-    dbItem: DatabaseItem,
-    methodSignatures: Set<string>,
-  ) {
-    this.changeModifiedMethods(dbItem, (state) => {
-      state.modifiedMethodSignatures = new Set(methodSignatures);
+      if (setModified) {
+        const newModifiedMethods = new Set([
+          ...state.modifiedMethodSignatures,
+          signature,
+        ]);
+        state.modifiedMethodSignatures = newModifiedMethods;
+      }
     });
-  }
-
-  public addModifiedMethods(
-    dbItem: DatabaseItem,
-    methodSignatures: Iterable<string>,
-  ) {
-    this.changeModifiedMethods(dbItem, (state) => {
-      const newModifiedMethods = new Set([
-        ...state.modifiedMethodSignatures,
-        ...methodSignatures,
-      ]);
-      state.modifiedMethodSignatures = newModifiedMethods;
-    });
-  }
-
-  public addModifiedMethod(dbItem: DatabaseItem, methodSignature: string) {
-    this.addModifiedMethods(dbItem, [methodSignature]);
   }
 
   public removeModifiedMethods(
     dbItem: DatabaseItem,
     methodSignatures: string[],
   ) {
-    this.changeModifiedMethods(dbItem, (state) => {
+    this.changeModeledAndModifiedMethods(dbItem, (state) => {
       const newModifiedMethods = Array.from(
         state.modifiedMethodSignatures,
       ).filter((s) => !methodSignatures.includes(s));
@@ -374,6 +371,7 @@ export class ModelingStore extends DisposableObject {
         ...processedByAutoModelMethods,
       ]);
     });
+    this.updateMethodSorting(dbItem);
   }
 
   public updateModelEvaluationRun(
@@ -421,7 +419,13 @@ export class ModelingStore extends DisposableObject {
     return this.state.get(databaseItem.databaseUri.toString())!;
   }
 
-  private changeModifiedMethods(
+  public getModelEvaluationRun(
+    dbItem: DatabaseItem,
+  ): ModelEvaluationRun | undefined {
+    return this.getState(dbItem).modelEvaluationRun;
+  }
+
+  private changeMethods(
     dbItem: DatabaseItem,
     updateState: (state: InternalDbModelingState) => void,
   ) {
@@ -429,14 +433,15 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireModifiedMethodsChangedEvent(
-      state.modifiedMethodSignatures,
+    this.modelingEvents.fireMethodsChangedEvent(
+      state.methods,
       dbItem.databaseUri.toString(),
+      dbItem,
       dbItem.databaseUri.toString() === this.activeDb,
     );
   }
 
-  private changeModeledMethods(
+  private changeModeledAndModifiedMethods(
     dbItem: DatabaseItem,
     updateState: (state: InternalDbModelingState) => void,
   ) {
@@ -444,8 +449,9 @@ export class ModelingStore extends DisposableObject {
 
     updateState(state);
 
-    this.modelingEvents.fireModeledMethodsChangedEvent(
+    this.modelingEvents.fireModeledAndModifiedMethodsChangedEvent(
       state.modeledMethods,
+      state.modifiedMethodSignatures,
       dbItem.databaseUri.toString(),
       dbItem.databaseUri.toString() === this.activeDb,
     );

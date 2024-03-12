@@ -245,6 +245,37 @@ describe("local databases", () => {
       await expect(pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
         false,
       );
+      await expect(pathExists(dir.name)).resolves.toBe(true);
+    });
+
+    it("should remove a database item with an extension managed location", async () => {
+      const dbLocation = join(dir.name, "org-repo-12");
+      await ensureDir(dbLocation);
+
+      const mockDbItem = createMockDB(dbLocation, {
+        ...mockDbOptions(),
+        extensionManagedLocation: dbLocation,
+      });
+      await ensureDir(mockDbItem.databaseUri.fsPath);
+
+      // pretend that this item is the first workspace folder in the list
+      jest
+        .spyOn(mockDbItem, "belongsToSourceArchiveExplorerUri")
+        .mockReturnValue(true);
+
+      await (databaseManager as any).addDatabaseItem(mockDbItem);
+
+      updateSpy.mockClear();
+
+      await databaseManager.removeDatabaseItem(mockDbItem);
+
+      expect(databaseManager.databaseItems).toEqual([]);
+      expect(updateSpy).toHaveBeenCalledWith("databaseList", []);
+      // should remove the folder
+      expect(workspace.updateWorkspaceFolders).toHaveBeenCalledWith(0, 1);
+
+      // should delete the complete extension managed location
+      await expect(pathExists(dbLocation)).resolves.toBe(false);
     });
 
     it("should remove a database item outside of the extension controlled area", async () => {
@@ -607,6 +638,7 @@ describe("local databases", () => {
         origin: {
           type: "folder",
         },
+        extensionManagedLocation: undefined,
       };
       mockDbItem = createMockDB(dir, options);
 

@@ -3,12 +3,12 @@ import type { Method } from "../../model-editor/method";
 import { canMethodBeModeled } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
-import { sortMethods } from "../../model-editor/shared/sorting";
 import { HiddenMethodsRow } from "./HiddenMethodsRow";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ScreenReaderOnly } from "../common/ScreenReaderOnly";
 import { DataGrid, DataGridCell } from "../common/DataGrid";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 export const MULTIPLE_MODELS_GRID_TEMPLATE_COLUMNS =
   "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr max-content";
@@ -24,6 +24,7 @@ export type ModeledMethodDataGridProps = {
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
   accessPathSuggestions?: AccessPathSuggestionOptions;
+  evaluationRun: ModelEvaluationRunState | undefined;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
 };
@@ -39,6 +40,7 @@ export const ModeledMethodDataGrid = ({
   hideModeledMethods,
   revealedMethodSignature,
   accessPathSuggestions,
+  evaluationRun,
   onChange,
   onMethodClick,
 }: ModeledMethodDataGridProps) => {
@@ -48,12 +50,7 @@ export const ModeledMethodDataGrid = ({
   ] = useMemo(() => {
     const methodsWithModelability = [];
     let numHiddenMethods = 0;
-    for (const method of sortMethods(
-      methods,
-      modeledMethodsMap,
-      modifiedSignatures,
-      processedByAutoModelMethods,
-    )) {
+    for (const method of methods) {
       const modeledMethods = modeledMethodsMap[method.signature] ?? [];
       const methodIsUnsaved = modifiedSignatures.has(method.signature);
       const methodCanBeModeled = canMethodBeModeled(
@@ -69,13 +66,7 @@ export const ModeledMethodDataGrid = ({
       }
     }
     return [methodsWithModelability, numHiddenMethods];
-  }, [
-    hideModeledMethods,
-    methods,
-    modeledMethodsMap,
-    modifiedSignatures,
-    processedByAutoModelMethods,
-  ]);
+  }, [hideModeledMethods, methods, modeledMethodsMap, modifiedSignatures]);
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
 
@@ -113,6 +104,7 @@ export const ModeledMethodDataGrid = ({
                 revealedMethodSignature={revealedMethodSignature}
                 inputAccessPathSuggestions={inputAccessPathSuggestions}
                 outputAccessPathSuggestions={outputAccessPathSuggestions}
+                evaluationRun={evaluationRun}
                 onChange={onChange}
                 onMethodClick={onMethodClick}
               />

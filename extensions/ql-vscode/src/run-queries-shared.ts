@@ -495,8 +495,7 @@ export async function createInitialQueryInfo(
   outputDir: QueryOutputDir,
 ): Promise<InitialQueryInfo> {
   const isQuickEval = selectedQuery.quickEval !== undefined;
-  const isQuickEvalCount =
-    selectedQuery.quickEval?.quickEvalCount !== undefined;
+  const isQuickEvalCount = selectedQuery.quickEval?.quickEvalCount;
   return {
     queryPath: selectedQuery.queryPath,
     isQuickEval,

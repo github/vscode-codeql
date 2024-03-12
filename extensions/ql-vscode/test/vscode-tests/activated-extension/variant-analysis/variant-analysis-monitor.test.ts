@@ -27,15 +27,16 @@ import { createMockLogger } from "../../../__mocks__/loggerMock";
 jest.setTimeout(60_000);
 
 describe("Variant Analysis Monitor", () => {
-  let mockGetVariantAnalysis: jest.SpiedFunction<
+  let mockGetVariantAnalysisFromApi: jest.SpiedFunction<
     typeof ghApiClient.getVariantAnalysis
   >;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let shouldCancelMonitor: jest.Mock<Promise<boolean>, [number]>;
+  let mockGetVariantAnalysis: jest.Mock<VariantAnalysis, [number]>;
   let variantAnalysis: VariantAnalysis;
 
   const onVariantAnalysisChangeSpy = jest.fn();
-  const mockEecuteCommand = jest.fn();
+  const mockExecuteCommand = jest.fn();
 
   let logger: NotificationLogger;
 
@@ -43,23 +44,27 @@ describe("Variant Analysis Monitor", () => {
     variantAnalysis = createMockVariantAnalysis({});
 
     shouldCancelMonitor = jest.fn();
+    mockGetVariantAnalysis = jest.fn();
 
     logger = createMockLogger();
 
     variantAnalysisMonitor = new VariantAnalysisMonitor(
       createMockApp({
         commands: createMockCommandManager({
-          executeCommand: mockEecuteCommand,
+          executeCommand: mockExecuteCommand,
         }),
         logger,
       }),
       shouldCancelMonitor,
+      mockGetVariantAnalysis,
     );
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
 
-    mockGetVariantAnalysis = jest
+    mockGetVariantAnalysisFromApi = jest
       .spyOn(ghApiClient, "getVariantAnalysis")
       .mockRejectedValue(new Error("Not mocked"));
+
+    mockGetVariantAnalysis.mockReturnValue(variantAnalysis);
 
     limitNumberOfAttemptsToMonitor();
   });
@@ -77,13 +82,13 @@ describe("Variant Analysis Monitor", () => {
 
     beforeEach(async () => {
       mockFailedApiResponse = createFailedMockApiResponse();
-      mockGetVariantAnalysis.mockResolvedValue(mockFailedApiResponse);
+      mockGetVariantAnalysisFromApi.mockResolvedValue(mockFailedApiResponse);
     });
 
     it("should mark as failed and stop monitoring", async () => {
       await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-      expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(1);
+      expect(mockGetVariantAnalysisFromApi).toHaveBeenCalledTimes(1);
 
       expect(onVariantAnalysisChangeSpy).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -112,7 +117,7 @@ describe("Variant Analysis Monitor", () => {
           "succeeded",
         ]);
         mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
-        mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValue(mockApiResponse);
       });
 
       it("should trigger a download extension command for each repo", async () => {
@@ -121,10 +126,10 @@ describe("Variant Analysis Monitor", () => {
         );
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).toHaveBeenCalledTimes(succeededRepos.length);
+        expect(mockExecuteCommand).toHaveBeenCalledTimes(succeededRepos.length);
 
         succeededRepos.forEach((succeededRepo, index) => {
-          expect(mockEecuteCommand).toHaveBeenNthCalledWith(
+          expect(mockExecuteCommand).toHaveBeenNthCalledWith(
             index + 1,
             "codeQL.autoDownloadVariantAnalysisResult",
             mapScannedRepository(succeededRepo),
@@ -140,13 +145,13 @@ describe("Variant Analysis Monitor", () => {
       beforeEach(async () => {
         scannedRepos = createMockScannedRepos(["pending", "in_progress"]);
         mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
-        mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValue(mockApiResponse);
       });
 
       it("should succeed and not download any repos via a command", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).not.toHaveBeenCalled();
+        expect(mockExecuteCommand).not.toHaveBeenCalled();
       });
     });
 
@@ -163,7 +168,7 @@ describe("Variant Analysis Monitor", () => {
           "pending",
         ]);
         mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
-        mockGetVariantAnalysis.mockResolvedValueOnce(mockApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(mockApiResponse);
 
         let nextApiResponse = {
           ...mockApiResponse,
@@ -171,7 +176,7 @@ describe("Variant Analysis Monitor", () => {
         };
         nextApiResponse.scanned_repositories[0].analysis_status = "succeeded";
         nextApiResponse.scanned_repositories[1].analysis_status = "succeeded";
-        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(nextApiResponse);
 
         nextApiResponse = {
           ...mockApiResponse,
@@ -181,7 +186,7 @@ describe("Variant Analysis Monitor", () => {
         };
         nextApiResponse.scanned_repositories[2].analysis_status = "succeeded";
         nextApiResponse.scanned_repositories[5].analysis_status = "succeeded";
-        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(nextApiResponse);
 
         nextApiResponse = {
           ...mockApiResponse,
@@ -191,14 +196,14 @@ describe("Variant Analysis Monitor", () => {
         };
         nextApiResponse.scanned_repositories[3].analysis_status = "succeeded";
         nextApiResponse.scanned_repositories[4].analysis_status = "failed";
-        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(nextApiResponse);
       });
 
       it("should trigger a download extension command for each repo", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(4);
-        expect(mockEecuteCommand).toHaveBeenCalledTimes(5);
+        expect(mockGetVariantAnalysisFromApi).toHaveBeenCalledTimes(4);
+        expect(mockExecuteCommand).toHaveBeenCalledTimes(5);
       });
     });
 
@@ -215,15 +220,15 @@ describe("Variant Analysis Monitor", () => {
           "pending",
         ]);
         mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
-        mockGetVariantAnalysis.mockResolvedValueOnce(mockApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(mockApiResponse);
 
-        mockGetVariantAnalysis.mockRejectedValueOnce(
+        mockGetVariantAnalysisFromApi.mockRejectedValueOnce(
           new Error("No internet connection"),
         );
-        mockGetVariantAnalysis.mockRejectedValueOnce(
+        mockGetVariantAnalysisFromApi.mockRejectedValueOnce(
           new Error("No internet connection"),
         );
-        mockGetVariantAnalysis.mockRejectedValueOnce(
+        mockGetVariantAnalysisFromApi.mockRejectedValueOnce(
           new Error("My different error"),
         );
 
@@ -234,15 +239,15 @@ describe("Variant Analysis Monitor", () => {
         nextApiResponse.scanned_repositories[0].analysis_status = "succeeded";
         nextApiResponse.scanned_repositories[1].analysis_status = "succeeded";
 
-        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(nextApiResponse);
 
-        mockGetVariantAnalysis.mockRejectedValueOnce(
+        mockGetVariantAnalysisFromApi.mockRejectedValueOnce(
           new Error("My different error"),
         );
-        mockGetVariantAnalysis.mockRejectedValueOnce(
+        mockGetVariantAnalysisFromApi.mockRejectedValueOnce(
           new Error("My different error"),
         );
-        mockGetVariantAnalysis.mockRejectedValueOnce(
+        mockGetVariantAnalysisFromApi.mockRejectedValueOnce(
           new Error("Another different error"),
         );
 
@@ -255,7 +260,7 @@ describe("Variant Analysis Monitor", () => {
         nextApiResponse.scanned_repositories[4].analysis_status = "failed";
         nextApiResponse.scanned_repositories[5].analysis_status = "succeeded";
         nextApiResponse.status = "succeeded";
-        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(nextApiResponse);
       });
 
       it("should only trigger the warning once per error", async () => {
@@ -285,13 +290,13 @@ describe("Variant Analysis Monitor", () => {
       beforeEach(async () => {
         scannedRepos = [];
         mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
-        mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValue(mockApiResponse);
       });
 
       it("should not try to download any repos", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockEecuteCommand).not.toHaveBeenCalled();
+        expect(mockExecuteCommand).not.toHaveBeenCalled();
       });
     });
 
@@ -306,9 +311,9 @@ describe("Variant Analysis Monitor", () => {
           "pending",
         ]);
         mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
-        mockGetVariantAnalysis.mockResolvedValueOnce(mockApiResponse);
+        mockGetVariantAnalysisFromApi.mockResolvedValueOnce(mockApiResponse);
 
-        mockGetVariantAnalysis.mockRejectedValueOnce(
+        mockGetVariantAnalysisFromApi.mockRejectedValueOnce(
           new RequestError("Not Found", 404, {
             request: {
               method: "GET",
@@ -329,10 +334,30 @@ describe("Variant Analysis Monitor", () => {
       it("should stop requesting the variant analysis", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(2);
+        expect(mockGetVariantAnalysisFromApi).toHaveBeenCalledTimes(2);
         expect(logger.showWarningMessage).toHaveBeenCalledTimes(1);
         expect(logger.showWarningMessage).toHaveBeenCalledWith(
           expect.stringMatching(/not found/i),
+        );
+      });
+    });
+
+    describe("cancelation", () => {
+      it("should maintain canceling status", async () => {
+        mockGetVariantAnalysis.mockReturnValueOnce({
+          ...variantAnalysis,
+          status: VariantAnalysisStatus.Canceling,
+        });
+
+        mockApiResponse = createMockApiResponse("in_progress");
+        mockGetVariantAnalysisFromApi.mockResolvedValue(mockApiResponse);
+
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
+
+        expect(onVariantAnalysisChangeSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: VariantAnalysisStatus.Canceling,
+          }),
         );
       });
     });

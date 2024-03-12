@@ -20,6 +20,7 @@ import type {
   ModelExtension,
   ModelExtensionFile,
 } from "./model-extension-file";
+import { createFilenameFromString } from "../common/filenames";
 import type { QueryLanguage } from "../common/query-language";
 
 import modelExtensionFileSchema from "./model-extension-file.schema.json";
@@ -275,26 +276,7 @@ export function createFilenameForLibrary(
   prefix = "models/",
   suffix = ".model",
 ) {
-  let libraryName = library;
-
-  // Lowercase everything
-  libraryName = libraryName.toLowerCase();
-
-  // Replace all spaces and underscores with hyphens
-  libraryName = libraryName.replaceAll(/[\s_]+/g, "-");
-
-  // Replace all characters which are not allowed by empty strings
-  libraryName = libraryName.replaceAll(/[^a-z0-9.-]/g, "");
-
-  // Remove any leading or trailing hyphens or dots
-  libraryName = libraryName.replaceAll(/^[.-]+|[.-]+$/g, "");
-
-  // Remove any duplicate hyphens
-  libraryName = libraryName.replaceAll(/-{2,}/g, "-");
-  // Remove any duplicate dots
-  libraryName = libraryName.replaceAll(/\.{2,}/g, ".");
-
-  return `${prefix}${libraryName}${suffix}.yml`;
+  return `${prefix}${createFilenameFromString(library)}${suffix}.yml`;
 }
 
 export function createFilenameForPackage(
@@ -337,7 +319,7 @@ function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
  *
  * @param data The data extension file
  */
-function modelExtensionFileToYaml(data: ModelExtensionFile) {
+export function modelExtensionFileToYaml(data: ModelExtensionFile) {
   const extensions = data.extensions
     .map((extension) => {
       const data =

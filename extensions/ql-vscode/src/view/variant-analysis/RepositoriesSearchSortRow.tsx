@@ -11,6 +11,7 @@ import { RepositoriesSort } from "./RepositoriesSort";
 import { RepositoriesFilter } from "./RepositoriesFilter";
 import { RepositoriesResultFormat } from "./RepositoriesResultFormat";
 import type { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
+import { isSarifResultsQueryKind } from "../../common/query-metadata";
 
 type Props = {
   filterSortValue: RepositoriesFilterSortState;
@@ -47,10 +48,7 @@ const RepositoriesResultFormatColumn = styled(RepositoriesResultFormat)`
 function showResultFormatColumn(
   variantAnalysisQueryKind: string | undefined,
 ): boolean {
-  return (
-    variantAnalysisQueryKind === "problem" ||
-    variantAnalysisQueryKind === "path-problem"
-  );
+  return isSarifResultsQueryKind(variantAnalysisQueryKind);
 }
 
 export const RepositoriesSearchSortRow = ({

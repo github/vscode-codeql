@@ -49,7 +49,6 @@ import {
 } from "./database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
 import type { QueryRunner } from "../query-server";
-import { isCanary } from "../config";
 import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import type { LocalDatabasesCommands } from "../common/commands";
@@ -560,13 +559,10 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
       async (progress) => {
-        const credentials = isCanary() ? this.app.credentials : undefined;
-
         await promptImportGithubDatabase(
-          this.app.commands,
+          this.app,
           this.databaseManager,
           this.storagePath,
-          credentials,
           progress,
           this.queryServer.cliServer,
         );

@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.12.3",
+  "version": "1.12.4",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -53,10 +53,10 @@
     "configurationDefaults": {
       "[ql]": {
         "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
-        "editor.wordBasedSuggestions": false
+        "editor.wordBasedSuggestions": "off"
       },
       "[dbscheme]": {
-        "editor.wordBasedSuggestions": false
+        "editor.wordBasedSuggestions": "off"
       }
     },
     "debuggers": [
@@ -1966,7 +1966,7 @@
     "fs-extra": "^11.1.1",
     "js-yaml": "^4.1.0",
     "msw": "^2.0.13",
-    "nanoid": "^5.0.1",
+    "nanoid": "^5.0.6",
     "node-fetch": "^2.6.7",
     "p-queue": "^8.0.1",
     "react": "^18.2.0",
@@ -1986,7 +1986,7 @@
     "zip-a-folder": "^3.1.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.18.13",
+    "@babel/core": "^7.24.0",
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-react": "^7.18.6",
@@ -2035,10 +2035,10 @@
     "@types/yauzl": "^2.10.3",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vscode/test-electron": "^2.2.0",
-    "@vscode/vsce": "^2.19.0",
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^2.24.0",
     "ansi-colors": "^4.1.1",
-    "applicationinsights": "^2.9.2",
+    "applicationinsights": "^2.9.4",
     "cosmiconfig": "^9.0.0",
     "cross-env": "^7.0.3",
     "css-loader": "^6.10.0",
@@ -2054,7 +2054,7 @@
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-react": "^7.31.8",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-storybook": "^0.6.4",
+    "eslint-plugin-storybook": "^0.8.0",
     "file-loader": "^6.2.0",
     "glob": "^10.0.0",
     "gulp": "^4.0.2",
@@ -2068,12 +2068,12 @@
     "lint-staged": "^15.0.2",
     "markdownlint-cli2": "^0.12.1",
     "markdownlint-cli2-formatter-pretty": "^0.0.5",
-    "mini-css-extract-plugin": "^2.8.0",
+    "mini-css-extract-plugin": "^2.8.1",
     "npm-run-all": "^4.1.5",
     "patch-package": "^8.0.0",
     "prettier": "^3.2.5",
     "storybook": "^7.6.15",
-    "tar-stream": "^3.0.0",
+    "tar-stream": "^3.1.7",
     "through2": "^4.0.2",
     "ts-jest": "^29.0.1",
     "ts-json-schema-generator": "^1.1.2",

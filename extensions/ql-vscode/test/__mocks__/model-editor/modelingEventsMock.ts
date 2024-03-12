@@ -3,12 +3,13 @@ import type { ModelingEvents } from "../../../src/model-editor/modeling-events";
 
 export function createMockModelingEvents({
   onActiveDbChanged = jest.fn(),
+  onDbOpened = jest.fn(),
   onDbClosed = jest.fn(),
+  onSelectedMethodChanged = jest.fn(),
   onMethodsChanged = jest.fn(),
   onHideModeledMethodsChanged = jest.fn(),
   onModeChanged = jest.fn(),
-  onModeledMethodsChanged = jest.fn(),
-  onModifiedMethodsChanged = jest.fn(),
+  onModeledAndModifiedMethodsChanged = jest.fn(),
   onInProgressMethodsChanged = jest.fn(),
   onProcessedByAutoModelMethodsChanged = jest.fn(),
   onRevealInModelEditor = jest.fn(),
@@ -16,12 +17,13 @@ export function createMockModelingEvents({
   onModelEvaluationRunChanged = jest.fn(),
 }: {
   onActiveDbChanged?: ModelingEvents["onActiveDbChanged"];
+  onDbOpened?: ModelingEvents["onDbOpened"];
   onDbClosed?: ModelingEvents["onDbClosed"];
+  onSelectedMethodChanged?: ModelingEvents["onSelectedMethodChanged"];
   onMethodsChanged?: ModelingEvents["onMethodsChanged"];
   onHideModeledMethodsChanged?: ModelingEvents["onHideModeledMethodsChanged"];
   onModeChanged?: ModelingEvents["onModeChanged"];
-  onModeledMethodsChanged?: ModelingEvents["onModeledMethodsChanged"];
-  onModifiedMethodsChanged?: ModelingEvents["onModifiedMethodsChanged"];
+  onModeledAndModifiedMethodsChanged?: ModelingEvents["onModeledAndModifiedMethodsChanged"];
   onInProgressMethodsChanged?: ModelingEvents["onInProgressMethodsChanged"];
   onProcessedByAutoModelMethodsChanged?: ModelingEvents["onProcessedByAutoModelMethodsChanged"];
   onRevealInModelEditor?: ModelingEvents["onRevealInModelEditor"];
@@ -30,12 +32,13 @@ export function createMockModelingEvents({
 } = {}): ModelingEvents {
   return mockedObject<ModelingEvents>({
     onActiveDbChanged,
+    onDbOpened,
     onDbClosed,
+    onSelectedMethodChanged,
     onMethodsChanged,
     onHideModeledMethodsChanged,
     onModeChanged,
-    onModeledMethodsChanged,
-    onModifiedMethodsChanged,
+    onModeledAndModifiedMethodsChanged,
     onInProgressMethodsChanged,
     onProcessedByAutoModelMethodsChanged,
     onRevealInModelEditor,

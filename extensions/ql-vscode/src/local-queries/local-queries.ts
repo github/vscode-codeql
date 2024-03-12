@@ -10,7 +10,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
-import { isCanary, MAX_QUERIES } from "../config";
+import { MAX_QUERIES } from "../config";
 import { gatherQlFiles } from "../common/files";
 import { basename } from "path";
 import { showBinaryChoiceDialog } from "../common/vscode/dialog";
@@ -322,14 +322,12 @@ export class LocalQueries extends DisposableObject {
   private async createSkeletonQuery(): Promise<void> {
     await withProgress(
       async (progress: ProgressCallback) => {
-        const credentials = isCanary() ? this.app.credentials : undefined;
         const contextStoragePath =
           this.app.workspaceStoragePath || this.app.globalStoragePath;
         const language = this.languageContextStore.selectedLanguage;
         const skeletonQueryWizard = new SkeletonQueryWizard(
           this.cliServer,
           progress,
-          credentials,
           this.app,
           this.databaseManager,
           contextStoragePath,

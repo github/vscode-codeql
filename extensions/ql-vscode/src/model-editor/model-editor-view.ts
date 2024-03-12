@@ -41,7 +41,11 @@ import type { ModeledMethod } from "./modeled-method";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { ModelConfigListener } from "../config";
 import { Mode } from "./shared/mode";
-import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
+import {
+  GENERATED_MODELS_SUFFIX,
+  loadModeledMethods,
+  saveModeledMethods,
+} from "./modeled-method-fs";
 import { pickExtensionPack } from "./extension-pack-picker";
 import type { QueryLanguage } from "../common/query-language";
 import { getLanguageDisplayName } from "../common/query-language";
@@ -50,7 +54,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import type { ModelingStore } from "./modeling-store";
 import type { ModelingEvents } from "./modeling-events";
 import type { ModelsAsDataLanguage } from "./languages";
-import { getModelsAsDataLanguage } from "./languages";
+import { createModelConfig, getModelsAsDataLanguage } from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";
@@ -60,6 +64,10 @@ import { parseAccessPathSuggestionRowsToOptions } from "./suggestions-bqrs";
 import { ModelEvaluator } from "./model-evaluator";
 import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
+import type { ModelExtensionFile } from "./model-extension-file";
+import { modelExtensionFileToYaml } from "./yaml";
+import { outputFile } from "fs-extra";
+import { join } from "path";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -117,7 +125,7 @@ export class ModelEditorView extends AbstractWebview<
     this.languageDefinition = getModelsAsDataLanguage(language);
 
     this.modelEvaluator = new ModelEvaluator(
-      this.app.logger,
+      this.app,
       this.cliServer,
       modelingStore,
       modelingEvents,
@@ -264,6 +272,7 @@ export class ModelEditorView extends AbstractWebview<
                 modeledMethods,
                 mode,
                 this.cliServer,
+                this.modelConfig,
                 this.app.logger,
               );
 
@@ -287,6 +296,8 @@ export class ModelEditorView extends AbstractWebview<
             this.databaseItem,
             Object.keys(modeledMethods),
           );
+
+          this.modelingStore.updateMethodSorting(this.databaseItem);
 
           void telemetryListener?.sendUIInteraction(
             "model-editor-save-modeled-methods",
@@ -368,6 +379,9 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "stopModelEvaluation":
         await this.modelEvaluator.stopEvaluation();
+        break;
+      case "openModelAlertsView":
+        await this.modelEvaluator.openModelAlertsView();
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
@@ -456,6 +470,7 @@ export class ModelEditorView extends AbstractWebview<
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
         sourceArchiveAvailable,
+        modelConfig: createModelConfig(this.modelConfig),
       },
     });
   }
@@ -480,6 +495,7 @@ export class ModelEditorView extends AbstractWebview<
         this.extensionPack,
         this.language,
         this.cliServer,
+        this.modelConfig,
         this.app.logger,
       );
       this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
@@ -645,14 +661,18 @@ export class ModelEditorView extends AbstractWebview<
           await runGenerateQueries({
             queryConstraints: modelGeneration.queryConstraints(mode),
             filterQueries: modelGeneration.filterQueries,
-            parseResults: (queryPath, results) =>
-              modelGeneration.parseResults(
+            onResults: async (queryPath, results) => {
+              const modeledMethods = modelGeneration.parseResults(
                 queryPath,
                 results,
                 modelsAsDataLanguage,
                 this.app.logger,
-              ),
-            onResults: async (modeledMethods) => {
+                {
+                  mode,
+                  config: this.modelConfig,
+                },
+              );
+
               this.addModeledMethodsFromArray(modeledMethods);
             },
             cliServer: this.cliServer,
@@ -678,15 +698,17 @@ export class ModelEditorView extends AbstractWebview<
 
   protected async generateModeledMethodsOnStartup(): Promise<void> {
     const mode = this.modelingStore.getMode(this.databaseItem);
-    if (mode !== Mode.Framework) {
+    const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
+    const autoModelGeneration = modelsAsDataLanguage.autoModelGeneration;
+
+    if (autoModelGeneration === undefined) {
       return;
     }
 
-    const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
-    const modelGeneration = modelsAsDataLanguage.modelGeneration;
-    const autoRun = modelGeneration?.autoRun;
-
-    if (modelGeneration === undefined || autoRun === undefined) {
+    if (
+      autoModelGeneration.enabled &&
+      !autoModelGeneration.enabled({ mode, config: this.modelConfig })
+    ) {
       return;
     }
 
@@ -698,22 +720,23 @@ export class ModelEditorView extends AbstractWebview<
           message: "Generating models",
         });
 
-        const parseResults =
-          autoRun.parseResults ?? modelGeneration.parseResults;
+        const extensionFile: ModelExtensionFile = {
+          extensions: [],
+        };
 
         try {
           await runGenerateQueries({
-            queryConstraints: modelGeneration.queryConstraints(mode),
-            filterQueries: modelGeneration.filterQueries,
-            parseResults: (queryPath, results) =>
-              parseResults(
+            queryConstraints: autoModelGeneration.queryConstraints(mode),
+            filterQueries: autoModelGeneration.filterQueries,
+            onResults: (queryPath, results) => {
+              const extensions = autoModelGeneration.parseResultsToYaml(
                 queryPath,
                 results,
                 modelsAsDataLanguage,
                 this.app.logger,
-              ),
-            onResults: async (modeledMethods) => {
-              this.addModeledMethodsFromArray(modeledMethods);
+              );
+
+              extensionFile.extensions.push(...extensions);
             },
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
@@ -730,7 +753,25 @@ export class ModelEditorView extends AbstractWebview<
               asError(e),
             )`Failed to auto-run generating models: ${getErrorMessage(e)}`,
           );
+          return;
         }
+
+        progress({
+          step: 4000,
+          maxStep: 4000,
+          message: "Saving generated models",
+        });
+
+        const fileContents = `# This file was automatically generated from ${this.databaseItem.name}. Manual changes will not persist.\n\n${modelExtensionFileToYaml(extensionFile)}`;
+        const filePath = join(
+          this.extensionPack.path,
+          "models",
+          `${this.language}${GENERATED_MODELS_SUFFIX}`,
+        );
+
+        await outputFile(filePath, fileContents);
+
+        void this.app.logger.log(`Saved generated model file to ${filePath}`);
       },
       {
         cancellable: false,
@@ -876,10 +917,9 @@ export class ModelEditorView extends AbstractWebview<
     // imported to the query server, so we need to register it to our workspace.
     const makeSelected = false;
     const addedDatabase = await promptImportGithubDatabase(
-      this.app.commands,
+      this.app,
       this.databaseManager,
       this.app.workspaceStoragePath ?? this.app.globalStoragePath,
-      this.app.credentials,
       progress,
       this.cliServer,
       this.databaseItem.language,
@@ -907,22 +947,12 @@ export class ModelEditorView extends AbstractWebview<
     );
 
     this.push(
-      this.modelingEvents.onModeledMethodsChanged(async (event) => {
+      this.modelingEvents.onModeledAndModifiedMethodsChanged(async (event) => {
         if (event.dbUri === this.databaseItem.databaseUri.toString()) {
           await this.postMessage({
-            t: "setModeledMethods",
+            t: "setModeledAndModifiedMethods",
             methods: event.modeledMethods,
-          });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onModifiedMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setModifiedMethods",
-            methodSignatures: [...event.modifiedMethods],
+            modifiedMethodSignatures: [...event.modifiedMethodSignatures],
           });
         }
       }),
@@ -978,11 +1008,10 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private addModeledMethods(modeledMethods: Record<string, ModeledMethod[]>) {
-    this.modelingStore.addModeledMethods(this.databaseItem, modeledMethods);
-
-    this.modelingStore.addModifiedMethods(
+    this.modelingStore.addModeledMethods(
       this.databaseItem,
-      new Set(Object.keys(modeledMethods)),
+      modeledMethods,
+      true,
     );
   }
 
@@ -1005,8 +1034,8 @@ export class ModelEditorView extends AbstractWebview<
       this.databaseItem,
       signature,
       methods,
+      true,
     );
-    this.modelingStore.addModifiedMethod(this.databaseItem, signature);
   }
 
   private async updateModelEvaluationRun(run: ModelEvaluationRunState) {

@@ -4,6 +4,10 @@ import type { ModeledMethod } from "../modeled-method";
 import { Mode } from "./mode";
 import { calculateModeledPercentage } from "./modeled-percentage";
 
+/**
+ * Groups methods by library or package name.
+ * Does not change the order of methods within a group.
+ */
 export function groupMethods(
   methods: readonly Method[],
   mode: Mode,

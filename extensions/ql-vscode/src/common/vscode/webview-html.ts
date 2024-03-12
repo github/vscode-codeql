@@ -10,7 +10,8 @@ export type WebviewKind =
   | "variant-analysis"
   | "data-flow-paths"
   | "model-editor"
-  | "method-modeling";
+  | "method-modeling"
+  | "model-alerts";
 
 export interface WebviewMessage {
   t: string;

@@ -94,7 +94,7 @@ describe("test-runner", () => {
       eventHandlerSpy,
     );
 
-    expect(eventHandlerSpy).toHaveBeenCalledTimes(3);
+    expect(eventHandlerSpy).toHaveBeenCalledTimes(4);
 
     expect(eventHandlerSpy).toHaveBeenNthCalledWith(1, {
       test: mockTestsInfo.dPath,
@@ -132,6 +132,27 @@ describe("test-runner", () => {
       diff: ["jkh", "tuv"],
       failureStage: "RESULT",
       messages: [],
+    });
+    expect(eventHandlerSpy).toHaveBeenNthCalledWith(4, {
+      test: mockTestsInfo.kPath,
+      pass: false,
+      compilationMs: 7000,
+      evaluationMs: 8000,
+      diff: ["jkh", "tuv"],
+      failureStage: "RESULT",
+      messages: [
+        {
+          position: {
+            fileName: mockTestsInfo.kPath,
+            line: 1,
+            column: 1,
+            endLine: 2,
+            endColumn: 2,
+          },
+          message: "abc",
+          severity: "WARNING",
+        },
+      ],
     });
   });
 

@@ -21,7 +21,8 @@ import {
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { QLTestDiscovery } from "./qltest-discovery";
-import type { CodeQLCliServer } from "../codeql-cli/cli";
+import type { CodeQLCliServer, CompilationMessage } from "../codeql-cli/cli";
+import { CompilationMessageSeverity } from "../codeql-cli/cli";
 import { getErrorMessage } from "../common/helpers-pure";
 import type { BaseLogger, LogOptions } from "../common/logging";
 import type { TestRunner } from "./test-runner";
@@ -64,6 +65,23 @@ function getTestOutputFile(testPath: string, extension: string): string {
  */
 function changeExtension(p: string, ext: string): string {
   return p.slice(0, -extname(p).length) + ext;
+}
+
+function compilationMessageToTestMessage(
+  compilationMessage: CompilationMessage,
+): TestMessage {
+  const location = new Location(
+    Uri.file(compilationMessage.position.fileName),
+    new Range(
+      compilationMessage.position.line - 1,
+      compilationMessage.position.column - 1,
+      compilationMessage.position.endLine - 1,
+      compilationMessage.position.endColumn - 1,
+    ),
+  );
+  const testMessage = new TestMessage(compilationMessage.message);
+  testMessage.location = location;
+  return testMessage;
 }
 
 /**
@@ -398,23 +416,15 @@ export class TestManager extends DisposableObject {
               );
             }
           }
-          if (event.messages?.length > 0) {
+          const errorMessages = event.messages.filter(
+            (m) => m.severity === CompilationMessageSeverity.Error,
+          );
+          if (errorMessages.length > 0) {
             // The test didn't make it far enough to produce results. Transform any error messages
             // into `TestMessage`s and report the test as "errored".
-            const testMessages = event.messages.map((m) => {
-              const location = new Location(
-                Uri.file(m.position.fileName),
-                new Range(
-                  m.position.line - 1,
-                  m.position.column - 1,
-                  m.position.endLine - 1,
-                  m.position.endColumn - 1,
-                ),
-              );
-              const testMessage = new TestMessage(m.message);
-              testMessage.location = location;
-              return testMessage;
-            });
+            const testMessages = event.messages.map(
+              compilationMessageToTestMessage,
+            );
             testRun.errored(testItem, testMessages, duration);
           } else {
             // Results didn't match expectations. Report the test as "failed".
@@ -423,6 +433,12 @@ export class TestManager extends DisposableObject {
               // here. Any failed test needs at least one message.
               testMessages.push(new TestMessage("Test failed"));
             }
+
+            // Add any warnings produced by the test to the test messages.
+            testMessages.push(
+              ...event.messages.map(compilationMessageToTestMessage),
+            );
+
             testRun.failed(testItem, testMessages, duration);
           }
         }

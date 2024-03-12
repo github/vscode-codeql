@@ -27,7 +27,6 @@ describe("MethodsUsageDataProvider", () => {
     const methods: Method[] = [];
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
-    const processedByAutoModelMethods: Set<string> = new Set();
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
     });
@@ -40,7 +39,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -53,7 +51,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       expect(onDidChangeTreeDataListener).not.toHaveBeenCalled();
@@ -69,7 +66,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -82,7 +78,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
@@ -100,7 +95,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -113,7 +107,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
@@ -127,7 +120,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -140,7 +132,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
@@ -156,7 +147,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -169,7 +159,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods2,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
@@ -185,7 +174,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -198,7 +186,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures2,
-        processedByAutoModelMethods,
       );
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
@@ -217,7 +204,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -230,7 +216,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
@@ -270,7 +255,6 @@ describe("MethodsUsageDataProvider", () => {
       createSinkModeledMethod(),
     ];
     const modifiedMethodSignatures: Set<string> = new Set();
-    const processedByAutoModelMethods: Set<string> = new Set();
 
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
@@ -307,7 +291,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
       expect(dataProvider.getChildren().length).toEqual(4);
     });
@@ -321,7 +304,6 @@ describe("MethodsUsageDataProvider", () => {
         mode,
         modeledMethods,
         modifiedMethodSignatures,
-        processedByAutoModelMethods,
       );
       expect(dataProvider.getChildren().length).toEqual(3);
     });
@@ -410,7 +392,7 @@ describe("MethodsUsageDataProvider", () => {
           }),
         ];
 
-        it("should sort methods", async () => {
+        it("should not change sort methods of methods", async () => {
           await dataProvider.setState(
             methods,
             dbItem,
@@ -418,7 +400,6 @@ describe("MethodsUsageDataProvider", () => {
             mode,
             modeledMethods,
             modifiedMethodSignatures,
-            processedByAutoModelMethods,
           );
           expect(
             dataProvider
@@ -426,11 +407,7 @@ describe("MethodsUsageDataProvider", () => {
               .map(
                 (item) => (item as MethodsUsageTreeViewItem).method.signature,
               ),
-          ).toEqual(["b.a.C.d()", "b.a.C.b()", "b.a.C.a()", "a.b.C.d()"]);
-          // reasoning for sort order:
-          // b.a.C.d() has more usages than b.a.C.b()
-          // b.a.C.b() is supported, b.a.C.a() is not
-          // b.a.C.a() is in a more unsupported library, a.b.C.d() is in a more supported library
+          ).toEqual(["b.a.C.a()", "b.a.C.b()", "b.a.C.d()", "a.b.C.d()"]);
         });
       });
     });
