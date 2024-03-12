@@ -466,19 +466,32 @@ export class CodeQLCliServer implements Disposable {
       void this.logger.log(`${description} using CodeQL CLI: ${argsString}...`);
     }
 
-    const process = spawnChildProcess(codeqlPath, args);
+    const abortController = new AbortController();
+
+    const process = spawnChildProcess(codeqlPath, args, {
+      signal: abortController.signal,
+    });
     if (!process || !process.pid) {
       throw new Error(
         `Failed to start ${description} using command ${codeqlPath} ${argsString}.`,
       );
     }
 
-    let cancellationRegistration: Disposable | undefined = undefined;
-    try {
-      cancellationRegistration = token?.onCancellationRequested((_e) => {
-        tk(process.pid || 0);
-      });
+    // We need to ensure that we're not killing the same process twice (since this may kill
+    // another process with the same PID), so keep track of whether we've already exited.
+    let exited = false;
+    process.on("exit", () => {
+      exited = true;
+    });
 
+    const cancellationRegistration = token?.onCancellationRequested((_e) => {
+      abortController.abort("Token was cancelled.");
+      if (process.pid && !exited) {
+        tk(process.pid);
+      }
+    });
+
+    try {
       return await this.handleProcessOutput(process, {
         handleNullTerminator: false,
         description,
@@ -501,7 +514,9 @@ export class CodeQLCliServer implements Disposable {
       throw e;
     } finally {
       process.stdin.end();
-      process.kill();
+      if (!exited) {
+        tk(process.pid);
+      }
       process.stdout.destroy();
       process.stderr.destroy();
 
