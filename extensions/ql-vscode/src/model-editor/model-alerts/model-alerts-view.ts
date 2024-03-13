@@ -14,6 +14,7 @@ import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import type { ModelingEvents } from "../modeling-events";
 import type { ModelingStore } from "../modeling-store";
 import type { DatabaseItem } from "../../databases/local-databases";
+import type { ExtensionPack } from "../shared/extension-pack";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -26,6 +27,7 @@ export class ModelAlertsView extends AbstractWebview<
     private readonly modelingEvents: ModelingEvents,
     private readonly modelingStore: ModelingStore,
     private readonly dbItem: DatabaseItem,
+    private readonly extensionPack: ExtensionPack,
   ) {
     super(app);
 
@@ -37,6 +39,7 @@ export class ModelAlertsView extends AbstractWebview<
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
+    await this.setViewState();
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -73,6 +76,15 @@ export class ModelAlertsView extends AbstractWebview<
       default:
         assertNever(msg);
     }
+  }
+
+  private async setViewState(): Promise<void> {
+    await this.postMessage({
+      t: "setModelAlertsViewState",
+      viewState: {
+        extensionPack: this.extensionPack,
+      },
+    });
   }
 
   public async focusView(): Promise<void> {
