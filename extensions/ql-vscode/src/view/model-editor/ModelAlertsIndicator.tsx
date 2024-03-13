@@ -2,12 +2,9 @@ import { styled } from "styled-components";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
+import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
 
-const ModelAlertsButton = styled.button`
-  color: var(--vscode-editor-foreground);
-  background-color: var(--vscode-input-background);
-  border: none;
-  border-radius: 40%;
+const ModelAlertsButton = styled(VSCodeBadge)`
   cursor: pointer;
 `;
 
@@ -36,6 +33,8 @@ export const ModelAlertsIndicator = ({
 
   return (
     <ModelAlertsButton
+      role="button"
+      aria-label="Model alerts"
       onClick={(event: React.MouseEvent) => {
         event.stopPropagation();
       }}

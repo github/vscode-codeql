@@ -1,4 +1,5 @@
 import {
+  VSCodeBadge,
   VSCodeButton,
   VSCodeLink,
   VSCodeProgressRing,
@@ -57,11 +58,7 @@ const ModelButtonsContainer = styled.div`
   gap: 1em;
 `;
 
-const UsagesButton = styled.button`
-  color: var(--vscode-editor-foreground);
-  background-color: var(--vscode-input-background);
-  border: none;
-  border-radius: 40%;
+const UsagesButton = styled(VSCodeBadge)`
   cursor: pointer;
 `;
 
