@@ -4,7 +4,7 @@ import { Uri, window } from "vscode";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { DatabaseManager } from "../../../../src/databases/local-databases";
 import {
-  importArchiveDatabase,
+  importLocalDatabase,
   promptImportInternetDatabase,
 } from "../../../../src/databases/database-fetcher";
 import {
@@ -13,9 +13,11 @@ import {
   DB_URL,
   getActivatedExtension,
   storagePath,
+  testprojLoc,
 } from "../../global.helper";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import { remove } from "fs-extra";
+import { utimesSync } from "fs";
+import { remove, existsSync } from "fs-extra";
 
 /**
  * Run various integration tests for databases
@@ -46,10 +48,10 @@ describe("database-fetcher", () => {
     await remove(storagePath);
   });
 
-  describe("importArchiveDatabase", () => {
-    it("should add a database from a folder", async () => {
+  describe("importLocalDatabase", () => {
+    it("should add a database from an archive", async () => {
       const uri = Uri.file(dbLoc);
-      let dbItem = await importArchiveDatabase(
+      let dbItem = await importLocalDatabase(
         createMockCommandManager(),
         uri.toString(true),
         databaseManager,
@@ -63,6 +65,42 @@ describe("database-fetcher", () => {
       dbItem = dbItem!;
       expect(dbItem.name).toBe("db");
       expect(dbItem.databaseUri.fsPath).toBe(join(storagePath, "db", "db"));
+    });
+
+    it("should import a testproj database", async () => {
+      let dbItem = await importLocalDatabase(
+        createMockCommandManager(),
+        Uri.file(testprojLoc).toString(true),
+        databaseManager,
+        storagePath,
+        progressCallback,
+        cli,
+      );
+      expect(dbItem).toBe(databaseManager.currentDatabaseItem);
+      expect(dbItem).toBe(databaseManager.databaseItems[0]);
+      expect(dbItem).toBeDefined();
+      dbItem = dbItem!;
+      expect(dbItem.name).toBe("db");
+      expect(dbItem.databaseUri.fsPath).toBe(join(storagePath, "db"));
+
+      // Now that we have fetched it. Check for re-importing
+      // Delete a file in the imported database and we can check if the file is recreated
+      const srczip = join(dbItem.databaseUri.fsPath, "src.zip");
+      await remove(srczip);
+
+      // Attempt 1: re-import database should be a no-op since timestamp of imported database is newer
+      await databaseManager.maybeReimportTestDatabase(dbItem.databaseUri);
+      expect(existsSync(srczip)).toBeFalsy();
+
+      // Attempt 3: re-import database should re-import the database after updating modified time
+      utimesSync(
+        join(testprojLoc, "codeql-database.yml"),
+        new Date(),
+        new Date(),
+      );
+
+      await databaseManager.maybeReimportTestDatabase(dbItem.databaseUri, true);
+      expect(existsSync(srczip)).toBeTruthy();
     });
   });
 

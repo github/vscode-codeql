@@ -43,7 +43,7 @@ import {
   showAndLogErrorMessage,
 } from "../common/logging";
 import {
-  importArchiveDatabase,
+  importLocalDatabase,
   promptImportGithubDatabase,
   promptImportInternetDatabase,
 } from "./database-fetcher";
@@ -145,7 +145,8 @@ class DatabaseTreeDataProvider
       item.iconPath = new ThemeIcon("error", new ThemeColor("errorForeground"));
     }
     item.tooltip = element.databaseUri.fsPath;
-    item.description = element.language;
+    item.description =
+      element.language + (element.origin?.type === "testproj" ? " (test)" : "");
     return item;
   }
 
@@ -281,6 +282,7 @@ export class DatabaseUI extends DisposableObject {
         this.handleChooseDatabaseInternet.bind(this),
       "codeQL.chooseDatabaseGithub": this.handleChooseDatabaseGithub.bind(this),
       "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
+      "codeQL.importTestDatabase": this.handleImportTestDatabase.bind(this),
       "codeQL.setDefaultTourDatabase":
         this.handleSetDefaultTourDatabase.bind(this),
       "codeQL.upgradeCurrentDatabase":
@@ -712,7 +714,7 @@ export class DatabaseUI extends DisposableObject {
         try {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
-            await importArchiveDatabase(
+            await importLocalDatabase(
               this.app.commands,
               uri.toString(true),
               this.databaseManager,
@@ -736,6 +738,60 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Importing database from archive",
+      },
+    );
+  }
+
+  private async handleImportTestDatabase(uri: Uri): Promise<void> {
+    return withProgress(
+      async (progress) => {
+        try {
+          if (!uri.path.endsWith(".testproj")) {
+            throw new Error(
+              "Please select a valid test database to import. Test databases end with `.testproj`.",
+            );
+          }
+
+          // Check if the database is already in the workspace. If
+          // so, delete it first before importing the new one.
+          const existingItem = this.databaseManager.findTestDatabase(uri);
+          const baseName = basename(uri.fsPath);
+          if (existingItem !== undefined) {
+            progress({
+              maxStep: 9,
+              step: 1,
+              message: `Removing existing test database ${baseName}`,
+            });
+            await this.databaseManager.removeDatabaseItem(existingItem);
+          }
+
+          await importLocalDatabase(
+            this.app.commands,
+            uri.toString(true),
+            this.databaseManager,
+            this.storagePath,
+            progress,
+            this.queryServer.cliServer,
+          );
+
+          if (existingItem !== undefined) {
+            progress({
+              maxStep: 9,
+              step: 9,
+              message: `Successfully re-imported ${baseName}`,
+            });
+          }
+        } catch (e) {
+          // rethrow and let this be handled by default error handling.
+          throw new Error(
+            `Could not set database to ${basename(
+              uri.fsPath,
+            )}. Reason: ${getErrorMessage(e)}`,
+          );
+        }
+      },
+      {
+        title: "(Re-)importing test database from directory",
       },
     );
   }
@@ -959,7 +1015,7 @@ export class DatabaseUI extends DisposableObject {
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area
           // before importing.
-          return await importArchiveDatabase(
+          return await importLocalDatabase(
             this.app.commands,
             uri.toString(true),
             this.databaseManager,

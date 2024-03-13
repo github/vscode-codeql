@@ -18,7 +18,10 @@ import {
 import { join } from "path";
 import type { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
-import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
+import {
+  showBinaryChoiceDialog,
+  showNeverAskAgainDialog,
+} from "../../common/vscode/dialog";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
@@ -32,7 +35,7 @@ import { QlPackGenerator } from "../../local-queries/qlpack-generator";
 import { asError, getErrorMessage } from "../../common/helpers-pure";
 import type { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { redactableError } from "../../common/errors";
-import { remove } from "fs-extra";
+import { copy, remove, stat } from "fs-extra";
 import { containsPath } from "../../common/files";
 import type { DatabaseChangedEvent } from "./database-events";
 import { DatabaseEventKind } from "./database-events";
@@ -120,6 +123,7 @@ export class DatabaseManager extends DisposableObject {
     super();
 
     qs.onStart(this.reregisterDatabases.bind(this));
+    qs.onQueryRunStarting(this.maybeReimportTestDatabase.bind(this));
 
     this.push(
       this.languageContext.onLanguageContextChanged(async () => {
@@ -163,6 +167,99 @@ export class DatabaseManager extends DisposableObject {
       isTutorialDatabase,
       addSourceArchiveFolder,
     );
+  }
+
+  /**
+   * Finds a test database that was originally imported from `uri`.
+   * A test database is creeated by the `codeql test run` command
+   * and ends with `.testproj`.
+   * @param uri The original location of the database
+   * @returns The first database item found that matches the uri
+   */
+  public findTestDatabase(uri: vscode.Uri): DatabaseItem | undefined {
+    const originPath = uri.fsPath;
+    for (const item of this._databaseItems) {
+      if (item.origin?.type === "testproj" && item.origin.path === originPath) {
+        return item;
+      }
+    }
+    return undefined;
+  }
+
+  public async maybeReimportTestDatabase(
+    databaseUri: vscode.Uri,
+    forceImport = false,
+  ): Promise<void> {
+    const res = await this.isTestDatabaseOutdated(databaseUri);
+    if (!res) {
+      return;
+    }
+    const doit =
+      forceImport ||
+      (await showBinaryChoiceDialog(
+        "This test database is outdated. Do you want to reimport it?",
+      ));
+
+    if (doit) {
+      await this.reimportTestDatabase(databaseUri);
+    }
+  }
+
+  /**
+   * Checks if the origin of the imported database is newer.
+   * The imported database must be a test database.
+   * @param databaseUri the URI of the imported database to check
+   * @returns true if both databases exist and the origin database is newer.
+   */
+  private async isTestDatabaseOutdated(
+    databaseUri: vscode.Uri,
+  ): Promise<boolean> {
+    const dbItem = this.findDatabaseItem(databaseUri);
+    if (dbItem === undefined || dbItem.origin?.type !== "testproj") {
+      return false;
+    }
+
+    // Compare timestmps of the codeql-database.yml files of the original and the
+    // imported databases.
+    const originDbYml = join(dbItem.origin.path, "codeql-database.yml");
+    const importedDbYml = join(
+      dbItem.databaseUri.fsPath,
+      "codeql-database.yml",
+    );
+
+    try {
+      const originStat = await stat(originDbYml);
+      const importedStat = await stat(importedDbYml);
+      return originStat.mtimeMs > importedStat.mtimeMs;
+    } catch (e) {
+      // If either of the files does not exist, we assume the origin is newer.
+      // This shouldn't happen unless the user manually deleted one of the files.
+      return true;
+    }
+  }
+
+  /**
+   * Reimport the specified imported database from its origin.
+   * The imported databsae must be a testproj database.
+   *
+   * @param databaseUri the URI of the imported database to reimport
+   */
+  private async reimportTestDatabase(databaseUri: vscode.Uri): Promise<void> {
+    const dbItem = this.findDatabaseItem(databaseUri);
+    if (dbItem === undefined || dbItem.origin?.type !== "testproj") {
+      throw new Error(`Database ${databaseUri} is not a testproj.`);
+    }
+
+    await this.removeDatabaseItem(dbItem);
+    await copy(dbItem.origin.path, databaseUri.fsPath);
+    const newDbItem = new DatabaseItemImpl(databaseUri, dbItem.contents, {
+      dateAdded: Date.now(),
+      language: dbItem.language,
+      origin: dbItem.origin,
+      extensionManagedLocation: dbItem.extensionManagedLocation,
+    });
+    await this.addDatabaseItem(newDbItem);
+    await this.setCurrentDatabaseItem(newDbItem);
   }
 
   /**

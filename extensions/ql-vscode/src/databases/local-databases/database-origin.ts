@@ -24,9 +24,15 @@ interface DatabaseOriginDebugger {
   type: "debugger";
 }
 
+interface DatabaseOriginTestProj {
+  type: "testproj";
+  path: string;
+}
+
 export type DatabaseOrigin =
   | DatabaseOriginFolder
   | DatabaseOriginArchive
   | DatabaseOriginGitHub
   | DatabaseOriginInternet
-  | DatabaseOriginDebugger;
+  | DatabaseOriginDebugger
+  | DatabaseOriginTestProj;
