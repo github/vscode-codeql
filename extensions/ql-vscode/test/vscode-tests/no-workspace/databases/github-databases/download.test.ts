@@ -10,7 +10,6 @@ import {
   askForGitHubDatabaseDownload,
   downloadDatabaseFromGitHub,
 } from "../../../../../src/databases/github-databases/download";
-import type { DatabaseItem } from "../../../../../src/databases/local-databases";
 import type { GitHubDatabaseConfig } from "../../../../../src/config";
 import type { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../../src/common/vscode/dialog";
@@ -113,7 +112,9 @@ describe("downloadDatabaseFromGitHub", () => {
   ];
 
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
-  let downloadGitHubDatabaseFromUrlMock: jest.Mock<DatabaseItem | undefined>;
+  let downloadGitHubDatabaseFromUrlMock: jest.MockedFunction<
+    DatabaseFetcher["downloadGitHubDatabaseFromUrl"]
+  >;
 
   beforeEach(() => {
     octokit = mockedObject<Octokit>({});

@@ -8,10 +8,7 @@ import {
   mockedQuickPickItem,
 } from "../../../utils/mocking.helpers";
 import type { CodeqlDatabase } from "../../../../../src/databases/github-databases/api";
-import type {
-  DatabaseItem,
-  DatabaseManager,
-} from "../../../../../src/databases/local-databases";
+import type { DatabaseManager } from "../../../../../src/databases/local-databases";
 import type { GitHubDatabaseConfig } from "../../../../../src/config";
 import type { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../../src/common/vscode/dialog";
@@ -368,7 +365,9 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
   ];
 
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
-  let downloadGitHubDatabaseFromUrlMock: jest.Mock<DatabaseItem | undefined>;
+  let downloadGitHubDatabaseFromUrlMock: jest.MockedFunction<
+    DatabaseFetcher["downloadGitHubDatabaseFromUrl"]
+  >;
 
   beforeEach(() => {
     octokit = mockedObject<Octokit>({});

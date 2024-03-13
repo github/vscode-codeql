@@ -56,7 +56,9 @@ describe("SkeletonQueryWizard", () => {
   let createExampleQlFileSpy: jest.SpiedFunction<
     typeof QlPackGenerator.prototype.createExampleQlFile
   >;
-  let promptImportGithubDatabaseMock: jest.Mock<DatabaseItem | undefined>;
+  let promptImportGithubDatabaseMock: jest.MockedFunction<
+    DatabaseFetcher["promptImportGithubDatabase"]
+  >;
   let openTextDocumentSpy: jest.SpiedFunction<
     typeof workspace.openTextDocument
   >;
