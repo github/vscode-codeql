@@ -50,14 +50,7 @@ export class ModelAlertsView extends AbstractWebview<
   }
 
   protected onPanelDispose(): void {
-    const evaluationRun = this.modelingStore.getModelEvaluationRun(this.dbItem);
-    if (evaluationRun === undefined) {
-      return;
-    }
-    this.modelingStore.updateModelEvaluationRun(this.dbItem, {
-      ...evaluationRun,
-      isModelAlertsViewOpen: false,
-    });
+    this.modelingStore.updateIsModelAlertsViewOpen(this.dbItem, false);
   }
 
   protected async onMessage(msg: FromModelAlertsMessage): Promise<void> {
