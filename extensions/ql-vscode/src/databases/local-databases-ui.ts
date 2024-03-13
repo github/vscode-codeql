@@ -24,10 +24,7 @@ import type {
   DatabaseItem,
   DatabaseManager,
 } from "./local-databases";
-import type {
-  ProgressCallback,
-  ProgressContext,
-} from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
   UserCancellationException,
   withProgress,
@@ -791,9 +788,8 @@ export class DatabaseUI extends DisposableObject {
    */
   public async getDatabaseItem(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
-    return await this.getDatabaseItemInternal({ progress, token });
+    return await this.getDatabaseItemInternal(progress);
   }
 
   /**
@@ -806,10 +802,10 @@ export class DatabaseUI extends DisposableObject {
    * notification if it tries to perform any long-running operations.
    */
   private async getDatabaseItemInternal(
-    progressContext: ProgressContext | undefined,
+    progress: ProgressCallback | undefined,
   ): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
-      progressContext?.progress({
+      progress?.({
         maxStep: 2,
         step: 1,
         message: "Choosing database",

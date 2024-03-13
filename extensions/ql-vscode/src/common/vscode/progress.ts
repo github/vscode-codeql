@@ -85,11 +85,6 @@ export function withProgress<R>(
   );
 }
 
-export interface ProgressContext {
-  progress: ProgressCallback;
-  token: CancellationToken;
-}
-
 /**
  * Displays a progress monitor that indicates how much progess has been made
  * reading from a stream.

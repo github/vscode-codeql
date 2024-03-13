@@ -7,7 +7,7 @@ import {
   createFileSync,
   pathExistsSync,
 } from "fs-extra";
-import { CancellationTokenSource, Uri, window } from "vscode";
+import { Uri, window } from "vscode";
 
 import type {
   DatabaseImportQuickPickItems,
@@ -127,7 +127,6 @@ describe("local-databases-ui", () => {
 
   describe("getDatabaseItem", () => {
     const progress = jest.fn();
-    const token = new CancellationTokenSource().token;
     describe("when there is a current database", () => {
       const databaseUI = new DatabaseUI(
         app,
@@ -153,7 +152,7 @@ describe("local-databases-ui", () => {
       );
 
       it("should return current database", async () => {
-        const databaseItem = await databaseUI.getDatabaseItem(progress, token);
+        const databaseItem = await databaseUI.getDatabaseItem(progress);
 
         expect(databaseItem).toEqual({ databaseUri: Uri.file(db1) });
       });
@@ -211,7 +210,7 @@ describe("local-databases-ui", () => {
           "setCurrentDatabaseItem",
         );
 
-        await databaseUI.getDatabaseItem(progress, token);
+        await databaseUI.getDatabaseItem(progress);
 
         expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
         expect(setCurrentDatabaseItemSpy).toHaveBeenCalledWith({
@@ -241,7 +240,7 @@ describe("local-databases-ui", () => {
           .spyOn(databaseUI as any, "handleChooseDatabaseGithub")
           .mockResolvedValue(undefined);
 
-        await databaseUI.getDatabaseItem(progress, token);
+        await databaseUI.getDatabaseItem(progress);
 
         expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
         expect(handleChooseDatabaseGithubSpy).toHaveBeenCalledTimes(1);
@@ -264,7 +263,7 @@ describe("local-databases-ui", () => {
           .spyOn(databaseUI as any, "handleChooseDatabaseGithub")
           .mockResolvedValue(undefined);
 
-        await databaseUI.getDatabaseItem(progress, token);
+        await databaseUI.getDatabaseItem(progress);
 
         expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
         expect(handleChooseDatabaseGithubSpy).toHaveBeenCalledTimes(1);
