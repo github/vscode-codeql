@@ -1,0 +1,41 @@
+/**
+ * @name Don't ignore the token for a cancelable progress bar
+ * @kind problem
+ * @problem.severity warning
+ * @id vscode-codeql/token-not-used
+ * @description If we call `withProgress` with `cancellable: true` but then
+ * ignore the token that is given to us, it will lead to a poor user experience
+ * because the progress bar will appear to be canceled but it will not actually
+ * affect the background process.
+ */
+
+import javascript
+
+class NewTokenSource extends CallExpr {
+  NewTokenSource() {
+    this.getCalleeName() = "withProgress" or this.getCalleeName() = "withInheritedProgress"
+  }
+
+  Function getCallback() {
+    this.getCalleeName() = "withProgress" and result = this.getArgument(0)
+    or
+    this.getCalleeName() = "withInheritedProgress" and result = this.getArgument(1)
+  }
+
+  ObjectExpr getOptions() {
+    this.getCalleeName() = "withProgress" and result = this.getArgument(1)
+    or
+    this.getCalleeName() = "withInheritedProgress" and result = this.getArgument(2)
+  }
+
+  predicate usesToken() { this.getCallback().getNumParameter() >= 2 }
+
+  predicate isCancellable() {
+    this.getOptions().getPropertyByName("cancellable").getInit().(BooleanLiteral).getBoolValue() =
+      true
+  }
+}
+
+from NewTokenSource t
+where t.isCancellable() and not t.usesToken()
+select t, "This progress bar is cancelable but the token is not used"
