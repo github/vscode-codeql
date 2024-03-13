@@ -18,7 +18,6 @@ import type { CancellationToken } from "vscode";
 import { CancellationTokenSource } from "vscode";
 import type { QlPackDetails } from "../variant-analysis/ql-pack-details";
 import type { App } from "../common/app";
-import { MultiCancellationToken } from "../common/vscode/multi-cancellation-token";
 import { ModelAlertsView } from "./model-alerts/model-alerts-view";
 
 export class ModelEvaluator extends DisposableObject {
@@ -69,15 +68,15 @@ export class ModelEvaluator extends DisposableObject {
 
     // Submit variant analysis and monitor progress
     return withProgress(
-      (progress, token) =>
+      (progress) =>
         this.runVariantAnalysis(
           qlPack,
           progress,
-          new MultiCancellationToken(token, this.cancellationSource.token),
+          this.cancellationSource.token,
         ),
       {
         title: "Run model evaluation",
-        cancellable: true,
+        cancellable: false,
       },
     );
   }
