@@ -10,32 +10,8 @@
  */
 
 import javascript
+import ProgressBar
 
-class NewTokenSource extends CallExpr {
-  NewTokenSource() {
-    this.getCalleeName() = "withProgress" or this.getCalleeName() = "withInheritedProgress"
-  }
-
-  Function getCallback() {
-    this.getCalleeName() = "withProgress" and result = this.getArgument(0)
-    or
-    this.getCalleeName() = "withInheritedProgress" and result = this.getArgument(1)
-  }
-
-  ObjectExpr getOptions() {
-    this.getCalleeName() = "withProgress" and result = this.getArgument(1)
-    or
-    this.getCalleeName() = "withInheritedProgress" and result = this.getArgument(2)
-  }
-
-  predicate usesToken() { this.getCallback().getNumParameter() >= 2 }
-
-  predicate isCancellable() {
-    this.getOptions().getPropertyByName("cancellable").getInit().(BooleanLiteral).getBoolValue() =
-      true
-  }
-}
-
-from NewTokenSource t
+from ProgressBar t
 where t.isCancellable() and not t.usesToken()
 select t, "This progress bar is cancelable but the token is not used"

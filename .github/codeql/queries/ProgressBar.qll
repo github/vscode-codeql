@@ -1,0 +1,32 @@
+import javascript
+
+abstract class ProgressBar extends CallExpr {
+  ProgressBar() { any() }
+
+  abstract Function getCallback();
+
+  abstract ObjectExpr getOptions();
+
+  predicate usesToken() { this.getCallback().getNumParameter() >= 2 }
+
+  predicate isCancellable() {
+    this.getOptions().getPropertyByName("cancellable").getInit().(BooleanLiteral).getBoolValue() =
+      true
+  }
+}
+
+class WithProgressCall extends ProgressBar {
+  WithProgressCall() { this.getCalleeName() = "withProgress" }
+
+  override Function getCallback() { result = this.getArgument(0) }
+
+  override ObjectExpr getOptions() { result = this.getArgument(1) }
+}
+
+class WithInheritedProgressCall extends ProgressBar {
+  WithInheritedProgressCall() { this.getCalleeName() = "withInheritedProgress" }
+
+  override Function getCallback() { result = this.getArgument(1) }
+
+  override ObjectExpr getOptions() { result = this.getArgument(2) }
+}
