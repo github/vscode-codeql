@@ -20,6 +20,7 @@ interface InternalDbModelingState {
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
   modelEvaluationRun: ModelEvaluationRun | undefined;
+  isModelAlertsViewOpen: boolean;
 }
 
 export interface DbModelingState {
@@ -34,6 +35,7 @@ export interface DbModelingState {
   readonly selectedMethod: Method | undefined;
   readonly selectedUsage: Usage | undefined;
   readonly modelEvaluationRun: ModelEvaluationRun | undefined;
+  readonly isModelAlertsViewOpen: boolean;
 }
 
 export interface SelectedMethodDetails {
@@ -71,6 +73,7 @@ export class ModelingStore extends DisposableObject {
       selectedUsage: undefined,
       inProgressMethods: new Set(),
       modelEvaluationRun: undefined,
+      isModelAlertsViewOpen: false,
     });
 
     this.modelingEvents.fireDbOpenedEvent(databaseItem);
@@ -497,5 +500,24 @@ export class ModelingStore extends DisposableObject {
       dbItem.databaseUri.toString(),
       state.modelEvaluationRun,
     );
+  }
+
+  public isModelAlertsViewOpen(dbItem: DatabaseItem): boolean {
+    return this.getState(dbItem).isModelAlertsViewOpen ?? false;
+  }
+
+  private changeIsModelAlertsViewOpen(
+    dbItem: DatabaseItem,
+    updateState: (state: InternalDbModelingState) => void,
+  ) {
+    const state = this.getState(dbItem);
+
+    updateState(state);
+  }
+
+  public updateIsModelAlertsViewOpen(dbItem: DatabaseItem, isOpen: boolean) {
+    this.changeIsModelAlertsViewOpen(dbItem, (state) => {
+      state.isModelAlertsViewOpen = isOpen;
+    });
   }
 }

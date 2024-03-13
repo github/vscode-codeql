@@ -107,8 +107,21 @@ export class ModelEvaluator extends DisposableObject {
   }
 
   public async openModelAlertsView() {
-    const view = new ModelAlertsView(this.app);
-    await view.showView();
+    if (this.modelingStore.isModelAlertsViewOpen(this.dbItem)) {
+      this.modelingEvents.fireFocusModelAlertsViewEvent(
+        this.dbItem.databaseUri.toString(),
+      );
+      return;
+    } else {
+      this.modelingStore.updateIsModelAlertsViewOpen(this.dbItem, true);
+      const view = new ModelAlertsView(
+        this.app,
+        this.modelingEvents,
+        this.modelingStore,
+        this.dbItem,
+      );
+      await view.showView();
+    }
   }
 
   private registerToModelingEvents() {

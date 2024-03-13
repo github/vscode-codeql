@@ -11,6 +11,9 @@ import type { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
+import type { ModelingEvents } from "../modeling-events";
+import type { ModelingStore } from "../modeling-store";
+import type { DatabaseItem } from "../../databases/local-databases";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -18,8 +21,15 @@ export class ModelAlertsView extends AbstractWebview<
 > {
   public static readonly viewType = "codeQL.modelAlerts";
 
-  public constructor(app: App) {
+  public constructor(
+    app: App,
+    private readonly modelingEvents: ModelingEvents,
+    private readonly modelingStore: ModelingStore,
+    private readonly dbItem: DatabaseItem,
+  ) {
     super(app);
+
+    this.registerToModelingEvents();
   }
 
   public async showView() {
@@ -40,7 +50,7 @@ export class ModelAlertsView extends AbstractWebview<
   }
 
   protected onPanelDispose(): void {
-    // Nothing to dispose
+    this.modelingStore.updateIsModelAlertsViewOpen(this.dbItem, false);
   }
 
   protected async onMessage(msg: FromModelAlertsMessage): Promise<void> {
@@ -63,5 +73,19 @@ export class ModelAlertsView extends AbstractWebview<
       default:
         assertNever(msg);
     }
+  }
+
+  public async focusView(): Promise<void> {
+    this.panel?.reveal();
+  }
+
+  private registerToModelingEvents() {
+    this.push(
+      this.modelingEvents.onFocusModelAlertsView(async (event) => {
+        if (event.dbUri === this.dbItem.databaseUri.toString()) {
+          await this.focusView();
+        }
+      }),
+    );
   }
 }
