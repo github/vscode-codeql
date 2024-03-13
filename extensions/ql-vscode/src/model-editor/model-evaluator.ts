@@ -58,6 +58,7 @@ export class ModelEvaluator extends DisposableObject {
       this.app.logger,
       this.cliServer,
       this.language,
+      this.cancellationSource.token,
     );
 
     if (!qlPack) {
