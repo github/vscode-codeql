@@ -14,4 +14,4 @@ import ProgressBar
 
 from ProgressBar t
 where t.isCancellable() and not t.usesToken()
-select t, "This progress bar is cancelable but the token is not used"
+select t, "This progress bar is $@ but the token is not used", t.getCancellableProperty(), "cancellable"
