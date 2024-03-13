@@ -102,6 +102,7 @@ export class DatabaseFetcher {
    *
    * @param progress the progress callback
    * @param language the language to download. If undefined, the user will be prompted to choose a language.
+   * @param suggestedRepoNwo the suggested value to use when prompting for a github repo
    * @param makeSelected make the new database selected in the databases panel (default: true)
    * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
    */
@@ -270,6 +271,7 @@ export class DatabaseFetcher {
    * Imports a database from a local archive.
    *
    * @param databaseUrl the file url of the archive to import
+   * @param progress the progress callback
    */
   public async importArchiveDatabase(
     databaseUrl: string,
