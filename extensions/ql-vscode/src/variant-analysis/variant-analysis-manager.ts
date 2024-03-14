@@ -350,6 +350,7 @@ export class VariantAnalysisManager
     const {
       actionBranch,
       base64Pack,
+      modelPacks,
       repoSelection,
       controllerRepo,
       queryStartTime,
@@ -410,6 +411,7 @@ export class VariantAnalysisManager
     const mappedVariantAnalysis = mapVariantAnalysisFromSubmission(
       variantAnalysisSubmission,
       variantAnalysisResponse,
+      modelPacks,
     );
 
     await this.onVariantAnalysisSubmitted(mappedVariantAnalysis);
