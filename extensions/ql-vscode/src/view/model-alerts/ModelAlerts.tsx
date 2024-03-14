@@ -1,16 +1,29 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ModelAlertsHeader } from "./ModelAlertsHeader";
 import type { ModelAlertsViewState } from "../../model-editor/shared/view-state";
 import type { ToModelAlertsMessage } from "../../common/interface-types";
+import type { VariantAnalysis } from "../../variant-analysis/shared/variant-analysis";
+import { vscode } from "../vscode-api";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
 };
 
 export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
+  const onOpenModelPackClick = useCallback((path: string) => {
+    vscode.postMessage({
+      t: "openModelPack",
+      path,
+    });
+  }, []);
+
   const [viewState, setViewState] = useState<ModelAlertsViewState | undefined>(
     initialViewState,
   );
+
+  const [variantAnalysis, setVariantAnalysis] = useState<
+    VariantAnalysis | undefined
+  >(undefined);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -20,6 +33,9 @@ export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
           case "setModelAlertsViewState": {
             setViewState(msg.viewState);
             break;
+          }
+          case "setVariantAnalysis": {
+            setVariantAnalysis(msg.variantAnalysis);
           }
         }
       } else {
@@ -35,9 +51,15 @@ export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
     };
   }, []);
 
-  if (viewState === undefined) {
+  if (viewState === undefined || variantAnalysis === undefined) {
     return <></>;
   }
 
-  return <ModelAlertsHeader viewState={viewState}></ModelAlertsHeader>;
+  return (
+    <ModelAlertsHeader
+      viewState={viewState}
+      variantAnalysis={variantAnalysis}
+      openModelPackClick={onOpenModelPackClick}
+    ></ModelAlertsHeader>
+  );
 }

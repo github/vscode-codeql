@@ -124,7 +124,26 @@ export class ModelEvaluator extends DisposableObject {
         this.dbItem,
         this.extensionPack,
       );
-      await view.showView();
+
+      // There should be a variant analysis available at this point, as the
+      // view can only opened when the variant analysis is complete. So we
+      // send this to the view. This is temporary until we have logic to
+      // listen to variant analysis updates and update the view accordingly.
+      const evaluationRun = this.modelingStore.getModelEvaluationRun(
+        this.dbItem,
+      );
+      if (!evaluationRun) {
+        throw new Error("No evaluation run available");
+      }
+
+      const variantAnalysis =
+        await this.getVariantAnalysisForRun(evaluationRun);
+
+      if (!variantAnalysis) {
+        throw new Error("No variant analysis available");
+      }
+
+      await view.showView(variantAnalysis);
     }
   }
 
