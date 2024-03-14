@@ -87,5 +87,13 @@ export class ModelAlertsView extends AbstractWebview<
         }
       }),
     );
+
+    this.push(
+      this.modelingEvents.onDbClosed(async (event) => {
+        if (event === this.dbItem.databaseUri.toString()) {
+          this.dispose();
+        }
+      }),
+    );
   }
 }
