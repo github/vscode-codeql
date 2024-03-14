@@ -2017,7 +2017,7 @@
     "@types/fs-extra": "^11.0.1",
     "@types/gulp": "^4.0.9",
     "@types/gulp-replace": "^1.1.0",
-    "@types/jest": "^29.0.2",
+    "@types/jest": "^29.5.12",
     "@types/js-yaml": "^4.0.6",
     "@types/nanoid": "^3.0.0",
     "@types/node": "18.17.*",
