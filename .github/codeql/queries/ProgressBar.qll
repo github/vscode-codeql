@@ -7,7 +7,9 @@ abstract class ProgressBar extends CallExpr {
 
   abstract ObjectExpr getOptions();
 
-  predicate usesToken() { this.getCallback().getNumParameter() >= 2 }
+  predicate usesToken() { exists(this.getTokenParameter()) }
+
+  Parameter getTokenParameter() { result = this.getCallback().getParameter(1) }
 
   Property getCancellableProperty() { result = this.getOptions().getPropertyByName("cancellable") }
 

@@ -14,4 +14,7 @@ import ProgressBar
 
 from ProgressBar t
 where not t.isCancellable() and t.usesToken()
-select t, "The token should not be used when the progress bar is not cancelable. Either stop using the token or mark the progress bar as cancellable."
+select t,
+  "The $@ should not be used when the progress bar is not cancellable. Either stop using the $@ or mark the progress bar as cancellable.",
+  t.getTokenParameter(), t.getTokenParameter().getName(), t.getTokenParameter(),
+  t.getTokenParameter().getName()

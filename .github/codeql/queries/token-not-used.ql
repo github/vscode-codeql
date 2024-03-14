@@ -1,5 +1,5 @@
 /**
- * @name Don't ignore the token for a cancelable progress bar
+ * @name Don't ignore the token for a cancellable progress bar
  * @kind problem
  * @problem.severity warning
  * @id vscode-codeql/token-not-used
