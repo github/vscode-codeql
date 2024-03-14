@@ -1,4 +1,4 @@
-import { ViewColumn } from "vscode";
+import { Uri, ViewColumn } from "vscode";
 import type { WebviewPanelConfig } from "../../common/vscode/abstract-webview";
 import { AbstractWebview } from "../../common/vscode/abstract-webview";
 import { assertNever } from "../../common/helpers-pure";
@@ -15,6 +15,7 @@ import type { ModelingEvents } from "../modeling-events";
 import type { ModelingStore } from "../modeling-store";
 import type { DatabaseItem } from "../../databases/local-databases";
 import type { ExtensionPack } from "../shared/extension-pack";
+import type { VariantAnalysis } from "../../variant-analysis/shared/variant-analysis";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -34,12 +35,17 @@ export class ModelAlertsView extends AbstractWebview<
     this.registerToModelingEvents();
   }
 
-  public async showView() {
+  public async showView(variantAnalysis: VariantAnalysis) {
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     await this.setViewState();
+
+    await this.postMessage({
+      t: "setVariantAnalysis",
+      variantAnalysis,
+    });
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -72,6 +78,9 @@ export class ModelAlertsView extends AbstractWebview<
             msg.error,
           )`Unhandled error in model alerts view: ${msg.error.message}`,
         );
+        break;
+      case "openModelPack":
+        await this.app.commands.execute("revealInExplorer", Uri.file(msg.path));
         break;
       default:
         assertNever(msg);

@@ -732,6 +732,15 @@ interface SetModelAlertsViewStateMessage {
   viewState: ModelAlertsViewState;
 }
 
-export type ToModelAlertsMessage = SetModelAlertsViewStateMessage;
+interface OpenModelPackMessage {
+  t: "openModelPack";
+  path: string;
+}
 
-export type FromModelAlertsMessage = CommonFromViewMessages;
+export type ToModelAlertsMessage =
+  | SetModelAlertsViewStateMessage
+  | SetVariantAnalysisMessage;
+
+export type FromModelAlertsMessage =
+  | CommonFromViewMessages
+  | OpenModelPackMessage;
