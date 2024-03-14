@@ -13,6 +13,6 @@
 import javascript
 import ProgressBar
 
-from ProgressBar t
+from WithProgressCall t
 where t.isCancellable() and not t.usesToken()
 select t, "This progress bar is $@ but the token is not used. Either use the token or mark the progress bar as not cancellable.", t.getCancellableProperty(), "cancellable"
