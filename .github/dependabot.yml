@@ -13,6 +13,20 @@ updates:
       # are unrelated to the Node version, so we allow those.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+    groups:
+      octokit:
+        patterns:
+          - "@octokit/*"
+      storybook:
+        patterns:
+          - "@storybook/*"
+          - "storybook"
+      testing-library:
+        patterns:
+          - "@testing-library/*"
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
