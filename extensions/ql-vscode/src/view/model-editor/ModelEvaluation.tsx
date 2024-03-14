@@ -4,7 +4,7 @@ import type { ModelEditorViewState } from "../../model-editor/shared/view-state"
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-evaluation-run-state";
 import { ModelEditorProgressRing } from "./ModelEditorProgressRing";
-import { LinkIconButton } from "../variant-analysis/LinkIconButton";
+import { LinkIconButton } from "../common/LinkIconButton";
 
 export type Props = {
   viewState: ModelEditorViewState;
