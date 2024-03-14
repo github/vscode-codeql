@@ -19,3 +19,7 @@ export interface MethodModelingPanelViewState {
   language: QueryLanguage | undefined;
   modelConfig: ModelConfig;
 }
+
+export interface ModelAlertsViewState {
+  title: string;
+}

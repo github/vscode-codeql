@@ -132,6 +132,7 @@ export class ModelEditorView extends AbstractWebview<
       this.variantAnalysisManager,
       databaseItem,
       language,
+      this.extensionPack,
       this.updateModelEvaluationRun.bind(this),
     );
     this.push(this.modelEvaluator);

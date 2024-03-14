@@ -739,6 +739,10 @@
         "title": "CodeQL: Set Current Database"
       },
       {
+        "command": "codeQL.importTestDatabase",
+        "title": "CodeQL: (Re-)Import Test Database"
+      },
+      {
         "command": "codeQL.getCurrentDatabase",
         "title": "CodeQL: Get Current Database"
       },
@@ -1322,7 +1326,12 @@
         {
           "command": "codeQL.setCurrentDatabase",
           "group": "9_qlCommands",
-          "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zip"
+          "when": "resourceExtname != .testproj && (resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zipz)"
+        },
+        {
+          "command": "codeQL.importTestDatabase",
+          "group": "9_qlCommands",
+          "when": "explorerResourceIsFolder && resourceExtname == .testproj"
         },
         {
           "command": "codeQL.viewAstContextExplorer",
@@ -1474,6 +1483,10 @@
         },
         {
           "command": "codeQL.setCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.importTestDatabase",
           "when": "false"
         },
         {
@@ -2018,7 +2031,6 @@
     "@types/tar-stream": "^3.1.3",
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.2.6",
-    "@types/unzipper": "^0.10.1",
     "@types/vscode": "^1.82.0",
     "@types/yauzl": "^2.10.3",
     "@typescript-eslint/eslint-plugin": "^6.19.0",

@@ -6,13 +6,18 @@ import {
   beforeEachAction,
 } from "../jest.activated-extension.setup";
 import { createWriteStream, existsSync, mkdirpSync } from "fs-extra";
-import { dirname } from "path";
-import { DB_URL, dbLoc } from "../global.helper";
+import { dirname, join } from "path";
+import { DB_URL, dbLoc, testprojLoc } from "../global.helper";
 import fetch from "node-fetch";
+import { renameSync } from "fs";
+import { unzipToDirectoryConcurrently } from "../../../src/common/unzip-concurrently";
+import { platform } from "os";
+import { sleep } from "../../../src/common/time";
 
 beforeAll(async () => {
   // ensure the test database is downloaded
-  mkdirpSync(dirname(dbLoc));
+  const dbParentDir = dirname(dbLoc);
+  mkdirpSync(dbParentDir);
   if (!existsSync(dbLoc)) {
     console.log(`Downloading test database to ${dbLoc}`);
 
@@ -28,6 +33,19 @@ beforeAll(async () => {
         });
       });
     });
+  }
+
+  // unzip the database from dbLoc to testprojLoc
+  if (!existsSync(testprojLoc)) {
+    console.log(`Unzipping test database to ${testprojLoc}`);
+    await unzipToDirectoryConcurrently(dbLoc, dbParentDir);
+    // On Windows, wait a few seconds to make sure all background processes
+    // release their lock on the files before renaming the directory.
+    if (platform() === "win32") {
+      await sleep(3000);
+    }
+    renameSync(join(dbParentDir, "db"), testprojLoc);
+    console.log("Unzip completed.");
   }
 
   await beforeAllAction();

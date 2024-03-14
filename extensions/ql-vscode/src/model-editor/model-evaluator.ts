@@ -19,6 +19,7 @@ import { CancellationTokenSource } from "vscode";
 import type { QlPackDetails } from "../variant-analysis/ql-pack-details";
 import type { App } from "../common/app";
 import { ModelAlertsView } from "./model-alerts/model-alerts-view";
+import type { ExtensionPack } from "./shared/extension-pack";
 
 export class ModelEvaluator extends DisposableObject {
   // Cancellation token source to allow cancelling of the current run
@@ -34,6 +35,7 @@ export class ModelEvaluator extends DisposableObject {
     private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly dbItem: DatabaseItem,
     private readonly language: QueryLanguage,
+    private readonly extensionPack: ExtensionPack,
     private readonly updateView: (
       run: ModelEvaluationRunState,
     ) => Promise<void>,
@@ -120,6 +122,7 @@ export class ModelEvaluator extends DisposableObject {
         this.modelingEvents,
         this.modelingStore,
         this.dbItem,
+        this.extensionPack,
       );
       await view.showView();
     }
