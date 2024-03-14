@@ -1,6 +1,7 @@
 import type { Repository, RepositoryWithMetadata } from "./repository";
 import type { AnalysisAlert, AnalysisRawResults } from "./analysis-result";
 import { QueryLanguage } from "../../common/query-language";
+import type { ModelPackDetails } from "../../common/model-pack-details";
 
 export interface VariantAnalysis {
   id: number;
@@ -13,6 +14,7 @@ export interface VariantAnalysis {
     kind?: string;
   };
   queries?: VariantAnalysisQueries;
+  modelPacks?: ModelPackDetails[];
   databases: {
     repositories?: string[];
     repositoryLists?: string[];

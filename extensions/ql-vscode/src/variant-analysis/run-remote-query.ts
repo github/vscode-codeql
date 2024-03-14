@@ -37,25 +37,31 @@ import {
 import type { QlPackFile } from "../packaging/qlpack-file";
 import { expandShortPaths } from "../common/short-paths";
 import type { QlPackDetails } from "./ql-pack-details";
+import type { ModelPackDetails } from "../common/model-pack-details";
 
 /**
  * Well-known names for the query pack used by the server.
  */
 const QUERY_PACK_NAME = "codeql-remote/query";
 
+interface GeneratedQlPackDetails {
+  base64Pack: string;
+  modelPacks: ModelPackDetails[];
+}
+
 /**
  * Two possibilities:
  * 1. There is no qlpack.yml (or codeql-pack.yml) in this directory. Assume this is a lone query and generate a synthetic qlpack for it.
  * 2. There is a qlpack.yml (or codeql-pack.yml) in this directory. Assume this is a query pack and use the yml to pack the query before uploading it.
  *
- * @returns the entire qlpack as a base64 string.
+ * @returns details about the generated QL pack.
  */
 async function generateQueryPack(
   cliServer: CodeQLCliServer,
   qlPackDetails: QlPackDetails,
   tmpDir: RemoteQueryTempDir,
   token: CancellationToken,
-): Promise<string> {
+): Promise<GeneratedQlPackDetails> {
   const workspaceFolders = getOnDiskWorkspaceFolders();
   const extensionPacks = await getExtensionPacksToInject(
     cliServer,
@@ -129,7 +135,7 @@ async function generateQueryPack(
       ...queryOpts,
       // We need to specify the extension packs as dependencies so that they are included in the MRVA pack.
       // The version range doesn't matter, since they'll always be found by source lookup.
-      ...extensionPacks.map((p) => `--extension-pack=${p}@*`),
+      ...extensionPacks.map((p) => `--extension-pack=${p.name}@*`),
     ];
   } else {
     precompilationOpts = ["--qlx"];
@@ -152,7 +158,10 @@ async function generateQueryPack(
     token,
   );
   const base64Pack = (await readFile(bundlePath)).toString("base64");
-  return base64Pack;
+  return {
+    base64Pack,
+    modelPacks: extensionPacks,
+  };
 }
 
 async function createNewQueryPack(
@@ -278,6 +287,7 @@ async function getPackedBundlePath(remoteQueryDir: string): Promise<string> {
 interface PreparedRemoteQuery {
   actionBranch: string;
   base64Pack: string;
+  modelPacks: ModelPackDetails[];
   repoSelection: RepositorySelection;
   controllerRepo: Repository;
   queryStartTime: number;
@@ -330,10 +340,10 @@ export async function prepareRemoteQueryRun(
 
   const tempDir = await createRemoteQueriesTempDirectory();
 
-  let base64Pack: string;
+  let generatedPack: GeneratedQlPackDetails;
 
   try {
-    base64Pack = await generateQueryPack(
+    generatedPack = await generateQueryPack(
       cliServer,
       qlPackDetails,
       tempDir,
@@ -358,7 +368,8 @@ export async function prepareRemoteQueryRun(
 
   return {
     actionBranch,
-    base64Pack,
+    base64Pack: generatedPack.base64Pack,
+    modelPacks: generatedPack.modelPacks,
     repoSelection,
     controllerRepo,
     queryStartTime,
@@ -404,8 +415,8 @@ async function fixPackFile(
 async function getExtensionPacksToInject(
   cliServer: CodeQLCliServer,
   workspaceFolders: string[],
-): Promise<string[]> {
-  const result: string[] = [];
+): Promise<ModelPackDetails[]> {
+  const result: ModelPackDetails[] = [];
   if (cliServer.useExtensionPacks()) {
     const extensionPacks = await cliServer.resolveQlpacks(
       workspaceFolders,
@@ -422,7 +433,7 @@ async function getExtensionPacksToInject(
           )}`,
         );
       }
-      result.push(name);
+      result.push({ name, path: paths[0] });
     });
   }
 
@@ -431,7 +442,7 @@ async function getExtensionPacksToInject(
 
 async function addExtensionPacksAsDependencies(
   queryPackDir: string,
-  extensionPacks: string[],
+  extensionPacks: ModelPackDetails[],
 ): Promise<void> {
   const qlpackFile = await getQlPackFilePath(queryPackDir);
   if (!qlpackFile) {
@@ -447,7 +458,7 @@ async function addExtensionPacksAsDependencies(
   ) as QlPackFile;
 
   const dependencies = syntheticQueryPack.dependencies ?? {};
-  extensionPacks.forEach((name) => {
+  extensionPacks.forEach(({ name }) => {
     // Add this extension pack as a dependency. It doesn't matter which
     // version we specify, since we are guaranteed that the extension pack
     // is resolved from source at the given path.
