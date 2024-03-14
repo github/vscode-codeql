@@ -1998,7 +1998,7 @@
     "@storybook/addon-a11y": "^7.6.15",
     "@storybook/addon-actions": "^7.1.0",
     "@storybook/addon-essentials": "^7.1.0",
-    "@storybook/addon-interactions": "^7.1.0",
+    "@storybook/addon-interactions": "^8.0.0",
     "@storybook/addon-links": "^7.1.0",
     "@storybook/components": "^7.6.17",
     "@storybook/csf": "^0.1.1",
