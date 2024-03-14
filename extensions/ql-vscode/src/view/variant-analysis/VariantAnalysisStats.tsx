@@ -1,6 +1,12 @@
 import { useMemo } from "react";
 import { styled } from "styled-components";
-import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
+import type { VariantAnalysis } from "../../variant-analysis/shared/variant-analysis";
+import {
+  VariantAnalysisStatus,
+  getSkippedRepoCount,
+  hasRepoScanCompleted,
+  isRepoScanSuccessful,
+} from "../../variant-analysis/shared/variant-analysis";
 import { StatItem } from "./StatItem";
 import { formatDecimal } from "../../common/number";
 import { humanizeUnit } from "../../common/time";
@@ -8,12 +14,7 @@ import { VariantAnalysisRepositoriesStats } from "./VariantAnalysisRepositoriesS
 import { VariantAnalysisStatusStats } from "./VariantAnalysisStatusStats";
 
 export type VariantAnalysisStatsProps = {
-  variantAnalysisStatus: VariantAnalysisStatus;
-
-  totalRepositoryCount: number;
-  completedRepositoryCount: number;
-  successfulRepositoryCount: number;
-  skippedRepositoryCount: number;
+  variantAnalysis: VariantAnalysis;
 
   resultCount?: number | undefined;
   createdAt: Date;
@@ -29,16 +30,31 @@ const Row = styled.div`
 `;
 
 export const VariantAnalysisStats = ({
-  variantAnalysisStatus,
-  totalRepositoryCount,
-  completedRepositoryCount,
-  successfulRepositoryCount,
-  skippedRepositoryCount,
+  variantAnalysis,
   resultCount,
   createdAt,
   completedAt,
   onViewLogsClick,
 }: VariantAnalysisStatsProps) => {
+  const variantAnalysisStatus = variantAnalysis.status;
+  const totalScannedRepositoryCount = useMemo(() => {
+    return variantAnalysis.scannedRepos?.length ?? 0;
+  }, [variantAnalysis.scannedRepos]);
+  const completedRepositoryCount = useMemo(() => {
+    return (
+      variantAnalysis.scannedRepos?.filter((repo) => hasRepoScanCompleted(repo))
+        ?.length ?? 0
+    );
+  }, [variantAnalysis.scannedRepos]);
+  const successfulRepositoryCount = useMemo(() => {
+    return (
+      variantAnalysis.scannedRepos?.filter((repo) => isRepoScanSuccessful(repo))
+        ?.length ?? 0
+    );
+  }, [variantAnalysis.scannedRepos]);
+  const skippedRepositoryCount = useMemo(() => {
+    return getSkippedRepoCount(variantAnalysis.skippedRepos);
+  }, [variantAnalysis.skippedRepos]);
   const completionHeaderName = useMemo(() => {
     if (variantAnalysisStatus === VariantAnalysisStatus.InProgress) {
       return "Running";
@@ -86,7 +102,7 @@ export const VariantAnalysisStats = ({
       <StatItem title="Repositories">
         <VariantAnalysisRepositoriesStats
           variantAnalysisStatus={variantAnalysisStatus}
-          totalRepositoryCount={totalRepositoryCount}
+          totalRepositoryCount={totalScannedRepositoryCount}
           completedRepositoryCount={completedRepositoryCount}
           successfulRepositoryCount={successfulRepositoryCount}
           skippedRepositoryCount={skippedRepositoryCount}

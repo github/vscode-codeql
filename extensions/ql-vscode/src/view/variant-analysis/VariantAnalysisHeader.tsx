@@ -5,10 +5,7 @@ import type {
   VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
 import {
-  getSkippedRepoCount,
   getTotalResultCount,
-  hasRepoScanCompleted,
-  isRepoScanSuccessful,
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../../variant-analysis/shared/variant-analysis";
 import { QueryDetails } from "./QueryDetails";
@@ -86,27 +83,9 @@ export const VariantAnalysisHeader = ({
   onExportResultsClick,
   onViewLogsClick,
 }: VariantAnalysisHeaderProps) => {
-  const totalScannedRepositoryCount = useMemo(() => {
-    return variantAnalysis.scannedRepos?.length ?? 0;
-  }, [variantAnalysis.scannedRepos]);
-  const completedRepositoryCount = useMemo(() => {
-    return (
-      variantAnalysis.scannedRepos?.filter((repo) => hasRepoScanCompleted(repo))
-        ?.length ?? 0
-    );
-  }, [variantAnalysis.scannedRepos]);
-  const successfulRepositoryCount = useMemo(() => {
-    return (
-      variantAnalysis.scannedRepos?.filter((repo) => isRepoScanSuccessful(repo))
-        ?.length ?? 0
-    );
-  }, [variantAnalysis.scannedRepos]);
   const resultCount = useMemo(() => {
     return getTotalResultCount(variantAnalysis.scannedRepos);
   }, [variantAnalysis.scannedRepos]);
-  const skippedRepositoryCount = useMemo(() => {
-    return getSkippedRepoCount(variantAnalysis.skippedRepos);
-  }, [variantAnalysis.skippedRepos]);
   const filteredRepositories = useMemo(() => {
     return filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, {
       ...defaultFilterSortState,
@@ -165,11 +144,7 @@ export const VariantAnalysisHeader = ({
         />
       </Row>
       <VariantAnalysisStats
-        variantAnalysisStatus={variantAnalysis.status}
-        totalRepositoryCount={totalScannedRepositoryCount}
-        completedRepositoryCount={completedRepositoryCount}
-        successfulRepositoryCount={successfulRepositoryCount}
-        skippedRepositoryCount={skippedRepositoryCount}
+        variantAnalysis={variantAnalysis}
         resultCount={resultCount}
         createdAt={parseDate(variantAnalysis.createdAt)}
         completedAt={parseDate(variantAnalysis.completedAt)}
