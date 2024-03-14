@@ -1,7 +1,6 @@
 import { ensureDir, writeFile, pathExists, readFile } from "fs-extra";
 import { dump, load } from "js-yaml";
 import { basename, join } from "path";
-import type { CancellationToken } from "vscode";
 import { window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
@@ -56,7 +55,6 @@ export async function displayQuickQuery(
   cliServer: CodeQLCliServer,
   databaseUI: DatabaseUI,
   progress: ProgressCallback,
-  token: CancellationToken,
 ) {
   try {
     // If there is already a quick query open, don't clobber it, just
@@ -111,7 +109,7 @@ export async function displayQuickQuery(
     }
 
     // We're going to infer which qlpack to use from the current database
-    const dbItem = await databaseUI.getDatabaseItem(progress, token);
+    const dbItem = await databaseUI.getDatabaseItem(progress);
     if (dbItem === undefined) {
       throw new Error("Can't start quick query without a selected database");
     }

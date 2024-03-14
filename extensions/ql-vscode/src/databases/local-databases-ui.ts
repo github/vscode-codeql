@@ -16,7 +16,6 @@ import {
   ThemeIcon,
   ThemeColor,
   workspace,
-  ProgressLocation,
 } from "vscode";
 import { pathExists, stat, readdir, remove } from "fs-extra";
 
@@ -25,13 +24,9 @@ import type {
   DatabaseItem,
   DatabaseManager,
 } from "./local-databases";
-import type {
-  ProgressCallback,
-  ProgressContext,
-} from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
   UserCancellationException,
-  withInheritedProgress,
   withProgress,
 } from "../common/vscode/progress";
 import {
@@ -332,10 +327,9 @@ export class DatabaseUI extends DisposableObject {
 
   private async chooseDatabaseFolder(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<void> {
     try {
-      await this.chooseAndSetDatabase(true, { progress, token });
+      await this.chooseAndSetDatabase(true, progress);
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
@@ -349,8 +343,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseFolder(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseFolder(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseFolder(progress);
       },
       {
         title: "Adding database from folder",
@@ -360,8 +354,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseFolderFromPalette(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseFolder(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseFolder(progress);
       },
       {
         title: "Choose a Database from a Folder",
@@ -502,10 +496,9 @@ export class DatabaseUI extends DisposableObject {
 
   private async chooseDatabaseArchive(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<void> {
     try {
-      await this.chooseAndSetDatabase(false, { progress, token });
+      await this.chooseAndSetDatabase(false, progress);
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
@@ -519,8 +512,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseArchive(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseArchive(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseArchive(progress);
       },
       {
         title: "Adding database from archive",
@@ -530,8 +523,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseArchiveFromPalette(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseArchive(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseArchive(progress);
       },
       {
         title: "Choose a Database from an Archive",
@@ -851,9 +844,8 @@ export class DatabaseUI extends DisposableObject {
    */
   public async getDatabaseItem(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
-    return await this.getDatabaseItemInternal({ progress, token });
+    return await this.getDatabaseItemInternal(progress);
   }
 
   /**
@@ -866,10 +858,10 @@ export class DatabaseUI extends DisposableObject {
    * notification if it tries to perform any long-running operations.
    */
   private async getDatabaseItemInternal(
-    progressContext: ProgressContext | undefined,
+    progress: ProgressCallback | undefined,
   ): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
-      progressContext?.progress({
+      progress?.({
         maxStep: 2,
         step: 1,
         message: "Choosing database",
@@ -996,41 +988,31 @@ export class DatabaseUI extends DisposableObject {
    */
   private async chooseAndSetDatabase(
     byFolder: boolean,
-    progress: ProgressContext | undefined,
+    progress: ProgressCallback,
   ): Promise<DatabaseItem | undefined> {
     const uri = await chooseDatabaseDir(byFolder);
     if (!uri) {
       return undefined;
     }
 
-    return await withInheritedProgress(
-      progress,
-      async (progress) => {
-        if (byFolder) {
-          const fixedUri = await this.fixDbUri(uri);
-          // we are selecting a database folder
-          return await this.databaseManager.openDatabase(fixedUri, {
-            type: "folder",
-          });
-        } else {
-          // we are selecting a database archive. Must unzip into a workspace-controlled area
-          // before importing.
-          return await importLocalDatabase(
-            this.app.commands,
-            uri.toString(true),
-            this.databaseManager,
-            this.storagePath,
-            progress,
-            this.queryServer.cliServer,
-          );
-        }
-      },
-      {
-        location: ProgressLocation.Notification,
-        cancellable: true,
-        title: "Opening database",
-      },
-    );
+    if (byFolder) {
+      const fixedUri = await this.fixDbUri(uri);
+      // we are selecting a database folder
+      return await this.databaseManager.openDatabase(fixedUri, {
+        type: "folder",
+      });
+    } else {
+      // we are selecting a database archive. Must unzip into a workspace-controlled area
+      // before importing.
+      return await importLocalDatabase(
+        this.app.commands,
+        uri.toString(true),
+        this.databaseManager,
+        this.storagePath,
+        progress,
+        this.queryServer.cliServer,
+      );
+    }
   }
 
   /**

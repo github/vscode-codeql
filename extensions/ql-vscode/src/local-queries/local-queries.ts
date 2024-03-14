@@ -290,14 +290,8 @@ export class LocalQueries extends DisposableObject {
 
   private async quickQuery(): Promise<void> {
     await withProgress(
-      async (progress, token) =>
-        displayQuickQuery(
-          this.app,
-          this.cliServer,
-          this.databaseUI,
-          progress,
-          token,
-        ),
+      async (progress) =>
+        displayQuickQuery(this.app, this.cliServer, this.databaseUI, progress),
       {
         title: "Run Quick Query",
       },
@@ -445,7 +439,7 @@ export class LocalQueries extends DisposableObject {
 
     // If no databaseItem is specified, use the database currently selected in the Databases UI
     databaseItem =
-      databaseItem ?? (await this.databaseUI.getDatabaseItem(progress, token));
+      databaseItem ?? (await this.databaseUI.getDatabaseItem(progress));
     if (databaseItem === undefined) {
       throw new Error("Can't run query without a selected database");
     }
