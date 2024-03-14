@@ -82,7 +82,7 @@ export class ModelAlertsView extends AbstractWebview<
     await this.postMessage({
       t: "setModelAlertsViewState",
       viewState: {
-        extensionPack: this.extensionPack,
+        title: this.extensionPack.name,
       },
     });
   }

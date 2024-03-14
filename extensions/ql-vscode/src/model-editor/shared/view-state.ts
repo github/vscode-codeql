@@ -21,5 +21,5 @@ export interface MethodModelingPanelViewState {
 }
 
 export interface ModelAlertsViewState {
-  extensionPack: ExtensionPack;
+  title: string;
 }

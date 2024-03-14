@@ -7,6 +7,7 @@ import type { ModelEvaluationRun } from "../../../../src/model-editor/model-eval
 import { ModelEvaluator } from "../../../../src/model-editor/model-evaluator";
 import type { ModelingEvents } from "../../../../src/model-editor/modeling-events";
 import type { ModelingStore } from "../../../../src/model-editor/modeling-store";
+import type { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
@@ -23,6 +24,7 @@ describe("Model Evaluator", () => {
   let variantAnalysisManager: VariantAnalysisManager;
   let dbItem: DatabaseItem;
   let language: QueryLanguage;
+  let extensionPack: ExtensionPack;
   let updateView: jest.Mock;
   let getModelEvaluationRunMock = jest.fn();
 
@@ -40,6 +42,7 @@ describe("Model Evaluator", () => {
     });
     dbItem = mockedObject<DatabaseItem>({});
     language = QueryLanguage.Java;
+    extensionPack = mockedObject<ExtensionPack>({});
     updateView = jest.fn();
 
     modelEvaluator = new ModelEvaluator(
@@ -50,6 +53,7 @@ describe("Model Evaluator", () => {
       variantAnalysisManager,
       dbItem,
       language,
+      extensionPack,
       updateView,
     );
   });
