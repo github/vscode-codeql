@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { ModelAlertsHeader } from "./ModelAlertsHeader";
 import type { ModelAlertsViewState } from "../../model-editor/shared/view-state";
 import type { ToModelAlertsMessage } from "../../common/interface-types";
 import type {
@@ -8,6 +7,7 @@ import type {
   VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
 import { vscode } from "../vscode-api";
+import { ModelAlertsHeader } from "./ModelAlertsHeader";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
