@@ -95,7 +95,10 @@ import {
   telemetryListener,
 } from "./common/vscode/telemetry";
 import type { ProgressCallback } from "./common/vscode/progress";
-import { withProgress } from "./common/vscode/progress";
+import {
+  UserCancellationException,
+  withProgress,
+} from "./common/vscode/progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
@@ -1185,6 +1188,10 @@ function addUnhandledRejectionListener() {
       extension && getErrorStack(error).includes(extension.extensionPath);
 
     if (isFromThisExtension) {
+      if (error instanceof UserCancellationException && error.silent) {
+        return;
+      }
+
       const message = redactableError(
         asError(error),
       )`Unhandled error: ${getErrorMessage(error)}`;
