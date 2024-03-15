@@ -737,6 +737,10 @@ interface OpenModelPackMessage {
   path: string;
 }
 
+interface StopEvaluationRunMessage {
+  t: "stopEvaluationRun";
+}
+
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
   | SetVariantAnalysisMessage
@@ -745,4 +749,5 @@ export type ToModelAlertsMessage =
 
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
-  | OpenModelPackMessage;
+  | OpenModelPackMessage
+  | StopEvaluationRunMessage;

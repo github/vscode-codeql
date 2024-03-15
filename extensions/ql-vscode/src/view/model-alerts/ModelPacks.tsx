@@ -2,6 +2,10 @@ import { styled } from "styled-components";
 import { LinkIconButton } from "../common/LinkIconButton";
 import type { ModelPackDetails } from "../../common/model-pack-details";
 
+const Container = styled.div`
+  display: block;
+`;
+
 const Title = styled.h3`
   font-size: medium;
   font-weight: 500;
@@ -26,7 +30,7 @@ export const ModelPacks = ({
   }
 
   return (
-    <>
+    <Container>
       <Title>Model packs</Title>
       <List>
         {modelPacks.map((modelPack) => (
@@ -38,6 +42,6 @@ export const ModelPacks = ({
           </li>
         ))}
       </List>
-    </>
+    </Container>
   );
 };

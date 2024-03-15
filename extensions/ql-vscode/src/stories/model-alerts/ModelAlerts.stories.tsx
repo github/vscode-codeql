@@ -3,7 +3,7 @@ import type { Meta, StoryFn } from "@storybook/react";
 import { ModelAlerts as ModelAlertsComponent } from "../../view/model-alerts/ModelAlerts";
 
 export default {
-  title: "CodeQL Model Alerts/CodeQL Model Alerts",
+  title: "Model Alerts/Model Alerts",
   component: ModelAlertsComponent,
 } as Meta<typeof ModelAlertsComponent>;
 
