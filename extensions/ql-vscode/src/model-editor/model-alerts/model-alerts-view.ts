@@ -15,7 +15,11 @@ import type { ModelingEvents } from "../modeling-events";
 import type { ModelingStore } from "../modeling-store";
 import type { DatabaseItem } from "../../databases/local-databases";
 import type { ExtensionPack } from "../shared/extension-pack";
-import type { VariantAnalysis } from "../../variant-analysis/shared/variant-analysis";
+import type {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryResult,
+  VariantAnalysisScannedRepositoryState,
+} from "../../variant-analysis/shared/variant-analysis";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -35,17 +39,12 @@ export class ModelAlertsView extends AbstractWebview<
     this.registerToModelingEvents();
   }
 
-  public async showView(variantAnalysis: VariantAnalysis) {
+  public async showView() {
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     await this.setViewState();
-
-    await this.postMessage({
-      t: "setVariantAnalysis",
-      variantAnalysis,
-    });
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -93,6 +92,45 @@ export class ModelAlertsView extends AbstractWebview<
       viewState: {
         title: this.extensionPack.name,
       },
+    });
+  }
+
+  public async updateVariantAnalysis(
+    variantAnalysis: VariantAnalysis,
+  ): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setVariantAnalysis",
+      variantAnalysis,
+    });
+  }
+
+  public async updateRepoState(
+    repoState: VariantAnalysisScannedRepositoryState,
+  ): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setRepoStates",
+      repoStates: [repoState],
+    });
+  }
+
+  public async updateRepoResults(
+    repositoryResult: VariantAnalysisScannedRepositoryResult,
+  ): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setRepoResults",
+      repoResults: [repositoryResult],
     });
   }
 
