@@ -995,14 +995,15 @@ export class DatabaseUI extends DisposableObject {
       return undefined;
     }
 
-    if (byFolder) {
+    if (byFolder && !uri.fsPath.endsWith("testproj")) {
       const fixedUri = await this.fixDbUri(uri);
       // we are selecting a database folder
       return await this.databaseManager.openDatabase(fixedUri, {
         type: "folder",
       });
     } else {
-      // we are selecting a database archive. Must unzip into a workspace-controlled area
+      // we are selecting a database archive or a testproj.
+      // Unzip archives (if an archive) and copy into a workspace-controlled area
       // before importing.
       return await importLocalDatabase(
         this.app.commands,
