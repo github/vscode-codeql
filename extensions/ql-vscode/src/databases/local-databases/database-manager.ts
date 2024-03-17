@@ -43,6 +43,7 @@ import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import type { LanguageContextStore } from "../../language-context-store";
 import type { DatabaseOrigin } from "./database-origin";
+import { ensureZippedSourceLocation } from "../database-fetcher";
 
 /**
  * The name of the key in the workspaceState dictionary in which we
@@ -260,6 +261,7 @@ export class DatabaseManager extends DisposableObject {
 
     await this.removeDatabaseItem(dbItem);
     await copy(dbItem.origin.path, databaseUri.fsPath);
+    await ensureZippedSourceLocation(databaseUri.fsPath);
     const newDbItem = new DatabaseItemImpl(databaseUri, dbItem.contents, {
       dateAdded: Date.now(),
       language: dbItem.language,
