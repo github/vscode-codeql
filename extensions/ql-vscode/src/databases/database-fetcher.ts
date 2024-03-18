@@ -666,7 +666,9 @@ function isFile(databaseUrl: string) {
  *
  * @param databasePath The full path to the unzipped database
  */
-async function ensureZippedSourceLocation(databasePath: string): Promise<void> {
+export async function ensureZippedSourceLocation(
+  databasePath: string,
+): Promise<void> {
   const srcFolderPath = join(databasePath, "src");
   const srcZipPath = `${srcFolderPath}.zip`;
 

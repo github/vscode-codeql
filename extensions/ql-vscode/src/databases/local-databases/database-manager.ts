@@ -43,6 +43,7 @@ import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import type { LanguageContextStore } from "../../language-context-store";
 import type { DatabaseOrigin } from "./database-origin";
+import { ensureZippedSourceLocation } from "../database-fetcher";
 
 /**
  * The name of the key in the workspaceState dictionary in which we
@@ -227,8 +228,16 @@ export class DatabaseManager extends DisposableObject {
       "codeql-database.yml",
     );
 
+    let originStat;
     try {
-      const originStat = await stat(originDbYml);
+      originStat = await stat(originDbYml);
+    } catch (e) {
+      // if there is an error here, assume that the origin database
+      // is no longer available. Safely ignore and do not try to re-import.
+      return false;
+    }
+
+    try {
       const importedStat = await stat(importedDbYml);
       return originStat.mtimeMs > importedStat.mtimeMs;
     } catch (e) {
@@ -252,6 +261,7 @@ export class DatabaseManager extends DisposableObject {
 
     await this.removeDatabaseItem(dbItem);
     await copy(dbItem.origin.path, databaseUri.fsPath);
+    await ensureZippedSourceLocation(databaseUri.fsPath);
     const newDbItem = new DatabaseItemImpl(databaseUri, dbItem.contents, {
       dateAdded: Date.now(),
       language: dbItem.language,
