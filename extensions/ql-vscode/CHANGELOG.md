@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Don't show notification after local query cancellation. [#3489](https://github.com/github/vscode-codeql/pull/3489)
 - Databases created from [CodeQL test cases](https://docs.github.com/en/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/testing-custom-queries) are now copied into a shared VS Code storage location. This avoids a bug where re-running test cases would fail if the test's database is already imported into the workspace. [#3433](https://github.com/github/vscode-codeql/pull/3433)
 
 ## 1.12.3 - 29 February 2024
