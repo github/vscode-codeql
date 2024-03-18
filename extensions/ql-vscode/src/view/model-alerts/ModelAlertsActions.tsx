@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 
-type VariantAnalysisActionsProps = {
+type ModelAlertsActionsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
 
   onStopRunClick: () => void;
@@ -21,7 +21,7 @@ const Button = styled(VSCodeButton)`
 export const ModelAlertsActions = ({
   variantAnalysisStatus,
   onStopRunClick,
-}: VariantAnalysisActionsProps) => {
+}: ModelAlertsActionsProps) => {
   return (
     <Container>
       {variantAnalysisStatus === VariantAnalysisStatus.InProgress && (
