@@ -745,4 +745,5 @@ export type ToModelAlertsMessage =
 
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
-  | OpenModelPackMessage;
+  | OpenModelPackMessage
+  | OpenLogsMessage;
