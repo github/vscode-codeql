@@ -13,6 +13,12 @@ export default {
         disable: true,
       },
     },
+    onViewLogsClick: {
+      action: "view-logs-clicked",
+      table: {
+        disable: true,
+      },
+    },
     stopRunClick: {
       action: "stop-run-clicked",
       table: {
@@ -29,7 +35,6 @@ const Template: StoryFn<typeof ModelAlertsHeaderComponent> = (args) => (
 export const ModelAlertsHeader = Template.bind({});
 ModelAlertsHeader.args = {
   viewState: { title: "codeql/sql2o-models" },
-  openModelPackClick: (path: string) => {},
   variantAnalysis: createMockVariantAnalysis({
     modelPacks: [
       {
