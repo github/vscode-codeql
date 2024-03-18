@@ -739,7 +739,9 @@ interface OpenModelPackMessage {
 
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
-  | SetVariantAnalysisMessage;
+  | SetVariantAnalysisMessage
+  | SetRepoResultsMessage
+  | SetRepoStatesMessage;
 
 export type FromModelAlertsMessage =
   | CommonFromViewMessages

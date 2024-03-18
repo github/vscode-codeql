@@ -122,6 +122,21 @@ export class VariantAnalysisManager
   public readonly onVariantAnalysisRemoved =
     this._onVariantAnalysisRemoved.event;
 
+  private readonly _onRepoStateUpdated = this.push(
+    new EventEmitter<{
+      variantAnalysisId: number;
+      repoState: VariantAnalysisScannedRepositoryState;
+    }>(),
+  );
+
+  public readonly onRepoStatesUpdated = this._onRepoStateUpdated.event;
+
+  private readonly _onRepoResultsLoaded = this.push(
+    new EventEmitter<VariantAnalysisScannedRepositoryResult>(),
+  );
+
+  public readonly onRepoResultsLoaded = this._onRepoResultsLoaded.event;
+
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
@@ -685,6 +700,8 @@ export class VariantAnalysisManager
     await this.getView(
       repositoryResult.variantAnalysisId,
     )?.sendRepositoryResults([repositoryResult]);
+
+    this._onRepoResultsLoaded.fire(repositoryResult);
   }
 
   private async onRepoStateUpdated(
@@ -700,6 +717,8 @@ export class VariantAnalysisManager
     }
 
     repoStates[repoState.repositoryId] = repoState;
+
+    this._onRepoStateUpdated.fire({ variantAnalysisId, repoState });
   }
 
   private async onDidChangeSessions(

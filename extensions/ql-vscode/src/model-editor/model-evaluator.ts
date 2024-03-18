@@ -27,6 +27,8 @@ export class ModelEvaluator extends DisposableObject {
   // submitted, we use the variant analysis manager's cancellation support.
   private cancellationSource: CancellationTokenSource;
 
+  private modelAlertsView: ModelAlertsView | undefined;
+
   public constructor(
     private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
@@ -36,7 +38,7 @@ export class ModelEvaluator extends DisposableObject {
     private readonly dbItem: DatabaseItem,
     private readonly language: QueryLanguage,
     private readonly extensionPack: ExtensionPack,
-    private readonly updateView: (
+    private readonly updateModelEditorView: (
       run: ModelEvaluationRunState,
     ) => Promise<void>,
   ) {
@@ -117,18 +119,17 @@ export class ModelEvaluator extends DisposableObject {
       return;
     } else {
       this.modelingStore.updateIsModelAlertsViewOpen(this.dbItem, true);
-      const view = new ModelAlertsView(
+      this.modelAlertsView = new ModelAlertsView(
         this.app,
         this.modelingEvents,
         this.modelingStore,
         this.dbItem,
         this.extensionPack,
       );
+      await this.modelAlertsView.showView();
 
       // There should be a variant analysis available at this point, as the
-      // view can only opened when the variant analysis is complete. So we
-      // send this to the view. This is temporary until we have logic to
-      // listen to variant analysis updates and update the view accordingly.
+      // view can only opened when the variant analysis is submitted.
       const evaluationRun = this.modelingStore.getModelEvaluationRun(
         this.dbItem,
       );
@@ -143,7 +144,7 @@ export class ModelEvaluator extends DisposableObject {
         throw new Error("No variant analysis available");
       }
 
-      await view.showView(variantAnalysis);
+      await this.modelAlertsView.updateVariantAnalysis(variantAnalysis);
     }
   }
 
@@ -152,7 +153,7 @@ export class ModelEvaluator extends DisposableObject {
       this.modelingEvents.onModelEvaluationRunChanged(async (event) => {
         if (event.dbUri === this.dbItem.databaseUri.toString()) {
           if (!event.evaluationRun) {
-            await this.updateView({
+            await this.updateModelEditorView({
               isPreparing: false,
               variantAnalysis: undefined,
             });
@@ -164,7 +165,7 @@ export class ModelEvaluator extends DisposableObject {
               isPreparing: event.evaluationRun.isPreparing,
               variantAnalysis,
             };
-            await this.updateView(run);
+            await this.updateModelEditorView(run);
           }
         }
       }),
@@ -241,14 +242,34 @@ export class ModelEvaluator extends DisposableObject {
       this.variantAnalysisManager.onVariantAnalysisStatusUpdated(
         async (variantAnalysis) => {
           // Make sure it's the variant analysis we're interested in
-          if (variantAnalysisId === variantAnalysis.id) {
-            await this.updateView({
+          if (variantAnalysis.id === variantAnalysisId) {
+            // Update model editor view
+            await this.updateModelEditorView({
               isPreparing: false,
               variantAnalysis,
             });
+
+            // Update model alerts view
+            await this.modelAlertsView?.updateVariantAnalysis(variantAnalysis);
           }
         },
       ),
+    );
+
+    this.push(
+      this.variantAnalysisManager.onRepoStatesUpdated(async (e) => {
+        if (e.variantAnalysisId === variantAnalysisId) {
+          await this.modelAlertsView?.updateRepoState(e.repoState);
+        }
+      }),
+    );
+
+    this.push(
+      this.variantAnalysisManager.onRepoResultsLoaded(async (e) => {
+        if (e.variantAnalysisId === variantAnalysisId) {
+          await this.modelAlertsView?.updateRepoResults(e);
+        }
+      }),
     );
   }
 }
