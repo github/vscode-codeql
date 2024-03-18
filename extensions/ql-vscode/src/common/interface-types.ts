@@ -742,6 +742,10 @@ interface OpenActionsLogsMessage {
   variantAnalysisId: number;
 }
 
+interface StopEvaluationRunMessage {
+  t: "stopEvaluationRun";
+}
+
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
   | SetVariantAnalysisMessage
@@ -751,4 +755,5 @@ export type ToModelAlertsMessage =
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
   | OpenModelPackMessage
-  | OpenActionsLogsMessage;
+  | OpenActionsLogsMessage
+  | StopEvaluationRunMessage;

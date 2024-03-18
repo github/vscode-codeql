@@ -1,3 +1,4 @@
+import { styled } from "styled-components";
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
@@ -15,6 +16,11 @@ export type Props = {
   openModelAlertsView: () => void;
   evaluationRun: ModelEvaluationRunState | undefined;
 };
+
+const RunLink = styled(VSCodeLink)`
+  display: flex;
+  align-items: center;
+`;
 
 export const ModelEvaluation = ({
   viewState,
@@ -61,12 +67,12 @@ export const ModelEvaluation = ({
         </VSCodeButton>
       )}
       {shouldShowEvaluationRunLink && (
-        <VSCodeLink>
+        <RunLink>
           <LinkIconButton onClick={openModelAlertsView}>
             <span slot="end" className="codicon codicon-link-external"></span>
             Evaluation run
           </LinkIconButton>
-        </VSCodeLink>
+        </RunLink>
       )}
     </>
   );

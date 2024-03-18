@@ -21,6 +21,12 @@ export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
     });
   }, []);
 
+  const onStopRunClick = useCallback(() => {
+    vscode.postMessage({
+      t: "stopEvaluationRun",
+    });
+  }, []);
+
   const [viewState, setViewState] = useState<ModelAlertsViewState | undefined>(
     initialViewState,
   );
@@ -107,6 +113,7 @@ export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
         variantAnalysis={variantAnalysis}
         openModelPackClick={onOpenModelPackClick}
         onViewLogsClick={onViewLogsClick}
+        stopRunClick={onStopRunClick}
       ></ModelAlertsHeader>
       <div>
         <h3>Repo states</h3>

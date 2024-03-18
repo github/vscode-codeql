@@ -128,6 +128,10 @@ export class ModelEvaluator extends DisposableObject {
       );
       await this.modelAlertsView.showView();
 
+      this.modelAlertsView.onEvaluationRunStopClicked(async () => {
+        await this.stopEvaluation();
+      });
+
       // There should be a variant analysis available at this point, as the
       // view can only opened when the variant analysis is submitted.
       const evaluationRun = this.modelingStore.getModelEvaluationRun(

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { parseDate } from "../../common/date";
+import { styled } from "styled-components";
 import type { ModelAlertsViewState } from "../../model-editor/shared/view-state";
 import {
   getSkippedRepoCount,
@@ -9,6 +10,7 @@ import {
 } from "../../variant-analysis/shared/variant-analysis";
 import type { VariantAnalysis } from "../../variant-analysis/shared/variant-analysis";
 import { ViewTitle } from "../common";
+import { ModelAlertsActions } from "./ModelAlertsActions";
 import { ModelPacks } from "./ModelPacks";
 import { VariantAnalysisStats } from "../variant-analysis/VariantAnalysisStats";
 
@@ -17,13 +19,25 @@ type Props = {
   variantAnalysis: VariantAnalysis;
   openModelPackClick: (path: string) => void;
   onViewLogsClick?: () => void;
+  stopRunClick: () => void;
 };
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: flex-start;
+`;
 
 export const ModelAlertsHeader = ({
   viewState,
   variantAnalysis,
   openModelPackClick,
   onViewLogsClick,
+  stopRunClick,
 }: Props) => {
   const totalScannedRepositoryCount = useMemo(() => {
     return variantAnalysis.scannedRepos?.length ?? 0;
@@ -49,22 +63,32 @@ export const ModelAlertsHeader = ({
 
   return (
     <>
-      <ViewTitle>Model evaluation results for {viewState.title}</ViewTitle>
-      <ModelPacks
-        modelPacks={variantAnalysis.modelPacks || []}
-        openModelPackClick={openModelPackClick}
-      ></ModelPacks>
-      <VariantAnalysisStats
-        variantAnalysisStatus={variantAnalysis.status}
-        totalRepositoryCount={totalScannedRepositoryCount}
-        completedRepositoryCount={completedRepositoryCount}
-        successfulRepositoryCount={successfulRepositoryCount}
-        skippedRepositoryCount={skippedRepositoryCount}
-        resultCount={resultCount}
-        createdAt={parseDate(variantAnalysis.createdAt)}
-        completedAt={parseDate(variantAnalysis.completedAt)}
-        onViewLogsClick={onViewLogsClick}
-      />
+      <Container>
+        <Row>
+          <ViewTitle>Model evaluation results for {viewState.title}</ViewTitle>
+        </Row>
+        <Row>
+          <ModelPacks
+            modelPacks={variantAnalysis.modelPacks || []}
+            openModelPackClick={openModelPackClick}
+          ></ModelPacks>
+          <ModelAlertsActions
+            variantAnalysisStatus={variantAnalysis.status}
+            onStopRunClick={stopRunClick}
+          />
+        </Row>
+        <VariantAnalysisStats
+          variantAnalysisStatus={variantAnalysis.status}
+          totalRepositoryCount={totalScannedRepositoryCount}
+          completedRepositoryCount={completedRepositoryCount}
+          successfulRepositoryCount={successfulRepositoryCount}
+          skippedRepositoryCount={skippedRepositoryCount}
+          resultCount={resultCount}
+          createdAt={parseDate(variantAnalysis.createdAt)}
+          completedAt={parseDate(variantAnalysis.completedAt)}
+          onViewLogsClick={onViewLogsClick}
+        />
+      </Container>
     </>
   );
 };

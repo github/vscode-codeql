@@ -20,12 +20,16 @@ import type {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
+import type { AppEvent, AppEventEmitter } from "../../common/events";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
   FromModelAlertsMessage
 > {
   public static readonly viewType = "codeQL.modelAlerts";
+
+  public readonly onEvaluationRunStopClicked: AppEvent<void>;
+  private readonly onEvaluationRunStopClickedEventEmitter: AppEventEmitter<void>;
 
   public constructor(
     app: App,
@@ -37,6 +41,12 @@ export class ModelAlertsView extends AbstractWebview<
     super(app);
 
     this.registerToModelingEvents();
+
+    this.onEvaluationRunStopClickedEventEmitter = this.push(
+      app.createEventEmitter<void>(),
+    );
+    this.onEvaluationRunStopClicked =
+      this.onEvaluationRunStopClickedEventEmitter.event;
   }
 
   public async showView() {
@@ -86,6 +96,9 @@ export class ModelAlertsView extends AbstractWebview<
           "codeQL.openVariantAnalysisLogs",
           msg.variantAnalysisId,
         );
+        break;
+      case "stopEvaluationRun":
+        await this.stopEvaluationRun();
         break;
       default:
         assertNever(msg);
@@ -160,5 +173,9 @@ export class ModelAlertsView extends AbstractWebview<
         }
       }),
     );
+  }
+
+  private async stopEvaluationRun() {
+    this.onEvaluationRunStopClickedEventEmitter.fire();
   }
 }
