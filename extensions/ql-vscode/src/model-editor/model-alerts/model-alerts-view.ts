@@ -81,10 +81,10 @@ export class ModelAlertsView extends AbstractWebview<
       case "openModelPack":
         await this.app.commands.execute("revealInExplorer", Uri.file(msg.path));
         break;
-      case "openLogs":
+      case "openActionsLogs":
         await this.app.commands.execute(
           "codeQL.openVariantAnalysisLogs",
-          123, // TODO: Get the actual variantAnalysisId
+          msg.variantAnalysisId,
         );
         break;
       default:

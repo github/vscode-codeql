@@ -13,12 +13,6 @@ type Props = {
   initialViewState?: ModelAlertsViewState;
 };
 
-const openLogs = () => {
-  vscode.postMessage({
-    t: "openLogs",
-  });
-};
-
 export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
   const onOpenModelPackClick = useCallback((path: string) => {
     vscode.postMessage({
@@ -40,9 +34,6 @@ export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
   const [repoResults, setRepoResults] = useState<
     VariantAnalysisScannedRepositoryResult[]
   >([]);
-
-  const onViewLogsClick =
-    variantAnalysis?.actionsWorkflowRunId === undefined ? undefined : openLogs;
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -98,6 +89,16 @@ export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
   if (viewState === undefined || variantAnalysis === undefined) {
     return <></>;
   }
+
+  const openLogs = () => {
+    vscode.postMessage({
+      t: "openActionsLogs",
+      variantAnalysisId: variantAnalysis.id,
+    });
+  };
+
+  const onViewLogsClick =
+    variantAnalysis.actionsWorkflowRunId === undefined ? undefined : openLogs;
 
   return (
     <>
