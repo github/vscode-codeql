@@ -2,7 +2,10 @@ import type {
   ProgressCallback,
   ProgressUpdate,
 } from "../common/vscode/progress";
-import { withProgress } from "../common/vscode/progress";
+import {
+  UserCancellationException,
+  withProgress,
+} from "../common/vscode/progress";
 import type { CancellationToken, Range, TabInputText } from "vscode";
 import { CancellationTokenSource, Uri, window } from "vscode";
 import {
@@ -492,7 +495,12 @@ export class LocalQueries extends DisposableObject {
         // to unify both error handling paths.
         const err = asError(e);
         await localQueryRun.fail(err);
-        throw e;
+
+        if (token.isCancellationRequested) {
+          throw new UserCancellationException(err.message, true);
+        } else {
+          throw e;
+        }
       }
     } finally {
       source.dispose();
