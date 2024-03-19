@@ -11,9 +11,17 @@ import { vscode } from "../vscode-api";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
+  variantAnalysis?: VariantAnalysis;
+  repoStates?: VariantAnalysisScannedRepositoryState[];
+  repoResults?: VariantAnalysisScannedRepositoryResult[];
 };
 
-export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
+export function ModelAlerts({
+  initialViewState,
+  variantAnalysis: initialVariantAnalysis,
+  repoStates: initialRepoStates = [],
+  repoResults: initialRepoResults = [],
+}: Props): React.JSX.Element {
   const onOpenModelPackClick = useCallback((path: string) => {
     vscode.postMessage({
       t: "openModelPack",
@@ -33,13 +41,11 @@ export function ModelAlerts({ initialViewState }: Props): React.JSX.Element {
 
   const [variantAnalysis, setVariantAnalysis] = useState<
     VariantAnalysis | undefined
-  >(undefined);
-  const [repoStates, setRepoStates] = useState<
-    VariantAnalysisScannedRepositoryState[]
-  >([]);
-  const [repoResults, setRepoResults] = useState<
-    VariantAnalysisScannedRepositoryResult[]
-  >([]);
+  >(initialVariantAnalysis);
+  const [repoStates, setRepoStates] =
+    useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
+  const [repoResults, setRepoResults] =
+    useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
