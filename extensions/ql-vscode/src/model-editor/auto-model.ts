@@ -21,6 +21,7 @@ export async function encodeSarif(log: Log): Promise<string> {
 export async function createAutoModelRequest(
   mode: Mode,
   result: AutoModelQueriesResult,
+  batchIndex: number,
 ): Promise<ModelRequest> {
   let requestMode: AutomodelMode;
   switch (mode) {
@@ -37,5 +38,6 @@ export async function createAutoModelRequest(
   return {
     mode: requestMode,
     candidates: await encodeSarif(result.candidates),
+    batchIndex,
   };
 }

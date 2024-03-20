@@ -13,10 +13,13 @@ export interface ModelRequest {
   mode: AutomodelMode;
   // Base64-encoded GZIP-compressed SARIF log
   candidates: string;
+  // The index of the batch of sources/sinks to model, starting from 0
+  batchIndex: number;
 }
 
 export interface ModelResponse {
   models: string;
+  finished: boolean;
 }
 
 export async function autoModel(
