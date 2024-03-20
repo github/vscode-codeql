@@ -2001,6 +2001,7 @@
     "@storybook/addon-essentials": "^8.0.0",
     "@storybook/addon-interactions": "^8.0.0",
     "@storybook/addon-links": "^8.0.0",
+    "@storybook/blocks": "^8.0.2",
     "@storybook/components": "^8.0.0",
     "@storybook/csf": "^0.1.1",
     "@storybook/manager-api": "^8.0.0",
