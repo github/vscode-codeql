@@ -273,6 +273,9 @@ export type VariantAnalysisCommands = {
   "codeQL.openVariantAnalysisLogs": (
     variantAnalysisId: number,
   ) => Promise<void>;
+  "codeQLModelAlerts.openVariantAnalysisLogs": (
+    variantAnalysisId: number,
+  ) => Promise<void>;
   "codeQL.openVariantAnalysisView": (
     variantAnalysisId: number,
   ) => Promise<void>;

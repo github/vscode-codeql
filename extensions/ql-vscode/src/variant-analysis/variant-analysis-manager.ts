@@ -191,6 +191,8 @@ export class VariantAnalysisManager
       "codeQL.monitorReauthenticatedVariantAnalysis":
         this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
+      "codeQLModelAlerts.openVariantAnalysisLogs":
+        this.openVariantAnalysisLogs.bind(this),
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
         this.runVariantAnalysisFromCommandPalette.bind(this),
