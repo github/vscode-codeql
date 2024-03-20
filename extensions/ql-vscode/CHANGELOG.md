@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.12.4 - 20 March 2024
 
 - Don't show notification after local query cancellation. [#3489](https://github.com/github/vscode-codeql/pull/3489)
