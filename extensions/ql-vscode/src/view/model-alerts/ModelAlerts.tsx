@@ -4,7 +4,6 @@ import type { ToModelAlertsMessage } from "../../common/interface-types";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
 import { vscode } from "../vscode-api";
 import { ModelAlertsHeader } from "./ModelAlertsHeader";
@@ -12,14 +11,12 @@ import { ModelAlertsHeader } from "./ModelAlertsHeader";
 type Props = {
   initialViewState?: ModelAlertsViewState;
   variantAnalysis?: VariantAnalysis;
-  repoStates?: VariantAnalysisScannedRepositoryState[];
   repoResults?: VariantAnalysisScannedRepositoryResult[];
 };
 
 export function ModelAlerts({
   initialViewState,
   variantAnalysis: initialVariantAnalysis,
-  repoStates: initialRepoStates = [],
   repoResults: initialRepoResults = [],
 }: Props): React.JSX.Element {
   const onOpenModelPackClick = useCallback((path: string) => {
@@ -42,8 +39,6 @@ export function ModelAlerts({
   const [variantAnalysis, setVariantAnalysis] = useState<
     VariantAnalysis | undefined
   >(initialVariantAnalysis);
-  const [repoStates, setRepoStates] =
-    useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
   const [repoResults, setRepoResults] =
     useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
@@ -58,18 +53,6 @@ export function ModelAlerts({
           }
           case "setVariantAnalysis": {
             setVariantAnalysis(msg.variantAnalysis);
-            break;
-          }
-          case "setRepoStates": {
-            setRepoStates((oldRepoStates) => {
-              const newRepoIds = msg.repoStates.map((r) => r.repositoryId);
-              return [
-                ...oldRepoStates.filter(
-                  (v) => !newRepoIds.includes(v.repositoryId),
-                ),
-                ...msg.repoStates,
-              ];
-            });
             break;
           }
           case "setRepoResults": {
@@ -121,10 +104,6 @@ export function ModelAlerts({
         onViewLogsClick={onViewLogsClick}
         stopRunClick={onStopRunClick}
       ></ModelAlertsHeader>
-      <div>
-        <h3>Repo states</h3>
-        <p>{JSON.stringify(repoStates, null, 2)}</p>
-      </div>
       <div>
         <h3>Repo results</h3>
         <p>{JSON.stringify(repoResults, null, 2)}</p>

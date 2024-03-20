@@ -18,7 +18,6 @@ import type { ExtensionPack } from "../shared/extension-pack";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
-  VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
 import type { AppEvent, AppEventEmitter } from "../../common/events";
 
@@ -124,19 +123,6 @@ export class ModelAlertsView extends AbstractWebview<
     await this.postMessage({
       t: "setVariantAnalysis",
       variantAnalysis,
-    });
-  }
-
-  public async updateRepoState(
-    repoState: VariantAnalysisScannedRepositoryState,
-  ): Promise<void> {
-    if (!this.isShowingPanel) {
-      return;
-    }
-
-    await this.postMessage({
-      t: "setRepoStates",
-      repoStates: [repoState],
     });
   }
 
