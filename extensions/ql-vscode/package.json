@@ -1954,6 +1954,7 @@
     "@floating-ui/react": "^0.26.9",
     "@octokit/plugin-retry": "^6.0.1",
     "@octokit/rest": "^20.0.2",
+    "@storybook/icons": "^1.2.9",
     "@vscode/codicons": "^0.0.35",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.59.0",
