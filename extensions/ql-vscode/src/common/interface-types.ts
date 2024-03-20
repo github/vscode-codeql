@@ -737,6 +737,11 @@ interface OpenModelPackMessage {
   path: string;
 }
 
+interface OpenActionsLogsMessage {
+  t: "openActionsLogs";
+  variantAnalysisId: number;
+}
+
 interface StopEvaluationRunMessage {
   t: "stopEvaluationRun";
 }
@@ -750,4 +755,5 @@ export type ToModelAlertsMessage =
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
   | OpenModelPackMessage
+  | OpenActionsLogsMessage
   | StopEvaluationRunMessage;

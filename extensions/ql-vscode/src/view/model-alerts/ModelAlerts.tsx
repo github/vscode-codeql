@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { ModelAlertsHeader } from "./ModelAlertsHeader";
 import type { ModelAlertsViewState } from "../../model-editor/shared/view-state";
 import type { ToModelAlertsMessage } from "../../common/interface-types";
 import type {
@@ -8,6 +7,7 @@ import type {
   VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
 import { vscode } from "../vscode-api";
+import { ModelAlertsHeader } from "./ModelAlertsHeader";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
@@ -102,12 +102,23 @@ export function ModelAlerts({
     return <></>;
   }
 
+  const openLogs = () => {
+    vscode.postMessage({
+      t: "openActionsLogs",
+      variantAnalysisId: variantAnalysis.id,
+    });
+  };
+
+  const onViewLogsClick =
+    variantAnalysis.actionsWorkflowRunId === undefined ? undefined : openLogs;
+
   return (
     <>
       <ModelAlertsHeader
         viewState={viewState}
         variantAnalysis={variantAnalysis}
         openModelPackClick={onOpenModelPackClick}
+        onViewLogsClick={onViewLogsClick}
         stopRunClick={onStopRunClick}
       ></ModelAlertsHeader>
       <div>

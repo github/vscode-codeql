@@ -13,6 +13,12 @@ export default {
         disable: true,
       },
     },
+    onViewLogsClick: {
+      action: "view-logs-clicked",
+      table: {
+        disable: true,
+      },
+    },
     stopRunClick: {
       action: "stop-run-clicked",
       table: {
