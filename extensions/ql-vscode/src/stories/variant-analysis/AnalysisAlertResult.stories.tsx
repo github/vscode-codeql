@@ -2,6 +2,7 @@ import type { Meta, StoryFn } from "@storybook/react";
 
 import AnalysisAlertResult from "../../view/variant-analysis/AnalysisAlertResult";
 import type { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
+import { createMockAnalysisAlert } from "../../../test/factories/variant-analysis/shared/analysis-alert";
 
 export default {
   title: "Variant Analysis/Analysis Alert Result",
@@ -14,35 +15,7 @@ const Template: StoryFn<typeof AnalysisAlertResult> = (args) => (
 
 export const Warning = Template.bind({});
 
-const warningAlert: AnalysisAlert = {
-  message: {
-    tokens: [
-      {
-        t: "text",
-        text: "This is an empty block.",
-      },
-    ],
-  },
-  shortDescription: "This is an empty block.",
-  fileLink: {
-    fileLinkPrefix:
-      "https://github.com/expressjs/express/blob/33e8dc303af9277f8a7e4f46abfdcb5e72f6797b",
-    filePath: "test/app.options.js",
-  },
-  severity: "Warning",
-  codeSnippet: {
-    startLine: 10,
-    endLine: 14,
-    text: "    app.del('/', function(){});\n    app.get('/users', function(req, res){});\n    app.put('/users', function(req, res){});\n\n    request(app)\n",
-  },
-  highlightedRegion: {
-    startLine: 12,
-    startColumn: 41,
-    endLine: 12,
-    endColumn: 43,
-  },
-  codeFlows: [],
-};
+const warningAlert: AnalysisAlert = createMockAnalysisAlert();
 
 Warning.args = {
   alert: warningAlert,
