@@ -12,7 +12,7 @@
 import javascript
 import ProgressBar
 
-from ProgressBar t
+from WithProgressCall t
 where not t.isCancellable() and t.usesToken()
 select t,
   "The $@ should not be used when the progress bar is not cancellable. Either stop using the $@ or mark the progress bar as cancellable.",
