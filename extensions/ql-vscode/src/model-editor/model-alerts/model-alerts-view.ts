@@ -93,7 +93,7 @@ export class ModelAlertsView extends AbstractWebview<
         break;
       case "openActionsLogs":
         await this.app.commands.execute(
-          "codeQL.openVariantAnalysisLogs",
+          "codeQLModelAlerts.openVariantAnalysisLogs",
           msg.variantAnalysisId,
         );
         break;
