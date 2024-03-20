@@ -749,8 +749,7 @@ interface StopEvaluationRunMessage {
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
   | SetVariantAnalysisMessage
-  | SetRepoResultsMessage
-  | SetRepoStatesMessage;
+  | SetRepoResultsMessage;
 
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
