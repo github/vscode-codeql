@@ -207,25 +207,34 @@ export class AutoModeler {
       return;
     }
 
-    const request = await createAutoModelRequest(mode, usages);
+    let finished = false;
+    let batchIndex = 0;
 
-    void this.app.logger.log("Calling auto-model API");
+    while (!finished) {
+      const request = await createAutoModelRequest(mode, usages, batchIndex);
 
-    const response = await this.callAutoModelApi(request);
-    if (!response) {
-      return;
+      void this.app.logger.log(`Calling auto-model API (batch ${batchIndex})`);
+
+      const response = await this.callAutoModelApi(request);
+      if (!response) {
+        return;
+      }
+
+      const models = loadYaml(response.models, {
+        filename: "auto-model.yml",
+      });
+
+      const loadedMethods = loadDataExtensionYaml(models, this.language);
+      if (!loadedMethods) {
+        return;
+      }
+
+      await this.addModeledMethods(loadedMethods);
+
+      finished = response.finished;
+
+      batchIndex++;
     }
-
-    const models = loadYaml(response.models, {
-      filename: "auto-model.yml",
-    });
-
-    const loadedMethods = loadDataExtensionYaml(models, this.language);
-    if (!loadedMethods) {
-      return;
-    }
-
-    await this.addModeledMethods(loadedMethods);
   }
 
   private async callAutoModelApi(
