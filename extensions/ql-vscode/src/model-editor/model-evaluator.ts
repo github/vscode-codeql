@@ -13,6 +13,7 @@ import {
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
+import { VariantAnalysisScannedRepositoryDownloadStatus } from "../variant-analysis/shared/variant-analysis";
 import type { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 import type { CancellationToken } from "vscode";
 import { CancellationTokenSource } from "vscode";
@@ -126,7 +127,6 @@ export class ModelEvaluator extends DisposableObject {
         this.dbItem,
         this.extensionPack,
       );
-      await this.modelAlertsView.showView();
 
       this.modelAlertsView.onEvaluationRunStopClicked(async () => {
         await this.stopEvaluation();
@@ -147,6 +147,12 @@ export class ModelEvaluator extends DisposableObject {
       if (!variantAnalysis) {
         throw new Error("No variant analysis available");
       }
+
+      const reposResults =
+        this.variantAnalysisManager.getLoadedResultsForVariantAnalysis(
+          variantAnalysis.id,
+        );
+      await this.modelAlertsView.showView(reposResults);
 
       await this.modelAlertsView.updateVariantAnalysis(variantAnalysis);
     }
@@ -261,11 +267,60 @@ export class ModelEvaluator extends DisposableObject {
     );
 
     this.push(
+      this.variantAnalysisManager.onRepoStatesUpdated(async (e) => {
+        if (e.variantAnalysisId === variantAnalysisId) {
+          if (
+            e.repoState.downloadStatus ===
+            VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
+          ) {
+            await this.readAnalysisResults(
+              variantAnalysisId,
+              e.repoState.repositoryId,
+            );
+          }
+        }
+      }),
+    );
+
+    this.push(
       this.variantAnalysisManager.onRepoResultsLoaded(async (e) => {
         if (e.variantAnalysisId === variantAnalysisId) {
           await this.modelAlertsView?.updateRepoResults(e);
         }
       }),
+    );
+  }
+
+  private async readAnalysisResults(
+    variantAnalysisId: number,
+    repositoryId: number,
+  ) {
+    const variantAnalysis =
+      this.variantAnalysisManager.tryGetVariantAnalysis(variantAnalysisId);
+    if (!variantAnalysis) {
+      void this.app.logger.log(
+        `Could not find variant analysis with id ${variantAnalysisId}`,
+      );
+      throw new Error(
+        "There was an error when trying to retrieve variant analysis information",
+      );
+    }
+
+    const repository = variantAnalysis.scannedRepos?.find(
+      (r) => r.repository.id === repositoryId,
+    );
+    if (!repository) {
+      void this.app.logger.log(
+        `Could not find reposiotry with id ${repositoryId} in scanned repos`,
+      );
+      throw new Error(
+        "There was an error when trying to retrieve repository information",
+      );
+    }
+
+    await this.variantAnalysisManager.loadResults(
+      variantAnalysisId,
+      repository.repository.fullName,
     );
   }
 }

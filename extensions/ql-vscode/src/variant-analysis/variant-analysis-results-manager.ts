@@ -12,6 +12,7 @@ import { sarifParser } from "../common/sarif-parser";
 import { extractAnalysisAlerts } from "./sarif-processing";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { extractRawResults } from "./bqrs-processing";
+import { VariantAnalysisRepoStatus } from "./shared/variant-analysis";
 import type {
   VariantAnalysis,
   VariantAnalysisRepositoryTask,
@@ -303,6 +304,28 @@ export class VariantAnalysisResultsManager extends DisposableObject {
         }
       });
     }
+  }
+
+  public getLoadedResultsForVariantAnalysis(
+    variantAnalysis: VariantAnalysis,
+  ): VariantAnalysisScannedRepositoryResult[] {
+    const scannedRepos = variantAnalysis.scannedRepos?.filter(
+      (r) => r.analysisStatus === VariantAnalysisRepoStatus.Succeeded,
+    );
+
+    if (!scannedRepos) {
+      return [];
+    }
+
+    return scannedRepos
+      .map((scannedRepo) =>
+        this.cachedResults.get(
+          createCacheKey(variantAnalysis.id, scannedRepo.repository.fullName),
+        ),
+      )
+      .filter(
+        (r): r is VariantAnalysisScannedRepositoryResult => r !== undefined,
+      );
   }
 
   public dispose(disposeHandler?: DisposeHandler) {
