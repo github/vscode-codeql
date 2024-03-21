@@ -2035,7 +2035,7 @@
     "@types/tmp": "^0.2.6",
     "@types/vscode": "^1.82.0",
     "@types/yauzl": "^2.10.3",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
     "@typescript-eslint/parser": "^6.21.0",
     "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^2.24.0",
