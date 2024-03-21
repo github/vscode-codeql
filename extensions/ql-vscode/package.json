@@ -1956,7 +1956,7 @@
     "@octokit/rest": "^20.0.2",
     "@vscode/codicons": "^0.0.35",
     "@vscode/debugadapter": "^1.59.0",
-    "@vscode/debugprotocol": "^1.59.0",
+    "@vscode/debugprotocol": "^1.65.0",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
     "child-process-promise": "^2.2.1",
