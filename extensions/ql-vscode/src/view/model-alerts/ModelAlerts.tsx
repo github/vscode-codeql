@@ -66,10 +66,6 @@ export function ModelAlerts({
             setVariantAnalysis(msg.variantAnalysis);
             break;
           }
-          case "setReposResults": {
-            setRepoResults(msg.reposResults);
-            break;
-          }
           case "setRepoResults": {
             setRepoResults((oldRepoResults) => {
               const newRepoIds = msg.repoResults.map((r) => r.repositoryId);

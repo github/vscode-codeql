@@ -143,15 +143,15 @@ export class ModelAlertsView extends AbstractWebview<
   }
 
   public async updateReposResults(
-    reposResults: VariantAnalysisScannedRepositoryResult[],
+    repoResults: VariantAnalysisScannedRepositoryResult[],
   ): Promise<void> {
     if (!this.isShowingPanel) {
       return;
     }
 
     await this.postMessage({
-      t: "setReposResults",
-      reposResults,
+      t: "setRepoResults",
+      repoResults,
     });
   }
 

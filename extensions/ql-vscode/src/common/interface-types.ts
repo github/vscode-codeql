@@ -732,11 +732,6 @@ interface SetModelAlertsViewStateMessage {
   viewState: ModelAlertsViewState;
 }
 
-interface SetReposResultsMessage {
-  t: "setReposResults";
-  reposResults: VariantAnalysisScannedRepositoryResult[];
-}
-
 interface OpenModelPackMessage {
   t: "openModelPack";
   path: string;
@@ -754,8 +749,7 @@ interface StopEvaluationRunMessage {
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
   | SetVariantAnalysisMessage
-  | SetRepoResultsMessage
-  | SetReposResultsMessage;
+  | SetRepoResultsMessage;
 
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
