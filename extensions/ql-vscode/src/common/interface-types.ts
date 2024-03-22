@@ -453,8 +453,8 @@ interface AddRepoResultsMessage {
   repoResults: VariantAnalysisScannedRepositoryResult[];
 }
 
-interface SetRepoStatesMessage {
-  t: "setRepoStates";
+interface AddRepoStatesMessage {
+  t: "addRepoStates";
   repoStates: VariantAnalysisScannedRepositoryState[];
 }
 
@@ -498,7 +498,7 @@ export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetFilterSortStateMessage
   | AddRepoResultsMessage
-  | SetRepoStatesMessage;
+  | AddRepoStatesMessage;
 
 export type FromVariantAnalysisMessage =
   | CommonFromViewMessages

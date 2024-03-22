@@ -77,7 +77,7 @@ export class VariantAnalysisView
     }
 
     await this.postMessage({
-      t: "setRepoStates",
+      t: "addRepoStates",
       repoStates: [repoState],
     });
   }
@@ -212,7 +212,7 @@ export class VariantAnalysisView
     }
 
     await this.postMessage({
-      t: "setRepoStates",
+      t: "addRepoStates",
       repoStates,
     });
   }

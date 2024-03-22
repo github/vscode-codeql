@@ -98,7 +98,7 @@ export function VariantAnalysis({
               ...msg.repoResults,
             ];
           });
-        } else if (msg.t === "setRepoStates") {
+        } else if (msg.t === "addRepoStates") {
           setRepoStates((oldRepoStates) => {
             const newRepoIds = msg.repoStates.map((r) => r.repositoryId);
             return [
