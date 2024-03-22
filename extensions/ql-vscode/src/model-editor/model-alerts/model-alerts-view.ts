@@ -116,7 +116,7 @@ export class ModelAlertsView extends AbstractWebview<
     });
   }
 
-  public async updateVariantAnalysis(
+  public async setVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
     if (!this.isShowingPanel) {
