@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { styled } from "styled-components";
+import { ModelAlertsHeader } from "./ModelAlertsHeader";
 import type { ModelAlertsViewState } from "../../model-editor/shared/view-state";
 import type { ToModelAlertsMessage } from "../../common/interface-types";
 import type {
@@ -6,13 +8,22 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../../variant-analysis/shared/variant-analysis";
 import { vscode } from "../vscode-api";
-import { ModelAlertsHeader } from "./ModelAlertsHeader";
+import { ModelAlertsResults } from "./ModelAlertsResults";
+import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
+import { calculateModelAlerts } from "../../model-editor/model-alerts/alert-processor";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
   variantAnalysis?: VariantAnalysis;
   repoResults?: VariantAnalysisScannedRepositoryResult[];
 };
+
+const SectionTitle = styled.h3`
+  font-size: medium;
+  font-weight: 500;
+  margin: 0;
+  padding-bottom: 10px;
+`;
 
 export function ModelAlerts({
   initialViewState,
@@ -55,6 +66,10 @@ export function ModelAlerts({
             setVariantAnalysis(msg.variantAnalysis);
             break;
           }
+          case "setReposResults": {
+            setRepoResults(msg.reposResults);
+            break;
+          }
           case "setRepoResults": {
             setRepoResults((oldRepoResults) => {
               const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
@@ -81,6 +96,16 @@ export function ModelAlerts({
     };
   }, []);
 
+  const modelAlerts = useMemo(() => {
+    if (!repoResults) {
+      return [];
+    }
+
+    const alerts = repoResults.flatMap((a) => a.interpretedResults ?? []);
+
+    return calculateModelAlerts(alerts);
+  }, [repoResults]);
+
   if (viewState === undefined || variantAnalysis === undefined) {
     return <></>;
   }
@@ -105,8 +130,16 @@ export function ModelAlerts({
         stopRunClick={onStopRunClick}
       ></ModelAlertsHeader>
       <div>
-        <h3>Repo results</h3>
-        <p>{JSON.stringify(repoResults, null, 2)}</p>
+        <SectionTitle>Model alerts</SectionTitle>
+        <div>
+          {modelAlerts.map((alerts, i) => (
+            // We're using the index as the key here which is not recommended.
+            // but we don't have a unique identifier for models. In the future,
+            // we may need to consider coming up with unique identifiers for models
+            // and using those as keys.
+            <ModelAlertsResults key={i} modelAlerts={alerts} />
+          ))}
+        </div>
       </div>
     </>
   );

@@ -635,6 +635,17 @@ export class VariantAnalysisManager
     );
   }
 
+  public getLoadedResultsForVariantAnalysis(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    return this.variantAnalysisResultsManager.getLoadedResultsForVariantAnalysis(
+      variantAnalysis,
+    );
+  }
+
   private async variantAnalysisRecordExists(
     variantAnalysisId: number,
   ): Promise<boolean> {

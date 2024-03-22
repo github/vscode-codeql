@@ -48,12 +48,15 @@ export class ModelAlertsView extends AbstractWebview<
       this.onEvaluationRunStopClickedEventEmitter.event;
   }
 
-  public async showView() {
+  public async showView(
+    reposResults: VariantAnalysisScannedRepositoryResult[],
+  ) {
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     await this.setViewState();
+    await this.updateReposResults(reposResults);
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -136,6 +139,19 @@ export class ModelAlertsView extends AbstractWebview<
     await this.postMessage({
       t: "setRepoResults",
       repoResults: [repositoryResult],
+    });
+  }
+
+  public async updateReposResults(
+    reposResults: VariantAnalysisScannedRepositoryResult[],
+  ): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setReposResults",
+      reposResults,
     });
   }
 
