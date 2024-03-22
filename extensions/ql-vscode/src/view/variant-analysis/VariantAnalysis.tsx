@@ -88,7 +88,7 @@ export function VariantAnalysis({
           });
         } else if (msg.t === "setFilterSortState") {
           setFilterSortState(msg.filterSortState);
-        } else if (msg.t === "setRepoResults") {
+        } else if (msg.t === "addRepoResults") {
           setRepoResults((oldRepoResults) => {
             const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
             return [

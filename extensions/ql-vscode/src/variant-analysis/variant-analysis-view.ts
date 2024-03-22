@@ -90,7 +90,7 @@ export class VariantAnalysisView
     }
 
     await this.postMessage({
-      t: "setRepoResults",
+      t: "addRepoResults",
       repoResults: repositoryResult,
     });
   }

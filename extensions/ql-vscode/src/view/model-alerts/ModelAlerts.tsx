@@ -70,7 +70,7 @@ export function ModelAlerts({
             setRepoResults(msg.reposResults);
             break;
           }
-          case "setRepoResults": {
+          case "addRepoResults": {
             setRepoResults((oldRepoResults) => {
               const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
               return [

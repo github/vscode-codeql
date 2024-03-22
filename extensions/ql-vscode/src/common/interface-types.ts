@@ -448,8 +448,8 @@ export type VariantAnalysisState = {
   variantAnalysisId: number;
 };
 
-interface SetRepoResultsMessage {
-  t: "setRepoResults";
+interface AddRepoResultsMessage {
+  t: "addRepoResults";
   repoResults: VariantAnalysisScannedRepositoryResult[];
 }
 
@@ -497,7 +497,7 @@ interface ShowDataFlowPathsMessage {
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetFilterSortStateMessage
-  | SetRepoResultsMessage
+  | AddRepoResultsMessage
   | SetRepoStatesMessage;
 
 export type FromVariantAnalysisMessage =
@@ -754,7 +754,7 @@ interface StopEvaluationRunMessage {
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
   | SetVariantAnalysisMessage
-  | SetRepoResultsMessage
+  | AddRepoResultsMessage
   | SetReposResultsMessage;
 
 export type FromModelAlertsMessage =

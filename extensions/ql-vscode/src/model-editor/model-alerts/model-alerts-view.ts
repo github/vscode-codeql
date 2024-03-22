@@ -137,7 +137,7 @@ export class ModelAlertsView extends AbstractWebview<
     }
 
     await this.postMessage({
-      t: "setRepoResults",
+      t: "addRepoResults",
       repoResults: [repositoryResult],
     });
   }
