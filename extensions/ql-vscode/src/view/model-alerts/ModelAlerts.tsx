@@ -101,9 +101,7 @@ export function ModelAlerts({
       return [];
     }
 
-    const alerts = repoResults
-      .filter((r) => r.interpretedResults !== undefined)
-      .flatMap((a) => a.interpretedResults!);
+    const alerts = repoResults.flatMap((a) => a.interpretedResults ?? []);
 
     return calculateModelAlerts(alerts);
   }, [repoResults]);

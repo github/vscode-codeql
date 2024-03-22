@@ -268,16 +268,15 @@ export class ModelEvaluator extends DisposableObject {
 
     this.push(
       this.variantAnalysisManager.onRepoStatesUpdated(async (e) => {
-        if (e.variantAnalysisId === variantAnalysisId) {
-          if (
-            e.repoState.downloadStatus ===
+        if (
+          e.variantAnalysisId === variantAnalysisId &&
+          e.repoState.downloadStatus ===
             VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
-          ) {
-            await this.readAnalysisResults(
-              variantAnalysisId,
-              e.repoState.repositoryId,
-            );
-          }
+        ) {
+          await this.readAnalysisResults(
+            variantAnalysisId,
+            e.repoState.repositoryId,
+          );
         }
       }),
     );
@@ -311,13 +310,15 @@ export class ModelEvaluator extends DisposableObject {
     );
     if (!repository) {
       void this.app.logger.log(
-        `Could not find reposiotry with id ${repositoryId} in scanned repos`,
+        `Could not find repository with id ${repositoryId} in scanned repos`,
       );
       throw new Error(
         "There was an error when trying to retrieve repository information",
       );
     }
 
+    // Trigger loading the results for the repository. This will trigger a
+    // onRepoResultsLoaded event that we'll process.
     await this.variantAnalysisManager.loadResults(
       variantAnalysisId,
       repository.repository.fullName,
