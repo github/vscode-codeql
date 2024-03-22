@@ -56,7 +56,7 @@ export class ModelAlertsView extends AbstractWebview<
 
     await this.waitForPanelLoaded();
     await this.setViewState();
-    await this.updateReposResults(reposResults);
+    await this.setReposResults(reposResults);
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -142,7 +142,7 @@ export class ModelAlertsView extends AbstractWebview<
     });
   }
 
-  public async updateReposResults(
+  private async setReposResults(
     reposResults: VariantAnalysisScannedRepositoryResult[],
   ): Promise<void> {
     if (!this.isShowingPanel) {
