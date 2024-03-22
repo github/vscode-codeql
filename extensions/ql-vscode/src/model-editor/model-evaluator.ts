@@ -284,7 +284,7 @@ export class ModelEvaluator extends DisposableObject {
     this.push(
       this.variantAnalysisManager.onRepoResultsLoaded(async (e) => {
         if (e.variantAnalysisId === variantAnalysisId) {
-          await this.modelAlertsView?.updateRepoResults(e);
+          await this.modelAlertsView?.addRepoResults(e);
         }
       }),
     );

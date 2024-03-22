@@ -129,7 +129,7 @@ export class ModelAlertsView extends AbstractWebview<
     });
   }
 
-  public async updateRepoResults(
+  public async addRepoResults(
     repositoryResult: VariantAnalysisScannedRepositoryResult,
   ): Promise<void> {
     if (!this.isShowingPanel) {
