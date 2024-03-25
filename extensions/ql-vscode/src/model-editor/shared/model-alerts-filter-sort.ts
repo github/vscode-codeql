@@ -58,7 +58,7 @@ function matchesRepository(
   repositorySearchValue: string,
 ): boolean {
   // We may want to only return alerts that have a repository match
-  // but for now just return any true if the model has any alerts
+  // but for now just return true if the model has any alerts
   // with a matching repo.
 
   return item.alerts.some((alert) =>
