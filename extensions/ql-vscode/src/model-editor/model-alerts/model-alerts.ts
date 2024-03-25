@@ -3,5 +3,11 @@ import type { ModeledMethod } from "../modeled-method";
 
 export interface ModelAlerts {
   model: ModeledMethod;
-  alerts: AnalysisAlert[];
+  alerts: Array<{
+    alert: AnalysisAlert;
+    repository: {
+      id: number;
+      fullName: string;
+    };
+  }>;
 }

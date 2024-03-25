@@ -17,6 +17,14 @@ export const ModelAlertsResults = Template.bind({});
 ModelAlertsResults.args = {
   modelAlerts: {
     model: createSinkModeledMethod(),
-    alerts: [createMockAnalysisAlert()],
+    alerts: [
+      {
+        repository: {
+          id: 1,
+          fullName: "expressjs/express",
+        },
+        alert: createMockAnalysisAlert(),
+      },
+    ],
   },
 };

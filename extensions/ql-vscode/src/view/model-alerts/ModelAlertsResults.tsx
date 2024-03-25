@@ -80,7 +80,7 @@ export const ModelAlertsResults = ({
           <AlertsContainer>
             {modelAlerts.alerts.map((r, i) => (
               <Alert key={i}>
-                <AnalysisAlertResult alert={r} />
+                <AnalysisAlertResult alert={r.alert} />
               </Alert>
             ))}
           </AlertsContainer>
