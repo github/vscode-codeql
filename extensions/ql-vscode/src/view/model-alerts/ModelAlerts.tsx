@@ -11,6 +11,12 @@ import { vscode } from "../vscode-api";
 import { ModelAlertsResults } from "./ModelAlertsResults";
 import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
 import { calculateModelAlerts } from "../../model-editor/model-alerts/alert-processor";
+import { ModelAlertsSearchSortRow } from "./ModelAlertsSearchSortRow";
+import {
+  defaultFilterSortState,
+  filterAndSort,
+} from "../../model-editor/shared/model-alerts-filter-sort";
+import type { ModelAlertsFilterSortState } from "../../model-editor/shared/model-alerts-filter-sort";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
@@ -52,6 +58,9 @@ export function ModelAlerts({
   >(initialVariantAnalysis);
   const [repoResults, setRepoResults] =
     useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
+
+  const [filterSortValue, setFilterSortValue] =
+    useState<ModelAlertsFilterSortState>(defaultFilterSortState);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -97,8 +106,10 @@ export function ModelAlerts({
       return [];
     }
 
-    return calculateModelAlerts(variantAnalysis, repoResults);
-  }, [variantAnalysis, repoResults]);
+    const modelAlerts = calculateModelAlerts(variantAnalysis, repoResults);
+
+    return filterAndSort(modelAlerts, filterSortValue);
+  }, [filterSortValue, variantAnalysis, repoResults]);
 
   if (viewState === undefined || variantAnalysis === undefined) {
     return <></>;
@@ -125,6 +136,10 @@ export function ModelAlerts({
       ></ModelAlertsHeader>
       <div>
         <SectionTitle>Model alerts</SectionTitle>
+        <ModelAlertsSearchSortRow
+          filterSortValue={filterSortValue}
+          onFilterSortChange={setFilterSortValue}
+        />
         <div>
           {modelAlerts.map((alerts, i) => (
             // We're using the index as the key here which is not recommended.
