@@ -93,14 +93,12 @@ export function ModelAlerts({
   }, []);
 
   const modelAlerts = useMemo(() => {
-    if (!repoResults) {
+    if (!repoResults || !variantAnalysis) {
       return [];
     }
 
-    const alerts = repoResults.flatMap((a) => a.interpretedResults ?? []);
-
-    return calculateModelAlerts(alerts);
-  }, [repoResults]);
+    return calculateModelAlerts(variantAnalysis, repoResults);
+  }, [variantAnalysis, repoResults]);
 
   if (viewState === undefined || variantAnalysis === undefined) {
     return <></>;

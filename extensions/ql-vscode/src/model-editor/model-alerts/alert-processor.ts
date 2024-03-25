@@ -2,35 +2,58 @@ import type { AnalysisAlert } from "../../variant-analysis/shared/analysis-resul
 import type { ModeledMethod } from "../modeled-method";
 import { EndpointType } from "../method";
 import type { ModelAlerts } from "./model-alerts";
+import type {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryResult,
+} from "../../variant-analysis/shared/variant-analysis";
 
 /**
  * Calculate which model has contributed to each alert.
  * @param alerts The alerts to process.
+ * @param repoResults The analysis results for each repo.
  * @returns The alerts grouped by modeled method.
  */
-export function calculateModelAlerts(alerts: AnalysisAlert[]): ModelAlerts[] {
-  // Temporary logging to use alerts variable.
-  console.log(`Processing ${alerts.length} alerts`);
-
+export function calculateModelAlerts(
+  variantAnalysis: VariantAnalysis,
+  repoResults: VariantAnalysisScannedRepositoryResult[],
+): ModelAlerts[] {
   // For now we just return some mock data, but once we have provenance information
   // we'll be able to calculate this properly based on the alerts that are passed in
   // and potentially some other information.
-  return [
-    {
-      model: createModeledMethod(),
-      alerts: [createMockAlert()],
-    },
-  ];
+
+  const modelAlerts: ModelAlerts[] = [];
+
+  const repoMap = new Map<number, string>();
+  for (const scannedRepo of variantAnalysis.scannedRepos || []) {
+    repoMap.set(scannedRepo.repository.id, scannedRepo.repository.fullName);
+  }
+
+  for (const [i, repoResult] of repoResults.entries()) {
+    modelAlerts.push({
+      model: createModeledMethod(i.toString()),
+      alerts: [
+        {
+          alert: createMockAlert(),
+          repository: {
+            id: repoResult.repositoryId,
+            fullName: repoMap.get(repoResult.repositoryId) || "",
+          },
+        },
+      ],
+    });
+  }
+
+  return modelAlerts;
 }
 
-function createModeledMethod(): ModeledMethod {
+function createModeledMethod(suffix: string): ModeledMethod {
   return {
     libraryVersion: "1.6.0",
-    signature: "org.sql2o.Connection#createQuery(String)",
+    signature: `org.sql2o.Connection#createQuery${suffix}(String)`,
     endpointType: EndpointType.Method,
     packageName: "org.sql2o",
     typeName: "Connection",
-    methodName: "createQuery",
+    methodName: `createQuery${suffix}`,
     methodParameters: "(String)",
     type: "sink",
     input: "Argument[0]",
