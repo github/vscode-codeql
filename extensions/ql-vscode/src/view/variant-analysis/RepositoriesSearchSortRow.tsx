@@ -6,7 +6,7 @@ import type {
   RepositoriesFilterSortState,
   SortKey,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
-import { RepositoriesSearch } from "./RepositoriesSearch";
+import { SearchBox } from "../common/SearchBox";
 import { RepositoriesSort } from "./RepositoriesSort";
 import { RepositoriesFilter } from "./RepositoriesFilter";
 import { RepositoriesResultFormat } from "./RepositoriesResultFormat";
@@ -29,7 +29,7 @@ const Container = styled.div`
   margin-bottom: 1em;
 `;
 
-const RepositoriesSearchColumn = styled(RepositoriesSearch)`
+const RepositoriesSearchColumn = styled(SearchBox)`
   flex: 3;
 `;
 
@@ -99,6 +99,7 @@ export const RepositoriesSearchSortRow = ({
     <Container>
       <RepositoriesSearchColumn
         value={filterSortValue.searchValue}
+        placeholder="Filter by repository owner/name"
         onChange={handleSearchValueChange}
       />
       <RepositoriesFilterColumn

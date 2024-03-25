@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { styled } from "styled-components";
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
-import { Codicon } from "../common";
+import { Codicon } from "./icon";
 
 const TextField = styled(VSCodeTextField)`
   width: 100%;
@@ -9,12 +9,18 @@ const TextField = styled(VSCodeTextField)`
 
 type Props = {
   value: string;
+  placeholder: string;
   onChange: (value: string) => void;
 
   className?: string;
 };
 
-export const RepositoriesSearch = ({ value, onChange, className }: Props) => {
+export const SearchBox = ({
+  value,
+  placeholder,
+  onChange,
+  className,
+}: Props) => {
   const handleInput = useCallback(
     (e: InputEvent) => {
       const target = e.target as HTMLInputElement;
@@ -26,7 +32,7 @@ export const RepositoriesSearch = ({ value, onChange, className }: Props) => {
 
   return (
     <TextField
-      placeholder="Filter by repository owner/name"
+      placeholder={placeholder}
       value={value}
       onInput={handleInput}
       className={className}
