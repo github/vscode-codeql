@@ -29,17 +29,22 @@ export function calculateModelAlerts(
   }
 
   for (const [i, repoResult] of repoResults.entries()) {
+    const results = repoResult.interpretedResults || [];
+    const repository = {
+      id: repoResult.repositoryId,
+      fullName: repoMap.get(repoResult.repositoryId) || "",
+    };
+
+    const alerts = results.map(() => {
+      return {
+        alert: createMockAlert(),
+        repository,
+      };
+    });
+
     modelAlerts.push({
       model: createModeledMethod(i.toString()),
-      alerts: [
-        {
-          alert: createMockAlert(),
-          repository: {
-            id: repoResult.repositoryId,
-            fullName: repoMap.get(repoResult.repositoryId) || "",
-          },
-        },
-      ],
+      alerts,
     });
   }
 
