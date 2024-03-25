@@ -129,11 +129,6 @@ describe("model alerts filter sort", () => {
 
     const result = filterAndSort(shuffle([...modelAlerts]), filterSortState);
 
-    console.log(
-      "***",
-      result.map((r) => r.model.signature),
-    );
-
     expect(result).toEqual([modelAlerts[2], modelAlerts[0], modelAlerts[1]]);
   });
 
