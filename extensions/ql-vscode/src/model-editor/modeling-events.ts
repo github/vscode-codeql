@@ -2,7 +2,7 @@ import type { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
 import type { AppEvent, AppEventEmitter } from "../common/events";
 import type { DatabaseItem } from "../databases/local-databases";
-import type { Method, Usage } from "./method";
+import type { Method, MethodSignature, Usage } from "./method";
 import type { ModelEvaluationRun } from "./model-evaluation-run";
 import type { ModeledMethod } from "./modeled-method";
 import type { Mode } from "./shared/mode";
@@ -58,7 +58,7 @@ interface ModelEvaluationRunChangedEvent {
 
 interface RevealInModelEditorEvent {
   dbUri: string;
-  method: Method;
+  method: MethodSignature;
 }
 
 interface FocusModelEditorEvent {
@@ -285,7 +285,7 @@ export class ModelingEvents extends DisposableObject {
     });
   }
 
-  public fireRevealInModelEditorEvent(dbUri: string, method: Method) {
+  public fireRevealInModelEditorEvent(dbUri: string, method: MethodSignature) {
     this.onRevealInModelEditorEventEmitter.fire({
       dbUri,
       method,
