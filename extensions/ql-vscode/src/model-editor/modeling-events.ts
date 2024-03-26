@@ -69,6 +69,11 @@ interface FocusModelAlertsViewEvent {
   dbUri: string;
 }
 
+interface RevealInModelAlertsViewEvent {
+  dbUri: string;
+  method: MethodSignature;
+}
+
 export class ModelingEvents extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
   public readonly onDbOpened: AppEvent<DatabaseItem>;
@@ -84,6 +89,7 @@ export class ModelingEvents extends DisposableObject {
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
   public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
   public readonly onFocusModelAlertsView: AppEvent<FocusModelAlertsViewEvent>;
+  public readonly onRevealInModelAlertsView: AppEvent<RevealInModelAlertsViewEvent>;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
   private readonly onDbOpenedEventEmitter: AppEventEmitter<DatabaseItem>;
@@ -99,6 +105,7 @@ export class ModelingEvents extends DisposableObject {
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
   private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
   private readonly onFocusModelAlertsViewEventEmitter: AppEventEmitter<FocusModelAlertsViewEvent>;
+  private readonly onRevealInModelAlertsViewEventEmitter: AppEventEmitter<RevealInModelAlertsViewEvent>;
 
   constructor(app: App) {
     super();
@@ -176,6 +183,12 @@ export class ModelingEvents extends DisposableObject {
       app.createEventEmitter<FocusModelAlertsViewEvent>(),
     );
     this.onFocusModelAlertsView = this.onFocusModelAlertsViewEventEmitter.event;
+
+    this.onRevealInModelAlertsViewEventEmitter = this.push(
+      app.createEventEmitter<RevealInModelAlertsViewEvent>(),
+    );
+    this.onRevealInModelAlertsView =
+      this.onRevealInModelAlertsViewEventEmitter.event;
   }
 
   public fireActiveDbChangedEvent() {
@@ -300,5 +313,12 @@ export class ModelingEvents extends DisposableObject {
 
   public fireFocusModelAlertsViewEvent(dbUri: string) {
     this.onFocusModelAlertsViewEventEmitter.fire({ dbUri });
+  }
+
+  public fireRevealInModelAlertsViewEvent(
+    dbUri: string,
+    method: MethodSignature,
+  ) {
+    this.onRevealInModelAlertsViewEventEmitter.fire({ dbUri, method });
   }
 }
