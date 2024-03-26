@@ -10,7 +10,7 @@ import type {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import type { ErrorLike } from "../common/errors";
 import type { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import type { Method } from "../model-editor/method";
+import type { Method, MethodSignature } from "../model-editor/method";
 import type { ModeledMethod } from "../model-editor/modeled-method";
 import type {
   MethodModelingPanelViewState,
@@ -681,7 +681,7 @@ export type FromModelEditorMessage =
 
 interface RevealInEditorMessage {
   t: "revealInModelEditor";
-  method: Method;
+  method: MethodSignature;
 }
 
 interface StartModelingMessage {
