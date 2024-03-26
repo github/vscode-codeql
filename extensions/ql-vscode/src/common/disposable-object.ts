@@ -88,3 +88,7 @@ export class DisposableObject implements Disposable {
     }
   }
 }
+
+export function isDisposable(obj: unknown): obj is Disposable {
+  return obj !== undefined && typeof (obj as Disposable).dispose === "function";
+}

@@ -1,7 +1,10 @@
-import { appendFile, ensureFile } from "fs-extra";
+import { ensureFile } from "fs-extra";
+import { open } from "node:fs/promises";
+import type { FileHandle } from "node:fs/promises";
 import { isAbsolute } from "path";
 import { getErrorMessage } from "../helpers-pure";
 import type { Logger, LogOptions } from "./logger";
+import type { Disposable } from "../disposable-object";
 
 /**
  * An implementation of {@link Logger} that sends the output both to another {@link Logger}
@@ -10,9 +13,10 @@ import type { Logger, LogOptions } from "./logger";
  * The first time a message is written, an additional banner is written to the underlying logger
  * pointing the user to the "side log" file.
  */
-export class TeeLogger implements Logger {
+export class TeeLogger implements Logger, Disposable {
   private emittedRedirectMessage = false;
   private error = false;
+  private fileHandle: FileHandle | undefined = undefined;
 
   public constructor(
     private readonly logger: Logger,
@@ -37,11 +41,15 @@ export class TeeLogger implements Logger {
 
     if (!this.error) {
       try {
-        const trailingNewline = options.trailingNewline ?? true;
-        await ensureFile(this.location);
+        if (!this.fileHandle) {
+          await ensureFile(this.location);
 
-        await appendFile(
-          this.location,
+          this.fileHandle = await open(this.location, "a");
+        }
+
+        const trailingNewline = options.trailingNewline ?? true;
+
+        await this.fileHandle.appendFile(
           message + (trailingNewline ? "\n" : ""),
           {
             encoding: "utf8",
@@ -50,6 +58,7 @@ export class TeeLogger implements Logger {
       } catch (e) {
         // Write an error message to the primary log, and stop trying to write to the side log.
         this.error = true;
+        this.fileHandle = undefined;
         const errorMessage = getErrorMessage(e);
         await this.logger.log(
           `Error writing to additional log file: ${errorMessage}`,
@@ -64,5 +73,10 @@ export class TeeLogger implements Logger {
 
   show(preserveFocus?: boolean): void {
     this.logger.show(preserveFocus);
+  }
+
+  dispose(): void {
+    void this.fileHandle?.close();
+    this.fileHandle = undefined;
   }
 }
