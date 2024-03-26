@@ -20,6 +20,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../../variant-analysis/shared/variant-analysis";
 import type { AppEvent, AppEventEmitter } from "../../common/events";
+import type { MethodSignature } from "../method";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -102,6 +103,9 @@ export class ModelAlertsView extends AbstractWebview<
       case "stopEvaluationRun":
         await this.stopEvaluationRun();
         break;
+      case "revealInModelEditor":
+        await this.revealInModelEditor(msg.method);
+        break;
       default:
         assertNever(msg);
     }
@@ -179,5 +183,16 @@ export class ModelAlertsView extends AbstractWebview<
 
   private async stopEvaluationRun() {
     this.onEvaluationRunStopClickedEventEmitter.fire();
+  }
+
+  private async revealInModelEditor(method: MethodSignature): Promise<void> {
+    if (!this.dbItem) {
+      return;
+    }
+
+    this.modelingEvents.fireRevealInModelEditorEvent(
+      this.dbItem.databaseUri.toString(),
+      method,
+    );
   }
 }

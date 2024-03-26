@@ -1,12 +1,14 @@
 import { styled } from "styled-components";
 import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
 import { Codicon } from "../common";
-import { useState } from "react";
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
+import { useCallback, useState } from "react";
+import { VSCodeBadge, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import { formatDecimal } from "../../common/number";
 import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
 import { MethodName } from "../model-editor/MethodName";
 import { ModelDetails } from "./ModelDetails";
+import { vscode } from "../vscode-api";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -36,6 +38,11 @@ const ModelTypeText = styled.span`
   color: var(--vscode-descriptionForeground);
 `;
 
+const ViewLink = styled(VSCodeLink)`
+  white-space: nowrap;
+  padding: 0 0 0.25em 1em;
+`;
+
 const ModelDetailsContainer = styled.div`
   padding-top: 10px;
 `;
@@ -59,6 +66,10 @@ export const ModelAlertsResults = ({
   modelAlerts,
 }: Props): React.JSX.Element => {
   const [isExpanded, setExpanded] = useState(true);
+  const viewInModelEditor = useCallback(
+    () => sendRevealInModelEditorMessage(modelAlerts.model),
+    [modelAlerts.model],
+  );
   return (
     <div>
       <TitleContainer onClick={() => setExpanded(!isExpanded)}>
@@ -71,6 +82,7 @@ export const ModelAlertsResults = ({
         <VSCodeBadge>{formatDecimal(modelAlerts.alerts.length)}</VSCodeBadge>
         <MethodName {...modelAlerts.model}></MethodName>
         <ModelTypeText>{modelAlerts.model.type}</ModelTypeText>
+        <ViewLink onClick={viewInModelEditor}>View</ViewLink>
       </TitleContainer>
       {isExpanded && (
         <>
@@ -89,3 +101,10 @@ export const ModelAlertsResults = ({
     </div>
   );
 };
+
+function sendRevealInModelEditorMessage(modeledMethod: ModeledMethod) {
+  vscode.postMessage({
+    t: "revealInModelEditor",
+    method: modeledMethod,
+  });
+}
