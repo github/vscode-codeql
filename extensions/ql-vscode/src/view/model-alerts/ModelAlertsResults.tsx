@@ -8,7 +8,6 @@ import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
 import { MethodName } from "../model-editor/MethodName";
 import { ModelDetails } from "./ModelDetails";
 import { vscode } from "../vscode-api";
-import type { ModeledMethod } from "../../model-editor/modeled-method";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -67,7 +66,11 @@ export const ModelAlertsResults = ({
 }: Props): React.JSX.Element => {
   const [isExpanded, setExpanded] = useState(true);
   const viewInModelEditor = useCallback(
-    () => sendRevealInModelEditorMessage(modelAlerts.model),
+    () =>
+      vscode.postMessage({
+        t: "revealInModelEditor",
+        method: modelAlerts.model,
+      }),
     [modelAlerts.model],
   );
   return (
@@ -101,10 +104,3 @@ export const ModelAlertsResults = ({
     </div>
   );
 };
-
-function sendRevealInModelEditorMessage(modeledMethod: ModeledMethod) {
-  vscode.postMessage({
-    t: "revealInModelEditor",
-    method: modeledMethod,
-  });
-}
