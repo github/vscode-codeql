@@ -10,7 +10,7 @@ function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
 }
 
-export const staticLanguage: ModelsAsDataLanguage = {
+export const staticLanguage = {
   createMethodSignature: ({
     packageName,
     typeName,
@@ -168,4 +168,4 @@ export const staticLanguage: ModelsAsDataLanguage = {
         argumentsList.length > 0 ? argumentsList[0].path : "Argument[this]",
     };
   },
-};
+} satisfies ModelsAsDataLanguage;
