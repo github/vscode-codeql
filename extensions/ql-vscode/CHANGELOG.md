@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add new supported source and sink kinds in the CodeQL Model Editor [#3511](https://github.com/github/vscode-codeql/pull/3511)
+
 ## 1.12.4 - 20 March 2024
 
 - Don't show notification after local query cancellation. [#3489](https://github.com/github/vscode-codeql/pull/3489)
