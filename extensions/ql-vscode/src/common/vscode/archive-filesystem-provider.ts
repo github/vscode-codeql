@@ -242,6 +242,17 @@ export class ArchiveFileSystemProvider implements FileSystemProvider {
 
   root = new Directory("");
 
+  constructor() {
+    // When a file system archive is removed from the workspace, we should
+    // also remove it from our cache.
+    workspace.onDidChangeWorkspaceFolders((event) => {
+      for (const removed of event.removed) {
+        const zipPath = removed.uri.fsPath;
+        this.archives.delete(zipPath);
+      }
+    });
+  }
+
   // metadata
 
   async stat(uri: Uri): Promise<FileStat> {
