@@ -755,4 +755,5 @@ export type FromModelAlertsMessage =
   | CommonFromViewMessages
   | OpenModelPackMessage
   | OpenActionsLogsMessage
-  | StopEvaluationRunMessage;
+  | StopEvaluationRunMessage
+  | RevealInEditorMessage;
