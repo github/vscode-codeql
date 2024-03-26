@@ -125,6 +125,7 @@ export class QueryServerClient extends DisposableObject {
           this.restartQueryServerInternal(progress, token),
         {
           title: "Restarting CodeQL query server due to unexpected termination",
+          cancellable: true,
         },
       );
     } else {

@@ -203,6 +203,7 @@ function getCommands(
       },
       {
         title: "Restarting Query Server",
+        cancellable: true,
       },
     );
 

@@ -673,6 +673,7 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Clearing cache",
+        cancellable: true,
       },
     );
   }
@@ -692,6 +693,7 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Trimming cache",
+        cancellable: true,
       },
     );
   }
