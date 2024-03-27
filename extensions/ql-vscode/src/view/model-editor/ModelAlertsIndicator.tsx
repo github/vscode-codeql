@@ -24,7 +24,7 @@ export const ModelAlertsIndicator = ({
     return null;
   }
 
-  if (!evaluationRun || !modeledMethod) {
+  if (!evaluationRun?.variantAnalysis || !modeledMethod) {
     return null;
   }
 
