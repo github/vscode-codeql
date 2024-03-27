@@ -25,7 +25,7 @@ import { redactableError } from "../common/errors";
 import type { LocalQueries } from "./local-queries";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { isDisposable } from "../common/disposable-object";
+import type { Disposable } from "../common/disposable-object";
 
 function formatResultMessage(result: CoreQueryResults): string {
   switch (result.resultType) {
@@ -66,7 +66,7 @@ export class LocalQueryRun {
      * The logger is only available while the query is running and will be disposed of when the
      * query completes.
      */
-    public readonly logger: Logger, // Public so that other clients, like the debug adapter, know where to send log output
+    public readonly logger: Logger & Disposable, // Public so that other clients, like the debug adapter, know where to send log output
     private readonly queryHistoryManager: QueryHistoryManager,
     private readonly cliServer: CodeQLCliServer,
   ) {}
@@ -98,9 +98,7 @@ export class LocalQueryRun {
     // display and sorting might depend on the number of results
     await this.queryHistoryManager.refreshTreeView();
 
-    if (isDisposable(this.logger)) {
-      this.logger.dispose();
-    }
+    this.logger.dispose();
   }
 
   /**
@@ -120,9 +118,7 @@ export class LocalQueryRun {
     this.queryInfo.failureReason = err.message;
     await this.queryHistoryManager.refreshTreeView();
 
-    if (isDisposable(this.logger)) {
-      this.logger.dispose();
-    }
+    this.logger.dispose();
   }
 
   /**
