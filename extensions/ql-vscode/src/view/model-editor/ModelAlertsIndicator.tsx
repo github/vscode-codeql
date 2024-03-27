@@ -28,8 +28,12 @@ export const ModelAlertsIndicator = ({
     return null;
   }
 
-  const revealInModelAlertsView = () =>
-    sendRevealInModelAlertsViewMessage(modeledMethod);
+  const revealInModelAlertsView = () => {
+    vscode.postMessage({
+      t: "revealInModelAlertsView",
+      modeledMethod,
+    });
+  };
 
   // TODO: Once we have alert provenance, we can show actual alert counts here.
   // For now, we show a random number.
@@ -48,10 +52,3 @@ export const ModelAlertsIndicator = ({
     </ModelAlertsButton>
   );
 };
-
-function sendRevealInModelAlertsViewMessage(modeledMethod: ModeledMethod) {
-  vscode.postMessage({
-    t: "revealInModelAlertsView",
-    modeledMethod,
-  });
-}
