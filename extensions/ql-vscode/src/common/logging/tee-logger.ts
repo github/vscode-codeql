@@ -58,6 +58,13 @@ export class TeeLogger implements Logger, Disposable {
       } catch (e) {
         // Write an error message to the primary log, and stop trying to write to the side log.
         this.error = true;
+        try {
+          await this.fileHandle?.close();
+        } catch (e) {
+          void this.logger.log(
+            `Failed to close file handle: ${getErrorMessage(e)}`,
+          );
+        }
         this.fileHandle = undefined;
         const errorMessage = getErrorMessage(e);
         await this.logger.log(
@@ -76,7 +83,13 @@ export class TeeLogger implements Logger, Disposable {
   }
 
   dispose(): void {
-    void this.fileHandle?.close();
+    try {
+      void this.fileHandle?.close();
+    } catch (e) {
+      void this.logger.log(
+        `Failed to close file handle: ${getErrorMessage(e)}`,
+      );
+    }
     this.fileHandle = undefined;
   }
 }
