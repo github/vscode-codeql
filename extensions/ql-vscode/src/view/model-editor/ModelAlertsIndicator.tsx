@@ -52,6 +52,6 @@ export const ModelAlertsIndicator = ({
 function sendRevealInModelAlertsViewMessage(modeledMethod: ModeledMethod) {
   vscode.postMessage({
     t: "revealInModelAlertsView",
-    method: modeledMethod,
+    modeledMethod,
   });
 }

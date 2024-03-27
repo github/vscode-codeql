@@ -607,7 +607,7 @@ interface OpenModelAlertsViewMessage {
 
 interface RevealInModelAlertsViewMessage {
   t: "revealInModelAlertsView";
-  method: MethodSignature;
+  modeledMethod: ModeledMethod;
 }
 
 interface ModelDependencyMessage {

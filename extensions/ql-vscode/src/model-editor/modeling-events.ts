@@ -71,7 +71,7 @@ interface FocusModelAlertsViewEvent {
 
 interface RevealInModelAlertsViewEvent {
   dbUri: string;
-  method: MethodSignature;
+  modeledMethod: ModeledMethod;
 }
 
 export class ModelingEvents extends DisposableObject {
@@ -317,8 +317,8 @@ export class ModelingEvents extends DisposableObject {
 
   public fireRevealInModelAlertsViewEvent(
     dbUri: string,
-    method: MethodSignature,
+    modeledMethod: ModeledMethod,
   ) {
-    this.onRevealInModelAlertsViewEventEmitter.fire({ dbUri, method });
+    this.onRevealInModelAlertsViewEventEmitter.fire({ dbUri, modeledMethod });
   }
 }

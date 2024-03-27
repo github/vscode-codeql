@@ -385,7 +385,7 @@ export class ModelEditorView extends AbstractWebview<
         await this.modelEvaluator.openModelAlertsView();
         break;
       case "revealInModelAlertsView":
-        await this.modelEvaluator.revealInModelAlertsView(msg.method);
+        await this.modelEvaluator.revealInModelAlertsView(msg.modeledMethod);
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
