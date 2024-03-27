@@ -85,7 +85,14 @@ export const ModelAlertsResults = ({
         <VSCodeBadge>{formatDecimal(modelAlerts.alerts.length)}</VSCodeBadge>
         <MethodName {...modelAlerts.model}></MethodName>
         <ModelTypeText>{modelAlerts.model.type}</ModelTypeText>
-        <ViewLink onClick={viewInModelEditor}>View</ViewLink>
+        <ViewLink
+          onClick={(event: React.MouseEvent) => {
+            event.stopPropagation();
+            viewInModelEditor();
+          }}
+        >
+          View
+        </ViewLink>
       </TitleContainer>
       {isExpanded && (
         <>
