@@ -21,6 +21,7 @@ import type { QlPackDetails } from "../variant-analysis/ql-pack-details";
 import type { App } from "../common/app";
 import { ModelAlertsView } from "./model-alerts/model-alerts-view";
 import type { ExtensionPack } from "./shared/extension-pack";
+import type { ModeledMethod } from "./modeled-method";
 
 export class ModelEvaluator extends DisposableObject {
   // Cancellation token source to allow cancelling of the current run
@@ -156,6 +157,16 @@ export class ModelEvaluator extends DisposableObject {
 
       await this.modelAlertsView.updateVariantAnalysis(variantAnalysis);
     }
+  }
+
+  public async revealInModelAlertsView(modeledMethod: ModeledMethod) {
+    if (!this.modelingStore.isModelAlertsViewOpen(this.dbItem)) {
+      await this.openModelAlertsView();
+    }
+    this.modelingEvents.fireRevealInModelAlertsViewEvent(
+      this.dbItem.databaseUri.toString(),
+      modeledMethod,
+    );
   }
 
   private registerToModelingEvents() {
