@@ -20,6 +20,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../../variant-analysis/shared/variant-analysis";
 import type { AppEvent, AppEventEmitter } from "../../common/events";
+import type { ModeledMethod } from "../modeled-method";
 import type { MethodSignature } from "../method";
 
 export class ModelAlertsView extends AbstractWebview<
@@ -179,6 +180,14 @@ export class ModelAlertsView extends AbstractWebview<
         }
       }),
     );
+
+    this.push(
+      this.modelingEvents.onRevealInModelAlertsView(async (event) => {
+        if (event.dbUri === this.dbItem.databaseUri.toString()) {
+          await this.revealMethod(event.modeledMethod);
+        }
+      }),
+    );
   }
 
   private async stopEvaluationRun() {
@@ -194,5 +203,16 @@ export class ModelAlertsView extends AbstractWebview<
       this.dbItem.databaseUri.toString(),
       method,
     );
+  }
+
+  public async revealMethod(method: ModeledMethod): Promise<void> {
+    const panel = await this.getPanel();
+
+    panel?.reveal();
+
+    await this.postMessage({
+      t: "revealModel",
+      modeledMethod: method,
+    });
   }
 }
