@@ -1,13 +1,15 @@
 import { styled } from "styled-components";
 import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
 import { Codicon } from "../common";
-import { useCallback, useState } from "react";
 import { VSCodeBadge, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { formatDecimal } from "../../common/number";
 import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
 import { MethodName } from "../model-editor/MethodName";
 import { ModelDetails } from "./ModelDetails";
 import { vscode } from "../vscode-api";
+import { createModeledMethodKey } from "../../model-editor/modeled-method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -59,10 +61,12 @@ const Alert = styled.li`
 
 interface Props {
   modelAlerts: ModelAlerts;
+  revealedModel: ModeledMethod | null;
 }
 
 export const ModelAlertsResults = ({
   modelAlerts,
+  revealedModel,
 }: Props): React.JSX.Element => {
   const [isExpanded, setExpanded] = useState(true);
   const viewInModelEditor = useCallback(
@@ -73,6 +77,22 @@ export const ModelAlertsResults = ({
       }),
     [modelAlerts.model],
   );
+
+  const ref = useRef<HTMLElement>();
+
+  useEffect(() => {
+    if (
+      revealedModel &&
+      createModeledMethodKey(modelAlerts.model) ===
+        createModeledMethodKey(revealedModel)
+    ) {
+      ref.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [modelAlerts.model, revealedModel]);
+
   return (
     <div>
       <TitleContainer onClick={() => setExpanded(!isExpanded)}>

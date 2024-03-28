@@ -17,6 +17,7 @@ import {
   filterAndSort,
 } from "../../model-editor/shared/model-alerts-filter-sort";
 import type { ModelAlertsFilterSortState } from "../../model-editor/shared/model-alerts-filter-sort";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
@@ -62,6 +63,10 @@ export function ModelAlerts({
   const [filterSortValue, setFilterSortValue] =
     useState<ModelAlertsFilterSortState>(defaultFilterSortState);
 
+  const [revealedModel, setRevealedModel] = useState<ModeledMethod | null>(
+    null,
+  );
+
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
@@ -85,6 +90,10 @@ export function ModelAlerts({
                 ...msg.repoResults,
               ];
             });
+            break;
+          }
+          case "revealModel": {
+            setRevealedModel(msg.modeledMethod);
             break;
           }
         }
@@ -146,7 +155,11 @@ export function ModelAlerts({
             // but we don't have a unique identifier for models. In the future,
             // we may need to consider coming up with unique identifiers for models
             // and using those as keys.
-            <ModelAlertsResults key={i} modelAlerts={alerts} />
+            <ModelAlertsResults
+              key={i}
+              modelAlerts={alerts}
+              revealedModel={revealedModel}
+            />
           ))}
         </div>
       </div>

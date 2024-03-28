@@ -752,10 +752,16 @@ interface StopEvaluationRunMessage {
   t: "stopEvaluationRun";
 }
 
+interface RevealModelMessage {
+  t: "revealModel";
+  modeledMethod: ModeledMethod;
+}
+
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
   | SetVariantAnalysisMessage
-  | SetRepoResultsMessage;
+  | SetRepoResultsMessage
+  | RevealModelMessage;
 
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
