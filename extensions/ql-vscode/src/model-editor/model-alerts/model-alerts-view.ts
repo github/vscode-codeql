@@ -205,7 +205,7 @@ export class ModelAlertsView extends AbstractWebview<
     );
   }
 
-  public async revealMethod(method: ModeledMethod): Promise<void> {
+  private async revealMethod(method: ModeledMethod): Promise<void> {
     const panel = await this.getPanel();
 
     panel?.reveal();
