@@ -1,6 +1,5 @@
+import { createModeledMethodKey } from "../modeled-method";
 import type { ModeledMethod, NeutralModeledMethod } from "../modeled-method";
-import type { MethodSignature } from "../method";
-import { assertNever } from "../../common/helpers-pure";
 
 export type ModeledMethodValidationError = {
   title: string;
@@ -8,80 +7,6 @@ export type ModeledMethodValidationError = {
   actionText: string;
   index: number;
 };
-
-/**
- * This method will reset any properties which are not used for the specific type of modeled method.
- *
- * It will also set the `provenance` to `manual` since multiple modelings of the same method with a
- * different provenance are not actually different.
- *
- * The returned canonical modeled method should only be used for comparisons. It should not be used
- * for display purposes, saving the model, or any other purpose which requires the original modeled
- * method to be preserved.
- *
- * @param modeledMethod The modeled method to canonicalize
- */
-function canonicalizeModeledMethod(
-  modeledMethod: ModeledMethod,
-): ModeledMethod {
-  const methodSignature: MethodSignature = {
-    endpointType: modeledMethod.endpointType,
-    signature: modeledMethod.signature,
-    packageName: modeledMethod.packageName,
-    typeName: modeledMethod.typeName,
-    methodName: modeledMethod.methodName,
-    methodParameters: modeledMethod.methodParameters,
-  };
-
-  switch (modeledMethod.type) {
-    case "none":
-      return {
-        ...methodSignature,
-        type: "none",
-      };
-    case "source":
-      return {
-        ...methodSignature,
-        type: "source",
-        output: modeledMethod.output,
-        kind: modeledMethod.kind,
-        provenance: "manual",
-      };
-    case "sink":
-      return {
-        ...methodSignature,
-        type: "sink",
-        input: modeledMethod.input,
-        kind: modeledMethod.kind,
-        provenance: "manual",
-      };
-    case "summary":
-      return {
-        ...methodSignature,
-        type: "summary",
-        input: modeledMethod.input,
-        output: modeledMethod.output,
-        kind: modeledMethod.kind,
-        provenance: "manual",
-      };
-    case "neutral":
-      return {
-        ...methodSignature,
-        type: "neutral",
-        kind: modeledMethod.kind,
-        provenance: "manual",
-      };
-    case "type":
-      return {
-        ...methodSignature,
-        type: "type",
-        relatedTypeName: modeledMethod.relatedTypeName,
-        path: modeledMethod.path,
-      };
-    default:
-      assertNever(modeledMethod);
-  }
-}
 
 export function validateModeledMethods(
   modeledMethods: ModeledMethod[],
@@ -97,12 +22,7 @@ export function validateModeledMethods(
   // an error for any duplicates.
   const seenModeledMethods = new Set<string>();
   for (const modeledMethod of consideredModeledMethods) {
-    const canonicalModeledMethod = canonicalizeModeledMethod(modeledMethod);
-    const key = JSON.stringify(
-      canonicalModeledMethod,
-      // This ensures the keys are always in the same order
-      Object.keys(canonicalModeledMethod).sort(),
-    );
+    const key = createModeledMethodKey(modeledMethod);
 
     if (seenModeledMethods.has(key)) {
       result.push({

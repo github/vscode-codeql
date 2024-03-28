@@ -21,6 +21,12 @@ export const dbLoc = join(
   realpathSync(join(__dirname, "../../../")),
   "build/tests/db.zip",
 );
+
+export const testprojLoc = join(
+  realpathSync(join(__dirname, "../../../")),
+  "build/tests/db.testproj",
+);
+
 // eslint-disable-next-line import/no-mutable-exports
 export let storagePath: string;
 
@@ -40,7 +46,7 @@ export async function ensureTestDatabase(
     storagePath,
     cli,
   );
-  const maybeDbItem = await databaseFetcher.importArchiveDatabase(
+  const maybeDbItem = await databaseFetcher.importLocalDatabase(
     uri.toString(true),
     (_p) => {
       /**/

@@ -2,7 +2,7 @@ import type { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
 import type { AppEvent, AppEventEmitter } from "../common/events";
 import type { DatabaseItem } from "../databases/local-databases";
-import type { Method, Usage } from "./method";
+import type { Method, MethodSignature, Usage } from "./method";
 import type { ModelEvaluationRun } from "./model-evaluation-run";
 import type { ModeledMethod } from "./modeled-method";
 import type { Mode } from "./shared/mode";
@@ -58,11 +58,20 @@ interface ModelEvaluationRunChangedEvent {
 
 interface RevealInModelEditorEvent {
   dbUri: string;
-  method: Method;
+  method: MethodSignature;
 }
 
 interface FocusModelEditorEvent {
   dbUri: string;
+}
+
+interface FocusModelAlertsViewEvent {
+  dbUri: string;
+}
+
+interface RevealInModelAlertsViewEvent {
+  dbUri: string;
+  modeledMethod: ModeledMethod;
 }
 
 export class ModelingEvents extends DisposableObject {
@@ -79,6 +88,8 @@ export class ModelingEvents extends DisposableObject {
   public readonly onModelEvaluationRunChanged: AppEvent<ModelEvaluationRunChangedEvent>;
   public readonly onRevealInModelEditor: AppEvent<RevealInModelEditorEvent>;
   public readonly onFocusModelEditor: AppEvent<FocusModelEditorEvent>;
+  public readonly onFocusModelAlertsView: AppEvent<FocusModelAlertsViewEvent>;
+  public readonly onRevealInModelAlertsView: AppEvent<RevealInModelAlertsViewEvent>;
 
   private readonly onActiveDbChangedEventEmitter: AppEventEmitter<void>;
   private readonly onDbOpenedEventEmitter: AppEventEmitter<DatabaseItem>;
@@ -93,6 +104,8 @@ export class ModelingEvents extends DisposableObject {
   private readonly onModelEvaluationRunChangedEventEmitter: AppEventEmitter<ModelEvaluationRunChangedEvent>;
   private readonly onRevealInModelEditorEventEmitter: AppEventEmitter<RevealInModelEditorEvent>;
   private readonly onFocusModelEditorEventEmitter: AppEventEmitter<FocusModelEditorEvent>;
+  private readonly onFocusModelAlertsViewEventEmitter: AppEventEmitter<FocusModelAlertsViewEvent>;
+  private readonly onRevealInModelAlertsViewEventEmitter: AppEventEmitter<RevealInModelAlertsViewEvent>;
 
   constructor(app: App) {
     super();
@@ -165,6 +178,17 @@ export class ModelingEvents extends DisposableObject {
       app.createEventEmitter<FocusModelEditorEvent>(),
     );
     this.onFocusModelEditor = this.onFocusModelEditorEventEmitter.event;
+
+    this.onFocusModelAlertsViewEventEmitter = this.push(
+      app.createEventEmitter<FocusModelAlertsViewEvent>(),
+    );
+    this.onFocusModelAlertsView = this.onFocusModelAlertsViewEventEmitter.event;
+
+    this.onRevealInModelAlertsViewEventEmitter = this.push(
+      app.createEventEmitter<RevealInModelAlertsViewEvent>(),
+    );
+    this.onRevealInModelAlertsView =
+      this.onRevealInModelAlertsViewEventEmitter.event;
   }
 
   public fireActiveDbChangedEvent() {
@@ -274,7 +298,7 @@ export class ModelingEvents extends DisposableObject {
     });
   }
 
-  public fireRevealInModelEditorEvent(dbUri: string, method: Method) {
+  public fireRevealInModelEditorEvent(dbUri: string, method: MethodSignature) {
     this.onRevealInModelEditorEventEmitter.fire({
       dbUri,
       method,
@@ -285,5 +309,16 @@ export class ModelingEvents extends DisposableObject {
     this.onFocusModelEditorEventEmitter.fire({
       dbUri,
     });
+  }
+
+  public fireFocusModelAlertsViewEvent(dbUri: string) {
+    this.onFocusModelAlertsViewEventEmitter.fire({ dbUri });
+  }
+
+  public fireRevealInModelAlertsViewEvent(
+    dbUri: string,
+    modeledMethod: ModeledMethod,
+  ) {
+    this.onRevealInModelAlertsViewEventEmitter.fire({ dbUri, modeledMethod });
   }
 }

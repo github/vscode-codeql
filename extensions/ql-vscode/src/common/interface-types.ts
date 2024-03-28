@@ -10,10 +10,11 @@ import type {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import type { ErrorLike } from "../common/errors";
 import type { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import type { Method } from "../model-editor/method";
+import type { Method, MethodSignature } from "../model-editor/method";
 import type { ModeledMethod } from "../model-editor/modeled-method";
 import type {
   MethodModelingPanelViewState,
+  ModelAlertsViewState,
   ModelEditorViewState,
 } from "../model-editor/shared/view-state";
 import type { Mode } from "../model-editor/shared/mode";
@@ -604,6 +605,11 @@ interface OpenModelAlertsViewMessage {
   t: "openModelAlertsView";
 }
 
+interface RevealInModelAlertsViewMessage {
+  t: "revealInModelAlertsView";
+  modeledMethod: ModeledMethod;
+}
+
 interface ModelDependencyMessage {
   t: "modelDependency";
 }
@@ -676,11 +682,12 @@ export type FromModelEditorMessage =
   | SetMultipleModeledMethodsMessage
   | StartModelEvaluationMessage
   | StopModelEvaluationMessage
-  | OpenModelAlertsViewMessage;
+  | OpenModelAlertsViewMessage
+  | RevealInModelAlertsViewMessage;
 
 interface RevealInEditorMessage {
   t: "revealInModelEditor";
-  method: Method;
+  method: MethodSignature;
 }
 
 interface StartModelingMessage {
@@ -726,10 +733,39 @@ export type ToMethodModelingMessage =
   | SetInProgressMessage
   | SetProcessedByAutoModelMessage;
 
-interface SetModelAlertsMessage {
-  t: "setModelAlerts";
+interface SetModelAlertsViewStateMessage {
+  t: "setModelAlertsViewState";
+  viewState: ModelAlertsViewState;
 }
 
-export type ToModelAlertsMessage = SetModelAlertsMessage;
+interface OpenModelPackMessage {
+  t: "openModelPack";
+  path: string;
+}
 
-export type FromModelAlertsMessage = CommonFromViewMessages;
+interface OpenActionsLogsMessage {
+  t: "openActionsLogs";
+  variantAnalysisId: number;
+}
+
+interface StopEvaluationRunMessage {
+  t: "stopEvaluationRun";
+}
+
+interface RevealModelMessage {
+  t: "revealModel";
+  modeledMethod: ModeledMethod;
+}
+
+export type ToModelAlertsMessage =
+  | SetModelAlertsViewStateMessage
+  | SetVariantAnalysisMessage
+  | SetRepoResultsMessage
+  | RevealModelMessage;
+
+export type FromModelAlertsMessage =
+  | CommonFromViewMessages
+  | OpenModelPackMessage
+  | OpenActionsLogsMessage
+  | StopEvaluationRunMessage
+  | RevealInEditorMessage;

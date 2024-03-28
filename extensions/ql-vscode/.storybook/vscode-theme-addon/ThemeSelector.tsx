@@ -5,10 +5,10 @@ import { useCallback } from "react";
 import { useGlobals } from "@storybook/manager-api";
 import {
   IconButton,
-  Icons,
   TooltipLinkList,
   WithTooltip,
 } from "@storybook/components";
+import { DashboardIcon } from "@storybook/icons";
 
 import { themeNames, VSCodeTheme } from "./theme";
 
@@ -53,7 +53,7 @@ export const ThemeSelector: FunctionComponent = () => {
         title="Change the theme of the preview"
         active={vscodeTheme !== VSCodeTheme.Dark}
       >
-        <Icons icon="dashboard" />
+        <DashboardIcon />
       </IconButton>
     </WithTooltip>
   );

@@ -31,6 +31,7 @@ describe(mapVariantAnalysisFromSubmission.name, () => {
     const result = mapVariantAnalysisFromSubmission(
       mockSubmission,
       mockApiResponse,
+      [],
     );
 
     const {
@@ -54,6 +55,7 @@ describe(mapVariantAnalysisFromSubmission.name, () => {
         text: mockSubmission.query.text,
         kind: "table",
       },
+      modelPacks: [],
       databases: {
         repositories: ["1", "2", "3"],
       },

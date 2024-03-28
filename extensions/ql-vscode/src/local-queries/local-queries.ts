@@ -2,7 +2,10 @@ import type {
   ProgressCallback,
   ProgressUpdate,
 } from "../common/vscode/progress";
-import { withProgress } from "../common/vscode/progress";
+import {
+  UserCancellationException,
+  withProgress,
+} from "../common/vscode/progress";
 import type { CancellationToken, Range, TabInputText } from "vscode";
 import { CancellationTokenSource, Uri, window } from "vscode";
 import {
@@ -292,14 +295,8 @@ export class LocalQueries extends DisposableObject {
 
   private async quickQuery(): Promise<void> {
     await withProgress(
-      async (progress, token) =>
-        displayQuickQuery(
-          this.app,
-          this.cliServer,
-          this.databaseUI,
-          progress,
-          token,
-        ),
+      async (progress) =>
+        displayQuickQuery(this.app, this.cliServer, this.databaseUI, progress),
       {
         title: "Run Quick Query",
       },
@@ -445,7 +442,7 @@ export class LocalQueries extends DisposableObject {
 
     // If no databaseItem is specified, use the database currently selected in the Databases UI
     databaseItem =
-      databaseItem ?? (await this.databaseUI.getDatabaseItem(progress, token));
+      databaseItem ?? (await this.databaseUI.getDatabaseItem(progress));
     if (databaseItem === undefined) {
       throw new Error("Can't run query without a selected database");
     }
@@ -498,7 +495,12 @@ export class LocalQueries extends DisposableObject {
         // to unify both error handling paths.
         const err = asError(e);
         await localQueryRun.fail(err);
-        throw e;
+
+        if (token.isCancellationRequested) {
+          throw new UserCancellationException(err.message, true);
+        } else {
+          throw e;
+        }
       }
     } finally {
       source.dispose();

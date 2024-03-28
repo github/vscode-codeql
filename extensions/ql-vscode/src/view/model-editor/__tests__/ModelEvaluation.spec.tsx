@@ -98,11 +98,32 @@ describe(ModelEvaluation.name, () => {
       expect(screen.queryByText("Stop evaluation")).not.toBeInTheDocument();
     });
 
-    it("renders 'Stop evaluation' button and 'Evaluation run' link when there is an in progress evaluation", () => {
+    it("renders 'Stop evaluation' button when there is an in progress evaluation, but no variant analysis yet", () => {
       render({
         evaluationRun: {
           isPreparing: true,
           variantAnalysis: undefined,
+        },
+      });
+
+      const stopEvaluationButton = screen.queryByText("Stop evaluation");
+      expect(stopEvaluationButton).toBeInTheDocument();
+      expect(
+        stopEvaluationButton?.getElementsByTagName("input")[0],
+      ).toBeEnabled();
+
+      expect(screen.queryByText("Evaluation run")).not.toBeInTheDocument();
+
+      expect(screen.queryByText("Evaluate")).not.toBeInTheDocument();
+    });
+
+    it("renders 'Stop evaluation' button and 'Evaluation run' link when there is an in progress evaluation with variant analysis", () => {
+      render({
+        evaluationRun: {
+          isPreparing: false,
+          variantAnalysis: createMockVariantAnalysis({
+            status: VariantAnalysisStatus.InProgress,
+          }),
         },
       });
 

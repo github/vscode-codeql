@@ -122,6 +122,21 @@ export class VariantAnalysisManager
   public readonly onVariantAnalysisRemoved =
     this._onVariantAnalysisRemoved.event;
 
+  private readonly _onRepoStateUpdated = this.push(
+    new EventEmitter<{
+      variantAnalysisId: number;
+      repoState: VariantAnalysisScannedRepositoryState;
+    }>(),
+  );
+
+  public readonly onRepoStatesUpdated = this._onRepoStateUpdated.event;
+
+  private readonly _onRepoResultsLoaded = this.push(
+    new EventEmitter<VariantAnalysisScannedRepositoryResult>(),
+  );
+
+  public readonly onRepoResultsLoaded = this._onRepoResultsLoaded.event;
+
   private readonly variantAnalysisMonitor: VariantAnalysisMonitor;
   private readonly variantAnalyses = new Map<number, VariantAnalysis>();
   private readonly views = new Map<number, VariantAnalysisView>();
@@ -176,6 +191,8 @@ export class VariantAnalysisManager
       "codeQL.monitorReauthenticatedVariantAnalysis":
         this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
+      "codeQLModelAlerts.openVariantAnalysisLogs":
+        this.openVariantAnalysisLogs.bind(this),
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
         this.runVariantAnalysisFromCommandPalette.bind(this),
@@ -221,42 +238,49 @@ export class VariantAnalysisManager
   }
 
   public async runVariantAnalysisFromPublishedPack(): Promise<void> {
-    return withProgress(async (progress, token) => {
-      progress({
-        maxStep: 7,
-        step: 0,
-        message: "Determining query language",
-      });
+    return withProgress(
+      async (progress, token) => {
+        progress({
+          maxStep: 7,
+          step: 0,
+          message: "Determining query language",
+        });
 
-      const language = await askForLanguage(this.cliServer);
-      if (!language) {
-        return;
-      }
+        const language = await askForLanguage(this.cliServer, true, token);
+        if (!language) {
+          return;
+        }
 
-      progress({
-        maxStep: 7,
-        step: 2,
-        message: "Downloading query pack and resolving queries",
-      });
+        progress({
+          maxStep: 7,
+          step: 2,
+          message: "Downloading query pack and resolving queries",
+        });
 
-      // Build up details to pass to the functions that run the variant analysis.
-      const qlPackDetails = await resolveCodeScanningQueryPack(
-        this.app.logger,
-        this.cliServer,
-        language,
-      );
+        // Build up details to pass to the functions that run the variant analysis.
+        const qlPackDetails = await resolveCodeScanningQueryPack(
+          this.app.logger,
+          this.cliServer,
+          language,
+          token,
+        );
 
-      await this.runVariantAnalysis(
-        qlPackDetails,
-        (p) =>
-          progress({
-            ...p,
-            maxStep: p.maxStep + 3,
-            step: p.step + 3,
-          }),
-        token,
-      );
-    });
+        await this.runVariantAnalysis(
+          qlPackDetails,
+          (p) =>
+            progress({
+              ...p,
+              maxStep: p.maxStep + 3,
+              step: p.step + 3,
+            }),
+          token,
+        );
+      },
+      {
+        title: "Run Variant Analysis",
+        cancellable: true,
+      },
+    );
   }
 
   private async runVariantAnalysisCommand(queryFiles: Uri[]): Promise<void> {
@@ -343,6 +367,7 @@ export class VariantAnalysisManager
     const {
       actionBranch,
       base64Pack,
+      modelPacks,
       repoSelection,
       controllerRepo,
       queryStartTime,
@@ -403,6 +428,7 @@ export class VariantAnalysisManager
     const mappedVariantAnalysis = mapVariantAnalysisFromSubmission(
       variantAnalysisSubmission,
       variantAnalysisResponse,
+      modelPacks,
     );
 
     await this.onVariantAnalysisSubmitted(mappedVariantAnalysis);
@@ -609,6 +635,17 @@ export class VariantAnalysisManager
     );
   }
 
+  public getLoadedResultsForVariantAnalysis(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    return this.variantAnalysisResultsManager.getLoadedResultsForVariantAnalysis(
+      variantAnalysis,
+    );
+  }
+
   private async variantAnalysisRecordExists(
     variantAnalysisId: number,
   ): Promise<boolean> {
@@ -676,6 +713,8 @@ export class VariantAnalysisManager
     await this.getView(
       repositoryResult.variantAnalysisId,
     )?.sendRepositoryResults([repositoryResult]);
+
+    this._onRepoResultsLoaded.fire(repositoryResult);
   }
 
   private async onRepoStateUpdated(
@@ -691,6 +730,8 @@ export class VariantAnalysisManager
     }
 
     repoStates[repoState.repositoryId] = repoState;
+
+    this._onRepoStateUpdated.fire({ variantAnalysisId, repoState });
   }
 
   private async onDidChangeSessions(

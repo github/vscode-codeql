@@ -36,6 +36,7 @@ import type { Position } from "../query-server/messages";
 import { LOGGING_FLAGS } from "./cli-command";
 import type { CliFeatures, VersionAndFeatures } from "./cli-version";
 import { ExitCodeError, getCliError } from "./cli-errors";
+import { UserCancellationException } from "../common/vscode/progress";
 
 /**
  * The version of the SARIF format that we are using.
@@ -217,6 +218,37 @@ type VersionChangedListener = (
   newVersionAndFeatures: VersionAndFeatures | undefined,
 ) => void;
 
+type RunOptions = {
+  /**
+   * Used to output progress messages, e.g. to the status bar.
+   */
+  progressReporter?: ProgressReporter;
+  /**
+   * Used for responding to interactive output on stdout/stdin.
+   */
+  onLine?: OnLineCallback;
+  /**
+   * If true, don't print logs to the CodeQL extension log.
+   */
+  silent?: boolean;
+  /**
+   * If true, run this command in a new process rather than in the CLI server.
+   */
+  runInNewProcess?: boolean;
+  /**
+   * If runInNewProcess is true, allows cancelling the command. If runInNewProcess
+   * is false or not specified, this option is ignored.
+   */
+  token?: CancellationToken;
+};
+
+type JsonRunOptions = RunOptions & {
+  /**
+   * Whether to add commandline arguments to specify the format as JSON.
+   */
+  addFormat?: boolean;
+};
+
 /**
  * This class manages a cli server started by `codeql execute cli-server` to
  * run commands without the overhead of starting a new java
@@ -369,9 +401,6 @@ export class CodeQLCliServer implements Disposable {
     onLine?: OnLineCallback,
     silent?: boolean,
   ): Promise<string> {
-    const stderrBuffers: Buffer[] = [];
-    // The current buffer of stderr of a single line. To be used for logging.
-    let currentLineStderrBuffer: Buffer = Buffer.alloc(0);
     if (this.commandInProcess) {
       throw new Error("runCodeQlCliInternal called while cli was running");
     }
@@ -383,8 +412,6 @@ export class CodeQLCliServer implements Disposable {
       }
       // Grab the process so that typescript know that it is always defined.
       const process = this.process;
-      // The array of fragments of stdout
-      const stdoutBuffers: Buffer[] = [];
 
       // Compute the full args array
       const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
@@ -396,26 +423,160 @@ export class CodeQLCliServer implements Disposable {
         );
       }
       try {
-        await new Promise<void>((resolve, reject) => {
-          // Start listening to stdout
-          process.stdout.addListener("data", (newData: Buffer) => {
-            if (onLine) {
-              void (async () => {
-                const response = await onLine(newData.toString("utf-8"));
+        return await this.handleProcessOutput(process, {
+          handleNullTerminator: true,
+          onListenStart: (process) => {
+            // Write the command followed by a null terminator.
+            process.stdin.write(JSON.stringify(args), "utf8");
+            process.stdin.write(this.nullBuffer);
+          },
+          description,
+          args,
+          silent,
+          onLine,
+        });
+      } catch (err) {
+        // Kill the process if it isn't already dead.
+        this.killProcessIfRunning();
 
-                if (!response) {
-                  return;
-                }
+        throw err;
+      }
+    } finally {
+      this.commandInProcess = false;
+      // start running the next command immediately
+      this.runNext();
+    }
+  }
 
-                process.stdin.write(`${response}${EOL}`);
+  private async runCodeQlCliInNewProcess(
+    command: string[],
+    commandArgs: string[],
+    description: string,
+    onLine?: OnLineCallback,
+    silent?: boolean,
+    token?: CancellationToken,
+  ): Promise<string> {
+    const codeqlPath = await this.getCodeQlPath();
 
-                // Remove newData from stdoutBuffers because the data has been consumed
-                // by the onLine callback.
-                stdoutBuffers.splice(stdoutBuffers.indexOf(newData), 1);
-              })();
-            }
+    const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
+    const argsString = args.join(" ");
 
-            stdoutBuffers.push(newData);
+    // If we are running silently, we don't want to print anything to the console.
+    if (!silent) {
+      void this.logger.log(`${description} using CodeQL CLI: ${argsString}...`);
+    }
+
+    const abortController = new AbortController();
+
+    const process = spawnChildProcess(codeqlPath, args, {
+      signal: abortController.signal,
+    });
+    if (!process || !process.pid) {
+      throw new Error(
+        `Failed to start ${description} using command ${codeqlPath} ${argsString}.`,
+      );
+    }
+
+    // We need to ensure that we're not killing the same process twice (since this may kill
+    // another process with the same PID), so keep track of whether we've already exited.
+    let exited = false;
+    process.on("exit", () => {
+      exited = true;
+    });
+
+    const cancellationRegistration = token?.onCancellationRequested((_e) => {
+      abortController.abort("Token was cancelled.");
+      if (process.pid && !exited) {
+        tk(process.pid);
+      }
+    });
+
+    try {
+      return await this.handleProcessOutput(process, {
+        handleNullTerminator: false,
+        description,
+        args,
+        silent,
+        onLine,
+      });
+    } catch (e) {
+      // If cancellation was requested, the error is probably just because the process was exited with SIGTERM.
+      if (token?.isCancellationRequested) {
+        void this.logger.log(
+          `The process was cancelled and exited with: ${getErrorMessage(e)}`,
+        );
+        throw new UserCancellationException(
+          `Command ${argsString} was cancelled.`,
+          true, // Don't show a warning message when the user manually cancelled the command.
+        );
+      }
+
+      throw e;
+    } finally {
+      process.stdin.end();
+      if (!exited) {
+        tk(process.pid);
+      }
+      process.stdout.destroy();
+      process.stderr.destroy();
+
+      cancellationRegistration?.dispose();
+    }
+  }
+
+  private async handleProcessOutput(
+    process: ChildProcessWithoutNullStreams,
+    {
+      handleNullTerminator,
+      args,
+      description,
+      onLine,
+      onListenStart,
+      silent,
+    }: {
+      handleNullTerminator: boolean;
+      args: string[];
+      description: string;
+      onLine?: OnLineCallback;
+      onListenStart?: (process: ChildProcessWithoutNullStreams) => void;
+      silent?: boolean;
+    },
+  ): Promise<string> {
+    const stderrBuffers: Buffer[] = [];
+    // The current buffer of stderr of a single line. To be used for logging.
+    let currentLineStderrBuffer: Buffer = Buffer.alloc(0);
+
+    // The listeners of the process. Declared here so they can be removed in the finally block.
+    let stdoutListener: ((newData: Buffer) => void) | undefined = undefined;
+    let stderrListener: ((newData: Buffer) => void) | undefined = undefined;
+    let closeListener: ((code: number | null) => void) | undefined = undefined;
+    let errorListener: ((err: Error) => void) | undefined = undefined;
+
+    try {
+      // The array of fragments of stdout
+      const stdoutBuffers: Buffer[] = [];
+
+      await new Promise<void>((resolve, reject) => {
+        stdoutListener = (newData: Buffer) => {
+          if (onLine) {
+            void (async () => {
+              const response = await onLine(newData.toString("utf-8"));
+
+              if (!response) {
+                return;
+              }
+
+              process.stdin.write(`${response}${EOL}`);
+
+              // Remove newData from stdoutBuffers because the data has been consumed
+              // by the onLine callback.
+              stdoutBuffers.splice(stdoutBuffers.indexOf(newData), 1);
+            })();
+          }
+
+          stdoutBuffers.push(newData);
+
+          if (handleNullTerminator) {
             // If the buffer ends in '0' then exit.
             // We don't have to check the middle as no output will be written after the null until
             // the next command starts
@@ -425,89 +586,112 @@ export class CodeQLCliServer implements Disposable {
             ) {
               resolve();
             }
-          });
-          // Listen to stderr
-          process.stderr.addListener("data", (newData: Buffer) => {
-            stderrBuffers.push(newData);
+          }
+        };
+        stderrListener = (newData: Buffer) => {
+          stderrBuffers.push(newData);
 
-            if (!silent) {
-              currentLineStderrBuffer = Buffer.concat([
-                currentLineStderrBuffer,
-                newData,
-              ]);
+          if (!silent) {
+            currentLineStderrBuffer = Buffer.concat([
+              currentLineStderrBuffer,
+              newData,
+            ]);
 
-              // Print the stderr to the logger as it comes in. We need to ensure that
-              // we don't split messages on the same line, so we buffer the stderr and
-              // split it on EOLs.
-              const eolBuffer = Buffer.from(EOL);
+            // Print the stderr to the logger as it comes in. We need to ensure that
+            // we don't split messages on the same line, so we buffer the stderr and
+            // split it on EOLs.
+            const eolBuffer = Buffer.from(EOL);
 
-              let hasCreatedSubarray = false;
+            let hasCreatedSubarray = false;
 
-              let eolIndex;
-              while (
-                (eolIndex = currentLineStderrBuffer.indexOf(eolBuffer)) !== -1
-              ) {
-                const line = currentLineStderrBuffer.subarray(0, eolIndex);
-                void this.logger.log(line.toString("utf-8"));
-                currentLineStderrBuffer = currentLineStderrBuffer.subarray(
-                  eolIndex + eolBuffer.length,
-                );
-                hasCreatedSubarray = true;
-              }
-
-              // We have created a subarray, which means that the complete original buffer is now referenced
-              // by the subarray. We need to create a new buffer to avoid memory leaks.
-              if (hasCreatedSubarray) {
-                currentLineStderrBuffer = Buffer.from(currentLineStderrBuffer);
-              }
+            let eolIndex;
+            while (
+              (eolIndex = currentLineStderrBuffer.indexOf(eolBuffer)) !== -1
+            ) {
+              const line = currentLineStderrBuffer.subarray(0, eolIndex);
+              void this.logger.log(line.toString("utf-8"));
+              currentLineStderrBuffer = currentLineStderrBuffer.subarray(
+                eolIndex + eolBuffer.length,
+              );
+              hasCreatedSubarray = true;
             }
-          });
-          // Listen for process exit.
-          process.addListener("close", (code) =>
-            reject(new ExitCodeError(code)),
-          );
-          // Write the command followed by a null terminator.
-          process.stdin.write(JSON.stringify(args), "utf8");
-          process.stdin.write(this.nullBuffer);
-        });
-        // Join all the data together
-        const fullBuffer = Buffer.concat(stdoutBuffers);
-        // Make sure we remove the terminator;
-        const data = fullBuffer.toString("utf8", 0, fullBuffer.length - 1);
-        if (!silent) {
-          void this.logger.log(currentLineStderrBuffer.toString("utf8"));
-          currentLineStderrBuffer = Buffer.alloc(0);
-          void this.logger.log("CLI command succeeded.");
-        }
-        return data;
-      } catch (err) {
-        // Kill the process if it isn't already dead.
-        this.killProcessIfRunning();
 
-        // Report the error (if there is a stderr then use that otherwise just report the error code or nodejs error)
-        const cliError = getCliError(
-          err,
-          stderrBuffers.length > 0
-            ? Buffer.concat(stderrBuffers).toString("utf8")
-            : undefined,
-          description,
-          args,
-        );
-        cliError.stack += getErrorStack(err);
-        throw cliError;
-      } finally {
-        if (!silent && currentLineStderrBuffer.length > 0) {
-          void this.logger.log(currentLineStderrBuffer.toString("utf8"));
-        }
-        // Remove the listeners we set up.
-        process.stdout.removeAllListeners("data");
-        process.stderr.removeAllListeners("data");
-        process.removeAllListeners("close");
+            // We have created a subarray, which means that the complete original buffer is now referenced
+            // by the subarray. We need to create a new buffer to avoid memory leaks.
+            if (hasCreatedSubarray) {
+              currentLineStderrBuffer = Buffer.from(currentLineStderrBuffer);
+            }
+          }
+        };
+        closeListener = (code) => {
+          if (handleNullTerminator) {
+            reject(new ExitCodeError(code));
+          } else {
+            if (code === 0) {
+              resolve();
+            } else {
+              reject(new ExitCodeError(code));
+            }
+          }
+        };
+        errorListener = (err) => {
+          reject(err);
+        };
+
+        // Start listening to stdout
+        process.stdout.addListener("data", stdoutListener);
+        // Listen to stderr
+        process.stderr.addListener("data", stderrListener);
+        // Listen for process exit.
+        process.addListener("close", closeListener);
+        // Listen for errors
+        process.addListener("error", errorListener);
+
+        onListenStart?.(process);
+      });
+      // Join all the data together
+      const fullBuffer = Buffer.concat(stdoutBuffers);
+      // Make sure we remove the terminator
+      const data = fullBuffer.toString(
+        "utf8",
+        0,
+        handleNullTerminator ? fullBuffer.length - 1 : fullBuffer.length,
+      );
+      if (!silent) {
+        void this.logger.log(currentLineStderrBuffer.toString("utf8"));
+        currentLineStderrBuffer = Buffer.alloc(0);
+        void this.logger.log("CLI command succeeded.");
       }
+      return data;
+    } catch (err) {
+      // Report the error (if there is a stderr then use that otherwise just report the error code or nodejs error)
+      const cliError = getCliError(
+        err,
+        stderrBuffers.length > 0
+          ? Buffer.concat(stderrBuffers).toString("utf8")
+          : undefined,
+        description,
+        args,
+      );
+      cliError.stack += getErrorStack(err);
+      throw cliError;
     } finally {
-      this.commandInProcess = false;
-      // start running the next command immediately
-      this.runNext();
+      if (!silent && currentLineStderrBuffer.length > 0) {
+        void this.logger.log(currentLineStderrBuffer.toString("utf8"));
+      }
+      // Remove the listeners we set up.
+      if (stdoutListener) {
+        process.stdout.removeListener("data", stdoutListener);
+      }
+      if (stderrListener) {
+        process.stderr.removeListener("data", stderrListener);
+      }
+      if (closeListener) {
+        process.removeListener("close", closeListener);
+      }
+      if (errorListener) {
+        process.removeListener("error", errorListener);
+      }
     }
   }
 
@@ -624,6 +808,10 @@ export class CodeQLCliServer implements Disposable {
    * @param description Description of the action being run, to be shown in log and error messages.
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
    * @param onLine Used for responding to interactive output on stdout/stdin.
+   * @param silent If true, don't print logs to the CodeQL extension log.
+   * @param runInNewProcess If true, run this command in a new process rather than in the CLI server.
+   * @param token If runInNewProcess is true, allows cancelling the command. If runInNewProcess
+   *              is false or not specified, this option is ignored.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   runCodeQlCliCommand(
@@ -634,14 +822,23 @@ export class CodeQLCliServer implements Disposable {
       progressReporter,
       onLine,
       silent = false,
-    }: {
-      progressReporter?: ProgressReporter;
-      onLine?: OnLineCallback;
-      silent?: boolean;
-    } = {},
+      runInNewProcess = false,
+      token,
+    }: RunOptions = {},
   ): Promise<string> {
     if (progressReporter) {
       progressReporter.report({ message: description });
+    }
+
+    if (runInNewProcess) {
+      return this.runCodeQlCliInNewProcess(
+        command,
+        commandArgs,
+        description,
+        onLine,
+        silent,
+        token,
+      );
     }
 
     return new Promise((resolve, reject) => {
@@ -676,24 +873,13 @@ export class CodeQLCliServer implements Disposable {
    * @param description Description of the action being run, to be shown in log and error messages.
    * @param addFormat Whether or not to add commandline arguments to specify the format as JSON.
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
-   * @param onLine Used for responding to interactive output on stdout/stdin.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   async runJsonCodeQlCliCommand<OutputType>(
     command: string[],
     commandArgs: string[],
     description: string,
-    {
-      addFormat = true,
-      progressReporter,
-      onLine,
-      silent = false,
-    }: {
-      addFormat?: boolean;
-      progressReporter?: ProgressReporter;
-      onLine?: OnLineCallback;
-      silent?: boolean;
-    } = {},
+    { addFormat = true, ...runOptions }: JsonRunOptions = {},
   ): Promise<OutputType> {
     let args: string[] = [];
     if (addFormat) {
@@ -701,11 +887,12 @@ export class CodeQLCliServer implements Disposable {
       args = args.concat(["--format", "json"]);
     }
     args = args.concat(commandArgs);
-    const result = await this.runCodeQlCliCommand(command, args, description, {
-      progressReporter,
-      onLine,
-      silent,
-    });
+    const result = await this.runCodeQlCliCommand(
+      command,
+      args,
+      description,
+      runOptions,
+    );
     try {
       return JSON.parse(result) as OutputType;
     } catch (err) {
@@ -733,21 +920,14 @@ export class CodeQLCliServer implements Disposable {
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
    * @param description Description of the action being run, to be shown in log and error messages.
-   * @param addFormat Whether or not to add commandline arguments to specify the format as JSON.
-   * @param progressReporter Used to output progress messages, e.g. to the status bar.
+   * @param runOptions Options for running the command.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   async runJsonCodeQlCliCommandWithAuthentication<OutputType>(
     command: string[],
     commandArgs: string[],
     description: string,
-    {
-      addFormat,
-      progressReporter,
-    }: {
-      addFormat?: boolean;
-      progressReporter?: ProgressReporter;
-    } = {},
+    runOptions: Omit<JsonRunOptions, "onLine"> = {},
   ): Promise<OutputType> {
     const accessToken = await this.app.credentials.getExistingAccessToken();
 
@@ -758,8 +938,7 @@ export class CodeQLCliServer implements Disposable {
       [...extraArgs, ...commandArgs],
       description,
       {
-        addFormat,
-        progressReporter,
+        ...runOptions,
         onLine: async (line) => {
           if (line.startsWith("Enter value for --github-auth-stdin")) {
             try {
@@ -1432,12 +1611,20 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Downloads a specified pack.
    * @param packs The `<package-scope/name[@version]>` of the packs to download.
+   * @param token The cancellation token. If not specified, the command will be run in the CLI server.
    */
-  async packDownload(packs: string[]): Promise<PackDownloadResult> {
+  async packDownload(
+    packs: string[],
+    token?: CancellationToken,
+  ): Promise<PackDownloadResult> {
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "download"],
       packs,
       "Downloading packs",
+      {
+        runInNewProcess: !!token, // Only run in a new process if a token is provided
+        token,
+      },
     );
   }
 
@@ -1473,6 +1660,7 @@ export class CodeQLCliServer implements Disposable {
    * @param outputBundleFile The path to the output bundle file.
    * @param outputPackDir The directory to contain the unbundled output pack.
    * @param moreOptions Additional options to be passed to `codeql pack bundle`.
+   * @param token Cancellation token for the operation.
    */
   async packBundle(
     sourcePackDir: string,
@@ -1480,6 +1668,7 @@ export class CodeQLCliServer implements Disposable {
     outputBundleFile: string,
     outputPackDir: string,
     moreOptions: string[],
+    token?: CancellationToken,
   ): Promise<void> {
     const args = [
       "-o",
@@ -1495,6 +1684,10 @@ export class CodeQLCliServer implements Disposable {
       ["pack", "bundle"],
       args,
       "Bundling pack",
+      {
+        runInNewProcess: true,
+        token,
+      },
     );
   }
 

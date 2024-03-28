@@ -1,10 +1,11 @@
+import { styled } from "styled-components";
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-evaluation-run-state";
 import { ModelEditorProgressRing } from "./ModelEditorProgressRing";
-import { LinkIconButton } from "../variant-analysis/LinkIconButton";
+import { LinkIconButton } from "../common/LinkIconButton";
 
 export type Props = {
   viewState: ModelEditorViewState;
@@ -15,6 +16,11 @@ export type Props = {
   openModelAlertsView: () => void;
   evaluationRun: ModelEvaluationRunState | undefined;
 };
+
+const RunLink = styled(VSCodeLink)`
+  display: flex;
+  align-items: center;
+`;
 
 export const ModelEvaluation = ({
   viewState,
@@ -34,7 +40,8 @@ export const ModelEvaluation = ({
 
   const shouldShowStopButton = !shouldShowEvaluateButton;
 
-  const shouldShowEvaluationRunLink = !!evaluationRun;
+  const shouldShowEvaluationRunLink =
+    !!evaluationRun && evaluationRun.variantAnalysis;
 
   const customModelsExist = Object.values(modeledMethods).some(
     (methods) => methods.filter((m) => m.type !== "none").length > 0,
@@ -60,12 +67,12 @@ export const ModelEvaluation = ({
         </VSCodeButton>
       )}
       {shouldShowEvaluationRunLink && (
-        <VSCodeLink>
+        <RunLink>
           <LinkIconButton onClick={openModelAlertsView}>
             <span slot="end" className="codicon codicon-link-external"></span>
             Evaluation run
           </LinkIconButton>
-        </VSCodeLink>
+        </RunLink>
       )}
     </>
   );

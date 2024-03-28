@@ -13,6 +13,8 @@ import { tmpDir } from "../../tmp-dir";
 import type { WebviewMessage, WebviewKind } from "./webview-html";
 import { getHtmlForWebview } from "./webview-html";
 import type { DeepReadonly } from "../readonly";
+import { runWithErrorHandling } from "./error-handling";
+import { telemetryListener } from "./telemetry";
 
 export type WebviewPanelConfig = {
   viewId: string;
@@ -117,7 +119,12 @@ export abstract class AbstractWebview<
     );
     this.push(
       panel.webview.onDidReceiveMessage(
-        async (e) => this.onMessage(e),
+        async (e) =>
+          runWithErrorHandling(
+            () => this.onMessage(e),
+            this.app.logger,
+            telemetryListener,
+          ),
         undefined,
       ),
     );

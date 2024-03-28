@@ -3,18 +3,10 @@ import { commands } from "vscode";
 import type { CommandFunction } from "../../packages/commands";
 import { CommandManager } from "../../packages/commands";
 import type { NotificationLogger } from "../logging";
-import {
-  showAndLogWarningMessage,
-  showAndLogExceptionWithTelemetry,
-} from "../logging";
 import { extLogger } from "../logging/vscode";
-import { asError, getErrorMessage } from "../../common/helpers-pure";
-import { redactableError } from "../../common/errors";
-import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
 import type { AppTelemetry } from "../telemetry";
-import { CliError } from "../../codeql-cli/cli-errors";
-import { EOL } from "os";
+import { runWithErrorHandling } from "./error-handling";
 
 /**
  * Create a command manager for VSCode, wrapping registerCommandWithErrorHandling
@@ -48,50 +40,9 @@ export function registerCommandWithErrorHandling<
   logger: NotificationLogger = extLogger,
   telemetry: AppTelemetry | undefined = telemetryListener,
 ): Disposable {
-  return commands.registerCommand(commandId, async (...args: Parameters<T>) => {
-    const startTime = Date.now();
-    let error: Error | undefined;
-
-    try {
-      return await task(...args);
-    } catch (e) {
-      error = asError(e);
-      const errorMessage = redactableError(error)`${
-        getErrorMessage(e) || e
-      } (${commandId})`;
-      if (e instanceof UserCancellationException) {
-        // User has cancelled this action manually
-        if (e.silent) {
-          void logger.log(errorMessage.fullMessage);
-        } else {
-          void showAndLogWarningMessage(logger, errorMessage.fullMessage);
-        }
-      } else if (e instanceof CliError) {
-        const fullMessage = `${e.commandDescription} failed with args:${EOL}    ${e.commandArgs.join(" ")}${EOL}${
-          e.stderr ?? e.cause
-        }`;
-        void showAndLogExceptionWithTelemetry(logger, telemetry, errorMessage, {
-          fullMessage,
-          extraTelemetryProperties: {
-            command: commandId,
-          },
-        });
-      } else {
-        // Include the full stack in the error log only.
-        const fullMessage = errorMessage.fullMessageWithStack;
-        void showAndLogExceptionWithTelemetry(logger, telemetry, errorMessage, {
-          fullMessage,
-          extraTelemetryProperties: {
-            command: commandId,
-          },
-        });
-      }
-      return undefined;
-    } finally {
-      const executionTime = Date.now() - startTime;
-      telemetryListener?.sendCommandUsage(commandId, executionTime, error);
-    }
-  });
+  return commands.registerCommand(commandId, async (...args: Parameters<T>) =>
+    runWithErrorHandling(task, logger, telemetry, commandId, ...args),
+  );
 }
 
 /**

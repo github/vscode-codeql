@@ -1,3 +1,4 @@
+import type { ModelPackDetails } from "../common/model-pack-details";
 import type {
   VariantAnalysis as ApiVariantAnalysis,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
@@ -26,6 +27,7 @@ import {
 export function mapVariantAnalysisFromSubmission(
   submission: VariantAnalysisSubmission,
   apiVariantAnalysis: ApiVariantAnalysis,
+  modelPacks: ModelPackDetails[],
 ): VariantAnalysis {
   return mapVariantAnalysis(
     {
@@ -37,6 +39,7 @@ export function mapVariantAnalysisFromSubmission(
         kind: submission.query.kind,
       },
       queries: submission.queries,
+      modelPacks,
       databases: submission.databases,
       executionStartTime: submission.startTime,
     },
@@ -59,7 +62,12 @@ export function mapUpdatedVariantAnalysis(
 function mapVariantAnalysis(
   currentVariantAnalysis: Pick<
     VariantAnalysis,
-    "language" | "query" | "queries" | "databases" | "executionStartTime"
+    | "language"
+    | "query"
+    | "queries"
+    | "databases"
+    | "executionStartTime"
+    | "modelPacks"
   >,
   currentStatus: VariantAnalysisStatus | undefined,
   response: ApiVariantAnalysis,
@@ -96,6 +104,7 @@ function mapVariantAnalysis(
     language: currentVariantAnalysis.language,
     query: currentVariantAnalysis.query,
     queries: currentVariantAnalysis.queries,
+    modelPacks: currentVariantAnalysis.modelPacks,
     databases: currentVariantAnalysis.databases,
     executionStartTime: currentVariantAnalysis.executionStartTime,
     createdAt: response.created_at,

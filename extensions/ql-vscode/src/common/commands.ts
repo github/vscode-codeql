@@ -220,6 +220,7 @@ export type LocalDatabasesCommands = {
 
   // Explorer context menu
   "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;
+  "codeQL.importTestDatabase": (uri: Uri) => Promise<void>;
 
   // Database panel view title commands
   "codeQLDatabases.chooseDatabaseFolder": () => Promise<void>;
@@ -270,6 +271,9 @@ export type VariantAnalysisCommands = {
     variantAnalysis: VariantAnalysis,
   ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
+    variantAnalysisId: number,
+  ) => Promise<void>;
+  "codeQLModelAlerts.openVariantAnalysisLogs": (
     variantAnalysisId: number,
   ) => Promise<void>;
   "codeQL.openVariantAnalysisView": (

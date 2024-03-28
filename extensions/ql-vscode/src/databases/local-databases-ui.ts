@@ -16,7 +16,6 @@ import {
   ThemeIcon,
   ThemeColor,
   workspace,
-  ProgressLocation,
 } from "vscode";
 import { pathExists, stat, readdir, remove } from "fs-extra";
 
@@ -25,13 +24,9 @@ import type {
   DatabaseItem,
   DatabaseManager,
 } from "./local-databases";
-import type {
-  ProgressCallback,
-  ProgressContext,
-} from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
 import {
   UserCancellationException,
-  withInheritedProgress,
   withProgress,
 } from "../common/vscode/progress";
 import {
@@ -141,7 +136,8 @@ class DatabaseTreeDataProvider
       item.iconPath = new ThemeIcon("error", new ThemeColor("errorForeground"));
     }
     item.tooltip = element.databaseUri.fsPath;
-    item.description = element.language;
+    item.description =
+      element.language + (element.origin?.type === "testproj" ? " (test)" : "");
     return item;
   }
 
@@ -278,6 +274,7 @@ export class DatabaseUI extends DisposableObject {
         this.handleChooseDatabaseInternet.bind(this),
       "codeQL.chooseDatabaseGithub": this.handleChooseDatabaseGithub.bind(this),
       "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
+      "codeQL.importTestDatabase": this.handleImportTestDatabase.bind(this),
       "codeQL.setDefaultTourDatabase":
         this.handleSetDefaultTourDatabase.bind(this),
       "codeQL.upgradeCurrentDatabase":
@@ -327,10 +324,9 @@ export class DatabaseUI extends DisposableObject {
 
   private async chooseDatabaseFolder(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<void> {
     try {
-      await this.chooseAndSetDatabase(true, { progress, token });
+      await this.chooseAndSetDatabase(true, progress);
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
@@ -344,8 +340,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseFolder(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseFolder(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseFolder(progress);
       },
       {
         title: "Adding database from folder",
@@ -355,8 +351,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseFolderFromPalette(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseFolder(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseFolder(progress);
       },
       {
         title: "Choose a Database from a Folder",
@@ -497,10 +493,9 @@ export class DatabaseUI extends DisposableObject {
 
   private async chooseDatabaseArchive(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<void> {
     try {
-      await this.chooseAndSetDatabase(false, { progress, token });
+      await this.chooseAndSetDatabase(false, progress);
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
@@ -514,8 +509,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseArchive(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseArchive(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseArchive(progress);
       },
       {
         title: "Adding database from archive",
@@ -525,8 +520,8 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseArchiveFromPalette(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
-        await this.chooseDatabaseArchive(progress, token);
+      async (progress) => {
+        await this.chooseDatabaseArchive(progress);
       },
       {
         title: "Choose a Database from an Archive",
@@ -697,7 +692,7 @@ export class DatabaseUI extends DisposableObject {
         try {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
-            await this.databaseFetcher.importArchiveDatabase(
+            await this.databaseFetcher.importLocalDatabase(
               uri.toString(true),
               progress,
             );
@@ -717,6 +712,56 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Importing database from archive",
+      },
+    );
+  }
+
+  private async handleImportTestDatabase(uri: Uri): Promise<void> {
+    return withProgress(
+      async (progress) => {
+        try {
+          if (!uri.path.endsWith(".testproj")) {
+            throw new Error(
+              "Please select a valid test database to import. Test databases end with `.testproj`.",
+            );
+          }
+
+          // Check if the database is already in the workspace. If
+          // so, delete it first before importing the new one.
+          const existingItem = this.databaseManager.findTestDatabase(uri);
+          const baseName = basename(uri.fsPath);
+          if (existingItem !== undefined) {
+            progress({
+              maxStep: 9,
+              step: 1,
+              message: `Removing existing test database ${baseName}`,
+            });
+            await this.databaseManager.removeDatabaseItem(existingItem);
+          }
+
+          await this.databaseFetcher.importLocalDatabase(
+            uri.toString(true),
+            progress,
+          );
+
+          if (existingItem !== undefined) {
+            progress({
+              maxStep: 9,
+              step: 9,
+              message: `Successfully re-imported ${baseName}`,
+            });
+          }
+        } catch (e) {
+          // rethrow and let this be handled by default error handling.
+          throw new Error(
+            `Could not set database to ${basename(
+              uri.fsPath,
+            )}. Reason: ${getErrorMessage(e)}`,
+          );
+        }
+      },
+      {
+        title: "(Re-)importing test database from directory",
       },
     );
   }
@@ -776,9 +821,8 @@ export class DatabaseUI extends DisposableObject {
    */
   public async getDatabaseItem(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
-    return await this.getDatabaseItemInternal({ progress, token });
+    return await this.getDatabaseItemInternal(progress);
   }
 
   /**
@@ -791,10 +835,10 @@ export class DatabaseUI extends DisposableObject {
    * notification if it tries to perform any long-running operations.
    */
   private async getDatabaseItemInternal(
-    progressContext: ProgressContext | undefined,
+    progress: ProgressCallback | undefined,
   ): Promise<DatabaseItem | undefined> {
     if (this.databaseManager.currentDatabaseItem === undefined) {
-      progressContext?.progress({
+      progress?.({
         maxStep: 2,
         step: 1,
         message: "Choosing database",
@@ -921,37 +965,28 @@ export class DatabaseUI extends DisposableObject {
    */
   private async chooseAndSetDatabase(
     byFolder: boolean,
-    progress: ProgressContext | undefined,
+    progress: ProgressCallback,
   ): Promise<DatabaseItem | undefined> {
     const uri = await chooseDatabaseDir(byFolder);
     if (!uri) {
       return undefined;
     }
 
-    return await withInheritedProgress(
-      progress,
-      async (progress) => {
-        if (byFolder) {
-          const fixedUri = await this.fixDbUri(uri);
-          // we are selecting a database folder
-          return await this.databaseManager.openDatabase(fixedUri, {
-            type: "folder",
-          });
-        } else {
-          // we are selecting a database archive. Must unzip into a workspace-controlled area
-          // before importing.
-          return await this.databaseFetcher.importArchiveDatabase(
-            uri.toString(true),
-            progress,
-          );
-        }
-      },
-      {
-        location: ProgressLocation.Notification,
-        cancellable: true,
-        title: "Opening database",
-      },
-    );
+    if (byFolder && !uri.fsPath.endsWith("testproj")) {
+      const fixedUri = await this.fixDbUri(uri);
+      // we are selecting a database folder
+      return await this.databaseManager.openDatabase(fixedUri, {
+        type: "folder",
+      });
+    } else {
+      // we are selecting a database archive or a testproj.
+      // Unzip archives (if an archive) and copy into a workspace-controlled area
+      // before importing.
+      return await this.databaseFetcher.importLocalDatabase(
+        uri.toString(true),
+        progress,
+      );
+    }
   }
 
   /**

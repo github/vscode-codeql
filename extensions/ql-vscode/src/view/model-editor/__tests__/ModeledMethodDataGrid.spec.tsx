@@ -59,6 +59,7 @@ describe(ModeledMethodDataGrid.name, () => {
         selectedSignatures={new Set()}
         inProgressMethods={new Set()}
         processedByAutoModelMethods={new Set()}
+        evaluationRun={undefined}
         viewState={viewState}
         hideModeledMethods={false}
         revealedMethodSignature={null}

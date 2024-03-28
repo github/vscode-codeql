@@ -13,18 +13,23 @@ import {
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
+import { VariantAnalysisScannedRepositoryDownloadStatus } from "../variant-analysis/shared/variant-analysis";
 import type { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 import type { CancellationToken } from "vscode";
 import { CancellationTokenSource } from "vscode";
 import type { QlPackDetails } from "../variant-analysis/ql-pack-details";
 import type { App } from "../common/app";
 import { ModelAlertsView } from "./model-alerts/model-alerts-view";
+import type { ExtensionPack } from "./shared/extension-pack";
+import type { ModeledMethod } from "./modeled-method";
 
 export class ModelEvaluator extends DisposableObject {
   // Cancellation token source to allow cancelling of the current run
   // before a variant analysis has been submitted. Once it has been
   // submitted, we use the variant analysis manager's cancellation support.
   private cancellationSource: CancellationTokenSource;
+
+  private modelAlertsView: ModelAlertsView | undefined;
 
   public constructor(
     private readonly app: App,
@@ -34,7 +39,8 @@ export class ModelEvaluator extends DisposableObject {
     private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly dbItem: DatabaseItem,
     private readonly language: QueryLanguage,
-    private readonly updateView: (
+    private readonly extensionPack: ExtensionPack,
+    private readonly updateModelEditorView: (
       run: ModelEvaluationRunState,
     ) => Promise<void>,
   ) {
@@ -58,6 +64,7 @@ export class ModelEvaluator extends DisposableObject {
       this.app.logger,
       this.cliServer,
       this.language,
+      this.cancellationSource.token,
     );
 
     if (!qlPack) {
@@ -107,8 +114,59 @@ export class ModelEvaluator extends DisposableObject {
   }
 
   public async openModelAlertsView() {
-    const view = new ModelAlertsView(this.app);
-    await view.showView();
+    if (this.modelingStore.isModelAlertsViewOpen(this.dbItem)) {
+      this.modelingEvents.fireFocusModelAlertsViewEvent(
+        this.dbItem.databaseUri.toString(),
+      );
+      return;
+    } else {
+      this.modelingStore.updateIsModelAlertsViewOpen(this.dbItem, true);
+      this.modelAlertsView = new ModelAlertsView(
+        this.app,
+        this.modelingEvents,
+        this.modelingStore,
+        this.dbItem,
+        this.extensionPack,
+      );
+
+      this.modelAlertsView.onEvaluationRunStopClicked(async () => {
+        await this.stopEvaluation();
+      });
+
+      // There should be a variant analysis available at this point, as the
+      // view can only opened when the variant analysis is submitted.
+      const evaluationRun = this.modelingStore.getModelEvaluationRun(
+        this.dbItem,
+      );
+      if (!evaluationRun) {
+        throw new Error("No evaluation run available");
+      }
+
+      const variantAnalysis =
+        await this.getVariantAnalysisForRun(evaluationRun);
+
+      if (!variantAnalysis) {
+        throw new Error("No variant analysis available");
+      }
+
+      const reposResults =
+        this.variantAnalysisManager.getLoadedResultsForVariantAnalysis(
+          variantAnalysis.id,
+        );
+      await this.modelAlertsView.showView(reposResults);
+
+      await this.modelAlertsView.updateVariantAnalysis(variantAnalysis);
+    }
+  }
+
+  public async revealInModelAlertsView(modeledMethod: ModeledMethod) {
+    if (!this.modelingStore.isModelAlertsViewOpen(this.dbItem)) {
+      await this.openModelAlertsView();
+    }
+    this.modelingEvents.fireRevealInModelAlertsViewEvent(
+      this.dbItem.databaseUri.toString(),
+      modeledMethod,
+    );
   }
 
   private registerToModelingEvents() {
@@ -116,7 +174,7 @@ export class ModelEvaluator extends DisposableObject {
       this.modelingEvents.onModelEvaluationRunChanged(async (event) => {
         if (event.dbUri === this.dbItem.databaseUri.toString()) {
           if (!event.evaluationRun) {
-            await this.updateView({
+            await this.updateModelEditorView({
               isPreparing: false,
               variantAnalysis: undefined,
             });
@@ -128,7 +186,7 @@ export class ModelEvaluator extends DisposableObject {
               isPreparing: event.evaluationRun.isPreparing,
               variantAnalysis,
             };
-            await this.updateView(run);
+            await this.updateModelEditorView(run);
           }
         }
       }),
@@ -205,14 +263,76 @@ export class ModelEvaluator extends DisposableObject {
       this.variantAnalysisManager.onVariantAnalysisStatusUpdated(
         async (variantAnalysis) => {
           // Make sure it's the variant analysis we're interested in
-          if (variantAnalysisId === variantAnalysis.id) {
-            await this.updateView({
+          if (variantAnalysis.id === variantAnalysisId) {
+            // Update model editor view
+            await this.updateModelEditorView({
               isPreparing: false,
               variantAnalysis,
             });
+
+            // Update model alerts view
+            await this.modelAlertsView?.updateVariantAnalysis(variantAnalysis);
           }
         },
       ),
+    );
+
+    this.push(
+      this.variantAnalysisManager.onRepoStatesUpdated(async (e) => {
+        if (
+          e.variantAnalysisId === variantAnalysisId &&
+          e.repoState.downloadStatus ===
+            VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
+        ) {
+          await this.readAnalysisResults(
+            variantAnalysisId,
+            e.repoState.repositoryId,
+          );
+        }
+      }),
+    );
+
+    this.push(
+      this.variantAnalysisManager.onRepoResultsLoaded(async (e) => {
+        if (e.variantAnalysisId === variantAnalysisId) {
+          await this.modelAlertsView?.updateRepoResults(e);
+        }
+      }),
+    );
+  }
+
+  private async readAnalysisResults(
+    variantAnalysisId: number,
+    repositoryId: number,
+  ) {
+    const variantAnalysis =
+      this.variantAnalysisManager.tryGetVariantAnalysis(variantAnalysisId);
+    if (!variantAnalysis) {
+      void this.app.logger.log(
+        `Could not find variant analysis with id ${variantAnalysisId}`,
+      );
+      throw new Error(
+        "There was an error when trying to retrieve variant analysis information",
+      );
+    }
+
+    const repository = variantAnalysis.scannedRepos?.find(
+      (r) => r.repository.id === repositoryId,
+    );
+    if (!repository) {
+      void this.app.logger.log(
+        `Could not find repository with id ${repositoryId} in scanned repos`,
+      );
+      throw new Error(
+        "There was an error when trying to retrieve repository information",
+      );
+    }
+
+    // Trigger loading the results for the repository. This will trigger a
+    // onRepoResultsLoaded event that we'll process.
+    await this.variantAnalysisManager.loadResults(
+      variantAnalysisId,
+      repository.repository.fullName,
     );
   }
 }

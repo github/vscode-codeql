@@ -11,7 +11,7 @@ import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "../../model-editor/shared/modeled-percentage";
-import { LinkIconButton } from "../variant-analysis/LinkIconButton";
+import { LinkIconButton } from "../common/LinkIconButton";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
@@ -436,6 +436,7 @@ export function ModelEditor({
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
           accessPathSuggestions={accessPathSuggestions}
+          evaluationRun={evaluationRun}
           onChange={onChange}
           onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}

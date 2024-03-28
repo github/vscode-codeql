@@ -1,16 +1,15 @@
 import type { Response } from "node-fetch";
 import fetch, { AbortError } from "node-fetch";
-import { zip } from "zip-a-folder";
 import type { InputBoxOptions } from "vscode";
 import { Uri, window } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   ensureDir,
   realpath as fs_realpath,
-  pathExists,
   createWriteStream,
   remove,
   readdir,
+  copy,
 } from "fs-extra";
 import { basename, join } from "path";
 import type { Octokit } from "@octokit/rest";
@@ -40,6 +39,7 @@ import type { App } from "../common/app";
 import { createFilenameFromString } from "../common/filenames";
 import { findDirWithFile } from "../common/files";
 import { convertGithubNwoToDatabaseUrl } from "./github-databases/api";
+import { ensureZippedSourceLocation } from "./local-databases/database-contents";
 
 // The number of tries to use when generating a unique filename before
 // giving up and using a nanoid.
@@ -74,7 +74,7 @@ export class DatabaseFetcher {
 
     this.validateUrl(databaseUrl);
 
-    const item = await this.databaseArchiveFetcher(
+    const item = await this.fetchDatabaseToWorkspaceStorage(
       databaseUrl,
       {},
       undefined,
@@ -247,7 +247,7 @@ export class DatabaseFetcher {
      * We only need the actual token string.
      */
     const octokitToken = ((await octokit.auth()) as { token: string })?.token;
-    return await this.databaseArchiveFetcher(
+    return await this.fetchDatabaseToWorkspaceStorage(
       databaseUrl,
       {
         Accept: "application/zip",
@@ -268,31 +268,35 @@ export class DatabaseFetcher {
   }
 
   /**
-   * Imports a database from a local archive.
+   * Imports a database from a local archive or a test database that is in a folder
+   * ending with `.testproj`.
    *
-   * @param databaseUrl the file url of the archive to import
+   * @param databaseUrl the file url of the archive or directory to import
    * @param progress the progress callback
    */
-  public async importArchiveDatabase(
+  public async importLocalDatabase(
     databaseUrl: string,
     progress: ProgressCallback,
   ): Promise<DatabaseItem | undefined> {
     try {
-      const item = await this.databaseArchiveFetcher(
+      const origin: DatabaseOrigin = {
+        type: databaseUrl.endsWith(".testproj") ? "testproj" : "archive",
+        path: Uri.parse(databaseUrl).fsPath,
+      };
+      const item = await this.fetchDatabaseToWorkspaceStorage(
         databaseUrl,
         {},
         undefined,
-        {
-          type: "archive",
-          path: databaseUrl,
-        },
+        origin,
         progress,
       );
       if (item) {
         await this.app.commands.execute("codeQLDatabases.focus");
         void showAndLogInformationMessage(
           extLogger,
-          "Database unzipped and imported successfully.",
+          origin.type === "testproj"
+            ? "Test database imported successfully."
+            : "Database unzipped and imported successfully.",
         );
       }
       return item;
@@ -309,10 +313,10 @@ export class DatabaseFetcher {
   }
 
   /**
-   * Fetches an archive database. The database might be on the internet
+   * Fetches a database into workspace storage. The database might be on the internet
    * or in the local filesystem.
    *
-   * @param databaseUrl URL from which to grab the database
+   * @param databaseUrl URL from which to grab the database. This could be a local archive file, a local directory, or a remote URL.
    * @param requestHeaders Headers to send with the request
    * @param nameOverride a name for the database that overrides the default
    * @param origin the origin of the database
@@ -320,7 +324,7 @@ export class DatabaseFetcher {
    * @param makeSelected make the new database selected in the databases panel (default: true)
    * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
    */
-  private async databaseArchiveFetcher(
+  private async fetchDatabaseToWorkspaceStorage(
     databaseUrl: string,
     requestHeaders: { [key: string]: string },
     nameOverride: string | undefined,
@@ -341,7 +345,11 @@ export class DatabaseFetcher {
     const unzipPath = await this.getStorageFolder(databaseUrl, nameOverride);
 
     if (Uri.parse(databaseUrl).scheme === "file") {
-      await this.readAndUnzip(databaseUrl, unzipPath, progress);
+      if (origin.type === "testproj") {
+        await this.copyDatabase(databaseUrl, unzipPath, progress);
+      } else {
+        await this.readAndUnzip(databaseUrl, unzipPath, progress);
+      }
     } else {
       await this.fetchAndUnzip(
         databaseUrl,
@@ -369,7 +377,7 @@ export class DatabaseFetcher {
         step: 4,
         maxStep: 4,
       });
-      await this.ensureZippedSourceLocation(dbPath);
+      await ensureZippedSourceLocation(dbPath);
 
       const item = await this.databaseManager.openDatabase(
         Uri.file(dbPath),
@@ -402,6 +410,8 @@ export class DatabaseFetcher {
       lastName = basename(url.path).substring(0, 250);
       if (lastName.endsWith(".zip")) {
         lastName = lastName.substring(0, lastName.length - 4);
+      } else if (lastName.endsWith(".testproj")) {
+        lastName = lastName.substring(0, lastName.length - 9);
       }
     }
 
@@ -446,6 +456,26 @@ export class DatabaseFetcher {
     if (!allowHttp() && uri.scheme !== "https") {
       throw new Error("Must use https for downloading a database.");
     }
+  }
+
+  /**
+   * Copies a database folder from the file system into the workspace storage.
+   * @param scrDirURL the original location of the database as a URL string
+   * @param destDir the location to copy the database to. This should be a folder in the workspace storage.
+   * @param progress callback to send progress messages to
+   */
+  private async copyDatabase(
+    srcDirURL: string,
+    destDir: string,
+    progress?: ProgressCallback,
+  ) {
+    progress?.({
+      maxStep: 10,
+      step: 9,
+      message: `Copying database ${basename(destDir)} into the workspace`,
+    });
+    await ensureDir(destDir);
+    await copy(Uri.parse(srcDirURL).fsPath, destDir);
   }
 
   private async readAndUnzip(
@@ -581,28 +611,5 @@ export class DatabaseFetcher {
       msg = text;
     }
     throw new Error(`${errorMessage}.\n\nReason: ${msg}`);
-  }
-
-  /**
-   * Databases created by the old odasa tool will not have a zipped
-   * source location. However, this extension works better if sources
-   * are zipped.
-   *
-   * This function ensures that the source location is zipped. If the
-   * `src` folder exists and the `src.zip` file does not, the `src`
-   * folder will be zipped and then deleted.
-   *
-   * @param databasePath The full path to the unzipped database
-   */
-  private async ensureZippedSourceLocation(
-    databasePath: string,
-  ): Promise<void> {
-    const srcFolderPath = join(databasePath, "src");
-    const srcZipPath = `${srcFolderPath}.zip`;
-
-    if ((await pathExists(srcFolderPath)) && !(await pathExists(srcZipPath))) {
-      await zip(srcFolderPath, srcZipPath);
-      await remove(srcFolderPath);
-    }
   }
 }

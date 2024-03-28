@@ -2,6 +2,13 @@
 
 ## [UNRELEASED]
 
+- Add new supported source and sink kinds in the CodeQL Model Editor [#3511](https://github.com/github/vscode-codeql/pull/3511)
+
+## 1.12.4 - 20 March 2024
+
+- Don't show notification after local query cancellation. [#3489](https://github.com/github/vscode-codeql/pull/3489)
+- Databases created from [CodeQL test cases](https://docs.github.com/en/code-security/codeql-cli/using-the-advanced-functionality-of-the-codeql-cli/testing-custom-queries) are now copied into a shared VS Code storage location. This avoids a bug where re-running test cases would fail if the test's database is already imported into the workspace. [#3433](https://github.com/github/vscode-codeql/pull/3433)
+
 ## 1.12.3 - 29 February 2024
 
 - Update variant analysis view to show when cancelation is in progress. [#3405](https://github.com/github/vscode-codeql/pull/3405)

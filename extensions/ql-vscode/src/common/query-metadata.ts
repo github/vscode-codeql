@@ -1,4 +1,4 @@
-const SARIF_RESULTS_QUERY_KINDS = [
+export const SARIF_RESULTS_QUERY_KINDS = [
   "problem",
   "alert",
   "path-problem",

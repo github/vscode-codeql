@@ -1,5 +1,5 @@
 import type { CodeQLCliServer } from "./cli";
-import type { Uri } from "vscode";
+import type { CancellationToken, Uri } from "vscode";
 import { window } from "vscode";
 import {
   getLanguageDisplayName,
@@ -50,6 +50,7 @@ export async function findLanguage(
 export async function askForLanguage(
   cliServer: CodeQLCliServer,
   throwOnEmpty = true,
+  token?: CancellationToken,
 ): Promise<QueryLanguage | undefined> {
   const supportedLanguages = await cliServer.getSupportedLanguages();
 
@@ -62,10 +63,14 @@ export async function askForLanguage(
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
-  const selectedItem = await window.showQuickPick(items, {
-    placeHolder: "Select target query language",
-    ignoreFocusOut: true,
-  });
+  const selectedItem = await window.showQuickPick(
+    items,
+    {
+      placeHolder: "Select target query language",
+      ignoreFocusOut: true,
+    },
+    token,
+  );
   if (!selectedItem) {
     // This only happens if the user cancels the quick pick.
     if (throwOnEmpty) {

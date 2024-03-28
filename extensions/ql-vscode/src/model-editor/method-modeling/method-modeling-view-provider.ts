@@ -6,7 +6,7 @@ import { telemetryListener } from "../../common/vscode/telemetry";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging/notifications";
 import type { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
-import type { Method } from "../method";
+import type { Method, MethodSignature } from "../method";
 import type { ModelingStore } from "../modeling-store";
 import { AbstractWebviewViewProvider } from "../../common/vscode/abstract-webview-view-provider";
 import { assertNever } from "../../common/helpers-pure";
@@ -163,7 +163,7 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     }
   }
 
-  private async revealInModelEditor(method: Method): Promise<void> {
+  private async revealInModelEditor(method: MethodSignature): Promise<void> {
     if (!this.databaseItem) {
       return;
     }

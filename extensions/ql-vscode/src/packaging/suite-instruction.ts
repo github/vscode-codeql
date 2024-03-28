@@ -8,5 +8,6 @@ export interface SuiteInstruction {
   include?: Record<string, string[]>;
   exclude?: Record<string, string[]>;
   description?: string;
+  import?: string;
   from?: string;
 }

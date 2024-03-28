@@ -112,7 +112,10 @@ export function pythonPath(
 export function pythonEndpointType(
   method: Omit<MethodDefinition, "endpointType">,
 ): EndpointType {
-  if (method.methodParameters.startsWith("(self,")) {
+  if (
+    method.methodParameters.startsWith("(self,") ||
+    method.methodParameters === "(self)"
+  ) {
     return EndpointType.Method;
   }
   return EndpointType.Function;

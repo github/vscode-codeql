@@ -1,4 +1,4 @@
-import { ViewColumn } from "vscode";
+import { Uri, ViewColumn } from "vscode";
 import type { WebviewPanelConfig } from "../../common/vscode/abstract-webview";
 import { AbstractWebview } from "../../common/vscode/abstract-webview";
 import { assertNever } from "../../common/helpers-pure";
@@ -11,6 +11,17 @@ import type { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
+import type { ModelingEvents } from "../modeling-events";
+import type { ModelingStore } from "../modeling-store";
+import type { DatabaseItem } from "../../databases/local-databases";
+import type { ExtensionPack } from "../shared/extension-pack";
+import type {
+  VariantAnalysis,
+  VariantAnalysisScannedRepositoryResult,
+} from "../../variant-analysis/shared/variant-analysis";
+import type { AppEvent, AppEventEmitter } from "../../common/events";
+import type { ModeledMethod } from "../modeled-method";
+import type { MethodSignature } from "../method";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -18,15 +29,36 @@ export class ModelAlertsView extends AbstractWebview<
 > {
   public static readonly viewType = "codeQL.modelAlerts";
 
-  public constructor(app: App) {
+  public readonly onEvaluationRunStopClicked: AppEvent<void>;
+  private readonly onEvaluationRunStopClickedEventEmitter: AppEventEmitter<void>;
+
+  public constructor(
+    app: App,
+    private readonly modelingEvents: ModelingEvents,
+    private readonly modelingStore: ModelingStore,
+    private readonly dbItem: DatabaseItem,
+    private readonly extensionPack: ExtensionPack,
+  ) {
     super(app);
+
+    this.registerToModelingEvents();
+
+    this.onEvaluationRunStopClickedEventEmitter = this.push(
+      app.createEventEmitter<void>(),
+    );
+    this.onEvaluationRunStopClicked =
+      this.onEvaluationRunStopClickedEventEmitter.event;
   }
 
-  public async showView() {
+  public async showView(
+    reposResults: VariantAnalysisScannedRepositoryResult[],
+  ) {
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
+    await this.setViewState();
+    await this.updateReposResults(reposResults);
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -40,7 +72,7 @@ export class ModelAlertsView extends AbstractWebview<
   }
 
   protected onPanelDispose(): void {
-    // Nothing to dispose
+    this.modelingStore.updateIsModelAlertsViewOpen(this.dbItem, false);
   }
 
   protected async onMessage(msg: FromModelAlertsMessage): Promise<void> {
@@ -60,8 +92,127 @@ export class ModelAlertsView extends AbstractWebview<
           )`Unhandled error in model alerts view: ${msg.error.message}`,
         );
         break;
+      case "openModelPack":
+        await this.app.commands.execute("revealInExplorer", Uri.file(msg.path));
+        break;
+      case "openActionsLogs":
+        await this.app.commands.execute(
+          "codeQLModelAlerts.openVariantAnalysisLogs",
+          msg.variantAnalysisId,
+        );
+        break;
+      case "stopEvaluationRun":
+        await this.stopEvaluationRun();
+        break;
+      case "revealInModelEditor":
+        await this.revealInModelEditor(msg.method);
+        break;
       default:
         assertNever(msg);
     }
+  }
+
+  private async setViewState(): Promise<void> {
+    await this.postMessage({
+      t: "setModelAlertsViewState",
+      viewState: {
+        title: this.extensionPack.name,
+      },
+    });
+  }
+
+  public async updateVariantAnalysis(
+    variantAnalysis: VariantAnalysis,
+  ): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setVariantAnalysis",
+      variantAnalysis,
+    });
+  }
+
+  public async updateRepoResults(
+    repositoryResult: VariantAnalysisScannedRepositoryResult,
+  ): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setRepoResults",
+      repoResults: [repositoryResult],
+    });
+  }
+
+  public async updateReposResults(
+    repoResults: VariantAnalysisScannedRepositoryResult[],
+  ): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setRepoResults",
+      repoResults,
+    });
+  }
+
+  public async focusView(): Promise<void> {
+    this.panel?.reveal();
+  }
+
+  private registerToModelingEvents() {
+    this.push(
+      this.modelingEvents.onFocusModelAlertsView(async (event) => {
+        if (event.dbUri === this.dbItem.databaseUri.toString()) {
+          await this.focusView();
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingEvents.onDbClosed(async (event) => {
+        if (event === this.dbItem.databaseUri.toString()) {
+          this.dispose();
+        }
+      }),
+    );
+
+    this.push(
+      this.modelingEvents.onRevealInModelAlertsView(async (event) => {
+        if (event.dbUri === this.dbItem.databaseUri.toString()) {
+          await this.revealMethod(event.modeledMethod);
+        }
+      }),
+    );
+  }
+
+  private async stopEvaluationRun() {
+    this.onEvaluationRunStopClickedEventEmitter.fire();
+  }
+
+  private async revealInModelEditor(method: MethodSignature): Promise<void> {
+    if (!this.dbItem) {
+      return;
+    }
+
+    this.modelingEvents.fireRevealInModelEditorEvent(
+      this.dbItem.databaseUri.toString(),
+      method,
+    );
+  }
+
+  private async revealMethod(method: ModeledMethod): Promise<void> {
+    const panel = await this.getPanel();
+
+    panel?.reveal();
+
+    await this.postMessage({
+      t: "revealModel",
+      modeledMethod: method,
+    });
   }
 }

@@ -9,6 +9,7 @@ import {
 } from "../../model-editor/shared/sorting";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
+import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 export type ModeledMethodsListProps = {
   methods: Method[];
@@ -19,6 +20,7 @@ export type ModeledMethodsListProps = {
   processedByAutoModelMethods: Set<string>;
   revealedMethodSignature: string | null;
   accessPathSuggestions?: AccessPathSuggestionOptions;
+  evaluationRun: ModelEvaluationRunState | undefined;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
@@ -48,6 +50,7 @@ export const ModeledMethodsList = ({
   hideModeledMethods,
   revealedMethodSignature,
   accessPathSuggestions,
+  evaluationRun,
   onChange,
   onMethodClick,
   onSaveModelClick,
@@ -98,6 +101,7 @@ export const ModeledMethodsList = ({
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
           accessPathSuggestions={accessPathSuggestions}
+          evaluationRun={evaluationRun}
           onChange={onChange}
           onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}

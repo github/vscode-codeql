@@ -36,7 +36,7 @@ import {
   externalApiQueriesProgressMaxStep,
   runModelEditorQueries,
 } from "./model-editor-queries";
-import type { Method } from "./method";
+import type { MethodSignature } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { ModelConfigListener } from "../config";
@@ -133,6 +133,7 @@ export class ModelEditorView extends AbstractWebview<
       this.variantAnalysisManager,
       databaseItem,
       language,
+      this.extensionPack,
       this.updateModelEvaluationRun.bind(this),
     );
     this.push(this.modelEvaluator);
@@ -384,6 +385,9 @@ export class ModelEditorView extends AbstractWebview<
       case "openModelAlertsView":
         await this.modelEvaluator.openModelAlertsView();
         break;
+      case "revealInModelAlertsView":
+        await this.modelEvaluator.revealInModelAlertsView(msg.modeledMethod);
+        break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
         break;
@@ -431,7 +435,7 @@ export class ModelEditorView extends AbstractWebview<
     this.panel?.reveal();
   }
 
-  public async revealMethod(method: Method): Promise<void> {
+  public async revealMethod(method: MethodSignature): Promise<void> {
     this.panel?.reveal();
 
     await this.postMessage({
