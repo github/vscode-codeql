@@ -107,10 +107,7 @@ export class QueryRunner {
     this.qs.onDidStartQueryServer(callBack);
   }
 
-  async clearCacheInDatabase(
-    dbItem: DatabaseItem,
-    token: CancellationToken,
-  ): Promise<void> {
+  async clearCacheInDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents === undefined) {
       throw new Error("Can't clear the cache in an invalid database.");
     }
@@ -120,7 +117,7 @@ export class QueryRunner {
       dryRun: false,
       db,
     };
-    await this.qs.sendRequest(clearCache, params, token);
+    await this.qs.sendRequest(clearCache, params);
   }
 
   async trimCacheInDatabase(

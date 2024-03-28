@@ -660,20 +660,18 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleClearCache(): Promise<void> {
     return withProgress(
-      async (_progress, token) => {
+      async () => {
         if (
           this.queryServer !== undefined &&
           this.databaseManager.currentDatabaseItem !== undefined
         ) {
           await this.queryServer.clearCacheInDatabase(
             this.databaseManager.currentDatabaseItem,
-            token,
           );
         }
       },
       {
         title: "Clearing cache",
-        cancellable: true,
       },
     );
   }
