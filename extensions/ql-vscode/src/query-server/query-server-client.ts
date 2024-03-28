@@ -14,7 +14,7 @@ import type { ProgressReporter } from "../common/logging/vscode";
 import { extLogger } from "../common/logging/vscode";
 import type { ProgressMessage, WithProgressId } from "./messages";
 import { progress } from "./messages";
-import type { ProgressCallback, ProgressTask } from "../common/vscode/progress";
+import type { ProgressCallback } from "../common/vscode/progress";
 import { withProgress } from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
 import type { App } from "../common/app";
@@ -51,12 +51,16 @@ export class QueryServerClient extends DisposableObject {
 
   withProgressReporting: WithProgressReporting;
 
-  private readonly queryServerStartListeners = [] as Array<ProgressTask<void>>;
+  private readonly queryServerStartListeners = [] as Array<
+    (progress: ProgressCallback) => void
+  >;
 
   // Can't use standard vscode EventEmitter here since they do not cause the calling
   // function to fail if one of the event handlers fail. This is something that
   // we need here.
-  readonly onDidStartQueryServer = (e: ProgressTask<void>) => {
+  readonly onDidStartQueryServer = (
+    e: (progress: ProgressCallback) => void,
+  ) => {
     this.queryServerStartListeners.push(e);
   };
 
@@ -105,14 +109,11 @@ export class QueryServerClient extends DisposableObject {
    * This resets the unexpected termination count. As hopefully it is an indication that the user has fixed the
    * issue.
    */
-  async restartQueryServer(
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<void> {
+  async restartQueryServer(progress: ProgressCallback): Promise<void> {
     // Reset the unexpected termination count when we restart the query server manually
     // or due to config change
     this.unexpectedTerminationCount = 0;
-    await this.restartQueryServerInternal(progress, token);
+    await this.restartQueryServerInternal(progress);
   }
 
   /**
@@ -121,8 +122,7 @@ export class QueryServerClient extends DisposableObject {
   private restartQueryServerOnFailure() {
     if (this.unexpectedTerminationCount < MAX_UNEXPECTED_TERMINATIONS) {
       void withProgress(
-        async (progress, token) =>
-          this.restartQueryServerInternal(progress, token),
+        async (progress) => this.restartQueryServerInternal(progress),
         {
           title: "Restarting CodeQL query server due to unexpected termination",
         },
@@ -144,7 +144,6 @@ export class QueryServerClient extends DisposableObject {
    */
   private async restartQueryServerInternal(
     progress: ProgressCallback,
-    token: CancellationToken,
   ): Promise<void> {
     this.stopQueryServer();
     await this.startQueryServer();
@@ -152,7 +151,7 @@ export class QueryServerClient extends DisposableObject {
     // Ensure we await all responses from event handlers so that
     // errors can be properly reported to the user.
     await Promise.all(
-      this.queryServerStartListeners.map((handler) => handler(progress, token)),
+      this.queryServerStartListeners.map((handler) => handler(progress)),
     );
   }
 

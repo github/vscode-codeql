@@ -48,7 +48,7 @@ type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
  * denote some progress being achieved on this task.
  * @param token a cancellation token
  */
-export type ProgressTask<R> = (
+type ProgressTask<R> = (
   progress: ProgressCallback,
   token: CancellationToken,
 ) => Thenable<R>;
