@@ -68,6 +68,9 @@
               }
             },
             {
+              "$ref": "#/definitions/SuiteInstruction"
+            },
+            {
               "type": "null"
             }
           ]
@@ -91,22 +94,42 @@
           "type": "string"
         },
         "include": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "string"
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
-          }
+          ]
         },
         "exclude": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "string"
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
-          }
+          ]
         },
         "description": {
           "type": "string"
