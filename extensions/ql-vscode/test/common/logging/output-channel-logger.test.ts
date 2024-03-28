@@ -5,6 +5,7 @@ import { dirSync } from "tmp";
 import type { BaseLogger, Logger } from "../../../src/common/logging";
 import { TeeLogger } from "../../../src/common/logging";
 import { OutputChannelLogger } from "../../../src/common/logging/vscode";
+import type { Disposable } from "../../../src/common/disposable-object";
 
 jest.setTimeout(999999);
 
@@ -66,6 +67,8 @@ describe("OutputChannelLogger tests", function () {
 
     // should have created 1 side log
     expect(readdirSync(tempFolders.storagePath.name)).toEqual(["hucairz"]);
+
+    hucairz.dispose();
   });
 
   it("should create a side log", async () => {
@@ -86,12 +89,15 @@ describe("OutputChannelLogger tests", function () {
     expect(
       readFileSync(join(tempFolders.storagePath.name, "second"), "utf8"),
     ).toBe("yyy\n");
+
+    first.dispose();
+    second.dispose();
   });
 
   function createSideLogger(
     logger: Logger,
     additionalLogLocation: string,
-  ): BaseLogger {
+  ): BaseLogger & Disposable {
     return new TeeLogger(
       logger,
       join(tempFolders.storagePath.name, additionalLogLocation),

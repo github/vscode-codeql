@@ -92,11 +92,12 @@ export async function runContextualQuery(
   void extLogger.log(
     `Running contextual query ${query}; results will be stored in ${queryRun.outputDir.querySaveDir}`,
   );
-  const results = await queryRun.evaluate(
-    progress,
-    token,
-    new TeeLogger(qs.logger, queryRun.outputDir.logPath),
-  );
-  await cleanup?.();
-  return results;
+  const teeLogger = new TeeLogger(qs.logger, queryRun.outputDir.logPath);
+
+  try {
+    return await queryRun.evaluate(progress, token, teeLogger);
+  } finally {
+    await cleanup?.();
+    teeLogger.dispose();
+  }
 }
