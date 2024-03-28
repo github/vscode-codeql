@@ -43,7 +43,6 @@ import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import type { LanguageContextStore } from "../../language-context-store";
 import type { DatabaseOrigin } from "./database-origin";
-import {} from "../database-fetcher";
 import { ensureZippedSourceLocation } from "./database-contents";
 
 /**

@@ -1,5 +1,5 @@
 import { pathExists, remove } from "fs-extra";
-import { join } from "path/posix";
+import { join } from "path";
 import type { Uri } from "vscode";
 import { zip } from "zip-a-folder";
 
