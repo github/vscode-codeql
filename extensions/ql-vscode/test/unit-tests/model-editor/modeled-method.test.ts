@@ -74,7 +74,7 @@ describe("createModeledMethodKey", () => {
     const key2 = createModeledMethodKey(modeledMethod2);
 
     // Object references are different, but the keys are the same.
-    expect(modeledMethod === modeledMethod2).toBe(false);
-    expect(key === key2).toBe(true);
+    expect(modeledMethod).not.toBe(modeledMethod2);
+    expect(key).toEqual(key2);
   });
 });
