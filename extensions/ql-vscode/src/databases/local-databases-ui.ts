@@ -678,20 +678,18 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleTrimCache(): Promise<void> {
     return withProgress(
-      async (_progress, token) => {
+      async () => {
         if (
           this.queryServer !== undefined &&
           this.databaseManager.currentDatabaseItem !== undefined
         ) {
           await this.queryServer.trimCacheInDatabase(
             this.databaseManager.currentDatabaseItem,
-            token,
           );
         }
       },
       {
         title: "Trimming cache",
-        cancellable: true,
       },
     );
   }

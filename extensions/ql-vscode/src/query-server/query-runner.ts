@@ -112,10 +112,7 @@ export class QueryRunner {
     await this.qs.sendRequest(clearCache, params);
   }
 
-  async trimCacheInDatabase(
-    dbItem: DatabaseItem,
-    token: CancellationToken,
-  ): Promise<void> {
+  async trimCacheInDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents === undefined) {
       throw new Error("Can't trim the cache in an invalid database.");
     }
@@ -124,7 +121,7 @@ export class QueryRunner {
     const params: TrimCacheParams = {
       db,
     };
-    await this.qs.sendRequest(trimCache, params, token);
+    await this.qs.sendRequest(trimCache, params);
   }
 
   public async compileAndRunQueryAgainstDatabaseCore(
