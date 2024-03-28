@@ -3,10 +3,7 @@ import { Uri, window } from "vscode";
 
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { DatabaseManager } from "../../../../src/databases/local-databases";
-import {
-  importLocalDatabase,
-  promptImportInternetDatabase,
-} from "../../../../src/databases/database-fetcher";
+import { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
 import {
   cleanDatabases,
   dbLoc,
@@ -15,9 +12,8 @@ import {
   storagePath,
   testprojLoc,
 } from "../../global.helper";
-import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import { utimesSync } from "fs";
-import { remove, existsSync } from "fs-extra";
+import { existsSync, remove, utimesSync } from "fs-extra";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 /**
  * Run various integration tests for databases
@@ -51,13 +47,15 @@ describe("database-fetcher", () => {
   describe("importLocalDatabase", () => {
     it("should add a database from an archive", async () => {
       const uri = Uri.file(dbLoc);
-      let dbItem = await importLocalDatabase(
-        createMockCommandManager(),
-        uri.toString(true),
+      const databaseFetcher = new DatabaseFetcher(
+        createMockApp(),
         databaseManager,
         storagePath,
-        progressCallback,
         cli,
+      );
+      let dbItem = await databaseFetcher.importLocalDatabase(
+        uri.toString(true),
+        progressCallback,
       );
       expect(dbItem).toBe(databaseManager.currentDatabaseItem);
       expect(dbItem).toBe(databaseManager.databaseItems[0]);
@@ -68,13 +66,15 @@ describe("database-fetcher", () => {
     });
 
     it("should import a testproj database", async () => {
-      let dbItem = await importLocalDatabase(
-        createMockCommandManager(),
-        Uri.file(testprojLoc).toString(true),
+      const databaseFetcher = new DatabaseFetcher(
+        createMockApp(),
         databaseManager,
         storagePath,
-        progressCallback,
         cli,
+      );
+      let dbItem = await databaseFetcher.importLocalDatabase(
+        Uri.file(testprojLoc).toString(true),
+        progressCallback,
       );
       expect(dbItem).toBe(databaseManager.currentDatabaseItem);
       expect(dbItem).toBe(databaseManager.databaseItems[0]);
@@ -109,13 +109,14 @@ describe("database-fetcher", () => {
       // Provide a database URL when prompted
       inputBoxStub.mockResolvedValue(DB_URL);
 
-      let dbItem = await promptImportInternetDatabase(
-        createMockCommandManager(),
+      const databaseFetcher = new DatabaseFetcher(
+        createMockApp(),
         databaseManager,
         storagePath,
-        progressCallback,
         cli,
       );
+      let dbItem =
+        await databaseFetcher.promptImportInternetDatabase(progressCallback);
       expect(dbItem).toBeDefined();
       dbItem = dbItem!;
       expect(dbItem.name).toBe("db");

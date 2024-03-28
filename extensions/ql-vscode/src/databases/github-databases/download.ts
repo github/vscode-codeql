@@ -2,10 +2,8 @@ import { window } from "vscode";
 import type { Octokit } from "@octokit/rest";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import { getLanguageDisplayName } from "../../common/query-language";
-import { downloadGitHubDatabaseFromUrl } from "../database-fetcher";
+import type { DatabaseFetcher } from "../database-fetcher";
 import { withProgress } from "../../common/vscode/progress";
-import type { DatabaseManager } from "../local-databases";
-import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import type { AppCommandManager } from "../../common/commands";
 import type { GitHubDatabaseConfig } from "../../config";
 import type { CodeqlDatabase } from "./api";
@@ -58,9 +56,7 @@ export async function downloadDatabaseFromGitHub(
   owner: string,
   repo: string,
   databases: CodeqlDatabase[],
-  databaseManager: DatabaseManager,
-  storagePath: string,
-  cliServer: CodeQLCliServer,
+  databaseFetcher: DatabaseFetcher,
   commandManager: AppCommandManager,
 ): Promise<void> {
   const selectedDatabases = await promptForDatabases(databases);
@@ -72,7 +68,7 @@ export async function downloadDatabaseFromGitHub(
     selectedDatabases.map((database) =>
       withProgress(
         async (progress) => {
-          await downloadGitHubDatabaseFromUrl(
+          await databaseFetcher.downloadGitHubDatabaseFromUrl(
             database.url,
             database.id,
             database.created_at,
@@ -81,9 +77,6 @@ export async function downloadDatabaseFromGitHub(
             repo,
             octokit,
             progress,
-            databaseManager,
-            storagePath,
-            cliServer,
             true,
             false,
           );

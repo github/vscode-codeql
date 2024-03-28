@@ -10,9 +10,7 @@ import {
 import type { CodeqlDatabase } from "../../../../../src/databases/github-databases/api";
 import type { DatabaseManager } from "../../../../../src/databases/local-databases";
 import type { GitHubDatabaseConfig } from "../../../../../src/config";
-import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
-import * as databaseFetcher from "../../../../../src/databases/database-fetcher";
+import type { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 import * as dialog from "../../../../../src/common/vscode/dialog";
 import type { DatabaseUpdate } from "../../../../../src/databases/github-databases/updates";
 import {
@@ -20,6 +18,7 @@ import {
   downloadDatabaseUpdateFromGitHub,
   isNewerDatabaseAvailable,
 } from "../../../../../src/databases/github-databases/updates";
+import { createMockApp } from "../../../../__mocks__/appMock";
 
 describe("isNewerDatabaseAvailable", () => {
   const owner = "github";
@@ -344,9 +343,8 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
   const owner = "github";
   const repo = "codeql";
   let databaseManager: DatabaseManager;
-  const storagePath = "/a/b/c/d";
-  let cliServer: CodeQLCliServer;
-  const commandManager = createMockCommandManager();
+  let databaseFetcher: DatabaseFetcher;
+  const app = createMockApp();
 
   let updates: DatabaseUpdate[] = [
     {
@@ -367,8 +365,8 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
   ];
 
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
-  let downloadGitHubDatabaseFromUrlSpy: jest.SpiedFunction<
-    typeof databaseFetcher.downloadGitHubDatabaseFromUrl
+  let downloadGitHubDatabaseFromUrlMock: jest.MockedFunction<
+    DatabaseFetcher["downloadGitHubDatabaseFromUrl"]
   >;
 
   beforeEach(() => {
@@ -376,7 +374,11 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
     databaseManager = mockedObject<DatabaseManager>({
       currentDatabaseItem: mockDatabaseItem(),
     });
-    cliServer = mockedObject<CodeQLCliServer>({});
+
+    downloadGitHubDatabaseFromUrlMock = jest.fn().mockReturnValue(undefined);
+    databaseFetcher = mockedObject<DatabaseFetcher>({
+      downloadGitHubDatabaseFromUrl: downloadGitHubDatabaseFromUrlMock,
+    });
 
     showQuickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValue(
       mockedQuickPickItem([
@@ -385,9 +387,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         }),
       ]),
     );
-    downloadGitHubDatabaseFromUrlSpy = jest
-      .spyOn(databaseFetcher, "downloadGitHubDatabaseFromUrl")
-      .mockResolvedValue(undefined);
   });
 
   it("downloads the database", async () => {
@@ -397,13 +396,12 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
       repo,
       updates,
       databaseManager,
-      storagePath,
-      cliServer,
-      commandManager,
+      databaseFetcher,
+      app.commands,
     );
 
-    expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledTimes(1);
-    expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledWith(
+    expect(downloadGitHubDatabaseFromUrlMock).toHaveBeenCalledTimes(1);
+    expect(downloadGitHubDatabaseFromUrlMock).toHaveBeenCalledWith(
       updates[0].database.url,
       updates[0].database.id,
       updates[0].database.created_at,
@@ -412,9 +410,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
       repo,
       octokit,
       expect.anything(),
-      databaseManager,
-      storagePath,
-      cliServer,
       false,
       false,
     );
@@ -476,13 +471,12 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         updates,
         databaseManager,
-        storagePath,
-        cliServer,
-        commandManager,
+        databaseFetcher,
+        app.commands,
       );
 
-      expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledTimes(1);
-      expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledWith(
+      expect(downloadGitHubDatabaseFromUrlMock).toHaveBeenCalledTimes(1);
+      expect(downloadGitHubDatabaseFromUrlMock).toHaveBeenCalledWith(
         updates[1].database.url,
         updates[1].database.id,
         updates[1].database.created_at,
@@ -491,9 +485,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         octokit,
         expect.anything(),
-        databaseManager,
-        storagePath,
-        cliServer,
         true,
         true,
       );
@@ -532,13 +523,12 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         updates,
         databaseManager,
-        storagePath,
-        cliServer,
-        commandManager,
+        databaseFetcher,
+        app.commands,
       );
 
-      expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledTimes(2);
-      expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledWith(
+      expect(downloadGitHubDatabaseFromUrlMock).toHaveBeenCalledTimes(2);
+      expect(downloadGitHubDatabaseFromUrlMock).toHaveBeenCalledWith(
         updates[0].database.url,
         updates[0].database.id,
         updates[0].database.created_at,
@@ -547,13 +537,10 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         octokit,
         expect.anything(),
-        databaseManager,
-        storagePath,
-        cliServer,
         false,
         false,
       );
-      expect(downloadGitHubDatabaseFromUrlSpy).toHaveBeenCalledWith(
+      expect(downloadGitHubDatabaseFromUrlMock).toHaveBeenCalledWith(
         updates[1].database.url,
         updates[1].database.id,
         updates[1].database.created_at,
@@ -562,9 +549,6 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
         repo,
         octokit,
         expect.anything(),
-        databaseManager,
-        storagePath,
-        cliServer,
         true,
         true,
       );
@@ -597,12 +581,11 @@ describe("downloadDatabaseUpdateFromGitHub", () => {
           repo,
           updates,
           databaseManager,
-          storagePath,
-          cliServer,
-          commandManager,
+          databaseFetcher,
+          app.commands,
         );
 
-        expect(downloadGitHubDatabaseFromUrlSpy).not.toHaveBeenCalled();
+        expect(downloadGitHubDatabaseFromUrlMock).not.toHaveBeenCalled();
       });
     });
   });

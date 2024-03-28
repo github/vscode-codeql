@@ -37,11 +37,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
 } from "../common/logging";
-import {
-  importLocalDatabase,
-  promptImportGithubDatabase,
-  promptImportInternetDatabase,
-} from "./database-fetcher";
+import type { DatabaseFetcher } from "./database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
 import type { QueryRunner } from "../query-server";
 import type { App } from "../common/app";
@@ -248,6 +244,7 @@ export class DatabaseUI extends DisposableObject {
   public constructor(
     private app: App,
     private databaseManager: DatabaseManager,
+    private readonly databaseFetcher: DatabaseFetcher,
     languageContext: LanguageContextStore,
     private readonly queryServer: QueryRunner,
     private readonly storagePath: string,
@@ -535,13 +532,7 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseInternet(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await promptImportInternetDatabase(
-          this.app.commands,
-          this.databaseManager,
-          this.storagePath,
-          progress,
-          this.queryServer.cliServer,
-        );
+        await this.databaseFetcher.promptImportInternetDatabase(progress);
       },
       {
         title: "Adding database from URL",
@@ -552,13 +543,7 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await promptImportGithubDatabase(
-          this.app,
-          this.databaseManager,
-          this.storagePath,
-          progress,
-          this.queryServer.cliServer,
-        );
+        await this.databaseFetcher.promptImportGithubDatabase(progress);
       },
       {
         title: "Adding database from GitHub",
@@ -707,13 +692,9 @@ export class DatabaseUI extends DisposableObject {
         try {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
-            await importLocalDatabase(
-              this.app.commands,
+            await this.databaseFetcher.importLocalDatabase(
               uri.toString(true),
-              this.databaseManager,
-              this.storagePath,
               progress,
-              this.queryServer.cliServer,
             );
           } else {
             await this.databaseManager.openDatabase(uri, {
@@ -758,13 +739,9 @@ export class DatabaseUI extends DisposableObject {
             await this.databaseManager.removeDatabaseItem(existingItem);
           }
 
-          await importLocalDatabase(
-            this.app.commands,
+          await this.databaseFetcher.importLocalDatabase(
             uri.toString(true),
-            this.databaseManager,
-            this.storagePath,
             progress,
-            this.queryServer.cliServer,
           );
 
           if (existingItem !== undefined) {
@@ -1005,13 +982,9 @@ export class DatabaseUI extends DisposableObject {
       // we are selecting a database archive or a testproj.
       // Unzip archives (if an archive) and copy into a workspace-controlled area
       // before importing.
-      return await importLocalDatabase(
-        this.app.commands,
+      return await this.databaseFetcher.importLocalDatabase(
         uri.toString(true),
-        this.databaseManager,
-        this.storagePath,
         progress,
-        this.queryServer.cliServer,
       );
     }
   }

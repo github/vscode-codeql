@@ -4,7 +4,6 @@ import { createMockApp } from "../../../../__mocks__/appMock";
 import type { App } from "../../../../../src/common/app";
 import type { DatabaseManager } from "../../../../../src/databases/local-databases";
 import { mockEmptyDatabaseManager } from "../../query-testing/test-runner-helpers";
-import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 import type { GitHubDatabaseConfig } from "../../../../../src/config";
 import { GitHubDatabasesModule } from "../../../../../src/databases/github-databases";
@@ -16,13 +15,13 @@ import * as githubDatabasesApi from "../../../../../src/databases/github-databas
 import * as githubDatabasesDownload from "../../../../../src/databases/github-databases/download";
 import * as githubDatabasesUpdates from "../../../../../src/databases/github-databases/updates";
 import type { DatabaseUpdate } from "../../../../../src/databases/github-databases/updates";
+import type { DatabaseFetcher } from "../../../../../src/databases/database-fetcher";
 
 describe("GitHubDatabasesModule", () => {
   describe("promptGitHubRepositoryDownload", () => {
     let app: App;
     let databaseManager: DatabaseManager;
-    let databaseStoragePath: string;
-    let cliServer: CodeQLCliServer;
+    const databaseFetcher = mockedObject<DatabaseFetcher>({});
     let config: GitHubDatabaseConfig;
     let gitHubDatabasesModule: GitHubDatabasesModule;
 
@@ -64,8 +63,6 @@ describe("GitHubDatabasesModule", () => {
     beforeEach(() => {
       app = createMockApp();
       databaseManager = mockEmptyDatabaseManager();
-      databaseStoragePath = "/a/b/some-path";
-      cliServer = mockedObject<CodeQLCliServer>({});
       config = mockedObject<GitHubDatabaseConfig>({
         download: "ask",
         update: "ask",
@@ -74,8 +71,7 @@ describe("GitHubDatabasesModule", () => {
       gitHubDatabasesModule = new GitHubDatabasesModule(
         app,
         databaseManager,
-        databaseStoragePath,
-        cliServer,
+        databaseFetcher,
         config,
       );
 
@@ -124,8 +120,7 @@ describe("GitHubDatabasesModule", () => {
       gitHubDatabasesModule = new GitHubDatabasesModule(
         app,
         databaseManager,
-        databaseStoragePath,
-        cliServer,
+        databaseFetcher,
         config,
       );
 
@@ -206,9 +201,7 @@ describe("GitHubDatabasesModule", () => {
         owner,
         repo,
         databases,
-        databaseManager,
-        databaseStoragePath,
-        cliServer,
+        databaseFetcher,
         app.commands,
       );
     });
@@ -250,8 +243,7 @@ describe("GitHubDatabasesModule", () => {
         repo,
         databaseUpdates,
         databaseManager,
-        databaseStoragePath,
-        cliServer,
+        databaseFetcher,
         app.commands,
       );
     });

@@ -14,7 +14,6 @@ import {
 } from "./download";
 import type { GitHubDatabaseConfig } from "../../config";
 import type { DatabaseManager } from "../local-databases";
-import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import type { CodeqlDatabase, ListDatabasesResult } from "./api";
 import { listDatabases } from "./api";
 import type { DatabaseUpdate } from "./updates";
@@ -24,6 +23,7 @@ import {
   isNewerDatabaseAvailable,
 } from "./updates";
 import type { Octokit } from "@octokit/rest";
+import type { DatabaseFetcher } from "../database-fetcher";
 
 export class GitHubDatabasesModule extends DisposableObject {
   /**
@@ -33,8 +33,7 @@ export class GitHubDatabasesModule extends DisposableObject {
   constructor(
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
-    private readonly databaseStoragePath: string,
-    private readonly cliServer: CodeQLCliServer,
+    private readonly databaseFetcher: DatabaseFetcher,
     private readonly config: GitHubDatabaseConfig,
   ) {
     super();
@@ -43,15 +42,13 @@ export class GitHubDatabasesModule extends DisposableObject {
   public static async initialize(
     app: App,
     databaseManager: DatabaseManager,
-    databaseStoragePath: string,
-    cliServer: CodeQLCliServer,
+    databaseFetcher: DatabaseFetcher,
     config: GitHubDatabaseConfig,
   ): Promise<GitHubDatabasesModule> {
     const githubDatabasesModule = new GitHubDatabasesModule(
       app,
       databaseManager,
-      databaseStoragePath,
-      cliServer,
+      databaseFetcher,
       config,
     );
     app.subscriptions.push(githubDatabasesModule);
@@ -185,9 +182,7 @@ export class GitHubDatabasesModule extends DisposableObject {
       owner,
       repo,
       databases,
-      this.databaseManager,
-      this.databaseStoragePath,
-      this.cliServer,
+      this.databaseFetcher,
       this.app.commands,
     );
   }
@@ -212,8 +207,7 @@ export class GitHubDatabasesModule extends DisposableObject {
       repo,
       databaseUpdates,
       this.databaseManager,
-      this.databaseStoragePath,
-      this.cliServer,
+      this.databaseFetcher,
       this.app.commands,
     );
   }
