@@ -183,11 +183,11 @@ function getCommands(
 
   const restartQueryServer = async () =>
     withProgress(
-      async (progress: ProgressCallback, token: CancellationToken) => {
+      async (progress: ProgressCallback) => {
         // Restart all of the spawned servers: cli, query, and language.
         cliServer.restartCliServer();
         await Promise.all([
-          queryRunner.restartQueryServer(progress, token),
+          queryRunner.restartQueryServer(progress),
           async () => {
             if (languageClient.isRunning()) {
               await languageClient.restart();
@@ -203,7 +203,6 @@ function getCommands(
       },
       {
         title: "Restarting Query Server",
-        cancellable: true,
       },
     );
 

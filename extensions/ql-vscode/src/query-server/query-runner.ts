@@ -91,19 +91,11 @@ export class QueryRunner {
     return this.qs.logger;
   }
 
-  async restartQueryServer(
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<void> {
-    await this.qs.restartQueryServer(progress, token);
+  async restartQueryServer(progress: ProgressCallback): Promise<void> {
+    await this.qs.restartQueryServer(progress);
   }
 
-  onStart(
-    callBack: (
-      progress: ProgressCallback,
-      token: CancellationToken,
-    ) => Promise<void>,
-  ) {
+  onStart(callBack: (progress: ProgressCallback) => Promise<void>) {
     this.qs.onDidStartQueryServer(callBack);
   }
 
