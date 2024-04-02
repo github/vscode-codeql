@@ -20,6 +20,8 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../../variant-analysis/shared/variant-analysis";
 import type { AppEvent, AppEventEmitter } from "../../common/events";
+import type { ModeledMethod } from "../modeled-method";
+import type { MethodSignature } from "../method";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -56,7 +58,7 @@ export class ModelAlertsView extends AbstractWebview<
 
     await this.waitForPanelLoaded();
     await this.setViewState();
-    await this.updateReposResults(reposResults);
+    await this.setReposResults(reposResults);
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -102,6 +104,9 @@ export class ModelAlertsView extends AbstractWebview<
       case "stopEvaluationRun":
         await this.stopEvaluationRun();
         break;
+      case "revealInModelEditor":
+        await this.revealInModelEditor(msg.method);
+        break;
       default:
         assertNever(msg);
     }
@@ -116,7 +121,7 @@ export class ModelAlertsView extends AbstractWebview<
     });
   }
 
-  public async updateVariantAnalysis(
+  public async setVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
     if (!this.isShowingPanel) {
@@ -129,20 +134,7 @@ export class ModelAlertsView extends AbstractWebview<
     });
   }
 
-  public async updateRepoResults(
-    repositoryResult: VariantAnalysisScannedRepositoryResult,
-  ): Promise<void> {
-    if (!this.isShowingPanel) {
-      return;
-    }
-
-    await this.postMessage({
-      t: "setRepoResults",
-      repoResults: [repositoryResult],
-    });
-  }
-
-  public async updateReposResults(
+  public async setReposResults(
     repoResults: VariantAnalysisScannedRepositoryResult[],
   ): Promise<void> {
     if (!this.isShowingPanel) {
@@ -175,9 +167,39 @@ export class ModelAlertsView extends AbstractWebview<
         }
       }),
     );
+
+    this.push(
+      this.modelingEvents.onRevealInModelAlertsView(async (event) => {
+        if (event.dbUri === this.dbItem.databaseUri.toString()) {
+          await this.revealMethod(event.modeledMethod);
+        }
+      }),
+    );
   }
 
   private async stopEvaluationRun() {
     this.onEvaluationRunStopClickedEventEmitter.fire();
+  }
+
+  private async revealInModelEditor(method: MethodSignature): Promise<void> {
+    if (!this.dbItem) {
+      return;
+    }
+
+    this.modelingEvents.fireRevealInModelEditorEvent(
+      this.dbItem.databaseUri.toString(),
+      method,
+    );
+  }
+
+  private async revealMethod(method: ModeledMethod): Promise<void> {
+    const panel = await this.getPanel();
+
+    panel?.reveal();
+
+    await this.postMessage({
+      t: "revealModel",
+      modeledMethod: method,
+    });
   }
 }

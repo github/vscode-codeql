@@ -1,12 +1,15 @@
 import { styled } from "styled-components";
 import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
 import { Codicon } from "../common";
-import { useState } from "react";
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeBadge, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { formatDecimal } from "../../common/number";
 import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
 import { MethodName } from "../model-editor/MethodName";
 import { ModelDetails } from "./ModelDetails";
+import { vscode } from "../vscode-api";
+import { createModeledMethodKey } from "../../model-editor/modeled-method";
+import type { ModeledMethod } from "../../model-editor/modeled-method";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -36,6 +39,11 @@ const ModelTypeText = styled.span`
   color: var(--vscode-descriptionForeground);
 `;
 
+const ViewLink = styled(VSCodeLink)`
+  white-space: nowrap;
+  padding: 0 0 0.25em 1em;
+`;
+
 const ModelDetailsContainer = styled.div`
   padding-top: 10px;
 `;
@@ -53,12 +61,38 @@ const Alert = styled.li`
 
 interface Props {
   modelAlerts: ModelAlerts;
+  revealedModel: ModeledMethod | null;
 }
 
 export const ModelAlertsResults = ({
   modelAlerts,
+  revealedModel,
 }: Props): React.JSX.Element => {
   const [isExpanded, setExpanded] = useState(true);
+  const viewInModelEditor = useCallback(
+    () =>
+      vscode.postMessage({
+        t: "revealInModelEditor",
+        method: modelAlerts.model,
+      }),
+    [modelAlerts.model],
+  );
+
+  const ref = useRef<HTMLElement>();
+
+  useEffect(() => {
+    if (
+      revealedModel &&
+      createModeledMethodKey(modelAlerts.model) ===
+        createModeledMethodKey(revealedModel)
+    ) {
+      ref.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [modelAlerts.model, revealedModel]);
+
   return (
     <div>
       <TitleContainer onClick={() => setExpanded(!isExpanded)}>
@@ -71,6 +105,14 @@ export const ModelAlertsResults = ({
         <VSCodeBadge>{formatDecimal(modelAlerts.alerts.length)}</VSCodeBadge>
         <MethodName {...modelAlerts.model}></MethodName>
         <ModelTypeText>{modelAlerts.model.type}</ModelTypeText>
+        <ViewLink
+          onClick={(event: React.MouseEvent) => {
+            event.stopPropagation();
+            viewInModelEditor();
+          }}
+        >
+          View
+        </ViewLink>
       </TitleContainer>
       {isExpanded && (
         <>

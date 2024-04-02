@@ -19,10 +19,7 @@ import {
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
-import {
-  askForGitHubRepo,
-  downloadGitHubDatabase,
-} from "../databases/database-fetcher";
+import type { DatabaseFetcher } from "../databases/database-fetcher";
 import {
   getQlPackLocation,
   isCodespacesTemplate,
@@ -62,7 +59,7 @@ export class SkeletonQueryWizard {
     private readonly progress: ProgressCallback,
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
-    private readonly databaseStoragePath: string | undefined,
+    private readonly databaseFetcher: DatabaseFetcher,
     private readonly selectedItems: readonly QueryTreeViewItem[],
     private language: QueryLanguage | undefined = undefined,
   ) {}
@@ -363,10 +360,6 @@ export class SkeletonQueryWizard {
   }
 
   private async downloadDatabase(progress: ProgressCallback) {
-    if (this.databaseStoragePath === undefined) {
-      throw new Error("Database storage path is undefined");
-    }
-
     if (this.language === undefined) {
       throw new Error("Language is undefined");
     }
@@ -378,20 +371,10 @@ export class SkeletonQueryWizard {
     });
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
-    const chosenRepo = await askForGitHubRepo(undefined, githubRepoNwo);
-
-    if (!chosenRepo) {
-      throw new UserCancellationException("No GitHub repository provided");
-    }
-
-    await downloadGitHubDatabase(
-      chosenRepo,
-      this.app,
-      this.databaseManager,
-      this.databaseStoragePath,
+    await this.databaseFetcher.promptImportGithubDatabase(
       progress,
-      this.cliServer,
       this.language,
+      githubRepoNwo,
     );
   }
 

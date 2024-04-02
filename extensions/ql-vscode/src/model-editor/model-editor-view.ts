@@ -29,7 +29,7 @@ import type {
 } from "../databases/local-databases";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
-import { promptImportGithubDatabase } from "../databases/database-fetcher";
+import type { DatabaseFetcher } from "../databases/database-fetcher";
 import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import {
@@ -86,6 +86,7 @@ export class ModelEditorView extends AbstractWebview<
     private readonly modelingEvents: ModelingEvents,
     private readonly modelConfig: ModelConfigListener,
     private readonly databaseManager: DatabaseManager,
+    private readonly databaseFetcher: DatabaseFetcher,
     private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -383,6 +384,9 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "openModelAlertsView":
         await this.modelEvaluator.openModelAlertsView();
+        break;
+      case "revealInModelAlertsView":
+        await this.modelEvaluator.revealInModelAlertsView(msg.modeledMethod);
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
@@ -850,6 +854,7 @@ export class ModelEditorView extends AbstractWebview<
           this.modelingEvents,
           this.modelConfig,
           this.databaseManager,
+          this.databaseFetcher,
           this.variantAnalysisManager,
           this.cliServer,
           this.queryRunner,
@@ -920,13 +925,10 @@ export class ModelEditorView extends AbstractWebview<
     // the user to import the library database. We need to have the database
     // imported to the query server, so we need to register it to our workspace.
     const makeSelected = false;
-    const addedDatabase = await promptImportGithubDatabase(
-      this.app,
-      this.databaseManager,
-      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+    const addedDatabase = await this.databaseFetcher.promptImportGithubDatabase(
       progress,
-      this.cliServer,
       this.databaseItem.language,
+      undefined,
       makeSelected,
       false,
     );

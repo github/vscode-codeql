@@ -3,6 +3,7 @@ import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
+import { vscode } from "../vscode-api";
 
 const ModelAlertsButton = styled(VSCodeBadge)`
   cursor: pointer;
@@ -23,9 +24,16 @@ export const ModelAlertsIndicator = ({
     return null;
   }
 
-  if (!evaluationRun || !modeledMethod) {
+  if (!evaluationRun?.variantAnalysis || !modeledMethod) {
     return null;
   }
+
+  const revealInModelAlertsView = () => {
+    vscode.postMessage({
+      t: "revealInModelAlertsView",
+      modeledMethod,
+    });
+  };
 
   // TODO: Once we have alert provenance, we can show actual alert counts here.
   // For now, we show a random number.
@@ -37,6 +45,7 @@ export const ModelAlertsIndicator = ({
       aria-label="Model alerts"
       onClick={(event: React.MouseEvent) => {
         event.stopPropagation();
+        revealInModelAlertsView();
       }}
     >
       {number}

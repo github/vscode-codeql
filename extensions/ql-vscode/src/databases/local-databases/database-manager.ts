@@ -43,7 +43,7 @@ import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import type { LanguageContextStore } from "../../language-context-store";
 import type { DatabaseOrigin } from "./database-origin";
-import { ensureZippedSourceLocation } from "../database-fetcher";
+import { ensureZippedSourceLocation } from "./database-contents";
 
 /**
  * The name of the key in the workspaceState dictionary in which we

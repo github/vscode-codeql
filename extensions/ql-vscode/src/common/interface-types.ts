@@ -605,6 +605,11 @@ interface OpenModelAlertsViewMessage {
   t: "openModelAlertsView";
 }
 
+interface RevealInModelAlertsViewMessage {
+  t: "revealInModelAlertsView";
+  modeledMethod: ModeledMethod;
+}
+
 interface ModelDependencyMessage {
   t: "modelDependency";
 }
@@ -677,7 +682,8 @@ export type FromModelEditorMessage =
   | SetMultipleModeledMethodsMessage
   | StartModelEvaluationMessage
   | StopModelEvaluationMessage
-  | OpenModelAlertsViewMessage;
+  | OpenModelAlertsViewMessage
+  | RevealInModelAlertsViewMessage;
 
 interface RevealInEditorMessage {
   t: "revealInModelEditor";
@@ -746,13 +752,20 @@ interface StopEvaluationRunMessage {
   t: "stopEvaluationRun";
 }
 
+interface RevealModelMessage {
+  t: "revealModel";
+  modeledMethod: ModeledMethod;
+}
+
 export type ToModelAlertsMessage =
   | SetModelAlertsViewStateMessage
   | SetVariantAnalysisMessage
-  | SetRepoResultsMessage;
+  | SetRepoResultsMessage
+  | RevealModelMessage;
 
 export type FromModelAlertsMessage =
   | CommonFromViewMessages
   | OpenModelPackMessage
   | OpenActionsLogsMessage
-  | StopEvaluationRunMessage;
+  | StopEvaluationRunMessage
+  | RevealInEditorMessage;

@@ -23,7 +23,7 @@ import type {
   DatabaseManager,
   FullDatabaseOptions,
 } from "../../../../src/databases/local-databases";
-import * as databaseFetcher from "../../../../src/databases/database-fetcher";
+import type { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
 import { createMockDB } from "../../../factories/databases/databases";
 import { asError } from "../../../../src/common/helpers-pure";
 import { Setting } from "../../../../src/config";
@@ -42,6 +42,7 @@ describe("SkeletonQueryWizard", () => {
   let mockApp: App;
   let wizard: SkeletonQueryWizard;
   let mockDatabaseManager: DatabaseManager;
+  let databaseFetcher: DatabaseFetcher;
   let dir: DirResult;
   let storagePath: string;
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
@@ -55,11 +56,8 @@ describe("SkeletonQueryWizard", () => {
   let createExampleQlFileSpy: jest.SpiedFunction<
     typeof QlPackGenerator.prototype.createExampleQlFile
   >;
-  let downloadGitHubDatabaseSpy: jest.SpiedFunction<
-    typeof databaseFetcher.downloadGitHubDatabase
-  >;
-  let askForGitHubRepoSpy: jest.SpiedFunction<
-    typeof databaseFetcher.askForGitHubRepo
+  let promptImportGithubDatabaseMock: jest.MockedFunction<
+    DatabaseFetcher["promptImportGithubDatabase"]
   >;
   let openTextDocumentSpy: jest.SpiedFunction<
     typeof workspace.openTextDocument
@@ -115,6 +113,11 @@ describe("SkeletonQueryWizard", () => {
       },
     ] as WorkspaceFolder[]);
 
+    promptImportGithubDatabaseMock = jest.fn().mockReturnValue(undefined);
+    databaseFetcher = mockedObject<DatabaseFetcher>({
+      promptImportGithubDatabase: promptImportGithubDatabaseMock,
+    });
+
     quickPickSpy = jest.spyOn(window, "showQuickPick").mockResolvedValueOnce(
       mockedQuickPickItem({
         label: chosenLanguage,
@@ -133,9 +136,6 @@ describe("SkeletonQueryWizard", () => {
     createExampleQlFileSpy = jest
       .spyOn(QlPackGenerator.prototype, "createExampleQlFile")
       .mockResolvedValue(undefined);
-    downloadGitHubDatabaseSpy = jest
-      .spyOn(databaseFetcher, "downloadGitHubDatabase")
-      .mockResolvedValue(undefined);
     openTextDocumentSpy = jest
       .spyOn(workspace, "openTextDocument")
       .mockResolvedValue({} as TextDocument);
@@ -145,13 +145,9 @@ describe("SkeletonQueryWizard", () => {
       jest.fn(),
       mockApp,
       mockDatabaseManager,
-      storagePath,
+      databaseFetcher,
       selectedItems,
     );
-
-    askForGitHubRepoSpy = jest
-      .spyOn(databaseFetcher, "askForGitHubRepo")
-      .mockResolvedValue(QUERY_LANGUAGE_TO_DATABASE_REPO[chosenLanguage]);
   });
 
   afterEach(async () => {
@@ -172,7 +168,7 @@ describe("SkeletonQueryWizard", () => {
         jest.fn(),
         mockApp,
         mockDatabaseManager,
-        storagePath,
+        databaseFetcher,
         selectedItems,
         QueryLanguage.Swift,
       );
@@ -202,7 +198,7 @@ describe("SkeletonQueryWizard", () => {
           title: "Download database",
         }),
       );
-      expect(downloadGitHubDatabaseSpy).not.toHaveBeenCalled();
+      expect(promptImportGithubDatabaseMock).not.toHaveBeenCalled();
     });
 
     it("should download database for selected language when selecting download in prompt", async () => {
@@ -219,7 +215,7 @@ describe("SkeletonQueryWizard", () => {
       await wizard.execute();
       await wizard.waitForDownload();
 
-      expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
+      expect(promptImportGithubDatabaseMock).toHaveBeenCalled();
     });
 
     it("should open the query file", async () => {
@@ -320,7 +316,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManagerWithItems,
-            storagePath,
+            databaseFetcher,
             selectedItems,
           );
         });
@@ -328,7 +324,7 @@ describe("SkeletonQueryWizard", () => {
         it("should not download a new database for language", async () => {
           await wizard.execute();
 
-          expect(downloadGitHubDatabaseSpy).not.toHaveBeenCalled();
+          expect(promptImportGithubDatabaseMock).not.toHaveBeenCalled();
         });
 
         it("should not select the database", async () => {
@@ -369,7 +365,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManagerWithItems,
-            storagePath,
+            databaseFetcher,
             selectedItems,
           );
         });
@@ -377,7 +373,7 @@ describe("SkeletonQueryWizard", () => {
         it("should not download a new database for language", async () => {
           await wizard.execute();
 
-          expect(downloadGitHubDatabaseSpy).not.toHaveBeenCalled();
+          expect(promptImportGithubDatabaseMock).not.toHaveBeenCalled();
         });
 
         it("should select an existing database", async () => {
@@ -409,54 +405,23 @@ describe("SkeletonQueryWizard", () => {
     });
 
     describe("if database is missing", () => {
-      describe("if the user chooses to downloaded the suggested database from GitHub", () => {
-        beforeEach(() => {
-          showInformationMessageSpy.mockImplementation(
-            async (_message, options, item) => {
-              if (item === undefined) {
-                return options as MessageItem;
-              }
+      beforeEach(() => {
+        showInformationMessageSpy.mockImplementation(
+          async (_message, options, item) => {
+            if (item === undefined) {
+              return options as MessageItem;
+            }
 
-              return item;
-            },
-          );
-        });
-
-        it("should download a new database for language", async () => {
-          await wizard.execute();
-          await wizard.waitForDownload();
-
-          expect(askForGitHubRepoSpy).toHaveBeenCalled();
-          expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
-        });
+            return item;
+          },
+        );
       });
 
-      describe("if the user choses to download a different database from GitHub than the one suggested", () => {
-        beforeEach(() => {
-          showInformationMessageSpy.mockImplementation(
-            async (_message, options, item) => {
-              if (item === undefined) {
-                return options as MessageItem;
-              }
+      it("should download a new database for language", async () => {
+        await wizard.execute();
+        await wizard.waitForDownload();
 
-              return item;
-            },
-          );
-
-          const chosenGitHubRepo = "pickles-owner/pickles-repo";
-
-          askForGitHubRepoSpy = jest
-            .spyOn(databaseFetcher, "askForGitHubRepo")
-            .mockResolvedValue(chosenGitHubRepo);
-        });
-
-        it("should download the newly chosen database", async () => {
-          await wizard.execute();
-          await wizard.waitForDownload();
-
-          expect(askForGitHubRepoSpy).toHaveBeenCalled();
-          expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
-        });
+        expect(promptImportGithubDatabaseMock).toHaveBeenCalled();
       });
     });
   });
@@ -504,7 +469,7 @@ describe("SkeletonQueryWizard", () => {
         jest.fn(),
         mockApp,
         mockDatabaseManager,
-        storagePath,
+        databaseFetcher,
         selectedItems,
         QueryLanguage.Javascript,
       );
@@ -725,7 +690,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
-            storagePath,
+            databaseFetcher,
             selectedItems,
           );
         });
@@ -754,7 +719,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
-            storagePath,
+            databaseFetcher,
             selectedItems,
           );
         });
@@ -787,7 +752,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
-            storagePath,
+            databaseFetcher,
             selectedItems,
             QueryLanguage.Swift,
           );
@@ -830,7 +795,7 @@ describe("SkeletonQueryWizard", () => {
             jest.fn(),
             mockApp,
             mockDatabaseManager,
-            storagePath,
+            databaseFetcher,
             selectedItems,
           );
         });

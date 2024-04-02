@@ -13,6 +13,7 @@ import type { ModelConfigListener } from "../../../../src/config";
 import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
+import type { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
@@ -22,6 +23,7 @@ describe("ModelEditorView", () => {
     onDidChangeConfiguration: jest.fn(),
   });
   const databaseManager = mockEmptyDatabaseManager();
+  const databaseFetcher = mockedObject<DatabaseFetcher>({});
   const variantAnalysisManager = mockedObject<VariantAnalysisManager>({});
   const cliServer = mockedObject<CodeQLCliServer>({});
   const queryRunner = mockedObject<QueryRunner>({});
@@ -50,6 +52,7 @@ describe("ModelEditorView", () => {
       modelingEvents,
       modelConfig,
       databaseManager,
+      databaseFetcher,
       variantAnalysisManager,
       cliServer,
       queryRunner,

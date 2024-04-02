@@ -54,6 +54,7 @@ import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { tryGetQueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 import type { ExtensionApp } from "../common/vscode/vscode-app";
+import type { DatabaseFetcher } from "../databases/database-fetcher";
 
 export enum QuickEvalType {
   None,
@@ -69,6 +70,7 @@ export class LocalQueries extends DisposableObject {
     private readonly queryRunner: QueryRunner,
     private readonly queryHistoryManager: QueryHistoryManager,
     private readonly databaseManager: DatabaseManager,
+    private readonly databaseFetcher: DatabaseFetcher,
     private readonly cliServer: CodeQLCliServer,
     private readonly databaseUI: DatabaseUI,
     private readonly localQueryResultsView: ResultsView,
@@ -319,15 +321,13 @@ export class LocalQueries extends DisposableObject {
   private async createSkeletonQuery(): Promise<void> {
     await withProgress(
       async (progress: ProgressCallback) => {
-        const contextStoragePath =
-          this.app.workspaceStoragePath || this.app.globalStoragePath;
         const language = this.languageContextStore.selectedLanguage;
         const skeletonQueryWizard = new SkeletonQueryWizard(
           this.cliServer,
           progress,
           this.app,
           this.databaseManager,
-          contextStoragePath,
+          this.databaseFetcher,
           this.selectedQueryTreeViewItems,
           language,
         );
