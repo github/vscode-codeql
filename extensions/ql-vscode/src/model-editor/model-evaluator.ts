@@ -155,7 +155,7 @@ export class ModelEvaluator extends DisposableObject {
         );
       await this.modelAlertsView.showView(reposResults);
 
-      await this.modelAlertsView.updateVariantAnalysis(variantAnalysis);
+      await this.modelAlertsView.setVariantAnalysis(variantAnalysis);
     }
   }
 
@@ -271,7 +271,7 @@ export class ModelEvaluator extends DisposableObject {
             });
 
             // Update model alerts view
-            await this.modelAlertsView?.updateVariantAnalysis(variantAnalysis);
+            await this.modelAlertsView?.setVariantAnalysis(variantAnalysis);
           }
         },
       ),
