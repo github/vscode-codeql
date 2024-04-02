@@ -47,21 +47,27 @@ export async function runQuery({
     undefined,
   );
 
-  const completedQuery = await queryRun.evaluate(
-    progress,
-    token,
-    new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
+  const teeLogger = new TeeLogger(
+    queryRunner.logger,
+    queryRun.outputDir.logPath,
   );
 
-  if (completedQuery.resultType !== QueryResultType.SUCCESS) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`Failed to run ${basename(queryPath)} query: ${
-        completedQuery.message ?? "No message"
-      }`,
-    );
-    return;
+  try {
+    const completedQuery = await queryRun.evaluate(progress, token, teeLogger);
+
+    if (completedQuery.resultType !== QueryResultType.SUCCESS) {
+      void showAndLogExceptionWithTelemetry(
+        extLogger,
+        telemetryListener,
+        redactableError`Failed to run ${basename(queryPath)} query: ${
+          completedQuery.message ?? "No message"
+        }`,
+      );
+      return;
+    }
+
+    return completedQuery;
+  } finally {
+    teeLogger.dispose();
   }
-  return completedQuery;
 }
