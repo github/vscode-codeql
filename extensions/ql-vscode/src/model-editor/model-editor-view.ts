@@ -814,58 +814,61 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   private async modelDependency(): Promise<void> {
-    return withProgress(async (progress, token) => {
-      const addedDatabase =
-        await this.promptChooseNewOrExistingDatabase(progress);
-      if (!addedDatabase || token.isCancellationRequested) {
-        return;
-      }
+    return withProgress(
+      async (progress, token) => {
+        const addedDatabase =
+          await this.promptChooseNewOrExistingDatabase(progress);
+        if (!addedDatabase || token.isCancellationRequested) {
+          return;
+        }
 
-      const addedDbUri = addedDatabase.databaseUri.toString();
-      if (this.modelingStore.isDbOpen(addedDbUri)) {
-        this.modelingEvents.fireFocusModelEditorEvent(addedDbUri);
-        return;
-      }
+        const addedDbUri = addedDatabase.databaseUri.toString();
+        if (this.modelingStore.isDbOpen(addedDbUri)) {
+          this.modelingEvents.fireFocusModelEditorEvent(addedDbUri);
+          return;
+        }
 
-      const modelFile = await pickExtensionPack(
-        this.cliServer,
-        addedDatabase,
-        this.modelConfig,
-        this.app.logger,
-        progress,
-        token,
-        3,
-      );
-      if (!modelFile) {
-        return;
-      }
+        const modelFile = await pickExtensionPack(
+          this.cliServer,
+          addedDatabase,
+          this.modelConfig,
+          this.app.logger,
+          progress,
+          token,
+          3,
+        );
+        if (!modelFile) {
+          return;
+        }
 
-      // Check again just before opening the editor to ensure no model editor has been opened between
-      // our first check and now.
-      if (this.modelingStore.isDbOpen(addedDbUri)) {
-        this.modelingEvents.fireFocusModelEditorEvent(addedDbUri);
-        return;
-      }
+        // Check again just before opening the editor to ensure no model editor has been opened between
+        // our first check and now.
+        if (this.modelingStore.isDbOpen(addedDbUri)) {
+          this.modelingEvents.fireFocusModelEditorEvent(addedDbUri);
+          return;
+        }
 
-      const view = new ModelEditorView(
-        this.app,
-        this.modelingStore,
-        this.modelingEvents,
-        this.modelConfig,
-        this.databaseManager,
-        this.databaseFetcher,
-        this.variantAnalysisManager,
-        this.cliServer,
-        this.queryRunner,
-        this.queryStorageDir,
-        this.queryDir,
-        addedDatabase,
-        modelFile,
-        this.language,
-        Mode.Framework,
-      );
-      await view.openView();
-    });
+        const view = new ModelEditorView(
+          this.app,
+          this.modelingStore,
+          this.modelingEvents,
+          this.modelConfig,
+          this.databaseManager,
+          this.databaseFetcher,
+          this.variantAnalysisManager,
+          this.cliServer,
+          this.queryRunner,
+          this.queryStorageDir,
+          this.queryDir,
+          addedDatabase,
+          modelFile,
+          this.language,
+          Mode.Framework,
+        );
+        await view.openView();
+      },
+      { cancellable: true },
+    );
   }
 
   private async promptChooseNewOrExistingDatabase(

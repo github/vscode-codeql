@@ -91,26 +91,15 @@ export class QueryRunner {
     return this.qs.logger;
   }
 
-  async restartQueryServer(
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<void> {
-    await this.qs.restartQueryServer(progress, token);
+  async restartQueryServer(progress: ProgressCallback): Promise<void> {
+    await this.qs.restartQueryServer(progress);
   }
 
-  onStart(
-    callBack: (
-      progress: ProgressCallback,
-      token: CancellationToken,
-    ) => Promise<void>,
-  ) {
+  onStart(callBack: (progress: ProgressCallback) => Promise<void>) {
     this.qs.onDidStartQueryServer(callBack);
   }
 
-  async clearCacheInDatabase(
-    dbItem: DatabaseItem,
-    token: CancellationToken,
-  ): Promise<void> {
+  async clearCacheInDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents === undefined) {
       throw new Error("Can't clear the cache in an invalid database.");
     }
@@ -120,13 +109,10 @@ export class QueryRunner {
       dryRun: false,
       db,
     };
-    await this.qs.sendRequest(clearCache, params, token);
+    await this.qs.sendRequest(clearCache, params);
   }
 
-  async trimCacheInDatabase(
-    dbItem: DatabaseItem,
-    token: CancellationToken,
-  ): Promise<void> {
+  async trimCacheInDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents === undefined) {
       throw new Error("Can't trim the cache in an invalid database.");
     }
@@ -135,7 +121,7 @@ export class QueryRunner {
     const params: TrimCacheParams = {
       db,
     };
-    await this.qs.sendRequest(trimCache, params, token);
+    await this.qs.sendRequest(trimCache, params);
   }
 
   public async compileAndRunQueryAgainstDatabaseCore(
