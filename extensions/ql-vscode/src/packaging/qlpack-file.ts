@@ -10,7 +10,7 @@ export interface QlPackFile {
   extensionTargets?: Record<string, string> | null;
   dbscheme?: string | null;
   library?: boolean | null;
-  defaultSuite?: SuiteInstruction[] | null;
+  defaultSuite?: SuiteInstruction[] | SuiteInstruction | null;
   defaultSuiteFile?: string | null;
   dataExtensions?: string[] | string | null;
 }
