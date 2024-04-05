@@ -54,19 +54,21 @@ export function createMockApp({
 
 class MockAppEventEmitter<T> implements AppEventEmitter<T> {
   public event: AppEvent<T>;
+  private listeners: Array<(event: T) => void> = [];
 
   constructor() {
-    this.event = () => {
+    this.event = (listener) => {
+      this.listeners.push(listener);
       return new MockAppEvent();
     };
   }
 
-  public fire(): void {
-    // no-op
+  public fire(event: T): void {
+    this.listeners.forEach((listener) => listener(event));
   }
 
   public dispose() {
-    // no-op
+    this.listeners = [];
   }
 }
 

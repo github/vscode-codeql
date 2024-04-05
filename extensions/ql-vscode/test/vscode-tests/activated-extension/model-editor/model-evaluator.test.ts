@@ -1,22 +1,22 @@
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { App } from "../../../../src/common/app";
-import type { BaseLogger } from "../../../../src/common/logging";
+import type { NotificationLogger } from "../../../../src/common/logging";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import type { DatabaseItem } from "../../../../src/databases/local-databases";
 import type { ModelEvaluationRun } from "../../../../src/model-editor/model-evaluation-run";
 import { ModelEvaluator } from "../../../../src/model-editor/model-evaluator";
-import type { ModelingEvents } from "../../../../src/model-editor/modeling-events";
+import { ModelingEvents } from "../../../../src/model-editor/modeling-events";
 import type { ModelingStore } from "../../../../src/model-editor/modeling-store";
 import type { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
+import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
 import { createMockModelingStore } from "../../../__mocks__/model-editor/modelingStoreMock";
 import { mockedObject } from "../../../mocked-object";
 
 describe("Model Evaluator", () => {
   let modelEvaluator: ModelEvaluator;
-  let logger: BaseLogger;
+  let logger: NotificationLogger;
   let app: App;
   let cliServer: CodeQLCliServer;
   let modelingStore: ModelingStore;
@@ -30,13 +30,13 @@ describe("Model Evaluator", () => {
 
   beforeEach(() => {
     logger = createMockLogger();
-    app = mockedObject<App>({ logger });
+    app = createMockApp({ logger });
     cliServer = mockedObject<CodeQLCliServer>({});
     getModelEvaluationRunMock = jest.fn();
     modelingStore = createMockModelingStore({
       getModelEvaluationRun: getModelEvaluationRunMock,
     });
-    modelingEvents = createMockModelingEvents();
+    modelingEvents = new ModelingEvents(app);
     variantAnalysisManager = mockedObject<VariantAnalysisManager>({
       cancelVariantAnalysis: jest.fn(),
     });

@@ -10,15 +10,15 @@ import type { QueryRunner } from "../../../../src/query-server";
 import type { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { createMockModelingStore } from "../../../__mocks__/model-editor/modelingStoreMock";
 import type { ModelConfigListener } from "../../../../src/config";
-import { createMockModelingEvents } from "../../../__mocks__/model-editor/modelingEventsMock";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import type { DatabaseFetcher } from "../../../../src/databases/database-fetcher";
+import { ModelingEvents } from "../../../../src/model-editor/modeling-events";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
   const modelingStore = createMockModelingStore();
-  const modelingEvents = createMockModelingEvents();
+  const modelingEvents = new ModelingEvents(app);
   const modelConfig = mockedObject<ModelConfigListener>({
     onDidChangeConfiguration: jest.fn(),
   });
