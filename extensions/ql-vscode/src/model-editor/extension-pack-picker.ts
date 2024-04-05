@@ -2,7 +2,6 @@ import { join } from "path";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import type { CancellationToken } from "vscode";
-import { Uri } from "vscode";
 import Ajv from "ajv";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -14,10 +13,13 @@ import { getErrorMessage } from "../common/helpers-pure";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { NotificationLogger } from "../common/logging";
 import { showAndLogErrorMessage } from "../common/logging";
-import type { ModelConfig } from "../config";
+import type { ModelConfig, ModelConfigPackVariables } from "../config";
 import type { ExtensionPackName } from "./extension-pack-name";
 import { autoNameExtensionPack, formatPackName } from "./extension-pack-name";
-import { autoPickExtensionsDirectory } from "./extensions-workspace-folder";
+import {
+  ensurePackLocationIsInWorkspaceFolder,
+  packLocationToAbsolute,
+} from "./extensions-workspace-folder";
 
 import type { ExtensionPackMetadata } from "./extension-pack-metadata";
 import extensionPackMetadataSchemaJson from "./extension-pack-metadata.schema.json";
@@ -27,7 +29,7 @@ const extensionPackValidate = ajv.compile(extensionPackMetadataSchemaJson);
 
 export async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
-  databaseItem: Pick<DatabaseItem, "name" | "language">,
+  databaseItem: Pick<DatabaseItem, "name" | "language" | "origin">,
   modelConfig: ModelConfig,
   logger: NotificationLogger,
   progress: ProgressCallback,
@@ -64,19 +66,19 @@ export async function pickExtensionPack(
     maxStep,
   });
 
-  // Get the `codeQL.model.extensionsDirectory` setting for the language
-  const userExtensionsDirectory = modelConfig.getExtensionsDirectory(
-    databaseItem.language,
+  // The default is .github/codeql/extensions/${name}-${language}
+  const packPath = await packLocationToAbsolute(
+    modelConfig.getPackLocation(
+      databaseItem.language,
+      getModelConfigPackVariables(databaseItem),
+    ),
+    logger,
   );
-
-  // If the setting is not set, automatically pick a suitable directory
-  const extensionsDirectory = userExtensionsDirectory
-    ? Uri.file(userExtensionsDirectory)
-    : await autoPickExtensionsDirectory(logger);
-
-  if (!extensionsDirectory) {
+  if (!packPath) {
     return undefined;
   }
+
+  await ensurePackLocationIsInWorkspaceFolder(packPath, modelConfig, logger);
 
   // Generate the name of the extension pack
   const packName = autoNameExtensionPack(
@@ -139,20 +141,38 @@ export async function pickExtensionPack(
     return undefined;
   }
 
-  const packPath = join(extensionsDirectory.fsPath, packName.name);
-
   if (await pathExists(packPath)) {
     void showAndLogErrorMessage(
       logger,
       `Directory ${packPath} already exists for extension pack ${formatPackName(
         packName,
-      )}`,
+      )}, but wasn't returned by codeql resolve qlpacks --kind extension --no-recursive`,
     );
 
     return undefined;
   }
 
   return writeExtensionPack(packPath, packName, databaseItem.language);
+}
+
+function getModelConfigPackVariables(
+  databaseItem: Pick<DatabaseItem, "name" | "language" | "origin">,
+): ModelConfigPackVariables {
+  const database = databaseItem.name;
+  const language = databaseItem.language;
+  let name = databaseItem.name;
+  let owner = "";
+
+  if (databaseItem.origin?.type === "github") {
+    [owner, name] = databaseItem.origin.repository.split("/");
+  }
+
+  return {
+    database,
+    language,
+    name,
+    owner,
+  };
 }
 
 async function writeExtensionPack(

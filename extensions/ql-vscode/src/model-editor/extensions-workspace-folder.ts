@@ -1,9 +1,12 @@
 import type { WorkspaceFolder } from "vscode";
 import { FileType, Uri, workspace } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
-import { tmpdir } from "../common/files";
+import { containsPath, tmpdir } from "../common/files";
 import type { NotificationLogger } from "../common/logging";
 import { showAndLogErrorMessage } from "../common/logging";
+import { isAbsolute, normalize, resolve } from "path";
+import { nanoid } from "nanoid";
+import type { ModelConfig } from "../config";
 
 /**
  * Returns the ancestors of this path in order from furthest to closest (i.e. root of filesystem to parent directory)
@@ -22,26 +25,17 @@ function getAncestors(uri: Uri): Uri[] {
   return ancestors;
 }
 
-async function getRootWorkspaceDirectory(): Promise<Uri | undefined> {
-  // If there is a valid workspace file, just use its directory as the directory for the extensions
-  const workspaceFile = workspace.workspaceFile;
-  if (workspaceFile?.scheme === "file") {
-    return Uri.joinPath(workspaceFile, "..");
+function findCommonAncestor(uris: Uri[]): Uri | undefined {
+  if (uris.length === 0) {
+    return undefined;
   }
 
-  const allWorkspaceFolders = getOnDiskWorkspaceFoldersObjects();
-
-  // Get the system temp directory and convert it to a URI so it's normalized
-  const systemTmpdir = Uri.file(tmpdir());
-
-  const workspaceFolders = allWorkspaceFolders.filter((folder) => {
-    // Never use a workspace folder that is in the system temp directory
-    return !folder.uri.fsPath.startsWith(systemTmpdir.fsPath);
-  });
+  if (uris.length === 1) {
+    return uris[0];
+  }
 
   // Find the common root directory of all workspace folders by finding the longest common prefix
-  const commonRoot = workspaceFolders.reduce((commonRoot, folder) => {
-    const folderUri = folder.uri;
+  const commonRoot = uris.reduce((commonRoot, folderUri) => {
     const ancestors = getAncestors(folderUri);
 
     const minLength = Math.min(commonRoot.length, ancestors.length);
@@ -55,10 +49,10 @@ async function getRootWorkspaceDirectory(): Promise<Uri | undefined> {
     }
 
     return commonRoot.slice(0, commonLength);
-  }, getAncestors(workspaceFolders[0].uri));
+  }, getAncestors(uris[0]));
 
   if (commonRoot.length === 0) {
-    return await findGitFolder(workspaceFolders);
+    return undefined;
   }
 
   // The path closest to the workspace folders is the last element of the common root
@@ -67,6 +61,54 @@ async function getRootWorkspaceDirectory(): Promise<Uri | undefined> {
   // If we are at the root of the filesystem, we can't go up any further and there's something
   // wrong, so just return undefined
   if (commonRootUri.fsPath === Uri.joinPath(commonRootUri, "..").fsPath) {
+    return undefined;
+  }
+
+  return commonRootUri;
+}
+
+/**
+ * Finds the root directory of this workspace. It is determined
+ * heuristically based on the on-disk workspace folders.
+ *
+ * The heuristic is as follows:
+ * 1. If there is a workspace file (`<basename>.code-workspace`), use the directory containing that file
+ * 1. If there is only 1 workspace folder, use that folder=
+ * 3. If there is a common root directory for all workspace folders, use that directory
+ *   - Workspace folders in the system temp directory are ignored
+ *   - If the common root directory is the root of the filesystem, then it's not used
+ * 5. If there is a .git directory in any workspace folder, use the directory containing that .git directory
+ *    for which the .git directory is closest to a workspace folder
+ * 6. If none of the above apply, return `undefined`
+ */
+export async function getRootWorkspaceDirectory(): Promise<Uri | undefined> {
+  // If there is a valid workspace file, just use its directory as the directory for the extensions
+  const workspaceFile = workspace.workspaceFile;
+  if (workspaceFile?.scheme === "file") {
+    return Uri.joinPath(workspaceFile, "..");
+  }
+
+  const allWorkspaceFolders = getOnDiskWorkspaceFoldersObjects();
+
+  if (allWorkspaceFolders.length === 1) {
+    return allWorkspaceFolders[0].uri;
+  }
+
+  // Get the system temp directory and convert it to a URI so it's normalized
+  const systemTmpdir = Uri.file(tmpdir());
+
+  const workspaceFolders = allWorkspaceFolders.filter((folder) => {
+    // Never use a workspace folder that is in the system temp directory
+    return !folder.uri.fsPath.startsWith(systemTmpdir.fsPath);
+  });
+
+  // The path closest to the workspace folders is the last element of the common root
+  const commonRootUri = findCommonAncestor(
+    workspaceFolders.map((folder) => folder.uri),
+  );
+
+  // If there is no common root URI, try to find a .git folder in the workspace folders
+  if (commonRootUri === undefined) {
     return await findGitFolder(workspaceFolders);
   }
 
@@ -126,74 +168,116 @@ async function findGitFolder(
   return closestFolder?.[1];
 }
 
-/**
- * Finds a suitable directory for extension packs to be created in. This will
- * always be a path ending in `.github/codeql/extensions`. The parent directory
- * will be determined heuristically based on the on-disk workspace folders.
- *
- * The heuristic is as follows (`.github/codeql/extensions` is added automatically unless
- * otherwise specified):
- * 1. If there is only 1 workspace folder, use that folder
- * 2. If there is a workspace folder for which the path ends in `.github/codeql/extensions`, use that folder
- *   - If there are multiple such folders, use the first one
- *   - Does not append `.github/codeql/extensions` to the path
- * 3. If there is a workspace file (`<basename>.code-workspace`), use the directory containing that file
- * 4. If there is a common root directory for all workspace folders, use that directory
- *   - Workspace folders in the system temp directory are ignored
- *   - If the common root directory is the root of the filesystem, then it's not used
- * 5. If there is a .git directory in any workspace folder, use the directory containing that .git directory
- *    for which the .git directory is closest to a workspace folder
- * 6. If none of the above apply, return `undefined`
- */
-export async function autoPickExtensionsDirectory(
+export async function packLocationToAbsolute(
+  packLocation: string,
   logger: NotificationLogger,
-): Promise<Uri | undefined> {
-  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+): Promise<string | undefined> {
+  let userPackLocation = packLocation.trim();
 
-  // If there are no on-disk workspace folders, we can't do anything
-  if (workspaceFolders.length === 0) {
+  if (!isAbsolute(userPackLocation)) {
+    const rootDirectory = await getRootWorkspaceDirectory();
+    if (!rootDirectory) {
+      void logger.log("Unable to determine root workspace directory");
+
+      return undefined;
+    }
+
+    userPackLocation = resolve(rootDirectory.fsPath, userPackLocation);
+  }
+
+  userPackLocation = normalize(userPackLocation);
+
+  if (!isAbsolute(userPackLocation)) {
+    // This shouldn't happen, but just in case
     void showAndLogErrorMessage(
       logger,
-      `Could not find any on-disk workspace folders. Please ensure that you have opened a folder or workspace.`,
+      `Invalid pack location: ${userPackLocation}`,
     );
-    return undefined;
-  }
-
-  // If there's only 1 workspace folder, use the `.github/codeql/extensions` directory in that folder
-  if (workspaceFolders.length === 1) {
-    return Uri.joinPath(
-      workspaceFolders[0].uri,
-      ".github",
-      "codeql",
-      "extensions",
-    );
-  }
-
-  // Now try to find a workspace folder for which the path ends in `.github/codeql/extensions`
-  const workspaceFolderForExtensions = workspaceFolders.find((folder) =>
-    // Using path instead of fsPath because path always uses forward slashes
-    folder.uri.path.endsWith(".github/codeql/extensions"),
-  );
-  if (workspaceFolderForExtensions) {
-    return workspaceFolderForExtensions.uri;
-  }
-
-  // Get the root workspace directory, i.e. the common root directory of all workspace folders
-  const rootDirectory = await getRootWorkspaceDirectory();
-  if (!rootDirectory) {
-    void logger.log("Unable to determine root workspace directory");
 
     return undefined;
   }
 
-  // We'll create a new workspace folder for the extensions in the root workspace directory
-  // at `.github/codeql/extensions`
-  const extensionsUri = Uri.joinPath(
-    rootDirectory,
-    ".github",
-    "codeql",
-    "extensions",
+  // If we are at the root of the filesystem, then something is wrong since
+  // this should never be the location of a pack
+  if (userPackLocation === resolve(userPackLocation, "..")) {
+    void showAndLogErrorMessage(
+      logger,
+      `Invalid pack location: ${userPackLocation}`,
+    );
+
+    return undefined;
+  }
+
+  return userPackLocation;
+}
+
+/**
+ * This function will try to add the pack location as a workspace folder if it's not already in a
+ * workspace folder and the workspace is a multi-root workspace.
+ */
+export async function ensurePackLocationIsInWorkspaceFolder(
+  packLocation: string,
+  modelConfig: ModelConfig,
+  logger: NotificationLogger,
+): Promise<void> {
+  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+
+  const existsInWorkspaceFolder = workspaceFolders.some((folder) =>
+    containsPath(folder.uri.fsPath, packLocation),
   );
+
+  if (existsInWorkspaceFolder) {
+    // If the pack location is already in a workspace folder, we don't need to do anything
+    return;
+  }
+
+  if (workspace.workspaceFile === undefined) {
+    // If we're not in a workspace, we can't add a workspace folder without reloading the window,
+    // so we'll not do anything
+    return;
+  }
+
+  // To find the "correct" directory to add as a workspace folder, we'll generate a few different
+  // pack locations and find the common ancestor of the directories. This is the directory that
+  // we'll add as a workspace folder.
+
+  // Generate a few different pack locations to get an accurate common ancestor
+  const otherPackLocations = await Promise.all(
+    Array.from({ length: 3 }).map(() =>
+      packLocationToAbsolute(
+        modelConfig.getPackLocation(nanoid(), {
+          database: nanoid(),
+          language: nanoid(),
+          name: nanoid(),
+          owner: nanoid(),
+        }),
+        logger,
+      ),
+    ),
+  );
+
+  const otherPackLocationUris = otherPackLocations
+    .filter((loc): loc is string => loc !== undefined)
+    .map((loc) => Uri.file(loc));
+
+  if (otherPackLocationUris.length === 0) {
+    void logger.log(
+      `Failed to generate different pack locations, not adding workspace folder.`,
+    );
+    return;
+  }
+
+  const commonRootUri = findCommonAncestor([
+    Uri.file(packLocation),
+    ...otherPackLocationUris,
+  ]);
+
+  if (commonRootUri === undefined) {
+    void logger.log(
+      `Failed to find common ancestor for ${packLocation} and ${otherPackLocationUris[0].fsPath}, not adding workspace folder.`,
+    );
+    return;
+  }
 
   if (
     !workspace.updateWorkspaceFolders(
@@ -201,15 +285,13 @@ export async function autoPickExtensionsDirectory(
       0,
       {
         name: "CodeQL Extension Packs",
-        uri: extensionsUri,
+        uri: commonRootUri,
       },
     )
   ) {
     void logger.log(
-      `Failed to add workspace folder for extensions at ${extensionsUri.fsPath}`,
+      `Failed to add workspace folder for extensions at ${commonRootUri.fsPath}`,
     );
-    return undefined;
+    return;
   }
-
-  return extensionsUri;
 }

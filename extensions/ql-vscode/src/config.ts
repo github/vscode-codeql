@@ -13,6 +13,7 @@ import {
   FilterKey,
   SortKey,
 } from "./variant-analysis/shared/variant-analysis-filter-sort";
+import { substituteConfigVariables } from "./common/config-template";
 
 export const ALL_SETTINGS: Setting[] = [];
 
@@ -734,18 +735,28 @@ const LLM_GENERATION_DEV_ENDPOINT = new Setting(
   MODEL_SETTING,
 );
 const MODEL_EVALUATION = new Setting("evaluation", MODEL_SETTING);
-const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
+const MODEL_PACK_LOCATION = new Setting("packLocation", MODEL_SETTING);
 const ENABLE_PYTHON = new Setting("enablePython", MODEL_SETTING);
 const ENABLE_ACCESS_PATH_SUGGESTIONS = new Setting(
   "enableAccessPathSuggestions",
   MODEL_SETTING,
 );
 
+export type ModelConfigPackVariables = {
+  database: string;
+  owner: string;
+  name: string;
+  language: string;
+};
+
 export interface ModelConfig {
   flowGeneration: boolean;
   llmGeneration: boolean;
   showTypeModels: boolean;
-  getExtensionsDirectory(languageId: string): string | undefined;
+  getPackLocation(
+    languageId: string,
+    variables: ModelConfigPackVariables,
+  ): string;
   enablePython: boolean;
   enableAccessPathSuggestions: boolean;
 }
@@ -787,10 +798,16 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
     return !!MODEL_EVALUATION.getValue<boolean>();
   }
 
-  public getExtensionsDirectory(languageId: string): string | undefined {
-    return EXTENSIONS_DIRECTORY.getValue<string>({
-      languageId,
-    });
+  public getPackLocation(
+    languageId: string,
+    variables: ModelConfigPackVariables,
+  ): string {
+    return substituteConfigVariables(
+      MODEL_PACK_LOCATION.getValue<string>({
+        languageId,
+      }),
+      variables,
+    );
   }
 
   public get enablePython(): boolean {
