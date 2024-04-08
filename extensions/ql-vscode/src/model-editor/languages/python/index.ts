@@ -177,6 +177,7 @@ export const python: ModelsAsDataLanguage = {
     // Argument and Parameter are equivalent in Python, but we'll use Argument in the model editor
     const argumentsList = getArgumentsList(method.methodParameters).map(
       (argument, index): MethodArgument => {
+        // Keyword-only arguments end with `:` in the query
         if (argument.endsWith(":")) {
           return {
             path: `Argument[${argument}]`,
@@ -184,9 +185,18 @@ export const python: ModelsAsDataLanguage = {
           };
         }
 
+        // Positional-only arguments end with `/` in the query
+        if (argument.endsWith("/")) {
+          return {
+            path: `Argument[${index}]`,
+            label: `Argument[${index}]: ${argument.substring(0, argument.length - 1)}`,
+          };
+        }
+
+        // All other arguments are both keyword and positional
         return {
-          path: `Argument[${index}]`,
-          label: `Argument[${index}]: ${argument}`,
+          path: `Argument[${index},${argument}:]`,
+          label: `Argument[${index},${argument}:]: ${argument}`,
         };
       },
     );
