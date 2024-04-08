@@ -109,7 +109,7 @@ import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-mana
 import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./common/mock-gh-api/vscode/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
-import { ExtensionApp } from "./common/vscode/vscode-app";
+import { ExtensionApp } from "./common/vscode/extension-app";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./common/errors";
 import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";

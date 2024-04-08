@@ -16,7 +16,7 @@ import { createMockApiResponse } from "../../../factories/variant-analysis/gh-ap
 import { UserCancellationException } from "../../../../src/common/vscode/progress";
 import type { Repository } from "../../../../src/variant-analysis/gh-api/repository";
 import { DbManager } from "../../../../src/databases/db-manager";
-import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
+import { ExtensionApp } from "../../../../src/common/vscode/extension-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { QueryLanguage } from "../../../../src/common/query-language";
