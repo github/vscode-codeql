@@ -2,7 +2,6 @@ import type { App, EnvironmentContext } from "../../src/common/app";
 import { AppMode } from "../../src/common/app";
 import type { AppEvent, AppEventEmitter } from "../../src/common/events";
 import type { Memento } from "../../src/common/memento";
-import type { Disposable } from "../../src/common/disposable-object";
 import { createMockLogger } from "./loggerMock";
 import { createMockMemento } from "../mock-memento";
 import { testCredentialsWithStub } from "../factories/authentication";
@@ -59,7 +58,11 @@ class MockAppEventEmitter<T> implements AppEventEmitter<T> {
   constructor() {
     this.event = (listener) => {
       this.listeners.push(listener);
-      return new MockAppEvent();
+      return {
+        dispose: () => {
+          this.listeners = this.listeners.filter((l) => l !== listener);
+        },
+      };
     };
   }
 
@@ -69,16 +72,6 @@ class MockAppEventEmitter<T> implements AppEventEmitter<T> {
 
   public dispose() {
     this.listeners = [];
-  }
-}
-
-class MockAppEvent implements Disposable {
-  public fire(): void {
-    // no-op
-  }
-
-  public dispose() {
-    // no-op
   }
 }
 
