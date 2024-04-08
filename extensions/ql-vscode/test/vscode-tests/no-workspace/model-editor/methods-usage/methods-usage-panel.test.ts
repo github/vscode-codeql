@@ -1,5 +1,5 @@
 import type { TreeView } from "vscode";
-import { EventEmitter, window } from "vscode";
+import { window } from "vscode";
 import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import type { Method } from "../../../../../src/model-editor/method";
 import { MethodsUsagePanel } from "../../../../../src/model-editor/methods-usage/methods-usage-panel";
@@ -13,8 +13,8 @@ import type { ModelingStore } from "../../../../../src/model-editor/modeling-sto
 import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
 import type { ModeledMethod } from "../../../../../src/model-editor/modeled-method";
 import { Mode } from "../../../../../src/model-editor/shared/mode";
-import { createMockModelingEvents } from "../../../../__mocks__/model-editor/modelingEventsMock";
-import type { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
+import { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
+import { createMockApp } from "../../../../__mocks__/appMock";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -36,7 +36,8 @@ describe("MethodsUsagePanel", () => {
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
       const modelingStore = createMockModelingStore();
-      const modelingEvents = createMockModelingEvents();
+      const app = createMockApp({});
+      const modelingEvents = new ModelingEvents(app);
 
       const panel = new MethodsUsagePanel(
         modelingStore,
@@ -66,8 +67,6 @@ describe("MethodsUsagePanel", () => {
     const modeledMethods: Record<string, ModeledMethod[]> = {};
     const modifiedMethodSignatures: Set<string> = new Set();
     const usage = createUsage();
-    const selectedMethodChangedEmitter: ModelingEvents["onSelectedMethodChangedEventEmitter"] =
-      new EventEmitter();
 
     beforeEach(() => {
       mockTreeView = mockedObject<TreeView<unknown>>({
@@ -76,9 +75,7 @@ describe("MethodsUsagePanel", () => {
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
       modelingStore = createMockModelingStore();
-      modelingEvents = createMockModelingEvents({
-        onSelectedMethodChanged: selectedMethodChangedEmitter.event,
-      });
+      modelingEvents = new ModelingEvents(createMockApp({}));
     });
 
     it("should reveal the correct item in the tree view", async () => {
@@ -101,15 +98,15 @@ describe("MethodsUsagePanel", () => {
         modifiedMethodSignatures,
       );
 
-      selectedMethodChangedEmitter.fire({
-        databaseItem: dbItem,
+      modelingEvents.fireSelectedMethodChangedEvent(
+        dbItem,
         method,
         usage,
-        modeledMethods: modeledMethods[method.signature],
-        isModified: modifiedMethodSignatures.has(method.signature),
-        isInProgress: false,
-        processedByAutoModel: false,
-      });
+        modeledMethods[method.signature],
+        modifiedMethodSignatures.has(method.signature),
+        false,
+        false,
+      );
 
       expect(mockTreeView.reveal).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -136,15 +133,15 @@ describe("MethodsUsagePanel", () => {
         modifiedMethodSignatures,
       );
 
-      selectedMethodChangedEmitter.fire({
-        databaseItem: dbItem,
+      modelingEvents.fireSelectedMethodChangedEvent(
+        dbItem,
         method,
         usage,
-        modeledMethods: modeledMethods[method.signature],
-        isModified: modifiedMethodSignatures.has(method.signature),
-        isInProgress: false,
-        processedByAutoModel: false,
-      });
+        modeledMethods[method.signature],
+        modifiedMethodSignatures.has(method.signature),
+        false,
+        false,
+      );
 
       expect(mockTreeView.reveal).not.toHaveBeenCalled();
     });

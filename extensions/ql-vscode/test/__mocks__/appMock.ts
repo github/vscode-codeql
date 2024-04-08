@@ -2,7 +2,6 @@ import type { App, EnvironmentContext } from "../../src/common/app";
 import { AppMode } from "../../src/common/app";
 import type { AppEvent, AppEventEmitter } from "../../src/common/events";
 import type { Memento } from "../../src/common/memento";
-import type { Disposable } from "../../src/common/disposable-object";
 import { createMockLogger } from "./loggerMock";
 import { createMockMemento } from "../mock-memento";
 import { testCredentialsWithStub } from "../factories/authentication";
@@ -54,29 +53,25 @@ export function createMockApp({
 
 class MockAppEventEmitter<T> implements AppEventEmitter<T> {
   public event: AppEvent<T>;
+  private listeners: Array<(event: T) => void> = [];
 
   constructor() {
-    this.event = () => {
-      return new MockAppEvent();
+    this.event = (listener) => {
+      this.listeners.push(listener);
+      return {
+        dispose: () => {
+          this.listeners = this.listeners.filter((l) => l !== listener);
+        },
+      };
     };
   }
 
-  public fire(): void {
-    // no-op
+  public fire(event: T): void {
+    this.listeners.forEach((listener) => listener(event));
   }
 
   public dispose() {
-    // no-op
-  }
-}
-
-class MockAppEvent implements Disposable {
-  public fire(): void {
-    // no-op
-  }
-
-  public dispose() {
-    // no-op
+    this.listeners = [];
   }
 }
 

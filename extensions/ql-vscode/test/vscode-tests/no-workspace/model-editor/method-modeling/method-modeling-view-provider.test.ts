@@ -1,14 +1,12 @@
 import type { Uri, Webview, WebviewView } from "vscode";
-import { EventEmitter } from "vscode";
 import type { ModelConfigListener } from "../../../../../src/config";
 import { MethodModelingViewProvider } from "../../../../../src/model-editor/method-modeling/method-modeling-view-provider";
 import { createMockApp } from "../../../../__mocks__/appMock";
-import { createMockModelingEvents } from "../../../../__mocks__/model-editor/modelingEventsMock";
 import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
 import { mockedObject } from "../../../../mocked-object";
 import type { FromMethodModelingMessage } from "../../../../../src/common/interface-types";
 import { DisposableObject } from "../../../../../src/common/disposable-object";
-import type { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
+import { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
 import type {
   DbModelingState,
   ModelingStore,
@@ -29,10 +27,6 @@ describe("method modeling view provider", () => {
     ModelingStore["getSelectedMethodDetails"]
   >;
 
-  // Modeling events
-  let selectedMethodChangedEventEmitter: ModelingEvents["onSelectedMethodChangedEventEmitter"];
-  let dbOpenedEventEmitter: ModelingEvents["onDbOpenedEventEmitter"];
-
   // View provider
   let viewProvider: MethodModelingViewProvider;
   let onDidReceiveMessage: (msg: FromMethodModelingMessage) => Promise<void>;
@@ -48,12 +42,7 @@ describe("method modeling view provider", () => {
       getSelectedMethodDetails,
     });
 
-    selectedMethodChangedEventEmitter = new EventEmitter();
-    dbOpenedEventEmitter = new EventEmitter();
-    const modelingEvents = createMockModelingEvents({
-      onSelectedMethodChanged: selectedMethodChangedEventEmitter.event,
-      onDbOpened: dbOpenedEventEmitter.event,
-    });
+    const modelingEvents = new ModelingEvents(app);
 
     const modelConfigListener = mockedObject<ModelConfigListener>({
       showTypeModels: true,
