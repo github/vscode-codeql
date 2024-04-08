@@ -12,7 +12,7 @@ import { UserCancellationException } from "../common/vscode/progress";
 import { getErrorMessage } from "../common/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackFilePath } from "../common/ql";
 import type { App } from "../common/app";
-import type { ExtensionApp } from "../common/vscode/vscode-app";
+import type { ExtensionApp } from "../common/vscode/extension-app";
 import type { QlPackFile } from "../packaging/qlpack-file";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";

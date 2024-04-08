@@ -53,7 +53,7 @@ import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 import { tryGetQueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
-import type { ExtensionApp } from "../common/vscode/vscode-app";
+import type { ExtensionApp } from "../common/vscode/extension-app";
 import type { DatabaseFetcher } from "../databases/database-fetcher";
 
 export enum QuickEvalType {

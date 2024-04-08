@@ -41,7 +41,7 @@ import type { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/g
 import { SortKey } from "../../../../src/variant-analysis/shared/variant-analysis-filter-sort";
 import { DbManager } from "../../../../src/databases/db-manager";
 import type { App } from "../../../../src/common/app";
-import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
+import { ExtensionApp } from "../../../../src/common/vscode/extension-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { mockedObject } from "../../utils/mocking.helpers";
 import {

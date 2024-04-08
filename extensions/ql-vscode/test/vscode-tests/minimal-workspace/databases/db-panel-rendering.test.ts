@@ -7,7 +7,7 @@ import { DbConfigStore } from "../../../../src/databases/config/db-config-store"
 import { DbTreeDataProvider } from "../../../../src/databases/ui/db-tree-data-provider";
 import { DbItemKind } from "../../../../src/databases/db-item";
 import type { DbTreeViewItem } from "../../../../src/databases/ui/db-tree-view-item";
-import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
+import { ExtensionApp } from "../../../../src/common/vscode/extension-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
 import { createDbConfig } from "../../../factories/db-config-factories";
 import { setRemoteControllerRepo } from "../../../../src/config";

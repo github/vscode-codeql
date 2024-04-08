@@ -2,7 +2,7 @@ import { CancellationTokenSource } from "vscode";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { App } from "../../../../src/common/app";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
+import { ExtensionApp } from "../../../../src/common/vscode/extension-app";
 import { resolveCodeScanningQueryPack } from "../../../../src/variant-analysis/code-scanning-pack";
 import { getActivatedExtension } from "../../global.helper";
 
