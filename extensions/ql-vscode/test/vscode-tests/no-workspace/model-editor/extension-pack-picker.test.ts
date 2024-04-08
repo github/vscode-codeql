@@ -11,6 +11,7 @@ import type { ExtensionPack } from "../../../../src/model-editor/shared/extensio
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import type { ModelConfig } from "../../../../src/config";
 import { mockedObject } from "../../utils/mocking.helpers";
+import type { DatabaseItem } from "../../../../src/databases/local-databases";
 
 describe("pickExtensionPack", () => {
   let tmpDir: string;
@@ -19,9 +20,16 @@ describe("pickExtensionPack", () => {
   let autoExtensionPack: ExtensionPack;
 
   let qlPacks: QlpacksInfo;
-  const databaseItem = {
+  const databaseItem: Pick<DatabaseItem, "name" | "language" | "origin"> = {
     name: "github/vscode-codeql",
     language: "java",
+    origin: {
+      type: "github",
+      repository: "github/vscode-codeql",
+      databaseId: 123578,
+      databaseCreatedAt: "2021-01-01T00:00:00Z",
+      commitOid: "1234567890abcdef",
+    },
   };
 
   const progress = jest.fn();
@@ -67,7 +75,12 @@ describe("pickExtensionPack", () => {
       .mockReturnValue([workspaceFolder]);
 
     modelConfig = mockedObject<ModelConfig>({
-      getExtensionsDirectory: jest.fn().mockReturnValue(undefined),
+      getPackLocation: jest
+        .fn()
+        .mockImplementation(
+          (language, { name }) =>
+            `.github/codeql/extensions/${name}-${language}`,
+        ),
     });
   });
 
@@ -90,10 +103,15 @@ describe("pickExtensionPack", () => {
       additionalPacks,
       true,
     );
-    expect(modelConfig.getExtensionsDirectory).toHaveBeenCalledWith("java");
+    expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
+      database: "github/vscode-codeql",
+      language: "java",
+      name: "vscode-codeql",
+      owner: "github",
+    });
   });
 
-  it("creates a new extension pack using default extensions directory", async () => {
+  it("creates a new extension pack using default pack location", async () => {
     const tmpDir = await dir({
       unsafeCleanup: true,
     });
@@ -154,7 +172,12 @@ describe("pickExtensionPack", () => {
       dataExtensions: ["models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(modelConfig.getExtensionsDirectory).toHaveBeenCalledWith("java");
+    expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
+      database: "github/vscode-codeql",
+      language: "java",
+      name: "vscode-codeql",
+      owner: "github",
+    });
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
@@ -169,21 +192,146 @@ describe("pickExtensionPack", () => {
     });
   });
 
-  it("creates a new extension pack when extensions directory is set in config", async () => {
+  it("creates a new extension pack when absolute custom pack location is set in config", async () => {
+    const packLocation = join(Uri.file(tmpDir).fsPath, "java/ql/lib");
+
+    const modelConfig = mockedObject<ModelConfig>({
+      getPackLocation: jest.fn().mockReturnValue(packLocation),
+    });
+
+    const cliServer = mockCliServer({});
+
+    expect(
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        modelConfig,
+        logger,
+        progress,
+        token,
+        maxStep,
+      ),
+    ).toEqual({
+      path: packLocation,
+      yamlPath: join(packLocation, "codeql-pack.yml"),
+      name: autoExtensionPackName,
+      version: "0.0.0",
+      language: "java",
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
+      database: "github/vscode-codeql",
+      language: "java",
+      name: "vscode-codeql",
+      owner: "github",
+    });
+
+    expect(
+      loadYaml(await readFile(join(packLocation, "codeql-pack.yml"), "utf8")),
+    ).toEqual({
+      name: autoExtensionPackName,
+      version: "0.0.0",
+      library: true,
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+  });
+
+  it("creates a new extension pack when relative custom pack location is set in config", async () => {
+    const packLocation = join(Uri.file(tmpDir).fsPath, "java/ql/lib");
+
+    const modelConfig = mockedObject<ModelConfig>({
+      getPackLocation: jest
+        .fn()
+        .mockImplementation((language) => `${language}/ql/lib`),
+    });
+
+    const cliServer = mockCliServer({});
+
+    expect(
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        modelConfig,
+        logger,
+        progress,
+        token,
+        maxStep,
+      ),
+    ).toEqual({
+      path: packLocation,
+      yamlPath: join(packLocation, "codeql-pack.yml"),
+      name: autoExtensionPackName,
+      version: "0.0.0",
+      language: "java",
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
+      database: "github/vscode-codeql",
+      language: "java",
+      name: "vscode-codeql",
+      owner: "github",
+    });
+
+    expect(
+      loadYaml(await readFile(join(packLocation, "codeql-pack.yml"), "utf8")),
+    ).toEqual({
+      name: autoExtensionPackName,
+      version: "0.0.0",
+      library: true,
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+  });
+
+  it("creates a new extension pack with non-github origin database", async () => {
+    const databaseItem: Pick<DatabaseItem, "name" | "language" | "origin"> = {
+      name: "vscode-codeql",
+      language: "java",
+      origin: {
+        type: "archive",
+        path: "/path/to/codeql-database.zip",
+      },
+    };
+
     const tmpDir = await dir({
       unsafeCleanup: true,
     });
 
-    const configExtensionsDir = join(
+    workspaceFoldersSpy.mockReturnValue([
+      {
+        uri: Uri.joinPath(Uri.file(tmpDir.path), "codeql-custom-queries-java"),
+        name: "codeql-custom-queries-java",
+        index: 2,
+      },
+    ]);
+
+    jest
+      .spyOn(workspace, "workspaceFile", "get")
+      .mockReturnValue(
+        Uri.joinPath(Uri.file(tmpDir.path), "workspace.code-workspace"),
+      );
+    jest.spyOn(workspace, "updateWorkspaceFolders").mockReturnValue(true);
+
+    const newPackDir = join(
       Uri.file(tmpDir.path).fsPath,
-      "my-custom-extensions-directory",
+      ".github",
+      "codeql",
+      "extensions",
+      "vscode-codeql-java",
     );
-
-    const modelConfig = mockedObject<ModelConfig>({
-      getExtensionsDirectory: jest.fn().mockReturnValue(configExtensionsDir),
-    });
-
-    const newPackDir = join(configExtensionsDir, "vscode-codeql-java");
 
     const cliServer = mockCliServer({});
 
@@ -200,7 +348,7 @@ describe("pickExtensionPack", () => {
     ).toEqual({
       path: newPackDir,
       yamlPath: join(newPackDir, "codeql-pack.yml"),
-      name: autoExtensionPackName,
+      name: "pack/vscode-codeql-java",
       version: "0.0.0",
       language: "java",
       extensionTargets: {
@@ -209,12 +357,17 @@ describe("pickExtensionPack", () => {
       dataExtensions: ["models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(modelConfig.getExtensionsDirectory).toHaveBeenCalledWith("java");
+    expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
+      database: "vscode-codeql",
+      language: "java",
+      name: "vscode-codeql",
+      owner: "",
+    });
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
     ).toEqual({
-      name: autoExtensionPackName,
+      name: "pack/vscode-codeql-java",
       version: "0.0.0",
       library: true,
       extensionTargets: {
