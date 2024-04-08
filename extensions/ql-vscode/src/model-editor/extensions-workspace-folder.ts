@@ -73,13 +73,13 @@ function findCommonAncestor(uris: Uri[]): Uri | undefined {
  *
  * The heuristic is as follows:
  * 1. If there is a workspace file (`<basename>.code-workspace`), use the directory containing that file
- * 1. If there is only 1 workspace folder, use that folder=
+ * 2. If there is only 1 workspace folder, use that folder
  * 3. If there is a common root directory for all workspace folders, use that directory
  *   - Workspace folders in the system temp directory are ignored
  *   - If the common root directory is the root of the filesystem, then it's not used
- * 5. If there is a .git directory in any workspace folder, use the directory containing that .git directory
+ * 4. If there is a .git directory in any workspace folder, use the directory containing that .git directory
  *    for which the .git directory is closest to a workspace folder
- * 6. If none of the above apply, return `undefined`
+ * 5. If none of the above apply, return `undefined`
  */
 export async function getRootWorkspaceDirectory(): Promise<Uri | undefined> {
   // If there is a valid workspace file, just use its directory as the directory for the extensions
