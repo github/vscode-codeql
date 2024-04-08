@@ -177,11 +177,28 @@ export const python: ModelsAsDataLanguage = {
     // Argument and Parameter are equivalent in Python, but we'll use Argument in the model editor
     const argumentsList = getArgumentsList(method.methodParameters).map(
       (argument, index): MethodArgument => {
+        if (
+          method.endpointType === EndpointType.Method &&
+          argument === "self" &&
+          index === 0
+        ) {
+          return {
+            path: "Argument[self]",
+            label: "Argument[self]: self",
+          };
+        }
+
+        // If this is a method, self does not count as an argument index, so we
+        // should start at 0 for the second argument
+        if (method.endpointType === EndpointType.Method) {
+          index -= 1;
+        }
+
         // Keyword-only arguments end with `:` in the query
         if (argument.endsWith(":")) {
           return {
             path: `Argument[${argument}]`,
-            label: `Argument[${argument}]`,
+            label: `Argument[${argument}]: ${argument.substring(0, argument.length - 1)}`,
           };
         }
 
@@ -202,13 +219,7 @@ export const python: ModelsAsDataLanguage = {
     );
 
     return {
-      options: [
-        {
-          path: "Argument[self]",
-          label: "Argument[self]",
-        },
-        ...argumentsList,
-      ],
+      options: argumentsList,
       // If there are no arguments, we will default to "Argument[self]"
       defaultArgumentPath:
         argumentsList.length > 0 ? argumentsList[0].path : "Argument[self]",
