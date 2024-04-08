@@ -1951,7 +1951,7 @@
     "prepare": "cd ../.. && husky install"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.26.9",
+    "@floating-ui/react": "^0.26.10",
     "@octokit/plugin-retry": "^6.0.1",
     "@octokit/rest": "^20.0.2",
     "@vscode/codicons": "^0.0.35",
