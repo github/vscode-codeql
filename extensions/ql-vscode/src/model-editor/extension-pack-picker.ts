@@ -15,7 +15,11 @@ import type { NotificationLogger } from "../common/logging";
 import { showAndLogErrorMessage } from "../common/logging";
 import type { ModelConfig, ModelConfigPackVariables } from "../config";
 import type { ExtensionPackName } from "./extension-pack-name";
-import { autoNameExtensionPack, formatPackName } from "./extension-pack-name";
+import {
+  validatePackName,
+  sanitizePackName,
+  formatPackName,
+} from "./extension-pack-name";
 import {
   ensurePackLocationIsInWorkspaceFolder,
   packLocationToAbsolute,
@@ -80,15 +84,20 @@ export async function pickExtensionPack(
 
   await ensurePackLocationIsInWorkspaceFolder(packPath, modelConfig, logger);
 
-  // Generate the name of the extension pack
-  const packName = autoNameExtensionPack(
-    databaseItem.name,
+  const userPackName = modelConfig.getPackName(
     databaseItem.language,
+    getModelConfigPackVariables(databaseItem),
   );
-  if (!packName) {
+
+  // Generate the name of the extension pack
+  const packName = sanitizePackName(userPackName);
+
+  // Validate that the name isn't too long etc.
+  const packNameError = validatePackName(formatPackName(packName));
+  if (packNameError) {
     void showAndLogErrorMessage(
       logger,
-      `Could not automatically name extension pack for database ${databaseItem.name}`,
+      `Invalid model pack name '${formatPackName(packName)}' for database ${databaseItem.name}: ${packNameError}`,
     );
 
     return undefined;

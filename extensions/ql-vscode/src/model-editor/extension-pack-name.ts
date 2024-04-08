@@ -15,11 +15,8 @@ export function formatPackName(packName: ExtensionPackName): string {
   return `${packName.scope}/${packName.name}`;
 }
 
-export function autoNameExtensionPack(
-  name: string,
-  language: string,
-): ExtensionPackName | undefined {
-  let packName = `${name}-${language}`;
+export function sanitizePackName(userPackName: string): ExtensionPackName {
+  let packName = userPackName;
   if (!packName.includes("/")) {
     packName = `pack/${packName}`;
   }
