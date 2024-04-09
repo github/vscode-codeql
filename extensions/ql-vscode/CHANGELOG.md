@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.12.5 - 9 April 2024
 
 - Add new supported source and sink kinds in the CodeQL Model Editor [#3511](https://github.com/github/vscode-codeql/pull/3511)
 - Fix a bug where the test explorer wouldn't display certain tests. [#3527](https://github.com/github/vscode-codeql/pull/3527)
