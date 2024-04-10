@@ -58,6 +58,18 @@ describe("sanitizePackName", () => {
       name: "a/b--d--e-d-csharp",
       expected: "a/b-d-e-d-csharp",
     },
+    {
+      name: "/github/vscode-codeql",
+      expected: "github/vscode-codeql",
+    },
+    {
+      name: "github/vscode-codeql/",
+      expected: "github/vscode-codeql",
+    },
+    {
+      name: "///github/vscode-codeql///",
+      expected: "github/vscode-codeql",
+    },
   ];
 
   test.each(testCases)(
