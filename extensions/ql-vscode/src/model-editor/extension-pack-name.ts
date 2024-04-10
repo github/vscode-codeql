@@ -15,11 +15,19 @@ export function formatPackName(packName: ExtensionPackName): string {
   return `${packName.scope}/${packName.name}`;
 }
 
-export function autoNameExtensionPack(
-  name: string,
-  language: string,
-): ExtensionPackName | undefined {
-  let packName = `${name}-${language}`;
+export function sanitizePackName(userPackName: string): ExtensionPackName {
+  let packName = userPackName;
+
+  packName = packName.trim();
+
+  while (packName.startsWith("/")) {
+    packName = packName.slice(1);
+  }
+
+  while (packName.endsWith("/")) {
+    packName = packName.slice(0, -1);
+  }
+
   if (!packName.includes("/")) {
     packName = `pack/${packName}`;
   }

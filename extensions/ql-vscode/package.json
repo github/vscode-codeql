@@ -470,6 +470,11 @@
             "type": "string",
             "default": ".github/codeql/extensions/${name}-${language}",
             "markdownDescription": "Location for newly created CodeQL model packs. The location can be either absolute or relative. If relative, it is relative to the workspace root.\n\nThe following variables are supported:\n* **${database}** - the name of the database\n* **${language}** - the name of the language\n* **${name}** - the name of the GitHub repository, or the name of the database if the database was not downloaded from GitHub\n* **${owner}** - the owner of the GitHub repository, or an empty string if the database was not downloaded from GitHub"
+          },
+          "codeQL.model.packName": {
+            "type": "string",
+            "default": "${owner}/${name}-${language}",
+            "markdownDescription": "Name of newly created CodeQL model packs. If the result is not a valid pack name, it will be converted to a valid pack name.\n\nThe following variables are supported:\n* **${database}** - the name of the database\n* **${language}** - the name of the language\n* **${name}** - the name of the GitHub repository, or the name of the database if the database was not downloaded from GitHub\n* **${owner}** - the owner of the GitHub repository, or an empty string if the database was not downloaded from GitHub"
           }
         }
       },
