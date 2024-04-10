@@ -348,11 +348,7 @@ export class ModelEditorView extends AbstractWebview<
           withProgress((progress) => this.loadMethods(progress), {
             cancellable: false,
           }),
-          withProgress((progress) => this.loadAccessPathSuggestions(progress), {
-            cancellable: false,
-            location: ProgressLocation.Window,
-            title: "Loading access path suggestions",
-          }),
+          this.loadAccessPathSuggestions(),
         ]);
         void telemetryListener?.sendUIInteraction("model-editor-switch-modes");
 
@@ -410,11 +406,7 @@ export class ModelEditorView extends AbstractWebview<
         await this.generateModeledMethodsOnStartup();
       }),
       this.loadExistingModeledMethods(),
-      withProgress((progress) => this.loadAccessPathSuggestions(progress), {
-        cancellable: false,
-        location: ProgressLocation.Window,
-        title: "Loading access path suggestions",
-      }),
+      this.loadAccessPathSuggestions(),
     ]);
   }
 
@@ -559,9 +551,7 @@ export class ModelEditorView extends AbstractWebview<
     }
   }
 
-  protected async loadAccessPathSuggestions(
-    progress: ProgressCallback,
-  ): Promise<void> {
+  protected async loadAccessPathSuggestions(): Promise<void> {
     const mode = this.modelingStore.getMode(this.databaseItem);
 
     const modelsAsDataLanguage = getModelsAsDataLanguage(this.language);
@@ -570,46 +560,55 @@ export class ModelEditorView extends AbstractWebview<
       return;
     }
 
-    try {
-      const suggestions = await runSuggestionsQuery(mode, {
-        parseResults: (results) =>
-          accessPathSuggestions.parseResults(
-            results,
-            modelsAsDataLanguage,
+    await withProgress(
+      async (progress) => {
+        try {
+          const suggestions = await runSuggestionsQuery(mode, {
+            parseResults: (results) =>
+              accessPathSuggestions.parseResults(
+                results,
+                modelsAsDataLanguage,
+                this.app.logger,
+              ),
+            queryConstraints: accessPathSuggestions.queryConstraints(mode),
+            cliServer: this.cliServer,
+            queryRunner: this.queryRunner,
+            queryStorageDir: this.queryStorageDir,
+            databaseItem: this.databaseItem,
+            progress,
+            token: this.cancellationTokenSource.token,
+            logger: this.app.logger,
+          });
+
+          if (!suggestions) {
+            return;
+          }
+
+          const options: AccessPathSuggestionOptions = {
+            input: parseAccessPathSuggestionRowsToOptions(suggestions.input),
+            output: parseAccessPathSuggestionRowsToOptions(suggestions.output),
+          };
+
+          await this.postMessage({
+            t: "setAccessPathSuggestions",
+            accessPathSuggestions: options,
+          });
+        } catch (e: unknown) {
+          void showAndLogExceptionWithTelemetry(
             this.app.logger,
-          ),
-        queryConstraints: accessPathSuggestions.queryConstraints(mode),
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        queryStorageDir: this.queryStorageDir,
-        databaseItem: this.databaseItem,
-        progress,
-        token: this.cancellationTokenSource.token,
-        logger: this.app.logger,
-      });
-
-      if (!suggestions) {
-        return;
-      }
-
-      const options: AccessPathSuggestionOptions = {
-        input: parseAccessPathSuggestionRowsToOptions(suggestions.input),
-        output: parseAccessPathSuggestionRowsToOptions(suggestions.output),
-      };
-
-      await this.postMessage({
-        t: "setAccessPathSuggestions",
-        accessPathSuggestions: options,
-      });
-    } catch (e: unknown) {
-      void showAndLogExceptionWithTelemetry(
-        this.app.logger,
-        this.app.telemetry,
-        redactableError(
-          asError(e),
-        )`Failed to fetch access path suggestions: ${getErrorMessage(e)}`,
-      );
-    }
+            this.app.telemetry,
+            redactableError(
+              asError(e),
+            )`Failed to fetch access path suggestions: ${getErrorMessage(e)}`,
+          );
+        }
+      },
+      {
+        cancellable: false,
+        location: ProgressLocation.Window,
+        title: "Loading access path suggestions",
+      },
+    );
   }
 
   protected async generateModeledMethods(): Promise<void> {
