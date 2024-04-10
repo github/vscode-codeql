@@ -348,17 +348,11 @@ export class ModelEditorView extends AbstractWebview<
           withProgress((progress) => this.loadMethods(progress), {
             cancellable: false,
           }),
-          // Only load access path suggestions if the feature is enabled
-          this.modelConfig.enableAccessPathSuggestions
-            ? withProgress(
-                (progress) => this.loadAccessPathSuggestions(progress),
-                {
-                  cancellable: false,
-                  location: ProgressLocation.Window,
-                  title: "Loading access path suggestions",
-                },
-              )
-            : undefined,
+          withProgress((progress) => this.loadAccessPathSuggestions(progress), {
+            cancellable: false,
+            location: ProgressLocation.Window,
+            title: "Loading access path suggestions",
+          }),
         ]);
         void telemetryListener?.sendUIInteraction("model-editor-switch-modes");
 
@@ -416,14 +410,11 @@ export class ModelEditorView extends AbstractWebview<
         await this.generateModeledMethodsOnStartup();
       }),
       this.loadExistingModeledMethods(),
-      // Only load access path suggestions if the feature is enabled
-      this.modelConfig.enableAccessPathSuggestions
-        ? withProgress((progress) => this.loadAccessPathSuggestions(progress), {
-            cancellable: false,
-            location: ProgressLocation.Window,
-            title: "Loading access path suggestions",
-          })
-        : undefined,
+      withProgress((progress) => this.loadAccessPathSuggestions(progress), {
+        cancellable: false,
+        location: ProgressLocation.Window,
+        title: "Loading access path suggestions",
+      }),
     ]);
   }
 

@@ -737,10 +737,6 @@ const LLM_GENERATION_DEV_ENDPOINT = new Setting(
 const MODEL_EVALUATION = new Setting("evaluation", MODEL_SETTING);
 const MODEL_PACK_LOCATION = new Setting("packLocation", MODEL_SETTING);
 const ENABLE_PYTHON = new Setting("enablePython", MODEL_SETTING);
-const ENABLE_ACCESS_PATH_SUGGESTIONS = new Setting(
-  "enableAccessPathSuggestions",
-  MODEL_SETTING,
-);
 
 export type ModelConfigPackVariables = {
   database: string;
@@ -758,7 +754,6 @@ export interface ModelConfig {
     variables: ModelConfigPackVariables,
   ): string;
   enablePython: boolean;
-  enableAccessPathSuggestions: boolean;
 }
 
 export class ModelConfigListener extends ConfigListener implements ModelConfig {
@@ -812,10 +807,6 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
   public get enablePython(): boolean {
     return !!ENABLE_PYTHON.getValue<boolean>();
-  }
-
-  public get enableAccessPathSuggestions(): boolean {
-    return !!ENABLE_ACCESS_PATH_SUGGESTIONS.getValue<boolean>();
   }
 }
 
