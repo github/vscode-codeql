@@ -1969,7 +1969,7 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.10",
-    "@octokit/plugin-retry": "^6.0.1",
+    "@octokit/plugin-retry": "^7.1.0",
     "@octokit/rest": "^20.0.2",
     "@vscode/codicons": "^0.0.35",
     "@vscode/debugadapter": "^1.59.0",
@@ -2010,7 +2010,7 @@
     "@babel/preset-typescript": "^7.21.4",
     "@faker-js/faker": "^8.4.1",
     "@github/markdownlint-github": "^0.6.2",
-    "@octokit/plugin-throttling": "^8.0.0",
+    "@octokit/plugin-throttling": "^9.1.0",
     "@playwright/test": "^1.40.1",
     "@storybook/addon-a11y": "^8.0.8",
     "@storybook/addon-actions": "^8.0.8",
