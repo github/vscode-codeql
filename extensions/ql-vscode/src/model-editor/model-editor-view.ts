@@ -278,7 +278,6 @@ export class ModelEditorView extends AbstractWebview<
                 modeledMethods,
                 mode,
                 this.cliServer,
-                this.modelConfig,
                 this.app.logger,
               );
 
@@ -487,7 +486,6 @@ export class ModelEditorView extends AbstractWebview<
         this.extensionPack,
         this.language,
         this.cliServer,
-        this.modelConfig,
         this.app.logger,
       );
       this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);

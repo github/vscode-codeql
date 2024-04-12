@@ -725,7 +725,6 @@ export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
 const MODEL_SETTING = new Setting("model", ROOT_SETTING);
 const FLOW_GENERATION = new Setting("flowGeneration", MODEL_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
-const SHOW_TYPE_MODELS = new Setting("showTypeModels", MODEL_SETTING);
 const LLM_GENERATION_BATCH_SIZE = new Setting(
   "llmGenerationBatchSize",
   MODEL_SETTING,
@@ -749,7 +748,6 @@ export type ModelConfigPackVariables = {
 export interface ModelConfig {
   flowGeneration: boolean;
   llmGeneration: boolean;
-  showTypeModels: boolean;
   getPackLocation(
     languageId: string,
     variables: ModelConfigPackVariables,
@@ -769,10 +767,6 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
   public get llmGeneration(): boolean {
     return !!LLM_GENERATION.getValue<boolean>();
-  }
-
-  public get showTypeModels(): boolean {
-    return !!SHOW_TYPE_MODELS.getValue<boolean>();
   }
 
   /**

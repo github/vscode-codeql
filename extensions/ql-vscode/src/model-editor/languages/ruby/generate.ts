@@ -1,9 +1,6 @@
 import type { BaseLogger } from "../../../common/logging";
 import type { DecodedBqrs } from "../../../common/bqrs-cli-types";
-import type {
-  GenerationContext,
-  ModelsAsDataLanguage,
-} from "../models-as-data";
+import type { ModelsAsDataLanguage } from "../models-as-data";
 import type { ModeledMethod } from "../../modeled-method";
 import type { DataTuple } from "../../model-extension-file";
 
@@ -12,21 +9,10 @@ export function parseGenerateModelResults(
   bqrs: DecodedBqrs,
   modelsAsDataLanguage: ModelsAsDataLanguage,
   logger: BaseLogger,
-  { config }: GenerationContext,
 ): ModeledMethod[] {
   const modeledMethods: ModeledMethod[] = [];
 
   for (const resultSetName in bqrs) {
-    if (
-      resultSetName ===
-        modelsAsDataLanguage.predicates.type?.extensiblePredicate &&
-      !config.showTypeModels
-    ) {
-      // Don't load generated type results when type models are hidden. These are already
-      // automatically generated on start-up.
-      continue;
-    }
-
     const definition = Object.values(modelsAsDataLanguage.predicates).find(
       (definition) => definition.extensiblePredicate === resultSetName,
     );

@@ -170,7 +170,6 @@ export const ruby: ModelsAsDataLanguage = {
           methodParameters: "",
         };
       },
-      isHidden: ({ config }) => !config.showTypeModels,
     },
   },
   modelGeneration: {
@@ -210,7 +209,7 @@ export const ruby: ModelsAsDataLanguage = {
         },
       ];
     },
-    parseResults: (queryPath, bqrs, modelsAsDataLanguage, logger, context) => {
+    parseResults: (queryPath, bqrs, modelsAsDataLanguage, logger) => {
       // Only parse type models when automatically generating models
       const typePredicate = modelsAsDataLanguage.predicates.type;
       if (!typePredicate) {
@@ -229,13 +228,12 @@ export const ruby: ModelsAsDataLanguage = {
         },
         modelsAsDataLanguage,
         logger,
-        context,
       );
     },
     // Only enabled for framework mode when type models are hidden
-    type: ({ mode, config }) =>
-      mode === Mode.Framework && !config.showTypeModels
-        ? AutoModelGenerationType.SeparateFile
+    type: ({ mode }) =>
+      mode === Mode.Framework
+        ? AutoModelGenerationType.Models
         : AutoModelGenerationType.Disabled,
   },
   accessPathSuggestions: {

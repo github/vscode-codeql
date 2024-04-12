@@ -12,7 +12,6 @@ import { load as loadYaml } from "js-yaml";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
 import type { QueryLanguage } from "../common/query-language";
-import type { ModelConfig } from "./languages";
 
 export const GENERATED_MODELS_SUFFIX = ".model.generated.yml";
 
@@ -23,14 +22,12 @@ export async function saveModeledMethods(
   modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   mode: Mode,
   cliServer: CodeQLCliServer,
-  modelConfig: ModelConfig,
   logger: NotificationLogger,
 ): Promise<void> {
   const existingModeledMethods = await loadModeledMethodFiles(
     extensionPack,
     language,
     cliServer,
-    modelConfig,
     logger,
   );
 
@@ -53,14 +50,9 @@ async function loadModeledMethodFiles(
   extensionPack: ExtensionPack,
   language: QueryLanguage,
   cliServer: CodeQLCliServer,
-  modelConfig: ModelConfig,
   logger: NotificationLogger,
 ): Promise<Record<string, Record<string, ModeledMethod[]>>> {
-  const modelFiles = await listModelFiles(
-    extensionPack.path,
-    cliServer,
-    modelConfig,
-  );
+  const modelFiles = await listModelFiles(extensionPack.path, cliServer);
 
   const modeledMethodsByFile: Record<
     string,
@@ -92,7 +84,6 @@ export async function loadModeledMethods(
   extensionPack: ExtensionPack,
   language: QueryLanguage,
   cliServer: CodeQLCliServer,
-  modelConfig: ModelConfig,
   logger: NotificationLogger,
 ): Promise<Record<string, ModeledMethod[]>> {
   const existingModeledMethods: Record<string, ModeledMethod[]> = {};
@@ -101,7 +92,6 @@ export async function loadModeledMethods(
     extensionPack,
     language,
     cliServer,
-    modelConfig,
     logger,
   );
   for (const modeledMethods of Object.values(modeledMethodsByFile)) {
@@ -120,7 +110,6 @@ export async function loadModeledMethods(
 export async function listModelFiles(
   extensionPackPath: string,
   cliServer: CodeQLCliServer,
-  modelConfig: ModelConfig,
 ): Promise<Set<string>> {
   const result = await cliServer.resolveExtensions(
     extensionPackPath,
@@ -131,11 +120,8 @@ export async function listModelFiles(
   for (const [path, extensions] of Object.entries(result.data)) {
     if (pathsEqual(path, extensionPackPath)) {
       for (const extension of extensions) {
-        // We only load generated models when type models are shown
-        if (
-          !modelConfig.showTypeModels &&
-          extension.file.endsWith(GENERATED_MODELS_SUFFIX)
-        ) {
+        // We never load generated models
+        if (extension.file.endsWith(GENERATED_MODELS_SUFFIX)) {
           continue;
         }
 
