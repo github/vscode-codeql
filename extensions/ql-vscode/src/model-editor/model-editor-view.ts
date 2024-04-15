@@ -54,7 +54,11 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import type { ModelingStore } from "./modeling-store";
 import type { ModelingEvents } from "./modeling-events";
 import type { ModelsAsDataLanguage } from "./languages";
-import { createModelConfig, getModelsAsDataLanguage } from "./languages";
+import {
+  AutoModelGenerationType,
+  createModelConfig,
+  getModelsAsDataLanguage,
+} from "./languages";
 import { runGenerateQueries } from "./generate";
 import { ResponseError } from "vscode-jsonrpc";
 import { LSPErrorCodes } from "vscode-languageclient";
@@ -700,10 +704,12 @@ export class ModelEditorView extends AbstractWebview<
       return;
     }
 
-    if (
-      autoModelGeneration.enabled &&
-      !autoModelGeneration.enabled({ mode, config: this.modelConfig })
-    ) {
+    const autoModelType = autoModelGeneration.type({
+      mode,
+      config: this.modelConfig,
+    });
+
+    if (autoModelType === AutoModelGenerationType.Disabled) {
       return;
     }
 
@@ -724,14 +730,37 @@ export class ModelEditorView extends AbstractWebview<
             queryConstraints: autoModelGeneration.queryConstraints(mode),
             filterQueries: autoModelGeneration.filterQueries,
             onResults: (queryPath, results) => {
-              const extensions = autoModelGeneration.parseResultsToYaml(
-                queryPath,
-                results,
-                modelsAsDataLanguage,
-                this.app.logger,
-              );
+              switch (autoModelType) {
+                case AutoModelGenerationType.SeparateFile: {
+                  const extensions = autoModelGeneration.parseResultsToYaml(
+                    queryPath,
+                    results,
+                    modelsAsDataLanguage,
+                    this.app.logger,
+                  );
 
-              extensionFile.extensions.push(...extensions);
+                  extensionFile.extensions.push(...extensions);
+                  break;
+                }
+                case AutoModelGenerationType.Models: {
+                  const modeledMethods = autoModelGeneration.parseResults(
+                    queryPath,
+                    results,
+                    modelsAsDataLanguage,
+                    this.app.logger,
+                    {
+                      mode,
+                      config: this.modelConfig,
+                    },
+                  );
+
+                  this.addModeledMethodsFromArray(modeledMethods);
+                  break;
+                }
+                default: {
+                  assertNever(autoModelType);
+                }
+              }
             },
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
@@ -751,22 +780,24 @@ export class ModelEditorView extends AbstractWebview<
           return;
         }
 
-        progress({
-          step: 4000,
-          maxStep: 4000,
-          message: "Saving generated models",
-        });
+        if (autoModelType === AutoModelGenerationType.SeparateFile) {
+          progress({
+            step: 4000,
+            maxStep: 4000,
+            message: "Saving generated models",
+          });
 
-        const fileContents = `# This file was automatically generated from ${this.databaseItem.name}. Manual changes will not persist.\n\n${modelExtensionFileToYaml(extensionFile)}`;
-        const filePath = join(
-          this.extensionPack.path,
-          "models",
-          `${this.language}${GENERATED_MODELS_SUFFIX}`,
-        );
+          const fileContents = `# This file was automatically generated from ${this.databaseItem.name}. Manual changes will not persist.\n\n${modelExtensionFileToYaml(extensionFile)}`;
+          const filePath = join(
+            this.extensionPack.path,
+            "models",
+            `${this.language}${GENERATED_MODELS_SUFFIX}`,
+          );
 
-        await outputFile(filePath, fileContents);
+          await outputFile(filePath, fileContents);
 
-        void this.app.logger.log(`Saved generated model file to ${filePath}`);
+          void this.app.logger.log(`Saved generated model file to ${filePath}`);
+        }
       },
       {
         cancellable: false,

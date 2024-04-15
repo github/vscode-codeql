@@ -1,4 +1,5 @@
 import type { ModelsAsDataLanguage } from "../models-as-data";
+import { AutoModelGenerationType } from "../models-as-data";
 import { sharedExtensiblePredicates, sharedKinds } from "../shared";
 import { Mode } from "../../shared/mode";
 import { parseGenerateModelResults } from "./generate";
@@ -209,9 +210,33 @@ export const ruby: ModelsAsDataLanguage = {
         },
       ];
     },
+    parseResults: (queryPath, bqrs, modelsAsDataLanguage, logger, context) => {
+      // Only parse type models when automatically generating models
+      const typePredicate = modelsAsDataLanguage.predicates.type;
+      if (!typePredicate) {
+        throw new Error("Type predicate not found");
+      }
+
+      const typeTuples = bqrs[typePredicate.extensiblePredicate];
+      if (!typeTuples) {
+        return [];
+      }
+
+      return parseGenerateModelResults(
+        queryPath,
+        {
+          [typePredicate.extensiblePredicate]: typeTuples,
+        },
+        modelsAsDataLanguage,
+        logger,
+        context,
+      );
+    },
     // Only enabled for framework mode when type models are hidden
-    enabled: ({ mode, config }) =>
-      mode === Mode.Framework && !config.showTypeModels,
+    type: ({ mode, config }) =>
+      mode === Mode.Framework && !config.showTypeModels
+        ? AutoModelGenerationType.SeparateFile
+        : AutoModelGenerationType.Disabled,
   },
   accessPathSuggestions: {
     queryConstraints: (mode) => ({

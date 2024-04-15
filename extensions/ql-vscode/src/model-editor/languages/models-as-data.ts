@@ -105,15 +105,34 @@ type ParseResultsToYaml = (
   logger: BaseLogger,
 ) => ModelExtension[];
 
+export enum AutoModelGenerationType {
+  /**
+   * Auto model generation is disabled and will not be run.
+   */
+  Disabled = "disabled",
+  /**
+   * The models are generated to a separate file (suffixed with .model.generated.yml).
+   */
+  SeparateFile = "separateFile",
+  /**
+   * The models are added as a model in the model editor, but are not automatically saved.
+   * The user can view them and choose to save them.
+   */
+  Models = "models",
+}
+
 type ModelsAsDataLanguageAutoModelGeneration = {
   queryConstraints: (mode: Mode) => QueryConstraints;
   filterQueries?: (queryPath: string) => boolean;
+  /**
+   * This function is only used when type is `separateFile`.
+   */
   parseResultsToYaml: ParseResultsToYaml;
   /**
-   * By default, auto model generation is enabled for all modes. This function can be used to
-   * override that behavior.
+   * This function is only used when type is `models`.
    */
-  enabled?: (context: GenerationContext) => boolean;
+  parseResults: ParseGenerationResults;
+  type: (context: GenerationContext) => AutoModelGenerationType;
 };
 
 type ModelsAsDataLanguageAccessPathSuggestions = {
