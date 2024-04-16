@@ -1078,14 +1078,12 @@ async function activateWithInstalledDistribution(
   });
 
   // Handle visibility changes in the CodeQL language client.
-  if (await cliServer.cliConstraints.supportsVisibilityNotifications()) {
-    Window.onDidChangeVisibleTextEditors((editors) => {
-      languageClient.notifyVisibilityChange(editors);
-    });
-    // Send an inital notification to the language server
-    // to set the initial state of the visible editors.
-    languageClient.notifyVisibilityChange(Window.visibleTextEditors);
-  }
+  Window.onDidChangeVisibleTextEditors((editors) => {
+    languageClient.notifyVisibilityChange(editors);
+  });
+  // Send an inital notification to the language server
+  // to set the initial state of the visible editors.
+  languageClient.notifyVisibilityChange(Window.visibleTextEditors);
 
   // Jump-to-definition and find-references
   void extLogger.log("Registering jump-to-definition handlers.");
