@@ -97,6 +97,8 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { findVariantAnalysisQlPackRoot } from "./ql";
 import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
 import { isSarifResultsQueryKind } from "../common/query-metadata";
+import { isVariantAnalysisEnabledForGitHubHost } from "./ghec-dr";
+import { getEnterpriseUri } from "../config";
 
 const maxRetryCount = 3;
 
@@ -327,6 +329,12 @@ export class VariantAnalysisManager
     token: CancellationToken,
     openViewAfterSubmission = true,
   ): Promise<number | undefined> {
+    if (!isVariantAnalysisEnabledForGitHubHost()) {
+      throw new Error(
+        `Multi-repository variant analysis is not enabled for ${getEnterpriseUri()}`,
+      );
+    }
+
     await saveBeforeStart();
 
     progress({

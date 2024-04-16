@@ -1,10 +1,14 @@
-import { workspace } from "vscode";
+import { ConfigurationTarget, workspace } from "vscode";
 
 import type { ConfigListener } from "../../../src/config";
 import {
   CliConfigListener,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
+  VSCODE_GITHUB_ENTERPRISE_URI_SETTING,
+  getEnterpriseUri,
+  hasEnterpriseUri,
+  hasGhecDrUri,
 } from "../../../src/config";
 import { vscodeGetConfigurationMock } from "../test-config";
 
@@ -125,4 +129,50 @@ describe("config listeners", () => {
   async function wait(ms = 50) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+});
+
+describe("enterprise URI", () => {
+  it("detects no enterprise URI when config value is not set", async () => {
+    expect(getEnterpriseUri()).toBeUndefined();
+    expect(hasEnterpriseUri()).toBe(false);
+    expect(hasGhecDrUri()).toBe(false);
+  });
+
+  it("detects no enterprise URI when config value is set to an invalid value", async () => {
+    await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
+      "invalid-uri",
+      ConfigurationTarget.Global,
+    );
+    expect(getEnterpriseUri()).toBeUndefined();
+    expect(hasEnterpriseUri()).toBe(false);
+    expect(hasGhecDrUri()).toBe(false);
+  });
+
+  it("detects an enterprise URI when config value is set to a GHES URI", async () => {
+    await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
+      "https://github.example.com",
+      ConfigurationTarget.Global,
+    );
+    expect(getEnterpriseUri()?.toString()).toBe("https://github.example.com/");
+    expect(hasEnterpriseUri()).toBe(true);
+    expect(hasGhecDrUri()).toBe(false);
+  });
+
+  it("detects a GHEC-DR URI when config value is set to a GHEC-DR URI", async () => {
+    await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
+      "https://example.ghe.com",
+      ConfigurationTarget.Global,
+    );
+    expect(getEnterpriseUri()?.toString()).toBe("https://example.ghe.com/");
+    expect(hasEnterpriseUri()).toBe(true);
+    expect(hasGhecDrUri()).toBe(true);
+  });
+
+  it("Upgrades HTTP URIs to HTTPS", async () => {
+    await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
+      "http://example.ghe.com",
+      ConfigurationTarget.Global,
+    );
+    expect(getEnterpriseUri()?.toString()).toBe("https://example.ghe.com/");
+  });
 });
