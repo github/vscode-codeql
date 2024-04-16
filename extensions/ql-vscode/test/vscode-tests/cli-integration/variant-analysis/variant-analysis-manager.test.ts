@@ -295,15 +295,6 @@ describe("Variant Analysis Manager", () => {
     // Test running core java queries to ensure that we can compile queries in packs
     // that contain queries with extensible predicates
     it("should run a remote query that is part of the java pack", async () => {
-      if (
-        !(await cli.cliConstraints.supportsGenerateExtensiblePredicateMetadata())
-      ) {
-        console.log(
-          `Skipping test because generating extensible predicate metadata was only introduced in CLI version ${CliVersionConstraint.CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA}.`,
-        );
-        return;
-      }
-
       if (!process.env.TEST_CODEQL_PATH) {
         fail(
           "TEST_CODEQL_PATH environment variable not set. It should point to the absolute path to a checkout of the codeql repository.",

@@ -204,18 +204,14 @@ async function copyExistingQueryPack(
   // Also include query files that contain extensible predicates. These query files are not
   // needed for the query to run, but they are needed for the query pack to pass deep validation
   // of data extensions.
-  if (
-    await cliServer.cliConstraints.supportsGenerateExtensiblePredicateMetadata()
-  ) {
-    const metadata = await cliServer.generateExtensiblePredicateMetadata(
-      qlPackDetails.qlPackRootPath,
-    );
-    metadata.extensible_predicates.forEach((predicate) => {
-      if (predicate.path.endsWith(".ql")) {
-        toCopy.push(join(qlPackDetails.qlPackRootPath, predicate.path));
-      }
-    });
-  }
+  const metadata = await cliServer.generateExtensiblePredicateMetadata(
+    qlPackDetails.qlPackRootPath,
+  );
+  metadata.extensible_predicates.forEach((predicate) => {
+    if (predicate.path.endsWith(".ql")) {
+      toCopy.push(join(qlPackDetails.qlPackRootPath, predicate.path));
+    }
+  });
 
   [
     // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.

@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Remove support for CodeQL CLI versions older than 2.14.6. [#3562](https://github.com/github/vscode-codeql/pull/3562)
+
 ## 1.12.5 - 9 April 2024
 
 - Add new supported source and sink kinds in the CodeQL Model Editor [#3511](https://github.com/github/vscode-codeql/pull/3511)
