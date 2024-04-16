@@ -2057,7 +2057,7 @@
     "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^2.24.0",
     "ansi-colors": "^4.1.1",
-    "applicationinsights": "^2.9.4",
+    "applicationinsights": "^2.9.5",
     "cosmiconfig": "^9.0.0",
     "cross-env": "^7.0.3",
     "del": "^6.0.0",
