@@ -17,14 +17,13 @@ updates:
       octokit:
         patterns:
           - "@octokit/*"
-
+        update-types:
+          - "minor"
+          - "patch"
       storybook:
         patterns:
           - "@storybook/*"
           - "storybook"
-        update-types:
-          - "minor"
-          - "patch"
       testing-library:
         patterns:
           - "@testing-library/*"
