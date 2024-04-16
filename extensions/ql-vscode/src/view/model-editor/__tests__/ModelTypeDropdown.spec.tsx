@@ -36,33 +36,7 @@ describe(ModelTypeDropdown.name, () => {
     );
   });
 
-  it("allows changing the type to 'Type' for Ruby when type models are shown", async () => {
-    const method = createMethod();
-    const modeledMethod = createNoneModeledMethod();
-
-    render(
-      <ModelTypeDropdown
-        language={QueryLanguage.Ruby}
-        modeledMethod={modeledMethod}
-        modelPending={false}
-        onChange={onChange}
-        method={method}
-        modelConfig={{
-          ...defaultModelConfig,
-          showTypeModels: true,
-        }}
-      />,
-    );
-
-    await userEvent.selectOptions(screen.getByRole("combobox"), "type");
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: "type",
-      }),
-    );
-  });
-
-  it("does not allow changing the type to 'Type' for Ruby when type models are not shown", async () => {
+  it("allows changing the type to 'Type' for Ruby", async () => {
     const method = createMethod();
     const modeledMethod = createNoneModeledMethod();
 
@@ -77,9 +51,12 @@ describe(ModelTypeDropdown.name, () => {
       />,
     );
 
-    expect(
-      screen.queryByRole("option", { name: "Type" }),
-    ).not.toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByRole("combobox"), "type");
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "type",
+      }),
+    );
   });
 
   it("does not allow changing the type to 'Type' for Java", async () => {

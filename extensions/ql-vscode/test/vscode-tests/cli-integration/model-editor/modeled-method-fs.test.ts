@@ -13,7 +13,6 @@ import { homedir, tmpdir } from "os";
 import { mkdir, rm } from "fs-extra";
 import { nanoid } from "nanoid";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { defaultModelConfig } from "../../../../src/model-editor/languages";
 
 const dummyExtensionPackContents = `
 name: dummy/pack
@@ -136,11 +135,7 @@ describe("modeled-method-fs", () => {
     it("should return the empty set when the extension pack is empty", async () => {
       const extensionPackPath = writeExtensionPackFiles("extension-pack", []);
 
-      const modelFiles = await listModelFiles(
-        extensionPackPath,
-        cli,
-        defaultModelConfig,
-      );
+      const modelFiles = await listModelFiles(extensionPackPath, cli);
       expect(modelFiles).toEqual(new Set());
     });
 
@@ -150,11 +145,7 @@ describe("modeled-method-fs", () => {
         "library2.model.yml",
       ]);
 
-      const modelFiles = await listModelFiles(
-        extensionPackPath,
-        cli,
-        defaultModelConfig,
-      );
+      const modelFiles = await listModelFiles(extensionPackPath, cli);
       expect(modelFiles).toEqual(
         new Set([
           join("models", "library1.model.yml"),
@@ -163,40 +154,16 @@ describe("modeled-method-fs", () => {
       );
     });
 
-    it("should ignore generated type models when type models are hidden", async () => {
+    it("should ignore generated models", async () => {
       const extensionPackPath = writeExtensionPackFiles("extension-pack", [
         "library1.model.yml",
         "library2.model.yml",
         "library.model.generated.yml",
       ]);
 
-      const modelFiles = await listModelFiles(
-        extensionPackPath,
-        cli,
-        defaultModelConfig,
-      );
+      const modelFiles = await listModelFiles(extensionPackPath, cli);
       expect(modelFiles).toEqual(
         new Set([
-          join("models", "library1.model.yml"),
-          join("models", "library2.model.yml"),
-        ]),
-      );
-    });
-
-    it("should include generated type models when type models are shown", async () => {
-      const extensionPackPath = writeExtensionPackFiles("extension-pack", [
-        "library1.model.yml",
-        "library2.model.yml",
-        "library.model.generated.yml",
-      ]);
-
-      const modelFiles = await listModelFiles(extensionPackPath, cli, {
-        ...defaultModelConfig,
-        showTypeModels: true,
-      });
-      expect(modelFiles).toEqual(
-        new Set([
-          join("models", "library.model.generated.yml"),
           join("models", "library1.model.yml"),
           join("models", "library2.model.yml"),
         ]),
@@ -209,11 +176,7 @@ describe("modeled-method-fs", () => {
       ]);
       writeExtensionPackFiles("another-extension-pack", ["library2.model.yml"]);
 
-      const modelFiles = await listModelFiles(
-        extensionPackPath,
-        cli,
-        defaultModelConfig,
-      );
+      const modelFiles = await listModelFiles(extensionPackPath, cli);
       expect(modelFiles).toEqual(
         new Set([join("models", "library1.model.yml")]),
       );
@@ -230,7 +193,6 @@ describe("modeled-method-fs", () => {
         makeExtensionPack(extensionPackPath),
         QueryLanguage.Java,
         cli,
-        defaultModelConfig,
         extLogger,
       );
 

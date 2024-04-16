@@ -20,7 +20,7 @@ import type { AccessPathSuggestionRow } from "../suggestions";
 // This is a subset of the model config that doesn't import the vscode module.
 // It only includes settings that are actually used.
 export type ModelConfig = {
-  showTypeModels: boolean;
+  flowGeneration: boolean;
 };
 
 /**
@@ -32,12 +32,12 @@ export type ModelConfig = {
  */
 export function createModelConfig(modelConfig: ModelConfig): ModelConfig {
   return {
-    showTypeModels: modelConfig.showTypeModels,
+    flowGeneration: modelConfig.flowGeneration,
   };
 }
 
 export const defaultModelConfig: ModelConfig = {
-  showTypeModels: false,
+  flowGeneration: false,
 };
 
 type GenerateMethodDefinition<T> = (method: T) => DataTuple[];

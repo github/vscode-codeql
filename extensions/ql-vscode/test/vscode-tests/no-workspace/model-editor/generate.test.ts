@@ -138,10 +138,7 @@ describe("runGenerateQueries", () => {
             createMockLogger(),
             {
               mode: Mode.Framework,
-              config: {
-                ...defaultModelConfig,
-                showTypeModels: true,
-              },
+              config: defaultModelConfig,
             },
           ),
         );

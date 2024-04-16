@@ -4,7 +4,10 @@ import { MethodModelingViewProvider } from "../../../../../src/model-editor/meth
 import { createMockApp } from "../../../../__mocks__/appMock";
 import { createMockModelingStore } from "../../../../__mocks__/model-editor/modelingStoreMock";
 import { mockedObject } from "../../../../mocked-object";
-import type { FromMethodModelingMessage } from "../../../../../src/common/interface-types";
+import type {
+  FromMethodModelingMessage,
+  ToMethodModelingMessage,
+} from "../../../../../src/common/interface-types";
 import { DisposableObject } from "../../../../../src/common/disposable-object";
 import { ModelingEvents } from "../../../../../src/model-editor/modeling-events";
 import type {
@@ -17,6 +20,7 @@ import {
   createMethod,
   createUsage,
 } from "../../../../factories/model-editor/method-factories";
+import { QueryLanguage } from "../../../../../src/common/query-language";
 
 describe("method modeling view provider", () => {
   // Modeling store
@@ -45,7 +49,7 @@ describe("method modeling view provider", () => {
     const modelingEvents = new ModelingEvents(app);
 
     const modelConfigListener = mockedObject<ModelConfigListener>({
-      showTypeModels: true,
+      flowGeneration: true,
       onDidChangeConfiguration: jest.fn(),
     });
 
@@ -91,10 +95,10 @@ describe("method modeling view provider", () => {
       viewState: {
         language: undefined,
         modelConfig: {
-          showTypeModels: true,
+          flowGeneration: true,
         },
       },
-    });
+    } satisfies ToMethodModelingMessage);
   });
 
   it("should load webview when active DB but no selected method", async () => {
@@ -116,10 +120,10 @@ describe("method modeling view provider", () => {
       viewState: {
         language: undefined,
         modelConfig: {
-          showTypeModels: true,
+          flowGeneration: true,
         },
       },
-    });
+    } satisfies ToMethodModelingMessage);
     expect(postMessage).toHaveBeenNthCalledWith(2, {
       t: "setInModelingMode",
       inModelingMode: true,
@@ -127,12 +131,12 @@ describe("method modeling view provider", () => {
     expect(postMessage).toHaveBeenNthCalledWith(3, {
       t: "setMethodModelingPanelViewState",
       viewState: {
-        language: "java",
+        language: QueryLanguage.Java,
         modelConfig: {
-          showTypeModels: true,
+          flowGeneration: true,
         },
       },
-    });
+    } satisfies ToMethodModelingMessage);
   });
 
   it("should load webview when active DB and a selected method", async () => {
@@ -165,10 +169,10 @@ describe("method modeling view provider", () => {
       viewState: {
         language: undefined,
         modelConfig: {
-          showTypeModels: true,
+          flowGeneration: true,
         },
       },
-    });
+    } satisfies ToMethodModelingMessage);
     expect(postMessage).toHaveBeenNthCalledWith(2, {
       t: "setInModelingMode",
       inModelingMode: true,
@@ -176,12 +180,12 @@ describe("method modeling view provider", () => {
     expect(postMessage).toHaveBeenNthCalledWith(3, {
       t: "setMethodModelingPanelViewState",
       viewState: {
-        language: "java",
+        language: QueryLanguage.Java,
         modelConfig: {
-          showTypeModels: true,
+          flowGeneration: true,
         },
       },
-    });
+    } satisfies ToMethodModelingMessage);
     expect(postMessage).toHaveBeenNthCalledWith(4, {
       t: "setSelectedMethod",
       method: selectedMethodDetails.method,
