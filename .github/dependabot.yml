@@ -17,6 +17,9 @@ updates:
       octokit:
         patterns:
           - "@octokit/*"
+        update-types:
+          - "minor"
+          - "patch"
       storybook:
         patterns:
           - "@storybook/*"
