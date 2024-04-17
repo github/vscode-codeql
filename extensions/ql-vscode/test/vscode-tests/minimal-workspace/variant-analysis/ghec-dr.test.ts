@@ -10,7 +10,15 @@ describe("checkVariantAnalysisEnabled", () => {
     expect(isVariantAnalysisEnabledForGitHubHost()).toBe(true);
   });
 
-  it("returns false when GHES enterprise URI is set", async () => {
+  it("returns false when GHES enterprise URI is set and variant analysis feature flag is not set", async () => {
+    await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
+      "https://github.example.com",
+      ConfigurationTarget.Global,
+    );
+    expect(isVariantAnalysisEnabledForGitHubHost()).toBe(false);
+  });
+
+  it("returns false when GHES enterprise URI is set and variant analysis feature flag is set", async () => {
     await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
       "https://github.example.com",
       ConfigurationTarget.Global,
@@ -22,9 +30,9 @@ describe("checkVariantAnalysisEnabled", () => {
     expect(isVariantAnalysisEnabledForGitHubHost()).toBe(false);
   });
 
-  it("returns false when GHEC-DR URI is set but variant analysis feature flag is not set", async () => {
+  it("returns false when GHEC-DR URI is set and variant analysis feature flag is not set", async () => {
     await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
-      "https://github.example.com",
+      "https://example.ghe.com",
       ConfigurationTarget.Global,
     );
     expect(isVariantAnalysisEnabledForGitHubHost()).toBe(false);
