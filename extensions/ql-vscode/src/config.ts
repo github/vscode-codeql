@@ -113,7 +113,7 @@ export function hasEnterpriseUri(): boolean {
  */
 export function hasGhecDrUri(): boolean {
   const uri = getEnterpriseUri();
-  return uri !== undefined && uri.authority.match(/.*\.ghe\.com/) !== null;
+  return uri !== undefined && uri.authority.toLowerCase().endsWith(".ghe.com");
 }
 
 const ROOT_SETTING = new Setting("codeQL");
