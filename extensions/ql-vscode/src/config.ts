@@ -624,7 +624,7 @@ export function getVariantAnalysisDefaultResultsSort(): SortKey {
 const ACTION_BRANCH = new Setting("actionBranch", VARIANT_ANALYSIS_SETTING);
 
 export const VARIANT_ANALYSIS_ENABLE_GHEC_DR = new Setting(
-  "enable_ghec_dr",
+  "enableGhecDr",
   VARIANT_ANALYSIS_SETTING,
 );
 
