@@ -1,3 +1,4 @@
+import type { VariantAnalysisConfig } from "../config";
 import type { DbConfig, RemoteRepositoryList } from "./config/db-config";
 import { SelectedDbItemKind } from "./config/db-config";
 import type {
@@ -13,13 +14,17 @@ import { ExpandedDbItemKind } from "./db-item-expansion";
 
 export function createRemoteTree(
   dbConfig: DbConfig,
+  variantAnalysisConfig: VariantAnalysisConfig,
   expandedItems: ExpandedDbItem[],
 ): RootRemoteDbItem {
-  const systemDefinedLists = [
-    createSystemDefinedList(10, dbConfig),
-    createSystemDefinedList(100, dbConfig),
-    createSystemDefinedList(1000, dbConfig),
-  ];
+  const systemDefinedLists =
+    variantAnalysisConfig.showSystemDefinedRepositoryLists
+      ? [
+          createSystemDefinedList(10, dbConfig),
+          createSystemDefinedList(100, dbConfig),
+          createSystemDefinedList(1000, dbConfig),
+        ]
+      : [];
 
   const userDefinedRepoLists =
     dbConfig.databases.variantAnalysis.repositoryLists.map((r) =>
