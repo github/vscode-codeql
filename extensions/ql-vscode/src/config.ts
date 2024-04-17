@@ -4,7 +4,7 @@ import type {
   ConfigurationScope,
   Event,
 } from "vscode";
-import { ConfigurationTarget, EventEmitter, workspace } from "vscode";
+import { ConfigurationTarget, EventEmitter, workspace, Uri } from "vscode";
 import type { DistributionManager } from "./codeql-cli/distribution";
 import { extLogger } from "./common/logging/vscode";
 import { ONE_DAY_IN_MS } from "./common/time";
@@ -14,6 +14,7 @@ import {
   SortKey,
 } from "./variant-analysis/shared/variant-analysis-filter-sort";
 import { substituteConfigVariables } from "./common/config-template";
+import { getErrorMessage } from "./common/helpers-pure";
 
 export const ALL_SETTINGS: Setting[] = [];
 
@@ -68,6 +69,52 @@ export const VSCODE_SAVE_BEFORE_START_SETTING = new Setting(
   "saveBeforeStart",
   VSCODE_DEBUG_SETTING,
 );
+
+const VSCODE_GITHUB_ENTERPRISE_SETTING = new Setting(
+  "github-enterprise",
+  undefined,
+);
+export const VSCODE_GITHUB_ENTERPRISE_URI_SETTING = new Setting(
+  "uri",
+  VSCODE_GITHUB_ENTERPRISE_SETTING,
+);
+
+/**
+ * Get the value of the `github-enterprise.uri` setting, parsed as a URI.
+ * If the value is not set or cannot be parsed, return `undefined`.
+ */
+export function getEnterpriseUri(): Uri | undefined {
+  const config = VSCODE_GITHUB_ENTERPRISE_URI_SETTING.getValue<string>();
+  if (config) {
+    try {
+      let uri = Uri.parse(config, true);
+      if (uri.scheme === "http") {
+        uri = uri.with({ scheme: "https" });
+      }
+      return uri;
+    } catch (e) {
+      void extLogger.log(
+        `Failed to parse the GitHub Enterprise URI: ${getErrorMessage(e)}`,
+      );
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Is the GitHub Enterprise URI set?
+ */
+export function hasEnterpriseUri(): boolean {
+  return getEnterpriseUri() !== undefined;
+}
+
+/**
+ * Is the GitHub Enterprise URI set to something that looks like GHEC-DR?
+ */
+export function hasGhecDrUri(): boolean {
+  const uri = getEnterpriseUri();
+  return uri !== undefined && uri.authority.toLowerCase().endsWith(".ghe.com");
+}
 
 const ROOT_SETTING = new Setting("codeQL");
 
@@ -575,6 +622,11 @@ export function getVariantAnalysisDefaultResultsSort(): SortKey {
  * Note: This command is only available for internal users.
  */
 const ACTION_BRANCH = new Setting("actionBranch", VARIANT_ANALYSIS_SETTING);
+
+export const VARIANT_ANALYSIS_ENABLE_GHEC_DR = new Setting(
+  "enableGhecDr",
+  VARIANT_ANALYSIS_SETTING,
+);
 
 export function getActionBranch(): string {
   return ACTION_BRANCH.getValue<string>() || "main";

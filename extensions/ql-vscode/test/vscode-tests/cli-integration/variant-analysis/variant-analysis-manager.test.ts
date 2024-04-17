@@ -1,6 +1,15 @@
-import { CancellationTokenSource, commands, window, Uri } from "vscode";
+import {
+  CancellationTokenSource,
+  commands,
+  window,
+  Uri,
+  ConfigurationTarget,
+} from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
-import { setRemoteControllerRepo } from "../../../../src/config";
+import {
+  VSCODE_GITHUB_ENTERPRISE_URI_SETTING,
+  setRemoteControllerRepo,
+} from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { isAbsolute, join } from "path";
 
@@ -97,6 +106,32 @@ describe("Variant Analysis Manager", () => {
 
       // always run in the vscode-codeql repo
       await setRemoteControllerRepo("github/vscode-codeql");
+    });
+
+    it("fails if MRVA is not supported for this GHE URI", async () => {
+      await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
+        "https://github.example.com",
+        ConfigurationTarget.Global,
+      );
+
+      const qlPackDetails: QlPackDetails = {
+        queryFiles: [getFileOrDir("data-remote-qlpack/in-pack.ql")],
+        qlPackRootPath: getFileOrDir("data-remote-qlpack"),
+        qlPackFilePath: getFileOrDir("data-remote-qlpack/qlpack.yml"),
+        language: QueryLanguage.Javascript,
+      };
+
+      await expect(
+        variantAnalysisManager.runVariantAnalysis(
+          qlPackDetails,
+          progress,
+          cancellationTokenSource.token,
+        ),
+      ).rejects.toThrow(
+        new Error(
+          "Multi-repository variant analysis is not enabled for https://github.example.com/",
+        ),
+      );
     });
 
     it("should run a variant analysis that is part of a qlpack", async () => {
