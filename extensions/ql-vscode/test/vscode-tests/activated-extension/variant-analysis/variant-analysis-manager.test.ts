@@ -49,6 +49,7 @@ import {
   writeRepoStates,
 } from "../../../../src/variant-analysis/repo-states-store";
 import { permissiveFilterSortState } from "../../../unit-tests/variant-analysis-filter-sort.test";
+import { createMockVariantAnalysisConfig } from "../../../factories/config";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -72,7 +73,11 @@ describe("Variant Analysis Manager", () => {
     const extension = await getActivatedExtension();
     const cli = mockedObject<CodeQLCliServer>({});
     app = new ExtensionApp(extension.ctx);
-    const dbManager = new DbManager(app, new DbConfigStore(app));
+    const dbManager = new DbManager(
+      app,
+      new DbConfigStore(app),
+      createMockVariantAnalysisConfig(),
+    );
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(
       cli,
       extLogger,

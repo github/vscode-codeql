@@ -12,6 +12,7 @@ import { ExtensionApp } from "../../../../src/common/vscode/extension-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
 import { createDbConfig } from "../../../factories/db-config-factories";
 import { setRemoteControllerRepo } from "../../../../src/config";
+import { createMockVariantAnalysisConfig } from "../../../factories/config";
 
 describe("db panel selection", () => {
   const workspaceStoragePath = join(__dirname, "test-workspace-storage");
@@ -36,7 +37,11 @@ describe("db panel selection", () => {
     const app = new ExtensionApp(extensionContext);
 
     dbConfigStore = new DbConfigStore(app, false);
-    dbManager = new DbManager(app, dbConfigStore);
+    dbManager = new DbManager(
+      app,
+      dbConfigStore,
+      createMockVariantAnalysisConfig(),
+    );
   });
 
   beforeEach(async () => {

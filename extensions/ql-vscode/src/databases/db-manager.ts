@@ -16,18 +16,17 @@ import {
 } from "./db-item-selection";
 import { createRemoteTree } from "./db-tree-creator";
 import type { DbConfigValidationError } from "./db-validation-errors";
-import { VariantAnalysisConfigListener } from "../config";
+import type { VariantAnalysisConfig } from "../config";
 
 export class DbManager extends DisposableObject {
   public readonly onDbItemsChanged: AppEvent<void>;
   public static readonly DB_EXPANDED_STATE_KEY = "db_expanded";
   private readonly onDbItemsChangesEventEmitter: AppEventEmitter<void>;
-  private readonly variantAnalysisConfigListener =
-    new VariantAnalysisConfigListener();
 
   constructor(
     private readonly app: App,
     private readonly dbConfigStore: DbConfigStore,
+    private readonly variantAnalysisConfigListener: VariantAnalysisConfig,
   ) {
     super();
 
@@ -40,7 +39,7 @@ export class DbManager extends DisposableObject {
       this.onDbItemsChangesEventEmitter.fire();
     });
 
-    this.variantAnalysisConfigListener.onDidChangeConfiguration(() => {
+    this.variantAnalysisConfigListener.onDidChangeConfiguration?.(() => {
       this.onDbItemsChangesEventEmitter.fire();
     });
   }

@@ -1,4 +1,3 @@
-import type { VariantAnalysisConfig } from "../../../src/config";
 import type { DbConfig } from "../../../src/databases/config/db-config";
 import { SelectedDbItemKind } from "../../../src/databases/config/db-config";
 import {
@@ -11,12 +10,10 @@ import type { ExpandedDbItem } from "../../../src/databases/db-item-expansion";
 import { ExpandedDbItemKind } from "../../../src/databases/db-item-expansion";
 import { createRemoteTree } from "../../../src/databases/db-tree-creator";
 import { createDbConfig } from "../../factories/db-config-factories";
+import { createMockVariantAnalysisConfig } from "../../factories/config";
 
 describe("db tree creator", () => {
-  const defaultVariantAnalysisConfig: VariantAnalysisConfig = {
-    controllerRepo: "foo/bar",
-    showSystemDefinedRepositoryLists: true,
-  };
+  const defaultVariantAnalysisConfig = createMockVariantAnalysisConfig();
 
   describe("createRemoteTree", () => {
     it("should build root node and system defined lists", () => {
