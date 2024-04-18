@@ -569,8 +569,8 @@ export async function setRemoteControllerRepo(repo: string | undefined) {
 
 export interface VariantAnalysisConfig {
   controllerRepo: string | undefined;
-  onDidChangeConfiguration?: Event<void>;
   showSystemDefinedRepositoryLists: boolean;
+  onDidChangeConfiguration?: Event<void>;
 }
 
 export class VariantAnalysisConfigListener
