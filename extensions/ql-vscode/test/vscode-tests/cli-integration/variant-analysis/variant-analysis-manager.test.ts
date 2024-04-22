@@ -36,6 +36,7 @@ import type { QlPackLockFile } from "../../../../src/packaging/qlpack-lock-file"
 //import { expect } from "@jest/globals";
 import "../../../matchers/toExistInCodeQLPack";
 import type { QlPackDetails } from "../../../../src/variant-analysis/ql-pack-details";
+import { createMockVariantAnalysisConfig } from "../../../factories/config";
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
@@ -50,7 +51,11 @@ describe("Variant Analysis Manager", () => {
     const extension = await getActivatedExtension();
     cli = extension.cliServer;
     const app = new ExtensionApp(extension.ctx);
-    const dbManager = new DbManager(app, new DbConfigStore(app));
+    const dbManager = new DbManager(
+      app,
+      new DbConfigStore(app),
+      createMockVariantAnalysisConfig(),
+    );
     const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
       cli,
       extLogger,

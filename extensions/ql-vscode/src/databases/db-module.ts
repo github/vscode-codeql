@@ -7,6 +7,7 @@ import { DbManager } from "./db-manager";
 import { DbPanel } from "./ui/db-panel";
 import { DbSelectionDecorationProvider } from "./ui/db-selection-decoration-provider";
 import type { DatabasePanelCommands } from "../common/commands";
+import { VariantAnalysisConfigListener } from "../config";
 
 export class DbModule extends DisposableObject {
   public readonly dbManager: DbManager;
@@ -17,7 +18,13 @@ export class DbModule extends DisposableObject {
     super();
 
     this.dbConfigStore = new DbConfigStore(app);
-    this.dbManager = this.push(new DbManager(app, this.dbConfigStore));
+    this.dbManager = this.push(
+      new DbManager(
+        app,
+        this.dbConfigStore,
+        new VariantAnalysisConfigListener(),
+      ),
+    );
   }
 
   public static async initialize(app: App): Promise<DbModule> {

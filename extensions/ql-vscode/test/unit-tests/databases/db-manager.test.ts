@@ -24,6 +24,7 @@ import { DbManager } from "../../../src/databases/db-manager";
 import { createDbConfig } from "../../factories/db-config-factories";
 import { createRemoteUserDefinedListDbItem } from "../../factories/db-item-factories";
 import { createMockApp } from "../../__mocks__/appMock";
+import { createMockVariantAnalysisConfig } from "../../factories/config";
 
 // Note: Although these are "unit tests" (i.e. not integrating with VS Code), they do
 // test the interaction/"integration" between the DbManager and the DbConfigStore.
@@ -46,7 +47,11 @@ describe("db manager", () => {
     // We don't need to watch changes to the config file in these tests, so we
     // pass `false` to the dbConfigStore constructor.
     dbConfigStore = new DbConfigStore(app, false);
-    dbManager = new DbManager(app, dbConfigStore);
+    dbManager = new DbManager(
+      app,
+      dbConfigStore,
+      createMockVariantAnalysisConfig(),
+    );
     await ensureDir(tempWorkspaceStoragePath);
 
     dbConfigFilePath = join(

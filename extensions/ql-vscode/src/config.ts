@@ -569,6 +569,7 @@ export async function setRemoteControllerRepo(repo: string | undefined) {
 
 export interface VariantAnalysisConfig {
   controllerRepo: string | undefined;
+  showSystemDefinedRepositoryLists: boolean;
   onDidChangeConfiguration?: Event<void>;
 }
 
@@ -578,13 +579,17 @@ export class VariantAnalysisConfigListener
 {
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
     this.handleDidChangeConfigurationForRelevantSettings(
-      [VARIANT_ANALYSIS_SETTING],
+      [VARIANT_ANALYSIS_SETTING, VSCODE_GITHUB_ENTERPRISE_URI_SETTING],
       e,
     );
   }
 
   public get controllerRepo(): string | undefined {
     return getRemoteControllerRepo();
+  }
+
+  public get showSystemDefinedRepositoryLists(): boolean {
+    return !hasEnterpriseUri();
   }
 }
 

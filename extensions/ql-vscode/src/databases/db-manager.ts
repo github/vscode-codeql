@@ -16,6 +16,7 @@ import {
 } from "./db-item-selection";
 import { createRemoteTree } from "./db-tree-creator";
 import type { DbConfigValidationError } from "./db-validation-errors";
+import type { VariantAnalysisConfig } from "../config";
 
 export class DbManager extends DisposableObject {
   public readonly onDbItemsChanged: AppEvent<void>;
@@ -25,6 +26,7 @@ export class DbManager extends DisposableObject {
   constructor(
     private readonly app: App,
     private readonly dbConfigStore: DbConfigStore,
+    private readonly variantAnalysisConfigListener: VariantAnalysisConfig,
   ) {
     super();
 
@@ -34,6 +36,10 @@ export class DbManager extends DisposableObject {
     this.onDbItemsChanged = this.onDbItemsChangesEventEmitter.event;
 
     this.dbConfigStore.onDidChangeConfig(() => {
+      this.onDbItemsChangesEventEmitter.fire();
+    });
+
+    this.variantAnalysisConfigListener.onDidChangeConfiguration?.(() => {
       this.onDbItemsChangesEventEmitter.fire();
     });
   }
@@ -56,7 +62,11 @@ export class DbManager extends DisposableObject {
 
     const expandedItems = this.getExpandedItems();
 
-    const remoteTree = createRemoteTree(configResult.value, expandedItems);
+    const remoteTree = createRemoteTree(
+      configResult.value,
+      this.variantAnalysisConfigListener,
+      expandedItems,
+    );
     return ValueResult.ok(remoteTree.children);
   }
 

@@ -10,13 +10,20 @@ import type { ExpandedDbItem } from "../../../src/databases/db-item-expansion";
 import { ExpandedDbItemKind } from "../../../src/databases/db-item-expansion";
 import { createRemoteTree } from "../../../src/databases/db-tree-creator";
 import { createDbConfig } from "../../factories/db-config-factories";
+import { createMockVariantAnalysisConfig } from "../../factories/config";
 
 describe("db tree creator", () => {
+  const defaultVariantAnalysisConfig = createMockVariantAnalysisConfig();
+
   describe("createRemoteTree", () => {
     it("should build root node and system defined lists", () => {
       const dbConfig = createDbConfig();
 
-      const dbTreeRoot = createRemoteTree(dbConfig, []);
+      const dbTreeRoot = createRemoteTree(
+        dbConfig,
+        defaultVariantAnalysisConfig,
+        [],
+      );
 
       expect(dbTreeRoot).toBeTruthy();
       expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
@@ -45,6 +52,24 @@ describe("db tree creator", () => {
       });
     });
 
+    it("displays empty list when no remote user defined list nodes and system defined lists are disabled", () => {
+      const dbConfig = createDbConfig();
+
+      const dbTreeRoot = createRemoteTree(
+        dbConfig,
+        {
+          ...defaultVariantAnalysisConfig,
+          showSystemDefinedRepositoryLists: false,
+        },
+        [],
+      );
+
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
+      expect(dbTreeRoot.expanded).toBe(false);
+      expect(dbTreeRoot.children.length).toBe(0);
+    });
+
     it("should create remote user defined list nodes", () => {
       const dbConfig = createDbConfig({
         remoteLists: [
@@ -59,10 +84,15 @@ describe("db tree creator", () => {
         ],
       });
 
-      const dbTreeRoot = createRemoteTree(dbConfig, []);
+      const dbTreeRoot = createRemoteTree(
+        dbConfig,
+        defaultVariantAnalysisConfig,
+        [],
+      );
 
       expect(dbTreeRoot).toBeTruthy();
       expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
+      expect(dbTreeRoot.children.length).toBe(5);
       const repositoryListNodes = dbTreeRoot.children.filter(
         isRemoteUserDefinedListDbItem,
       );
@@ -102,12 +132,76 @@ describe("db tree creator", () => {
       });
     });
 
+    it("shows only user defined list nodes when system defined lists are disabled", () => {
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
+          },
+          {
+            name: "my-list-2",
+            repositories: ["owner3/repo1", "owner3/repo2", "owner4/repo1"],
+          },
+        ],
+      });
+
+      const dbTreeRoot = createRemoteTree(
+        dbConfig,
+        {
+          ...defaultVariantAnalysisConfig,
+          showSystemDefinedRepositoryLists: false,
+        },
+        [],
+      );
+
+      expect(dbTreeRoot).toBeTruthy();
+      expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
+      expect(dbTreeRoot.children.length).toBe(2);
+      expect(dbTreeRoot.children[0]).toEqual({
+        kind: DbItemKind.RemoteUserDefinedList,
+        selected: false,
+        expanded: false,
+        listName: dbConfig.databases.variantAnalysis.repositoryLists[0].name,
+        repos:
+          dbConfig.databases.variantAnalysis.repositoryLists[0].repositories.map(
+            (repo) => ({
+              kind: DbItemKind.RemoteRepo,
+              selected: false,
+              repoFullName: repo,
+              parentListName:
+                dbConfig.databases.variantAnalysis.repositoryLists[0].name,
+            }),
+          ),
+      });
+      expect(dbTreeRoot.children[1]).toEqual({
+        kind: DbItemKind.RemoteUserDefinedList,
+        selected: false,
+        expanded: false,
+        listName: dbConfig.databases.variantAnalysis.repositoryLists[1].name,
+        repos:
+          dbConfig.databases.variantAnalysis.repositoryLists[1].repositories.map(
+            (repo) => ({
+              kind: DbItemKind.RemoteRepo,
+              selected: false,
+              repoFullName: repo,
+              parentListName:
+                dbConfig.databases.variantAnalysis.repositoryLists[1].name,
+            }),
+          ),
+      });
+    });
+
     it("should create remote owner nodes", () => {
       const dbConfig: DbConfig = createDbConfig({
         remoteOwners: ["owner1", "owner2"],
       });
 
-      const dbTreeRoot = createRemoteTree(dbConfig, []);
+      const dbTreeRoot = createRemoteTree(
+        dbConfig,
+        defaultVariantAnalysisConfig,
+        [],
+      );
 
       expect(dbTreeRoot).toBeTruthy();
       expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
@@ -131,7 +225,11 @@ describe("db tree creator", () => {
         remoteRepos: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
       });
 
-      const dbTreeRoot = createRemoteTree(dbConfig, []);
+      const dbTreeRoot = createRemoteTree(
+        dbConfig,
+        defaultVariantAnalysisConfig,
+        [],
+      );
 
       expect(dbTreeRoot).toBeTruthy();
       expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
@@ -170,7 +268,11 @@ describe("db tree creator", () => {
           },
         });
 
-        const dbTreeRoot = createRemoteTree(dbConfig, []);
+        const dbTreeRoot = createRemoteTree(
+          dbConfig,
+          defaultVariantAnalysisConfig,
+          [],
+        );
 
         expect(dbTreeRoot).toBeTruthy();
         expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
@@ -191,7 +293,11 @@ describe("db tree creator", () => {
           },
         });
 
-        const dbTreeRoot = createRemoteTree(dbConfig, []);
+        const dbTreeRoot = createRemoteTree(
+          dbConfig,
+          defaultVariantAnalysisConfig,
+          [],
+        );
 
         expect(dbTreeRoot).toBeTruthy();
         expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
@@ -213,7 +319,11 @@ describe("db tree creator", () => {
           },
         });
 
-        const dbTreeRoot = createRemoteTree(dbConfig, []);
+        const dbTreeRoot = createRemoteTree(
+          dbConfig,
+          defaultVariantAnalysisConfig,
+          [],
+        );
 
         expect(dbTreeRoot).toBeTruthy();
         expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
@@ -240,7 +350,11 @@ describe("db tree creator", () => {
           },
         });
 
-        const dbTreeRoot = createRemoteTree(dbConfig, []);
+        const dbTreeRoot = createRemoteTree(
+          dbConfig,
+          defaultVariantAnalysisConfig,
+          [],
+        );
 
         expect(dbTreeRoot).toBeTruthy();
 
@@ -265,7 +379,11 @@ describe("db tree creator", () => {
           },
         ];
 
-        const dbTreeRoot = createRemoteTree(dbConfig, expanded);
+        const dbTreeRoot = createRemoteTree(
+          dbConfig,
+          defaultVariantAnalysisConfig,
+          expanded,
+        );
 
         expect(dbTreeRoot).toBeTruthy();
         expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
@@ -291,7 +409,11 @@ describe("db tree creator", () => {
           },
         ];
 
-        const dbTreeRoot = createRemoteTree(dbConfig, expanded);
+        const dbTreeRoot = createRemoteTree(
+          dbConfig,
+          defaultVariantAnalysisConfig,
+          expanded,
+        );
 
         expect(dbTreeRoot).toBeTruthy();
         expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
