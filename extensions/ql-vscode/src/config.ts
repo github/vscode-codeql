@@ -815,7 +815,10 @@ export interface ModelConfig {
 
 export class ModelConfigListener extends ConfigListener implements ModelConfig {
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
-    this.handleDidChangeConfigurationForRelevantSettings([MODEL_SETTING], e);
+    this.handleDidChangeConfigurationForRelevantSettings(
+      [MODEL_SETTING, VSCODE_GITHUB_ENTERPRISE_URI_SETTING],
+      e,
+    );
   }
 
   public get flowGeneration(): boolean {
@@ -823,7 +826,7 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
   }
 
   public get llmGeneration(): boolean {
-    return !!LLM_GENERATION.getValue<boolean>();
+    return !!LLM_GENERATION.getValue<boolean>() && !hasEnterpriseUri();
   }
 
   /**
