@@ -78,7 +78,6 @@ import {
   REPO_STATES_FILENAME,
   writeRepoStates,
 } from "./repo-states-store";
-import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
 import {
   showAndLogExceptionWithTelemetry,
@@ -750,7 +749,7 @@ export class VariantAnalysisManager
   private async onDidChangeSessions(
     event: AuthenticationSessionsChangeEvent,
   ): Promise<void> {
-    if (event.provider.id !== GITHUB_AUTH_PROVIDER_ID) {
+    if (event.provider.id !== this.app.credentials.authProviderId) {
       return;
     }
 

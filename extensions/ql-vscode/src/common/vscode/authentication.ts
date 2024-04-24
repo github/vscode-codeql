@@ -2,8 +2,7 @@ import { authentication } from "vscode";
 import type { Octokit } from "@octokit/rest";
 import type { Credentials } from "../authentication";
 import { AppOctokit } from "../octokit";
-
-export const GITHUB_AUTH_PROVIDER_ID = "github";
+import { hasGhecDrUri } from "../../config";
 
 // We need 'repo' scope for triggering workflows, 'gist' scope for exporting results to Gist,
 // and 'read:packages' for reading private CodeQL packages.
@@ -39,7 +38,7 @@ export class VSCodeCredentials implements Credentials {
 
   async getAccessToken(): Promise<string> {
     const session = await authentication.getSession(
-      GITHUB_AUTH_PROVIDER_ID,
+      this.authProviderId,
       SCOPES,
       { createIfNone: true },
     );
@@ -49,11 +48,18 @@ export class VSCodeCredentials implements Credentials {
 
   async getExistingAccessToken(): Promise<string | undefined> {
     const session = await authentication.getSession(
-      GITHUB_AUTH_PROVIDER_ID,
+      this.authProviderId,
       SCOPES,
       { createIfNone: false },
     );
 
     return session?.accessToken;
+  }
+
+  public get authProviderId(): string {
+    if (hasGhecDrUri()) {
+      return "github-enterprise";
+    }
+    return "github";
   }
 }

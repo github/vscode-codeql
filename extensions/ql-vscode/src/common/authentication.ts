@@ -31,4 +31,9 @@ export interface Credentials {
    * @returns An OAuth access token, or undefined.
    */
   getExistingAccessToken(): Promise<string | undefined>;
+
+  /**
+   * Returns the ID of the authentication provider to use.
+   */
+  authProviderId: string;
 }
