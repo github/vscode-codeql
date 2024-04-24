@@ -140,6 +140,14 @@ export function getGhecDrUri(): Uri | undefined {
   }
 }
 
+export function getGitHubInstanceUrl(): URL {
+  const ghecDrUri = getGhecDrUri();
+  if (ghecDrUri) {
+    return new URL(ghecDrUri.toString());
+  }
+  return GITHUB_URL;
+}
+
 const ROOT_SETTING = new Setting("codeQL");
 
 // Telemetry configuration
@@ -622,11 +630,7 @@ export class VariantAnalysisConfigListener
   }
 
   public get githubUrl(): URL {
-    const ghecDrUri = getGhecDrUri();
-    if (ghecDrUri) {
-      return new URL(ghecDrUri.toString());
-    }
-    return GITHUB_URL;
+    return getGitHubInstanceUrl();
   }
 }
 

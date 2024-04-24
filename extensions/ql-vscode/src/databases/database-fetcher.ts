@@ -29,6 +29,7 @@ import {
   addDatabaseSourceToWorkspace,
   allowHttp,
   downloadTimeout,
+  getGitHubInstanceUrl,
   isCanary,
 } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
@@ -180,7 +181,8 @@ export class DatabaseFetcher {
     makeSelected = true,
     addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
   ): Promise<DatabaseItem | undefined> {
-    const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
+    const nwo =
+      getNwoFromGitHubUrl(githubRepo, getGitHubInstanceUrl()) || githubRepo;
     if (!isValidGitHubNwo(nwo)) {
       throw new Error(`Invalid GitHub repository: ${githubRepo}`);
     }

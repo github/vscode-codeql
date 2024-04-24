@@ -25,6 +25,7 @@ import type { App } from "../../common/app";
 import { QueryLanguage } from "../../common/query-language";
 import { getCodeSearchRepositories } from "../code-search-api";
 import { showAndLogErrorMessage } from "../../common/logging";
+import { getGitHubInstanceUrl } from "../../config";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -155,7 +156,8 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    const nwo = getNwoFromGitHubUrl(repoName) || repoName;
+    const nwo =
+      getNwoFromGitHubUrl(repoName, getGitHubInstanceUrl()) || repoName;
     if (!isValidGitHubNwo(nwo)) {
       void showAndLogErrorMessage(
         this.app.logger,
@@ -186,7 +188,8 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    const owner = getOwnerFromGitHubUrl(ownerName) || ownerName;
+    const owner =
+      getOwnerFromGitHubUrl(ownerName, getGitHubInstanceUrl()) || ownerName;
     if (!isValidGitHubOwner(owner)) {
       void showAndLogErrorMessage(
         this.app.logger,
