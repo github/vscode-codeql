@@ -78,11 +78,12 @@ describe("Variant Analysis Manager", () => {
       new DbConfigStore(app),
       createMockVariantAnalysisConfig(),
     );
+    const variantAnalysisConfig = createMockVariantAnalysisConfig();
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(
       cli,
+      variantAnalysisConfig,
       extLogger,
     );
-    const variantAnalysisConfig = createMockVariantAnalysisConfig();
     variantAnalysisManager = new VariantAnalysisManager(
       app,
       cli,

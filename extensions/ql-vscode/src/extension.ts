@@ -865,8 +865,10 @@ async function activateWithInstalledDistribution(
     "variant-analyses",
   );
   await ensureDir(variantAnalysisStorageDir);
+  const variantAnalysisConfig = new VariantAnalysisConfigListener();
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
     cliServer,
+    variantAnalysisConfig,
     extLogger,
   );
 
@@ -876,7 +878,7 @@ async function activateWithInstalledDistribution(
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
     dbModule.dbManager,
-    new VariantAnalysisConfigListener(),
+    variantAnalysisConfig,
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);

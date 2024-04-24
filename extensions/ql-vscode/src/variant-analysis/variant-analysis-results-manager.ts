@@ -23,6 +23,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { EventEmitter } from "vscode";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { readRepoTask, writeRepoTask } from "./repo-tasks-store";
+import type { VariantAnalysisConfig } from "../config";
 
 type CacheKey = `${number}/${string}`;
 
@@ -62,6 +63,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   constructor(
     private readonly cliServer: CodeQLCliServer,
+    private readonly config: VariantAnalysisConfig,
     private readonly logger: Logger,
   ) {
     super();
@@ -192,7 +194,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       throw new Error("Missing database commit SHA");
     }
 
-    const fileLinkPrefix = this.createGitHubDotcomFileLinkPrefix(
+    const fileLinkPrefix = this.createGitHubFileLinkPrefix(
       repoTask.repository.fullName,
       repoTask.databaseCommitSha,
     );
@@ -283,11 +285,11 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     return join(variantAnalysisStoragePath, fullName);
   }
 
-  private createGitHubDotcomFileLinkPrefix(
-    fullName: string,
-    sha: string,
-  ): string {
-    return `https://github.com/${fullName}/blob/${sha}`;
+  private createGitHubFileLinkPrefix(fullName: string, sha: string): string {
+    return new URL(
+      `/${fullName}/blob/${sha}`,
+      this.config.githubUrl,
+    ).toString();
   }
 
   public removeAnalysisResults(variantAnalysis: VariantAnalysis) {
