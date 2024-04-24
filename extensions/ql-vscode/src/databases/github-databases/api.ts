@@ -3,6 +3,7 @@ import type { Octokit } from "@octokit/rest";
 import type { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import type { GitHubDatabaseConfig } from "../../config";
+import { hasGhecDrUri } from "../../config";
 import type { Credentials } from "../../common/authentication";
 import { AppOctokit } from "../../common/octokit";
 import type { ProgressCallback } from "../../common/vscode/progress";
@@ -67,7 +68,10 @@ export async function listDatabases(
   credentials: Credentials,
   config: GitHubDatabaseConfig,
 ): Promise<ListDatabasesResult | undefined> {
-  const hasAccessToken = !!(await credentials.getExistingAccessToken());
+  // On GHEC-DR, unauthenticated requests will enver work, so we should always ask
+  // for authentication.
+  const hasAccessToken =
+    !!(await credentials.getExistingAccessToken()) || hasGhecDrUri();
 
   let octokit = hasAccessToken
     ? await credentials.getOctokit()

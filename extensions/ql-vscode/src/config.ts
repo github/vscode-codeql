@@ -127,6 +127,7 @@ export function hasGhecDrUri(): boolean {
  * The URI for GitHub.com.
  */
 export const GITHUB_URL = new URL("https://github.com");
+export const GITHUB_API_URL = new URL("https://api.github.com");
 
 /**
  * If the GitHub Enterprise URI is set to something that looks like GHEC-DR, return it.
@@ -146,6 +147,16 @@ export function getGitHubInstanceUrl(): URL {
     return new URL(ghecDrUri.toString());
   }
   return GITHUB_URL;
+}
+
+export function getGitHubInstanceApiUrl(): URL {
+  const ghecDrUri = getGhecDrUri();
+  if (ghecDrUri) {
+    const url = new URL(ghecDrUri.toString());
+    url.hostname = `api.${url.hostname}`;
+    return url;
+  }
+  return GITHUB_API_URL;
 }
 
 const ROOT_SETTING = new Setting("codeQL");

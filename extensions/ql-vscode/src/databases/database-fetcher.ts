@@ -30,6 +30,7 @@ import {
   allowHttp,
   downloadTimeout,
   getGitHubInstanceUrl,
+  hasGhecDrUri,
   isCanary,
 } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
@@ -151,9 +152,10 @@ export class DatabaseFetcher {
       maxStep: 2,
     });
 
+    const instanceUrl = getGitHubInstanceUrl();
+
     const options: InputBoxOptions = {
-      title:
-        'Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)',
+      title: `Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)`,
       placeHolder: "https://github.com/<owner>/<repo> or <owner>/<repo>",
       ignoreFocusOut: true,
     };
@@ -187,7 +189,8 @@ export class DatabaseFetcher {
       throw new Error(`Invalid GitHub repository: ${githubRepo}`);
     }
 
-    const credentials = isCanary() ? this.app.credentials : undefined;
+    const credentials =
+      isCanary() || hasGhecDrUri() ? this.app.credentials : undefined;
 
     const octokit = credentials
       ? await credentials.getOctokit()
