@@ -62,12 +62,15 @@ function canImportCodeSearch(dbItem: DbItem): boolean {
   return DbItemKind.RemoteUserDefinedList === dbItem.kind;
 }
 
-export function getGitHubUrl(dbItem: DbItem): string | undefined {
+export function getGitHubUrl(
+  dbItem: DbItem,
+  githubUrl: URL,
+): string | undefined {
   switch (dbItem.kind) {
     case DbItemKind.RemoteOwner:
-      return `https://github.com/${dbItem.ownerName}`;
+      return new URL(`/${dbItem.ownerName}`, githubUrl).toString();
     case DbItemKind.RemoteRepo:
-      return `https://github.com/${dbItem.repoFullName}`;
+      return new URL(`/${dbItem.repoFullName}`, githubUrl).toString();
     default:
       return undefined;
   }

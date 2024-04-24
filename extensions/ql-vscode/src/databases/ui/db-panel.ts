@@ -147,10 +147,12 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewRemoteRepo(parentList?: string): Promise<void> {
+    const instanceUrl = getGitHubInstanceUrl();
+
     const repoName = await window.showInputBox({
       title: "Add a repository",
       prompt: "Insert a GitHub repository URL or name with owner",
-      placeHolder: "<owner>/<repo> or https://github.com/<owner>/<repo>",
+      placeHolder: `<owner>/<repo> or ${new URL("/", instanceUrl).toString()}<owner>/<repo>`,
     });
     if (!repoName) {
       return;
@@ -178,10 +180,12 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewRemoteOwner(): Promise<void> {
+    const instanceUrl = getGitHubInstanceUrl();
+
     const ownerName = await window.showInputBox({
       title: "Add all repositories of a GitHub org or owner",
       prompt: "Insert a GitHub organization or owner name",
-      placeHolder: "<owner> or https://github.com/<owner>",
+      placeHolder: `<owner> or ${new URL("/", instanceUrl).toString()}<owner>`,
     });
 
     if (!ownerName) {
@@ -414,7 +418,7 @@ export class DbPanel extends DisposableObject {
     if (treeViewItem.dbItem === undefined) {
       throw new Error("Unable to open on GitHub. Please select a valid item.");
     }
-    const githubUrl = getGitHubUrl(treeViewItem.dbItem);
+    const githubUrl = getGitHubUrl(treeViewItem.dbItem, getGitHubInstanceUrl());
     if (!githubUrl) {
       throw new Error(
         "Unable to open on GitHub. Please select a variant analysis repository or owner.",
