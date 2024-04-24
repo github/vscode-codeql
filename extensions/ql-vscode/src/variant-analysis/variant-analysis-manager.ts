@@ -98,6 +98,7 @@ import { findVariantAnalysisQlPackRoot } from "./ql";
 import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
 import { isSarifResultsQueryKind } from "../common/query-metadata";
 import { isVariantAnalysisEnabledForGitHubHost } from "./ghec-dr";
+import type { VariantAnalysisConfig } from "../config";
 import { getEnterpriseUri } from "../config";
 
 const maxRetryCount = 3;
@@ -158,6 +159,7 @@ export class VariantAnalysisManager
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
     private readonly dbManager: DbManager,
+    private readonly config: VariantAnalysisConfig,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
@@ -426,7 +428,10 @@ export class VariantAnalysisManager
       );
     } catch (e: unknown) {
       // If the error is handled by the handleRequestError function, we don't need to throw
-      if (e instanceof RequestError && handleRequestError(e, this.app.logger)) {
+      if (
+        e instanceof RequestError &&
+        handleRequestError(e, this.config.githubUrl, this.app.logger)
+      ) {
         return undefined;
       }
 

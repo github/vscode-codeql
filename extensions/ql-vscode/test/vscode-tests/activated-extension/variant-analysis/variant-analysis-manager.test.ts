@@ -82,12 +82,14 @@ describe("Variant Analysis Manager", () => {
       cli,
       extLogger,
     );
+    const variantAnalysisConfig = createMockVariantAnalysisConfig();
     variantAnalysisManager = new VariantAnalysisManager(
       app,
       cli,
       storagePath,
       variantAnalysisResultsManager,
       dbManager,
+      variantAnalysisConfig,
     );
   });
 
