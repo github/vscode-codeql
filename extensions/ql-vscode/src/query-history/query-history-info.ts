@@ -7,6 +7,7 @@ import {
   getActionsWorkflowRunUrl as getVariantAnalysisActionsWorkflowRunUrl,
 } from "../variant-analysis/shared/variant-analysis";
 import type { QueryLanguage } from "../common/query-language";
+import { getGitHubInstanceUrl } from "../config";
 
 export type QueryHistoryInfo = LocalQueryInfo | VariantAnalysisHistoryItem;
 
@@ -79,5 +80,8 @@ export function buildRepoLabel(item: VariantAnalysisHistoryItem): string {
 export function getActionsWorkflowRunUrl(
   item: VariantAnalysisHistoryItem,
 ): string {
-  return getVariantAnalysisActionsWorkflowRunUrl(item.variantAnalysis);
+  return getVariantAnalysisActionsWorkflowRunUrl(
+    item.variantAnalysis,
+    getGitHubInstanceUrl(),
+  );
 }

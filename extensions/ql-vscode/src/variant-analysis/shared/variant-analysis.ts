@@ -295,10 +295,14 @@ export function getSkippedRepoCount(
 
 export function getActionsWorkflowRunUrl(
   variantAnalysis: VariantAnalysis,
+  githubUrl: URL,
 ): string {
   const {
     actionsWorkflowRunId,
     controllerRepo: { fullName },
   } = variantAnalysis;
-  return `https://github.com/${fullName}/actions/runs/${actionsWorkflowRunId}`;
+  return new URL(
+    `/${fullName}/actions/runs/${actionsWorkflowRunId}`,
+    githubUrl,
+  ).toString();
 }

@@ -956,7 +956,10 @@ export class VariantAnalysisManager
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(
+      variantAnalysis,
+      this.config.githubUrl,
+    );
 
     await this.app.commands.execute(
       "vscode.open",
