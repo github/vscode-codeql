@@ -2019,7 +2019,7 @@
     "@storybook/addon-links": "^8.0.9",
     "@storybook/blocks": "^8.0.2",
     "@storybook/components": "^8.0.2",
-    "@storybook/csf": "^0.1.4",
+    "@storybook/csf": "^0.1.6",
     "@storybook/icons": "^1.2.9",
     "@storybook/manager-api": "^8.0.9",
     "@storybook/react": "^8.0.9",
