@@ -1955,14 +1955,14 @@
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",
     "lint:markdown": "markdownlint-cli2 \"../../**/*.{md,mdx}\" \"!**/node_modules/**\" \"!**/.vscode-test/**\" \"!**/build/cli/v*/**\"",
-    "find-deadcode": "ts-node scripts/find-deadcode.ts",
+    "find-deadcode": "vite-node scripts/find-deadcode.ts",
     "format-staged": "lint-staged",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
+    "lint:scenarios": "vite-node scripts/lint-scenarios.ts",
     "generate": "npm-run-all -p generate:*",
-    "generate:schemas": "ts-node scripts/generate-schemas.ts",
-    "generate:chromium-version": "ts-node scripts/generate-chromium-version.ts",
+    "generate:schemas": "vite-node scripts/generate-schemas.ts",
+    "generate:chromium-version": "vite-node scripts/generate-chromium-version.ts",
     "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
     "postinstall": "patch-package",
     "prepare": "cd ../.. && husky install"
@@ -2093,10 +2093,10 @@
     "through2": "^4.0.2",
     "ts-jest": "^29.1.2",
     "ts-json-schema-generator": "^2.1.1",
-    "ts-node": "^10.7.0",
     "ts-unused-exports": "^10.0.0",
     "typescript": "^5.0.2",
-    "vite": "^5.2.6"
+    "vite": "^5.2.6",
+    "vite-node": "^1.5.3"
   },
   "lint-staged": {
     "./**/*.{json,css,scss}": [
