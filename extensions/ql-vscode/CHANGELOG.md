@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Add Ruby support to the CodeQL Model Editor. [#3584](https://github.com/github/vscode-codeql/pull/3584)
 - Remove support for CodeQL CLI versions older than 2.14.6. [#3562](https://github.com/github/vscode-codeql/pull/3562)
 
 ## 1.12.5 - 9 April 2024
