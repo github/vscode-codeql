@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.13.0 - 1 May 2024
 
 - Add Ruby support to the CodeQL Model Editor. [#3584](https://github.com/github/vscode-codeql/pull/3584)
