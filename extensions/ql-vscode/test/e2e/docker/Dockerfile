@@ -1,4 +1,4 @@
-FROM codercom/code-server:4.20.0
+FROM codercom/code-server:4.23.1
 
 USER root
 
@@ -7,7 +7,7 @@ RUN apt-get update \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN wget -q -O /tmp/codeql.zip https://github.com/github/codeql-cli-binaries/releases/download/v2.15.5/codeql-linux64.zip \
+RUN wget -q -O /tmp/codeql.zip https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql-linux64.zip \
   && unzip -q /tmp/codeql.zip -d /opt \
   && rm -rf /tmp/codeql.zip
 

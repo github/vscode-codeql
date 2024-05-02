@@ -55,6 +55,12 @@ describe("modeled-method-fs", () => {
   let cli: CodeQLCliServer;
 
   beforeEach(async () => {
+    if (!process.env.TEST_CODEQL_PATH) {
+      fail(
+        "TEST_CODEQL_PATH environment variable not set. It should point to the absolute path to a checkout of the codeql repository.",
+      );
+    }
+
     // On windows, make sure to use a temp directory that isn't an alias and therefore won't be canonicalised by CodeQL.
     // The tmp package doesn't support this, so we have to do it manually.
     // See https://github.com/github/vscode-codeql/pull/2605 for more context.
@@ -73,11 +79,16 @@ describe("modeled-method-fs", () => {
       name: "workspace",
       index: 0,
     };
+    const codeqlWorkspaceFolder = {
+      uri: Uri.file(process.env.TEST_CODEQL_PATH),
+      name: "ql",
+      index: 1,
+    };
     workspacePath = workspaceFolder.uri.fsPath;
     mkdirSync(workspacePath);
     jest
       .spyOn(workspace, "workspaceFolders", "get")
-      .mockReturnValue([workspaceFolder]);
+      .mockReturnValue([workspaceFolder, codeqlWorkspaceFolder]);
 
     const extension = await getActivatedExtension();
     cli = extension.cliServer;

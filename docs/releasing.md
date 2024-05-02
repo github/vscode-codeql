@@ -1,5 +1,6 @@
 # Releasing (write access required)
 
+1. Make sure the needed authentication keys are valid. Most likely the Azure DevOps PAT needs to be regenerated. See below.
 1. Determine the new version number. We default to increasing the patch version number, but make our own judgement about whether a change is big enough to warrant a minor version bump. Common reasons for a minor bump could include:
     - Making substantial new features available to all users. This can include lifting a feature flag.
     - Breakage in compatibility with recent versions of the CLI.
@@ -60,7 +61,7 @@
 
 ## Secrets and authentication for publishing
 
-Repository administrators, will need to manage the authentication keys for publishing to the VS Code marketplace and Open VSX. Each requires an authentication token. The VS Code marketplace token expires yearly.
+Repository administrators, will need to manage the authentication keys for publishing to the VS Code marketplace and Open VSX. Each requires an authentication token.
 
 To regenerate the Open VSX token:
 
@@ -69,4 +70,4 @@ To regenerate the Open VSX token:
 1. Go to the [Access Tokens](https://open-vsx.org/user-settings/tokens) page and generate a new token.
 1. Update the secret in the `publish-open-vsx` environment in the project settings.
 
-To regenerate the VSCode Marketplace token, please see our internal documentation. Note that Azure DevOps PATs expire every 90 days and must be regenerated.
+To regenerate the VSCode Marketplace token, please see our internal documentation. Note that Azure DevOps PATs expire every 7 days and must be regenerated.
