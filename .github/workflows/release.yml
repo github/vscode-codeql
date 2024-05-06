@@ -134,7 +134,7 @@ jobs:
 
       - name: Publish to Registry
         run: |
-          npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix
+          npx @vscode/vsce publish -p $VSCE_TOKEN --packagePath *.vsix
 
   open-vsx-publish:
     name: Publish to Open VSX Registry
