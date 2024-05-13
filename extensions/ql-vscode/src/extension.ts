@@ -446,8 +446,9 @@ export async function activate(
       }
 
       if (
-        CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(ver.version) <
-        0
+        CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(
+          ver.version,
+        ) <= 0
       ) {
         return;
       }
