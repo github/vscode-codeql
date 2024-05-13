@@ -2066,7 +2066,7 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-deprecation": "^2.0.0",
     "eslint-plugin-etc": "^2.0.2",
-    "eslint-plugin-github": "^4.4.1",
+    "eslint-plugin-github": "^4.10.2",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jest-dom": "^5.2.0",
     "eslint-plugin-prettier": "^5.1.3",
