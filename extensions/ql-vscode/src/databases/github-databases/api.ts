@@ -68,7 +68,7 @@ export async function listDatabases(
   credentials: Credentials,
   config: GitHubDatabaseConfig,
 ): Promise<ListDatabasesResult | undefined> {
-  // On GHEC-DR, unauthenticated requests will enver work, so we should always ask
+  // On GHEC-DR, unauthenticated requests will never work, so we should always ask
   // for authentication.
   const hasAccessToken =
     !!(await credentials.getExistingAccessToken()) || hasGhecDrUri();
