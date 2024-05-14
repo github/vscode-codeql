@@ -151,13 +151,29 @@ describe("isVariantAnalysisComplete", () => {
 });
 
 describe("getActionsWorkflowRunUrl", () => {
-  it("should get the run url", () => {
+  it("should get the run url on github.com", () => {
     const variantAnalysis = createMockVariantAnalysis({});
 
-    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(
+      variantAnalysis,
+      new URL("https://github.com"),
+    );
 
     expect(actionsWorkflowRunUrl).toBe(
       `https://github.com/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`,
+    );
+  });
+
+  it("should get the run url on GHEC-DR", () => {
+    const variantAnalysis = createMockVariantAnalysis({});
+
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(
+      variantAnalysis,
+      new URL("https://tenant.ghe.com"),
+    );
+
+    expect(actionsWorkflowRunUrl).toBe(
+      `https://tenant.ghe.com/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`,
     );
   });
 });

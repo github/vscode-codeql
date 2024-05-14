@@ -92,20 +92,40 @@ describe("getDbItemActions", () => {
 });
 
 describe("getGitHubUrl", () => {
-  it("should return the correct url for a remote owner", () => {
+  const githubUrl = new URL("https://github.com");
+
+  it("should return the correct url for a remote owner with github.com", () => {
     const dbItem = createRemoteOwnerDbItem();
 
-    const actualUrl = getGitHubUrl(dbItem);
+    const actualUrl = getGitHubUrl(dbItem, githubUrl);
     const expectedUrl = `https://github.com/${dbItem.ownerName}`;
 
     expect(actualUrl).toEqual(expectedUrl);
   });
 
-  it("should return the correct url for a remote repo", () => {
+  it("should return the correct url for a remote owner with GHEC-DR", () => {
+    const dbItem = createRemoteOwnerDbItem();
+
+    const actualUrl = getGitHubUrl(dbItem, new URL("https://tenant.ghe.com"));
+    const expectedUrl = `https://tenant.ghe.com/${dbItem.ownerName}`;
+
+    expect(actualUrl).toEqual(expectedUrl);
+  });
+
+  it("should return the correct url for a remote repo with github.com", () => {
     const dbItem = createRemoteRepoDbItem();
 
-    const actualUrl = getGitHubUrl(dbItem);
+    const actualUrl = getGitHubUrl(dbItem, githubUrl);
     const expectedUrl = `https://github.com/${dbItem.repoFullName}`;
+
+    expect(actualUrl).toEqual(expectedUrl);
+  });
+
+  it("should return the correct url for a remote repo with GHEC-DR", () => {
+    const dbItem = createRemoteRepoDbItem();
+
+    const actualUrl = getGitHubUrl(dbItem, new URL("https://tenant.ghe.com"));
+    const expectedUrl = `https://tenant.ghe.com/${dbItem.repoFullName}`;
 
     expect(actualUrl).toEqual(expectedUrl);
   });
@@ -115,9 +135,9 @@ describe("getGitHubUrl", () => {
     const dbItem1 = createRemoteSystemDefinedListDbItem();
     const dbItem2 = createRemoteUserDefinedListDbItem();
 
-    const actualUrl0 = getGitHubUrl(dbItem0);
-    const actualUrl1 = getGitHubUrl(dbItem1);
-    const actualUrl2 = getGitHubUrl(dbItem2);
+    const actualUrl0 = getGitHubUrl(dbItem0, githubUrl);
+    const actualUrl1 = getGitHubUrl(dbItem1, githubUrl);
+    const actualUrl2 = getGitHubUrl(dbItem2, githubUrl);
 
     expect(actualUrl0).toBeUndefined();
     expect(actualUrl1).toBeUndefined();

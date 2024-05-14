@@ -78,7 +78,6 @@ import {
   REPO_STATES_FILENAME,
   writeRepoStates,
 } from "./repo-states-store";
-import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
 import {
   showAndLogExceptionWithTelemetry,
@@ -98,6 +97,7 @@ import { findVariantAnalysisQlPackRoot } from "./ql";
 import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
 import { isSarifResultsQueryKind } from "../common/query-metadata";
 import { isVariantAnalysisEnabledForGitHubHost } from "./ghec-dr";
+import type { VariantAnalysisConfig } from "../config";
 import { getEnterpriseUri } from "../config";
 
 const maxRetryCount = 3;
@@ -158,6 +158,7 @@ export class VariantAnalysisManager
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
     private readonly dbManager: DbManager,
+    private readonly config: VariantAnalysisConfig,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
@@ -426,7 +427,10 @@ export class VariantAnalysisManager
       );
     } catch (e: unknown) {
       // If the error is handled by the handleRequestError function, we don't need to throw
-      if (e instanceof RequestError && handleRequestError(e, this.app.logger)) {
+      if (
+        e instanceof RequestError &&
+        handleRequestError(e, this.config.githubUrl, this.app.logger)
+      ) {
         return undefined;
       }
 
@@ -745,7 +749,7 @@ export class VariantAnalysisManager
   private async onDidChangeSessions(
     event: AuthenticationSessionsChangeEvent,
   ): Promise<void> {
-    if (event.provider.id !== GITHUB_AUTH_PROVIDER_ID) {
+    if (event.provider.id !== this.app.credentials.authProviderId) {
       return;
     }
 
@@ -951,7 +955,10 @@ export class VariantAnalysisManager
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(
+      variantAnalysis,
+      this.config.githubUrl,
+    );
 
     await this.app.commands.execute(
       "vscode.open",

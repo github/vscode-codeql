@@ -29,6 +29,8 @@ import {
   addDatabaseSourceToWorkspace,
   allowHttp,
   downloadTimeout,
+  getGitHubInstanceUrl,
+  hasGhecDrUri,
   isCanary,
 } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
@@ -150,10 +152,11 @@ export class DatabaseFetcher {
       maxStep: 2,
     });
 
+    const instanceUrl = getGitHubInstanceUrl();
+
     const options: InputBoxOptions = {
-      title:
-        'Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)',
-      placeHolder: "https://github.com/<owner>/<repo> or <owner>/<repo>",
+      title: `Enter a GitHub repository URL or "name with owner" (e.g. ${new URL("/github/codeql", instanceUrl).toString()} or github/codeql)`,
+      placeHolder: `${new URL("/", instanceUrl).toString()}<owner>/<repo> or <owner>/<repo>`,
       ignoreFocusOut: true,
     };
 
@@ -180,12 +183,14 @@ export class DatabaseFetcher {
     makeSelected = true,
     addSourceArchiveFolder = addDatabaseSourceToWorkspace(),
   ): Promise<DatabaseItem | undefined> {
-    const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
+    const nwo =
+      getNwoFromGitHubUrl(githubRepo, getGitHubInstanceUrl()) || githubRepo;
     if (!isValidGitHubNwo(nwo)) {
       throw new Error(`Invalid GitHub repository: ${githubRepo}`);
     }
 
-    const credentials = isCanary() ? this.app.credentials : undefined;
+    const credentials =
+      isCanary() || hasGhecDrUri() ? this.app.credentials : undefined;
 
     const octokit = credentials
       ? await credentials.getOctokit()

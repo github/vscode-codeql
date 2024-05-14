@@ -16,6 +16,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { mockedObject } from "../../utils/mocking.helpers";
+import { createMockVariantAnalysisConfig } from "../../../factories/config";
 
 jest.setTimeout(10_000);
 
@@ -27,8 +28,10 @@ describe(VariantAnalysisResultsManager.name, () => {
     variantAnalysisId = faker.number.int();
 
     const cli = mockedObject<CodeQLCliServer>({});
+    const variantAnalysisConfig = createMockVariantAnalysisConfig();
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(
       cli,
+      variantAnalysisConfig,
       extLogger,
     );
   });

@@ -7,6 +7,7 @@ import { AppOctokit } from "../common/octokit";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { UserCancellationException } from "../common/vscode/progress";
 import type { EndpointDefaults } from "@octokit/types";
+import { getOctokitBaseUrl } from "../common/vscode/octokit";
 
 export async function getCodeSearchRepositories(
   query: string,
@@ -54,6 +55,7 @@ async function provideOctokitWithThrottling(
 
   const octokit = new MyOctokit({
     auth,
+    baseUrl: getOctokitBaseUrl(),
     throttle: {
       onRateLimit: (retryAfter: number, options: EndpointDefaults): boolean => {
         void logger.log(

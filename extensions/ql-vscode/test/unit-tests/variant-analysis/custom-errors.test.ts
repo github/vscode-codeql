@@ -4,13 +4,14 @@ import { handleRequestError } from "../../../src/variant-analysis/custom-errors"
 import { faker } from "@faker-js/faker";
 
 describe("handleRequestError", () => {
+  const githubUrl = new URL("https://github.com");
   const logger = createMockLogger();
 
   it("returns false when handling a non-422 error", () => {
     const e = mockRequestError(404, {
       message: "Not Found",
     });
-    expect(handleRequestError(e, logger)).toBe(false);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(false);
     expect(logger.showErrorMessage).not.toHaveBeenCalled();
   });
 
@@ -19,13 +20,13 @@ describe("handleRequestError", () => {
       message:
         "Unable to trigger a variant analysis. None of the requested repositories could be found.",
     });
-    expect(handleRequestError(e, logger)).toBe(false);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(false);
     expect(logger.showErrorMessage).not.toHaveBeenCalled();
   });
 
   it("returns false when handling an error without response body", () => {
     const e = mockRequestError(422, undefined);
-    expect(handleRequestError(e, logger)).toBe(false);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(false);
     expect(logger.showErrorMessage).not.toHaveBeenCalled();
   });
 
@@ -42,7 +43,7 @@ describe("handleRequestError", () => {
         },
       },
     });
-    expect(handleRequestError(e, logger)).toBe(false);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(false);
     expect(logger.showErrorMessage).not.toHaveBeenCalled();
   });
 
@@ -58,7 +59,7 @@ describe("handleRequestError", () => {
         },
       ],
     });
-    expect(handleRequestError(e, logger)).toBe(false);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(false);
     expect(logger.showErrorMessage).not.toHaveBeenCalled();
   });
 
@@ -75,7 +76,7 @@ describe("handleRequestError", () => {
         },
       ],
     });
-    expect(handleRequestError(e, logger)).toBe(false);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(false);
     expect(logger.showErrorMessage).not.toHaveBeenCalled();
   });
 
@@ -92,11 +93,11 @@ describe("handleRequestError", () => {
         },
       ],
     });
-    expect(handleRequestError(e, logger)).toBe(false);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(false);
     expect(logger.showErrorMessage).not.toHaveBeenCalled();
   });
 
-  it("shows notification when handling a missing default branch error", () => {
+  it("shows notification when handling a missing default branch error with github.com URL", () => {
     const e = mockRequestError(422, {
       message:
         "Variant analysis failed because controller repository github/pickles does not have a branch 'main'. Please create a 'main' branch in the repository and re-run the variant analysis.",
@@ -110,9 +111,31 @@ describe("handleRequestError", () => {
         },
       ],
     });
-    expect(handleRequestError(e, logger)).toBe(true);
+    expect(handleRequestError(e, githubUrl, logger)).toBe(true);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
       "Variant analysis failed because the controller repository github/pickles does not have a branch 'main'. Please create a 'main' branch by clicking [here](https://github.com/github/pickles/new/main) and re-run the variant analysis query.",
+    );
+  });
+
+  it("shows notification when handling a missing default branch error with GHEC-DR URL", () => {
+    const e = mockRequestError(422, {
+      message:
+        "Variant analysis failed because controller repository github/pickles does not have a branch 'main'. Please create a 'main' branch in the repository and re-run the variant analysis.",
+      errors: [
+        {
+          resource: "Repository",
+          field: "default_branch",
+          code: "missing",
+          repository: "github/pickles",
+          default_branch: "main",
+        },
+      ],
+    });
+    expect(
+      handleRequestError(e, new URL("https://tenant.ghe.com"), logger),
+    ).toBe(true);
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
+      "Variant analysis failed because the controller repository github/pickles does not have a branch 'main'. Please create a 'main' branch by clicking [here](https://tenant.ghe.com/github/pickles/new/main) and re-run the variant analysis query.",
     );
   });
 });

@@ -15,6 +15,7 @@ function makeTestOctokit(octokit: Octokit): Credentials {
         "getExistingAccessToken not supported by test credentials",
       );
     },
+    authProviderId: "github",
   };
 }
 

@@ -109,11 +109,54 @@ export function hasEnterpriseUri(): boolean {
 }
 
 /**
+ * Does the uri look like GHEC-DR?
+ */
+function isGhecDrUri(uri: Uri | undefined): boolean {
+  return uri !== undefined && uri.authority.toLowerCase().endsWith(".ghe.com");
+}
+
+/**
  * Is the GitHub Enterprise URI set to something that looks like GHEC-DR?
  */
 export function hasGhecDrUri(): boolean {
   const uri = getEnterpriseUri();
-  return uri !== undefined && uri.authority.toLowerCase().endsWith(".ghe.com");
+  return isGhecDrUri(uri);
+}
+
+/**
+ * The URI for GitHub.com.
+ */
+export const GITHUB_URL = new URL("https://github.com");
+export const GITHUB_API_URL = new URL("https://api.github.com");
+
+/**
+ * If the GitHub Enterprise URI is set to something that looks like GHEC-DR, return it.
+ */
+export function getGhecDrUri(): Uri | undefined {
+  const uri = getEnterpriseUri();
+  if (isGhecDrUri(uri)) {
+    return uri;
+  } else {
+    return undefined;
+  }
+}
+
+export function getGitHubInstanceUrl(): URL {
+  const ghecDrUri = getGhecDrUri();
+  if (ghecDrUri) {
+    return new URL(ghecDrUri.toString());
+  }
+  return GITHUB_URL;
+}
+
+export function getGitHubInstanceApiUrl(): URL {
+  const ghecDrUri = getGhecDrUri();
+  if (ghecDrUri) {
+    const url = new URL(ghecDrUri.toString());
+    url.hostname = `api.${url.hostname}`;
+    return url;
+  }
+  return GITHUB_API_URL;
 }
 
 const ROOT_SETTING = new Setting("codeQL");
@@ -570,6 +613,11 @@ export async function setRemoteControllerRepo(repo: string | undefined) {
 export interface VariantAnalysisConfig {
   controllerRepo: string | undefined;
   showSystemDefinedRepositoryLists: boolean;
+  /**
+   * This uses a URL instead of a URI because the URL class is available in
+   * unit tests and is fully browser-compatible.
+   */
+  githubUrl: URL;
   onDidChangeConfiguration?: Event<void>;
 }
 
@@ -590,6 +638,10 @@ export class VariantAnalysisConfigListener
 
   public get showSystemDefinedRepositoryLists(): boolean {
     return !hasEnterpriseUri();
+  }
+
+  public get githubUrl(): URL {
+    return getGitHubInstanceUrl();
   }
 }
 

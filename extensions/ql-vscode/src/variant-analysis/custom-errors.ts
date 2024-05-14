@@ -15,6 +15,7 @@ type ErrorResponse = {
 
 export function handleRequestError(
   e: RequestError,
+  githubUrl: URL,
   logger: NotificationLogger,
 ): boolean {
   if (e.status !== 422) {
@@ -60,9 +61,12 @@ export function handleRequestError(
     return false;
   }
 
-  const createBranchURL = `https://github.com/${
-    missingDefaultBranchError.repository
-  }/new/${encodeURIComponent(missingDefaultBranchError.default_branch)}`;
+  const createBranchURL = new URL(
+    `/${
+      missingDefaultBranchError.repository
+    }/new/${encodeURIComponent(missingDefaultBranchError.default_branch)}`,
+    githubUrl,
+  ).toString();
 
   void showAndLogErrorMessage(
     logger,

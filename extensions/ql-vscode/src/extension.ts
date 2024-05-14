@@ -31,6 +31,7 @@ import {
   joinOrderWarningThreshold,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
+  VariantAnalysisConfigListener,
 } from "./config";
 import {
   AstViewer,
@@ -865,8 +866,10 @@ async function activateWithInstalledDistribution(
     "variant-analyses",
   );
   await ensureDir(variantAnalysisStorageDir);
+  const variantAnalysisConfig = new VariantAnalysisConfigListener();
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
     cliServer,
+    variantAnalysisConfig,
     extLogger,
   );
 
@@ -876,6 +879,7 @@ async function activateWithInstalledDistribution(
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
     dbModule.dbManager,
+    variantAnalysisConfig,
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
