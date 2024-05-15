@@ -240,8 +240,32 @@ export class QueryServerClient extends DisposableObject {
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};
-    child.on("close", () => {
-      this.restartQueryServerOnFailure();
+
+    // 'exit' may or may not fire after 'error' event, so we want to guard against restarting the
+    // query server twice if both events fire.
+    let wasExitOrErrorHandled = false;
+    child.on("error", (err: Error) => {
+      if (!wasExitOrErrorHandled) {
+        void this.logger.log(`Query server terminated with error: ${err}.`);
+        this.restartQueryServerOnFailure();
+        wasExitOrErrorHandled = true;
+      }
+    });
+    child.on("exit", (code: number, signal: string) => {
+      if (!wasExitOrErrorHandled) {
+        if (code !== null) {
+          void this.logger.log(
+            `Query server terminated with exit code: ${code}.`,
+          );
+        }
+        if (signal !== null) {
+          void this.logger.log(
+            `Query server terminated due to receipt of signal: ${signal}.`,
+          );
+        }
+        this.restartQueryServerOnFailure();
+        wasExitOrErrorHandled = true;
+      }
     });
   }
 
