@@ -947,7 +947,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(compareView);
 
   void extLogger.log("Initializing source archive filesystem provider.");
-  archiveFilesystemProvider_activate(ctx);
+  archiveFilesystemProvider_activate(ctx, dbm);
 
   const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
