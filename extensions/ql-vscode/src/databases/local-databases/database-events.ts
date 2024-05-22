@@ -18,6 +18,6 @@ export interface DatabaseChangedEvent {
   item: DatabaseItem | undefined;
   // If true, event handlers should consider the database manager
   // to have been fully refreshed. Any state managed by the
-  /// event handler shouuld be fully refreshed as well.
+  // event handler shouuld be fully refreshed as well.
   fullRefresh: boolean;
 }

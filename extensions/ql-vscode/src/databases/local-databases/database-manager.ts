@@ -722,7 +722,6 @@ export class DatabaseManager extends DisposableObject {
       );
     }
 
-    // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
       item,
       kind: DatabaseEventKind.Remove,

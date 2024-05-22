@@ -244,8 +244,6 @@ export class ArchiveFileSystemProvider implements FileSystemProvider {
 
   root = new Directory("");
 
-  constructor() {}
-
   flushCache(zipPath: string) {
     this.archives.delete(zipPath);
   }
@@ -363,17 +361,19 @@ export class ArchiveFileSystemProvider implements FileSystemProvider {
  */
 export const zipArchiveScheme = "codeql-zip-archive";
 
-export function activate(ctx: ExtensionContext, dbm: DatabaseManager) {
+export function activate(ctx: ExtensionContext, dbm?: DatabaseManager) {
   const afsp = new ArchiveFileSystemProvider();
-  ctx.subscriptions.push(
-    dbm.onDidChangeDatabaseItem(async ({ kind, item: db }) => {
-      if (kind === DatabaseEventKind.Remove) {
-        if (db?.sourceArchive) {
-          afsp.flushCache(db.sourceArchive.fsPath);
+  if (dbm) {
+    ctx.subscriptions.push(
+      dbm.onDidChangeDatabaseItem(async ({ kind, item: db }) => {
+        if (kind === DatabaseEventKind.Remove) {
+          if (db?.sourceArchive) {
+            afsp.flushCache(db.sourceArchive.fsPath);
+          }
         }
-      }
-    }),
-  );
+      }),
+    );
+  }
 
   ctx.subscriptions.push(
     // When a file system archive is removed from the workspace, we should

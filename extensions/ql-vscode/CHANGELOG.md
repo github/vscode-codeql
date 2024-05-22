@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Fix a bug when re-importing test databases that erroneously showed old source code. [#3616](https://github.com/github/vscode-codeql/pull/3616)
+
 ## 1.13.0 - 1 May 2024
 
 - Add Ruby support to the CodeQL Model Editor. [#3584](https://github.com/github/vscode-codeql/pull/3584)

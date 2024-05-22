@@ -140,7 +140,8 @@ describe("local databases", () => {
       },
     ]);
     expect(onDidChangeDatabaseItem).toHaveBeenCalledWith({
-      item: undefined,
+      fullRefresh: true,
+      item: mockDbItem,
       kind: DatabaseEventKind.Add,
     });
 
@@ -152,7 +153,8 @@ describe("local databases", () => {
     expect((databaseManager as any)._databaseItems).toEqual([]);
     expect(updateSpy).toHaveBeenCalledWith("databaseList", []);
     expect(onDidChangeDatabaseItem).toHaveBeenCalledWith({
-      item: undefined,
+      fullRefresh: true,
+      item: mockDbItem,
       kind: DatabaseEventKind.Remove,
     });
   });
@@ -175,7 +177,8 @@ describe("local databases", () => {
       ]);
 
       expect(onDidChangeDatabaseItem).toHaveBeenCalledWith({
-        item: undefined,
+        fullRefresh: true,
+        item: mockDbItem,
         kind: DatabaseEventKind.Rename,
       });
     });
@@ -198,7 +201,8 @@ describe("local databases", () => {
       ]);
 
       const mockEvent = {
-        item: undefined,
+        fullRefresh: true,
+        item: mockDbItem,
         kind: DatabaseEventKind.Add,
       };
       expect(onDidChangeDatabaseItem).toHaveBeenCalledWith(mockEvent);
