@@ -135,7 +135,7 @@ class QLDebugAdapterTracker
   ): Promise<void> {
     if (this.localQueryRun !== undefined) {
       const results: CoreQueryResults = body;
-      await this.localQueryRun.complete(results);
+      await this.localQueryRun.complete(results, (_) => {});
       this.localQueryRun = undefined;
     }
   }
