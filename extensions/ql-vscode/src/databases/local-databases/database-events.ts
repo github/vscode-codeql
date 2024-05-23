@@ -16,4 +16,8 @@ export enum DatabaseEventKind {
 export interface DatabaseChangedEvent {
   kind: DatabaseEventKind;
   item: DatabaseItem | undefined;
+  // If true, event handlers should consider the database manager
+  // to have been fully refreshed. Any state managed by the
+  // event handler should be fully refreshed as well.
+  fullRefresh: boolean;
 }

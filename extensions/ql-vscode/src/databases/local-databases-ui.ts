@@ -109,9 +109,8 @@ class DatabaseTreeDataProvider
     // Note that events from the database manager are instances of DatabaseChangedEvent
     // and events fired by the UI are instances of DatabaseItem
 
-    // When event.item is undefined, then the entire tree is refreshed.
-    // When event.item is a db item, then only that item is refreshed.
-    this._onDidChangeTreeData.fire(event.item);
+    // When a full refresh has occurred, then all items are refreshed by passing undefined.
+    this._onDidChangeTreeData.fire(event.fullRefresh ? undefined : event.item);
   }
 
   private handleDidChangeCurrentDatabaseItem(
