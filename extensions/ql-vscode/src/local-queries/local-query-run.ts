@@ -26,6 +26,8 @@ import type { LocalQueries } from "./local-queries";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { telemetryListener } from "../common/vscode/telemetry";
 import type { Disposable } from "../common/disposable-object";
+import type { ProgressCallback } from "../common/vscode/progress";
+import { progressUpdate } from "../common/vscode/progress";
 
 function formatResultMessage(result: CoreQueryResults): string {
   switch (result.resultType) {
@@ -79,23 +81,31 @@ export class LocalQueryRun {
    * This function must be called when the evaluation completes, whether the evaluation was
    * successful or not.
    * */
-  public async complete(results: CoreQueryResults): Promise<void> {
+  public async complete(
+    results: CoreQueryResults,
+    progress: ProgressCallback,
+  ): Promise<void> {
     const evalLogPaths = await this.summarizeEvalLog(
       results.resultType,
       this.outputDir,
       this.logger,
+      progress,
     );
     if (evalLogPaths !== undefined) {
       this.queryInfo.setEvaluatorLogPaths(evalLogPaths);
     }
+    progress(progressUpdate(1, 4, "Getting completed query info"));
     const queryWithResults = await this.getCompletedQueryInfo(results);
+    progress(progressUpdate(2, 4, "Updating query history"));
     this.queryHistoryManager.completeQuery(this.queryInfo, queryWithResults);
+    progress(progressUpdate(3, 4, "Showing results"));
     await this.localQueries.showResultsForCompletedQuery(
       this.queryInfo as CompletedLocalQueryInfo,
       WebviewReveal.Forced,
     );
     // Note we must update the query history view after showing results as the
     // display and sorting might depend on the number of results
+    progress(progressUpdate(4, 4, "Updating query history"));
     await this.queryHistoryManager.refreshTreeView();
 
     this.logger.dispose();
@@ -109,6 +119,7 @@ export class LocalQueryRun {
       QueryResultType.OTHER_ERROR,
       this.outputDir,
       this.logger,
+      (_) => {},
     );
     if (evalLogPaths !== undefined) {
       this.queryInfo.setEvaluatorLogPaths(evalLogPaths);
@@ -128,10 +139,12 @@ export class LocalQueryRun {
     resultType: QueryResultType,
     outputDir: QueryOutputDir,
     logger: BaseLogger,
+    progress: ProgressCallback,
   ): Promise<EvaluatorLogPaths | undefined> {
     const evalLogPaths = await generateEvalLogSummaries(
       this.cliServer,
       outputDir,
+      progress,
     );
     if (evalLogPaths !== undefined) {
       if (evalLogPaths.endSummary !== undefined) {

@@ -31,6 +31,8 @@ import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./common/helpers-pure";
 import { createHash } from "crypto";
 import { QueryOutputDir } from "./local-queries/query-output-dir";
+import { progressUpdate } from "./common/vscode/progress";
+import type { ProgressCallback } from "./common/vscode/progress";
 
 /**
  * run-queries.ts
@@ -519,6 +521,7 @@ export async function createInitialQueryInfo(
 export async function generateEvalLogSummaries(
   cliServer: CodeQLCliServer,
   outputDir: QueryOutputDir,
+  progress: ProgressCallback,
 ): Promise<EvaluatorLogPaths | undefined> {
   const log = outputDir.evalLogPath;
   if (!(await pathExists(log))) {
@@ -527,6 +530,7 @@ export async function generateEvalLogSummaries(
   }
   let humanReadableSummary: string | undefined = undefined;
   let endSummary: string | undefined = undefined;
+  progress(progressUpdate(1, 3, "Generating evaluator log summary"));
   if (await generateHumanReadableLogSummary(cliServer, outputDir)) {
     humanReadableSummary = outputDir.evalLogSummaryPath;
     endSummary = outputDir.evalLogEndSummaryPath;
@@ -535,10 +539,12 @@ export async function generateEvalLogSummaries(
   let summarySymbols: string | undefined = undefined;
   if (isCanary()) {
     // Generate JSON summary for viewer.
+    progress(progressUpdate(2, 3, "Generating JSON log summary"));
     jsonSummary = outputDir.jsonEvalLogSummaryPath;
     await cliServer.generateJsonLogSummary(log, jsonSummary);
 
     if (humanReadableSummary !== undefined) {
+      progress(progressUpdate(3, 3, "Generating summary symbols file"));
       summarySymbols = outputDir.evalLogSummarySymbolsPath;
       await generateSummarySymbolsFile(humanReadableSummary, summarySymbols);
     }

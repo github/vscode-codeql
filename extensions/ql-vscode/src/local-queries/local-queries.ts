@@ -485,7 +485,7 @@ export class LocalQueries extends DisposableObject {
           localQueryRun.logger,
         );
 
-        await localQueryRun.complete(results);
+        await localQueryRun.complete(results, progress);
 
         return results;
       } catch (e) {
