@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.13.1 - 29 May 2024
 
 - Fix a bug when re-importing test databases that erroneously showed old source code. [#3616](https://github.com/github/vscode-codeql/pull/3616)
