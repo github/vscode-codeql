@@ -179,7 +179,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
    import semmle.python.frameworks.data.internal.ApiGraphModelsExtensions
 
    from string path, string kind
-   where sinkModel("vscode-codeql", path, kind)
+   where sinkModel("vscode-codeql", path, kind, _)
    select path, kind
    ```
 
@@ -210,17 +210,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 4. Open the ".model.yml" file corresponding to the library that was changed.
    - Check that the file contains entries for the methods that were modeled.
 
-#### Test Case 3: Model with AI
-
-Note that this test requires the feature flag: `codeQL.model.llmGeneration`
-
-A package that the AI normally gives models for is `javax.servlet-api` from the `jhy/jsoup` repository.
-
-1. Click "Model with AI".
-   - Check that rows change to "Thinking".
-   - Check that results come back and rows get filled out.
-
-#### Test Case 4: Model as dependency
+#### Test Case 3: Model as dependency
 
 Note that this test requires the feature flag: `codeQL.model.flowGeneration`
 
