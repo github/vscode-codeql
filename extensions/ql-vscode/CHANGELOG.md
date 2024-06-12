@@ -4,6 +4,11 @@
 
 - Add `codeQL.runningQueries.ignoredWorkspaceFolders` setting. [#3617](https://github.com/github/vscode-codeql/pull/3617)
 
+## 1.13.1 - 29 May 2024
+
+- Fix a bug when re-importing test databases that erroneously showed old source code. [#3616](https://github.com/github/vscode-codeql/pull/3616)
+- Update the progress window with details on potentially long-running post-processing steps after running a query. [#3622](https://github.com/github/vscode-codeql/pull/3622)
+
 ## 1.13.0 - 1 May 2024
 
 - Add Ruby support to the CodeQL Model Editor. [#3584](https://github.com/github/vscode-codeql/pull/3584)

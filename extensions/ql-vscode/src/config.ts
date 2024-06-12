@@ -684,11 +684,6 @@ export function getVariantAnalysisDefaultResultsSort(): SortKey {
  */
 const ACTION_BRANCH = new Setting("actionBranch", VARIANT_ANALYSIS_SETTING);
 
-export const VARIANT_ANALYSIS_ENABLE_GHEC_DR = new Setting(
-  "enableGhecDr",
-  VARIANT_ANALYSIS_SETTING,
-);
-
 export function getActionBranch(): string {
   return ACTION_BRANCH.getValue<string>() || "main";
 }

@@ -33,6 +33,14 @@ export interface ProgressUpdate {
   message: string;
 }
 
+export function progressUpdate(
+  step: number,
+  maxStep: number,
+  message: string,
+): ProgressUpdate {
+  return { step, maxStep, message };
+}
+
 export type ProgressCallback = (p: ProgressUpdate) => void;
 
 // Make certain properties within a type optional

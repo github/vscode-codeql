@@ -613,6 +613,7 @@ export class DatabaseManager extends DisposableObject {
       this._onDidChangeCurrentDatabaseItem.fire({
         item,
         kind: DatabaseEventKind.Change,
+        fullRefresh: false,
       });
     }
   }
@@ -662,8 +663,9 @@ export class DatabaseManager extends DisposableObject {
     }
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
-      item: undefined,
+      item,
       kind: DatabaseEventKind.Add,
+      fullRefresh: true,
     });
   }
 
@@ -671,9 +673,9 @@ export class DatabaseManager extends DisposableObject {
     item.name = newName;
     await this.updatePersistedDatabaseList();
     this._onDidChangeDatabaseItem.fire({
-      // pass undefined so that the entire tree is rebuilt in order to re-sort
-      item: undefined,
+      item,
       kind: DatabaseEventKind.Rename,
+      fullRefresh: true,
     });
   }
 
@@ -720,10 +722,10 @@ export class DatabaseManager extends DisposableObject {
       );
     }
 
-    // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
-      item: undefined,
+      item,
       kind: DatabaseEventKind.Remove,
+      fullRefresh: true,
     });
   }
 
@@ -776,6 +778,7 @@ export class DatabaseManager extends DisposableObject {
       this._onDidChangeDatabaseItem.fire({
         kind: DatabaseEventKind.Refresh,
         item: databaseItem,
+        fullRefresh: false,
       });
     }
   }

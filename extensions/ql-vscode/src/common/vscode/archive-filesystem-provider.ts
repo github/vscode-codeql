@@ -26,6 +26,8 @@ import {
 // All path operations in this file must be on paths *within* the zip
 // archive.
 import { posix } from "path";
+import { DatabaseEventKind } from "../../databases/local-databases/database-events";
+import type { DatabaseManager } from "../../databases/local-databases/database-manager";
 
 const path = posix;
 
@@ -242,15 +244,8 @@ export class ArchiveFileSystemProvider implements FileSystemProvider {
 
   root = new Directory("");
 
-  constructor() {
-    // When a file system archive is removed from the workspace, we should
-    // also remove it from our cache.
-    workspace.onDidChangeWorkspaceFolders((event) => {
-      for (const removed of event.removed) {
-        const zipPath = removed.uri.fsPath;
-        this.archives.delete(zipPath);
-      }
-    });
+  flushCache(zipPath: string) {
+    this.archives.delete(zipPath);
   }
 
   // metadata
@@ -366,15 +361,35 @@ export class ArchiveFileSystemProvider implements FileSystemProvider {
  */
 export const zipArchiveScheme = "codeql-zip-archive";
 
-export function activate(ctx: ExtensionContext) {
+export function activate(ctx: ExtensionContext, dbm?: DatabaseManager) {
+  const afsp = new ArchiveFileSystemProvider();
+  if (dbm) {
+    ctx.subscriptions.push(
+      dbm.onDidChangeDatabaseItem(async ({ kind, item: db }) => {
+        if (kind === DatabaseEventKind.Remove) {
+          if (db?.sourceArchive) {
+            afsp.flushCache(db.sourceArchive.fsPath);
+          }
+        }
+      }),
+    );
+  }
+
   ctx.subscriptions.push(
-    workspace.registerFileSystemProvider(
-      zipArchiveScheme,
-      new ArchiveFileSystemProvider(),
-      {
-        isCaseSensitive: true,
-        isReadonly: true,
-      },
-    ),
+    // When a file system archive is removed from the workspace, we should
+    // also remove it from our cache.
+    workspace.onDidChangeWorkspaceFolders((event) => {
+      for (const removed of event.removed) {
+        const zipPath = removed.uri.fsPath;
+        afsp.flushCache(zipPath);
+      }
+    }),
+  );
+
+  ctx.subscriptions.push(
+    workspace.registerFileSystemProvider(zipArchiveScheme, afsp, {
+      isCaseSensitive: true,
+      isReadonly: true,
+    }),
   );
 }
