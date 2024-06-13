@@ -1,6 +1,6 @@
 import type { CancellationToken } from "vscode";
 import { Uri, window } from "vscode";
-import { join, sep, basename, relative } from "path";
+import { join, sep, basename, relative, normalize, resolve } from "path";
 import { dump, load } from "js-yaml";
 import { copy, writeFile, readFile, mkdirp } from "fs-extra";
 import type { DirectoryResult } from "tmp-promise";
@@ -251,14 +251,15 @@ interface RemoteQueryTempDir {
 }
 
 async function createRemoteQueriesTempDirectory(): Promise<RemoteQueryTempDir> {
+  const absoluteTmpDir = normalize(resolve(tmpDir.name));
   const remoteQueryDir = await dir({
-    dir: tmpDir.name,
+    dir: absoluteTmpDir,
     unsafeCleanup: true,
   });
   const queryPackDir = join(remoteQueryDir.path, "query-pack");
   await mkdirp(queryPackDir);
   const compiledPackDir = join(remoteQueryDir.path, "compiled-pack");
-  const bundleFile = await getPackedBundlePath(tmpDir.name);
+  const bundleFile = await getPackedBundlePath(absoluteTmpDir);
   return { remoteQueryDir, queryPackDir, compiledPackDir, bundleFile };
 }
 
