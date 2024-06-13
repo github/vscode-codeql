@@ -35,7 +35,6 @@ import {
   QLPACK_LOCK_FILENAMES,
 } from "../common/ql";
 import type { QlPackFile } from "../packaging/qlpack-file";
-import { expandShortPaths } from "../common/short-paths";
 import type { QlPackDetails } from "./ql-pack-details";
 import type { ModelPackDetails } from "../common/model-pack-details";
 
@@ -252,23 +251,14 @@ interface RemoteQueryTempDir {
 }
 
 async function createRemoteQueriesTempDirectory(): Promise<RemoteQueryTempDir> {
-  const shortRemoteQueryDir = await dir({
+  const remoteQueryDir = await dir({
     dir: tmpDir.name,
     unsafeCleanup: true,
   });
-  // Expand 8.3 filenames here to work around a CLI bug where `codeql pack bundle` produces an empty
-  // archive if the pack path contains any 8.3 components.
-  const remoteQueryDir = {
-    ...shortRemoteQueryDir,
-    path: await expandShortPaths(shortRemoteQueryDir.path, extLogger),
-  };
   const queryPackDir = join(remoteQueryDir.path, "query-pack");
   await mkdirp(queryPackDir);
   const compiledPackDir = join(remoteQueryDir.path, "compiled-pack");
-  const bundleFile = await expandShortPaths(
-    await getPackedBundlePath(tmpDir.name),
-    extLogger,
-  );
+  const bundleFile = await getPackedBundlePath(tmpDir.name);
   return { remoteQueryDir, queryPackDir, compiledPackDir, bundleFile };
 }
 
