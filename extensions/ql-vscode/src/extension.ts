@@ -717,12 +717,13 @@ async function installOrUpdateThenTryActivate(
   return undefined;
 }
 
-const PACK_GLOBS = [
+const CLEAR_PACK_CACHE_ON_EDIT_GLOBS = [
   "**/codeql-pack.yml",
   "**/qlpack.yml",
   "**/queries.xml",
   "**/codeql-pack.lock.yml",
   "**/qlpack.lock.yml",
+  "**/*.dbscheme",
   ".codeqlmanifest.json",
   "codeql-workspace.yml",
 ];
@@ -769,7 +770,7 @@ async function activateWithInstalledDistribution(
     ctx,
   );
 
-  for (const glob of PACK_GLOBS) {
+  for (const glob of CLEAR_PACK_CACHE_ON_EDIT_GLOBS) {
     const fsWatcher = workspace.createFileSystemWatcher(glob);
     ctx.subscriptions.push(fsWatcher);
 
