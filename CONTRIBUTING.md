@@ -28,6 +28,7 @@ Here are a few things you can do that will increase the likelihood of your pull 
   - [Integration tests that do require the VS Code API are located here](extensions/ql-vscode/src/vscode-tests).
 - Keep your change as focused as possible. If there are multiple changes you would like to make that are not dependent upon each other, consider submitting them as separate pull requests.
 - Write a [good commit message](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+- Update the [changelog](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/CHANGELOG.md) if you are doing user-facing changes.
 
 ## Setting up a local build
 
