@@ -111,7 +111,7 @@ If you wish to navigate the query results from your keyboard, you can bind short
 We recommend reading the [full documentation for the extension](https://docs.github.com/code-security/codeql-for-vs-code/) on the GitHub documentation website. You may also find the following resources useful:
 
 - [Create a database for a different codebase](https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/).
-- [Try out variant analysis](https://docs.github.com/en/code-security/codeql-for-vs-code/getting-started-with-codeql-for-vs-code/running-codeql-queries-at-scale-with-multi-repository-variant-analysis).
+- [Try out variant analysis](https://docs.github.com/code-security/codeql-for-vs-code/getting-started-with-codeql-for-vs-code/running-codeql-queries-at-scale-with-multi-repository-variant-analysis).
 - [Learn more about CodeQL](https://codeql.github.com/docs/).
 - [Read how security researchers use CodeQL to find CVEs](https://github.blog/tag/github-security-lab/).
 
