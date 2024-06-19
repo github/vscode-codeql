@@ -144,6 +144,19 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
+      # Enable 8.3 filename creation. This is not required to run the extension but it is required for the unit tests to pass.
+      # This feature is currently enabled by default in Windows 11 for the C: drive and therefore we must maintain support for it.
+      # This setting needs to be enabled before files are created, i.e. before we checkout the repository.
+      - name: Enable 8.3 filenames
+        shell: pwsh
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          $shortNameEnableProcess = Start-Process -FilePath fsutil.exe -ArgumentList ('8dot3name', 'set', '0') -Wait -PassThru
+          $shortNameEnableExitCode = $shortNameEnableProcess.ExitCode
+          if ($shortNameEnableExitCode -ne 0) {
+              exit $shortNameEnableExitCode
+          }
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
