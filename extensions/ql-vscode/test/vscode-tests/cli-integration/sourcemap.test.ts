@@ -29,7 +29,11 @@ describe("SourceMap", () => {
     // Always use forward slashes, since they work everywhere.
     const slashRoot = root.replaceAll("\\", "/");
     const newMapText = mapText.replaceAll("${root}", slashRoot);
+    console.log(99999, "prewrite");
     await writeFile(tempFiles.summaryMap, newMapText, "utf8");
+    console.log(99999, "postwrite");
+
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const summaryDocument = await workspace.openTextDocument(tempFiles.summary);
     expect(summaryDocument.languageId).toBe("ql-summary");
