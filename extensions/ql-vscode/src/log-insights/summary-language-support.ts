@@ -114,12 +114,20 @@ export class SummaryLanguageSupport extends DisposableObject {
 
       const mapPath = `${document.uri.fsPath}.map`;
       console.log("mapPath", mapPath);
+      const rawMap = await readFile(mapPath, "utf-8");
       try {
-        const rawMap = await readFile(mapPath, "utf-8");
         console.log("rawMap length BAD", rawMap.length);
         this.sourceMap = await new SourceMapConsumer(rawMap);
       } catch (e: unknown) {
         console.log(666666, e);
+        // try again
+        try {
+          this.sourceMap = await new SourceMapConsumer(rawMap);
+        } catch (e2: unknown) {
+          console.log(777777, "Failed a second time", e2);
+          // Error reading sourcemap. Pretend there was no sourcemap.
+          this.sourceMap = undefined;
+        }
         // Error reading sourcemap. Pretend there was no sourcemap.
         void extLogger.log(
           `Error reading sourcemap file '${mapPath}': ${getErrorMessage(e)}`,
