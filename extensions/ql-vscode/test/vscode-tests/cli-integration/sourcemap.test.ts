@@ -29,7 +29,7 @@ describe("SourceMap", () => {
     // Always use forward slashes, since they work everywhere.
     const slashRoot = root.replaceAll("\\", "/");
     const newMapText = mapText.replaceAll("${root}", slashRoot);
-    await writeFile(tempFiles.summaryMap, newMapText);
+    await writeFile(tempFiles.summaryMap, newMapText, "utf8");
 
     const summaryDocument = await workspace.openTextDocument(tempFiles.summary);
     expect(summaryDocument.languageId).toBe("ql-summary");
@@ -37,10 +37,9 @@ describe("SourceMap", () => {
     summaryEditor.selection = new Selection(356, 10, 356, 10);
 
     // DELETEME just trying to track down the error
-    const selectedText = summaryEditor.document.getText(
-      summaryEditor.selection,
+    const smap = await new SourceMapConsumer(
+      await readFile(tempFiles.summaryMap, "utf-8"),
     );
-    const smap = await new SourceMapConsumer(newMapText);
     const qlPosition = smap.originalPositionFor({
       line: summaryEditor.selection.start.line + 1,
       column: summaryEditor.selection.start.character,
@@ -48,7 +47,12 @@ describe("SourceMap", () => {
     });
 
     console.log(11111111);
-    console.log("selectedText", selectedText);
+    console.log("tempFiles.summaryMap", tempFiles.summaryMap);
+    console.log(
+      "orig position",
+      summaryEditor.selection.start.line,
+      summaryEditor.selection.start.character,
+    );
     console.log("target file", qlPosition.source);
     console.log("target position", qlPosition.line, qlPosition.column);
     console.log(11111111);

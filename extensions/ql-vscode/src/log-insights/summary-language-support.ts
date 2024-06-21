@@ -91,29 +91,35 @@ export class SummaryLanguageSupport extends DisposableObject {
    */
   private async getQLSourceLocation(): Promise<PositionInFile | undefined> {
     const editor = window.activeTextEditor;
+    console.log(2222222);
+
     if (editor === undefined) {
       return undefined;
     }
+    console.log(3333333);
 
     const document = editor.document;
     if (document.languageId !== "ql-summary") {
       return undefined;
     }
 
+    console.log(444444);
     if (document.uri.scheme !== "file") {
       return undefined;
     }
+    console.log(555555);
 
     if (this.lastDocument !== document) {
       this.clearCache();
 
       const mapPath = `${document.uri.fsPath}.map`;
-
+      console.log("mapPath", mapPath);
       try {
         const sourceMapText = await readFile(mapPath, "utf-8");
-        const rawMap: RawSourceMap = JSON.parse(sourceMapText);
-        this.sourceMap = await new SourceMapConsumer(rawMap);
+        // const rawMap: RawSourceMap = JSON.parse(sourceMapText);
+        this.sourceMap = await new SourceMapConsumer(sourceMapText);
       } catch (e: unknown) {
+        console.log(666666, e);
         // Error reading sourcemap. Pretend there was no sourcemap.
         void extLogger.log(
           `Error reading sourcemap file '${mapPath}': ${getErrorMessage(e)}`,
@@ -123,6 +129,7 @@ export class SummaryLanguageSupport extends DisposableObject {
       this.lastDocument = document;
     }
 
+    console.log(7777777);
     if (this.sourceMap === undefined) {
       return undefined;
     }
@@ -132,6 +139,16 @@ export class SummaryLanguageSupport extends DisposableObject {
       column: editor.selection.start.character,
       bias: SourceMapConsumer.GREATEST_LOWER_BOUND,
     });
+
+    console.log(22222222);
+    console.log(
+      "orig position",
+      editor.selection.start.line,
+      editor.selection.start.character,
+    );
+    console.log("target file", qlPosition.source);
+    console.log("target position", qlPosition.line, qlPosition.column);
+    console.log(22222222);
 
     if (qlPosition.source === null || qlPosition.line === null) {
       // No position found.
