@@ -1,6 +1,7 @@
 import { readFile } from "fs-extra";
 // import type { RawSourceMap } from "source-map";
-import { SourceMapConsumer } from "source-map";
+import { SourceMapConsumer } from "../../node_modules/source-map";
+
 import type {
   TextDocument,
   TextEditor,

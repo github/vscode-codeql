@@ -4,7 +4,7 @@ import { tmpDir } from "../../../src/tmp-dir";
 import { readFile, writeFile, ensureDir, copy } from "fs-extra";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import type { AllCommands } from "../../../src/common/commands";
-import { SourceMapConsumer } from "source-map";
+import { SourceMapConsumer } from "../../../node_modules/source-map";
 
 /**
  * Integration tests for queries
