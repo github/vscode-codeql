@@ -115,9 +115,10 @@ export class SummaryLanguageSupport extends DisposableObject {
       const mapPath = `${document.uri.fsPath}.map`;
       console.log("mapPath", mapPath);
       try {
-        const sourceMapText = await readFile(mapPath, "utf-8");
-        // const rawMap: RawSourceMap = JSON.parse(sourceMapText);
-        this.sourceMap = await new SourceMapConsumer(sourceMapText);
+        console.log(await readFile(mapPath, "utf-8"));
+        this.sourceMap = await new SourceMapConsumer(
+          await readFile(mapPath, "utf-8"),
+        );
       } catch (e: unknown) {
         console.log(666666, e);
         // Error reading sourcemap. Pretend there was no sourcemap.

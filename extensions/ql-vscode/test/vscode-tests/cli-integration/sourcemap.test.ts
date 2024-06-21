@@ -41,6 +41,8 @@ describe("SourceMap", () => {
     summaryEditor.selection = new Selection(356, 10, 356, 10);
 
     // DELETEME just trying to track down the error
+    console.log(await readFile(tempFiles.summaryMap, "utf-8"));
+
     const smap = await new SourceMapConsumer(
       await readFile(tempFiles.summaryMap, "utf-8"),
     );
