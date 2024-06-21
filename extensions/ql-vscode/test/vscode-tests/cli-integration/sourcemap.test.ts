@@ -4,6 +4,7 @@ import { tmpDir } from "../../../src/tmp-dir";
 import { readFile, writeFile, ensureDir, copy } from "fs-extra";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import type { AllCommands } from "../../../src/common/commands";
+import { SourceMapConsumer } from "source-map";
 
 /**
  * Integration tests for queries
@@ -34,6 +35,24 @@ describe("SourceMap", () => {
     expect(summaryDocument.languageId).toBe("ql-summary");
     const summaryEditor = await window.showTextDocument(summaryDocument);
     summaryEditor.selection = new Selection(356, 10, 356, 10);
+
+    // DELETEME just trying to track down the error
+    const selectedText = summaryEditor.document.getText(
+      summaryEditor.selection,
+    );
+    const smap = await new SourceMapConsumer(newMapText);
+    const qlPosition = smap.originalPositionFor({
+      line: summaryEditor.selection.start.line + 1,
+      column: summaryEditor.selection.start.character,
+      bias: SourceMapConsumer.GREATEST_LOWER_BOUND,
+    });
+
+    console.log(11111111);
+    console.log("selectedText", selectedText);
+    console.log("target file", qlPosition.source);
+    console.log("target position", qlPosition.line, qlPosition.column);
+    console.log(11111111);
+
     await commandManager.execute("codeQL.gotoQL");
 
     const newEditor = window.activeTextEditor;
