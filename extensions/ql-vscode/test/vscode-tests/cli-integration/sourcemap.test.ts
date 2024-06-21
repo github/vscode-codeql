@@ -41,11 +41,10 @@ describe("SourceMap", () => {
     summaryEditor.selection = new Selection(356, 10, 356, 10);
 
     // DELETEME just trying to track down the error
-    console.log(await readFile(tempFiles.summaryMap, "utf-8"));
+    const rawMap = await readFile(tempFiles.summaryMap, "utf-8");
+    console.log("rawMap length GOOD", rawMap.length);
 
-    const smap = await new SourceMapConsumer(
-      await readFile(tempFiles.summaryMap, "utf-8"),
-    );
+    const smap = await new SourceMapConsumer(rawMap);
     const qlPosition = smap.originalPositionFor({
       line: summaryEditor.selection.start.line + 1,
       column: summaryEditor.selection.start.character,
