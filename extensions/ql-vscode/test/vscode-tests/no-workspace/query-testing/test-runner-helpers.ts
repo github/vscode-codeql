@@ -40,7 +40,10 @@ export function createMockCliServerForTestRun() {
     cliServer: mockedObject<CodeQLCliServer>({
       runTests: runTestsSpy,
       resolveQlpacks: resolveQlpacksSpy,
-      resolveTests: resolveTestsSpy,
+      createClone: () =>
+        mockedObject<CodeQLCliServer>({
+          resolveTests: resolveTestsSpy,
+        }),
     }),
     runTestsSpy,
   };

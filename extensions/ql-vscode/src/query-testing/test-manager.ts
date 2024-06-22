@@ -138,7 +138,7 @@ class WorkspaceFolderHandler extends DisposableObject {
   public constructor(
     private readonly workspaceFolder: WorkspaceFolder,
     private readonly testUI: TestManager,
-    cliServer: CodeQLCliServer,
+    cliServer: Pick<CodeQLCliServer, "resolveTests">,
   ) {
     super();
 
@@ -173,10 +173,12 @@ export class TestManager extends DisposableObject {
     WorkspaceFolderHandler
   >();
 
+  private readonly cliServer: Pick<CodeQLCliServer, "resolveTests">;
+
   public constructor(
     private readonly app: App,
     private readonly testRunner: TestRunner,
-    private readonly cliServer: CodeQLCliServer,
+    extensionCliServer: CodeQLCliServer,
     // Having this as a parameter with a default value makes passing in a mock easier.
     private readonly testController: TestController = tests.createTestController(
       "codeql",
@@ -184,6 +186,12 @@ export class TestManager extends DisposableObject {
     ),
   ) {
     super();
+
+    // The resolve tests command can be very slow for large workspaces and we don't want to block
+    // other CLI commands from running, so we'll create a separate CLI server just for this.
+    this.cliServer = this.push(
+      extensionCliServer.createClone("CodeQL Test Discovery CLI Server"),
+    );
 
     this.testController.createRunProfile(
       "Run",
