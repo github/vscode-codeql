@@ -77,5 +77,8 @@ export function copyWasmFiles() {
   // to configure the path to the WASM file. So, source-map will always load the file from `__dirname/mappings.wasm`.
   // In version 0.8.0, it may be possible to do this properly by calling SourceMapConsumer.initialize by
   // using the "browser" field in source-map's package.json to load the WASM file from a given file path.
-  return src("node_modules/source-map/lib/mappings.wasm").pipe(dest("out"));
+  return src("node_modules/source-map/lib/mappings.wasm", {
+    // WASM is a binary format, so don't try to re-encode it as text.
+    encoding: false,
+  }).pipe(dest("out"));
 }
