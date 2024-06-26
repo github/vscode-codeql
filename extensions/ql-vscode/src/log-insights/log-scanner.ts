@@ -112,3 +112,20 @@ export class EvaluationLogScannerSet {
     scanners.forEach((scanner) => scanner.onDone());
   }
 }
+
+/**
+ * Scan the evaluator summary log using the given scanner. For conveience, returns the scanner.
+ *
+ * @param jsonSummaryLocation The file path of the JSON summary log.
+ * @param scanner The scanner to process events from the log
+ */
+export async function scanLog<T extends EvaluationLogScanner>(
+  jsonSummaryLocation: string,
+  scanner: T,
+): Promise<T> {
+  await readJsonlFile<SummaryEvent>(jsonSummaryLocation, async (obj) => {
+    scanner.onEvent(obj);
+  });
+  scanner.onDone();
+  return scanner;
+}

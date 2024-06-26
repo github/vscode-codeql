@@ -6,6 +6,7 @@ import { registerUnhandledErrorListener } from "./common/errors";
 import type { WebviewDefinition } from "./webview-definition";
 
 import compareView from "./compare";
+import comparePerformance from "./compare-performance";
 import dataFlowPathsView from "./data-flow-paths";
 import methodModelingView from "./method-modeling";
 import modelEditorView from "./model-editor";
@@ -18,6 +19,7 @@ import "@vscode/codicons/dist/codicon.css";
 
 const views: Record<string, WebviewDefinition> = {
   compare: compareView,
+  "compare-performance": comparePerformance,
   "data-flow-paths": dataFlowPathsView,
   "method-modeling": methodModelingView,
   "model-editor": modelEditorView,

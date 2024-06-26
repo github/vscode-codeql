@@ -180,6 +180,7 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.removeHistoryItemContextInline": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.renameItem": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.compareWith": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.comparePerformanceWith": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.showEvalLog": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.showEvalLogSummary": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.showEvalLogViewer": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
