@@ -960,6 +960,10 @@
         "title": "Compare Results"
       },
       {
+        "command": "codeQLQueryHistory.comparePerformanceWith",
+        "title": "Compare Performance"
+      },
+      {
         "command": "codeQLQueryHistory.openOnGithub",
         "title": "View Logs"
       },
@@ -1228,6 +1232,11 @@
         {
           "command": "codeQLQueryHistory.compareWith",
           "group": "3_queryHistory@0",
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.comparePerformanceWith",
+          "group": "3_queryHistory@1",
           "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
@@ -1731,6 +1740,10 @@
         },
         {
           "command": "codeQLQueryHistory.compareWith",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.comparePerformanceWith",
           "when": "false"
         },
         {

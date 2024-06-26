@@ -149,6 +149,10 @@ export class QueryHistoryManager extends DisposableObject {
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo,
     ) => Promise<void>,
+    private readonly doComparePerformanceCallback: (
+      from: CompletedLocalQueryInfo,
+      to: CompletedLocalQueryInfo,
+    ) => Promise<void>,
   ) {
     super();
 
@@ -263,6 +267,8 @@ export class QueryHistoryManager extends DisposableObject {
         "query",
       ),
       "codeQLQueryHistory.compareWith": this.handleCompareWith.bind(this),
+      "codeQLQueryHistory.comparePerformanceWith":
+        this.handleComparePerformanceWith.bind(this),
       "codeQLQueryHistory.showEvalLog": createSingleSelectionCommand(
         this.app.logger,
         this.handleShowEvalLog.bind(this),
@@ -676,6 +682,40 @@ export class QueryHistoryManager extends DisposableObject {
 
     if (toItem !== undefined) {
       await this.doCompareCallback(fromItem, toItem);
+    }
+  }
+
+  async handleComparePerformanceWith(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[] | undefined,
+  ) {
+    // TODO: reduce duplication with 'handleCompareWith'
+    multiSelect ||= [singleItem];
+
+    if (
+      !this.isSuccessfulCompletedLocalQueryInfo(singleItem) ||
+      !multiSelect.every(this.isSuccessfulCompletedLocalQueryInfo)
+    ) {
+      // TODO: support performance comparison with partially-evaluated query (technically possible)
+      throw new Error(
+        "Please only select local queries that have completed successfully.",
+      );
+    }
+
+    const fromItem = this.getFromQueryToCompare(singleItem, multiSelect);
+
+    let toItem: CompletedLocalQueryInfo | undefined = undefined;
+    try {
+      toItem = await this.findOtherQueryToCompare(fromItem, multiSelect);
+    } catch (e) {
+      void showAndLogErrorMessage(
+        this.app.logger,
+        `Failed to compare queries: ${getErrorMessage(e)}`,
+      );
+    }
+
+    if (toItem !== undefined) {
+      await this.doComparePerformanceCallback(fromItem, toItem);
     }
   }
 

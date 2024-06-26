@@ -135,6 +135,7 @@ import { LanguageContextStore } from "./language-context-store";
 import { LanguageSelectionPanel } from "./language-selection-panel/language-selection-panel";
 import { GitHubDatabasesModule } from "./databases/github-databases";
 import { DatabaseFetcher } from "./databases/database-fetcher";
+import { ComparePerformanceView } from "./compare-performance/compare-performance-view";
 
 /**
  * extension.ts
@@ -924,6 +925,11 @@ async function activateWithInstalledDistribution(
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo,
     ): Promise<void> => showResultsForComparison(compareView, from, to),
+    async (
+      from: CompletedLocalQueryInfo,
+      to: CompletedLocalQueryInfo,
+    ): Promise<void> =>
+      showPerformanceComparison(comparePerformanceView, from, to),
   );
 
   ctx.subscriptions.push(qhm);
@@ -948,6 +954,15 @@ async function activateWithInstalledDistribution(
       localQueries.showResultsForCompletedQuery(item, WebviewReveal.Forced),
   );
   ctx.subscriptions.push(compareView);
+
+  void extLogger.log("Initializing performance comparison view.");
+  const comparePerformanceView = new ComparePerformanceView(
+    app,
+    queryServerLogger,
+    labelProvider,
+    localQueryResultsView,
+  );
+  ctx.subscriptions.push(comparePerformanceView);
 
   void extLogger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider_activate(ctx, dbm);
@@ -1188,6 +1203,25 @@ async function showResultsForComparison(
       )}`,
     );
   }
+}
+
+async function showPerformanceComparison(
+  view: ComparePerformanceView,
+  from: CompletedLocalQueryInfo,
+  to: CompletedLocalQueryInfo,
+): Promise<void> {
+  const fromLog = from.evaluatorLogPaths?.jsonSummary;
+  const toLog = to.evaluatorLogPaths?.jsonSummary;
+  if (fromLog === undefined || toLog === undefined) {
+    return extLogger.showWarningMessage(
+      `Cannot compare performance as the structured logs are missing. Did they queries complete normally?`,
+    );
+  }
+  await extLogger.log(
+    `Comparing performance of ${from.getQueryName()} and ${to.getQueryName()}`,
+  );
+
+  await view.showResults(fromLog, toLog);
 }
 
 function addUnhandledRejectionListener() {

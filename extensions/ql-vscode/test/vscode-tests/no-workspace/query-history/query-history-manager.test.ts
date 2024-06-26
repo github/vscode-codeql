@@ -40,6 +40,7 @@ describe("QueryHistoryManager", () => {
     typeof variantAnalysisManagerStub.cancelVariantAnalysis
   >;
   const doCompareCallback = jest.fn();
+  const doComparePerformanceCallback = jest.fn();
 
   let executeCommand: jest.MockedFn<
     (commandName: string, ...args: any[]) => Promise<any>
@@ -939,6 +940,7 @@ describe("QueryHistoryManager", () => {
       }),
       new LanguageContextStore(mockApp),
       doCompareCallback,
+      doComparePerformanceCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];
     await workspace.saveAll();

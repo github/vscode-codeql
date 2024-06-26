@@ -7,6 +7,7 @@ import type { App } from "../app";
 export type WebviewKind =
   | "results"
   | "compare"
+  | "compare-performance"
   | "variant-analysis"
   | "data-flow-paths"
   | "model-editor"
