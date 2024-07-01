@@ -198,6 +198,11 @@
             "maximum": 1024,
             "description": "Number of threads for running queries."
           },
+          "codeQL.runningQueries.ignoredWorkspaceFolders": {
+            "type": "array",
+            "default": [],
+            "description": "Workspace folders to ignore."
+          },
           "codeQL.runningQueries.saveCache": {
             "type": "boolean",
             "default": false,

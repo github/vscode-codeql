@@ -230,6 +230,10 @@ const TIMEOUT_SETTING = new Setting("timeout", RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting("memory", RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting("debug", RUNNING_QUERIES_SETTING);
 const MAX_PATHS = new Setting("maxPaths", RUNNING_QUERIES_SETTING);
+export const IGNORED_WORKSPACE_FOLDERS_SETTING = new Setting(
+  "ignoredWorkspaceFolders",
+  RUNNING_QUERIES_SETTING,
+);
 const RUNNING_TESTS_SETTING = new Setting("runningTests", ROOT_SETTING);
 const RESULTS_DISPLAY_SETTING = new Setting("resultsDisplay", ROOT_SETTING);
 const USE_EXTENSION_PACKS = new Setting(
