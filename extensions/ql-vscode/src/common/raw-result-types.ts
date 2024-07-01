@@ -5,6 +5,7 @@ export enum ColumnKind {
   Boolean = "boolean",
   Date = "date",
   Entity = "entity",
+  BigInt = "bigint",
 }
 
 export type Column = {
@@ -61,6 +62,11 @@ type CellValueNumber = {
   value: number;
 };
 
+type CellValueBigInt = {
+  type: "number";
+  value: number;
+};
+
 type CellValueString = {
   type: "string";
   value: string;
@@ -75,7 +81,8 @@ export type CellValue =
   | CellValueEntity
   | CellValueNumber
   | CellValueString
-  | CellValueBoolean;
+  | CellValueBoolean
+  | CellValueBigInt;
 
 export type Row = CellValue[];
 
