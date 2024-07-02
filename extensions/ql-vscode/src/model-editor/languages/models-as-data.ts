@@ -174,11 +174,14 @@ export type ModelsAsDataLanguage = {
    * be determined by heuristics.
    * @param method The method to get the endpoint type for. The endpoint type can be undefined if the
    *               query does not return an endpoint type.
+   * @param endpointKind An optional column that may be provided by the query to help determine the
+   *                     endpoint type.
    */
   endpointTypeForEndpoint?: (
     method: Omit<MethodDefinition, "endpointType"> & {
       endpointType: EndpointType | undefined;
     },
+    endpointKind: string | undefined,
   ) => EndpointType | undefined;
   predicates: ModelsAsDataLanguagePredicates;
   modelGeneration?: ModelsAsDataLanguageModelGeneration;

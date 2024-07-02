@@ -29,6 +29,8 @@ export enum EndpointType {
   Method = "method",
   Constructor = "constructor",
   Function = "function",
+  StaticMethod = "staticMethod",
+  ClassMethod = "classMethod",
 }
 
 export interface MethodDefinition {
