@@ -4,44 +4,48 @@ import { Mode } from "../../shared/mode";
 import type { MethodArgument } from "../../method";
 import { EndpointType, getArgumentsList } from "../../method";
 import {
-  parsePythonAccessPath,
+  hasPythonSelfArgument,
+  parsePythonTypeAndPath,
   pythonEndpointType,
   pythonMethodPath,
   pythonMethodSignature,
   pythonPath,
+  pythonType,
 } from "./access-paths";
 
 export const python: ModelsAsDataLanguage = {
   availableModes: [Mode.Framework],
   createMethodSignature: ({ typeName, methodName }) =>
     `${typeName}#${methodName}`,
-  endpointTypeForEndpoint: (method) => pythonEndpointType(method),
+  endpointTypeForEndpoint: (method, endpointKind) =>
+    pythonEndpointType(method, endpointKind),
   predicates: {
     source: {
       extensiblePredicate: sharedExtensiblePredicates.source,
       supportedKinds: sharedKinds.source,
-      supportedEndpointTypes: [EndpointType.Method, EndpointType.Function],
+      supportedEndpointTypes: [
+        EndpointType.Method,
+        EndpointType.Function,
+        EndpointType.Constructor,
+        EndpointType.ClassMethod,
+        EndpointType.StaticMethod,
+      ],
       // extensible predicate sourceModel(
       //   string type, string path, string kind
       // );
       generateMethodDefinition: (method) => [
-        method.packageName,
-        pythonPath(
-          method.typeName,
-          method.methodName,
-          method.endpointType,
-          method.output,
-        ),
+        pythonType(method.packageName, method.typeName, method.endpointType),
+        pythonPath(method.methodName, method.output),
         method.kind,
       ],
       readModeledMethod: (row) => {
-        const packageName = row[0] as string;
         const {
+          packageName,
           typeName,
           methodName,
           endpointType,
           path: output,
-        } = parsePythonAccessPath(row[1] as string);
+        } = parsePythonTypeAndPath(row[0] as string, row[1] as string);
         return {
           type: "source",
           output,
@@ -59,30 +63,31 @@ export const python: ModelsAsDataLanguage = {
     sink: {
       extensiblePredicate: sharedExtensiblePredicates.sink,
       supportedKinds: sharedKinds.sink,
-      supportedEndpointTypes: [EndpointType.Method, EndpointType.Function],
+      supportedEndpointTypes: [
+        EndpointType.Method,
+        EndpointType.Function,
+        EndpointType.Constructor,
+        EndpointType.ClassMethod,
+        EndpointType.StaticMethod,
+      ],
       // extensible predicate sinkModel(
       //   string type, string path, string kind
       // );
       generateMethodDefinition: (method) => {
         return [
-          method.packageName,
-          pythonPath(
-            method.typeName,
-            method.methodName,
-            method.endpointType,
-            method.input,
-          ),
+          pythonType(method.packageName, method.typeName, method.endpointType),
+          pythonPath(method.methodName, method.input),
           method.kind,
         ];
       },
       readModeledMethod: (row) => {
-        const packageName = row[0] as string;
         const {
+          packageName,
           typeName,
           methodName,
           endpointType,
           path: input,
-        } = parsePythonAccessPath(row[1] as string);
+        } = parsePythonTypeAndPath(row[0] as string, row[1] as string);
         return {
           type: "sink",
           input,
@@ -100,25 +105,26 @@ export const python: ModelsAsDataLanguage = {
     summary: {
       extensiblePredicate: sharedExtensiblePredicates.summary,
       supportedKinds: sharedKinds.summary,
-      supportedEndpointTypes: [EndpointType.Method, EndpointType.Function],
+      supportedEndpointTypes: [
+        EndpointType.Method,
+        EndpointType.Function,
+        EndpointType.Constructor,
+        EndpointType.ClassMethod,
+        EndpointType.StaticMethod,
+      ],
       // extensible predicate summaryModel(
       //   string type, string path, string input, string output, string kind
       // );
       generateMethodDefinition: (method) => [
-        method.packageName,
-        pythonMethodPath(
-          method.typeName,
-          method.methodName,
-          method.endpointType,
-        ),
+        pythonType(method.packageName, method.typeName, method.endpointType),
+        pythonMethodPath(method.methodName),
         method.input,
         method.output,
         method.kind,
       ],
       readModeledMethod: (row) => {
-        const packageName = row[0] as string;
-        const { typeName, methodName, endpointType, path } =
-          parsePythonAccessPath(row[1] as string);
+        const { packageName, typeName, methodName, endpointType, path } =
+          parsePythonTypeAndPath(row[0] as string, row[1] as string);
         if (path !== "") {
           throw new Error("Summary path must be a method");
         }
@@ -144,18 +150,13 @@ export const python: ModelsAsDataLanguage = {
       //   string type, string path, string kind
       // );
       generateMethodDefinition: (method) => [
-        method.packageName,
-        pythonMethodPath(
-          method.typeName,
-          method.methodName,
-          method.endpointType,
-        ),
+        pythonType(method.packageName, method.typeName, method.endpointType),
+        pythonMethodPath(method.methodName),
         method.kind,
       ],
       readModeledMethod: (row) => {
-        const packageName = row[0] as string;
-        const { typeName, methodName, endpointType, path } =
-          parsePythonAccessPath(row[1] as string);
+        const { packageName, typeName, methodName, endpointType, path } =
+          parsePythonTypeAndPath(row[0] as string, row[1] as string);
         if (path !== "") {
           throw new Error("Neutral path must be a method");
         }
@@ -177,20 +178,16 @@ export const python: ModelsAsDataLanguage = {
     // Argument and Parameter are equivalent in Python, but we'll use Argument in the model editor
     const argumentsList = getArgumentsList(method.methodParameters).map(
       (argument, index): MethodArgument => {
-        if (
-          method.endpointType === EndpointType.Method &&
-          argument === "self" &&
-          index === 0
-        ) {
+        if (hasPythonSelfArgument(method.endpointType) && index === 0) {
           return {
             path: "Argument[self]",
-            label: "Argument[self]: self",
+            label: `Argument[self]: ${argument}`,
           };
         }
 
-        // If this is a method, self does not count as an argument index, so we
+        // If this endpoint has a self argument, self does not count as an argument index so we
         // should start at 0 for the second argument
-        if (method.endpointType === EndpointType.Method) {
+        if (hasPythonSelfArgument(method.endpointType)) {
           index -= 1;
         }
 

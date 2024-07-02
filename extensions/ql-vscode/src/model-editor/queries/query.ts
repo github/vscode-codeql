@@ -17,6 +17,7 @@ export type Query = {
    * - libraryVersion: the version of the library that contains the external API. This is a string and can be empty if the version cannot be determined.
    * - type: the modeled kind of the method, either "sink", "source", "summary", or "neutral"
    * - classification: the classification of the use of the method, either "source", "test", "generated", or "unknown"
+   * - kind: the kind of the endpoint, language-specific, e.g. "method" or "function"
    */
   applicationModeQuery: string;
   /**
@@ -32,6 +33,7 @@ export type Query = {
    * - supported: whether this method is modeled. This should be a string representation of a boolean to satify the result pattern for a problem query.
    * - libraryName: the name of the file or library that contains the method. This is a string and usually the basename of a file.
    * - type: the modeled kind of the method, either "sink", "source", "summary", or "neutral"
+   * - kind: the kind of the endpoint, language-specific, e.g. "method" or "function"
    */
   frameworkModeQuery: string;
   dependencies?: {
@@ -50,6 +52,7 @@ export type ApplicationModeTuple = [
   string,
   ModeledMethodType,
   CallClassification,
+  string | BqrsEntityValue | undefined,
 ];
 
 export type FrameworkModeTuple = [
@@ -61,4 +64,5 @@ export type FrameworkModeTuple = [
   boolean,
   string,
   ModeledMethodType,
+  string | BqrsEntityValue | undefined,
 ];
