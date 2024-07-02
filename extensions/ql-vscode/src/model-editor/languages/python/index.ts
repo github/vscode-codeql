@@ -173,6 +173,31 @@ export const python: ModelsAsDataLanguage = {
         };
       },
     },
+    type: {
+      extensiblePredicate: "typeModel",
+      // extensible predicate typeModel(string type1, string type2, string path);
+      generateMethodDefinition: (method) => [
+        method.relatedTypeName,
+        pythonType(method.packageName, method.typeName, method.endpointType),
+        pythonPath(method.methodName, method.path),
+      ],
+      readModeledMethod: (row) => {
+        const { packageName, typeName, methodName, endpointType, path } =
+          parsePythonTypeAndPath(row[1] as string, row[2] as string);
+
+        return {
+          type: "type",
+          relatedTypeName: row[0] as string,
+          path,
+          signature: pythonMethodSignature(typeName, methodName),
+          endpointType,
+          packageName,
+          typeName,
+          methodName,
+          methodParameters: "",
+        };
+      },
+    },
   },
   getArgumentOptions: (method) => {
     // Argument and Parameter are equivalent in Python, but we'll use Argument in the model editor
