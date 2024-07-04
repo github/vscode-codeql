@@ -33,6 +33,7 @@ export function decodeBqrsToMethods(
     let libraryVersion: string | undefined;
     let type: ModeledMethodType;
     let classification: CallClassification;
+    let endpointKindColumn: string | BqrsEntityValue | undefined;
     let endpointType: EndpointType | undefined = undefined;
 
     if (mode === Mode.Application) {
@@ -47,6 +48,7 @@ export function decodeBqrsToMethods(
         libraryVersion,
         type,
         classification,
+        endpointKindColumn,
       ] = tuple as ApplicationModeTuple;
     } else {
       [
@@ -58,6 +60,7 @@ export function decodeBqrsToMethods(
         supported,
         library,
         type,
+        endpointKindColumn,
       ] = tuple as FrameworkModeTuple;
 
       classification = CallClassification.Unknown;
@@ -68,13 +71,18 @@ export function decodeBqrsToMethods(
     }
 
     if (definition.endpointTypeForEndpoint) {
-      endpointType = definition.endpointTypeForEndpoint({
-        endpointType,
-        packageName,
-        typeName,
-        methodName,
-        methodParameters,
-      });
+      endpointType = definition.endpointTypeForEndpoint(
+        {
+          endpointType,
+          packageName,
+          typeName,
+          methodName,
+          methodParameters,
+        },
+        typeof endpointKindColumn === "object"
+          ? endpointKindColumn.label
+          : endpointKindColumn,
+      );
     }
 
     if (endpointType === undefined) {
