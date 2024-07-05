@@ -544,9 +544,16 @@ export async function generateEvalLogSummaries(
     await cliServer.generateJsonLogSummary(log, jsonSummary);
 
     if (humanReadableSummary !== undefined) {
-      progress(progressUpdate(3, 3, "Generating summary symbols file"));
       summarySymbols = outputDir.evalLogSummarySymbolsPath;
-      await generateSummarySymbolsFile(humanReadableSummary, summarySymbols);
+      if (
+        !(await cliServer.cliConstraints.supportsGenerateSummarySymbolMap())
+      ) {
+        // We're using an old CLI that cannot generate the summary symbols file while generating the
+        // human-readable log summary. As a fallback, create it by parsing the human-readable
+        // summary.
+        progress(progressUpdate(3, 3, "Generating summary symbols file"));
+        await generateSummarySymbolsFile(humanReadableSummary, summarySymbols);
+      }
     }
   }
 
