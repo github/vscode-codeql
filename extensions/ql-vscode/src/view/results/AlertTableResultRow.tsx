@@ -90,7 +90,7 @@ export function AlertTableResultRow(props: Props) {
         {result.codeFlows === undefined ? (
           <>
             <td className="vscode-codeql__icon-cell">{info}</td>
-            <td colSpan={3}>{msg}</td>
+            <td colSpan={4}>{msg}</td>
           </>
         ) : (
           <>
@@ -99,7 +99,7 @@ export function AlertTableResultRow(props: Props) {
               onClick={handleDropdownClick}
             />
             <td className="vscode-codeql__icon-cell">{listUnordered}</td>
-            <td colSpan={2}>{msg}</td>
+            <td colSpan={3}>{msg}</td>
           </>
         )}
         <td className="vscode-codeql__location-cell">

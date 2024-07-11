@@ -61,7 +61,7 @@ export function AlertTablePathRow(props: Props) {
           expanded={currentPathExpanded}
           onClick={handleDropdownClick}
         />
-        <td className="vscode-codeql__text-center" colSpan={3}>
+        <td className="vscode-codeql__text-center" colSpan={4}>
           Path
         </td>
       </tr>

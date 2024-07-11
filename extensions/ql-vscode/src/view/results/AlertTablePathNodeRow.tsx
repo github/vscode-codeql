@@ -86,6 +86,7 @@ export function AlertTablePathNodeRow(props: Props) {
           "[no location]"
         )}
       </td>
+      <td {...selectableZebraStripe(isSelected, zebraIndex)}>{"model"}</td>
       <td
         {...selectableZebraStripe(
           isSelected,
