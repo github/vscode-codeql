@@ -1998,7 +1998,7 @@
     "tmp-promise": "^3.0.2",
     "tree-kill": "^1.2.2",
     "vscode-extension-telemetry": "^0.1.6",
-    "vscode-jsonrpc": "^8.0.2",
+    "vscode-jsonrpc": "^8.2.1",
     "vscode-languageclient": "^8.0.2",
     "yauzl": "^2.10.0",
     "zip-a-folder": "^3.1.6"
