@@ -1,6 +1,7 @@
 import { dirname, join } from "path";
 import type { WorkspaceFolder } from "vscode";
 import { workspace } from "vscode";
+import { IGNORED_WORKSPACE_FOLDERS_SETTING } from "../../config";
 
 /** Returns true if the specified workspace folder is on the file system. */
 export function isWorkspaceFolderOnDisk(
@@ -9,10 +10,23 @@ export function isWorkspaceFolderOnDisk(
   return workspaceFolder.uri.scheme === "file";
 }
 
+export function isWorkspaceFolderIgnored(
+  workspaceFolder: WorkspaceFolder,
+): boolean {
+  const ignoredFolders =
+    IGNORED_WORKSPACE_FOLDERS_SETTING.getValue() as string[];
+  return ignoredFolders.some((ignoredFolder) =>
+    workspaceFolder.uri.fsPath.startsWith(ignoredFolder),
+  );
+}
+
 /** Gets all active workspace folders that are on the filesystem. */
 export function getOnDiskWorkspaceFoldersObjects() {
   const workspaceFolders = workspace.workspaceFolders ?? [];
-  return workspaceFolders.filter(isWorkspaceFolderOnDisk);
+  return workspaceFolders.filter(
+    (f: WorkspaceFolder) =>
+      isWorkspaceFolderOnDisk(f) && !isWorkspaceFolderIgnored(f),
+  );
 }
 
 /** Gets all active workspace folders that are on the filesystem. */
