@@ -37,11 +37,12 @@ export const shownLocationLineDecoration =
 /**
  * Resolves the specified CodeQL location to a URI into the source archive.
  * @param loc CodeQL location to resolve. Must have a non-empty value for `loc.file`.
- * @param databaseItem Database in which to resolve the file location.
+ * @param databaseItem Database in which to resolve the file location, or `undefined` to resolve
+ *   from the local file system.
  */
 function resolveFivePartLocation(
   loc: UrlValueLineColumnLocation,
-  databaseItem: DatabaseItem,
+  databaseItem: DatabaseItem | undefined,
 ): Location {
   // `Range` is a half-open interval, and is zero-based. CodeQL locations are closed intervals, and
   // are one-based. Adjust accordingly.
@@ -52,7 +53,10 @@ function resolveFivePartLocation(
     Math.max(1, loc.endColumn),
   );
 
-  return new Location(databaseItem.resolveSourceFile(loc.uri), range);
+  return new Location(
+    databaseItem?.resolveSourceFile(loc.uri) ?? Uri.parse(loc.uri),
+    range,
+  );
 }
 
 /**
@@ -62,22 +66,26 @@ function resolveFivePartLocation(
  */
 function resolveWholeFileLocation(
   loc: UrlValueWholeFileLocation,
-  databaseItem: DatabaseItem,
+  databaseItem: DatabaseItem | undefined,
 ): Location {
   // A location corresponding to the start of the file.
   const range = new Range(0, 0, 0, 0);
-  return new Location(databaseItem.resolveSourceFile(loc.uri), range);
+  return new Location(
+    databaseItem?.resolveSourceFile(loc.uri) ?? Uri.parse(loc.uri),
+    range,
+  );
 }
 
 /**
  * Try to resolve the specified CodeQL location to a URI into the source archive. If no exact location
  * can be resolved, returns `undefined`.
  * @param loc CodeQL location to resolve
- * @param databaseItem Database in which to resolve the file location.
+ * @param databaseItem Database in which to resolve the file location, or `undefined` to resolve
+ *   from the local file system.
  */
 export function tryResolveLocation(
   loc: UrlValueResolvable | undefined,
-  databaseItem: DatabaseItem,
+  databaseItem: DatabaseItem | undefined,
 ): Location | undefined {
   if (!loc) {
     return;
@@ -95,7 +103,7 @@ export function tryResolveLocation(
 
 export async function showResolvableLocation(
   loc: UrlValueResolvable,
-  databaseItem: DatabaseItem,
+  databaseItem: DatabaseItem | undefined,
   logger: Logger,
 ): Promise<void> {
   try {
@@ -151,13 +159,14 @@ export async function showLocation(location?: Location) {
 }
 
 export async function jumpToLocation(
-  databaseUri: string,
+  databaseUri: string | undefined,
   loc: UrlValueResolvable,
   databaseManager: DatabaseManager,
   logger: Logger,
 ) {
-  const databaseItem = databaseManager.findDatabaseItem(Uri.parse(databaseUri));
-  if (databaseItem !== undefined) {
-    await showResolvableLocation(loc, databaseItem, logger);
-  }
+  const databaseItem =
+    databaseUri !== undefined
+      ? databaseManager.findDatabaseItem(Uri.parse(databaseUri))
+      : undefined;
+  await showResolvableLocation(loc, databaseItem, logger);
 }

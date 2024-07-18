@@ -1,18 +1,20 @@
-import type { Log, Tool } from "sarif";
+import type { Log } from "sarif";
 import { createReadStream } from "fs-extra";
 import { connectTo } from "stream-json/Assembler";
 import { getErrorMessage } from "./helpers-pure";
-import { withParser } from "stream-json/filters/Pick";
-
-const DUMMY_TOOL: Tool = { driver: { name: "" } };
+import { withParser } from "stream-json/filters/Ignore";
 
 export async function sarifParser(
   interpretedResultsPath: string,
 ): Promise<Log> {
   try {
-    // Parse the SARIF file into token streams, filtering out only the results array.
+    // Parse the SARIF file into token streams, filtering out some of the larger subtrees that we
+    // don't need.
     const pipeline = createReadStream(interpretedResultsPath).pipe(
-      withParser({ filter: "runs.0.results" }),
+      withParser({
+        // We don't need to run's `artifacts` property, nor the driver's `notifications` property.
+        filter: /^runs\.\d+\.(artifacts|tool\.driver\.notifications)/,
+      }),
     );
 
     // Creates JavaScript objects from the token stream
@@ -38,15 +40,7 @@ export async function sarifParser(
       });
 
       asm.on("done", (asm) => {
-        const log: Log = {
-          version: "2.1.0",
-          runs: [
-            {
-              tool: DUMMY_TOOL,
-              results: asm.current ?? [],
-            },
-          ],
-        };
+        const log: Log = asm.current;
 
         resolve(log);
         alreadyDone = true;

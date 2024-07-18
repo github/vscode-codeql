@@ -1,4 +1,4 @@
-import type { ThreadFlow } from "sarif";
+import type { Run, ThreadFlow } from "sarif";
 import type {
   PathNode,
   Result as ResultKeysResult,
@@ -10,6 +10,7 @@ import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { useCallback, useMemo } from "react";
 import { VerticalRule } from "../common/VerticalRule";
+import type { UserSettings } from "../../common/interface-types";
 
 interface Props {
   path: ThreadFlow;
@@ -20,6 +21,8 @@ interface Props {
   selectedItemRef: React.RefObject<HTMLTableRowElement>;
   databaseUri: string;
   sourceLocationPrefix: string;
+  run?: Run;
+  userSettings: UserSettings;
   updateSelectionCallback: (
     resultKey: PathNode | ResultKeysResult | undefined,
   ) => void;

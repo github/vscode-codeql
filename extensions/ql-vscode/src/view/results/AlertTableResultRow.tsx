@@ -1,4 +1,4 @@
-import type { Result } from "sarif";
+import type { Result, Run } from "sarif";
 import type {
   PathNode,
   Result as ResultKeysResult,
@@ -12,6 +12,7 @@ import { useCallback, useMemo } from "react";
 import { SarifLocation } from "./locations/SarifLocation";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { AlertTablePathRow } from "./AlertTablePathRow";
+import type { UserSettings } from "../../common/interface-types";
 
 interface Props {
   result: Result;
@@ -21,6 +22,8 @@ interface Props {
   selectedItemRef: React.RefObject<HTMLTableRowElement>;
   databaseUri: string;
   sourceLocationPrefix: string;
+  run?: Run;
+  userSettings: UserSettings;
   updateSelectionCallback: (
     resultKey: PathNode | ResultKeysResult | undefined,
   ) => void;

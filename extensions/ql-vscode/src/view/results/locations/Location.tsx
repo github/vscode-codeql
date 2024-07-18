@@ -26,15 +26,11 @@ export function Location({
   const displayLabel = useMemo(() => convertNonPrintableChars(label), [label]);
 
   if (loc === undefined) {
-    return <NonClickableLocation msg={displayLabel} />;
+    return <NonClickableLocation msg={displayLabel} locationHint={title} />;
   }
 
   if (loc.type === "string") {
     return <a href={loc.value}>{loc.value}</a>;
-  }
-
-  if (databaseUri === undefined) {
-    return <NonClickableLocation msg={displayLabel} locationHint={title} />;
   }
 
   return (

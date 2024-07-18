@@ -538,6 +538,14 @@ export class ResultsView extends AbstractWebview<
     };
 
     await this.postMessage({
+      t: "setUserSettings",
+      userSettings: {
+        // Only show provenance info in canary mode for now.
+        shouldShowProvenance: isCanary(),
+      },
+    });
+
+    await this.postMessage({
       t: "setState",
       interpretation: interpretationPage,
       origResultsPaths: fullQuery.completedQuery.query.resultsPaths,

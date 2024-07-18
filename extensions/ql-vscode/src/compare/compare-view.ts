@@ -33,6 +33,7 @@ import {
   getResultSetNames,
 } from "./result-set-names";
 import { compareInterpretedResults } from "./interpreted-results";
+import { isCanary } from "../config";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -115,6 +116,13 @@ export class CompareView extends AbstractWebview<
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
     await this.waitForPanelLoaded();
+
+    await this.postMessage({
+      t: "setUserSettings",
+      userSettings: {
+        shouldShowProvenance: isCanary(),
+      },
+    });
 
     await this.postMessage({
       t: "setComparisonQueryInfo",
