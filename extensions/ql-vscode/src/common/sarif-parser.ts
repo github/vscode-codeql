@@ -40,7 +40,17 @@ export async function sarifParser(
       });
 
       asm.on("done", (asm) => {
-        const log: Log = asm.current;
+        const log = asm.current;
+
+        // Do some trivial validation. This isn't a full validation of the SARIF file, but it's at
+        // least enough to ensure that we're not trying to parse complete garbage later.
+        if (log.runs === undefined || log.runs.length < 1) {
+          reject(
+            new Error(
+              "Invalid SARIF file: expecting at least one run with result.",
+            ),
+          );
+        }
 
         resolve(log);
         alreadyDone = true;
