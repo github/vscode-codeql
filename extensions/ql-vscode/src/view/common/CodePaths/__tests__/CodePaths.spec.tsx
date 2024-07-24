@@ -24,6 +24,14 @@ describe(CodePaths.name, () => {
     expect(screen.getByText("Show paths")).toBeInTheDocument();
   });
 
+  it("renders shortest path for code flows", () => {
+    render();
+
+    expect(screen.getByTestId("shortest-path-length")).toHaveTextContent(
+      "(Shortest: 1)",
+    );
+  });
+
   it("posts extension message when 'show paths' link clicked", async () => {
     render();
 
