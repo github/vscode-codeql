@@ -52,9 +52,7 @@ export const CodePaths = ({
   return (
     <>
       <ShowPathsLink onClick={onShowPathsClick}>Show paths</ShowPathsLink>
-      <Label data-testid="shortest-path-length">
-        (Shortest: {getShortestPathLength(codeFlows)})
-      </Label>
+      <Label>(Shortest: {getShortestPathLength(codeFlows)})</Label>
     </>
   );
 };
