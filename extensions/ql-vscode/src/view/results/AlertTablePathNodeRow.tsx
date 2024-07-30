@@ -100,7 +100,7 @@ export function AlertTablePathNodeRow(props: Props) {
         )}
       >
         {userSettings.shouldShowProvenance ? (
-          <div className="vscode-codeql__taxa-cell-div">
+          <div className="vscode-codeql__taxa-cell-contents">
             <TaxaLocations
               taxa={step.taxa}
               run={run}

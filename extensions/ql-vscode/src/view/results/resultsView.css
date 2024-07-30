@@ -149,7 +149,7 @@ td.vscode-codeql__path-index-cell {
   text-align: left !important;
 }
 
-.vscode-codeql__taxa-cell-div {
+.vscode-codeql__taxa-cell-contents {
   background-color: transparent;
   display: grid;
 }
