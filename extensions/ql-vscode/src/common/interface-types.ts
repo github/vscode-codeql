@@ -147,6 +147,21 @@ interface SetStateMsg {
   parsedResultSets: ParsedResultSets;
 }
 
+export interface UserSettings {
+  /** Whether to display links to the dataflow models that generated particular nodes in a flow path. */
+  shouldShowProvenance: boolean;
+}
+
+export const DEFAULT_USER_SETTINGS: UserSettings = {
+  shouldShowProvenance: false,
+};
+
+/** Message indicating that the user's configuration settings have changed. */
+interface SetUserSettingsMsg {
+  t: "setUserSettings";
+  userSettings: UserSettings;
+}
+
 /**
  * Message indicating that the results view should display interpreted
  * results.
@@ -191,6 +206,7 @@ interface UntoggleShowProblemsMsg {
 export type IntoResultsViewMsg =
   | ResultsUpdatingMsg
   | SetStateMsg
+  | SetUserSettingsMsg
   | ShowInterpretedPageMsg
   | NavigateMsg
   | UntoggleShowProblemsMsg;
@@ -208,13 +224,15 @@ export type FromResultsViewMsg =
   | OpenFileMsg;
 
 /**
- * Message from the results view to open a database source
+ * Message from the results view to open a source
  * file at the provided location.
  */
 interface ViewSourceFileMsg {
   t: "viewSourceFile";
   loc: UrlValueResolvable;
-  databaseUri: string;
+  /** URI of the database whose source archive contains the file, or `undefined` to open a file from
+   * the local disk. The latter case is used for opening links to data extension model files. */
+  databaseUri: string | undefined;
 }
 
 /**
@@ -341,7 +359,8 @@ interface ChangeCompareMessage {
 
 export type ToCompareViewMessage =
   | SetComparisonQueryInfoMessage
-  | SetComparisonsMessage;
+  | SetComparisonsMessage
+  | SetUserSettingsMsg;
 
 /**
  * Message to the compare view that sets the metadata of the compared queries.

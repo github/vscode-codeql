@@ -1,4 +1,4 @@
-import type { Location, Result } from "sarif";
+import type { Location, Result, Run } from "sarif";
 import type {
   PathNode,
   Result as ResultKeysResult,
@@ -7,7 +7,7 @@ import type {
 import { getPath, getPathNode, getResult, keyToString } from "./result-keys";
 import { className, jumpToLocation } from "./result-table-utils";
 import { onNavigation } from "./navigation";
-import type { NavigateMsg } from "../../common/interface-types";
+import type { NavigateMsg, UserSettings } from "../../common/interface-types";
 import { NavigationDirection } from "../../common/interface-types";
 import { isNoLocation, parseSarifLocation } from "../../common/sarif-utils";
 import { sendTelemetry } from "../common/telemetry";
@@ -21,6 +21,8 @@ type Props = {
   results: Result[];
   databaseUri: string;
   sourceLocationPrefix: string;
+  run?: Run;
+  userSettings: UserSettings;
   numTruncatedResults?: number;
 
   header: ReactNode;
@@ -31,6 +33,8 @@ export function AlertTable({
   results,
   databaseUri,
   sourceLocationPrefix,
+  run,
+  userSettings,
   numTruncatedResults,
   header,
   noResults,
@@ -202,6 +206,8 @@ export function AlertTable({
             selectedItem={selectedItem}
             selectedItemRef={selectedItemRef}
             databaseUri={databaseUri}
+            run={run}
+            userSettings={userSettings}
             sourceLocationPrefix={sourceLocationPrefix}
             updateSelectionCallback={updateSelectionCallback}
             toggleExpanded={toggle}

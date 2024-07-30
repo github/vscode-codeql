@@ -9,9 +9,11 @@ import type {
   ResultsPaths,
   ParsedResultSets,
   ResultSet,
+  UserSettings,
 } from "../../common/interface-types";
 import {
   ALERTS_TABLE_NAME,
+  DEFAULT_USER_SETTINGS,
   GRAPH_TABLE_NAME,
 } from "../../common/interface-types";
 import { ResultTables } from "./ResultTables";
@@ -77,6 +79,10 @@ export function ResultsApp() {
     isExpectingResultsUpdate: true,
   });
 
+  const [userSettings, setUserSettings] = useState<UserSettings>(
+    DEFAULT_USER_SETTINGS,
+  );
+
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
       let results: Results | null = null;
@@ -110,6 +116,10 @@ export function ResultsApp() {
   const handleMessage = useCallback(
     (msg: IntoResultsViewMsg): void => {
       switch (msg.t) {
+        case "setUserSettings":
+          setUserSettings(msg.userSettings);
+          break;
+
         case "setState":
           updateStateWithNewResultsInfo({
             resultsPath: msg.resultsPath,
@@ -217,6 +227,7 @@ export function ResultsApp() {
             ? displayedResults.resultsInfo.interpretation
             : undefined
         }
+        userSettings={userSettings}
         database={displayedResults.results.database}
         origResultsPaths={displayedResults.resultsInfo.origResultsPaths}
         resultsPath={displayedResults.resultsInfo.resultsPath}

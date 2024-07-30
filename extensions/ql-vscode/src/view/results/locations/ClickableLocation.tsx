@@ -7,7 +7,7 @@ import type { UrlValueResolvable } from "../../../common/raw-result-types";
 interface Props {
   loc: UrlValueResolvable;
   label: string;
-  databaseUri: string;
+  databaseUri: string | undefined;
   onClick?: () => void;
 }
 

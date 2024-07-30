@@ -2,6 +2,7 @@ import type {
   QueryMetadata,
   RawResultsSortState,
   ResultSet,
+  UserSettings,
 } from "../../common/interface-types";
 import { SortDirection } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
@@ -11,6 +12,7 @@ import type { UrlValueResolvable } from "../../common/raw-result-types";
 export interface ResultTableProps {
   resultSet: ResultSet;
   databaseUri: string;
+  userSettings: UserSettings;
   metadata?: QueryMetadata;
   resultsPath: string | undefined;
   sortState?: RawResultsSortState;
@@ -41,7 +43,7 @@ export const selectedRowClassName = "vscode-codeql__result-table-row--selected";
 
 export function jumpToLocation(
   loc: UrlValueResolvable,
-  databaseUri: string,
+  databaseUri: string | undefined,
 ): void {
   vscode.postMessage({
     t: "viewSourceFile",

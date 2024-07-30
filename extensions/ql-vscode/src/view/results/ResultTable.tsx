@@ -6,7 +6,7 @@ import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableHeader } from "./AlertTableHeader";
 
 export function ResultTable(props: ResultTableProps) {
-  const { resultSet } = props;
+  const { resultSet, userSettings } = props;
   switch (resultSet.t) {
     case "RawResultSet":
       return <RawTable {...props} resultSet={resultSet.resultSet} />;
@@ -21,6 +21,8 @@ export function ResultTable(props: ResultTableProps) {
               sourceLocationPrefix={
                 resultSet.interpretation.sourceLocationPrefix
               }
+              run={data.runs[0]}
+              userSettings={userSettings}
               numTruncatedResults={resultSet.interpretation.numTruncatedResults}
               header={<AlertTableHeader sortState={data.sortState} />}
               noResults={

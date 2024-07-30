@@ -8,7 +8,7 @@ interface Props {
   text?: string;
   loc?: SarifLogLocation;
   sourceLocationPrefix: string;
-  databaseUri: string;
+  databaseUri: string | undefined;
   onClick: () => void;
 }
 

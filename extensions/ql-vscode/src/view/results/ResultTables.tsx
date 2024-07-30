@@ -8,6 +8,7 @@ import type {
   ResultSet,
   ParsedResultSets,
   IntoResultsViewMsg,
+  UserSettings,
 } from "../../common/interface-types";
 import {
   ALERTS_TABLE_NAME,
@@ -33,6 +34,7 @@ interface ResultTablesProps {
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
   database: DatabaseInfo;
+  userSettings: UserSettings;
   metadata?: QueryMetadata;
   resultsPath: string;
   origResultsPaths: ResultsPaths;
@@ -94,6 +96,7 @@ export function ResultTables(props: ResultTablesProps) {
     interpretation,
     database,
     resultsPath,
+    userSettings,
     metadata,
     origResultsPaths,
     isLoadingNewResults,
@@ -242,6 +245,7 @@ export function ResultTables(props: ResultTablesProps) {
         <ResultTable
           key={resultSetName}
           resultSet={resultSet}
+          userSettings={userSettings}
           databaseUri={database.databaseUri}
           resultsPath={resultsPath}
           sortState={sortStates.get(resultSetName)}

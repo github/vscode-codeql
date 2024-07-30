@@ -45,7 +45,7 @@ export function AlertTableHeader({
         <th colSpan={2}></th>
         <th
           className={`${sortClass()} vscode-codeql__alert-message-cell`}
-          colSpan={3}
+          colSpan={4}
           onClick={toggleSortStateForColumn}
         >
           Message

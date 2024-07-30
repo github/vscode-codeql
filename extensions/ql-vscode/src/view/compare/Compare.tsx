@@ -5,7 +5,9 @@ import type {
   ToCompareViewMessage,
   SetComparisonsMessage,
   SetComparisonQueryInfoMessage,
+  UserSettings,
 } from "../../common/interface-types";
+import { DEFAULT_USER_SETTINGS } from "../../common/interface-types";
 import CompareSelector from "./CompareSelector";
 import { vscode } from "../vscode-api";
 import CompareTable from "./CompareTable";
@@ -31,6 +33,9 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
   const [comparison, setComparison] = useState<SetComparisonsMessage | null>(
     null,
   );
+  const [userSettings, setUserSettings] = useState<UserSettings>(
+    DEFAULT_USER_SETTINGS,
+  );
 
   const message = comparison?.message || "Empty comparison";
   const hasRows =
@@ -47,6 +52,9 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
             break;
           case "setComparisons":
             setComparison(msg);
+            break;
+          case "setUserSettings":
+            setUserSettings(msg.userSettings);
             break;
           default:
             assertNever(msg);
@@ -85,6 +93,7 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
           <CompareTable
             queryInfo={queryInfo}
             comparison={comparison}
+            userSettings={userSettings}
           ></CompareTable>
         ) : (
           <Message>{message}</Message>

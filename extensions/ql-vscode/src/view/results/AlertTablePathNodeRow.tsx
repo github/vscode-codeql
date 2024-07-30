@@ -1,4 +1,4 @@
-import type { ThreadFlowLocation } from "sarif";
+import type { ThreadFlowLocation, Run } from "sarif";
 import type {
   PathNode,
   Result as ResultKeysResult,
@@ -9,6 +9,8 @@ import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
 import { useCallback, useMemo } from "react";
 import { VerticalRule } from "../common/VerticalRule";
+import type { UserSettings } from "../../common/interface-types";
+import { TaxaLocations } from "./locations/TaxaLocations";
 
 interface Props {
   step: ThreadFlowLocation;
@@ -19,6 +21,8 @@ interface Props {
   selectedItemRef: React.RefObject<HTMLTableRowElement>;
   databaseUri: string;
   sourceLocationPrefix: string;
+  run?: Run;
+  userSettings: UserSettings;
   updateSelectionCallback: (
     resultKey: PathNode | ResultKeysResult | undefined,
   ) => void;
@@ -34,6 +38,8 @@ export function AlertTablePathNodeRow(props: Props) {
     selectedItemRef,
     databaseUri,
     sourceLocationPrefix,
+    run,
+    userSettings,
     updateSelectionCallback,
   } = props;
 
@@ -85,6 +91,23 @@ export function AlertTablePathNodeRow(props: Props) {
         ) : (
           "[no location]"
         )}
+      </td>
+      <td
+        {...selectableZebraStripe(
+          isSelected,
+          zebraIndex,
+          "vscode-codeql__taxa-cell",
+        )}
+      >
+        {userSettings.shouldShowProvenance ? (
+          <div className="vscode-codeql__taxa-cell-contents">
+            <TaxaLocations
+              taxa={step.taxa}
+              run={run}
+              onClick={handleSarifLocationClicked}
+            />
+          </div>
+        ) : null}
       </td>
       <td
         {...selectableZebraStripe(

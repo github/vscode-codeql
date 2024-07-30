@@ -1,6 +1,7 @@
 import type {
   SetComparisonQueryInfoMessage,
   SetComparisonsMessage,
+  UserSettings,
 } from "../../common/interface-types";
 import { className } from "../results/result-table-utils";
 import { vscode } from "../vscode-api";
@@ -12,6 +13,7 @@ import { InterpretedCompareResultTable } from "./InterpretedCompareResultTable";
 interface Props {
   queryInfo: SetComparisonQueryInfoMessage;
   comparison: SetComparisonsMessage;
+  userSettings: UserSettings;
 }
 
 const OpenButton = styled(TextButton)`
@@ -29,7 +31,11 @@ const Table = styled.table`
   }
 `;
 
-export default function CompareTable({ queryInfo, comparison }: Props) {
+export default function CompareTable({
+  queryInfo,
+  comparison,
+  userSettings,
+}: Props) {
   const result = comparison.result!;
 
   async function openQuery(kind: "from" | "to") {
@@ -78,6 +84,7 @@ export default function CompareTable({ queryInfo, comparison }: Props) {
             {result.kind === "interpreted" && (
               <InterpretedCompareResultTable
                 results={result.from}
+                userSettings={userSettings}
                 databaseUri={queryInfo.databaseUri}
                 sourceLocationPrefix={result.sourceLocationPrefix}
               />
@@ -96,6 +103,7 @@ export default function CompareTable({ queryInfo, comparison }: Props) {
             {result.kind === "interpreted" && (
               <InterpretedCompareResultTable
                 results={result.to}
+                userSettings={userSettings}
                 databaseUri={queryInfo.databaseUri}
                 sourceLocationPrefix={result.sourceLocationPrefix}
               />
