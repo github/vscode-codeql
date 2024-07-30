@@ -152,6 +152,10 @@ export interface UserSettings {
   shouldShowProvenance: boolean;
 }
 
+export const DEFAULT_USER_SETTINGS: UserSettings = {
+  shouldShowProvenance: false,
+};
+
 /** Message indicating that the user's configuration settings have changed. */
 interface SetUserSettingsMsg {
   t: "setUserSettings";

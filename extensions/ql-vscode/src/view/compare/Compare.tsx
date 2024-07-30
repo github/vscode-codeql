@@ -7,6 +7,7 @@ import type {
   SetComparisonQueryInfoMessage,
   UserSettings,
 } from "../../common/interface-types";
+import { DEFAULT_USER_SETTINGS } from "../../common/interface-types";
 import CompareSelector from "./CompareSelector";
 import { vscode } from "../vscode-api";
 import CompareTable from "./CompareTable";
@@ -32,9 +33,9 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
   const [comparison, setComparison] = useState<SetComparisonsMessage | null>(
     null,
   );
-  const [userSettings, setUserSettings] = useState<UserSettings>({
-    shouldShowProvenance: false,
-  });
+  const [userSettings, setUserSettings] = useState<UserSettings>(
+    DEFAULT_USER_SETTINGS,
+  );
 
   const message = comparison?.message || "Empty comparison";
   const hasRows =

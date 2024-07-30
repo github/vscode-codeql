@@ -13,6 +13,7 @@ import type {
 } from "../../common/interface-types";
 import {
   ALERTS_TABLE_NAME,
+  DEFAULT_USER_SETTINGS,
   GRAPH_TABLE_NAME,
 } from "../../common/interface-types";
 import { ResultTables } from "./ResultTables";
@@ -78,9 +79,9 @@ export function ResultsApp() {
     isExpectingResultsUpdate: true,
   });
 
-  const [userSettings, setUserSettings] = useState<UserSettings>({
-    shouldShowProvenance: false,
-  });
+  const [userSettings, setUserSettings] = useState<UserSettings>(
+    DEFAULT_USER_SETTINGS,
+  );
 
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
