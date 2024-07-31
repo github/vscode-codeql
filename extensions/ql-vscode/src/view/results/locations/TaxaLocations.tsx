@@ -10,8 +10,17 @@ import { SarifLocation } from "./SarifLocation";
 
 /** The definition of a taxon for a data extension model row. */
 interface ModelTaxon {
+  kind: "model";
   location: SarifLogLocation;
 }
+
+/** A taxon for a built-in model, such as `AdditionalFlowStep`. */
+interface BuiltInTaxon {
+  kind: "string";
+  text: string;
+}
+
+type TaxonDefinition = ModelTaxon | BuiltInTaxon;
 
 /** Resolve an `ArtifactLocation` that might contain a relative reference instead of an absolute
  * URI.
@@ -49,12 +58,33 @@ function getLocalPackUri(extension: ToolComponent): URL | undefined {
   return new URL(localPackLocation.uri);
 }
 
-/** Resolve a `ReportingDescriptorReference` to the `ReportingDescriptor` for the taxon that it
- * refers to.
+/** Resolve a `ReportingDescriptorReference` to the built-in taxon it refers to, or `undefined` if
+ * it is not a built-in taxon.
  */
-function resolveTaxonDefinition(
-  run: Run,
+function resolveBuiltInTaxon(
   taxonRef: ReportingDescriptorReference,
+): BuiltInTaxon | undefined {
+  if (
+    taxonRef.id !== undefined &&
+    taxonRef.index === undefined &&
+    taxonRef.toolComponent === undefined
+  ) {
+    return {
+      kind: "string",
+      text: taxonRef.id,
+    };
+  } else {
+    return undefined;
+  }
+}
+
+/**
+ * Resolve a `ReportingDescriptorReference` to the MaD taxon definition it refers to, or
+ * `undefined` if it does not refer to a MaD model.
+ */
+function resolveModelTaxon(
+  taxonRef: ReportingDescriptorReference,
+  run: Run,
 ): ModelTaxon | undefined {
   const extensions = run.tool.extensions;
   if (extensions === undefined) {
@@ -101,6 +131,7 @@ function resolveTaxonDefinition(
   }
 
   return {
+    kind: "model",
     location: {
       physicalLocation: {
         ...location,
@@ -111,6 +142,14 @@ function resolveTaxonDefinition(
       },
     },
   };
+}
+
+/** Resolve a `ReportingDescriptorReference` to the taxon definition it refers to. */
+function resolveTaxonDefinition(
+  run: Run,
+  taxonRef: ReportingDescriptorReference,
+): TaxonDefinition | undefined {
+  return resolveModelTaxon(taxonRef, run) ?? resolveBuiltInTaxon(taxonRef);
 }
 
 interface Props {
@@ -148,8 +187,9 @@ export function TaxaLocations({
       <div key={index}>
         {`(${role}) `}
         <SarifLocation
-          loc={taxonDef.location}
+          loc={taxonDef.kind === "model" ? taxonDef.location : undefined}
           databaseUri={undefined}
+          text={taxonDef.kind === "string" ? taxonDef.text : undefined}
           sourceLocationPrefix=""
           onClick={onClick}
         />
