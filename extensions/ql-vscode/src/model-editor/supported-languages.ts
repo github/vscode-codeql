@@ -9,19 +9,15 @@ export const SUPPORTED_LANGUAGES: QueryLanguage[] = [
   QueryLanguage.Java,
   QueryLanguage.CSharp,
   QueryLanguage.Ruby,
+  QueryLanguage.Python,
 ];
 
 export function isSupportedLanguage(
   language: QueryLanguage,
-  modelConfig: ModelConfig,
+  _modelConfig: ModelConfig,
 ) {
   if (SUPPORTED_LANGUAGES.includes(language)) {
     return true;
-  }
-
-  if (language === QueryLanguage.Python) {
-    // Python is only enabled when the config setting is set
-    return modelConfig.enablePython;
   }
 
   return false;
