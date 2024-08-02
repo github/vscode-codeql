@@ -1755,14 +1755,6 @@ export class CodeQLCliServer implements Disposable {
         this._versionChangedListeners.forEach((listener) =>
           listener(newVersionAndFeatures),
         );
-        // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
-        await this.app.commands.execute(
-          "setContext",
-          "codeql.supportsTrimCache",
-          newVersionAndFeatures.version.compare(
-            CliVersionConstraint.CLI_VERSION_WITH_TRIM_CACHE,
-          ) >= 0,
-        );
       } catch (e) {
         this._versionChangedListeners.forEach((listener) =>
           listener(undefined),
@@ -1917,13 +1909,7 @@ function shouldDebugCliServer() {
 export class CliVersionConstraint {
   // The oldest version of the CLI that we support. This is used to determine
   // whether to show a warning about the CLI being too old on startup.
-  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.14.6");
-
-  /**
-   * CLI version where the query server supports the `evaluation/trimCache` method
-   * with `codeql database cleanup --mode=trim` semantics.
-   */
-  public static CLI_VERSION_WITH_TRIM_CACHE = new SemVer("2.15.1");
+  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("v2.15.5");
 
   public static CLI_VERSION_WITHOUT_MRVA_EXTENSIBLE_PREDICATE_HACK = new SemVer(
     "2.16.1",
