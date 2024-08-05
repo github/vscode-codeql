@@ -1790,8 +1790,7 @@
           "when": "false"
         },
         {
-          "command": "codeQL.trimCache",
-          "when": "codeql.supportsTrimCache"
+          "command": "codeQL.trimCache"
         }
       ],
       "editor/context": [
