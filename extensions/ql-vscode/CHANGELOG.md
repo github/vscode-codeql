@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.14.0 - 6 August 2024
 
 - Add Python support to the CodeQL Model Editor. [#3676](https://github.com/github/vscode-codeql/pull/3676)
 - Update variant analysis view to display the length of the shortest path for path queries. [#3671](https://github.com/github/vscode-codeql/pull/3671)
