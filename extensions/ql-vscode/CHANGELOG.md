@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.14.0 - 7 August 2024
 
 - Add Python support to the CodeQL Model Editor. [#3676](https://github.com/github/vscode-codeql/pull/3676)
