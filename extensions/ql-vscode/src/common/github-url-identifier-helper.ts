@@ -78,7 +78,7 @@ function getNwoOrOwnerFromGitHubUrl(
     }
     const nwo = `${paths[0]}/${paths[1]}`;
     return paths[1] ? nwo : undefined;
-  } catch (e) {
+  } catch {
     // Ignore the error here, since we catch failures at a higher level.
     return;
   }

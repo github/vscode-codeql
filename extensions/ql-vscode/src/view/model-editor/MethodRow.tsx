@@ -116,7 +116,7 @@ export const MethodRow = (props: MethodRowProps) => {
 };
 
 const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
-  (props, ref) => {
+  (props: MethodRowProps, ref) => {
     const {
       method,
       modeledMethods: modeledMethodsProp,
@@ -412,7 +412,7 @@ ModelableMethodRow.displayName = "ModelableMethodRow";
 const UnmodelableMethodRow = forwardRef<
   HTMLElement | undefined,
   MethodRowProps
->((props, ref) => {
+>((props: MethodRowProps, ref) => {
   const { method, viewState, revealedMethodSignature } = props;
 
   const jumpToMethod = useCallback(

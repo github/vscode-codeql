@@ -96,7 +96,7 @@ export type Response = DebugProtocol.Response & { type: "response" };
 export type InitializeResponse = DebugProtocol.InitializeResponse &
   Response & { command: "initialize" };
 
-export interface QuickEvalResponse extends Response {}
+export type QuickEvalResponse = Response;
 
 export type AnyResponse = InitializeResponse | QuickEvalResponse;
 

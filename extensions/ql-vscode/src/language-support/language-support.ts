@@ -12,7 +12,7 @@ import { languages, IndentAction } from "vscode";
  * See https://github.com/microsoft/vscode/blob/master/src/vs/editor/test/common/modes/supports/javascriptOnEnterRules.ts
  */
 export function install() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const langConfig = require("../../language-configuration.json");
   // setLanguageConfiguration requires a regexp for the wordpattern, not a string
   langConfig.wordPattern = new RegExp(langConfig.wordPattern);

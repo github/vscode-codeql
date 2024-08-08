@@ -562,7 +562,7 @@ export class VariantAnalysisManager
       });
       const doc = await workspace.openTextDocument(uri);
       await Window.showTextDocument(doc, { preview: false });
-    } catch (error) {
+    } catch {
       void showAndLogWarningMessage(
         this.app.logger,
         "Could not open variant analysis query text. Failed to open text document.",
@@ -586,7 +586,7 @@ export class VariantAnalysisManager
         variantAnalysis.query.filePath,
       );
       await Window.showTextDocument(textDocument, ViewColumn.One);
-    } catch (error) {
+    } catch {
       void showAndLogWarningMessage(
         this.app.logger,
         `Could not open file: ${variantAnalysis.query.filePath}`,

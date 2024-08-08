@@ -45,7 +45,7 @@ const baseConfig = {
     "@typescript-eslint/no-invalid-this": "off",
     "@typescript-eslint/no-shadow": "off",
     "prefer-const": ["warn", { destructuring: "all" }],
-    "@typescript-eslint/no-throw-literal": "error",
+    "@typescript-eslint/only-throw-error": "error",
     "@typescript-eslint/consistent-type-imports": "error",
     "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
     curly: ["error", "all"],
@@ -133,18 +133,7 @@ module.exports = {
         ...baseConfig.rules,
         // We want to allow mocking of functions in modules, so we need to allow namespace imports.
         "import/no-namespace": "off",
-        "@typescript-eslint/ban-types": [
-          "error",
-          {
-            // For a full list of the default banned types, see:
-            // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/ban-types.md
-            extendDefaults: true,
-            types: {
-              // Don't complain about the `Function` type in test files. (Default is `true`.)
-              Function: false,
-            },
-          },
-        ],
+        "@typescript-eslint/no-unsafe-function-type": "off",
       },
     },
     {

@@ -278,7 +278,7 @@ describeWithCodeQL()("Queries", () => {
   function safeDel(file: string) {
     try {
       unlinkSync(file);
-    } catch (e) {
+    } catch {
       // ignore
     }
   }

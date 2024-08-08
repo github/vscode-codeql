@@ -298,7 +298,7 @@ export class DbConfigStore extends DisposableObject {
     let newConfig: DbConfig | undefined = undefined;
     try {
       newConfig = await readJSON(this.configPath);
-    } catch (e) {
+    } catch {
       this.configErrors = [
         {
           kind: DbConfigValidationErrorKind.InvalidJson,
@@ -332,7 +332,7 @@ export class DbConfigStore extends DisposableObject {
     let newConfig: DbConfig | undefined = undefined;
     try {
       newConfig = readJSONSync(this.configPath);
-    } catch (e) {
+    } catch {
       this.configErrors = [
         {
           kind: DbConfigValidationErrorKind.InvalidJson,

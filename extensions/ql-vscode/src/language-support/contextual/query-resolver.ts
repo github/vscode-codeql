@@ -28,7 +28,7 @@ export async function resolveContextualQlPacksForDatabase(
 ): Promise<QlPacksForLanguage> {
   try {
     return await qlpackOfDatabase(cli, databaseItem);
-  } catch (e) {
+  } catch {
     // If we can't find the qlpacks for the database, use the defaults instead
   }
 

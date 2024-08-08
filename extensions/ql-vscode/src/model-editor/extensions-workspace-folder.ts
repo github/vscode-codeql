@@ -133,7 +133,7 @@ async function findGitFolder(
             const stat = await workspace.fs.stat(gitFolder);
             // Check whether it's a directory
             return (stat.type & FileType.Directory) !== 0;
-          } catch (e) {
+          } catch {
             return false;
           }
         }),

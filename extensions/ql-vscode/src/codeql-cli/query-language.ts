@@ -36,7 +36,7 @@ export async function findLanguage(
       void extLogger.log(
         "Query language is unsupported. Select language manually.",
       );
-    } catch (e) {
+    } catch {
       void extLogger.log(
         "Could not autodetect query language. Select language manually.",
       );
