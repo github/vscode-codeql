@@ -1,5 +1,5 @@
 import { src, dest } from "gulp";
-// eslint-disable-next-line @typescript-eslint/no-var-requires,import/no-commonjs
+// eslint-disable-next-line @typescript-eslint/no-require-imports,import/no-commonjs
 const replace = require("gulp-replace");
 
 /** Inject the application insights key into the telemetry file */

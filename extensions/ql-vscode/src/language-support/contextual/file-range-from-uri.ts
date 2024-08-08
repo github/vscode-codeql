@@ -31,7 +31,7 @@ export function fileRangeFromURI(
         return new Location(db.resolveSourceFile(uri.uri), range);
       }
       return undefined;
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }

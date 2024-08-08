@@ -607,7 +607,7 @@ export async function logEndSummary(
     const endSummaryContent = await readFile(endSummary, "utf-8");
     void logger.log(" --- Evaluator Log Summary --- ");
     void logger.log(endSummaryContent);
-  } catch (e) {
+  } catch {
     void showAndLogWarningMessage(
       extLogger,
       `Could not read structured evaluator log end of summary file at ${endSummary}.`,

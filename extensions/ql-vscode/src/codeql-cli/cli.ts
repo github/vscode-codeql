@@ -943,7 +943,7 @@ export class CodeQLCliServer implements Disposable {
           if (line.startsWith("Enter value for --github-auth-stdin")) {
             try {
               return await this.app.credentials.getAccessToken();
-            } catch (e) {
+            } catch {
               // If the user cancels the authentication prompt, we still need to give a value to the CLI.
               // By giving a potentially invalid value, the user will just get a 401/403 when they try to access a
               // private package and the access token is invalid.

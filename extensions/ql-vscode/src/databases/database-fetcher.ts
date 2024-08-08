@@ -454,7 +454,7 @@ export class DatabaseFetcher {
     let uri;
     try {
       uri = Uri.parse(databaseUrl, true);
-    } catch (e) {
+    } catch {
       throw new Error(`Invalid url: ${databaseUrl}`);
     }
 
@@ -612,7 +612,7 @@ export class DatabaseFetcher {
       const obj = JSON.parse(text);
       msg =
         obj.error || obj.message || obj.reason || JSON.stringify(obj, null, 2);
-    } catch (e) {
+    } catch {
       msg = text;
     }
     throw new Error(`${errorMessage}.\n\nReason: ${msg}`);

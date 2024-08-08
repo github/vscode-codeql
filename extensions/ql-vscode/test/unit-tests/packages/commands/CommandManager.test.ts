@@ -15,15 +15,11 @@ describe("CommandManager", () => {
   });
 
   it("can register typed commands", async () => {
-    const commands = {
-      "codeQL.openVariantAnalysisLogs": async (variantAnalysisId: number) => {
-        return variantAnalysisId * 10;
-      },
-    };
-    const commandManager = new CommandManager<typeof commands>(
-      jest.fn(),
-      jest.fn(),
-    );
+    const commandManager = new CommandManager<{
+      "codeQL.openVariantAnalysisLogs": (
+        variantAnalysisId: number,
+      ) => Promise<number>;
+    }>(jest.fn(), jest.fn());
 
     // @ts-expect-error wrong command name should give a type error
     commandManager.register("abc", jest.fn());
@@ -81,15 +77,11 @@ describe("CommandManager", () => {
   });
 
   it("can execute typed commands", async () => {
-    const commands = {
-      "codeQL.openVariantAnalysisLogs": async (variantAnalysisId: number) => {
-        return variantAnalysisId * 10;
-      },
-    };
-    const commandManager = new CommandManager<typeof commands>(
-      jest.fn(),
-      jest.fn(),
-    );
+    const commandManager = new CommandManager<{
+      "codeQL.openVariantAnalysisLogs": (
+        variantAnalysisId: number,
+      ) => Promise<number>;
+    }>(jest.fn(), jest.fn());
 
     // @ts-expect-error wrong command name should give a type error
     await commandManager.execute("abc", 4);

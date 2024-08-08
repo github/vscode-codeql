@@ -231,7 +231,7 @@ export class DatabaseManager extends DisposableObject {
     let originStat;
     try {
       originStat = await stat(originDbYml);
-    } catch (e) {
+    } catch {
       // if there is an error here, assume that the origin database
       // is no longer available. Safely ignore and do not try to re-import.
       return false;
@@ -240,7 +240,7 @@ export class DatabaseManager extends DisposableObject {
     try {
       const importedStat = await stat(importedDbYml);
       return originStat.mtimeMs > importedStat.mtimeMs;
-    } catch (e) {
+    } catch {
       // If either of the files does not exist, we assume the origin is newer.
       // This shouldn't happen unless the user manually deleted one of the files.
       return true;

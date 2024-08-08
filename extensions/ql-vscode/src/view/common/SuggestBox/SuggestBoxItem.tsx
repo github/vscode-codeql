@@ -64,23 +64,35 @@ type Props = {
 export const SuggestBoxItem = forwardRef<
   HTMLDivElement,
   Props & HTMLProps<HTMLDivElement>
->(({ children, active, icon, labelText, details, ...props }, ref) => {
-  const id = useId();
-  return (
-    <Container
-      ref={ref}
-      role="option"
-      id={id}
-      aria-selected={active}
-      $active={active}
-      {...props}
-    >
-      {icon}
-      <LabelContainer>
-        <Label>{labelText}</Label>
-        {details && <DetailsLabel>{details}</DetailsLabel>}
-      </LabelContainer>
-    </Container>
-  );
-});
+>(
+  (
+    {
+      children,
+      active,
+      icon,
+      labelText,
+      details,
+      ...props
+    }: Props & HTMLProps<HTMLDivElement>,
+    ref,
+  ) => {
+    const id = useId();
+    return (
+      <Container
+        ref={ref}
+        role="option"
+        id={id}
+        aria-selected={active}
+        $active={active}
+        {...props}
+      >
+        {icon}
+        <LabelContainer>
+          <Label>{labelText}</Label>
+          {details && <DetailsLabel>{details}</DetailsLabel>}
+        </LabelContainer>
+      </Container>
+    );
+  },
+);
 SuggestBoxItem.displayName = "SuggestBoxItem";
