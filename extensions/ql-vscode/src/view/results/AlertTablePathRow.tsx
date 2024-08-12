@@ -11,8 +11,9 @@ import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCe
 import { useCallback, useMemo } from "react";
 import { VerticalRule } from "../common/VerticalRule";
 import type { UserSettings } from "../../common/interface-types";
+import { pluralize } from "../../common/word";
 
-interface Props {
+export interface Props {
   path: ThreadFlow;
   pathIndex: number;
   resultIndex: number;
@@ -65,7 +66,7 @@ export function AlertTablePathRow(props: Props) {
           onClick={handleDropdownClick}
         />
         <td className="vscode-codeql__text-center" colSpan={4}>
-          Path
+          {`Path (${pluralize(path.locations.length, "step", "steps")})`}
         </td>
       </tr>
       {currentPathExpanded &&

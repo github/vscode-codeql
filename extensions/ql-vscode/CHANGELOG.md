@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Update results view to display the length of the shortest path for path queries. [#3687](https://github.com/github/vscode-codeql/pull/3687)
+
 ## 1.14.0 - 7 August 2024
 
 - Add Python support to the CodeQL Model Editor. [#3676](https://github.com/github/vscode-codeql/pull/3676)
