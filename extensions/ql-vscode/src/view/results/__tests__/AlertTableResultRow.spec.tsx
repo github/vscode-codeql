@@ -1,6 +1,6 @@
 import { render as reactRender, screen } from "@testing-library/react";
 import { AlertTableResultRow } from "../AlertTableResultRow";
-import type { Props } from "../AlertTablePathRow";
+import type { Props } from "../AlertTableResultRow";
 import { createMockResults } from "../../../../test/factories/results/mockresults";
 
 describe(AlertTableResultRow.name, () => {
