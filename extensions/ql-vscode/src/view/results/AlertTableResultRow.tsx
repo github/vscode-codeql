@@ -13,8 +13,9 @@ import { SarifLocation } from "./locations/SarifLocation";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { AlertTablePathRow } from "./AlertTablePathRow";
 import type { UserSettings } from "../../common/interface-types";
+import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
 
-interface Props {
+export interface Props {
   result: Result;
   resultIndex: number;
   expanded: Set<string>;
@@ -83,6 +84,11 @@ export function AlertTableResultRow(props: Props) {
       />
     );
 
+  const allPaths = getAllPaths(result);
+  const shortestPath = Math.min(
+    ...allPaths.map((path) => path.locations.length),
+  );
+
   const currentResultExpanded = expanded.has(keyToString(resultKey));
   return (
     <>
@@ -102,6 +108,9 @@ export function AlertTableResultRow(props: Props) {
               onClick={handleDropdownClick}
             />
             <td className="vscode-codeql__icon-cell">{listUnordered}</td>
+            <td className="vscode-codeql__icon-cell">
+              <VSCodeBadge title="Shortest path">{shortestPath}</VSCodeBadge>
+            </td>
             <td colSpan={3}>{msg}</td>
           </>
         )}
@@ -118,7 +127,7 @@ export function AlertTableResultRow(props: Props) {
       </tr>
       {currentResultExpanded &&
         result.codeFlows &&
-        getAllPaths(result).map((path, pathIndex) => (
+        allPaths.map((path, pathIndex) => (
           <AlertTablePathRow
             key={`${resultIndex}-${pathIndex}`}
             {...props}
