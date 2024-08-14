@@ -105,7 +105,17 @@ describe("runModelEditorQueries", () => {
             "/a/b/c/qlpack2.yml",
           ]),
         bqrsInfo: jest.fn().mockResolvedValue({
-          "result-sets": [],
+          "result-sets": [
+            {
+              name: "results",
+              rows: 45,
+              columns: [],
+            },
+          ],
+        }),
+        bqrsDecode: jest.fn().mockResolvedValue({
+          tuples: [],
+          columns: [],
         }),
       }),
       queryRunner: mockedObject<QueryRunner>({
