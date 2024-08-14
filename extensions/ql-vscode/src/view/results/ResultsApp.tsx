@@ -193,9 +193,11 @@ export function ResultsApp() {
     (evt: MessageEvent) => {
       // sanitize origin
       const origin = evt.origin.replace(/\n|\r/g, "");
-      evt.origin === window.origin
-        ? handleMessage(evt.data as IntoResultsViewMsg)
-        : console.error(`Invalid event origin ${origin}`);
+      if (evt.origin === window.origin) {
+        handleMessage(evt.data as IntoResultsViewMsg);
+      } else {
+        console.error(`Invalid event origin ${origin}`);
+      }
     },
     [handleMessage],
   );

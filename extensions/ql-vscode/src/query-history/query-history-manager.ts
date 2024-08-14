@@ -845,7 +845,7 @@ export class QueryHistoryManager extends DisposableObject {
         evalLogData,
       );
       this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
-    } catch (e) {
+    } catch {
       throw new Error(
         `Could not read evaluator log summary JSON file to generate viewer data at ${item.jsonEvalLogSummaryLocation}.`,
       );

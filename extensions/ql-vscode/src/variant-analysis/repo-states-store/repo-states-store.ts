@@ -26,7 +26,7 @@ export async function readRepoStates(
     const repoStates = mapRepoStatesToDomainModel(repoStatesData);
 
     return repoStates;
-  } catch (e) {
+  } catch {
     // Ignore this error, we simply might not have downloaded anything yet
     return undefined;
   }

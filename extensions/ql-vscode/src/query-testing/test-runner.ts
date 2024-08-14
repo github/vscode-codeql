@@ -61,7 +61,7 @@ export class TestRunner extends DisposableObject {
       })) {
         await eventHandler(event);
       }
-    } catch (e) {
+    } catch {
       // CodeQL testing can throw exception even in normal scenarios. For example, if the test run
       // produces no output (which is normal), the testing command would throw an exception on
       // unexpected EOF during json parsing. So nothing needs to be done here - all the relevant

@@ -200,7 +200,7 @@ describe("runSuggestionsQuery", () => {
 
     const result = await runSuggestionsQuery(Mode.Framework, options);
 
-    expect(result).not.toBeUndefined;
+    expect(result).not.toBeUndefined();
 
     expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
     expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);

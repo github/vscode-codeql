@@ -408,7 +408,7 @@ describe("query-results", () => {
   function safeDel(file: string) {
     try {
       unlinkSync(file);
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
