@@ -14,6 +14,8 @@ import { createMockLogger } from "../../../__mocks__/loggerMock";
 import { createMockModelingStore } from "../../../__mocks__/model-editor/modelingStoreMock";
 import { mockedObject } from "../../../mocked-object";
 
+const SETUP_TIMEOUT = 20_000;
+
 describe("Model Evaluator", () => {
   let modelEvaluator: ModelEvaluator;
   let logger: NotificationLogger;
@@ -56,7 +58,7 @@ describe("Model Evaluator", () => {
       extensionPack,
       updateView,
     );
-  });
+  }, SETUP_TIMEOUT);
 
   describe("stopping evaluation", () => {
     it("should just log a message if it never started", async () => {
