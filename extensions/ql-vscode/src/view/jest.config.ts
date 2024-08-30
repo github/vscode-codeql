@@ -1,4 +1,5 @@
 import type { Config } from "jest";
+import { transformIgnorePatterns } from "../../test/jest-config";
 
 /*
  * For a detailed explanation regarding each configuration property and type check, visit:
@@ -184,10 +185,7 @@ const config: Config = {
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  transformIgnorePatterns: [
-    // These use ES modules, so need to be transformed
-    "node_modules/(?!(?:@vscode/webview-ui-toolkit|@microsoft/.+|exenv-es6|d3|d3-(.*)|internmap|delaunator|robust-predicates)/.*)",
-  ],
+  transformIgnorePatterns,
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
