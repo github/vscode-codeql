@@ -32,9 +32,6 @@ describe("handleRequestError", () => {
 
   it("returns false when handling an error without response", () => {
     const e = new RequestError("Timeout", 500, {
-      headers: {
-        "Content-Type": "application/json",
-      },
       request: {
         method: "POST",
         url: faker.internet.url(),
