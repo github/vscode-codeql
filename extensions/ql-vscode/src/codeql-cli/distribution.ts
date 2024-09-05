@@ -404,6 +404,11 @@ class ExtensionSpecificDistributionManager {
           signal,
         );
 
+      const body = assetStream.body;
+      if (!body) {
+        throw new Error("No body in asset stream");
+      }
+
       const archivePath = join(tmpDirectory, "distributionDownload.zip");
       archiveFile = createWriteStream(archivePath);
 
@@ -412,26 +417,23 @@ class ExtensionSpecificDistributionManager {
         ? parseInt(contentLength, 10)
         : undefined;
       reportStreamProgress(
-        assetStream.body,
+        body,
         `Downloading CodeQL CLI ${release.name}…`,
         totalNumBytes,
         progressCallback,
       );
 
-      assetStream.body.on("data", onData);
+      body.on("data", onData);
 
       await new Promise((resolve, reject) => {
         if (!archiveFile) {
           throw new Error("Invariant violation: archiveFile not set");
         }
 
-        assetStream.body
-          .pipe(archiveFile)
-          .on("finish", resolve)
-          .on("error", reject);
+        body.pipe(archiveFile).on("finish", resolve).on("error", reject);
 
         // If an error occurs on the body, we also want to reject the promise (e.g. during a timeout error).
-        assetStream.body.on("error", reject);
+        body.on("error", reject);
       });
 
       disposeTimeout();

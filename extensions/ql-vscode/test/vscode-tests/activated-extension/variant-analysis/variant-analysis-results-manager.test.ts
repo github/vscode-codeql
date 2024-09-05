@@ -105,9 +105,9 @@ describe(VariantAnalysisResultsManager.name, () => {
 
         getVariantAnalysisRepoResultStub = jest
           .spyOn(fetchModule, "default")
-          .mockImplementation((url: RequestInfo, _init?: RequestInit) => {
+          .mockImplementation((url: URL | RequestInfo, _init?: RequestInit) => {
             if (url === dummyRepoTask.artifactUrl) {
-              return Promise.resolve(new Response(Readable.from(fileContents)));
+              return Promise.resolve(new Response(fileContents));
             }
             return Promise.reject(new Error("Unexpected artifact URL"));
           });
@@ -162,7 +162,7 @@ describe(VariantAnalysisResultsManager.name, () => {
         }
 
         getVariantAnalysisRepoResultStub.mockImplementation(
-          (url: RequestInfo, _init?: RequestInit) => {
+          (url: URL | RequestInfo, _init?: RequestInit) => {
             if (url === dummyRepoTask.artifactUrl) {
               const response = new Response(Readable.from(generateInParts()));
               response.headers.set(

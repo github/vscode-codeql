@@ -545,30 +545,27 @@ export class DatabaseFetcher {
       throw e;
     }
 
+    const body = response.body;
+    if (!body) {
+      throw new Error("No response body found");
+    }
+
     const archiveFileStream = createWriteStream(archivePath);
 
     const contentLength = response.headers.get("content-length");
     const totalNumBytes = contentLength
       ? parseInt(contentLength, 10)
       : undefined;
-    reportStreamProgress(
-      response.body,
-      "Downloading database",
-      totalNumBytes,
-      progress,
-    );
+    reportStreamProgress(body, "Downloading database", totalNumBytes, progress);
 
-    response.body.on("data", onData);
+    body.on("data", onData);
 
     try {
       await new Promise((resolve, reject) => {
-        response.body
-          .pipe(archiveFileStream)
-          .on("finish", resolve)
-          .on("error", reject);
+        body.pipe(archiveFileStream).on("finish", resolve).on("error", reject);
 
         // If an error occurs on the body, we also want to reject the promise (e.g. during a timeout error).
-        response.body.on("error", reject);
+        body.on("error", reject);
       });
     } catch (e) {
       // Close and remove the file if an error occurs

@@ -23,6 +23,10 @@ beforeAll(async () => {
 
     await new Promise((resolve, reject) => {
       return fetch(DB_URL).then((response) => {
+        if (!response.body) {
+          throw new Error("No response body found");
+        }
+
         const dest = createWriteStream(dbLoc);
         response.body.pipe(dest);
 
