@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "node",
-    "target": "es6",
+    "target": "es2021",
     "outDir": "out",
     "lib": ["ES2021", "dom"],
     "jsx": "react",
