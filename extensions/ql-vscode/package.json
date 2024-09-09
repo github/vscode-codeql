@@ -2093,7 +2093,7 @@
     "ts-json-schema-generator": "^2.1.1",
     "ts-node": "^10.9.2",
     "ts-unused-exports": "^10.1.0",
-    "typescript": "^5.0.2",
+    "typescript": "^5.5.4",
     "vite": "^5.2.11",
     "vite-node": "^1.5.3"
   },
