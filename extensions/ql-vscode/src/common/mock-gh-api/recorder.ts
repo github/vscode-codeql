@@ -91,7 +91,14 @@ export class Recorder extends DisposableObject {
 
         let bodyFileLink = undefined;
         if (writtenRequest.response.body) {
-          await writeFile(bodyFilePath, writtenRequest.response.body);
+          if (typeof writtenRequest.response.body === "string") {
+            await writeFile(bodyFilePath, writtenRequest.response.body);
+          } else {
+            await writeFile(
+              bodyFilePath,
+              Buffer.from(writtenRequest.response.body),
+            );
+          }
           bodyFileLink = `file:${bodyFileName}`;
         }
 
@@ -226,7 +233,7 @@ async function createGitHubApiRequest(
         "x-vscode-codeql-msw-bypass": "true",
       },
     });
-    const responseBuffer = await response.buffer();
+    const responseBuffer = await response.arrayBuffer();
 
     return {
       request: {

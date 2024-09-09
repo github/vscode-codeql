@@ -69,7 +69,7 @@ export interface GetVariantAnalysisRepoResultRequest {
   };
   response: {
     status: number;
-    body?: Buffer | string;
+    body?: ArrayBuffer | string;
     contentType: string;
   };
 }

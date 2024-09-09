@@ -34,9 +34,9 @@ export class ReleasesApiConsumer {
     additionalCompatibilityCheck?: (release: GithubRelease) => boolean,
   ): Promise<Release> {
     const apiPath = `/repos/${this.repositoryNwo}/releases`;
-    const allReleases: GithubRelease[] = await (
+    const allReleases = (await (
       await this.makeApiCall(apiPath)
-    ).json();
+    ).json()) as GithubRelease[];
     const compatibleReleases = allReleases.filter((release) => {
       if (release.prerelease && !includePrerelease) {
         return false;

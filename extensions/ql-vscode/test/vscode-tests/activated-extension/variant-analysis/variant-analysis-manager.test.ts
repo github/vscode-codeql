@@ -12,7 +12,6 @@ import {
   remove,
 } from "fs-extra";
 import { join } from "path";
-import { Readable } from "stream";
 import * as fetchModule from "node-fetch";
 import { Response } from "node-fetch";
 
@@ -227,8 +226,7 @@ describe("Variant Analysis Manager", () => {
           "data/variant-analysis-results.zip",
         );
         const fileContents = await readFile(sourceFilePath);
-        const response = new Response(Readable.from(fileContents));
-        response.size = fileContents.length;
+        const response = new Response(fileContents);
         getVariantAnalysisRepoResultStub.mockResolvedValue(response);
       });
 

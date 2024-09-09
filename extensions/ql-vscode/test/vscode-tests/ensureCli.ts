@@ -5,7 +5,6 @@ import {
   codeQlLauncherName,
 } from "../../src/common/distribution";
 import { unzipToDirectorySequentially } from "../../src/common/unzip";
-import fetch from "node-fetch";
 import supportedCliVersions from "../../supported_cli_versions.json";
 
 /**
@@ -112,26 +111,33 @@ async function downloadWithProgress(url: string, filePath: string) {
   const contentLength = Number(assetStream.headers.get("content-length") || 0);
   console.log("Total content size", Math.round(contentLength / _1MB), "MB");
   const archiveFile = createWriteStream(filePath);
-  const body = assetStream.body;
-  await new Promise<void>((resolve, reject) => {
-    let numBytesDownloaded = 0;
-    let lastMessage = 0;
-    body.on("data", (data) => {
-      numBytesDownloaded += data.length;
-      if (numBytesDownloaded - lastMessage > _10MB) {
-        console.log("Downloaded", Math.round(numBytesDownloaded / _1MB), "MB");
-        lastMessage = numBytesDownloaded;
-      }
-      archiveFile.write(data);
-    });
-    body.on("finish", () => {
-      archiveFile.end(() => {
-        console.log("Finished download into", filePath);
-        resolve();
+  const body = assetStream.body?.getReader();
+  if (!body) {
+    throw new Error("No response body found");
+  }
+
+  let numBytesDownloaded = 0;
+  let lastMessage = 0;
+
+  // eslint-disable-next-line no-constant-condition -- This is a loop that reads from a stream
+  while (true) {
+    const { done, value } = await body.read();
+    if (done) {
+      return new Promise((resolve) => {
+        archiveFile.end(() => {
+          console.log("Finished download into", filePath);
+          resolve(undefined);
+        });
       });
-    });
-    body.on("error", reject);
-  });
+    }
+
+    numBytesDownloaded += value.length;
+    if (numBytesDownloaded - lastMessage > _10MB) {
+      console.log("Downloaded", Math.round(numBytesDownloaded / _1MB), "MB");
+      lastMessage = numBytesDownloaded;
+    }
+    archiveFile.write(value);
+  }
 }
 
 async function unzipWithProgress(

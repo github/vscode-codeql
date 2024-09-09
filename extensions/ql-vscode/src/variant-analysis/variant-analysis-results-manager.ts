@@ -99,6 +99,10 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       responseSize = response.size;
     }
 
+    if (!response.body) {
+      throw new Error("No response body found");
+    }
+
     let amountDownloaded = 0;
     for await (const chunk of response.body) {
       await appendFile(zipFilePath, Buffer.from(chunk));
