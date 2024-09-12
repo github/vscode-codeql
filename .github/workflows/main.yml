@@ -79,13 +79,6 @@ jobs:
         run: |
           npm run check-types
 
-      - name: Lint
-        working-directory: extensions/ql-vscode
-        env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
-        run: |
-          npm run lint
-
       - name: Lint Markdown
         working-directory: extensions/ql-vscode
         run: |
@@ -100,6 +93,20 @@ jobs:
         working-directory: extensions/ql-vscode
         run: |
           npm run find-deadcode
+
+      - name: Lint
+        working-directory: extensions/ql-vscode
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+        run: |
+          npm run lint-ci
+
+      - name: Upload ESLint results to Code Scanning
+        if: "${{ !cancelled() }}"
+        uses: github/codeql-action/upload-sarif@main
+        with:
+          sarif_file: extensions/ql-vscode/build/eslint.sarif
+          category: eslint
 
   generated:
     name: Check generated code
