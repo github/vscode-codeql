@@ -95,6 +95,7 @@ jobs:
           npm run find-deadcode
 
       - name: Lint
+        if: "${{ !cancelled() }}"
         working-directory: extensions/ql-vscode
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
