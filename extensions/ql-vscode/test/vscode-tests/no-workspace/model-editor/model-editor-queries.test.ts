@@ -8,7 +8,6 @@ import type { QueryLanguage } from "../../../../src/common/query-language";
 import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject } from "../../utils/mocking.helpers";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import type { ModelConfig } from "../../../../src/config";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 describe("setUpPack", () => {
@@ -44,18 +43,8 @@ describe("setUpPack", () => {
         resolveQueriesInSuite: jest.fn().mockResolvedValue([]),
       });
       const logger = createMockLogger();
-      const modelConfig = mockedObject<ModelConfig>({
-        llmGeneration: false,
-      });
 
-      await setUpPack(
-        cliServer,
-        logger,
-        queryDir,
-        language,
-        modelConfig,
-        Mode.Application,
-      );
+      await setUpPack(cliServer, logger, queryDir, language, Mode.Application);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles).toEqual(
@@ -109,18 +98,8 @@ describe("setUpPack", () => {
           .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
       });
       const logger = createMockLogger();
-      const modelConfig = mockedObject<ModelConfig>({
-        llmGeneration: false,
-      });
 
-      await setUpPack(
-        cliServer,
-        logger,
-        queryDir,
-        language,
-        modelConfig,
-        Mode.Application,
-      );
+      await setUpPack(cliServer, logger, queryDir, language, Mode.Application);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles.sort()).toEqual(["codeql-pack.yml"].sort());

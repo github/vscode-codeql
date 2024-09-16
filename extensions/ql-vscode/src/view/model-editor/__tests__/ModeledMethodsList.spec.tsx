@@ -35,8 +35,6 @@ describe(ModeledMethodsList.name, () => {
   const onChange = jest.fn();
   const onMethodClick = jest.fn();
   const onSaveModelClick = jest.fn();
-  const onGenerateFromLlmClick = jest.fn();
-  const onStopGenerateFromLlmClick = jest.fn();
   const onModelDependencyClick = jest.fn();
 
   const viewState = createMockModelEditorViewState();
@@ -58,8 +56,6 @@ describe(ModeledMethodsList.name, () => {
         }}
         modifiedSignatures={new Set([method1.signature])}
         selectedSignatures={new Set()}
-        inProgressMethods={new Set()}
-        processedByAutoModelMethods={new Set()}
         evaluationRun={undefined}
         viewState={viewState}
         hideModeledMethods={false}
@@ -67,8 +63,6 @@ describe(ModeledMethodsList.name, () => {
         onChange={onChange}
         onMethodClick={onMethodClick}
         onSaveModelClick={onSaveModelClick}
-        onGenerateFromLlmClick={onGenerateFromLlmClick}
-        onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
         onGenerateFromSourceClick={jest.fn()}
         onModelDependencyClick={onModelDependencyClick}
         {...props}

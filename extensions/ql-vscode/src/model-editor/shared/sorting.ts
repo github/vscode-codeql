@@ -47,7 +47,6 @@ export function sortMethods(
   methods: readonly Method[],
   modeledMethodsMap: Record<string, readonly ModeledMethod[]>,
   modifiedSignatures: ReadonlySet<string>,
-  processedByAutoModelMethods: ReadonlySet<string>,
 ): Method[] {
   const sortedMethods = [...methods];
   sortedMethods.sort((a, b) => {
@@ -56,13 +55,11 @@ export function sortMethods(
       a,
       modeledMethodsMap[a.signature] ?? [],
       modifiedSignatures.has(a.signature),
-      processedByAutoModelMethods.has(a.signature),
     );
     const methodBPrimarySortOrdinal = getMethodPrimarySortOrdinal(
       b,
       modeledMethodsMap[b.signature] ?? [],
       modifiedSignatures.has(b.signature),
-      processedByAutoModelMethods.has(b.signature),
     );
     if (methodAPrimarySortOrdinal !== methodBPrimarySortOrdinal) {
       return methodAPrimarySortOrdinal - methodBPrimarySortOrdinal;
@@ -82,32 +79,25 @@ export function sortMethods(
 
 /**
  * Assigns numbers to the following classes of methods:
- * - Unsaved positive AutoModel predictions => 0
- * - Negative AutoModel predictions => 1
- * - Unsaved manual models + unmodeled methods => 2
- * - Saved models from this model pack (AutoModel and manual) => 3
- * - Methods not modelable in this model pack => 4
+ * - Unsaved manual models + unmodeled methods => 0
+ * - Saved models from this model pack (AutoModel and manual) => 1
+ * - Methods not modelable in this model pack => 2
  */
 function getMethodPrimarySortOrdinal(
   method: Method,
   modeledMethods: readonly ModeledMethod[],
   isUnsaved: boolean,
-  isProcessedByAutoModel: boolean,
 ): number {
   const canBeModeled = canMethodBeModeled(method, modeledMethods, isUnsaved);
   const isModeled = modeledMethods.length > 0;
   if (canBeModeled) {
-    if (isModeled && isUnsaved && isProcessedByAutoModel) {
+    if ((isModeled && isUnsaved) || !isModeled) {
       return 0;
-    } else if (!isModeled && isProcessedByAutoModel) {
-      return 1;
-    } else if ((isModeled && isUnsaved) || !isModeled) {
-      return 2;
     } else {
-      return 3;
+      return 1;
     }
   } else {
-    return 4;
+    return 2;
   }
 }
 

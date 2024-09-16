@@ -104,8 +104,6 @@ describe("MethodsUsagePanel", () => {
         usage,
         modeledMethods[method.signature],
         modifiedMethodSignatures.has(method.signature),
-        false,
-        false,
       );
 
       expect(mockTreeView.reveal).toHaveBeenCalledWith(
@@ -139,8 +137,6 @@ describe("MethodsUsagePanel", () => {
         usage,
         modeledMethods[method.signature],
         modifiedMethodSignatures.has(method.signature),
-        false,
-        false,
       );
 
       expect(mockTreeView.reveal).not.toHaveBeenCalled();

@@ -153,8 +153,6 @@ describe("method modeling view provider", () => {
       usage: createUsage(),
       modeledMethods: [],
       isModified: false,
-      isInProgress: false,
-      processedByAutoModel: false,
     };
     getSelectedMethodDetails.mockReturnValue(selectedMethodDetails);
 
@@ -191,8 +189,6 @@ describe("method modeling view provider", () => {
       method: selectedMethodDetails.method,
       modeledMethods: selectedMethodDetails.modeledMethods,
       isModified: selectedMethodDetails.isModified,
-      isInProgress: selectedMethodDetails.isInProgress,
-      processedByAutoModel: selectedMethodDetails.processedByAutoModel,
     });
   });
 });

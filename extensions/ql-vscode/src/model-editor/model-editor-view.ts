@@ -49,7 +49,6 @@ import {
 import { pickExtensionPack } from "./extension-pack-picker";
 import type { QueryLanguage } from "../common/query-language";
 import { getLanguageDisplayName } from "../common/query-language";
-import { AutoModeler } from "./auto-modeler";
 import { telemetryListener } from "../common/vscode/telemetry";
 import type { ModelingStore } from "./modeling-store";
 import type { ModelingEvents } from "./modeling-events";
@@ -77,7 +76,6 @@ export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
   FromModelEditorMessage
 > {
-  private readonly autoModeler: AutoModeler;
   private readonly modelEvaluator: ModelEvaluator;
   private readonly languageDefinition: ModelsAsDataLanguage;
   // Cancellation token source that can be used for passing into long-running operations. Should only
@@ -114,19 +112,6 @@ export class ModelEditorView extends AbstractWebview<
     this.registerToModelingEvents();
     this.registerToModelConfigEvents();
 
-    this.autoModeler = new AutoModeler(
-      app,
-      cliServer,
-      queryRunner,
-      this.modelConfig,
-      modelingStore,
-      queryStorageDir,
-      databaseItem,
-      language,
-      async (modeledMethods) => {
-        this.addModeledMethods(modeledMethods);
-      },
-    );
     this.languageDefinition = getModelsAsDataLanguage(language);
 
     this.modelEvaluator = new ModelEvaluator(
@@ -318,21 +303,6 @@ export class ModelEditorView extends AbstractWebview<
         );
 
         break;
-      case "generateMethodsFromLlm":
-        await this.generateModeledMethodsFromLlm(
-          msg.packageName,
-          msg.methodSignatures,
-        );
-        void telemetryListener?.sendUIInteraction(
-          "model-editor-generate-methods-from-llm",
-        );
-        break;
-      case "stopGeneratingMethodsFromLlm":
-        await this.autoModeler.stopModeling(msg.packageName);
-        void telemetryListener?.sendUIInteraction(
-          "model-editor-stop-generating-methods-from-llm",
-        );
-        break;
       case "modelDependency":
         await this.modelDependency();
         void telemetryListener?.sendUIInteraction(
@@ -438,9 +408,6 @@ export class ModelEditorView extends AbstractWebview<
         this.modelConfig.flowGeneration) &&
       !!modelsAsDataLanguage.modelGeneration;
 
-    const showLlmButton =
-      this.databaseItem.language === "java" && this.modelConfig.llmGeneration;
-
     const showEvaluationUi = this.modelConfig.modelEvaluation;
 
     const sourceArchiveAvailable =
@@ -456,7 +423,6 @@ export class ModelEditorView extends AbstractWebview<
         extensionPack: this.extensionPack,
         language: this.language,
         showGenerateButton,
-        showLlmButton,
         showEvaluationUi,
         mode: this.modelingStore.getMode(this.databaseItem),
         showModeSwitchButton,
@@ -805,33 +771,6 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
-  private async generateModeledMethodsFromLlm(
-    packageName: string,
-    methodSignatures: string[],
-  ): Promise<void> {
-    const methods = this.modelingStore.getMethods(
-      this.databaseItem,
-      methodSignatures,
-    );
-    const modeledMethods = this.modelingStore.getModeledMethods(
-      this.databaseItem,
-      methodSignatures,
-    );
-    const processedByAutoModelMethods =
-      this.modelingStore.getProcessedByAutoModelMethods(
-        this.databaseItem,
-        methodSignatures,
-      );
-    const mode = this.modelingStore.getMode(this.databaseItem);
-    await this.autoModeler.startModeling(
-      packageName,
-      methods,
-      modeledMethods,
-      processedByAutoModelMethods,
-      mode,
-    );
-  }
-
   private async modelDependency(): Promise<void> {
     return withProgress(
       async (progress, token) => {
@@ -981,30 +920,6 @@ export class ModelEditorView extends AbstractWebview<
           });
         }
       }),
-    );
-
-    this.push(
-      this.modelingEvents.onInProgressMethodsChanged(async (event) => {
-        if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-          await this.postMessage({
-            t: "setInProgressMethods",
-            methods: Array.from(event.methods),
-          });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onProcessedByAutoModelMethodsChanged(
-        async (event) => {
-          if (event.dbUri === this.databaseItem.databaseUri.toString()) {
-            await this.postMessage({
-              t: "setProcessedByAutoModelMethods",
-              methods: Array.from(event.methods),
-            });
-          }
-        },
-      ),
     );
 
     this.push(

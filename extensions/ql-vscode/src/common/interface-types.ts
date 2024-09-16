@@ -560,16 +560,6 @@ interface SetModifiedMethodsMessage {
   methodSignatures: string[];
 }
 
-interface SetInProgressMethodsMessage {
-  t: "setInProgressMethods";
-  methods: string[];
-}
-
-interface SetProcessedByAutoModelMethodsMessage {
-  t: "setProcessedByAutoModelMethods";
-  methods: string[];
-}
-
 interface SwitchModeMessage {
   t: "switchMode";
   mode: Mode;
@@ -599,17 +589,6 @@ interface SaveModeledMethods {
 
 interface GenerateMethodMessage {
   t: "generateMethod";
-}
-
-interface GenerateMethodsFromLlmMessage {
-  t: "generateMethodsFromLlm";
-  packageName: string;
-  methodSignatures: string[];
-}
-
-interface StopGeneratingMethodsFromLlmMessage {
-  t: "stopGeneratingMethodsFromLlm";
-  packageName: string;
 }
 
 interface StartModelEvaluationMessage {
@@ -649,16 +628,6 @@ interface SetInModelingModeMessage {
   inModelingMode: boolean;
 }
 
-interface SetInProgressMessage {
-  t: "setInProgress";
-  inProgress: boolean;
-}
-
-interface SetProcessedByAutoModelMessage {
-  t: "setProcessedByAutoModel";
-  processedByAutoModel: boolean;
-}
-
 interface RevealMethodMessage {
   t: "revealMethod";
   methodSignature: string;
@@ -679,8 +648,6 @@ export type ToModelEditorMessage =
   | SetMethodsMessage
   | SetModeledAndModifiedMethodsMessage
   | SetModifiedMethodsMessage
-  | SetInProgressMethodsMessage
-  | SetProcessedByAutoModelMethodsMessage
   | RevealMethodMessage
   | SetAccessPathSuggestionsMessage
   | SetModelEvaluationRunMessage;
@@ -694,8 +661,6 @@ export type FromModelEditorMessage =
   | JumpToMethodMessage
   | SaveModeledMethods
   | GenerateMethodMessage
-  | GenerateMethodsFromLlmMessage
-  | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
   | HideModeledMethodsMessage
   | SetMultipleModeledMethodsMessage
@@ -738,8 +703,6 @@ interface SetSelectedMethodMessage {
   method: Method;
   modeledMethods: ModeledMethod[];
   isModified: boolean;
-  isInProgress: boolean;
-  processedByAutoModel: boolean;
 }
 
 export type ToMethodModelingMessage =
@@ -748,9 +711,7 @@ export type ToMethodModelingMessage =
   | SetMethodModifiedMessage
   | SetNoMethodSelectedMessage
   | SetSelectedMethodMessage
-  | SetInModelingModeMessage
-  | SetInProgressMessage
-  | SetProcessedByAutoModelMessage;
+  | SetInModelingModeMessage;
 
 interface SetModelAlertsViewStateMessage {
   t: "setModelAlertsViewState";

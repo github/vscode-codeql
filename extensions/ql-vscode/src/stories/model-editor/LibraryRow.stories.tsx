@@ -220,10 +220,8 @@ LibraryRow.args = {
     ],
   },
   modifiedSignatures: new Set(["org.sql2o.Sql2o#Sql2o(String)"]),
-  inProgressMethods: new Set(),
   viewState: createMockModelEditorViewState({
     showGenerateButton: true,
-    showLlmButton: true,
   }),
   hideModeledMethods: false,
 };

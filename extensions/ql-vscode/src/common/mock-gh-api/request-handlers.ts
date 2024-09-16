@@ -4,7 +4,6 @@ import type { RequestHandler } from "msw";
 import { http } from "msw";
 import type { GitHubApiRequest } from "./gh-api-request";
 import {
-  isAutoModelRequest,
   isCodeSearchRequest,
   isGetRepoRequest,
   isGetVariantAnalysisRepoRequest,
@@ -41,7 +40,6 @@ export async function createRequestHandlers(
     createGetVariantAnalysisRepoRequestHandler(requests),
     createGetVariantAnalysisRepoResultRequestHandler(requests),
     createCodeSearchRequestHandler(requests),
-    createAutoModelRequestHandler(requests),
   ];
 
   return handlers;
@@ -229,30 +227,4 @@ function createCodeSearchRequestHandler(
       status: request.response.status,
     });
   });
-}
-
-function createAutoModelRequestHandler(
-  requests: GitHubApiRequest[],
-): RequestHandler {
-  const autoModelRequests = requests.filter(isAutoModelRequest);
-  let requestIndex = 0;
-
-  // During automodeling there can be multiple API requests for each batch
-  // of candidates we want to model. We need to return different responses for each request,
-  // so keep an index of the request and return the appropriate response.
-  return http.post(
-    `${baseUrl}/repos/github/codeql/code-scanning/codeql/auto-model`,
-    () => {
-      const request = autoModelRequests[requestIndex];
-
-      if (requestIndex < autoModelRequests.length - 1) {
-        // If there are more requests to come, increment the index.
-        requestIndex++;
-      }
-
-      return jsonResponse(request.response.body, {
-        status: request.response.status,
-      });
-    },
-  );
 }

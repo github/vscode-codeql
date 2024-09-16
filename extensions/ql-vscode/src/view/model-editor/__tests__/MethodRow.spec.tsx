@@ -42,8 +42,6 @@ describe(MethodRow.name, () => {
         modeledMethods={[modeledMethod]}
         methodIsUnsaved={false}
         methodIsSelected={false}
-        modelingInProgress={false}
-        processedByAutoModel={false}
         revealedMethodSignature={null}
         evaluationRun={undefined}
         viewState={viewState}
@@ -184,14 +182,6 @@ describe(MethodRow.name, () => {
     });
 
     expect(screen.getByLabelText("Method not modeled")).toBeInTheDocument();
-  });
-
-  it("shows the in progress indicator when in progress", () => {
-    render({
-      modelingInProgress: true,
-    });
-
-    expect(screen.getByLabelText("Loading")).toBeInTheDocument();
   });
 
   it("can render multiple models", () => {

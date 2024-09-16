@@ -70,8 +70,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
     method: Method,
     modeledMethods: readonly ModeledMethod[],
     isModified: boolean,
-    isInProgress: boolean,
-    processedByAutoModel: boolean,
   ): Promise<void> {
     this.method = method;
     this.databaseItem = databaseItem;
@@ -82,8 +80,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
       method,
       modeledMethods,
       isModified,
-      isInProgress,
-      processedByAutoModel,
     });
   }
 
@@ -104,8 +100,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
         selectedMethod.method,
         selectedMethod.modeledMethods,
         selectedMethod.isModified,
-        selectedMethod.isInProgress,
-        selectedMethod.processedByAutoModel,
       );
     }
   }
@@ -203,8 +197,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
             e.method,
             e.modeledMethods,
             e.isModified,
-            e.isInProgress,
-            e.processedByAutoModel,
           );
         }
       }),
@@ -229,36 +221,6 @@ export class MethodModelingViewProvider extends AbstractWebviewViewProvider<
           await this.postMessage({
             t: "setNoMethodSelected",
           });
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onInProgressMethodsChanged(async (e) => {
-        if (this.method && this.databaseItem) {
-          const dbUri = this.databaseItem.databaseUri.toString();
-          if (e.dbUri === dbUri) {
-            const inProgress = e.methods.has(this.method.signature);
-            await this.postMessage({
-              t: "setInProgress",
-              inProgress,
-            });
-          }
-        }
-      }),
-    );
-
-    this.push(
-      this.modelingEvents.onProcessedByAutoModelMethodsChanged(async (e) => {
-        if (this.method && this.databaseItem) {
-          const dbUri = this.databaseItem.databaseUri.toString();
-          if (e.dbUri === dbUri) {
-            const processedByAutoModel = e.methods.has(this.method.signature);
-            await this.postMessage({
-              t: "setProcessedByAutoModel",
-              processedByAutoModel,
-            });
-          }
         }
       }),
     );

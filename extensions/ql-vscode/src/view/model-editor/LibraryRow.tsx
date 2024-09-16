@@ -14,7 +14,6 @@ import {
 } from "@vscode/webview-ui-toolkit/react";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
-import { getCandidates } from "../../model-editor/shared/auto-model-candidates";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 
 const LibraryContainer = styled.div`
@@ -75,8 +74,6 @@ export type LibraryRowProps = {
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   selectedSignatures: Set<string>;
-  inProgressMethods: Set<string>;
-  processedByAutoModelMethods: Set<string>;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
   revealedMethodSignature: string | null;
@@ -85,11 +82,6 @@ export type LibraryRowProps = {
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
-  onGenerateFromLlmClick: (
-    dependencyName: string,
-    methodSignatures: string[],
-  ) => void;
-  onStopGenerateFromLlmClick: (dependencyName: string) => void;
   onGenerateFromSourceClick: () => void;
   onModelDependencyClick: () => void;
 };
@@ -101,8 +93,6 @@ export const LibraryRow = ({
   modeledMethodsMap,
   modifiedSignatures,
   selectedSignatures,
-  inProgressMethods,
-  processedByAutoModelMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
@@ -111,8 +101,6 @@ export const LibraryRow = ({
   onChange,
   onMethodClick,
   onSaveModelClick,
-  onGenerateFromLlmClick,
-  onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
 }: LibraryRowProps) => {
@@ -133,27 +121,6 @@ export const LibraryRow = ({
       setExpanded(true);
     }
   }, [methods, revealedMethodSignature]);
-
-  const handleModelWithAI = useCallback(
-    async (e: React.MouseEvent) => {
-      onGenerateFromLlmClick(
-        title,
-        methods.map((m) => m.signature),
-      );
-      e.stopPropagation();
-      e.preventDefault();
-    },
-    [title, methods, onGenerateFromLlmClick],
-  );
-
-  const handleStopModelWithAI = useCallback(
-    async (e: React.MouseEvent) => {
-      onStopGenerateFromLlmClick(title);
-      e.stopPropagation();
-      e.preventDefault();
-    },
-    [title, onStopGenerateFromLlmClick],
-  );
 
   const handleModelFromSource = useCallback(
     async (e: React.MouseEvent) => {
@@ -186,21 +153,6 @@ export const LibraryRow = ({
     return methods.some((method) => modifiedSignatures.has(method.signature));
   }, [methods, modifiedSignatures]);
 
-  const canStopAutoModeling = useMemo(() => {
-    return methods.some((method) => inProgressMethods.has(method.signature));
-  }, [methods, inProgressMethods]);
-
-  const modelWithAIDisabled = useMemo(() => {
-    return (
-      getCandidates(
-        viewState.mode,
-        methods,
-        modeledMethodsMap,
-        processedByAutoModelMethods,
-      ).length === 0
-    );
-  }, [methods, modeledMethodsMap, processedByAutoModelMethods, viewState.mode]);
-
   return (
     <LibraryContainer>
       <TitleContainer onClick={toggleExpanded} aria-expanded={isExpanded}>
@@ -219,22 +171,6 @@ export const LibraryRow = ({
           </ModeledPercentage>
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        {viewState.showLlmButton && !canStopAutoModeling && (
-          <VSCodeButton
-            appearance="icon"
-            disabled={modelWithAIDisabled}
-            onClick={handleModelWithAI}
-          >
-            <Codicon name="lightbulb-autofix" label="Model with AI" />
-            &nbsp;Model with AI
-          </VSCodeButton>
-        )}
-        {viewState.showLlmButton && canStopAutoModeling && (
-          <VSCodeButton appearance="icon" onClick={handleStopModelWithAI}>
-            <Codicon name="debug-stop" label="Stop model with AI" />
-            &nbsp;Stop
-          </VSCodeButton>
-        )}
         {viewState.showGenerateButton &&
           viewState.mode === Mode.Application && (
             <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
@@ -257,8 +193,6 @@ export const LibraryRow = ({
             modeledMethodsMap={modeledMethodsMap}
             modifiedSignatures={modifiedSignatures}
             selectedSignatures={selectedSignatures}
-            inProgressMethods={inProgressMethods}
-            processedByAutoModelMethods={processedByAutoModelMethods}
             viewState={viewState}
             hideModeledMethods={hideModeledMethods}
             revealedMethodSignature={revealedMethodSignature}

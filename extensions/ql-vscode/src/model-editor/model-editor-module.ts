@@ -204,7 +204,6 @@ export class ModelEditorModule extends DisposableObject {
             this.app.logger,
             queryDir,
             language,
-            this.modelConfig,
             initialMode,
           );
           if (!success) {

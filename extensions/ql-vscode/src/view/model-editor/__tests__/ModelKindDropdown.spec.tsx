@@ -24,7 +24,6 @@ describe(ModelKindDropdown.name, () => {
       <ModelKindDropdown
         language={QueryLanguage.Java}
         modeledMethod={modeledMethod}
-        modelPending={false}
         onChange={onChange}
       />,
     );
@@ -47,7 +46,6 @@ describe(ModelKindDropdown.name, () => {
       <ModelKindDropdown
         language={QueryLanguage.Java}
         modeledMethod={modeledMethod}
-        modelPending={false}
         onChange={onChange}
       />,
     );
@@ -64,7 +62,6 @@ describe(ModelKindDropdown.name, () => {
       <ModelKindDropdown
         language={QueryLanguage.Java}
         modeledMethod={updatedModeledMethod}
-        modelPending={false}
         onChange={onChange}
       />,
     );
@@ -82,7 +79,6 @@ describe(ModelKindDropdown.name, () => {
       <ModelKindDropdown
         language={QueryLanguage.Java}
         modeledMethod={modeledMethod}
-        modelPending={false}
         onChange={onChange}
       />,
     );
@@ -102,7 +98,6 @@ describe(ModelKindDropdown.name, () => {
       <ModelKindDropdown
         language={QueryLanguage.Java}
         modeledMethod={modeledMethod}
-        modelPending={false}
         onChange={onChange}
       />,
     );
