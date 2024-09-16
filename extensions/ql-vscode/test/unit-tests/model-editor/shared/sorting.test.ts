@@ -10,16 +10,8 @@ import { shuffle } from "../../../vscode-tests/utils/list-helpers";
 
 describe("sortMethods", () => {
   it("uses primary sort order", () => {
-    const unsavedPositiveAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#unsavedPositiveAutoModelPrediction()",
-      supported: false,
-    });
-    const negativeAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#negativeAutoModelPrediction()",
-      supported: false,
-    });
-    const unsavedManualModel = createMethod({
-      signature: "org.sql2o.Sql2o#unsavedManualModel()",
+    const unsavedModel = createMethod({
+      signature: "org.sql2o.Sql2o#unsavedModel()",
       supported: false,
     });
     const unmodeledMethodWithEarlierSignature = createMethod({
@@ -30,12 +22,8 @@ describe("sortMethods", () => {
       signature: "org.sql2o.Sql2o#zzz_unmodeledMethodWithLaterSignature()",
       supported: false,
     });
-    const savedAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#savedAutoModelPrediction()",
-      supported: false,
-    });
-    const savedManualModel = createMethod({
-      signature: "org.sql2o.Sql2o#savedManualModel()",
+    const savedModel = createMethod({
+      signature: "org.sql2o.Sql2o#savedModel()",
       supported: false,
     });
     const supportedMethod = createMethod({
@@ -44,65 +32,31 @@ describe("sortMethods", () => {
     });
 
     const methods: Method[] = shuffle([
-      unsavedPositiveAutoModelPrediction,
-      negativeAutoModelPrediction,
-      unsavedManualModel,
+      unsavedModel,
       unmodeledMethodWithEarlierSignature,
       unmodeledMethodWithLaterSignature,
-      savedAutoModelPrediction,
-      savedManualModel,
+      savedModel,
       supportedMethod,
     ]);
 
     const modeledMethodsMap: Record<string, readonly ModeledMethod[]> = {};
-    modeledMethodsMap[unsavedPositiveAutoModelPrediction.signature] = [
-      createSinkModeledMethod(),
-    ];
-    modeledMethodsMap[unsavedManualModel.signature] = [
-      createSinkModeledMethod(),
-    ];
-    modeledMethodsMap[savedAutoModelPrediction.signature] = [
-      createSinkModeledMethod(),
-    ];
-    modeledMethodsMap[savedManualModel.signature] = [createSinkModeledMethod()];
+    modeledMethodsMap[unsavedModel.signature] = [createSinkModeledMethod()];
+    modeledMethodsMap[savedModel.signature] = [createSinkModeledMethod()];
 
-    const modifiedSignatures: Set<string> = new Set([
-      unsavedPositiveAutoModelPrediction.signature,
-      unsavedManualModel.signature,
-    ]);
+    const modifiedSignatures: Set<string> = new Set([unsavedModel.signature]);
 
-    const processedByAutoModelMethods: Set<string> = new Set([
-      unsavedPositiveAutoModelPrediction.signature,
-      negativeAutoModelPrediction.signature,
-      savedAutoModelPrediction.signature,
-    ]);
-
-    expect(
-      sortMethods(
-        methods,
-        modeledMethodsMap,
-        modifiedSignatures,
-        processedByAutoModelMethods,
-      ),
-    ).toEqual([
-      unsavedPositiveAutoModelPrediction,
-      negativeAutoModelPrediction,
-      unmodeledMethodWithEarlierSignature,
-      unsavedManualModel,
-      unmodeledMethodWithLaterSignature,
-      savedAutoModelPrediction,
-      savedManualModel,
-      supportedMethod,
-    ]);
+    expect(sortMethods(methods, modeledMethodsMap, modifiedSignatures)).toEqual(
+      [
+        unmodeledMethodWithEarlierSignature,
+        unsavedModel,
+        unmodeledMethodWithLaterSignature,
+        savedModel,
+        supportedMethod,
+      ],
+    );
   });
 
   it("uses secondary sort order based on usages and signature", () => {
-    const negativeAutoModelPrediction = createMethod({
-      signature: "org.sql2o.Sql2o#negativeAutoModelPrediction()",
-      supported: false,
-      usages: [],
-    });
-
     const unmodeledMethodWithTwoUsages = createMethod({
       signature: "org.sql2o.Sql2o#unmodeledMethodWithTwoUsages()",
       supported: false,
@@ -126,7 +80,6 @@ describe("sortMethods", () => {
     });
 
     const methods: Method[] = shuffle([
-      negativeAutoModelPrediction,
       unmodeledMethodWithTwoUsages,
       unmodeledMethodWithOneUsage,
       unmodeledMethodWithEarlierSignature,
@@ -137,23 +90,13 @@ describe("sortMethods", () => {
 
     const modifiedSignatures: Set<string> = new Set([]);
 
-    const processedByAutoModelMethods: Set<string> = new Set([
-      negativeAutoModelPrediction.signature,
-    ]);
-
-    expect(
-      sortMethods(
-        methods,
-        modeledMethodsMap,
-        modifiedSignatures,
-        processedByAutoModelMethods,
-      ),
-    ).toEqual([
-      negativeAutoModelPrediction,
-      unmodeledMethodWithTwoUsages,
-      unmodeledMethodWithOneUsage,
-      unmodeledMethodWithEarlierSignature,
-      unmodeledMethodWithLaterSignature,
-    ]);
+    expect(sortMethods(methods, modeledMethodsMap, modifiedSignatures)).toEqual(
+      [
+        unmodeledMethodWithTwoUsages,
+        unmodeledMethodWithOneUsage,
+        unmodeledMethodWithEarlierSignature,
+        unmodeledMethodWithLaterSignature,
+      ],
+    );
   });
 });

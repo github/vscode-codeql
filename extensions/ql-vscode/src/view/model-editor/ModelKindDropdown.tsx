@@ -15,14 +15,12 @@ import { InputDropdown } from "./InputDropdown";
 type Props = {
   language: QueryLanguage;
   modeledMethod: ModeledMethod | undefined;
-  modelPending: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelKindDropdown = ({
   language,
   modeledMethod,
-  modelPending,
   onChange,
 }: Props) => {
   const predicate = useMemo(() => {
@@ -92,7 +90,6 @@ export const ModelKindDropdown = ({
       value={value}
       options={options}
       disabled={disabled}
-      $pending={modelPending}
       onChange={handleChange}
       aria-label="Kind"
     />

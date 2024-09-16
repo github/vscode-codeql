@@ -27,7 +27,6 @@ ModelEditor.args = {
       dataExtensions: [],
     },
     showGenerateButton: true,
-    showLlmButton: true,
   }),
   initialMethods: [
     {

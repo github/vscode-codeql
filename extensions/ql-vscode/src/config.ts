@@ -828,15 +828,6 @@ export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
 
 const MODEL_SETTING = new Setting("model", ROOT_SETTING);
 const FLOW_GENERATION = new Setting("flowGeneration", MODEL_SETTING);
-const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
-const LLM_GENERATION_BATCH_SIZE = new Setting(
-  "llmGenerationBatchSize",
-  MODEL_SETTING,
-);
-const LLM_GENERATION_DEV_ENDPOINT = new Setting(
-  "llmGenerationDevEndpoint",
-  MODEL_SETTING,
-);
 const MODEL_EVALUATION = new Setting("evaluation", MODEL_SETTING);
 const MODEL_PACK_LOCATION = new Setting("packLocation", MODEL_SETTING);
 const MODEL_PACK_NAME = new Setting("packName", MODEL_SETTING);
@@ -850,7 +841,6 @@ export type ModelConfigPackVariables = {
 
 export interface ModelConfig {
   flowGeneration: boolean;
-  llmGeneration: boolean;
   getPackLocation(
     languageId: string,
     variables: ModelConfigPackVariables,
@@ -868,26 +858,6 @@ export class ModelConfigListener extends ConfigListener implements ModelConfig {
 
   public get flowGeneration(): boolean {
     return !!FLOW_GENERATION.getValue<boolean>();
-  }
-
-  public get llmGeneration(): boolean {
-    return !!LLM_GENERATION.getValue<boolean>() && !hasEnterpriseUri();
-  }
-
-  /**
-   * Limits the number of candidates we send to the model in each request to avoid long requests.
-   * Note that the model may return fewer than this number of candidates.
-   */
-  public get llmGenerationBatchSize(): number {
-    return LLM_GENERATION_BATCH_SIZE.getValue<number | null>() || 5;
-  }
-
-  /**
-   * The URL of the endpoint to use for LLM generation. This should only be set
-   * if you want to test against a dev server.
-   */
-  public get llmGenerationDevEndpoint(): string | undefined {
-    return LLM_GENERATION_DEV_ENDPOINT.getValue<string | undefined>();
   }
 
   public get modelEvaluation(): boolean {

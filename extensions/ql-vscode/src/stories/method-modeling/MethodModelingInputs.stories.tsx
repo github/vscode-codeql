@@ -53,20 +53,3 @@ FullyModeledMethod.args = {
   method,
   modeledMethod,
 };
-
-export const ModelingInProgress = Template.bind({});
-ModelingInProgress.args = {
-  method,
-  modeledMethod,
-  isModelingInProgress: true,
-};
-
-const generatedModeledMethod = createSinkModeledMethod({
-  provenance: "ai-generated",
-});
-export const ModelingNotAccepted = Template.bind({});
-ModelingNotAccepted.args = {
-  method,
-  modeledMethod: generatedModeledMethod,
-  modelPending: true,
-};

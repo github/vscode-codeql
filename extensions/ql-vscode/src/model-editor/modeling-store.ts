@@ -15,8 +15,6 @@ interface InternalDbModelingState {
   mode: Mode;
   modeledMethods: Record<string, ModeledMethod[]>;
   modifiedMethodSignatures: Set<string>;
-  inProgressMethods: Set<string>;
-  processedByAutoModelMethods: Set<string>;
   selectedMethod: Method | undefined;
   selectedUsage: Usage | undefined;
   modelEvaluationRun: ModelEvaluationRun | undefined;
@@ -30,8 +28,6 @@ export interface DbModelingState {
   readonly mode: Mode;
   readonly modeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>;
   readonly modifiedMethodSignatures: ReadonlySet<string>;
-  readonly inProgressMethods: ReadonlySet<string>;
-  readonly processedByAutoModelMethods: ReadonlySet<string>;
   readonly selectedMethod: Method | undefined;
   readonly selectedUsage: Usage | undefined;
   readonly modelEvaluationRun: ModelEvaluationRun | undefined;
@@ -44,8 +40,6 @@ export interface SelectedMethodDetails {
   readonly usage: Usage | undefined;
   readonly modeledMethods: readonly ModeledMethod[];
   readonly isModified: boolean;
-  readonly isInProgress: boolean;
-  readonly processedByAutoModel: boolean;
 }
 
 export class ModelingStore extends DisposableObject {
@@ -68,10 +62,8 @@ export class ModelingStore extends DisposableObject {
       mode,
       modeledMethods: {},
       modifiedMethodSignatures: new Set(),
-      processedByAutoModelMethods: new Set(),
       selectedMethod: undefined,
       selectedUsage: undefined,
-      inProgressMethods: new Set(),
       modelEvaluationRun: undefined,
       isModelAlertsViewOpen: false,
     });
@@ -160,7 +152,6 @@ export class ModelingStore extends DisposableObject {
         methods,
         state.modeledMethods,
         state.modifiedMethodSignatures,
-        state.processedByAutoModelMethods,
       );
     });
   }
@@ -171,7 +162,6 @@ export class ModelingStore extends DisposableObject {
         state.methods,
         state.modeledMethods,
         state.modifiedMethodSignatures,
-        state.processedByAutoModelMethods,
       );
     });
   }
@@ -308,73 +298,13 @@ export class ModelingStore extends DisposableObject {
 
     const modeledMethods = dbState.modeledMethods[method.signature] ?? [];
     const isModified = dbState.modifiedMethodSignatures.has(method.signature);
-    const isInProgress = dbState.inProgressMethods.has(method.signature);
-    const processedByAutoModel = dbState.processedByAutoModelMethods.has(
-      method.signature,
-    );
     this.modelingEvents.fireSelectedMethodChangedEvent(
       dbItem,
       method,
       usage,
       modeledMethods,
       isModified,
-      isInProgress,
-      processedByAutoModel,
     );
-  }
-
-  public addInProgressMethods(
-    dbItem: DatabaseItem,
-    inProgressMethods: string[],
-  ) {
-    this.changeInProgressMethods(dbItem, (state) => {
-      state.inProgressMethods = new Set([
-        ...state.inProgressMethods,
-        ...inProgressMethods,
-      ]);
-    });
-  }
-
-  public removeInProgressMethods(
-    dbItem: DatabaseItem,
-    methodSignatures: string[],
-  ) {
-    this.changeInProgressMethods(dbItem, (state) => {
-      state.inProgressMethods = new Set(
-        Array.from(state.inProgressMethods).filter(
-          (s) => !methodSignatures.includes(s),
-        ),
-      );
-    });
-  }
-
-  public getProcessedByAutoModelMethods(
-    dbItem: DatabaseItem,
-    methodSignatures?: string[],
-  ): Set<string> {
-    const processedByAutoModelMethods =
-      this.getState(dbItem).processedByAutoModelMethods;
-    if (!methodSignatures) {
-      return processedByAutoModelMethods;
-    }
-    return new Set(
-      Array.from(processedByAutoModelMethods).filter((x) =>
-        methodSignatures.includes(x),
-      ),
-    );
-  }
-
-  public addProcessedByAutoModelMethods(
-    dbItem: DatabaseItem,
-    processedByAutoModelMethods: string[],
-  ) {
-    this.changeProcessedByAutoModelMethods(dbItem, (state) => {
-      state.processedByAutoModelMethods = new Set([
-        ...state.processedByAutoModelMethods,
-        ...processedByAutoModelMethods,
-      ]);
-    });
-    this.updateMethodSorting(dbItem);
   }
 
   public updateModelEvaluationRun(
@@ -403,10 +333,6 @@ export class ModelingStore extends DisposableObject {
       usage: dbState.selectedUsage,
       modeledMethods: dbState.modeledMethods[selectedMethod.signature] ?? [],
       isModified: dbState.modifiedMethodSignatures.has(
-        selectedMethod.signature,
-      ),
-      isInProgress: dbState.inProgressMethods.has(selectedMethod.signature),
-      processedByAutoModel: dbState.processedByAutoModelMethods.has(
         selectedMethod.signature,
       ),
     };
@@ -457,34 +383,6 @@ export class ModelingStore extends DisposableObject {
       state.modifiedMethodSignatures,
       dbItem.databaseUri.toString(),
       dbItem.databaseUri.toString() === this.activeDb,
-    );
-  }
-
-  private changeInProgressMethods(
-    dbItem: DatabaseItem,
-    updateState: (state: InternalDbModelingState) => void,
-  ) {
-    const state = this.getState(dbItem);
-
-    updateState(state);
-
-    this.modelingEvents.fireInProgressMethodsChangedEvent(
-      dbItem.databaseUri.toString(),
-      state.inProgressMethods,
-    );
-  }
-
-  private changeProcessedByAutoModelMethods(
-    dbItem: DatabaseItem,
-    updateState: (state: InternalDbModelingState) => void,
-  ) {
-    const state = this.getState(dbItem);
-
-    updateState(state);
-
-    this.modelingEvents.fireProcessedByAutoModelMethodsChangedEvent(
-      dbItem.databaseUri.toString(),
-      state.processedByAutoModelMethods,
     );
   }
 

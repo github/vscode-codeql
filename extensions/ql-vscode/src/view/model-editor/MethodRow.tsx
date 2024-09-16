@@ -2,7 +2,6 @@ import {
   VSCodeBadge,
   VSCodeButton,
   VSCodeLink,
-  VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
 import {
   forwardRef,
@@ -17,13 +16,11 @@ import { vscode } from "../vscode-api";
 
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
-import { isModelPending } from "../../model-editor/modeled-method";
 import { ModelKindDropdown } from "./ModelKindDropdown";
 import { Mode } from "../../model-editor/shared/mode";
 import { MethodClassifications } from "./MethodClassifications";
 import { getModelingStatus } from "../../model-editor/shared/modeling-status";
 import { ModelingStatusIndicator } from "./ModelingStatusIndicator";
-import { InProgressDropdown } from "./InProgressDropdown";
 import { MethodName } from "./MethodName";
 import { ModelTypeDropdown } from "./ModelTypeDropdown";
 import { ModelInputDropdown } from "./ModelInputDropdown";
@@ -66,12 +63,6 @@ const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
 `;
 
-const ProgressRing = styled(VSCodeProgressRing)`
-  width: 16px;
-  height: 16px;
-  margin-left: auto;
-`;
-
 const CodiconRow = styled(VSCodeButton)`
   min-height: calc(var(--input-height) * 1px);
   align-items: center;
@@ -83,8 +74,6 @@ export type MethodRowProps = {
   modeledMethods: ModeledMethod[];
   methodIsUnsaved: boolean;
   methodIsSelected: boolean;
-  modelingInProgress: boolean;
-  processedByAutoModel: boolean;
   viewState: ModelEditorViewState;
   revealedMethodSignature: string | null;
   inputAccessPathSuggestions?: AccessPathOption[];
@@ -122,7 +111,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
       modeledMethods: modeledMethodsProp,
       methodIsUnsaved,
       methodIsSelected,
-      processedByAutoModel,
       viewState,
       revealedMethodSignature,
       inputAccessPathSuggestions,
@@ -269,140 +257,105 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
             >
               View
             </ViewLink>
-            {props.modelingInProgress && <ProgressRing />}
           </ApiOrMethodRow>
         </DataGridCell>
-        {props.modelingInProgress && (
-          <>
-            <DataGridCell>
-              <InProgressDropdown />
-            </DataGridCell>
-            <DataGridCell>
-              <InProgressDropdown />
-            </DataGridCell>
-            <DataGridCell>
-              <InProgressDropdown />
-            </DataGridCell>
-            <DataGridCell>
-              <InProgressDropdown />
-            </DataGridCell>
-            <DataGridCell>
-              <CodiconRow appearance="icon" disabled={true}>
-                <Codicon name="add" label="Add new model" />
-              </CodiconRow>
-            </DataGridCell>
-          </>
-        )}
-        {!props.modelingInProgress && (
-          <>
-            {shownModeledMethods.map((modeledMethod, index) => {
-              const modelPending = isModelPending(
-                modeledMethod,
-                modelingStatus,
-                processedByAutoModel,
-              );
 
-              return (
-                <DataGridRow key={index} focused={focusedIndex === index}>
-                  <DataGridCell>
-                    <ModelTypeDropdown
-                      language={viewState.language}
-                      modelConfig={viewState.modelConfig}
-                      method={method}
-                      modeledMethod={modeledMethod}
-                      modelPending={modelPending}
-                      onChange={modeledMethodChangedHandlers[index]}
-                    />
-                  </DataGridCell>
-                  <DataGridCell>
-                    {inputAccessPathSuggestions === undefined ? (
-                      <ModelInputDropdown
-                        language={viewState.language}
-                        method={method}
-                        modeledMethod={modeledMethod}
-                        modelPending={modelPending}
-                        onChange={modeledMethodChangedHandlers[index]}
-                      />
-                    ) : (
-                      <ModelInputSuggestBox
-                        modeledMethod={modeledMethod}
-                        suggestions={inputAccessPathSuggestions}
-                        typePathSuggestions={outputAccessPathSuggestions ?? []}
-                        onChange={modeledMethodChangedHandlers[index]}
-                      />
-                    )}
-                  </DataGridCell>
-                  <DataGridCell>
-                    {outputAccessPathSuggestions === undefined ? (
-                      <ModelOutputDropdown
-                        language={viewState.language}
-                        method={method}
-                        modeledMethod={modeledMethod}
-                        modelPending={modelPending}
-                        onChange={modeledMethodChangedHandlers[index]}
-                      />
-                    ) : (
-                      <ModelOutputSuggestBox
-                        modeledMethod={modeledMethod}
-                        suggestions={outputAccessPathSuggestions}
-                        onChange={modeledMethodChangedHandlers[index]}
-                      />
-                    )}
-                  </DataGridCell>
-                  <DataGridCell>
-                    <ModelKindDropdown
-                      language={viewState.language}
-                      modeledMethod={modeledMethod}
-                      modelPending={modelPending}
-                      onChange={modeledMethodChangedHandlers[index]}
-                    />
-                  </DataGridCell>
-                  <DataGridCell>
-                    <ModelButtonsContainer>
-                      <ModelAlertsIndicator
-                        viewState={viewState}
-                        modeledMethod={modeledMethod}
-                        evaluationRun={evaluationRun}
-                      ></ModelAlertsIndicator>
-                      {index === 0 ? (
-                        <CodiconRow
-                          appearance="icon"
-                          aria-label="Add new model"
-                          onClick={(event: React.MouseEvent) => {
-                            event.stopPropagation();
-                            handleAddModelClick();
-                          }}
-                          disabled={addModelButtonDisabled}
-                        >
-                          <Codicon name="add" />
-                        </CodiconRow>
-                      ) : (
-                        <CodiconRow
-                          appearance="icon"
-                          aria-label="Remove model"
-                          onClick={(event: React.MouseEvent) => {
-                            event.stopPropagation();
-                            removeModelClickedHandlers[index]();
-                          }}
-                        >
-                          <Codicon name="trash" />
-                        </CodiconRow>
-                      )}
-                    </ModelButtonsContainer>
-                  </DataGridCell>
-                </DataGridRow>
-              );
-            })}
-            {validationErrors.map((error, index) => (
-              <DataGridCell gridColumn="span 5" key={index}>
-                <ModeledMethodAlert
-                  error={error}
-                  setSelectedIndex={setFocusedIndex}
+        {shownModeledMethods.map((modeledMethod, index) => {
+          return (
+            <DataGridRow key={index} focused={focusedIndex === index}>
+              <DataGridCell>
+                <ModelTypeDropdown
+                  language={viewState.language}
+                  modelConfig={viewState.modelConfig}
+                  method={method}
+                  modeledMethod={modeledMethod}
+                  onChange={modeledMethodChangedHandlers[index]}
                 />
               </DataGridCell>
-            ))}
-          </>
-        )}
+              <DataGridCell>
+                {inputAccessPathSuggestions === undefined ? (
+                  <ModelInputDropdown
+                    language={viewState.language}
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                ) : (
+                  <ModelInputSuggestBox
+                    modeledMethod={modeledMethod}
+                    suggestions={inputAccessPathSuggestions}
+                    typePathSuggestions={outputAccessPathSuggestions ?? []}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                )}
+              </DataGridCell>
+              <DataGridCell>
+                {outputAccessPathSuggestions === undefined ? (
+                  <ModelOutputDropdown
+                    language={viewState.language}
+                    method={method}
+                    modeledMethod={modeledMethod}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                ) : (
+                  <ModelOutputSuggestBox
+                    modeledMethod={modeledMethod}
+                    suggestions={outputAccessPathSuggestions}
+                    onChange={modeledMethodChangedHandlers[index]}
+                  />
+                )}
+              </DataGridCell>
+              <DataGridCell>
+                <ModelKindDropdown
+                  language={viewState.language}
+                  modeledMethod={modeledMethod}
+                  onChange={modeledMethodChangedHandlers[index]}
+                />
+              </DataGridCell>
+              <DataGridCell>
+                <ModelButtonsContainer>
+                  <ModelAlertsIndicator
+                    viewState={viewState}
+                    modeledMethod={modeledMethod}
+                    evaluationRun={evaluationRun}
+                  ></ModelAlertsIndicator>
+                  {index === 0 ? (
+                    <CodiconRow
+                      appearance="icon"
+                      aria-label="Add new model"
+                      onClick={(event: React.MouseEvent) => {
+                        event.stopPropagation();
+                        handleAddModelClick();
+                      }}
+                      disabled={addModelButtonDisabled}
+                    >
+                      <Codicon name="add" />
+                    </CodiconRow>
+                  ) : (
+                    <CodiconRow
+                      appearance="icon"
+                      aria-label="Remove model"
+                      onClick={(event: React.MouseEvent) => {
+                        event.stopPropagation();
+                        removeModelClickedHandlers[index]();
+                      }}
+                    >
+                      <Codicon name="trash" />
+                    </CodiconRow>
+                  )}
+                </ModelButtonsContainer>
+              </DataGridCell>
+            </DataGridRow>
+          );
+        })}
+        {validationErrors.map((error, index) => (
+          <DataGridCell gridColumn="span 5" key={index}>
+            <ModeledMethodAlert
+              error={error}
+              setSelectedIndex={setFocusedIndex}
+            />
+          </DataGridCell>
+        ))}
       </DataGridRow>
     );
   },

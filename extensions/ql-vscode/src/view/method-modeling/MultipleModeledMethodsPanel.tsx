@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
-import { isModelPending } from "../../model-editor/modeled-method";
 import {
   canAddNewModeledMethod,
   canRemoveModeledMethod,
@@ -15,7 +14,6 @@ import { ModeledMethodAlert } from "./ModeledMethodAlert";
 import type { QueryLanguage } from "../../common/query-language";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { sendTelemetry } from "../common/telemetry";
-import type { ModelingStatus } from "../../model-editor/shared/modeling-status";
 import type { ModelConfig } from "../../model-editor/languages";
 
 export type MultipleModeledMethodsPanelProps = {
@@ -23,9 +21,6 @@ export type MultipleModeledMethodsPanelProps = {
   modelConfig: ModelConfig;
   method: Method;
   modeledMethods: ModeledMethod[];
-  modelingStatus: ModelingStatus;
-  isModelingInProgress: boolean;
-  isProcessedByAutoModel: boolean;
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
 };
 
@@ -66,9 +61,6 @@ export const MultipleModeledMethodsPanel = ({
   modelConfig,
   method,
   modeledMethods,
-  modelingStatus,
-  isModelingInProgress,
-  isProcessedByAutoModel,
   onChange,
 }: MultipleModeledMethodsPanelProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -163,12 +155,6 @@ export const MultipleModeledMethodsPanel = ({
           modelConfig={modelConfig}
           method={method}
           modeledMethod={modeledMethods[selectedIndex]}
-          modelPending={isModelPending(
-            modeledMethods[selectedIndex],
-            modelingStatus,
-            isProcessedByAutoModel,
-          )}
-          isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
       ) : (
@@ -177,12 +163,6 @@ export const MultipleModeledMethodsPanel = ({
           modelConfig={modelConfig}
           method={method}
           modeledMethod={undefined}
-          modelPending={isModelPending(
-            modeledMethods[selectedIndex],
-            modelingStatus,
-            isProcessedByAutoModel,
-          )}
-          isModelingInProgress={isModelingInProgress}
           onChange={handleChange}
         />
       )}

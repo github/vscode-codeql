@@ -16,8 +16,6 @@ export type ModeledMethodsListProps = {
   modeledMethodsMap: Record<string, ModeledMethod[]>;
   modifiedSignatures: Set<string>;
   selectedSignatures: Set<string>;
-  inProgressMethods: Set<string>;
-  processedByAutoModelMethods: Set<string>;
   revealedMethodSignature: string | null;
   accessPathSuggestions?: AccessPathSuggestionOptions;
   evaluationRun: ModelEvaluationRunState | undefined;
@@ -26,11 +24,6 @@ export type ModeledMethodsListProps = {
   onChange: (methodSignature: string, modeledMethods: ModeledMethod[]) => void;
   onMethodClick: (methodSignature: string) => void;
   onSaveModelClick: (methodSignatures: string[]) => void;
-  onGenerateFromLlmClick: (
-    packageName: string,
-    methodSignatures: string[],
-  ) => void;
-  onStopGenerateFromLlmClick: (packageName: string) => void;
   onGenerateFromSourceClick: () => void;
   onModelDependencyClick: () => void;
 };
@@ -44,8 +37,6 @@ export const ModeledMethodsList = ({
   modeledMethodsMap,
   modifiedSignatures,
   selectedSignatures,
-  inProgressMethods,
-  processedByAutoModelMethods,
   viewState,
   hideModeledMethods,
   revealedMethodSignature,
@@ -54,8 +45,6 @@ export const ModeledMethodsList = ({
   onChange,
   onMethodClick,
   onSaveModelClick,
-  onGenerateFromLlmClick,
-  onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
 }: ModeledMethodsListProps) => {
@@ -95,8 +84,6 @@ export const ModeledMethodsList = ({
           modeledMethodsMap={modeledMethodsMap}
           modifiedSignatures={modifiedSignatures}
           selectedSignatures={selectedSignatures}
-          inProgressMethods={inProgressMethods}
-          processedByAutoModelMethods={processedByAutoModelMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
@@ -105,8 +92,6 @@ export const ModeledMethodsList = ({
           onChange={onChange}
           onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}
-          onGenerateFromLlmClick={onGenerateFromLlmClick}
-          onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
           onGenerateFromSourceClick={onGenerateFromSourceClick}
           onModelDependencyClick={onModelDependencyClick}
         />

@@ -8,7 +8,6 @@ import { DisposableObject } from "../disposable-object";
 import { gzipDecode } from "../zlib";
 
 import type {
-  AutoModelResponse,
   BasicErrorResponse,
   CodeSearchResponse,
   GetVariantAnalysisRepoResultRequest,
@@ -260,23 +259,6 @@ async function createGitHubApiRequest(
         status,
         body: await jsonResponseBody<
           CodeSearchResponse | BasicErrorResponse | undefined
-        >(response),
-      },
-    };
-  }
-
-  const autoModelMatch = url.match(
-    /\/repos\/github\/codeql\/code-scanning\/codeql\/auto-model/,
-  );
-  if (autoModelMatch) {
-    return {
-      request: {
-        kind: RequestKind.AutoModel,
-      },
-      response: {
-        status,
-        body: await jsonResponseBody<
-          BasicErrorResponse | AutoModelResponse | undefined
         >(response),
       },
     };

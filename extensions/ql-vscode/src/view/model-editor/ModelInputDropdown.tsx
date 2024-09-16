@@ -15,7 +15,6 @@ type Props = {
   language: QueryLanguage;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  modelPending: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
@@ -23,7 +22,6 @@ export const ModelInputDropdown = ({
   language,
   method,
   modeledMethod,
-  modelPending,
   onChange,
 }: Props): React.JSX.Element => {
   const options = useMemo(() => {
@@ -80,7 +78,6 @@ export const ModelInputDropdown = ({
       value={value}
       options={options}
       disabled={!enabled}
-      $pending={modelPending}
       onChange={handleChange}
       aria-label="Input"
     />

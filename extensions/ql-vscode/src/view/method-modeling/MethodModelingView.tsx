@@ -31,12 +31,6 @@ export function MethodModelingView({
 
   const [isMethodModified, setIsMethodModified] = useState<boolean>(false);
 
-  const [isModelingInProgress, setIsModelingInProgress] =
-    useState<boolean>(false);
-
-  const [isProcessedByAutoModel, setIsProcessedByAutoModel] =
-    useState<boolean>(false);
-
   const modelingStatus = useMemo(
     () => getModelingStatus(modeledMethods, isMethodModified),
     [modeledMethods, isMethodModified],
@@ -63,21 +57,11 @@ export function MethodModelingView({
             setMethod(undefined);
             setModeledMethods([]);
             setIsMethodModified(false);
-            setIsModelingInProgress(false);
-            setIsProcessedByAutoModel(false);
             break;
           case "setSelectedMethod":
             setMethod(msg.method);
             setModeledMethods(msg.modeledMethods);
             setIsMethodModified(msg.isModified);
-            setIsModelingInProgress(msg.isInProgress);
-            setIsProcessedByAutoModel(msg.processedByAutoModel);
-            break;
-          case "setInProgress":
-            setIsModelingInProgress(msg.inProgress);
-            break;
-          case "setProcessedByAutoModel":
-            setIsProcessedByAutoModel(msg.processedByAutoModel);
             break;
           default:
             assertNever(msg);
@@ -125,8 +109,6 @@ export function MethodModelingView({
       modelingStatus={modelingStatus}
       method={method}
       modeledMethods={modeledMethods}
-      isModelingInProgress={isModelingInProgress}
-      isProcessedByAutoModel={isProcessedByAutoModel}
       onChange={onChange}
     />
   );
