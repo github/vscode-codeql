@@ -103,7 +103,7 @@ jobs:
           npm run lint-ci
 
       - name: Upload ESLint results to Code Scanning
-        if: "${{ !cancelled() }}"
+        if: "${{ !cancelled() && !startsWith(github.head_ref, 'dependabot/')}}"
         uses: github/codeql-action/upload-sarif@main
         with:
           sarif_file: extensions/ql-vscode/build/eslint.sarif
