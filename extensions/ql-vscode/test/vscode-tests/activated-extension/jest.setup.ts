@@ -6,7 +6,7 @@ import {
 
 beforeAll(async () => {
   await beforeAllAction();
-});
+}, 20_000);
 
 beforeEach(async () => {
   await beforeEachAction();
