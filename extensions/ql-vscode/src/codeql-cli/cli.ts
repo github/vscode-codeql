@@ -1909,36 +1909,10 @@ function shouldDebugCliServer() {
 export class CliVersionConstraint {
   // The oldest version of the CLI that we support. This is used to determine
   // whether to show a warning about the CLI being too old on startup.
-  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("v2.15.5");
-
-  public static CLI_VERSION_WITHOUT_MRVA_EXTENSIBLE_PREDICATE_HACK = new SemVer(
-    "2.16.1",
-  );
-
-  /**
-   * CLI version where there is support for multiple queries on the pack create command.
-   */
-  public static CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE = new SemVer("2.16.1");
+  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.16.6");
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
-  }
-
-  private async isVersionAtLeast(v: SemVer) {
-    return (await this.cli.getVersion()).compare(v) >= 0;
-  }
-
-  async preservesExtensiblePredicatesInMrvaPack() {
-    // Negated, because we _stopped_ preserving these in 2.16.1.
-    return !(await this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITHOUT_MRVA_EXTENSIBLE_PREDICATE_HACK,
-    ));
-  }
-
-  async supportsPackCreateWithMultipleQueries() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE,
-    );
   }
 
   async supportsMrvaPackCreate(): Promise<boolean> {

@@ -347,13 +347,6 @@ describe("Variant Analysis Manager", () => {
       const queryToRun =
         "Security/CWE/CWE-020/ExternalAPIsUsedWithUntrustedData.ql";
 
-      // Recent versions of the CLI don't preserve queries with extensible predicates in MRVA packs,
-      // because all the necessary info is in the `.packinfo` file.
-      const extraQueries =
-        (await cli.cliConstraints.preservesExtensiblePredicatesInMrvaPack())
-          ? ["Telemetry/ExtractorInformation.ql"]
-          : [];
-
       const qlPackRootPath = join(process.env.TEST_CODEQL_PATH, "java/ql/src");
       const queryPath = join(qlPackRootPath, queryToRun);
       const qlPackFilePath = join(qlPackRootPath, "qlpack.yml");
@@ -362,7 +355,7 @@ describe("Variant Analysis Manager", () => {
         qlPackRootPath,
         qlPackFilePath,
         expectedPackName: "codeql/java-queries",
-        filesThatExist: [queryToRun, ...extraQueries],
+        filesThatExist: [queryToRun, ...["Telemetry/ExtractorInformation.ql"]],
         filesThatDoNotExist: [],
         qlxFilesThatExist: [],
         dependenciesToCheck: ["codeql/java-all"],
@@ -372,13 +365,6 @@ describe("Variant Analysis Manager", () => {
     });
 
     it("should run multiple queries that are part of the same pack", async () => {
-      if (!(await cli.cliConstraints.supportsPackCreateWithMultipleQueries())) {
-        console.log(
-          `Skipping test because MRVA with multiple queries is only suppported in CLI version ${CliVersionConstraint.CLI_VERSION_WITH_MULTI_QUERY_PACK_CREATE} or later.`,
-        );
-        return;
-      }
-
       await doVariantAnalysisTest({
         queryPaths: [
           "data-qlpack-multiple-queries/query1.ql",
