@@ -354,7 +354,7 @@ describe("Variant Analysis Manager", () => {
         qlPackRootPath,
         qlPackFilePath,
         expectedPackName: "codeql/java-queries",
-        filesThatExist: [queryToRun, ...["Telemetry/ExtractorInformation.ql"]],
+        filesThatExist: [queryToRun],
         filesThatDoNotExist: [],
         qlxFilesThatExist: [],
         dependenciesToCheck: ["codeql/java-all"],
