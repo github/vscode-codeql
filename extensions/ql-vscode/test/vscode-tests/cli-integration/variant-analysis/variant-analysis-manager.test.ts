@@ -15,7 +15,6 @@ import { isAbsolute, join } from "path";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { CliVersionConstraint } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension, storagePath } from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import type { VariantAnalysisSubmission } from "../../../../src/variant-analysis/shared/variant-analysis";
