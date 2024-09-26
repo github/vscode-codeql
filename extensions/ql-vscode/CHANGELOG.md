@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.15.0 - 26 Seotember 2024
+## 1.15.0 - 26 September 2024
 
 - Update results view to display the length of the shortest path for path queries. [#3687](https://github.com/github/vscode-codeql/pull/3687)
 - Remove support for CodeQL CLI versions older than 2.16.6. [#3728](https://github.com/github/vscode-codeql/pull/3728)
