@@ -14,7 +14,6 @@ export enum RequestKind {
   GetVariantAnalysisRepo = "getVariantAnalysisRepo",
   GetVariantAnalysisRepoResult = "getVariantAnalysisRepoResult",
   CodeSearch = "codeSearch",
-  AutoModel = "autoModel",
 }
 
 export interface BasicErrorResponse {
@@ -92,31 +91,13 @@ interface CodeSearchRequest {
   };
 }
 
-export interface AutoModelResponse {
-  models: string;
-}
-
-interface AutoModelRequest {
-  request: {
-    kind: RequestKind.AutoModel;
-    body?: {
-      candidates: string;
-    };
-  };
-  response: {
-    status: number;
-    body?: AutoModelResponse | BasicErrorResponse;
-  };
-}
-
 export type GitHubApiRequest =
   | GetRepoRequest
   | SubmitVariantAnalysisRequest
   | GetVariantAnalysisRequest
   | GetVariantAnalysisRepoRequest
   | GetVariantAnalysisRepoResultRequest
-  | CodeSearchRequest
-  | AutoModelRequest;
+  | CodeSearchRequest;
 
 export const isGetRepoRequest = (
   request: GitHubApiRequest,
@@ -146,8 +127,3 @@ export const isCodeSearchRequest = (
   request: GitHubApiRequest,
 ): request is CodeSearchRequest =>
   request.request.kind === RequestKind.CodeSearch;
-
-export const isAutoModelRequest = (
-  request: GitHubApiRequest,
-): request is AutoModelRequest =>
-  request.request.kind === RequestKind.AutoModel;

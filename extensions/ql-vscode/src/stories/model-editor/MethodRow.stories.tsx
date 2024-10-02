@@ -96,7 +96,6 @@ const modeledMethod: ModeledMethod = {
 
 const viewState = createMockModelEditorViewState({
   showGenerateButton: true,
-  showLlmButton: true,
 });
 
 export const Unmodeled = Template.bind({});
@@ -143,15 +142,6 @@ export const AlreadyModeled = Template.bind({});
 AlreadyModeled.args = {
   method: { ...method, supported: true },
   modeledMethods: [],
-  viewState,
-};
-
-export const ModelingInProgress = Template.bind({});
-ModelingInProgress.args = {
-  method,
-  modeledMethods: [modeledMethod],
-  modelingInProgress: true,
-  methodCanBeModeled: true,
   viewState,
 };
 

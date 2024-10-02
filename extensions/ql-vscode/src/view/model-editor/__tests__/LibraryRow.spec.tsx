@@ -10,8 +10,6 @@ describe(LibraryRow.name, () => {
   const onChange = jest.fn();
   const onMethodClick = jest.fn();
   const onSaveModelClick = jest.fn();
-  const onGenerateFromLlmClick = jest.fn();
-  const onStopGenerateFromLlmClick = jest.fn();
   const onModelDependencyClick = jest.fn();
 
   const viewState = createMockModelEditorViewState();
@@ -35,8 +33,6 @@ describe(LibraryRow.name, () => {
         }}
         modifiedSignatures={new Set([method.signature])}
         selectedSignatures={new Set()}
-        inProgressMethods={new Set()}
-        processedByAutoModelMethods={new Set()}
         evaluationRun={undefined}
         viewState={viewState}
         hideModeledMethods={false}
@@ -44,8 +40,6 @@ describe(LibraryRow.name, () => {
         onChange={onChange}
         onMethodClick={onMethodClick}
         onSaveModelClick={onSaveModelClick}
-        onGenerateFromLlmClick={onGenerateFromLlmClick}
-        onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
         onGenerateFromSourceClick={jest.fn()}
         onModelDependencyClick={onModelDependencyClick}
         {...props}
@@ -71,33 +65,6 @@ describe(LibraryRow.name, () => {
 
     expect(screen.queryByText("Model from source")).toBeInTheDocument();
     expect(screen.queryByText("Model with AI")).not.toBeInTheDocument();
-    expect(screen.queryByText("Model dependency")).toBeInTheDocument();
-  });
-
-  it("renders the row when LLM is enabled", () => {
-    render({
-      viewState: {
-        ...viewState,
-        showLlmButton: true,
-      },
-    });
-
-    expect(screen.queryByText("Model from source")).not.toBeInTheDocument();
-    expect(screen.queryByText("Model with AI")).toBeInTheDocument();
-    expect(screen.queryByText("Model dependency")).toBeInTheDocument();
-  });
-
-  it("renders the row when generate button and LLM are enabled", () => {
-    render({
-      viewState: {
-        ...viewState,
-        showGenerateButton: true,
-        showLlmButton: true,
-      },
-    });
-
-    expect(screen.queryByText("Model from source")).toBeInTheDocument();
-    expect(screen.queryByText("Model with AI")).toBeInTheDocument();
     expect(screen.queryByText("Model dependency")).toBeInTheDocument();
   });
 

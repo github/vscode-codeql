@@ -22,7 +22,6 @@ type Props = {
   modelConfig: ModelConfig;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  modelPending: boolean;
   onChange: (modeledMethod: ModeledMethod) => void;
 };
 
@@ -41,7 +40,6 @@ export const ModelTypeDropdown = ({
   modelConfig,
   method,
   modeledMethod,
-  modelPending,
   onChange,
 }: Props): React.JSX.Element => {
   const options = useMemo(() => {
@@ -126,7 +124,6 @@ export const ModelTypeDropdown = ({
     <InputDropdown
       value={modeledMethod?.type ?? "none"}
       options={options}
-      $pending={modelPending}
       onChange={handleChange}
       aria-label="Model type"
     />

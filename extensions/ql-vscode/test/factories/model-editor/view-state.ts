@@ -11,7 +11,6 @@ export function createMockModelEditorViewState(
     language: QueryLanguage.Java,
     mode: Mode.Application,
     showGenerateButton: false,
-    showLlmButton: false,
     showEvaluationUi: false,
     showModeSwitchButton: true,
     extensionPack: createMockExtensionPack(),

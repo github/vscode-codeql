@@ -102,12 +102,6 @@ export function ModelEditor({
     new Set(),
   );
 
-  const [inProgressMethods, setInProgressMethods] = useState<Set<string>>(
-    new Set(),
-  );
-  const [processedByAutoModelMethods, setProcessedByAutoModelMethods] =
-    useState<Set<string>>(new Set());
-
   const [hideModeledMethods, setHideModeledMethods] = useState(
     initialHideModeledMethods,
   );
@@ -153,14 +147,6 @@ export function ModelEditor({
           case "setModifiedMethods":
             setModifiedSignatures(new Set(msg.methodSignatures));
             break;
-          case "setInProgressMethods": {
-            setInProgressMethods(new Set(msg.methods));
-            break;
-          }
-          case "setProcessedByAutoModelMethods": {
-            setProcessedByAutoModelMethods(new Set(msg.methods));
-            break;
-          }
           case "revealMethod":
             setRevealedMethodSignature(msg.methodSignature);
             break;
@@ -294,24 +280,6 @@ export function ModelEditor({
     });
   }, []);
 
-  const onGenerateFromLlmClick = useCallback(
-    (packageName: string, methodSignatures: string[]) => {
-      vscode.postMessage({
-        t: "generateMethodsFromLlm",
-        packageName,
-        methodSignatures,
-      });
-    },
-    [],
-  );
-
-  const onStopGenerateFromLlmClick = useCallback((packageName: string) => {
-    vscode.postMessage({
-      t: "stopGeneratingMethodsFromLlm",
-      packageName,
-    });
-  }, []);
-
   const onOpenDatabaseClick = useCallback(() => {
     vscode.postMessage({
       t: "openDatabase",
@@ -430,8 +398,6 @@ export function ModelEditor({
           modeledMethodsMap={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           selectedSignatures={selectedSignatures}
-          inProgressMethods={inProgressMethods}
-          processedByAutoModelMethods={processedByAutoModelMethods}
           viewState={viewState}
           hideModeledMethods={hideModeledMethods}
           revealedMethodSignature={revealedMethodSignature}
@@ -440,8 +406,6 @@ export function ModelEditor({
           onChange={onChange}
           onMethodClick={onMethodClick}
           onSaveModelClick={onSaveModelClick}
-          onGenerateFromLlmClick={onGenerateFromLlmClick}
-          onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
           onGenerateFromSourceClick={onGenerateFromSourceClick}
           onModelDependencyClick={onModelDependencyClick}
         />

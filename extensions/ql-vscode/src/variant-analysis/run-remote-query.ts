@@ -116,15 +116,6 @@ async function generateQueryPack(
 
   let precompilationOpts: string[];
   if (cliSupportsMrvaPackCreate) {
-    if (
-      qlPackDetails.queryFiles.length > 1 &&
-      !(await cliServer.cliConstraints.supportsPackCreateWithMultipleQueries())
-    ) {
-      throw new Error(
-        `Installed CLI version does not allow creating a MRVA pack with multiple queries`,
-      );
-    }
-
     const queryOpts = qlPackDetails.queryFiles.flatMap((q) => [
       "--query",
       join(targetPackPath, relative(qlPackDetails.qlPackRootPath, q)),
