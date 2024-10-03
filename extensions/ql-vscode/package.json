@@ -1968,7 +1968,7 @@
     "prepare": "cd ../.. && husky"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.26.12",
+    "@floating-ui/react": "^0.26.24",
     "@octokit/plugin-retry": "^7.1.2",
     "@octokit/plugin-throttling": "^9.3.1",
     "@octokit/rest": "^21.0.2",
