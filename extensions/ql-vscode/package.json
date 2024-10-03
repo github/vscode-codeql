@@ -2061,7 +2061,7 @@
     "cosmiconfig": "^9.0.0",
     "cross-env": "^7.0.3",
     "del": "^6.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.11.1",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-deprecation": "^3.0.0",
