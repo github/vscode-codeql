@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Increase the required version of VS Code to 1.90.0. [#3737](https://github.com/github/vscode-codeql/pull/3737)
+
 ## 1.15.0 - 26 September 2024
 
 - Update results view to display the length of the shortest path for path queries. [#3687](https://github.com/github/vscode-codeql/pull/3687)
