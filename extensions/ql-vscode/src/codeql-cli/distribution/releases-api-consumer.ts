@@ -1,5 +1,3 @@
-import type { Response } from "node-fetch";
-import { default as fetch } from "node-fetch";
 import type { Range } from "semver";
 import { compare, parse, satisfies } from "semver";
 import { URL } from "url";

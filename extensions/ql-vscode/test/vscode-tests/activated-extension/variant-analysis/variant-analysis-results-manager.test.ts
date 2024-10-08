@@ -1,10 +1,6 @@
 import { extLogger } from "../../../../src/common/logging/vscode";
-import { readFile, pathExists, remove, outputJson, readJson } from "fs-extra";
+import { outputJson, pathExists, readFile, readJson, remove } from "fs-extra";
 import { join, resolve } from "path";
-import { Readable } from "stream";
-import * as fetchModule from "node-fetch";
-import type { RequestInfo, RequestInit } from "node-fetch";
-import { Response } from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
@@ -17,8 +13,20 @@ import type {
 } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockVariantAnalysisConfig } from "../../../factories/config";
+import { setupServer } from "msw/node";
+import { http } from "msw";
 
 jest.setTimeout(10_000);
+
+const server = setupServer();
+
+beforeAll(() =>
+  server.listen({
+    onUnhandledRequest: "error",
+  }),
+);
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 describe(VariantAnalysisResultsManager.name, () => {
   let variantAnalysisId: number;
@@ -37,7 +45,9 @@ describe(VariantAnalysisResultsManager.name, () => {
   });
 
   describe("download", () => {
-    let dummyRepoTask: VariantAnalysisRepositoryTask;
+    let dummyRepoTask: ReturnType<
+      typeof createMockVariantAnalysisRepositoryTask
+    >;
     let variantAnalysisStoragePath: string;
     let repoTaskStorageDirectory: string;
 
@@ -76,7 +86,8 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     describe("when the artifact_url is missing", () => {
       it("should not try to download the result", async () => {
-        const dummyRepoTask = createMockVariantAnalysisRepositoryTask();
+        const dummyRepoTask: VariantAnalysisRepositoryTask =
+          createMockVariantAnalysisRepositoryTask();
         delete dummyRepoTask.artifactUrl;
 
         await expect(
@@ -91,10 +102,8 @@ describe(VariantAnalysisResultsManager.name, () => {
     });
 
     describe("when the artifact_url is present", () => {
-      let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
-        typeof fetchModule.default
-      >;
       let fileContents: Buffer;
+      let artifactRequest: Request | undefined;
 
       beforeEach(async () => {
         const sourceFilePath = join(
@@ -103,14 +112,19 @@ describe(VariantAnalysisResultsManager.name, () => {
         );
         fileContents = await readFile(sourceFilePath);
 
-        getVariantAnalysisRepoResultStub = jest
-          .spyOn(fetchModule, "default")
-          .mockImplementation((url: URL | RequestInfo, _init?: RequestInit) => {
-            if (url === dummyRepoTask.artifactUrl) {
-              return Promise.resolve(new Response(fileContents));
+        artifactRequest = undefined;
+
+        server.resetHandlers(
+          http.get(dummyRepoTask.artifactUrl, ({ request }) => {
+            if (artifactRequest) {
+              throw new Error("Unexpected artifact request");
             }
-            return Promise.reject(new Error("Unexpected artifact URL"));
-          });
+
+            artifactRequest = request;
+
+            return new Response(fileContents);
+          }),
+        );
       });
 
       it("should call the API to download the results", async () => {
@@ -121,7 +135,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           () => Promise.resolve(),
         );
 
-        expect(getVariantAnalysisRepoResultStub).toHaveBeenCalledTimes(1);
+        expect(artifactRequest).not.toBeUndefined();
       });
 
       it("should save the results zip file to disk", async () => {
@@ -151,28 +165,29 @@ describe(VariantAnalysisResultsManager.name, () => {
       });
 
       it("should report download progress", async () => {
-        // This generates a "fake" stream which "downloads" the file in 5 chunks,
-        // rather than in 1 chunk. This is used for testing that we actually get
-        // multiple progress reports.
-        async function* generateInParts() {
-          const partLength = fileContents.length / 5;
-          for (let i = 0; i < 5; i++) {
-            yield fileContents.subarray(i * partLength, (i + 1) * partLength);
-          }
-        }
+        server.resetHandlers(
+          http.get(dummyRepoTask.artifactUrl, () => {
+            // This generates a "fake" stream which "downloads" the file in 5 chunks,
+            // rather than in 1 chunk. This is used for testing that we actually get
+            // multiple progress reports.
+            const stream = new ReadableStream({
+              start(controller) {
+                const partLength = fileContents.length / 5;
+                for (let i = 0; i < 5; i++) {
+                  controller.enqueue(
+                    fileContents.subarray(i * partLength, (i + 1) * partLength),
+                  );
+                }
+                controller.close();
+              },
+            });
 
-        getVariantAnalysisRepoResultStub.mockImplementation(
-          (url: URL | RequestInfo, _init?: RequestInit) => {
-            if (url === dummyRepoTask.artifactUrl) {
-              const response = new Response(Readable.from(generateInParts()));
-              response.headers.set(
-                "Content-Length",
-                fileContents.length.toString(),
-              );
-              return Promise.resolve(response);
-            }
-            return Promise.reject(new Error("Unexpected artifact URL"));
-          },
+            return new Response(stream, {
+              headers: {
+                "Content-Length": fileContents.length.toString(),
+              },
+            });
+          }),
         );
 
         const downloadPercentageChanged = jest

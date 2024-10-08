@@ -3,19 +3,15 @@ import { reportStreamProgress } from "../../../../../src/common/vscode/progress"
 describe("helpers", () => {
   it("should report stream progress", () => {
     const progressSpy = jest.fn();
-    const mockReadable = {
-      on: jest.fn(),
-    };
     const max = 1024 * 1024 * 4;
     const firstStep = 1024 * 1024 + 1024 * 600;
     const secondStep = 1024 * 1024 * 2;
 
-    (reportStreamProgress as any)(mockReadable, "My prefix", max, progressSpy);
+    const reportProgress = reportStreamProgress("My prefix", max, progressSpy);
 
     // now pretend that we have received some messages
-    const listener = mockReadable.on.mock.calls[0][1] as (data: any) => void;
-    listener({ length: firstStep });
-    listener({ length: secondStep });
+    reportProgress(firstStep);
+    reportProgress(secondStep);
 
     expect(progressSpy).toHaveBeenCalledTimes(3);
     expect(progressSpy).toHaveBeenCalledWith({
@@ -37,18 +33,14 @@ describe("helpers", () => {
 
   it("should report stream progress when total bytes unknown", () => {
     const progressSpy = jest.fn();
-    const mockReadable = {
-      on: jest.fn(),
-    };
-    (reportStreamProgress as any)(
-      mockReadable,
+    const reportProgress = reportStreamProgress(
       "My prefix",
       undefined,
       progressSpy,
     );
 
-    // There are no listeners registered to this readable
-    expect(mockReadable.on).not.toHaveBeenCalled();
+    // It should not report progress when calling the callback
+    reportProgress(100);
 
     expect(progressSpy).toHaveBeenCalledTimes(1);
     expect(progressSpy).toHaveBeenCalledWith({

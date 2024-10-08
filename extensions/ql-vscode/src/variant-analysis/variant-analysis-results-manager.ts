@@ -1,5 +1,4 @@
 import { appendFile, pathExists, rm } from "fs-extra";
-import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
 
@@ -94,17 +93,23 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
     const response = await fetch(repoTask.artifactUrl);
 
-    let responseSize = parseInt(response.headers.get("content-length") || "0");
-    if (responseSize === 0 && response.size > 0) {
-      responseSize = response.size;
-    }
+    const responseSize = parseInt(
+      response.headers.get("content-length") || "1",
+    );
 
     if (!response.body) {
       throw new Error("No response body found");
     }
 
+    const reader = response.body.getReader();
+
     let amountDownloaded = 0;
-    for await (const chunk of response.body) {
+    for (;;) {
+      const { value: chunk, done } = await reader.read();
+      if (done) {
+        break;
+      }
+
       await appendFile(zipFilePath, Buffer.from(chunk));
       amountDownloaded += chunk.length;
       await onDownloadPercentageChanged(

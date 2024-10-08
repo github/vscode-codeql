@@ -3,7 +3,8 @@ import type { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/g
 import { VariantAnalysisRepoStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockRepository } from "./repository";
 
-export function createMockVariantAnalysisRepoTask(): VariantAnalysisRepoTask {
+export function createMockVariantAnalysisRepoTask(): VariantAnalysisRepoTask &
+  Required<Pick<VariantAnalysisRepoTask, "artifact_url">> {
   return {
     repository: {
       ...createMockRepository(),
@@ -12,6 +13,6 @@ export function createMockVariantAnalysisRepoTask(): VariantAnalysisRepoTask {
     analysis_status: VariantAnalysisRepoStatus.Succeeded,
     result_count: faker.number.int(),
     artifact_size_in_bytes: faker.number.int(),
-    artifact_url: "https://www.pickles.com",
+    artifact_url: faker.internet.url(),
   };
 }

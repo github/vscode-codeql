@@ -78,7 +78,6 @@ import {
   REPO_STATES_FILENAME,
   writeRepoStates,
 } from "./repo-states-store";
-import { FetchError } from "node-fetch";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
@@ -859,7 +858,9 @@ export class VariantAnalysisManager
           } catch (e) {
             if (
               retry++ < maxRetryCount &&
-              e instanceof FetchError &&
+              e &&
+              typeof e === "object" &&
+              "code" in e &&
               (e.code === "ETIMEDOUT" || e.code === "ECONNRESET")
             ) {
               void this.app.logger.log(

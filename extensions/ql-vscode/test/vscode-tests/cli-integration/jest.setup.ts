@@ -8,7 +8,6 @@ import {
 import { createWriteStream, existsSync, mkdirpSync } from "fs-extra";
 import { dirname, join } from "path";
 import { DB_URL, dbLoc, testprojLoc } from "../global.helper";
-import fetch from "node-fetch";
 import { renameSync } from "fs";
 import { unzipToDirectoryConcurrently } from "../../../src/common/unzip-concurrently";
 import { platform } from "os";
@@ -21,22 +20,42 @@ beforeAll(async () => {
   if (!existsSync(dbLoc)) {
     console.log(`Downloading test database to ${dbLoc}`);
 
-    await new Promise((resolve, reject) => {
-      return fetch(DB_URL).then((response) => {
-        if (!response.body) {
-          throw new Error("No response body found");
-        }
+    const response = await fetch(DB_URL);
+    if (!response.body) {
+      throw new Error("No response body found");
+    }
+    if (!response.ok) {
+      throw new Error(`Failed to download test database: ${response.status}`);
+    }
 
-        const dest = createWriteStream(dbLoc);
-        response.body.pipe(dest);
+    const dest = createWriteStream(dbLoc);
 
-        response.body.on("error", reject);
-        dest.on("error", reject);
-        dest.on("close", () => {
-          resolve(dbLoc);
+    const reader = response.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      await new Promise((resolve, reject) => {
+        dest.write(value, (err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(undefined);
         });
       });
-    });
+    }
+
+    await new Promise((resolve, reject) =>
+      dest.close((err) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(undefined);
+      }),
+    );
   }
 
   // unzip the database from dbLoc to testprojLoc

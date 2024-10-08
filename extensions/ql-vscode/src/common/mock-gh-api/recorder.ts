@@ -1,7 +1,6 @@
 import { ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 
-import fetch from "node-fetch";
 import type { SetupServer } from "msw/node";
 
 import { DisposableObject } from "../disposable-object";

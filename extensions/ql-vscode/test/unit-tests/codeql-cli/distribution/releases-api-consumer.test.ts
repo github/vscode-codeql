@@ -1,4 +1,3 @@
-import { Response } from "node-fetch";
 import { Range } from "semver";
 
 import type { GithubRelease } from "../../../../src/codeql-cli/distribution/releases-api-consumer";

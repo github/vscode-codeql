@@ -28,7 +28,6 @@ import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 import type { Release } from "./distribution/release";
 import { ReleasesApiConsumer } from "./distribution/releases-api-consumer";
 import { createTimeoutSignal } from "../common/fetch-stream";
-import { AbortError } from "node-fetch";
 
 /**
  * distribution.ts
@@ -416,24 +415,40 @@ class ExtensionSpecificDistributionManager {
       const totalNumBytes = contentLength
         ? parseInt(contentLength, 10)
         : undefined;
-      reportStreamProgress(
-        body,
+
+      const reportProgress = reportStreamProgress(
         `Downloading CodeQL CLI ${release.name}…`,
         totalNumBytes,
         progressCallback,
       );
 
-      body.on("data", onData);
-
-      await new Promise((resolve, reject) => {
-        if (!archiveFile) {
-          throw new Error("Invariant violation: archiveFile not set");
+      const reader = body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
         }
 
-        body.pipe(archiveFile).on("finish", resolve).on("error", reject);
+        onData();
+        reportProgress(value?.length ?? 0);
 
-        // If an error occurs on the body, we also want to reject the promise (e.g. during a timeout error).
-        body.on("error", reject);
+        await new Promise((resolve, reject) => {
+          archiveFile?.write(value, (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(undefined);
+          });
+        });
+      }
+
+      await new Promise((resolve, reject) => {
+        archiveFile?.close((err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(undefined);
+        });
       });
 
       disposeTimeout();
@@ -454,8 +469,8 @@ class ExtensionSpecificDistributionManager {
           : undefined,
       );
     } catch (e) {
-      if (e instanceof AbortError) {
-        const thrownError = new AbortError("The download timed out.");
+      if (e instanceof DOMException && e.name === "AbortError") {
+        const thrownError = new Error("The download timed out.");
         thrownError.stack = e.stack;
         throw thrownError;
       }
