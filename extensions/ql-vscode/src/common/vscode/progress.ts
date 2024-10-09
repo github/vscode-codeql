@@ -97,17 +97,15 @@ export function withProgress<R>(
  * Displays a progress monitor that indicates how much progess has been made
  * reading from a stream.
  *
- * @param readable The stream to read progress from
  * @param messagePrefix A prefix for displaying the message
  * @param totalNumBytes Total number of bytes in this stream
  * @param progress The progress callback used to set messages
  */
 export function reportStreamProgress(
-  readable: NodeJS.ReadableStream,
   messagePrefix: string,
   totalNumBytes?: number,
   progress?: ProgressCallback,
-) {
+): (bytesRead: number) => void {
   if (progress && totalNumBytes) {
     let numBytesDownloaded = 0;
     const updateProgress = () => {
@@ -123,10 +121,10 @@ export function reportStreamProgress(
     // Display the progress straight away rather than waiting for the first chunk.
     updateProgress();
 
-    readable.on("data", (data) => {
-      numBytesDownloaded += data.length;
+    return (bytesRead: number) => {
+      numBytesDownloaded += bytesRead;
       updateProgress();
-    });
+    };
   } else if (progress) {
     progress({
       step: 1,
@@ -134,4 +132,6 @@ export function reportStreamProgress(
       message: `${messagePrefix} (Size unknown)`,
     });
   }
+
+  return () => {};
 }

@@ -1,5 +1,3 @@
-import type { Response } from "node-fetch";
-import fetch, { AbortError } from "node-fetch";
 import type { InputBoxOptions } from "vscode";
 import { Uri, window } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
@@ -536,8 +534,8 @@ export class DatabaseFetcher {
     } catch (e) {
       disposeTimeout();
 
-      if (e instanceof AbortError) {
-        const thrownError = new AbortError("The request timed out.");
+      if (e instanceof DOMException && e.name === "AbortError") {
+        const thrownError = new Error("The request timed out.");
         thrownError.stack = e.stack;
         throw thrownError;
       }
@@ -556,16 +554,41 @@ export class DatabaseFetcher {
     const totalNumBytes = contentLength
       ? parseInt(contentLength, 10)
       : undefined;
-    reportStreamProgress(body, "Downloading database", totalNumBytes, progress);
 
-    body.on("data", onData);
+    const reportProgress = reportStreamProgress(
+      "Downloading database",
+      totalNumBytes,
+      progress,
+    );
 
     try {
-      await new Promise((resolve, reject) => {
-        body.pipe(archiveFileStream).on("finish", resolve).on("error", reject);
+      const reader = body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
 
-        // If an error occurs on the body, we also want to reject the promise (e.g. during a timeout error).
-        body.on("error", reject);
+        onData();
+        reportProgress(value?.length ?? 0);
+
+        await new Promise((resolve, reject) => {
+          archiveFileStream.write(value, (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(undefined);
+          });
+        });
+      }
+
+      await new Promise((resolve, reject) => {
+        archiveFileStream.close((err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(undefined);
+        });
       });
     } catch (e) {
       // Close and remove the file if an error occurs
@@ -573,8 +596,8 @@ export class DatabaseFetcher {
         void remove(archivePath);
       });
 
-      if (e instanceof AbortError) {
-        const thrownError = new AbortError("The download timed out.");
+      if (e instanceof DOMException && e.name === "AbortError") {
+        const thrownError = new Error("The download timed out.");
         thrownError.stack = e.stack;
         throw thrownError;
       }

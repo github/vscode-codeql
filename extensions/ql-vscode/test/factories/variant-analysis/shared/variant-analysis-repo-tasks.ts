@@ -5,7 +5,8 @@ import { createMockRepositoryWithMetadata } from "./repository";
 
 export function createMockVariantAnalysisRepositoryTask(
   data?: Partial<VariantAnalysisRepositoryTask>,
-): VariantAnalysisRepositoryTask {
+): VariantAnalysisRepositoryTask &
+  Required<Pick<VariantAnalysisRepositoryTask, "artifactUrl">> {
   return {
     repository: createMockRepositoryWithMetadata(),
     analysisStatus: VariantAnalysisRepoStatus.Pending,

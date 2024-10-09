@@ -2,6 +2,7 @@ import { join, resolve } from "path";
 import { pathExists } from "fs-extra";
 import type { SetupServer } from "msw/node";
 import { setupServer } from "msw/node";
+import type { UnhandledRequestStrategy } from "msw/lib/core/utils/request/onUnhandledRequest";
 
 import { DisposableObject } from "../disposable-object";
 
@@ -26,12 +27,14 @@ export class MockGitHubApiServer extends DisposableObject {
     this.recorder = this.push(new Recorder(this.server));
   }
 
-  public startServer(): void {
+  public startServer(
+    onUnhandledRequest: UnhandledRequestStrategy = "bypass",
+  ): void {
     if (this._isListening) {
       return;
     }
 
-    this.server.listen({ onUnhandledRequest: "bypass" });
+    this.server.listen({ onUnhandledRequest });
     this._isListening = true;
   }
 
@@ -54,8 +57,7 @@ export class MockGitHubApiServer extends DisposableObject {
     const scenarioPath = join(scenariosPath, scenarioName);
 
     const handlers = await createRequestHandlers(scenarioPath);
-    this.server.resetHandlers();
-    this.server.use(...handlers);
+    this.server.resetHandlers(...handlers);
   }
 
   public async saveScenario(

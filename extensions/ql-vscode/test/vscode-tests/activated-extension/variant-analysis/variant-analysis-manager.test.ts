@@ -12,8 +12,6 @@ import {
   remove,
 } from "fs-extra";
 import { join } from "path";
-import * as fetchModule from "node-fetch";
-import { Response } from "node-fetch";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
@@ -49,9 +47,34 @@ import {
 } from "../../../../src/variant-analysis/repo-states-store";
 import { permissiveFilterSortState } from "../../../unit-tests/variant-analysis-filter-sort.test";
 import { createMockVariantAnalysisConfig } from "../../../factories/config";
+import { setupServer } from "msw/node";
+import type { RequestHandler } from "msw";
+import { http } from "msw";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
+
+const server = setupServer();
+
+beforeAll(() =>
+  server.listen({
+    onUnhandledRequest: "error",
+  }),
+);
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+let requests: Request[] = [];
+
+beforeAll(() => {
+  server.events.on("request:start", ({ request }) => {
+    requests.push(request);
+  });
+});
+
+beforeEach(() => {
+  requests = [];
+});
 
 describe("Variant Analysis Manager", () => {
   let app: App;
@@ -175,9 +198,6 @@ describe("Variant Analysis Manager", () => {
     let getVariantAnalysisRepoStub: jest.SpiedFunction<
       typeof ghApiClient.getVariantAnalysisRepo
     >;
-    let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
-      typeof fetchModule.default
-    >;
 
     let repoStatesPath: string;
 
@@ -186,7 +206,6 @@ describe("Variant Analysis Manager", () => {
         ghApiClient,
         "getVariantAnalysisRepo",
       );
-      getVariantAnalysisRepoResultStub = jest.spyOn(fetchModule, "default");
 
       repoStatesPath = join(
         storagePath,
@@ -197,7 +216,8 @@ describe("Variant Analysis Manager", () => {
 
     describe("when the artifact_url is missing", () => {
       beforeEach(async () => {
-        const dummyRepoTask = createMockVariantAnalysisRepoTask();
+        const dummyRepoTask: VariantAnalysisRepoTask =
+          createMockVariantAnalysisRepoTask();
         delete dummyRepoTask.artifact_url;
 
         getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
@@ -209,25 +229,30 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis,
         );
 
-        expect(getVariantAnalysisRepoResultStub).not.toHaveBeenCalled();
+        expect(requests).toEqual([]);
       });
     });
 
     describe("when the artifact_url is present", () => {
-      let dummyRepoTask: VariantAnalysisRepoTask;
+      let dummyRepoTask: ReturnType<typeof createMockVariantAnalysisRepoTask>;
+      let handlers: RequestHandler[];
 
       beforeEach(async () => {
         dummyRepoTask = createMockVariantAnalysisRepoTask();
 
         getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
 
-        const sourceFilePath = join(
-          __dirname,
-          "data/variant-analysis-results.zip",
-        );
-        const fileContents = await readFile(sourceFilePath);
-        const response = new Response(fileContents);
-        getVariantAnalysisRepoResultStub.mockResolvedValue(response);
+        handlers = [
+          http.get(dummyRepoTask.artifact_url, async () => {
+            const sourceFilePath = join(
+              __dirname,
+              "data/variant-analysis-results.zip",
+            );
+            const fileContents = await readFile(sourceFilePath);
+            return new Response(fileContents);
+          }),
+        ];
+        server.resetHandlers(...handlers);
       });
 
       it("should fetch a repo task", async () => {
@@ -245,7 +270,7 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis,
         );
 
-        expect(getVariantAnalysisRepoResultStub).toHaveBeenCalled();
+        expect(requests).toHaveLength(1);
       });
 
       it("should skip the download if the repository has already been downloaded", async () => {
@@ -281,8 +306,10 @@ describe("Variant Analysis Manager", () => {
       });
 
       it("should not write the repo state when the download fails", async () => {
-        getVariantAnalysisRepoResultStub.mockRejectedValue(
-          new Error("Failed to download"),
+        server.resetHandlers(
+          http.get(dummyRepoTask.artifact_url, async () => {
+            return new Response(JSON.stringify({}), { status: 500 });
+          }),
         );
 
         await expect(
@@ -329,8 +356,10 @@ describe("Variant Analysis Manager", () => {
       });
 
       it("should have a failed repo state when the download fails", async () => {
-        getVariantAnalysisRepoResultStub.mockRejectedValueOnce(
-          new Error("Failed to download"),
+        server.resetHandlers(
+          http.get(dummyRepoTask.artifact_url, async () => {
+            return new Response(JSON.stringify({}), { status: 500 });
+          }),
         );
 
         await expect(
@@ -341,6 +370,8 @@ describe("Variant Analysis Manager", () => {
         ).rejects.toThrow();
 
         await expect(pathExists(repoStatesPath)).resolves.toBe(false);
+
+        server.resetHandlers(...handlers);
 
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[1],
