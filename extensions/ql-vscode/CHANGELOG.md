@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.16.0 - 10 October 2024
 
 - Increase the required version of VS Code to 1.90.0. [#3737](https://github.com/github/vscode-codeql/pull/3737)
 - Fix a bug where some variant analysis results failed to download. [#3750](https://github.com/github/vscode-codeql/pull/3750)
