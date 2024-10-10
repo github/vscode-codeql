@@ -3,7 +3,7 @@ import { spawn } from "child-process-promise";
 import type { ChildProcessWithoutNullStreams } from "child_process";
 import { spawn as spawnChildProcess } from "child_process";
 import { readFile } from "fs-extra";
-import { delimiter, dirname, join } from "path";
+import { delimiter, join } from "path";
 import type { Log } from "sarif";
 import { SemVer } from "semver";
 import type { Readable } from "stream";
@@ -91,15 +91,6 @@ export type QlpacksInfo = { [name: string]: string[] };
  */
 type LanguagesInfo = { [name: string]: string[] };
 
-/** Information about an ML model, as resolved by `codeql resolve ml-models`. */
-type MlModelInfo = {
-  checksum: string;
-  path: string;
-};
-
-/** The expected output of `codeql resolve ml-models`. */
-type MlModelsInfo = { models: MlModelInfo[] };
-
 /** Information about a data extension predicate, as resolved by `codeql resolve extensions`. */
 type DataExtensionResult = {
   predicate: string;
@@ -109,7 +100,6 @@ type DataExtensionResult = {
 
 /** The expected output of `codeql resolve extensions`. */
 type ResolveExtensionsResult = {
-  models: MlModelInfo[];
   data: {
     [path: string]: DataExtensionResult[];
   };
@@ -1094,24 +1084,6 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "metadata"],
       [queryPath],
       "Resolving query metadata",
-    );
-  }
-
-  /** Resolves the ML models that should be available when evaluating a query. */
-  async resolveMlModels(
-    additionalPacks: string[],
-    queryPath: string,
-  ): Promise<MlModelsInfo> {
-    const args =
-      // use the dirname of the path so that we can handle query libraries
-      [...this.getAdditionalPacksArg(additionalPacks), dirname(queryPath)];
-    return await this.runJsonCodeQlCliCommand<MlModelsInfo>(
-      ["resolve", "ml-models"],
-      args,
-      "Resolving ML models",
-      {
-        addFormat: false,
-      },
     );
   }
 
