@@ -144,6 +144,25 @@ describeWithCodeQL()("Debugger", () => {
     });
   });
 
+  it("should run a quick evaluation with a bigint-valued result column", async () => {
+    await withDebugController(appCommands, async (controller) => {
+      await selectForQuickEval(quickEvalLibPath, 20, 23, 20, 37);
+
+      await controller.startDebuggingSelection({
+        query: quickEvalQueryPath, // The query context. This query extends the abstract class.
+      });
+      await controller.expectLaunched();
+      const result = await controller.expectSucceeded();
+      expect(result.started.quickEvalContext).toBeDefined();
+      expect(result.started.quickEvalContext!.quickEvalText).toBe(
+        "getBigIntValue",
+      );
+      expect(result.results.queryTarget.quickEvalPosition).toBeDefined();
+      expect(await getResultCount(result.results.outputDir, cli)).toBe(8);
+      await controller.expectStopped();
+    });
+  });
+
   it("should save dirty documents before launching a debug session", async () => {
     await withDebugController(appCommands, async (controller) => {
       const editor = await selectForQuickEval(quickEvalLibPath, 4, 15, 4, 32);

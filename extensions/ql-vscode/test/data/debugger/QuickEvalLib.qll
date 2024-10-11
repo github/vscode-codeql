@@ -17,4 +17,8 @@ abstract class InterestingNumber extends TNumber
     final int getValue() {
         result = value
     }
+
+    QlBuiltins::BigInt getBigIntValue() {
+        result = value.toBigInt()
+    }
 }
