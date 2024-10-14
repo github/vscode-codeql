@@ -1963,7 +1963,7 @@
     "generate": "npm-run-all -p generate:*",
     "generate:schemas": "vite-node scripts/generate-schemas.ts",
     "generate:chromium-version": "vite-node scripts/generate-chromium-version.ts",
-    "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
+    "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" -not -path \"./.vscode-test/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
     "postinstall": "patch-package",
     "prepare": "cd ../.. && husky"
   },
