@@ -13,6 +13,7 @@ import type {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "../../../../src/common/logging";
+import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 jest.mock("os", () => {
   const original = jest.requireActual("os");
@@ -108,6 +109,7 @@ describe("Launcher path", () => {
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       {} as any,
+      createMockLogger(),
     );
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
@@ -126,6 +128,7 @@ describe("Launcher path", () => {
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       {} as any,
+      createMockLogger(),
     );
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
@@ -141,6 +144,7 @@ describe("Launcher path", () => {
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       {} as any,
+      createMockLogger(),
     );
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
