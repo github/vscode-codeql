@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Support result columns of type `QlBuiltins::BigInt` in quick evaluations. [#3647](https://github.com/github/vscode-codeql/pull/3647)
+
 ## 1.16.0 - 10 October 2024
 
 - Increase the required version of VS Code to 1.90.0. [#3737](https://github.com/github/vscode-codeql/pull/3737)
