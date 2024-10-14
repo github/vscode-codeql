@@ -11,6 +11,7 @@ export namespace BqrsColumnKindCode {
   export const BOOLEAN = "b";
   export const DATE = "d";
   export const ENTITY = "e";
+  export const BIGINT = "z";
 }
 
 export type BqrsColumnKind =
@@ -19,7 +20,8 @@ export type BqrsColumnKind =
   | typeof BqrsColumnKindCode.STRING
   | typeof BqrsColumnKindCode.BOOLEAN
   | typeof BqrsColumnKindCode.DATE
-  | typeof BqrsColumnKindCode.ENTITY;
+  | typeof BqrsColumnKindCode.ENTITY
+  | typeof BqrsColumnKindCode.BIGINT;
 
 export interface BqrsSchemaColumn {
   name?: string;
@@ -79,7 +81,8 @@ export type BqrsKind =
   | "Integer"
   | "Boolean"
   | "Date"
-  | "Entity";
+  | "Entity"
+  | "BigInt";
 
 interface BqrsColumn {
   name?: string;

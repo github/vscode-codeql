@@ -76,6 +76,8 @@ function mapColumnKind(kind: BqrsColumnKind): ColumnKind {
       return ColumnKind.Date;
     case BqrsColumnKindCode.ENTITY:
       return ColumnKind.Entity;
+    case BqrsColumnKindCode.BIGINT:
+      return ColumnKind.BigInt;
     default:
       assertNever(kind);
   }
