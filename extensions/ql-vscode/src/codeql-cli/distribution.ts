@@ -1,5 +1,11 @@
 import type { WriteStream } from "fs";
-import { createWriteStream, mkdtemp, pathExists, remove } from "fs-extra";
+import {
+  createWriteStream,
+  mkdtemp,
+  pathExists,
+  remove,
+  writeJson,
+} from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
 import { Range, satisfies } from "semver";
@@ -28,6 +34,7 @@ import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 import type { Release } from "./distribution/release";
 import { ReleasesApiConsumer } from "./distribution/releases-api-consumer";
 import { createTimeoutSignal } from "../common/fetch-stream";
+import { withDistributionUpdateLock } from "./lock";
 
 /**
  * distribution.ts
@@ -350,9 +357,24 @@ class ExtensionSpecificDistributionManager {
     release: Release,
     progressCallback?: ProgressCallback,
   ): Promise<void> {
-    await this.downloadDistribution(release, progressCallback);
-    // Store the installed release within the global extension state.
-    await this.storeInstalledRelease(release);
+    const distributionStatePath = join(
+      this.extensionContext.globalStorageUri.fsPath,
+      ExtensionSpecificDistributionManager._distributionStateFilename,
+    );
+    if (!(await pathExists(distributionStatePath))) {
+      // This may result in a race condition, but when this happens both processes should write the same file.
+      await writeJson(distributionStatePath, {});
+    }
+
+    await withDistributionUpdateLock(
+      // .lock will be appended to this filename
+      distributionStatePath,
+      async () => {
+        await this.downloadDistribution(release, progressCallback);
+        // Store the installed release within the global extension state.
+        await this.storeInstalledRelease(release);
+      },
+    );
   }
 
   private async downloadDistribution(
@@ -615,6 +637,7 @@ class ExtensionSpecificDistributionManager {
     "distributionFolderIndex";
   private static readonly _installedReleaseStateKey = "distributionRelease";
   private static readonly _codeQlExtractedFolderName = "codeql";
+  private static readonly _distributionStateFilename = "distribution.json";
 }
 
 /*
