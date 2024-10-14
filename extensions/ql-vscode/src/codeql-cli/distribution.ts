@@ -326,11 +326,11 @@ class ExtensionSpecificDistributionManager {
 
         this.distributionState = {
           folderIndex: this.extensionContext.globalState.get(
-            ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey,
+            "distributionFolderIndex",
             0,
           ),
           release: (this.extensionContext.globalState.get(
-            ExtensionSpecificDistributionManager._installedReleaseStateKey,
+            "distributionRelease",
           ) ?? null) as Release | null,
         };
 
@@ -710,9 +710,6 @@ class ExtensionSpecificDistributionManager {
   }
 
   private static readonly _currentDistributionFolderBaseName = "distribution";
-  private static readonly _currentDistributionFolderIndexStateKey =
-    "distributionFolderIndex";
-  private static readonly _installedReleaseStateKey = "distributionRelease";
   private static readonly _codeQlExtractedFolderName = "codeql";
   private static readonly _distributionStateFilename = "distribution.json";
 }
