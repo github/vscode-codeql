@@ -2,10 +2,10 @@ import type { WriteStream } from "fs";
 import {
   createWriteStream,
   mkdtemp,
+  outputJson,
   pathExists,
   readJson,
   remove,
-  writeJson,
 } from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
@@ -339,7 +339,7 @@ class ExtensionSpecificDistributionManager {
         };
 
         // This may result in a race condition, but when this happens both processes should write the same file.
-        await writeJson(distributionStatePath, this.distributionState);
+        await outputJson(distributionStatePath, this.distributionState);
       } else {
         void showAndLogExceptionWithTelemetry(
           this.logger,
@@ -714,7 +714,7 @@ class ExtensionSpecificDistributionManager {
     this.distributionState = newState;
 
     const distributionStatePath = this.getDistributionStatePath();
-    await writeJson(distributionStatePath, newState);
+    await outputJson(distributionStatePath, newState);
   }
 
   private static readonly _currentDistributionFolderBaseName = "distribution";
