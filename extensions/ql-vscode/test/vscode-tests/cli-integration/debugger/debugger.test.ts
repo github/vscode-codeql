@@ -49,6 +49,9 @@ describeWithCodeQL()("Debugger", () => {
   const quickEvalQueryPath = getDataFolderFilePath(
     "debugger/QuickEvalQuery.ql",
   );
+  const quickEvalBigIntQueryPath = getDataFolderFilePath(
+    "debugger/QuickEvalBigIntQuery.ql",
+  );
   const quickEvalLibPath = getDataFolderFilePath("debugger/QuickEvalLib.qll");
 
   beforeEach(async () => {
@@ -146,11 +149,16 @@ describeWithCodeQL()("Debugger", () => {
 
   it("should run a quick evaluation with a bigint-valued result column", async () => {
     await withDebugController(appCommands, async (controller) => {
-      await selectForQuickEval(quickEvalLibPath, 20, 23, 20, 37);
+      const semver = await cli.getVersion();
+      if (semver.compare("2.18.4") < 0) {
+        // Skip this test if the CLI version is too old to support BigInt
+        return;
+      }
 
-      await controller.startDebuggingSelection({
-        query: quickEvalQueryPath, // The query context. This query extends the abstract class.
-      });
+      await selectForQuickEval(quickEvalBigIntQueryPath, 4, 23, 4, 37);
+
+      // Don't specify a query path, so we'll default to the active document ("QuickEvalBigIntQuery.ql")
+      await controller.startDebuggingSelection({});
       await controller.expectLaunched();
       const result = await controller.expectSucceeded();
       expect(result.started.quickEvalContext).toBeDefined();
