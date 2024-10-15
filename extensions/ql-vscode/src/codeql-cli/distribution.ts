@@ -317,6 +317,10 @@ class ExtensionSpecificDistributionManager {
   }
 
   public async initialize() {
+    await this.ensureDistributionStateExists();
+  }
+
+  private async ensureDistributionStateExists() {
     const distributionStatePath = this.getDistributionStatePath();
     try {
       this.distributionState = await readJson(distributionStatePath);
@@ -414,6 +418,10 @@ class ExtensionSpecificDistributionManager {
     release: Release,
     progressCallback?: ProgressCallback,
   ): Promise<void> {
+    if (!this.distributionState) {
+      await this.ensureDistributionStateExists();
+    }
+
     const distributionStatePath = this.getDistributionStatePath();
 
     await withDistributionUpdateLock(
