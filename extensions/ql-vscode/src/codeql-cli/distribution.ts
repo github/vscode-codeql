@@ -67,7 +67,7 @@ const NIGHTLY_DISTRIBUTION_REPOSITORY_NWO = "dsp-testing/codeql-cli-nightlies";
  */
 export const DEFAULT_DISTRIBUTION_VERSION_RANGE: Range = new Range("2.x");
 
-interface DistributionState {
+export interface DistributionState {
   folderIndex: number;
   release: Release | null;
 }
@@ -329,10 +329,11 @@ class ExtensionSpecificDistributionManager {
         // If the file doesn't exist, that just means we need to create it
 
         this.distributionState = {
-          folderIndex: this.extensionContext.globalState.get(
-            "distributionFolderIndex",
-            0,
-          ),
+          folderIndex:
+            this.extensionContext.globalState.get(
+              "distributionFolderIndex",
+              0,
+            ) ?? 0,
           release: (this.extensionContext.globalState.get(
             "distributionRelease",
           ) ?? null) as Release | null,
@@ -647,7 +648,7 @@ class ExtensionSpecificDistributionManager {
     await this.updateState((oldState) => {
       return {
         ...oldState,
-        folderIndex: oldState.folderIndex + 1,
+        folderIndex: (oldState.folderIndex ?? 0) + 1,
       };
     });
   }
