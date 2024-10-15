@@ -66,18 +66,19 @@ describe("files", () => {
 
     it("should scan a directory", async () => {
       const file1 = join(dataDir, "compute-default-strings.ql");
-      const file2 = join(dataDir, "debugger", "QuickEvalQuery.ql");
-      const file3 = join(dataDir, "debugger", "simple-query.ql");
-      const file4 = join(dataDir, "multiple-result-sets.ql");
-      const file5 = join(dataDir, "query.ql");
+      const file2 = join(dataDir, "debugger", "QuickEvalBigIntQuery.ql");
+      const file3 = join(dataDir, "debugger", "QuickEvalQuery.ql");
+      const file4 = join(dataDir, "debugger", "simple-query.ql");
+      const file5 = join(dataDir, "multiple-result-sets.ql");
+      const file6 = join(dataDir, "query.ql");
 
       const vaDir = join(dataDir, "variant-analysis-query-packs");
-      const file6 = join(vaDir, "workspace1", "dir1", "query1.ql");
-      const file7 = join(vaDir, "workspace1", "pack1", "query1.ql");
-      const file8 = join(vaDir, "workspace1", "pack1", "query2.ql");
-      const file9 = join(vaDir, "workspace1", "pack2", "query1.ql");
-      const file10 = join(vaDir, "workspace1", "query1.ql");
-      const file11 = join(vaDir, "workspace2", "query1.ql");
+      const file7 = join(vaDir, "workspace1", "dir1", "query1.ql");
+      const file8 = join(vaDir, "workspace1", "pack1", "query1.ql");
+      const file9 = join(vaDir, "workspace1", "pack1", "query2.ql");
+      const file10 = join(vaDir, "workspace1", "pack2", "query1.ql");
+      const file11 = join(vaDir, "workspace1", "query1.ql");
+      const file12 = join(vaDir, "workspace2", "query1.ql");
 
       const result = await gatherQlFiles([dataDir]);
       expect(result.sort()).toEqual([
@@ -93,6 +94,7 @@ describe("files", () => {
           file9,
           file10,
           file11,
+          file12,
         ],
         true,
       ]);
@@ -112,18 +114,19 @@ describe("files", () => {
 
     it("should avoid duplicates", async () => {
       const file1 = join(dataDir, "compute-default-strings.ql");
-      const file2 = join(dataDir, "debugger", "QuickEvalQuery.ql");
-      const file3 = join(dataDir, "debugger", "simple-query.ql");
-      const file4 = join(dataDir, "multiple-result-sets.ql");
-      const file5 = join(dataDir, "query.ql");
+      const file2 = join(dataDir, "debugger", "QuickEvalBigIntQuery.ql");
+      const file3 = join(dataDir, "debugger", "QuickEvalQuery.ql");
+      const file4 = join(dataDir, "debugger", "simple-query.ql");
+      const file5 = join(dataDir, "multiple-result-sets.ql");
+      const file6 = join(dataDir, "query.ql");
 
       const vaDir = join(dataDir, "variant-analysis-query-packs");
-      const file6 = join(vaDir, "workspace1", "dir1", "query1.ql");
-      const file7 = join(vaDir, "workspace1", "pack1", "query1.ql");
-      const file8 = join(vaDir, "workspace1", "pack1", "query2.ql");
-      const file9 = join(vaDir, "workspace1", "pack2", "query1.ql");
-      const file10 = join(vaDir, "workspace1", "query1.ql");
-      const file11 = join(vaDir, "workspace2", "query1.ql");
+      const file7 = join(vaDir, "workspace1", "dir1", "query1.ql");
+      const file8 = join(vaDir, "workspace1", "pack1", "query1.ql");
+      const file9 = join(vaDir, "workspace1", "pack1", "query2.ql");
+      const file10 = join(vaDir, "workspace1", "pack2", "query1.ql");
+      const file11 = join(vaDir, "workspace1", "query1.ql");
+      const file12 = join(vaDir, "workspace2", "query1.ql");
 
       const result = await gatherQlFiles([file1, dataDir, file3, file4, file5]);
       result[0].sort();
@@ -140,6 +143,7 @@ describe("files", () => {
           file9,
           file10,
           file11,
+          file12,
         ],
         true,
       ]);
