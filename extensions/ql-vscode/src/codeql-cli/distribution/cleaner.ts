@@ -83,6 +83,15 @@ export class ExtensionManagedDistributionCleaner {
       return;
     }
 
+    // Shuffle the array so that multiple VS Code processes don't all try to clean up the same directory at the same time
+    for (let i = cleanableDirectories.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cleanableDirectories[i], cleanableDirectories[j]] = [
+        cleanableDirectories[j],
+        cleanableDirectories[i],
+      ];
+    }
+
     void this.logger.log(
       `Cleaning up ${cleanableDirectories.length} old versions of the CLI.`,
     );
