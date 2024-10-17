@@ -88,7 +88,7 @@ export class ExtensionManagedDistributionCleaner {
     );
 
     for (const cleanableDirectory of cleanableDirectories) {
-      // Wait 60 seconds between each cleanup to avoid overloading the system (even though the remove call should be async)
+      // Wait 10 seconds between each cleanup to avoid overloading the system (even though the remove call should be async)
       await sleep(10_000);
 
       const path = join(
