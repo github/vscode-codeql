@@ -362,6 +362,7 @@ export async function activate(
     distributionConfigListener,
     codeQlVersionRange,
     ctx,
+    app.logger,
   );
 
   registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
@@ -1122,6 +1123,8 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Reading query history");
   await qhm.readQueryHistory();
+
+  distributionManager.startCleanup();
 
   void extLogger.log("Successfully finished extension initialization.");
 

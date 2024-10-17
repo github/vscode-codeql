@@ -19,6 +19,7 @@ import {
   InvocationRateLimiter,
   InvocationRateLimiterResultKind,
 } from "../common/invocation-rate-limiter";
+import type { NotificationLogger } from "../common/logging";
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
@@ -28,6 +29,7 @@ import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 import type { Release } from "./distribution/release";
 import { ReleasesApiConsumer } from "./distribution/releases-api-consumer";
 import { createTimeoutSignal } from "../common/fetch-stream";
+import { ExtensionManagedDistributionCleaner } from "./distribution/cleaner";
 
 /**
  * distribution.ts
@@ -64,6 +66,7 @@ export class DistributionManager implements DistributionProvider {
     public readonly config: DistributionConfig,
     private readonly versionRange: Range,
     extensionContext: ExtensionContext,
+    logger: NotificationLogger,
   ) {
     this._onDidChangeDistribution = config.onDidChangeConfiguration;
     this.extensionSpecificDistributionManager =
@@ -78,6 +81,12 @@ export class DistributionManager implements DistributionProvider {
       () =>
         this.extensionSpecificDistributionManager.checkForUpdatesToDistribution(),
     );
+    this.extensionManagedDistributionCleaner =
+      new ExtensionManagedDistributionCleaner(
+        extensionContext,
+        logger,
+        this.extensionSpecificDistributionManager,
+      );
   }
 
   /**
@@ -255,6 +264,10 @@ export class DistributionManager implements DistributionProvider {
     );
   }
 
+  public startCleanup() {
+    this.extensionManagedDistributionCleaner.start();
+  }
+
   public get onDidChangeDistribution(): Event<void> | undefined {
     return this._onDidChangeDistribution;
   }
@@ -276,6 +289,7 @@ export class DistributionManager implements DistributionProvider {
 
   private readonly extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
   private readonly updateCheckRateLimiter: InvocationRateLimiter<DistributionUpdateCheckResult>;
+  private readonly extensionManagedDistributionCleaner: ExtensionManagedDistributionCleaner;
   private readonly _onDidChangeDistribution: Event<void> | undefined;
 }
 
@@ -608,6 +622,19 @@ class ExtensionSpecificDistributionManager {
       ExtensionSpecificDistributionManager._installedReleaseStateKey,
       release,
     );
+  }
+
+  public get folderIndex() {
+    return (
+      this.extensionContext.globalState.get(
+        ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey,
+        0,
+      ) ?? 0
+    );
+  }
+
+  public get distributionFolderPrefix() {
+    return ExtensionSpecificDistributionManager._currentDistributionFolderBaseName;
   }
 
   private static readonly _currentDistributionFolderBaseName = "distribution";
