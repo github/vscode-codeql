@@ -1,5 +1,5 @@
 import type { ExtensionContext } from "vscode";
-import { getDirectoryNamesInsidePath } from "../../common/files";
+import { getDirectoryNamesInsidePath, isIOError } from "../../common/files";
 import { sleep } from "../../common/time";
 import type { BaseLogger } from "../../common/logging";
 import { join } from "path";
@@ -109,6 +109,11 @@ export class ExtensionManagedDistributionCleaner {
       try {
         await remove(path);
       } catch (e) {
+        if (isIOError(e) && e.code === "ENOENT") {
+          // If the directory doesn't exist, that's fine
+          continue;
+        }
+
         void this.logger.log(
           `Tried to clean up an old version of the CLI at ${path} but encountered an error: ${getErrorMessage(e)}.`,
         );
