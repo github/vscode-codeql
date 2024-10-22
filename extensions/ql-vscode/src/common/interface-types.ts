@@ -360,6 +360,9 @@ interface ChangeCompareMessage {
 export type ToCompareViewMessage =
   | SetComparisonQueryInfoMessage
   | SetComparisonsMessage
+  | StreamingComparisonSetupMessage
+  | StreamingComparisonAddResultsMessage
+  | StreamingComparisonCompleteMessage
   | SetUserSettingsMsg;
 
 /**
@@ -418,6 +421,24 @@ export type InterpretedQueryCompareResult = {
   from: Result[];
   to: Result[];
 };
+
+export interface StreamingComparisonSetupMessage {
+  readonly t: "streamingComparisonSetup";
+  readonly currentResultSetName: string;
+  readonly message: string | undefined;
+  // The from and to fields will only contain a chunk of the results
+  readonly result: QueryCompareResult;
+}
+
+interface StreamingComparisonAddResultsMessage {
+  readonly t: "streamingComparisonAddResults";
+  // The from and to fields will only contain a chunk of the results
+  readonly result: QueryCompareResult;
+}
+
+interface StreamingComparisonCompleteMessage {
+  readonly t: "streamingComparisonComplete";
+}
 
 /**
  * Extract the name of the default result. Prefer returning

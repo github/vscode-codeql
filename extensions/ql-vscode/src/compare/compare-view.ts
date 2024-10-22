@@ -183,13 +183,92 @@ export class CompareView extends AbstractWebview<
         message = getErrorMessage(e);
       }
 
+      await this.streamResults(result, currentResultSetDisplayName, message);
+    }
+  }
+
+  private async streamResults(
+    result: QueryCompareResult | undefined,
+    currentResultSetName: string,
+    message: string | undefined,
+  ) {
+    // Since there is a string limit of 1GB in Node.js, the comparison is send as a JSON.stringified string to the webview
+    // and some comparisons may be larger than that, we sometimes need to stream results. This uses a heuristic of 2,000 results
+    // to determine if we should stream results.
+
+    if (!this.shouldStreamResults(result)) {
       await this.postMessage({
         t: "setComparisons",
         result,
-        currentResultSetName: currentResultSetDisplayName,
+        currentResultSetName,
         message,
       });
+      return;
     }
+
+    // Streaming itself is implemented like this:
+    // - 1 setup message which contains the first 1,000 results
+    // - n "add results" messages which contain 1,000 results each
+    // - 1 complete message which just tells the webview that we're done
+
+    await this.postMessage({
+      t: "streamingComparisonSetup",
+      result: this.chunkResults(result, 0, 1000),
+      currentResultSetName,
+      message,
+    });
+
+    const { from, to } = result;
+
+    const maxResults = Math.max(from.length, to.length);
+    for (let i = 1000; i < maxResults; i += 1000) {
+      const chunk = this.chunkResults(result, i, i + 1000);
+
+      await this.postMessage({
+        t: "streamingComparisonAddResults",
+        result: chunk,
+      });
+    }
+
+    await this.postMessage({
+      t: "streamingComparisonComplete",
+    });
+  }
+
+  private shouldStreamResults(
+    result: QueryCompareResult | undefined,
+  ): result is QueryCompareResult {
+    if (result === undefined) {
+      return false;
+    }
+
+    // We probably won't run into limits if we have less than 2,000 total results
+    const totalResults = result.from.length + result.to.length;
+    return totalResults > 2000;
+  }
+
+  private chunkResults(
+    result: QueryCompareResult,
+    start: number,
+    end: number,
+  ): QueryCompareResult {
+    if (result.kind === "raw") {
+      return {
+        ...result,
+        from: result.from.slice(start, end),
+        to: result.to.slice(start, end),
+      };
+    }
+
+    if (result.kind === "interpreted") {
+      return {
+        ...result,
+        from: result.from.slice(start, end),
+        to: result.to.slice(start, end),
+      };
+    }
+
+    assertNever(result);
   }
 
   protected getPanelConfig(): WebviewPanelConfig {
