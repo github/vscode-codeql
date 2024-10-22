@@ -4,6 +4,7 @@
 
 - Support result columns of type `QlBuiltins::BigInt` in quick evaluations. [#3647](https://github.com/github/vscode-codeql/pull/3647)
 - Fix a bug where the CodeQL CLI would be re-downloaded if you switched to a different filesystem (for example Codespaces or a remote SSH host). [#3762](https://github.com/github/vscode-codeql/pull/3762)
+- Clean up old extension-managed CodeQL CLI distributions. [#3763](https://github.com/github/vscode-codeql/pull/3763)
 
 ## 1.16.0 - 10 October 2024
 
