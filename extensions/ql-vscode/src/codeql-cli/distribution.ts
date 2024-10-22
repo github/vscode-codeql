@@ -42,6 +42,7 @@ import { asError, getErrorMessage } from "../common/helpers-pure";
 import { isIOError } from "../common/files";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
+import { ExtensionManagedDistributionCleaner } from "./distribution/cleaner";
 
 /**
  * distribution.ts
@@ -99,6 +100,12 @@ export class DistributionManager implements DistributionProvider {
       () =>
         this.extensionSpecificDistributionManager.checkForUpdatesToDistribution(),
     );
+    this.extensionManagedDistributionCleaner =
+      new ExtensionManagedDistributionCleaner(
+        extensionContext,
+        logger,
+        this.extensionSpecificDistributionManager,
+      );
   }
 
   public async initialize(): Promise<void> {
@@ -280,6 +287,10 @@ export class DistributionManager implements DistributionProvider {
     );
   }
 
+  public startCleanup() {
+    this.extensionManagedDistributionCleaner.start();
+  }
+
   public get onDidChangeDistribution(): Event<void> | undefined {
     return this._onDidChangeDistribution;
   }
@@ -301,6 +312,7 @@ export class DistributionManager implements DistributionProvider {
 
   private readonly extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
   private readonly updateCheckRateLimiter: InvocationRateLimiter<DistributionUpdateCheckResult>;
+  private readonly extensionManagedDistributionCleaner: ExtensionManagedDistributionCleaner;
   private readonly _onDidChangeDistribution: Event<void> | undefined;
 }
 
@@ -716,6 +728,16 @@ class ExtensionSpecificDistributionManager {
 
     const distributionStatePath = this.getDistributionStatePath();
     await outputJson(distributionStatePath, newState);
+  }
+
+  public get folderIndex() {
+    const distributionState = this.getDistributionState();
+
+    return distributionState.folderIndex;
+  }
+
+  public get distributionFolderPrefix() {
+    return ExtensionSpecificDistributionManager._currentDistributionFolderBaseName;
   }
 
   private static readonly _currentDistributionFolderBaseName = "distribution";
