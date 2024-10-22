@@ -362,7 +362,9 @@ export async function activate(
     distributionConfigListener,
     codeQlVersionRange,
     ctx,
+    app.logger,
   );
+  await distributionManager.initialize();
 
   registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
     void showAndLogErrorMessage(
