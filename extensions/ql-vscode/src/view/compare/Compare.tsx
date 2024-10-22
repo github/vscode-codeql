@@ -74,6 +74,13 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
               break;
             }
 
+            if (prev.id !== msg.id) {
+              console.warn(
+                'Received "streamingComparisonAddResults" with different id, ignoring',
+              );
+              break;
+            }
+
             let result: QueryCompareResult;
             switch (prev.result.kind) {
               case "raw":
@@ -121,6 +128,14 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
               setComparison(null);
               break;
             }
+
+            if (streamingComparisonRef.current.id !== msg.id) {
+              console.warn(
+                'Received "streamingComparisonComplete" with different id, ignoring',
+              );
+              break;
+            }
+
             setComparison({
               ...streamingComparisonRef.current,
               t: "setComparisons",

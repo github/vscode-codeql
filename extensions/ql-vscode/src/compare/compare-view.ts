@@ -34,6 +34,7 @@ import {
 } from "./result-set-names";
 import { compareInterpretedResults } from "./interpreted-results";
 import { isCanary } from "../config";
+import { nanoid } from "nanoid";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -206,6 +207,8 @@ export class CompareView extends AbstractWebview<
       return;
     }
 
+    const id = nanoid();
+
     // Streaming itself is implemented like this:
     // - 1 setup message which contains the first 1,000 results
     // - n "add results" messages which contain 1,000 results each
@@ -213,6 +216,7 @@ export class CompareView extends AbstractWebview<
 
     await this.postMessage({
       t: "streamingComparisonSetup",
+      id,
       result: this.chunkResults(result, 0, 1000),
       currentResultSetName,
       message,
@@ -226,12 +230,14 @@ export class CompareView extends AbstractWebview<
 
       await this.postMessage({
         t: "streamingComparisonAddResults",
+        id,
         result: chunk,
       });
     }
 
     await this.postMessage({
       t: "streamingComparisonComplete",
+      id,
     });
   }
 
