@@ -41,6 +41,7 @@ async function extractSourceMap() {
   const releaseAssetsDirectory = resolve(
     __dirname,
     "..",
+    "artifacts",
     "release-assets",
     versionNumber,
   );
@@ -64,7 +65,9 @@ async function extractSourceMap() {
     ]);
 
     const sourcemapAsset = release.assets.find(
-      (asset) => asset.name === `vscode-codeql-sourcemaps-${versionNumber}.zip`,
+      (asset) =>
+        asset.label === `vscode-codeql-sourcemaps-${versionNumber}.zip` ||
+        asset.name === "vscode-codeql-sourcemaps.zip",
     );
 
     if (sourcemapAsset) {
@@ -213,9 +216,7 @@ extractSourceMap().catch((e: unknown) => {
 function runGh(args: readonly string[]): string {
   const gh = spawnSync("gh", args);
   if (gh.status !== 0) {
-    throw new Error(
-      `Failed to get the source map for ${versionNumber}: ${gh.stderr}`,
-    );
+    throw new Error(`Failed to run gh ${args.join(" ")}: ${gh.stderr}`);
   }
   return gh.stdout.toString("utf-8");
 }
@@ -227,6 +228,7 @@ function runGhJSON<T>(args: readonly string[]): T {
 type ReleaseAsset = {
   id: string;
   name: string;
+  label: string;
 };
 
 type Release = {
