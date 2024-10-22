@@ -364,6 +364,7 @@ export async function activate(
     ctx,
     app.logger,
   );
+  await distributionManager.initialize();
 
   registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
     void showAndLogErrorMessage(

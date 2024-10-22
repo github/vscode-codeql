@@ -1,5 +1,12 @@
 import type { WriteStream } from "fs";
-import { createWriteStream, mkdtemp, pathExists, remove } from "fs-extra";
+import {
+  createWriteStream,
+  mkdtemp,
+  outputJson,
+  pathExists,
+  readJson,
+  remove,
+} from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
 import { Range, satisfies } from "semver";
@@ -21,6 +28,7 @@ import {
 } from "../common/invocation-rate-limiter";
 import type { NotificationLogger } from "../common/logging";
 import {
+  showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
@@ -29,6 +37,11 @@ import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 import type { Release } from "./distribution/release";
 import { ReleasesApiConsumer } from "./distribution/releases-api-consumer";
 import { createTimeoutSignal } from "../common/fetch-stream";
+import { withDistributionUpdateLock } from "./lock";
+import { asError, getErrorMessage } from "../common/helpers-pure";
+import { isIOError } from "../common/files";
+import { telemetryListener } from "../common/vscode/telemetry";
+import { redactableError } from "../common/errors";
 import { ExtensionManagedDistributionCleaner } from "./distribution/cleaner";
 
 /**
@@ -55,6 +68,11 @@ const NIGHTLY_DISTRIBUTION_REPOSITORY_NWO = "dsp-testing/codeql-cli-nightlies";
  */
 export const DEFAULT_DISTRIBUTION_VERSION_RANGE: Range = new Range("2.x");
 
+export interface DistributionState {
+  folderIndex: number;
+  release: Release | null;
+}
+
 export interface DistributionProvider {
   getCodeQlPathWithoutVersionCheck(): Promise<string | undefined>;
   onDidChangeDistribution?: Event<void>;
@@ -74,6 +92,7 @@ export class DistributionManager implements DistributionProvider {
         config,
         versionRange,
         extensionContext,
+        logger,
       );
     this.updateCheckRateLimiter = new InvocationRateLimiter(
       extensionContext.globalState,
@@ -87,6 +106,10 @@ export class DistributionManager implements DistributionProvider {
         logger,
         this.extensionSpecificDistributionManager,
       );
+  }
+
+  public async initialize(): Promise<void> {
+    await this.extensionSpecificDistributionManager.initialize();
   }
 
   /**
@@ -294,12 +317,56 @@ export class DistributionManager implements DistributionProvider {
 }
 
 class ExtensionSpecificDistributionManager {
+  private distributionState: DistributionState | undefined;
+
   constructor(
     private readonly config: DistributionConfig,
     private readonly versionRange: Range,
     private readonly extensionContext: ExtensionContext,
+    private readonly logger: NotificationLogger,
   ) {
     /**/
+  }
+
+  public async initialize() {
+    await this.ensureDistributionStateExists();
+  }
+
+  private async ensureDistributionStateExists() {
+    const distributionStatePath = this.getDistributionStatePath();
+    try {
+      this.distributionState = await readJson(distributionStatePath);
+    } catch (e: unknown) {
+      if (isIOError(e) && e.code === "ENOENT") {
+        // If the file doesn't exist, that just means we need to create it
+
+        this.distributionState = {
+          folderIndex:
+            this.extensionContext.globalState.get(
+              "distributionFolderIndex",
+              0,
+            ) ?? 0,
+          release: (this.extensionContext.globalState.get(
+            "distributionRelease",
+          ) ?? null) as Release | null,
+        };
+
+        // This may result in a race condition, but when this happens both processes should write the same file.
+        await outputJson(distributionStatePath, this.distributionState);
+      } else {
+        void showAndLogExceptionWithTelemetry(
+          this.logger,
+          telemetryListener,
+          redactableError(
+            asError(e),
+          )`Failed to read distribution state from ${distributionStatePath}: ${getErrorMessage(e)}`,
+        );
+        this.distributionState = {
+          folderIndex: 0,
+          release: null,
+        };
+      }
+    }
   }
 
   public async getCodeQlPathWithoutVersionCheck(): Promise<string | undefined> {
@@ -364,9 +431,21 @@ class ExtensionSpecificDistributionManager {
     release: Release,
     progressCallback?: ProgressCallback,
   ): Promise<void> {
-    await this.downloadDistribution(release, progressCallback);
-    // Store the installed release within the global extension state.
-    await this.storeInstalledRelease(release);
+    if (!this.distributionState) {
+      await this.ensureDistributionStateExists();
+    }
+
+    const distributionStatePath = this.getDistributionStatePath();
+
+    await withDistributionUpdateLock(
+      // .lock will be appended to this filename
+      distributionStatePath,
+      async () => {
+        await this.downloadDistribution(release, progressCallback);
+        // Store the installed release within the global extension state.
+        await this.storeInstalledRelease(release);
+      },
+    );
   }
 
   private async downloadDistribution(
@@ -578,23 +657,19 @@ class ExtensionSpecificDistributionManager {
   }
 
   private async bumpDistributionFolderIndex(): Promise<void> {
-    const index = this.extensionContext.globalState.get(
-      ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey,
-      0,
-    );
-    await this.extensionContext.globalState.update(
-      ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey,
-      index + 1,
-    );
+    await this.updateState((oldState) => {
+      return {
+        ...oldState,
+        folderIndex: (oldState.folderIndex ?? 0) + 1,
+      };
+    });
   }
 
   private getDistributionStoragePath(): string {
+    const distributionState = this.getDistributionState();
+
     // Use an empty string for the initial distribution for backwards compatibility.
-    const distributionFolderIndex =
-      this.extensionContext.globalState.get(
-        ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey,
-        0,
-      ) || "";
+    const distributionFolderIndex = distributionState.folderIndex || "";
     return join(
       this.extensionContext.globalStorageUri.fsPath,
       ExtensionSpecificDistributionManager._currentDistributionFolderBaseName +
@@ -609,28 +684,56 @@ class ExtensionSpecificDistributionManager {
     );
   }
 
-  private getInstalledRelease(): Release | undefined {
-    return this.extensionContext.globalState.get(
-      ExtensionSpecificDistributionManager._installedReleaseStateKey,
+  private getDistributionStatePath(): string {
+    return join(
+      this.extensionContext.globalStorageUri.fsPath,
+      ExtensionSpecificDistributionManager._distributionStateFilename,
     );
+  }
+
+  private getInstalledRelease(): Release | undefined {
+    return this.getDistributionState().release ?? undefined;
   }
 
   private async storeInstalledRelease(
     release: Release | undefined,
   ): Promise<void> {
-    await this.extensionContext.globalState.update(
-      ExtensionSpecificDistributionManager._installedReleaseStateKey,
-      release,
-    );
+    await this.updateState((oldState) => ({
+      ...oldState,
+      release: release ?? null,
+    }));
+  }
+
+  private getDistributionState(): DistributionState {
+    const distributionState = this.distributionState;
+    if (distributionState === undefined) {
+      throw new Error(
+        "Invariant violation: distribution state not initialized",
+      );
+    }
+    return distributionState;
+  }
+
+  private async updateState(
+    f: (oldState: DistributionState) => DistributionState,
+  ) {
+    const oldState = this.distributionState;
+    if (oldState === undefined) {
+      throw new Error(
+        "Invariant violation: distribution state not initialized",
+      );
+    }
+    const newState = f(oldState);
+    this.distributionState = newState;
+
+    const distributionStatePath = this.getDistributionStatePath();
+    await outputJson(distributionStatePath, newState);
   }
 
   public get folderIndex() {
-    return (
-      this.extensionContext.globalState.get(
-        ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey,
-        0,
-      ) ?? 0
-    );
+    const distributionState = this.getDistributionState();
+
+    return distributionState.folderIndex;
   }
 
   public get distributionFolderPrefix() {
@@ -638,10 +741,8 @@ class ExtensionSpecificDistributionManager {
   }
 
   private static readonly _currentDistributionFolderBaseName = "distribution";
-  private static readonly _currentDistributionFolderIndexStateKey =
-    "distributionFolderIndex";
-  private static readonly _installedReleaseStateKey = "distributionRelease";
   private static readonly _codeQlExtractedFolderName = "codeql";
+  private static readonly _distributionStateFilename = "distribution.json";
 }
 
 /*
