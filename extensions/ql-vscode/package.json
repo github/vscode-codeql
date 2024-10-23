@@ -2039,7 +2039,6 @@
     "@types/gulp-replace": "^1.1.0",
     "@types/jest": "^29.5.12",
     "@types/js-yaml": "^4.0.6",
-    "@types/nanoid": "^3.0.0",
     "@types/node": "20.16.*",
     "@types/proper-lockfile": "^4.1.4",
     "@types/react": "^18.3.1",
