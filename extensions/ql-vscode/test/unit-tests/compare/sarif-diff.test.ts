@@ -1,5 +1,7 @@
 import type { Result } from "sarif";
 import { sarifDiff } from "../../../src/compare/sarif-diff";
+import { readJson } from "fs-extra";
+import { resolve } from "path";
 
 describe("sarifDiff", () => {
   const result1: Result = {
@@ -492,6 +494,28 @@ describe("sarifDiff", () => {
 
     expect(sarifDiff([result1], [result2])).toEqual({
       from: [],
+      to: [],
+    });
+  });
+
+  it("only compares the source and sink of a result", async () => {
+    const { result1, result2 } = (await readJson(
+      resolve(__dirname, "differentPathsSameSourceSink.json"),
+    )) as { result1: Result; result2: Result };
+
+    expect(sarifDiff([result1], [result2])).toEqual({
+      from: [],
+      to: [],
+    });
+  });
+
+  it("gives a diff when the source and sink of a result differ", async () => {
+    const { result1, result2 } = (await readJson(
+      resolve(__dirname, "differentPathsDifferentSourceSink.json"),
+    )) as { result1: Result; result2: Result };
+
+    expect(sarifDiff([result1, result2], [result2])).toEqual({
+      from: [result1],
       to: [],
     });
   });
