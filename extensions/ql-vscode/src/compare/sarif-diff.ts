@@ -1,4 +1,4 @@
-import type { Location, Result } from "sarif";
+import type { Location, Result, ThreadFlowLocation } from "sarif";
 
 function toCanonicalLocation(location: Location): Location {
   if (location.physicalLocation?.artifactLocation?.index !== undefined) {
@@ -25,6 +25,19 @@ function toCanonicalLocation(location: Location): Location {
   return location;
 }
 
+function toCanonicalThreadFlowLocation(
+  threadFlowLocation: ThreadFlowLocation,
+): ThreadFlowLocation {
+  if (threadFlowLocation.location) {
+    return {
+      ...threadFlowLocation,
+      location: toCanonicalLocation(threadFlowLocation.location),
+    };
+  }
+
+  return threadFlowLocation;
+}
+
 function toCanonicalResult(result: Result): Result {
   const canonicalResult = {
     ...result,
@@ -40,37 +53,30 @@ function toCanonicalResult(result: Result): Result {
       canonicalResult.relatedLocations.map(toCanonicalLocation);
   }
 
-  if (canonicalResult.codeFlows) {
-    canonicalResult.codeFlows = canonicalResult.codeFlows.map((codeFlow) => {
-      if (codeFlow.threadFlows) {
-        return {
-          ...codeFlow,
-          threadFlows: codeFlow.threadFlows.map((threadFlow) => {
-            if (threadFlow.locations) {
-              return {
-                ...threadFlow,
-                locations: threadFlow.locations.map((threadFlowLocation) => {
-                  if (threadFlowLocation.location) {
-                    return {
-                      ...threadFlowLocation,
-                      location: toCanonicalLocation(
-                        threadFlowLocation.location,
-                      ),
-                    };
-                  }
+  if (canonicalResult.codeFlows && canonicalResult.codeFlows.length > 0) {
+    // If there are codeFlows, we don't want to compare the full codeFlows. Instead, we just want to compare the
+    // source and the sink (i.e. the first and last item). CodeQL should guarantee that the first and last threadFlow
+    // of every codeFlow is the same (i.e. every codeFlow has the same source and sink). Therefore, we just compare the
+    // first codeFlow and ignore the other codeFlows completely.
+    // If the codeFlow has a length of 1, this doesn't change the result.
 
-                  return threadFlowLocation;
-                }),
-              };
-            }
+    const source = {
+      ...canonicalResult.codeFlows[0].threadFlows[0],
+    };
+    const sink = {
+      ...canonicalResult.codeFlows[0].threadFlows[
+        canonicalResult.codeFlows[0].threadFlows.length - 1
+      ],
+    };
+    source.locations = source.locations.map(toCanonicalThreadFlowLocation);
+    sink.locations = sink.locations.map(toCanonicalThreadFlowLocation);
 
-            return threadFlow;
-          }),
-        };
-      }
-
-      return codeFlow;
-    });
+    canonicalResult.codeFlows = [
+      {
+        ...canonicalResult.codeFlows[0],
+        threadFlows: [source, sink],
+      },
+    ];
   }
 
   return canonicalResult;
@@ -79,11 +85,9 @@ function toCanonicalResult(result: Result): Result {
 /**
  * Compare the alerts of two queries. Use deep equality to determine if
  * results have been added or removed across two invocations of a query.
- *
- * Assumptions:
- *
- * 1. Queries have the same sort order
- * 2. Results are not changed or re-ordered, they are only added or removed
+ * It first canonicalizes the results to ensure that when small changes
+ * to the query are made, the results are still considered the same. This
+ * includes the removal of all paths except for the source and sink.
  *
  * @param fromResults the source query
  * @param toResults the target query
@@ -104,19 +108,30 @@ export function sarifDiff(fromResults: Result[], toResults: Result[]) {
   const canonicalFromResults = fromResults.map(toCanonicalResult);
   const canonicalToResults = toResults.map(toCanonicalResult);
 
-  const results = {
+  const diffResults = {
     from: arrayDiff(canonicalFromResults, canonicalToResults),
     to: arrayDiff(canonicalToResults, canonicalFromResults),
   };
 
   if (
-    fromResults.length === results.from.length &&
-    toResults.length === results.to.length
+    fromResults.length === diffResults.from.length &&
+    toResults.length === diffResults.to.length
   ) {
     throw new Error("CodeQL Compare: No overlap between the selected queries.");
   }
 
-  return results;
+  // We don't want to return the canonical results, we want to return the original results.
+  // We can retrieve this by finding the index of the canonical result in the canonical results
+  // and then using that index to find the original result. This is possible because we know that
+  // we did a 1-to-1 map between the canonical results and the original results.
+  return {
+    from: diffResults.from.map(
+      (result) => fromResults[canonicalFromResults.indexOf(result)],
+    ),
+    to: diffResults.to.map(
+      (result) => toResults[canonicalToResults.indexOf(result)],
+    ),
+  };
 }
 
 function arrayDiff<T>(source: readonly T[], toRemove: readonly T[]): T[] {
