@@ -85,7 +85,7 @@ function toCanonicalResult(result: Result): Result {
 /**
  * Compare the alerts of two queries. Use deep equality to determine if
  * results have been added or removed across two invocations of a query.
- * It first canonicalizes the results by to ensure that when small changes
+ * It first canonicalizes the results to ensure that when small changes
  * to the query are made, the results are still considered the same. This
  * includes the removal of all paths except for the source and sink.
  *
