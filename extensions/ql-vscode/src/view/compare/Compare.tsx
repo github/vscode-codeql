@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { styled } from "styled-components";
 
 import type {
@@ -6,6 +6,8 @@ import type {
   SetComparisonsMessage,
   SetComparisonQueryInfoMessage,
   UserSettings,
+  StreamingComparisonSetupMessage,
+  QueryCompareResult,
 } from "../../common/interface-types";
 import { DEFAULT_USER_SETTINGS } from "../../common/interface-types";
 import CompareSelector from "./CompareSelector";
@@ -37,6 +39,12 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
     DEFAULT_USER_SETTINGS,
   );
 
+  // This is a ref because we don't need to re-render when we get a new streaming comparison message
+  // and we don't want to change the listener every time we get a new message
+  const streamingComparisonRef = useRef<StreamingComparisonSetupMessage | null>(
+    null,
+  );
+
   const message = comparison?.message || "Empty comparison";
   const hasRows =
     comparison?.result &&
@@ -52,6 +60,87 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
             break;
           case "setComparisons":
             setComparison(msg);
+            break;
+          case "streamingComparisonSetup":
+            setComparison(null);
+            streamingComparisonRef.current = msg;
+            break;
+          case "streamingComparisonAddResults": {
+            const prev = streamingComparisonRef.current;
+            if (prev === null) {
+              console.warn(
+                'Received "streamingComparisonAddResults" before "streamingComparisonSetup"',
+              );
+              break;
+            }
+
+            if (prev.id !== msg.id) {
+              console.warn(
+                'Received "streamingComparisonAddResults" with different id, ignoring',
+              );
+              break;
+            }
+
+            let result: QueryCompareResult;
+            switch (prev.result.kind) {
+              case "raw":
+                if (msg.result.kind !== "raw") {
+                  throw new Error(
+                    "Streaming comparison: expected raw results, got interpreted results",
+                  );
+                }
+
+                result = {
+                  ...prev.result,
+                  from: [...prev.result.from, ...msg.result.from],
+                  to: [...prev.result.to, ...msg.result.to],
+                };
+                break;
+              case "interpreted":
+                if (msg.result.kind !== "interpreted") {
+                  throw new Error(
+                    "Streaming comparison: expected interpreted results, got raw results",
+                  );
+                }
+
+                result = {
+                  ...prev.result,
+                  from: [...prev.result.from, ...msg.result.from],
+                  to: [...prev.result.to, ...msg.result.to],
+                };
+                break;
+              default:
+                throw new Error("Unexpected comparison result kind");
+            }
+
+            streamingComparisonRef.current = {
+              ...prev,
+              result,
+            };
+
+            break;
+          }
+          case "streamingComparisonComplete":
+            if (streamingComparisonRef.current === null) {
+              console.warn(
+                'Received "streamingComparisonComplete" before "streamingComparisonSetup"',
+              );
+              setComparison(null);
+              break;
+            }
+
+            if (streamingComparisonRef.current.id !== msg.id) {
+              console.warn(
+                'Received "streamingComparisonComplete" with different id, ignoring',
+              );
+              break;
+            }
+
+            setComparison({
+              ...streamingComparisonRef.current,
+              t: "setComparisons",
+            });
+            streamingComparisonRef.current = null;
             break;
           case "setUserSettings":
             setUserSettings(msg.userSettings);
