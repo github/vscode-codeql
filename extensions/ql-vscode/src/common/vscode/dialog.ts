@@ -1,4 +1,4 @@
-import { env, Uri, window } from "vscode";
+import { window } from "vscode";
 
 /**
  * Opens a modal dialog for the user to make a yes/no choice.
@@ -32,50 +32,6 @@ export async function showBinaryChoiceDialog(
     return undefined;
   }
   return chosenItem?.title === yesItem.title;
-}
-
-/**
- * Opens a modal dialog for the user to make a yes/no choice.
- *
- * @param message The message to show.
- * @param modal If true (the default), show a modal dialog box, otherwise dialog is non-modal and can
- *        be closed even if the user does not make a choice.
- *
- * @return
- *  `true` if the user clicks 'Yes',
- *  `false` if the user clicks 'No' or cancels the dialog,
- *  `undefined` if the dialog is closed without the user making a choice.
- */
-export async function showBinaryChoiceWithUrlDialog(
-  message: string,
-  url: string,
-): Promise<boolean | undefined> {
-  const urlItem = { title: "More Information", isCloseAffordance: false };
-  const yesItem = { title: "Yes", isCloseAffordance: false };
-  const noItem = { title: "No", isCloseAffordance: true };
-  let chosenItem;
-
-  // Keep the dialog open as long as the user is clicking the 'more information' option.
-  // To prevent an infinite loop, if the user clicks 'more information' 5 times, close the dialog and return cancelled
-  let count = 0;
-  do {
-    chosenItem = await window.showInformationMessage(
-      message,
-      { modal: true },
-      urlItem,
-      yesItem,
-      noItem,
-    );
-    if (chosenItem === urlItem) {
-      await env.openExternal(Uri.parse(url, true));
-    }
-    count++;
-  } while (chosenItem === urlItem && count < 5);
-
-  if (!chosenItem || chosenItem.title === urlItem.title) {
-    return undefined;
-  }
-  return chosenItem.title === yesItem.title;
 }
 
 /**

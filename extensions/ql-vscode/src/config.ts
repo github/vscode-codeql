@@ -165,10 +165,6 @@ const ROOT_SETTING = new Setting("codeQL");
 const TELEMETRY_SETTING = new Setting("telemetry", ROOT_SETTING);
 
 export const LOG_TELEMETRY = new Setting("logTelemetry", TELEMETRY_SETTING);
-export const ENABLE_TELEMETRY = new Setting(
-  "enableTelemetry",
-  TELEMETRY_SETTING,
-);
 
 // Distribution configuration
 const DISTRIBUTION_SETTING = new Setting("cli", ROOT_SETTING);
