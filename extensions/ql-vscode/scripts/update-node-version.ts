@@ -1,6 +1,6 @@
 import { join, resolve } from "path";
 import { execSync } from "child_process";
-import { outputFile, readFile, readJSON } from "fs-extra";
+import { outputFile, readJSON } from "fs-extra";
 import { getVersionInformation } from "./util/vscode-versions";
 import { fetchJson } from "./util/fetch";
 import { SemVer } from "semver";
@@ -47,19 +47,7 @@ async function updateNodeVersion() {
     `VS Code ${versionInformation.vscodeVersion} uses Electron ${versionInformation.electronVersion} and Node ${versionInformation.nodeVersion}`,
   );
 
-  let currentNodeVersion = (
-    await readFile(join(extensionDirectory, ".nvmrc"), "utf8")
-  ).trim();
-  if (currentNodeVersion.startsWith("v")) {
-    currentNodeVersion = currentNodeVersion.slice(1);
-  }
-
-  if (currentNodeVersion === versionInformation.nodeVersion) {
-    console.log("Node version is already up to date");
-    return;
-  }
-
-  console.log("Node version needs to be updated, updating now");
+  console.log("Updating files related to the Node version");
 
   await outputFile(
     join(extensionDirectory, ".nvmrc"),
