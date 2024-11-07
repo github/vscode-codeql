@@ -16,6 +16,7 @@ import {
   ThemeIcon,
   ThemeColor,
   workspace,
+  FileType,
 } from "vscode";
 import { pathExists, stat, readdir, remove } from "fs-extra";
 
@@ -36,6 +37,7 @@ import {
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
+  showAndLogInformationMessage,
 } from "../common/logging";
 import type { DatabaseFetcher } from "./database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
@@ -267,6 +269,8 @@ export class DatabaseUI extends DisposableObject {
       "codeQL.getCurrentDatabase": this.handleGetCurrentDatabase.bind(this),
       "codeQL.chooseDatabaseFolder":
         this.handleChooseDatabaseFolderFromPalette.bind(this),
+      "codeQL.chooseMultipleDatabaseFolder":
+        this.handleChooseMultipleDatabaseFolderFromPalette.bind(this),
       "codeQL.chooseDatabaseArchive":
         this.handleChooseDatabaseArchiveFromPalette.bind(this),
       "codeQL.chooseDatabaseInternet":
@@ -322,10 +326,11 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async chooseDatabaseFolder(
+    subFolder: boolean,
     progress: ProgressCallback,
   ): Promise<void> {
     try {
-      await this.chooseAndSetDatabase(true, progress);
+      await this.chooseAndSetDatabase(true, subFolder, progress);
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
@@ -340,7 +345,7 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseFolder(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await this.chooseDatabaseFolder(progress);
+        await this.chooseDatabaseFolder(false, progress);
       },
       {
         title: "Adding database from folder",
@@ -351,10 +356,21 @@ export class DatabaseUI extends DisposableObject {
   private async handleChooseDatabaseFolderFromPalette(): Promise<void> {
     return withProgress(
       async (progress) => {
-        await this.chooseDatabaseFolder(progress);
+        await this.chooseDatabaseFolder(false, progress);
       },
       {
         title: "Choose a Database from a Folder",
+      },
+    );
+  }
+
+  private async handleChooseMultipleDatabaseFolderFromPalette(): Promise<void> {
+    return withProgress(
+      async (progress) => {
+        await this.chooseDatabaseFolder(true, progress);
+      },
+      {
+        title: "Choose a Folder contains all Database Folders",
       },
     );
   }
@@ -494,7 +510,7 @@ export class DatabaseUI extends DisposableObject {
     progress: ProgressCallback,
   ): Promise<void> {
     try {
-      await this.chooseAndSetDatabase(false, progress);
+      await this.chooseAndSetDatabase(false, false, progress);
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
@@ -962,27 +978,67 @@ export class DatabaseUI extends DisposableObject {
    */
   private async chooseAndSetDatabase(
     byFolder: boolean,
+    subFolder: boolean,
     progress: ProgressCallback,
-  ): Promise<DatabaseItem | undefined> {
+  ): Promise<DatabaseItem[] | DatabaseItem | undefined> {
     const uri = await chooseDatabaseDir(byFolder);
     if (!uri) {
       return undefined;
     }
 
-    if (byFolder && !uri.fsPath.endsWith("testproj")) {
-      const fixedUri = await this.fixDbUri(uri);
-      // we are selecting a database folder
-      return await this.databaseManager.openDatabase(fixedUri, {
-        type: "folder",
-      });
+    if (subFolder) {
+      if (!byFolder) {
+        return undefined;
+      }
+
+      const databases: DatabaseItem[] = [];
+      const failures: string[] = [];
+      const entries = await workspace.fs.readDirectory(uri);
+      for (const entry of entries) {
+        if (entry[1] === FileType.Directory) {
+          try {
+            const fixedUri = await this.fixDbUri(Uri.joinPath(uri, entry[0]));
+            const database = await this.databaseManager.openDatabase(fixedUri, {
+              type: "folder",
+            });
+            databases.push(database);
+          } catch (e) {
+            failures.push(entry[0]);
+          }
+        }
+      }
+
+      if (failures.length) {
+        void showAndLogErrorMessage(
+          this.app.logger,
+          `Failed to import ${failures.length} database(s) (${failures.join(
+            ", ",
+          )}), successfully imported ${databases.length} database(s).`,
+        );
+      } else {
+        void showAndLogInformationMessage(
+          this.app.logger,
+          `Successfully imported ${databases.length} database(s).`,
+        );
+      }
+
+      return databases;
     } else {
-      // we are selecting a database archive or a testproj.
-      // Unzip archives (if an archive) and copy into a workspace-controlled area
-      // before importing.
-      return await this.databaseFetcher.importLocalDatabase(
-        uri.toString(true),
-        progress,
-      );
+      if (byFolder && !uri.fsPath.endsWith("testproj")) {
+        const fixedUri = await this.fixDbUri(uri);
+        // we are selecting a database folder
+        return await this.databaseManager.openDatabase(fixedUri, {
+          type: "folder",
+        });
+      } else {
+        // we are selecting a database archive or a testproj.
+        // Unzip archives (if an archive) and copy into a workspace-controlled area
+        // before importing.
+        return await this.databaseFetcher.importLocalDatabase(
+          uri.toString(true),
+          progress,
+        );
+      }
     }
   }
 

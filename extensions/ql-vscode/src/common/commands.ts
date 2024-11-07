@@ -211,6 +211,7 @@ export type LanguageSelectionCommands = {
 export type LocalDatabasesCommands = {
   // Command palette commands
   "codeQL.chooseDatabaseFolder": () => Promise<void>;
+  "codeQL.chooseMultipleDatabaseFolder": () => Promise<void>;
   "codeQL.chooseDatabaseArchive": () => Promise<void>;
   "codeQL.chooseDatabaseInternet": () => Promise<void>;
   "codeQL.chooseDatabaseGithub": () => Promise<void>;
