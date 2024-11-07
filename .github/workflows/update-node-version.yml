@@ -34,7 +34,7 @@ jobs:
       - name: Update Node version
         working-directory: extensions/ql-vscode
         run: |
-          npx ts-node scripts/update-node-version.ts
+          npx vite-node scripts/update-node-version.ts
         shell: bash
       - name: Get current Node version
         working-directory: extensions/ql-vscode
