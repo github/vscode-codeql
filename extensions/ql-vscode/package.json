@@ -302,8 +302,8 @@
         "properties": {
           "codeQL.queryHistory.format": {
             "type": "string",
-            "default": "%q on %d - %s %r [%t]",
-            "markdownDescription": "Default string for how to label query history items.\n* %t is the time of the query\n* %q is the human-readable query name\n* %f is the query file name\n* %d is the database name\n* %r is the number of results\n* %s is a status string"
+            "default": "${queryName} on ${databaseName} - ${status} ${resultCount} [${startTime}]",
+            "markdownDescription": "Default string for how to label query history items.\n\nThe following variables are supported:\n* **${startTime}** - the time of the query\n* **${queryName}** - the human-readable query name\n* **${queryFileBasename}** - the query file's base name\n* **${queryLanguage}** - the query language\n* **${databaseName}** - the database name\n* **${resultCount}** - the number of results\n* **${status}** - a status string"
           },
           "codeQL.queryHistory.ttl": {
             "type": "number",
