@@ -3,17 +3,11 @@ import { resolve } from "path";
 import type { TextDocument } from "vscode";
 import { authentication, commands, window, workspace } from "vscode";
 
-import { MockGitHubApiServer } from "../../../../src/common/mock-gh-api/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import type { AllCommands } from "../../../../src/common/commands";
-
-const mockServer = new MockGitHubApiServer();
-beforeAll(() => mockServer.startServer("bypass"));
-afterEach(() => mockServer.unloadScenario());
-afterAll(() => mockServer.stopServer());
 
 async function showQlDocument(name: string): Promise<TextDocument> {
   const folderPath = workspace.workspaceFolders![0].uri.fsPath;
@@ -24,7 +18,7 @@ async function showQlDocument(name: string): Promise<TextDocument> {
 }
 
 // MSW can't intercept fetch requests made in VS Code, so we are skipping these tests for now
-describe.skip("Variant Analysis Submission Integration", () => {
+describe("Variant Analysis Submission Integration", () => {
   const commandManager = createVSCodeCommandManager<AllCommands>();
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
@@ -54,9 +48,16 @@ describe.skip("Variant Analysis Submission Integration", () => {
     await getActivatedExtension();
   });
 
+  afterAll(async () => {
+    await commandManager.execute("codeQL.mockGitHubApiServer.unloadScenario");
+  });
+
   describe("Successful scenario", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario("mrva-problem-query-success");
+      await commandManager.execute(
+        "codeQL.mockGitHubApiServer.loadScenario",
+        "mrva-problem-query-success",
+      );
     });
 
     it("opens the variant analysis view", async () => {
@@ -81,7 +82,10 @@ describe.skip("Variant Analysis Submission Integration", () => {
 
   describe("Missing controller repo", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario("mrva-missing-controller-repo");
+      await commandManager.execute(
+        "codeQL.mockGitHubApiServer.loadScenario",
+        "mrva-missing-controller-repo",
+      );
     });
 
     it("shows the error message", async () => {
@@ -108,7 +112,10 @@ describe.skip("Variant Analysis Submission Integration", () => {
 
   describe("Submission failure", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario("mrva-submission-failure");
+      await commandManager.execute(
+        "codeQL.mockGitHubApiServer.loadScenario",
+        "mrva-submission-failure",
+      );
     });
 
     it("shows the error message", async () => {
