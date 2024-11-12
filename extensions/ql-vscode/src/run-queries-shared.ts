@@ -45,7 +45,7 @@ import type { ProgressCallback } from "./common/vscode/progress";
  * Holds the paths to the various structured log summary files generated for a query evaluation.
  */
 export interface EvaluatorLogPaths {
-  log: string;
+  log: string | undefined;
   humanReadableSummary: string | undefined;
   endSummary: string | undefined;
   jsonSummary: string | undefined;

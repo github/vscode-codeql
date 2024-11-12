@@ -200,10 +200,7 @@ export class LocalQueryInfo {
     private cancellationSource?: CancellationTokenSource, // used to cancel in progress queries
     public failureReason?: string,
     public completedQuery?: CompletedQueryInfo,
-    public evalLogLocation?: string,
-    public evalLogSummaryLocation?: string,
-    public jsonEvalLogSummaryLocation?: string,
-    public evalLogSummarySymbolsLocation?: string,
+    public evalutorLogPaths?: EvaluatorLogPaths,
   ) {
     /**/
   }
@@ -229,10 +226,7 @@ export class LocalQueryInfo {
 
   /** Sets the paths to the various structured evaluator logs. */
   public setEvaluatorLogPaths(logPaths: EvaluatorLogPaths): void {
-    this.evalLogLocation = logPaths.log;
-    this.evalLogSummaryLocation = logPaths.humanReadableSummary;
-    this.jsonEvalLogSummaryLocation = logPaths.jsonSummary;
-    this.evalLogSummarySymbolsLocation = logPaths.summarySymbols;
+    this.evalutorLogPaths = logPaths;
   }
 
   /**
