@@ -16,11 +16,12 @@ import {
   DEFAULT_USER_SETTINGS,
   GRAPH_TABLE_NAME,
 } from "../../common/interface-types";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 import { ResultTables } from "./ResultTables";
 import { onNavigation } from "./navigation";
 
 import "./resultsView.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 /**
  * ResultsApp.tsx
@@ -113,8 +114,8 @@ export function ResultsApp() {
     [],
   );
 
-  const handleMessage = useCallback(
-    (msg: IntoResultsViewMsg): void => {
+  useMessageFromExtension<IntoResultsViewMsg>(
+    (msg) => {
       switch (msg.t) {
         case "setUserSettings":
           setUserSettings(msg.userSettings);
@@ -188,26 +189,6 @@ export function ResultsApp() {
     },
     [updateStateWithNewResultsInfo],
   );
-
-  const vscodeMessageHandler = useCallback(
-    (evt: MessageEvent) => {
-      // sanitize origin
-      const origin = evt.origin.replace(/\n|\r/g, "");
-      if (evt.origin === window.origin) {
-        handleMessage(evt.data as IntoResultsViewMsg);
-      } else {
-        console.error(`Invalid event origin ${origin}`);
-      }
-    },
-    [handleMessage],
-  );
-
-  useEffect(() => {
-    window.addEventListener("message", vscodeMessageHandler);
-    return () => {
-      window.removeEventListener("message", vscodeMessageHandler);
-    };
-  }, [vscodeMessageHandler]);
 
   const { displayedResults, nextResultsInfo, isExpectingResultsUpdate } = state;
   if (

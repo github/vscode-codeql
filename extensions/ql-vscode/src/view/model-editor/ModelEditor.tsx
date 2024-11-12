@@ -21,6 +21,7 @@ import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hi
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { ModelEvaluation } from "./ModelEvaluation";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -129,10 +130,7 @@ export function ModelEditor({
     AccessPathSuggestionOptions | undefined
   >(undefined);
 
-  useEffect(() => {
-    const listener = (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToModelEditorMessage = evt.data;
+  useMessageFromExtension<ToModelEditorMessage>((msg) => {
         switch (msg.t) {
           case "setModelEditorViewState":
             setViewState(msg.viewState);
@@ -159,17 +157,6 @@ export function ModelEditor({
           default:
             assertNever(msg);
         }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, "");
-        console.error(`Invalid event origin ${origin}`);
-      }
-    };
-    window.addEventListener("message", listener);
-
-    return () => {
-      window.removeEventListener("message", listener);
-    };
   }, []);
 
   useEffect(() => {

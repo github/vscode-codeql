@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { styled } from "styled-components";
 
 import type {
@@ -16,6 +16,7 @@ import CompareTable from "./CompareTable";
 
 import "../results/resultsView.css";
 import { assertNever } from "../../common/helpers-pure";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 
 const Header = styled.div`
   display: flex;
@@ -50,10 +51,7 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
     comparison?.result &&
     (comparison.result.to.length || comparison.result.from.length);
 
-  useEffect(() => {
-    const listener = (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToCompareViewMessage = evt.data;
+  useMessageFromExtension<ToCompareViewMessage>((msg) => {
         switch (msg.t) {
           case "setComparisonQueryInfo":
             setQueryInfo(msg);
@@ -148,17 +146,6 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
           default:
             assertNever(msg);
         }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, "");
-        console.error(`Invalid event origin ${origin}`);
-      }
-    };
-    window.addEventListener("message", listener);
-
-    return () => {
-      window.removeEventListener("message", listener);
-    };
   }, []);
 
   if (!queryInfo || !comparison) {

@@ -18,6 +18,7 @@ import {
 } from "../../model-editor/shared/model-alerts-filter-sort";
 import type { ModelAlertsFilterSortState } from "../../model-editor/shared/model-alerts-filter-sort";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
@@ -67,10 +68,7 @@ export function ModelAlerts({
     null,
   );
 
-  useEffect(() => {
-    const listener = (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToModelAlertsMessage = evt.data;
+  useMessageFromExtension<ToModelAlertsMessage>((msg) => {
         switch (msg.t) {
           case "setModelAlertsViewState": {
             setViewState(msg.viewState);
@@ -97,17 +95,6 @@ export function ModelAlerts({
             break;
           }
         }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, "");
-        console.error(`Invalid event origin ${origin}`);
-      }
-    };
-    window.addEventListener("message", listener);
-
-    return () => {
-      window.removeEventListener("message", listener);
-    };
   }, []);
 
   const modelAlerts = useMemo(() => {

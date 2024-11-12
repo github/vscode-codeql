@@ -12,6 +12,7 @@ import { NoMethodSelected } from "./NoMethodSelected";
 import type { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
 import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
 import { defaultModelConfig } from "../../model-editor/languages";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 
 type Props = {
   initialViewState?: MethodModelingPanelViewState;
@@ -36,10 +37,7 @@ export function MethodModelingView({
     [modeledMethods, isMethodModified],
   );
 
-  useEffect(() => {
-    const listener = (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToMethodModelingMessage = evt.data;
+  useMessageFromExtension<ToMethodModelingMessage>((msg) => {
         switch (msg.t) {
           case "setMethodModelingPanelViewState":
             setViewState(msg.viewState);
@@ -66,17 +64,6 @@ export function MethodModelingView({
           default:
             assertNever(msg);
         }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, "");
-        console.error(`Invalid event origin ${origin}`);
-      }
-    };
-    window.addEventListener("message", listener);
-
-    return () => {
-      window.removeEventListener("message", listener);
-    };
   }, []);
 
   if (!inModelingMode || !viewState?.language) {
