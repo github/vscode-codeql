@@ -348,7 +348,9 @@ export type MockGitHubApiServerCommands = {
   "codeQL.mockGitHubApiServer.startRecording": () => Promise<void>;
   "codeQL.mockGitHubApiServer.saveScenario": () => Promise<void>;
   "codeQL.mockGitHubApiServer.cancelRecording": () => Promise<void>;
-  "codeQL.mockGitHubApiServer.loadScenario": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.loadScenario": (
+    scenario?: string,
+  ) => Promise<void>;
   "codeQL.mockGitHubApiServer.unloadScenario": () => Promise<void>;
 };
 

@@ -63,26 +63,33 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     );
   }
 
-  public async loadScenario(): Promise<void> {
+  public async loadScenario(scenario?: string): Promise<void> {
     const scenariosPath = await this.getScenariosPath();
     if (!scenariosPath) {
       return;
     }
 
-    const scenarioNames = await this.server.getScenarioNames(scenariosPath);
-    const scenarioQuickPickItems = scenarioNames.map((s) => ({ label: s }));
-    const quickPickOptions = {
-      placeHolder: "Select a scenario to load",
-    };
-    const selectedScenario = await window.showQuickPick<QuickPickItem>(
-      scenarioQuickPickItems,
-      quickPickOptions,
-    );
-    if (!selectedScenario) {
-      return;
+    let scenarioName = scenario;
+    if (!scenarioName) {
+      const scenarioNames = await this.server.getScenarioNames(scenariosPath);
+      const scenarioQuickPickItems = scenarioNames.map((s) => ({ label: s }));
+      const quickPickOptions = {
+        placeHolder: "Select a scenario to load",
+      };
+      const selectedScenario = await window.showQuickPick<QuickPickItem>(
+        scenarioQuickPickItems,
+        quickPickOptions,
+      );
+      if (!selectedScenario) {
+        return;
+      }
+
+      scenarioName = selectedScenario.label;
     }
 
-    const scenarioName = selectedScenario.label;
+    if (!this.server.isListening && this.app.mode === AppMode.Test) {
+      await this.startServer();
+    }
 
     await this.server.loadScenario(scenarioName, scenariosPath);
 
@@ -94,12 +101,12 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
       true,
     );
 
-    await window.showInformationMessage(`Loaded scenario '${scenarioName}'`);
+    void window.showInformationMessage(`Loaded scenario '${scenarioName}'`);
   }
 
   public async unloadScenario(): Promise<void> {
     if (!this.server.isScenarioLoaded) {
-      await window.showInformationMessage("No scenario currently loaded");
+      void window.showInformationMessage("No scenario currently loaded");
     } else {
       await this.server.unloadScenario();
       await this.app.commands.execute(
@@ -107,7 +114,11 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
         "codeQL.mockGitHubApiServer.scenarioLoaded",
         false,
       );
-      await window.showInformationMessage("Unloaded scenario");
+      void window.showInformationMessage("Unloaded scenario");
+    }
+
+    if (this.server.isListening && this.app.mode === AppMode.Test) {
+      await this.stopServer();
     }
   }
 
@@ -139,7 +150,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
       true,
     );
 
-    await window.showInformationMessage(
+    void window.showInformationMessage(
       'Recording scenario. To save the scenario, use the "CodeQL Mock GitHub API Server: Save Scenario" command.',
     );
   }
@@ -221,7 +232,10 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
       return scenariosPath;
     }
 
-    if (this.app.mode === AppMode.Development) {
+    if (
+      this.app.mode === AppMode.Development ||
+      this.app.mode === AppMode.Test
+    ) {
       const developmentScenariosPath = path.join(
         this.app.extensionPath,
         "src/common/mock-gh-api/scenarios",
