@@ -12,17 +12,36 @@ import type { VariantAnalysisHistoryItem } from "./variant-analysis-history-item
 import { assertNever } from "../common/helpers-pure";
 import { pluralize } from "../common/word";
 import { humanizeQueryStatus } from "./query-status";
+import { substituteConfigVariables } from "../common/config-template";
 
-interface InterpolateReplacements {
-  t: string; // Start time
-  q: string; // Query name
-  d: string; // Database/repositories count
-  r: string; // Result count/Empty
-  s: string; // Status
-  f: string; // Query file name
-  l: string; // Query language
-  "%": "%"; // Percent sign
-}
+type LabelVariables = {
+  startTime: string;
+  queryName: string;
+  databaseName: string;
+  resultCount: string;
+  status: string;
+  queryFileBasename: string;
+  queryLanguage: string;
+};
+
+const legacyVariableInterpolateReplacements: Record<
+  keyof LabelVariables,
+  string
+> = {
+  startTime: "t",
+  queryName: "q",
+  databaseName: "d",
+  resultCount: "r",
+  status: "s",
+  queryFileBasename: "f",
+  queryLanguage: "l",
+};
+
+// If any of the "legacy" variables are used, we need to use legacy interpolation.
+const legacyLabelRegex = new RegExp(
+  `%([${Object.values(legacyVariableInterpolateReplacements).join("")}%])`,
+  "g",
+);
 
 export class HistoryItemLabelProvider {
   constructor(private config: QueryHistoryConfig) {
@@ -30,21 +49,26 @@ export class HistoryItemLabelProvider {
   }
 
   getLabel(item: QueryHistoryInfo) {
-    let replacements: InterpolateReplacements;
+    let variables: LabelVariables;
     switch (item.t) {
       case "local":
-        replacements = this.getLocalInterpolateReplacements(item);
+        variables = this.getLocalVariables(item);
         break;
       case "variant-analysis":
-        replacements = this.getVariantAnalysisInterpolateReplacements(item);
+        variables = this.getVariantAnalysisVariables(item);
         break;
       default:
         assertNever(item);
     }
 
-    const rawLabel = item.userSpecifiedLabel ?? (this.config.format || "%q");
+    const rawLabel =
+      item.userSpecifiedLabel ?? (this.config.format || "${queryName}");
 
-    return this.interpolate(rawLabel, replacements);
+    if (legacyLabelRegex.test(rawLabel)) {
+      return this.legacyInterpolate(rawLabel, variables);
+    }
+
+    return substituteConfigVariables(rawLabel, variables).replace(/\s+/g, " ");
   }
 
   /**
@@ -59,55 +83,60 @@ export class HistoryItemLabelProvider {
       : getRawQueryName(item);
   }
 
-  private interpolate(
+  private legacyInterpolate(
     rawLabel: string,
-    replacements: InterpolateReplacements,
+    variables: LabelVariables,
   ): string {
-    const label = rawLabel.replace(
-      /%(.)/g,
-      (match, key: keyof InterpolateReplacements) => {
-        const replacement = replacements[key];
-        return replacement !== undefined ? replacement : match;
+    const replacements = Object.entries(variables).reduce(
+      (acc, [key, value]) => {
+        acc[
+          legacyVariableInterpolateReplacements[key as keyof LabelVariables]
+        ] = value;
+        return acc;
       },
+      {
+        "%": "%",
+      } as Record<string, string>,
     );
+
+    const label = rawLabel.replace(/%(.)/g, (match, key: string) => {
+      const replacement = replacements[key];
+      return replacement !== undefined ? replacement : match;
+    });
 
     return label.replace(/\s+/g, " ");
   }
 
-  private getLocalInterpolateReplacements(
-    item: LocalQueryInfo,
-  ): InterpolateReplacements {
+  private getLocalVariables(item: LocalQueryInfo): LabelVariables {
     const { resultCount = 0, message = "in progress" } =
       item.completedQuery || {};
     return {
-      t: item.startTime,
-      q: item.getQueryName(),
-      d: item.databaseName,
-      r: `(${resultCount} results)`,
-      s: message,
-      f: item.getQueryFileName(),
-      l: this.getLanguageLabel(item),
-      "%": "%",
+      startTime: item.startTime,
+      queryName: item.getQueryName(),
+      databaseName: item.databaseName,
+      resultCount: `(${resultCount} results)`,
+      status: message,
+      queryFileBasename: item.getQueryFileName(),
+      queryLanguage: this.getLanguageLabel(item),
     };
   }
 
-  private getVariantAnalysisInterpolateReplacements(
+  private getVariantAnalysisVariables(
     item: VariantAnalysisHistoryItem,
-  ): InterpolateReplacements {
+  ): LabelVariables {
     const resultCount = item.resultCount
       ? `(${pluralize(item.resultCount, "result", "results")})`
       : "";
     return {
-      t: new Date(item.variantAnalysis.executionStartTime).toLocaleString(
-        env.language,
-      ),
-      q: `${item.variantAnalysis.query.name} (${item.variantAnalysis.language})`,
-      d: buildRepoLabel(item),
-      r: resultCount,
-      s: humanizeQueryStatus(item.status),
-      f: basename(item.variantAnalysis.query.filePath),
-      l: this.getLanguageLabel(item),
-      "%": "%",
+      startTime: new Date(
+        item.variantAnalysis.executionStartTime,
+      ).toLocaleString(env.language),
+      queryName: `${item.variantAnalysis.query.name} (${item.variantAnalysis.language})`,
+      databaseName: buildRepoLabel(item),
+      resultCount,
+      status: humanizeQueryStatus(item.status),
+      queryFileBasename: basename(item.variantAnalysis.query.filePath),
+      queryLanguage: this.getLanguageLabel(item),
     };
   }
 
