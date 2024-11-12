@@ -841,7 +841,7 @@
       },
       {
         "command": "codeQL.chooseMultipleDatabaseFolder",
-        "title": "CodeQL: Choose Folder contains all Database Folders to import"
+        "title": "CodeQL: Choose Folder to import all databases contained in it"
       },
       {
         "command": "codeQL.chooseDatabaseArchive",
