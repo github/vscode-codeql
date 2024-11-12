@@ -69,32 +69,32 @@ export function ModelAlerts({
   );
 
   useMessageFromExtension<ToModelAlertsMessage>((msg) => {
-        switch (msg.t) {
-          case "setModelAlertsViewState": {
-            setViewState(msg.viewState);
-            break;
-          }
-          case "setVariantAnalysis": {
-            setVariantAnalysis(msg.variantAnalysis);
-            break;
-          }
-          case "setRepoResults": {
-            setRepoResults((oldRepoResults) => {
-              const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
-              return [
-                ...oldRepoResults.filter(
-                  (v) => !newRepoIds.includes(v.repositoryId),
-                ),
-                ...msg.repoResults,
-              ];
-            });
-            break;
-          }
-          case "revealModel": {
-            setRevealedModel(msg.modeledMethod);
-            break;
-          }
-        }
+    switch (msg.t) {
+      case "setModelAlertsViewState": {
+        setViewState(msg.viewState);
+        break;
+      }
+      case "setVariantAnalysis": {
+        setVariantAnalysis(msg.variantAnalysis);
+        break;
+      }
+      case "setRepoResults": {
+        setRepoResults((oldRepoResults) => {
+          const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
+          return [
+            ...oldRepoResults.filter(
+              (v) => !newRepoIds.includes(v.repositoryId),
+            ),
+            ...msg.repoResults,
+          ];
+        });
+        break;
+      }
+      case "revealModel": {
+        setRevealedModel(msg.modeledMethod);
+        break;
+      }
+    }
   }, []);
 
   const modelAlerts = useMemo(() => {

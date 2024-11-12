@@ -16,11 +16,11 @@ export function DataFlowPathsView({
   >(initialDataFlowPaths);
 
   useMessageFromExtension<ToDataFlowPathsMessage>((msg) => {
-          setDataFlowPaths(msg.dataFlowPaths);
+    setDataFlowPaths(msg.dataFlowPaths);
 
-          // Scroll to the top of the page when we're rendering
-          // new data flow paths.
-          window.scrollTo(0, 0);
+    // Scroll to the top of the page when we're rendering
+    // new data flow paths.
+    window.scrollTo(0, 0);
   }, []);
 
   if (!dataFlowPaths) {

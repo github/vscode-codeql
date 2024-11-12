@@ -38,32 +38,32 @@ export function MethodModelingView({
   );
 
   useMessageFromExtension<ToMethodModelingMessage>((msg) => {
-        switch (msg.t) {
-          case "setMethodModelingPanelViewState":
-            setViewState(msg.viewState);
-            break;
-          case "setInModelingMode":
-            setInModelingMode(msg.inModelingMode);
-            break;
-          case "setMultipleModeledMethods":
-            setModeledMethods(msg.modeledMethods);
-            break;
-          case "setMethodModified":
-            setIsMethodModified(msg.isModified);
-            break;
-          case "setNoMethodSelected":
-            setMethod(undefined);
-            setModeledMethods([]);
-            setIsMethodModified(false);
-            break;
-          case "setSelectedMethod":
-            setMethod(msg.method);
-            setModeledMethods(msg.modeledMethods);
-            setIsMethodModified(msg.isModified);
-            break;
-          default:
-            assertNever(msg);
-        }
+    switch (msg.t) {
+      case "setMethodModelingPanelViewState":
+        setViewState(msg.viewState);
+        break;
+      case "setInModelingMode":
+        setInModelingMode(msg.inModelingMode);
+        break;
+      case "setMultipleModeledMethods":
+        setModeledMethods(msg.modeledMethods);
+        break;
+      case "setMethodModified":
+        setIsMethodModified(msg.isModified);
+        break;
+      case "setNoMethodSelected":
+        setMethod(undefined);
+        setModeledMethods([]);
+        setIsMethodModified(false);
+        break;
+      case "setSelectedMethod":
+        setMethod(msg.method);
+        setModeledMethods(msg.modeledMethods);
+        setIsMethodModified(msg.isModified);
+        break;
+      default:
+        assertNever(msg);
+    }
   }, []);
 
   if (!inModelingMode || !viewState?.language) {

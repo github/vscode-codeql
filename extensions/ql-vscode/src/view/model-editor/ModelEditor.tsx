@@ -131,32 +131,32 @@ export function ModelEditor({
   >(undefined);
 
   useMessageFromExtension<ToModelEditorMessage>((msg) => {
-        switch (msg.t) {
-          case "setModelEditorViewState":
-            setViewState(msg.viewState);
-            break;
-          case "setMethods":
-            setMethods(msg.methods);
-            break;
-          case "setModeledAndModifiedMethods":
-            setModeledMethods(msg.methods);
-            setModifiedSignatures(new Set(msg.modifiedMethodSignatures));
-            break;
-          case "setModifiedMethods":
-            setModifiedSignatures(new Set(msg.methodSignatures));
-            break;
-          case "revealMethod":
-            setRevealedMethodSignature(msg.methodSignature);
-            break;
-          case "setAccessPathSuggestions":
-            setAccessPathSuggestions(msg.accessPathSuggestions);
-            break;
-          case "setModelEvaluationRun":
-            setEvaluationRun(msg.run);
-            break;
-          default:
-            assertNever(msg);
-        }
+    switch (msg.t) {
+      case "setModelEditorViewState":
+        setViewState(msg.viewState);
+        break;
+      case "setMethods":
+        setMethods(msg.methods);
+        break;
+      case "setModeledAndModifiedMethods":
+        setModeledMethods(msg.methods);
+        setModifiedSignatures(new Set(msg.modifiedMethodSignatures));
+        break;
+      case "setModifiedMethods":
+        setModifiedSignatures(new Set(msg.methodSignatures));
+        break;
+      case "revealMethod":
+        setRevealedMethodSignature(msg.methodSignature);
+        break;
+      case "setAccessPathSuggestions":
+        setAccessPathSuggestions(msg.accessPathSuggestions);
+        break;
+      case "setModelEvaluationRun":
+        setEvaluationRun(msg.run);
+        break;
+      default:
+        assertNever(msg);
+    }
   }, []);
 
   useEffect(() => {

@@ -79,34 +79,30 @@ export function VariantAnalysis({
   });
 
   useMessageFromExtension<ToVariantAnalysisMessage>((msg) => {
-        if (msg.t === "setVariantAnalysis") {
-          setVariantAnalysis(msg.variantAnalysis);
-          vscode.setState({
-            variantAnalysisId: msg.variantAnalysis.id,
-          });
-        } else if (msg.t === "setFilterSortState") {
-          setFilterSortState(msg.filterSortState);
-        } else if (msg.t === "setRepoResults") {
-          setRepoResults((oldRepoResults) => {
-            const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
-            return [
-              ...oldRepoResults.filter(
-                (v) => !newRepoIds.includes(v.repositoryId),
-              ),
-              ...msg.repoResults,
-            ];
-          });
-        } else if (msg.t === "setRepoStates") {
-          setRepoStates((oldRepoStates) => {
-            const newRepoIds = msg.repoStates.map((r) => r.repositoryId);
-            return [
-              ...oldRepoStates.filter(
-                (v) => !newRepoIds.includes(v.repositoryId),
-              ),
-              ...msg.repoStates,
-            ];
-          });
-        }
+    if (msg.t === "setVariantAnalysis") {
+      setVariantAnalysis(msg.variantAnalysis);
+      vscode.setState({
+        variantAnalysisId: msg.variantAnalysis.id,
+      });
+    } else if (msg.t === "setFilterSortState") {
+      setFilterSortState(msg.filterSortState);
+    } else if (msg.t === "setRepoResults") {
+      setRepoResults((oldRepoResults) => {
+        const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
+        return [
+          ...oldRepoResults.filter((v) => !newRepoIds.includes(v.repositoryId)),
+          ...msg.repoResults,
+        ];
+      });
+    } else if (msg.t === "setRepoStates") {
+      setRepoStates((oldRepoStates) => {
+        const newRepoIds = msg.repoStates.map((r) => r.repositoryId);
+        return [
+          ...oldRepoStates.filter((v) => !newRepoIds.includes(v.repositoryId)),
+          ...msg.repoStates,
+        ];
+      });
+    }
   }, []);
 
   const copyRepositoryList = useCallback(() => {
