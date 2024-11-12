@@ -25,10 +25,10 @@ export function mapLocalQueryInfoToDto(
   return {
     initialInfo: mapInitialQueryInfoToDto(query.initialInfo),
     t: "local",
-    evalLogLocation: query.evalLogLocation,
-    evalLogSummaryLocation: query.evalLogSummaryLocation,
-    jsonEvalLogSummaryLocation: query.jsonEvalLogSummaryLocation,
-    evalLogSummarySymbolsLocation: query.evalLogSummarySymbolsLocation,
+    evalLogLocation: query.evalutorLogPaths?.log,
+    evalLogSummaryLocation: query.evalutorLogPaths?.humanReadableSummary,
+    jsonEvalLogSummaryLocation: query.evalutorLogPaths?.jsonSummary,
+    evalLogSummarySymbolsLocation: query.evalutorLogPaths?.summarySymbols,
     failureReason: query.failureReason,
     completedQuery:
       query.completedQuery && mapCompletedQueryToDto(query.completedQuery),
