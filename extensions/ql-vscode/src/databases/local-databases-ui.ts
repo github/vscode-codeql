@@ -1016,6 +1016,7 @@ export class DatabaseUI extends DisposableObject {
     const databases: DatabaseItem[] = [];
     const failures: string[] = [];
     const entries = await workspace.fs.readDirectory(uri);
+
     for (const [index, entry] of entries.entries()) {
       progress({
         step: index + 1,
@@ -1040,8 +1041,14 @@ export class DatabaseUI extends DisposableObject {
       void showAndLogErrorMessage(
         this.app.logger,
         `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).`,
-        { fullMessage: `Failed imports: \n${failures.join("\n")}` },
+        { fullMessage: `Failed folders to import:\n${failures.join("\n")}` },
       );
+    } else if (databases.length === 0) {
+      void showAndLogErrorMessage(
+        this.app.logger,
+        `No database folder to import.`,
+      );
+      return undefined;
     } else {
       void showAndLogInformationMessage(
         this.app.logger,
