@@ -752,6 +752,10 @@
         }
       },
       {
+        "command": "codeQL.compare-performance.downloadExternalLogs",
+        "title": "CodeQL: Download External Logs for Performance Comparison"
+      },
+      {
         "command": "codeQL.setCurrentDatabase",
         "title": "CodeQL: Set Current Database"
       },
