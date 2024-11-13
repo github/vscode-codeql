@@ -1041,7 +1041,7 @@ export class DatabaseUI extends DisposableObject {
       void showAndLogErrorMessage(
         this.app.logger,
         `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).`,
-        { fullMessage: `Failed folders to import:\n${failures.join("\n")}` },
+        { fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s). Failed folders to import:\n  ${failures.join("\n  ")}` },
       );
     } else if (databases.length === 0) {
       void showAndLogErrorMessage(
