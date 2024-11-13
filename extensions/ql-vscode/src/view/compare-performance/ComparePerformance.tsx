@@ -190,7 +190,7 @@ const SortOrderDropdown = styled.select``;
 interface PipelineStepProps {
   before: number | undefined;
   after: number | undefined;
-  step: string;
+  step: React.ReactNode;
 }
 
 /**
