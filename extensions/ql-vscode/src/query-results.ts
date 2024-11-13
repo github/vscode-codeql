@@ -200,7 +200,13 @@ export class LocalQueryInfo {
     private cancellationSource?: CancellationTokenSource, // used to cancel in progress queries
     public failureReason?: string,
     public completedQuery?: CompletedQueryInfo,
-    public evalutorLogPaths?: EvaluatorLogPaths,
+    public evalutorLogPaths: EvaluatorLogPaths = {
+      log: undefined,
+      humanReadableSummary: undefined,
+      endSummary: undefined,
+      jsonSummary: undefined,
+      summarySymbols: undefined,
+    },
   ) {
     /**/
   }

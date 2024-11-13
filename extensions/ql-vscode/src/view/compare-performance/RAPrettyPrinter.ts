@@ -1,7 +1,7 @@
 /**
  * A set of names, for generating unambiguous abbreviations.
  */
-export class NameSet {
+class NameSet {
   private readonly abbreviations = new Map<string, string>();
 
   constructor(readonly names: string[]) {
