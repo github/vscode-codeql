@@ -978,7 +978,7 @@ export class DatabaseUI extends DisposableObject {
   private async chooseAndSetDatabase(
     byFolder: boolean,
     progress: ProgressCallback,
-  ): Promise<DatabaseItem[] | DatabaseItem | undefined> {
+  ): Promise<DatabaseItem | undefined> {
     const uri = await chooseDatabaseDir(byFolder);
     if (!uri) {
       return undefined;
