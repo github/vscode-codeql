@@ -269,8 +269,8 @@ export class DatabaseUI extends DisposableObject {
       "codeQL.getCurrentDatabase": this.handleGetCurrentDatabase.bind(this),
       "codeQL.chooseDatabaseFolder":
         this.handleChooseDatabaseFolderFromPalette.bind(this),
-      "codeQL.chooseMultipleDatabaseFolder":
-        this.handleChooseMultipleDatabaseFolderFromPalette.bind(this),
+      "codeQL.chooseDatabaseFoldersParent":
+        this.handleChooseDatabaseFoldersParentFromPalette.bind(this),
       "codeQL.chooseDatabaseArchive":
         this.handleChooseDatabaseArchiveFromPalette.bind(this),
       "codeQL.chooseDatabaseInternet":
@@ -363,7 +363,7 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  private async handleChooseMultipleDatabaseFolderFromPalette(): Promise<void> {
+  private async handleChooseDatabaseFoldersParentFromPalette(): Promise<void> {
     return withProgress(
       async (progress) => {
         await this.chooseDatabasesParentFolder(progress);

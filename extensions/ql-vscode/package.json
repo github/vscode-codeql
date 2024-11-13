@@ -840,7 +840,7 @@
         "title": "CodeQL: Choose Database from Folder"
       },
       {
-        "command": "codeQL.chooseMultipleDatabaseFolder",
+        "command": "codeQL.chooseDatabaseFoldersParent",
         "title": "CodeQL: Choose Folder to import all databases contained in it"
       },
       {
