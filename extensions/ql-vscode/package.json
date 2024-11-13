@@ -1739,6 +1739,10 @@
           "when": "false"
         },
         {
+          "command": "codeQLQueryHistory.comparePerformanceWith",
+          "when": "false"
+        },
+        {
           "command": "codeQLQueryHistory.sortByName",
           "when": "false"
         },
