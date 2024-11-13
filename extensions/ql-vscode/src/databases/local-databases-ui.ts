@@ -980,14 +980,14 @@ export class DatabaseUI extends DisposableObject {
     byFolder: boolean,
     progress: ProgressCallback,
   ): Promise<DatabaseItem | undefined> {
-    if (byFolder && !uri.fsPath.endsWith("testproj")) {
+    if (byFolder && !uri.fsPath.endsWith(".testproj")) {
       const fixedUri = await this.fixDbUri(uri);
       // we are selecting a database folder
       return await this.databaseManager.openDatabase(fixedUri, {
         type: "folder",
       });
     } else {
-      // we are selecting a database archive or a testproj.
+      // we are selecting a database archive or a .testproj.
       // Unzip archives (if an archive) and copy into a workspace-controlled area
       // before importing.
       return await this.databaseFetcher.importLocalDatabase(
@@ -1028,6 +1028,7 @@ export class DatabaseUI extends DisposableObject {
     const databases: DatabaseItem[] = [];
     const failures: string[] = [];
     const entries = await workspace.fs.readDirectory(uri);
+    const validFileTypes = [FileType.File, FileType.Directory];
 
     for (const [index, entry] of entries.entries()) {
       progress({
@@ -1044,10 +1045,19 @@ export class DatabaseUI extends DisposableObject {
         });
       };
 
+      if (!validFileTypes.includes(entry[1])) {
+        void this.app.logger.log(
+          `Skip import ${entry}, invalid FileType: ${entry[1]}`,
+        );
+        continue;
+      }
+
       try {
-        const fixedUri = await this.fixDbUri(Uri.joinPath(uri, entry[0]));
+        const databaseUri = Uri.joinPath(uri, entry[0]);
+        void this.app.logger.log(`Importing from ${databaseUri}`);
+
         const database = await this.importDatabase(
-          fixedUri,
+          databaseUri,
           entry[1] === FileType.Directory,
           subProgress,
         );
@@ -1056,7 +1066,7 @@ export class DatabaseUI extends DisposableObject {
         } else {
           failures.push(entry[0]);
         }
-      } catch (e) {
+      } catch {
         failures.push(entry[0]);
       }
     }
