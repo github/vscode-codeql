@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { styled } from "styled-components";
 
 /**
  * A set of names, for generating unambiguous abbreviations.
@@ -12,7 +13,7 @@ class NameSet {
     qnames
       .map((qname) => builder.visitQName(qname))
       .forEach((r, index) => {
-        this.abbreviations.set(names[index], r.abbreviate());
+        this.abbreviations.set(names[index], r.abbreviate(true));
       });
   }
 
@@ -86,7 +87,7 @@ class TrieNode {
 
 interface VisitResult {
   node: TrieNode;
-  abbreviate: () => React.ReactNode;
+  abbreviate: (isRoot?: boolean) => React.ReactNode;
 }
 
 class TrieBuilder {
@@ -118,13 +119,21 @@ class TrieBuilder {
     }
     return {
       node: trieNode,
-      abbreviate: () => {
+      abbreviate: (isRoot = false) => {
         const result: React.ReactNode[] = [];
         if (prefix != null) {
           result.push(prefix.abbreviate());
           result.push("::");
         }
-        result.push(qname.name);
+        const { name } = qname;
+        const hash = name.indexOf("#");
+        if (hash !== -1 && isRoot) {
+          const shortName = name.substring(0, hash);
+          result.push(<IdentifierSpan>{shortName}</IdentifierSpan>);
+          result.push(name.substring(hash));
+        } else {
+          result.push(isRoot ? <IdentifierSpan>{name}</IdentifierSpan> : name);
+        }
         if (args != null) {
           result.push("<");
           if (trieNodeBeforeArgs.children.size === 1) {
@@ -148,6 +157,17 @@ class TrieBuilder {
   }
 }
 
+/** Span enclosing an entire qualified name. */
+const QNameSpan = styled.span`
+  color: var(--vscode-disabledForeground);
+`;
+
+/** Span enclosing the innermost identifier, e.g. the `foo` in `A::B<X>::foo#abc` */
+const IdentifierSpan = styled.span`
+  /* color: #4078f2; */
+  color: var(--vscode-foreground);
+`;
+
 const nameTokenRegex = /\b[^ ]+::[^ (]+\b/g;
 
 export function abbreviateRASteps(steps: string[]): React.ReactNode[] {
@@ -165,7 +185,7 @@ export function abbreviateRASteps(steps: string[]): React.ReactNode[] {
         match.index,
       );
       result.push(before);
-      result.push(nameSet.getAbbreviation(match[0]));
+      result.push(<QNameSpan>{nameSet.getAbbreviation(match[0])}</QNameSpan>);
     }
     result.push(
       matches.length === 0
