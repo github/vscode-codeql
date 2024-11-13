@@ -1,8 +1,10 @@
+import { Fragment } from "react";
+
 /**
  * A set of names, for generating unambiguous abbreviations.
  */
 class NameSet {
-  private readonly abbreviations = new Map<string, string>();
+  private readonly abbreviations = new Map<string, React.ReactNode>();
 
   constructor(readonly names: string[]) {
     const qnames = names.map(parseName);
@@ -14,7 +16,7 @@ class NameSet {
       });
   }
 
-  public getAbbreviation(name: string) {
+  public getAbbreviation(name: string): React.ReactNode {
     return this.abbreviations.get(name) ?? name;
   }
 }
@@ -84,7 +86,7 @@ class TrieNode {
 
 interface VisitResult {
   node: TrieNode;
-  abbreviate: () => string;
+  abbreviate: () => React.ReactNode;
 }
 
 class TrieBuilder {
@@ -117,20 +119,28 @@ class TrieBuilder {
     return {
       node: trieNode,
       abbreviate: () => {
-        let result = "";
+        const result: React.ReactNode[] = [];
         if (prefix != null) {
-          result += prefix.abbreviate();
-          result += "::";
+          result.push(prefix.abbreviate());
+          result.push("::");
         }
-        result += qname.name;
+        result.push(qname.name);
         if (args != null) {
-          result += "<";
+          result.push("<");
           if (trieNodeBeforeArgs.children.size === 1) {
-            result += "...";
+            result.push("...");
           } else {
-            result += args.map((arg) => arg.abbreviate()).join(",");
+            let first = true;
+            for (const arg of args) {
+              result.push(arg.abbreviate());
+              if (first) {
+                first = false;
+              } else {
+                result.push(",");
+              }
+            }
           }
-          result += ">";
+          result.push(">");
         }
         return result;
       },
@@ -140,12 +150,31 @@ class TrieBuilder {
 
 const nameTokenRegex = /\b[^ ]+::[^ (]+\b/g;
 
-export function abbreviateRASteps(steps: string[]): string[] {
+export function abbreviateRASteps(steps: string[]): React.ReactNode[] {
   const nameTokens = steps.flatMap((step) =>
     Array.from(step.matchAll(nameTokenRegex)).map((tok) => tok[0]),
   );
   const nameSet = new NameSet(nameTokens);
-  return steps.map((step) =>
-    step.replace(nameTokenRegex, (match) => nameSet.getAbbreviation(match)),
-  );
+  return steps.map((step, index) => {
+    const matches = Array.from(step.matchAll(nameTokenRegex));
+    const result: React.ReactNode[] = [];
+    for (let i = 0; i < matches.length; i++) {
+      const match = matches[i];
+      const before = step.slice(
+        i === 0 ? 0 : matches[i - 1].index + matches[i - 1][0].length,
+        match.index,
+      );
+      result.push(before);
+      result.push(nameSet.getAbbreviation(match[0]));
+    }
+    result.push(
+      matches.length === 0
+        ? step
+        : step.slice(
+            matches[matches.length - 1].index +
+              matches[matches.length - 1][0].length,
+          ),
+    );
+    return <Fragment key={index}>{result}</Fragment>;
+  });
 }
