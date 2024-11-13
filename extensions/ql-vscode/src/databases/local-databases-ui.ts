@@ -972,18 +972,14 @@ export class DatabaseUI extends DisposableObject {
   }
 
   /**
-   * Ask the user for a database directory. Returns the chosen database, or `undefined` if the
-   * operation was canceled.
+   * Import database from uri. Returns the imported database, or `undefined` if the
+   * operation was unsuccessful.
    */
-  private async chooseAndSetDatabase(
+  private async importDatabase(
+    uri: Uri,
     byFolder: boolean,
     progress: ProgressCallback,
   ): Promise<DatabaseItem | undefined> {
-    const uri = await chooseDatabaseDir(byFolder);
-    if (!uri) {
-      return undefined;
-    }
-
     if (byFolder && !uri.fsPath.endsWith("testproj")) {
       const fixedUri = await this.fixDbUri(uri);
       // we are selecting a database folder
@@ -999,6 +995,22 @@ export class DatabaseUI extends DisposableObject {
         progress,
       );
     }
+  }
+
+  /**
+   * Ask the user for a database directory. Returns the chosen database, or `undefined` if the
+   * operation was canceled.
+   */
+  private async chooseAndSetDatabase(
+    byFolder: boolean,
+    progress: ProgressCallback,
+  ): Promise<DatabaseItem | undefined> {
+    const uri = await chooseDatabaseDir(byFolder);
+    if (!uri) {
+      return undefined;
+    }
+
+    return await this.importDatabase(uri, byFolder, progress);
   }
 
   /**
@@ -1024,16 +1036,28 @@ export class DatabaseUI extends DisposableObject {
         message: `Importing ${entry[0]}`,
       });
 
-      if (entry[1] === FileType.Directory) {
-        try {
-          const fixedUri = await this.fixDbUri(Uri.joinPath(uri, entry[0]));
-          const database = await this.databaseManager.openDatabase(fixedUri, {
-            type: "folder",
-          });
+      const subProgress: ProgressCallback = (p) => {
+        progress({
+          step: index + 1,
+          maxStep: entries.length,
+          message: `Importing ${entry[0]} (${p.step}/${p.maxStep}): ${p.message}`,
+        });
+      };
+
+      try {
+        const fixedUri = await this.fixDbUri(Uri.joinPath(uri, entry[0]));
+        const database = await this.importDatabase(
+          fixedUri,
+          entry[1] === FileType.Directory,
+          subProgress,
+        );
+        if (database) {
           databases.push(database);
-        } catch (e) {
+        } else {
           failures.push(entry[0]);
         }
+      } catch (e) {
+        failures.push(entry[0]);
       }
     }
 
@@ -1041,7 +1065,9 @@ export class DatabaseUI extends DisposableObject {
       void showAndLogErrorMessage(
         this.app.logger,
         `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).`,
-        { fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s). Failed folders to import:\n  ${failures.join("\n  ")}` },
+        {
+          fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s). Failed folders to import:\n  - ${failures.join("\n  - ")}`,
+        },
       );
     } else if (databases.length === 0) {
       void showAndLogErrorMessage(
