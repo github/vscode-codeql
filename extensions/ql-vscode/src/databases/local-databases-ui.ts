@@ -369,7 +369,7 @@ export class DatabaseUI extends DisposableObject {
         await this.chooseDatabasesParentFolder(progress);
       },
       {
-        title: "Choose a Folder contains all Database Folders",
+        title: "Choose a Parent Folder contains all Databases to import",
       },
     );
   }
@@ -1076,7 +1076,7 @@ export class DatabaseUI extends DisposableObject {
         this.app.logger,
         `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).`,
         {
-          fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s). Failed folders to import:\n  - ${failures.join("\n  - ")}`,
+          fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).\nFailed databases to import:\n  - ${failures.join("\n  - ")}`,
         },
       );
     } else if (databases.length === 0) {
