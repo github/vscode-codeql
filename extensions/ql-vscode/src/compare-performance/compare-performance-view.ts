@@ -56,8 +56,10 @@ export class ComparePerformanceView extends AbstractWebview<
     }
 
     const [fromPerf, toPerf] = await Promise.all([
-      scanLogWithProgress(fromJsonLog, "1/2"),
-      scanLogWithProgress(toJsonLog, "2/2"),
+      fromJsonLog === ""
+        ? new PerformanceOverviewScanner()
+        : scanLogWithProgress(fromJsonLog, "1/2"),
+      scanLogWithProgress(toJsonLog, fromJsonLog === "" ? "1/1" : "2/2"),
     ]);
 
     await this.postMessage({

@@ -927,7 +927,7 @@ async function activateWithInstalledDistribution(
     ): Promise<void> => showResultsForComparison(compareView, from, to),
     async (
       from: CompletedLocalQueryInfo,
-      to: CompletedLocalQueryInfo,
+      to: CompletedLocalQueryInfo | undefined,
     ): Promise<void> =>
       showPerformanceComparison(comparePerformanceView, from, to),
   );
@@ -1208,17 +1208,22 @@ async function showResultsForComparison(
 async function showPerformanceComparison(
   view: ComparePerformanceView,
   from: CompletedLocalQueryInfo,
-  to: CompletedLocalQueryInfo,
+  to: CompletedLocalQueryInfo | undefined,
 ): Promise<void> {
-  const fromLog = from.evaluatorLogPaths?.jsonSummary;
-  const toLog = to.evaluatorLogPaths?.jsonSummary;
+  let fromLog = from.evaluatorLogPaths?.jsonSummary;
+  let toLog = to?.evaluatorLogPaths?.jsonSummary;
+
+  if (to === undefined) {
+    toLog = fromLog;
+    fromLog = "";
+  }
   if (fromLog === undefined || toLog === undefined) {
     return extLogger.showWarningMessage(
       `Cannot compare performance as the structured logs are missing. Did they queries complete normally?`,
     );
   }
   await extLogger.log(
-    `Comparing performance of ${from.getQueryName()} and ${to.getQueryName()}`,
+    `Comparing performance of ${from.getQueryName()} and ${to?.getQueryName() ?? "baseline"}`,
   );
 
   await view.showResults(fromLog, toLog);
