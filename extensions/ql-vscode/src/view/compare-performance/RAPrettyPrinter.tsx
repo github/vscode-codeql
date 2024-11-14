@@ -157,44 +157,73 @@ class TrieBuilder {
   }
 }
 
-/** Span enclosing an entire qualified name. */
+/**
+ * Span enclosing an entire qualified name.
+ *
+ * Can be used to gray out uninteresting parts of the name, though this looks worse than expected.
+ */
 const QNameSpan = styled.span`
-  color: var(--vscode-disabledForeground);
+  /* color: var(--vscode-disabledForeground); */
 `;
 
 /** Span enclosing the innermost identifier, e.g. the `foo` in `A::B<X>::foo#abc` */
 const IdentifierSpan = styled.span`
-  /* color: #4078f2; */
-  color: var(--vscode-foreground);
+  font-weight: 600;
 `;
 
-const nameTokenRegex = /\b[^ ]+::[^ (]+\b/g;
+/** Span enclosing keywords such as `JOIN` and `WITH`. */
+const KeywordSpan = styled.span`
+  font-weight: 500;
+`;
+
+const nameTokenRegex = /\b[^ (]+\b/g;
+
+function traverseMatches(
+  text: string,
+  regex: RegExp,
+  callbacks: {
+    onMatch: (match: RegExpMatchArray) => void;
+    onText: (text: string) => void;
+  },
+) {
+  const matches = Array.from(text.matchAll(regex));
+  let lastIndex = 0;
+  for (const match of matches) {
+    const before = text.substring(lastIndex, match.index);
+    if (before !== "") {
+      callbacks.onText(before);
+    }
+    callbacks.onMatch(match);
+    lastIndex = match.index + match[0].length;
+  }
+  const after = text.substring(lastIndex);
+  if (after !== "") {
+    callbacks.onText(after);
+  }
+}
 
 export function abbreviateRASteps(steps: string[]): React.ReactNode[] {
   const nameTokens = steps.flatMap((step) =>
     Array.from(step.matchAll(nameTokenRegex)).map((tok) => tok[0]),
   );
-  const nameSet = new NameSet(nameTokens);
+  const nameSet = new NameSet(nameTokens.filter((name) => name.includes("::")));
   return steps.map((step, index) => {
-    const matches = Array.from(step.matchAll(nameTokenRegex));
     const result: React.ReactNode[] = [];
-    for (let i = 0; i < matches.length; i++) {
-      const match = matches[i];
-      const before = step.slice(
-        i === 0 ? 0 : matches[i - 1].index + matches[i - 1][0].length,
-        match.index,
-      );
-      result.push(before);
-      result.push(<QNameSpan>{nameSet.getAbbreviation(match[0])}</QNameSpan>);
-    }
-    result.push(
-      matches.length === 0
-        ? step
-        : step.slice(
-            matches[matches.length - 1].index +
-              matches[matches.length - 1][0].length,
-          ),
-    );
+    traverseMatches(step, nameTokenRegex, {
+      onMatch(match) {
+        const text = match[0];
+        if (text.includes("::")) {
+          result.push(<QNameSpan>{nameSet.getAbbreviation(text)}</QNameSpan>);
+        } else if (/[A-Z]+/.test(text)) {
+          result.push(<KeywordSpan>{text}</KeywordSpan>);
+        } else {
+          result.push(match[0]);
+        }
+      },
+      onText(text) {
+        result.push(text);
+      },
+    });
     return <Fragment key={index}>{result}</Fragment>;
   });
 }
