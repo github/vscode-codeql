@@ -104,7 +104,6 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
     switch (event.evaluationStrategy) {
       case "EXTENSIONAL":
       case "COMPUTED_EXTENSIONAL":
-      case "COMPUTE_SIMPLE":
       case "CACHACA": {
         // TODO: is CACHACA effectively the same as cache hit?
         break;
@@ -122,12 +121,17 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
         break;
       }
       case "COMPUTE_RECURSIVE":
+      case "COMPUTE_SIMPLE":
       case "IN_LAYER": {
         const index = this.getPredicateIndex(event.predicateName);
         let totalTime = 0;
         let totalTuples = 0;
-        for (const millis of event.predicateIterationMillis ?? []) {
-          totalTime += millis;
+        if (event.evaluationStrategy === "COMPUTE_SIMPLE") {
+          totalTime += event.millis;
+        } else {
+          for (const millis of event.predicateIterationMillis ?? []) {
+            totalTime += millis;
+          }
         }
         const {
           timeCosts,
