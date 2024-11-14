@@ -12,7 +12,7 @@ import type {
 import { formatDecimal } from "../../common/number";
 import { styled } from "styled-components";
 import { Codicon, ViewTitle, WarningBox } from "../common";
-import { abbreviateRASteps } from "./RAPrettyPrinter";
+import { abbreviateRANames, abbreviateRASteps } from "./RAPrettyPrinter";
 
 const enum AbsentReason {
   NotSeen = "NotSeen",
@@ -364,6 +364,8 @@ export function ComparePerformance(_: Record<string, never>) {
     totalDiff += row.diff;
   }
 
+  const rowNames = abbreviateRANames(rows.map((row) => row.name));
+
   return (
     <>
       <ViewTitle>Performance comparison</ViewTitle>
@@ -406,7 +408,7 @@ export function ComparePerformance(_: Record<string, never>) {
           </HeaderTR>
         </thead>
       </Table>
-      {rows.map((row) => (
+      {rows.map((row, rowIndex) => (
         <Table
           key={row.name}
           className={expandedPredicates.has(row.name) ? "expanded" : ""}
@@ -427,7 +429,7 @@ export function ComparePerformance(_: Record<string, never>) {
               {renderAbsoluteValue(row.before)}
               {renderAbsoluteValue(row.after)}
               {renderDelta(row.diff)}
-              <NameCell>{row.name}</NameCell>
+              <NameCell>{rowNames[rowIndex]}</NameCell>
             </PredicateTR>
             {expandedPredicates.has(row.name) && (
               <>
