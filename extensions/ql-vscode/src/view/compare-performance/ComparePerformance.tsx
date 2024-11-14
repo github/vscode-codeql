@@ -216,6 +216,10 @@ function PipelineStep(props: PipelineStepProps) {
   );
 }
 
+const HeaderTR = styled.tr`
+  background-color: var(--vscode-sideBar-background);
+`;
+
 interface HighLevelStatsProps {
   before: PredicateInfo;
   after: PredicateInfo;
@@ -229,13 +233,13 @@ function HighLevelStats(props: HighLevelStatsProps) {
     before.evaluationCount > 1 || after.evaluationCount > 1;
   return (
     <>
-      <tr>
+      <HeaderTR>
         <ChevronCell></ChevronCell>
         <NumberHeader>{hasBefore ? "Before" : ""}</NumberHeader>
         <NumberHeader>{hasAfter ? "After" : ""}</NumberHeader>
         <NumberHeader>{hasBefore && hasAfter ? "Delta" : ""}</NumberHeader>
         <NameHeader>Stats</NameHeader>
-      </tr>
+      </HeaderTR>
       {showEvaluationCount && (
         <PipelineStep
           before={before.evaluationCount || undefined}
@@ -393,13 +397,13 @@ export function ComparePerformance(_: Record<string, never>) {
       </SortOrderDropdown>
       <Table>
         <thead>
-          <tr>
+          <HeaderTR>
             <ChevronCell />
             <NumberHeader>Before</NumberHeader>
             <NumberHeader>After</NumberHeader>
             <NumberHeader>Delta</NumberHeader>
             <NameHeader>Predicate</NameHeader>
-          </tr>
+          </HeaderTR>
         </thead>
       </Table>
       {rows.map((row) => (
@@ -433,7 +437,7 @@ export function ComparePerformance(_: Record<string, never>) {
                   row.after.pipelines,
                 ).map(({ name, first, second }, pipelineIndex) => (
                   <Fragment key={pipelineIndex}>
-                    <tr>
+                    <HeaderTR>
                       <td></td>
                       <NumberHeader>{first != null && "Before"}</NumberHeader>
                       <NumberHeader>{second != null && "After"}</NumberHeader>
@@ -448,7 +452,7 @@ export function ComparePerformance(_: Record<string, never>) {
                             ? " (before)"
                             : ""}
                       </NameHeader>
-                    </tr>
+                    </HeaderTR>
                     {abbreviateRASteps(first?.steps ?? second!.steps).map(
                       (step, index) => (
                         <PipelineStep
