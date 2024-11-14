@@ -10,7 +10,7 @@ import {
   remove,
 } from "fs-extra";
 import path, { basename, join } from "path";
-import { Uri, window } from "vscode";
+import { Uri, window, workspace } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { App } from "../common/app";
 import { createTimeoutSignal } from "../common/fetch-stream";
@@ -442,6 +442,19 @@ export class RemoteLogs {
     execFileSync("tar", ["-xzf", tarballPath, "-C", untarPath]);
   }
 
+  private getDca(): { bin: string; config: string } {
+    const dcaDir = workspace.getConfiguration().get("codeql-dca.dir");
+    if (typeof dcaDir !== "string") {
+      throw new Error(
+        'codeql-dca.dir not set in workspace configuration. Can not process remote logs without it. Solution: insert `"codeql-dca.dir": "/Users/esbena/Documents/codeql-dca"` into your `settings.json` and try again.',
+      );
+    }
+    return {
+      bin: path.join(dcaDir, "dca"),
+      config: path.join(dcaDir, "dca-config.yml"),
+    };
+  }
+
   private async getPotentialTargetInfos(
     experimentName: string,
   ): Promise<Array<MinimalDownloadsType["targets"]["string"]>> {
@@ -450,13 +463,13 @@ export class RemoteLogs {
     );
     const tasksDir = join(dir, "tasks");
     await ensureDir(tasksDir);
-    // XXX hardcoded path
-    const dca = "/Users/esbena/Documents/codeql-dca/dca";
-    const config = "/Users/esbena/Documents/codeql-dca/dca-config.yml";
-    execFileSync(dca, [
+
+    const dca = this.getDca();
+
+    execFileSync(dca.bin, [
       "tasks-remote",
       "--config",
-      config,
+      dca.config,
       "--mode",
       "get-tasks",
       "--name",
@@ -465,10 +478,10 @@ export class RemoteLogs {
       dir,
     ]);
     const downloadsFile = join(dir, "downloads.json");
-    execFileSync(dca, [
+    execFileSync(dca.bin, [
       "tasks-show",
       "--config",
-      config,
+      dca.config,
       "--mode",
       "downloads",
       "--output",
