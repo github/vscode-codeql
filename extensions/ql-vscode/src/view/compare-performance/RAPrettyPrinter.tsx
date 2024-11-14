@@ -193,7 +193,12 @@ interface ExpandableNamePartProps {
 function ExpandableNamePart(props: ExpandableNamePartProps) {
   const [isExpanded, setExpanded] = useState(false);
   return (
-    <ExpandableTextButton onClick={() => setExpanded(!isExpanded)}>
+    <ExpandableTextButton
+      onClick={(event: Event) => {
+        setExpanded(!isExpanded);
+        event.stopPropagation();
+      }}
+    >
       {isExpanded ? props.children : "..."}
     </ExpandableTextButton>
   );
@@ -268,4 +273,9 @@ export function abbreviateRASteps(steps: string[]): React.ReactNode[] {
     });
     return <Fragment key={index}>{result}</Fragment>;
   });
+}
+
+export function abbreviateRANames(names: string[]): React.ReactNode[] {
+  const nameSet = new NameSet(names);
+  return names.map((name) => nameSet.getAbbreviation(name));
 }
