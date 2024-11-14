@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { styled } from "styled-components";
 
 /**
@@ -27,6 +27,21 @@ interface QualifiedName {
   prefix?: QualifiedName;
   name: string;
   args?: QualifiedName[];
+}
+
+function qnameToString(name: QualifiedName): string {
+  const parts: string[] = [];
+  if (name.prefix != null) {
+    parts.push(qnameToString(name.prefix));
+    parts.push("::");
+  }
+  parts.push(name.name);
+  if (name.args != null && name.args.length > 0) {
+    parts.push("<");
+    parts.push(name.args.map(qnameToString).join(","));
+    parts.push(">");
+  }
+  return parts.join("");
 }
 
 function tokeniseName(text: string) {
@@ -137,7 +152,10 @@ class TrieBuilder {
         if (args != null) {
           result.push("<");
           if (trieNodeBeforeArgs.children.size === 1) {
-            result.push("...");
+            const argsText = qname
+              .args!.map((arg) => qnameToString(arg))
+              .join(",");
+            result.push(<ExpandableNamePart>{argsText}</ExpandableNamePart>);
           } else {
             let first = true;
             for (const arg of args) {
@@ -155,6 +173,30 @@ class TrieBuilder {
       },
     };
   }
+}
+
+const ExpandableTextButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  &:hover {
+    background-color: rgba(128, 128, 128, 0.2);
+  }
+`;
+
+interface ExpandableNamePartProps {
+  children: React.ReactNode;
+}
+
+function ExpandableNamePart(props: ExpandableNamePartProps) {
+  const [isExpanded, setExpanded] = useState(false);
+  return (
+    <ExpandableTextButton onClick={() => setExpanded(!isExpanded)}>
+      {isExpanded ? props.children : "..."}
+    </ExpandableTextButton>
+  );
 }
 
 /**
