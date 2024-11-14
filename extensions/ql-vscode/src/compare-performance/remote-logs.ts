@@ -1,4 +1,5 @@
 import { execFileSync } from "child_process";
+import { rmSync } from "fs";
 import {
   createWriteStream,
   ensureDir,
@@ -194,30 +195,52 @@ export class RemoteLogs {
    */
   private async downloadLogsForTarget(
     artifactDownloadUrl: { url: string; bytes: number; id: string },
-    downloadDir: string,
+    logsDir: string,
     progress: ProgressCallback,
   ) {
     const { url, bytes, id: artifactDiskId } = artifactDownloadUrl;
-    const downloadPath = path.join(this.workingDirectory, artifactDiskId);
-    if (existsSync(downloadPath) && readdirSync(downloadPath).length > 0) {
+    const artifactDownloadPath = path.join(
+      this.workingDirectory,
+      artifactDiskId,
+    );
+    if (
+      existsSync(artifactDownloadPath) &&
+      readdirSync(artifactDownloadPath).length > 0
+    ) {
       void extLogger.log(
         `Skipping download to existing '${artifactDiskId}'...`,
       );
     } else {
-      await ensureDir(downloadPath);
+      await ensureDir(artifactDownloadPath);
       void extLogger.log(
-        `Downloading from ${artifactDiskId} (bytes: ${bytes}) ${downloadPath}...`,
+        `Downloading from ${artifactDiskId} (bytes: ${bytes}) ${artifactDownloadPath}...`,
       );
-      await this.fetchAndUnzip(url, downloadPath, progress);
+      // this is incredibly unstable in practice: so retry up to 5 times
+      // XXX is there no generic retry utility in this project?
+      let retry = 0;
+      while (retry < 5) {
+        try {
+          await this.fetchAndUnzip(url, artifactDownloadPath, progress);
+          break;
+        } catch (e) {
+          if (retry >= 5) {
+            throw e;
+          }
+          void extLogger.log(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            `Failed to download and unzip ${artifactDiskId}: ${(e as any).message ?? "no error message"}. Trying again...`,
+          );
+          rmSync(artifactDownloadPath);
+          retry++;
+        }
+      }
     }
-    if (existsSync(downloadDir) && readdirSync(downloadDir).length > 0) {
-      void extLogger.log(
-        `Skipping log extraction to existing '${downloadDir}'...`,
-      );
+    if (existsSync(logsDir) && readdirSync(logsDir).length > 0) {
+      void extLogger.log(`Skipping log extraction to existing '${logsDir}'...`);
     } else {
-      await ensureDir(downloadDir);
+      await ensureDir(logsDir);
       // find the lone tar.gz file in the unzipped directory
-      const unzippedFiles = readdirSync(downloadPath);
+      const unzippedFiles = readdirSync(artifactDownloadPath);
       const tarGzFiles = unzippedFiles.filter((f) => f.endsWith(".tar.gz"));
       if (tarGzFiles.length !== 1) {
         throw new Error(
@@ -226,11 +249,20 @@ export class RemoteLogs {
           )}`,
         );
       }
-      await this.untargz(
-        path.join(downloadPath, tarGzFiles[0]),
-        downloadDir,
-        progress,
-      );
+      try {
+        await this.untargz(
+          path.join(artifactDownloadPath, tarGzFiles[0]),
+          logsDir,
+          progress,
+        );
+      } catch (e) {
+        // historically, this is due to corruption of the tarball. Remove it and ask the user to try again.
+        await remove(artifactDownloadPath);
+        throw new Error(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          `Failed to untar ${tarGzFiles[0]} into ${logsDir}: ${(e as any).message ?? "no error message"}! Please try the command again.`,
+        );
+      }
     }
   }
 
