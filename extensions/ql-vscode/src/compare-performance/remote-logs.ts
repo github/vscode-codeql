@@ -3,13 +3,13 @@ import {
   createWriteStream,
   ensureDir,
   existsSync,
-  mkdtempSync,
   move,
   readdirSync,
   readJsonSync,
   remove,
+  writeFileSync,
 } from "fs-extra";
-import path, { basename, join } from "path";
+import path, { basename, dirname, join } from "path";
 import { Uri, window, workspace } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { App } from "../common/app";
@@ -17,7 +17,7 @@ import { createTimeoutSignal } from "../common/fetch-stream";
 import { extLogger } from "../common/logging/vscode";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { reportStreamProgress, withProgress } from "../common/vscode/progress";
-import { downloadTimeout } from "../config";
+import { downloadTimeout, GITHUB_URL } from "../config";
 import { QueryOutputDir } from "../local-queries/query-output-dir";
 import { tmpDir } from "../tmp-dir";
 
@@ -50,6 +50,10 @@ type MinimalDownloadsType = {
   };
 };
 
+const dcaControllerRepository = {
+  owner: "github",
+  repo: "codeql-dca-main",
+};
 export class RemoteLogs {
   private LOG_DOWNLOAD_AND_PROCESS_PROGRESS_STEPS = 4;
   private PICK_TARGETS_PROGRESS_STEPS = 4;
@@ -459,42 +463,177 @@ export class RemoteLogs {
   private async getPotentialTargetInfos(
     experimentName: string,
   ): Promise<Array<MinimalDownloadsType["targets"]["string"]>> {
-    const dir = mkdtempSync(
-      path.join(tmpDir.name, "codeql-compare-performance"),
-    );
-    const tasksDir = join(dir, "tasks");
-    await ensureDir(tasksDir);
+    const tasksDir = await this.getTasksForExperiment(experimentName);
 
-    const dca = this.getDca();
-
-    execFileSync(dca.bin, [
-      "tasks-remote",
-      "--config",
-      dca.config,
-      "--mode",
-      "get-tasks",
-      "--name",
-      experimentName,
-      "--dir",
-      dir,
-    ]);
-    const downloadsFile = join(dir, "downloads.json");
-    execFileSync(dca.bin, [
-      "tasks-show",
-      "--config",
-      dca.config,
-      "--mode",
-      "downloads",
-      "--output",
-      downloadsFile,
-      "--dir",
-      dir,
-    ]);
-    const downloads = readJsonSync(downloadsFile) as MinimalDownloadsType;
+    const downloads = await this.getDownloadsFromTasks(tasksDir);
     void extLogger.log(
       `Found ${Object.keys(downloads.targets).length} potential targets in experiment ${experimentName}`,
     );
     return Object.values(downloads.targets);
+  }
+
+  /**
+   * Gets the "downloads" metadata from a taksks directory.
+   */
+  private async getDownloadsFromTasks(
+    tasksDir: string,
+  ): Promise<MinimalDownloadsType> {
+    // store the downloads in a fixed location relative to the tasks directory they are resolved from
+    // this way we can cache them and avoid recomputing them
+    const downloadsFile = join(
+      this.workingDirectory,
+      "downloads-of",
+      path.relative(this.workingDirectory, tasksDir),
+      "downloads.json",
+    );
+    if (existsSync(downloadsFile)) {
+      void extLogger.log(
+        `Skipping downloads extraction to existing '${downloadsFile}'...`,
+      );
+    } else {
+      const dca = this.getDca();
+      await ensureDir(dirname(downloadsFile));
+      void extLogger.log(
+        `Extracting downloads to ${downloadsFile} from ${tasksDir}...`,
+      );
+      const args = [
+        "tasks-show",
+        "--config",
+        dca.config,
+        "--mode",
+        "downloads",
+        "--output",
+        downloadsFile,
+        "--dir",
+        tasksDir,
+      ];
+      void extLogger.log(
+        `Running '${dca.bin}' ${args.map((a) => `'${a}'`).join(" ")}...`,
+      );
+      execFileSync(dca.bin, args);
+    }
+    return readJsonSync(downloadsFile) as MinimalDownloadsType;
+  }
+
+  /**
+   * Fetches the tasks data for an experiment and returns the path to the directory they are store in.
+   */
+  private async getTasksForExperiment(experimentName: string) {
+    const client = await this.app.credentials.getOctokit();
+
+    // XXX implementation details:
+    const dataBranch = `data/${experimentName}`;
+    const tasksPath = `tasks/tasks.yml.gz`;
+
+    // get the tasks.yml.gz file from the data branch
+    // note that it might be large, so get the raw content explicitly after fetching the metadata
+    const baseContentRequestArgs = {
+      ...dcaControllerRepository,
+      ref: dataBranch,
+      path: tasksPath,
+    };
+    const tasksResponse = await client.repos.getContent(baseContentRequestArgs);
+    if (
+      !tasksResponse.data ||
+      !("type" in tasksResponse.data) ||
+      tasksResponse.data.type !== "file"
+    ) {
+      throw new Error(
+        `No file found at ${dcaControllerRepository.owner}/${dcaControllerRepository.repo}/blob/${dataBranch}/${tasksPath}`,
+      );
+    }
+    const tasksSha = tasksResponse.data.sha;
+    const baseTasksDir = path.join(this.workingDirectory, "tasks");
+    const tasksDir = join(baseTasksDir, tasksSha);
+    if (existsSync(tasksDir) && readdirSync(tasksDir).length > 0) {
+      void extLogger.log(`Skipping download to existing '${tasksDir}'...`);
+    } else {
+      void extLogger.log(
+        `Downloading ${tasksResponse.data.size} bytes to ${tasksDir}...`,
+      );
+      // fetch and write the raw content directly to the tasksDir
+      const raw = await client.request(
+        "GET /repos/{owner}/{repo}/git/blobs/{sha}",
+        {
+          ...baseContentRequestArgs,
+          sha: tasksSha,
+          headers: {
+            Accept: "application/vnd.github.v3.raw",
+          },
+        },
+      );
+      await ensureDir(tasksDir);
+      writeFileSync(
+        join(tasksDir, basename(tasksPath)),
+        Buffer.from(raw.data as unknown as ArrayBuffer),
+      );
+    }
+    return tasksDir;
+  }
+
+  private async resolveExperimentChoice(
+    userValue: string | undefined,
+  ): Promise<string | undefined> {
+    if (!userValue) {
+      return undefined;
+    }
+    const client = await this.app.credentials.getOctokit();
+    // cases to handle:
+    // - issue URL -> resolve to experiment name from issue title
+    // - tree/blob URL -> resolve to experiment name by matching on the path
+    // - otherwise -> assume it's an experiment name
+
+    const issuePrefix = `${GITHUB_URL.toString()}${dcaControllerRepository.owner}/${dcaControllerRepository.repo}/issues/`;
+    if (userValue.startsWith(issuePrefix)) {
+      // parse the issue number
+      const issueNumber = userValue
+        .slice(issuePrefix.length)
+        .match(/^\d+/)?.[0];
+      if (!issueNumber) {
+        throw new Error(
+          `Invalid specific issue URL: ${userValue}, can not parse the issue number from it`,
+        );
+      }
+      // resolve the issue number to the experiment name by fetching the issue title and assuming it has the right format
+      const issue = await client.rest.issues.get({
+        ...dcaControllerRepository,
+        issue_number: parseInt(issueNumber),
+      });
+      const title = issue.data.title;
+      const pattern = /^Experiment (.+)$/;
+      const match = title.match(pattern);
+      if (!match) {
+        throw new Error(
+          `Invalid issue title: ${title}, does not match the expected pattern ${pattern.toString()}`,
+        );
+      }
+      void extLogger.log(
+        `Resolved issue ${issueNumber} to experiment ${match[1]}`,
+      );
+      return match[1];
+    }
+    const blobPrefix = `${GITHUB_URL.toString()}${dcaControllerRepository.owner}/${dcaControllerRepository.repo}/blob/data/`;
+    const treePrefix = `${GITHUB_URL.toString()}${dcaControllerRepository.owner}/${dcaControllerRepository.repo}/tree/data/`;
+    let blobTreeSuffix;
+    if (userValue.startsWith(blobPrefix)) {
+      blobTreeSuffix = userValue.slice(blobPrefix.length);
+    } else if (userValue.startsWith(treePrefix)) {
+      blobTreeSuffix = userValue.slice(treePrefix.length);
+    } else {
+      void extLogger.log(`Assuming ${userValue} is an experiment name already`);
+      return userValue;
+    }
+    // parse the blob/tree suffix: the experiment name is the path components before the last `reports`
+    const reportsIndex = blobTreeSuffix.lastIndexOf("/reports");
+    if (reportsIndex === -1) {
+      throw new Error(
+        `Invalid blob/tree URL: ${userValue}, can not find the /reports suffix in it`,
+      );
+    }
+    void extLogger.log(
+      `Resolved blob/tree URL ${userValue} to experiment ${blobTreeSuffix.slice(0, reportsIndex)}`,
+    );
+    return blobTreeSuffix.slice(0, reportsIndex);
   }
 
   private async pickTargets(progress?: ProgressCallback): Promise<
@@ -510,11 +649,14 @@ export class RemoteLogs {
       maxStep: this.PICK_TARGETS_PROGRESS_STEPS,
     });
 
-    const experimentChoice = await window.showInputBox({
-      title: `Enter an experiment name`,
-      placeHolder: "esbena/pr-17968-6d8ef2__nightly__nightly__1",
-      ignoreFocusOut: true,
-    });
+    const experimentChoice = await this.resolveExperimentChoice(
+      await window.showInputBox({
+        title: `Enter an experiment name or a github issue/blob/tree reports URL to the experiment`,
+        placeHolder:
+          "esbena/pr-17968-6d8ef2__nightly__nightly__1, https://github.com/github/codeql-dca-main/issues/24803, https://github.com/github/codeql-dca-main/tree/data/esbena/auto/esbena/tasks-show-downloads/53d1022/1731599740789/reports or https://github.com/github/codeql-dca-main/blob/data/esbena/auto/esbena/tasks-show-downloads/53d1022/1731599740789/reports/checkpoints.md",
+        ignoreFocusOut: true,
+      }),
+    );
 
     if (!experimentChoice) {
       return undefined;
@@ -526,7 +668,11 @@ export class RemoteLogs {
       maxStep: this.PICK_TARGETS_PROGRESS_STEPS,
     });
     const targetInfos = await this.getPotentialTargetInfos(experimentChoice);
-
+    if (targetInfos.length === 0) {
+      throw new Error(
+        `No targets found in experiment ${experimentChoice}. Is the experiment complete enough yet?`,
+      );
+    }
     progress?.({
       message: "Picking target 1/2",
       step: 3,
