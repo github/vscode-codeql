@@ -93,7 +93,7 @@ function renderAbsoluteValue(x: OptionalValue) {
 function renderDelta(x: number) {
   const sign = x > 0 ? "+" : "";
   return (
-    <NumberCell>
+    <NumberCell className={x > 0 ? "bad-value" : x < 0 ? "good-value" : ""}>
       {sign}
       {formatDecimal(x)}
     </NumberCell>
@@ -126,6 +126,19 @@ const NameCell = styled.td``;
 const NumberCell = styled.td`
   text-align: right;
   width: 10em !important;
+
+  &.bad-value {
+    color: var(--vscode-problemsErrorIcon-foreground);
+    tr.expanded & {
+      color: inherit;
+    }
+  }
+  &.good-value {
+    color: var(--vscode-problemsInfoIcon-foreground);
+    tr.expanded & {
+      color: inherit;
+    }
+  }
 `;
 
 const AbsentNumberCell = styled.td`
