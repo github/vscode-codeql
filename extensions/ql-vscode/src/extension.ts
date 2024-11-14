@@ -1076,6 +1076,7 @@ async function activateWithInstalledDistribution(
     ...testUiCommands,
     ...mockServer.getCommands(),
     ...debuggerUI.getCommands(),
+    ...comparePerformanceView.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
