@@ -10,7 +10,7 @@ import {
   remove,
   writeFileSync,
 } from "fs-extra";
-import path, { basename, dirname, join } from "path";
+import { basename, dirname, join, relative } from "path";
 import { Uri, window, workspace } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { App } from "../common/app";
@@ -119,7 +119,7 @@ export class RemoteLogs {
     logArtifact: ArtifactDownload,
   ): Promise<string /* log path */ | undefined> {
     const artifactDownloadUrl = await this.getArtifactDownloadUrl(logArtifact);
-    const logsPath = path.join(
+    const logsPath = join(
       this.workingDirectory,
       `logs-of/${artifactDownloadUrl.id}`,
     );
@@ -171,7 +171,7 @@ export class RemoteLogs {
           )}`,
         );
       }
-      const rawEvaluatorLog = path.join(logsDirectory, firstFileInDir);
+      const rawEvaluatorLog = join(logsDirectory, firstFileInDir);
       if (rawEvaluatorLog !== logsPathDirStructure.evalLogPath) {
         // rename the json file to the standard name
         await move(rawEvaluatorLog, logsPathDirStructure.evalLogPath);
@@ -199,10 +199,7 @@ export class RemoteLogs {
     progress: ProgressCallback,
   ) {
     const { url, bytes, id: artifactDiskId } = artifactDownloadUrl;
-    const artifactDownloadPath = path.join(
-      this.workingDirectory,
-      artifactDiskId,
-    );
+    const artifactDownloadPath = join(this.workingDirectory, artifactDiskId);
     if (
       existsSync(artifactDownloadPath) &&
       readdirSync(artifactDownloadPath).length > 0
@@ -251,7 +248,7 @@ export class RemoteLogs {
       }
       try {
         await this.untargz(
-          path.join(artifactDownloadPath, tarGzFiles[0]),
+          join(artifactDownloadPath, tarGzFiles[0]),
           logsDir,
           progress,
         );
@@ -487,8 +484,8 @@ export class RemoteLogs {
       );
     }
     return {
-      bin: path.join(dcaDir, "dca"),
-      config: path.join(dcaDir, "dca-config.yml"),
+      bin: join(dcaDir, "dca"),
+      config: join(dcaDir, "dca-config.yml"),
     };
   }
 
@@ -515,7 +512,7 @@ export class RemoteLogs {
     const downloadsFile = join(
       this.workingDirectory,
       "downloads-of",
-      path.relative(this.workingDirectory, tasksDir),
+      relative(this.workingDirectory, tasksDir),
       "downloads.json",
     );
     if (existsSync(downloadsFile)) {
@@ -575,7 +572,7 @@ export class RemoteLogs {
       );
     }
     const tasksSha = tasksResponse.data.sha;
-    const baseTasksDir = path.join(this.workingDirectory, "tasks");
+    const baseTasksDir = join(this.workingDirectory, "tasks");
     const tasksDir = join(baseTasksDir, tasksSha);
     if (existsSync(tasksDir) && readdirSync(tasksDir).length > 0) {
       void extLogger.log(`Skipping download to existing '${tasksDir}'...`);
