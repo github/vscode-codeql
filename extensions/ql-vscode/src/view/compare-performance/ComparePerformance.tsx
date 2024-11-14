@@ -98,13 +98,28 @@ function renderAbsoluteValue(x: PredicateInfo, metric: Metric) {
   }
 }
 
+const DeltaPositive = styled(Codicon)`
+  color: var(--vscode-problemsErrorIcon-foreground);
+`;
+
+const DeltaNegative = styled(Codicon)`
+  color: var(--vscode-problemsInfoIcon-foreground);
+`;
+
 function renderDelta(x: number, unit?: string) {
   const sign = x > 0 ? "+" : "";
+  const symbol =
+    x > 0 ? (
+      <DeltaPositive name="triangle-up" />
+    ) : (
+      <DeltaNegative name="triangle-down" />
+    );
   return (
     <NumberCell>
       {sign}
       {formatDecimal(x)}
       {renderUnit(unit)}
+      {symbol}
     </NumberCell>
   );
 }
