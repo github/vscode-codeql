@@ -1,7 +1,6 @@
 import { statSync } from "fs";
 import { createReadStream } from "fs-extra";
 import { createInterface } from "readline";
-import { extLogger } from "./logging/vscode";
 
 /**
  * Read a file consisting of multiple JSON objects. Each object is separated from the previous one
@@ -13,12 +12,13 @@ import { extLogger } from "./logging/vscode";
 export async function readJsonlFile<T>(
   path: string,
   handler: (value: T) => Promise<void>,
+  logger?: { log: (message: string) => void },
 ): Promise<void> {
   function parseJsonFromCurrentLines() {
     try {
       return JSON.parse(currentLineSequence.join("\n")) as T;
     } catch (e) {
-      void extLogger.log(
+      void logger?.log(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         `Error: Failed to parse at line ${lineCount} of ${path} as JSON: ${(e as any)?.message ?? "UNKNOWN REASON"}. Problematic line below:\n${JSON.stringify(currentLineSequence, null, 2)}`,
       );
@@ -27,12 +27,12 @@ export async function readJsonlFile<T>(
   }
 
   function logProgress() {
-    void extLogger.log(
+    void logger?.log(
       `Processed ${lineCount} lines with ${parseCounts} parses...`,
     );
   }
 
-  void extLogger.log(
+  void logger?.log(
     `Parsing ${path} (${statSync(path).size / 1024 / 1024} MB)...`,
   );
   const fileStream = createReadStream(path, "utf8");
@@ -54,7 +54,7 @@ export async function readJsonlFile<T>(
       currentLineSequence.push(line);
     }
     lineCount++;
-    if (lineCount % 100000 === 0) {
+    if (lineCount % 1000000 === 0) {
       logProgress();
     }
   }
