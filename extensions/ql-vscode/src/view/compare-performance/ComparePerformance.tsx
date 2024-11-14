@@ -356,7 +356,7 @@ function ComparePerformanceWithData(props: {
 }) {
   const { data } = props;
 
-  const datasets = useMemo(
+  const { from, to } = useMemo(
     () => ({
       from: new ComparisonDataset(data.from),
       to: new ComparisonDataset(data.to),
@@ -373,8 +373,6 @@ function ComparePerformanceWithData(props: {
   const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("delta");
 
   const [metric, setMetric] = useState<Metric>(metrics.tuples);
-
-  const { from, to } = datasets;
 
   const nameSet = new Set(from.data.names);
   for (const name of to.data.names) {
