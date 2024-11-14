@@ -151,7 +151,7 @@ export class QueryHistoryManager extends DisposableObject {
     ) => Promise<void>,
     private readonly doComparePerformanceCallback: (
       from: CompletedLocalQueryInfo,
-      to: CompletedLocalQueryInfo,
+      to: CompletedLocalQueryInfo | undefined,
     ) => Promise<void>,
   ) {
     super();
@@ -706,7 +706,10 @@ export class QueryHistoryManager extends DisposableObject {
 
     let toItem: CompletedLocalQueryInfo | undefined = undefined;
     try {
-      toItem = await this.findOtherQueryToCompare(fromItem, multiSelect);
+      toItem = await this.findOtherQueryToComparePerformance(
+        fromItem,
+        multiSelect,
+      );
     } catch (e) {
       void showAndLogErrorMessage(
         this.app.logger,
@@ -714,9 +717,7 @@ export class QueryHistoryManager extends DisposableObject {
       );
     }
 
-    if (toItem !== undefined) {
-      await this.doComparePerformanceCallback(fromItem, toItem);
-    }
+    await this.doComparePerformanceCallback(fromItem, toItem);
   }
 
   async handleItemClicked(item: QueryHistoryInfo) {
@@ -1116,10 +1117,65 @@ export class QueryHistoryManager extends DisposableObject {
         detail: item.completedQuery.message,
         query: item,
       }));
+
     if (comparableQueryLabels.length < 1) {
       throw new Error("No other queries available to compare with.");
     }
     const choice = await window.showQuickPick(comparableQueryLabels);
+
+    return choice?.query;
+  }
+
+  private async findOtherQueryToComparePerformance(
+    fromItem: CompletedLocalQueryInfo,
+    allSelectedItems: CompletedLocalQueryInfo[],
+  ): Promise<CompletedLocalQueryInfo | undefined> {
+    const dbName = fromItem.databaseName;
+
+    // If exactly 2 items are selected, return the one that
+    // isn't being used as the "from" item.
+    if (allSelectedItems.length === 2) {
+      const otherItem =
+        fromItem === allSelectedItems[0]
+          ? allSelectedItems[1]
+          : allSelectedItems[0];
+      if (otherItem.databaseName !== dbName) {
+        throw new Error("Query databases must be the same.");
+      }
+      return otherItem;
+    }
+
+    if (allSelectedItems.length > 2) {
+      throw new Error("Please select no more than 2 queries.");
+    }
+
+    // Otherwise, present a dialog so the user can choose the item they want to use.
+    const comparableQueryLabels = this.treeDataProvider.allHistory
+      .filter(this.isSuccessfulCompletedLocalQueryInfo)
+      .filter(
+        (otherItem) =>
+          otherItem !== fromItem && otherItem.databaseName === dbName,
+      )
+      .map((item) => ({
+        label: this.labelProvider.getLabel(item),
+        description: item.databaseName,
+        detail: item.completedQuery.message,
+        query: item,
+      }));
+    const comparableQueryLabelsWithDefault = [
+      {
+        label: "Single run",
+        description:
+          "Look at the performance of this run, compared to a trivial baseline",
+        detail: undefined,
+        query: undefined,
+      },
+      ...comparableQueryLabels,
+    ];
+    if (comparableQueryLabelsWithDefault.length < 1) {
+      throw new Error("No other queries available to compare with.");
+    }
+    const choice = await window.showQuickPick(comparableQueryLabelsWithDefault);
 
     return choice?.query;
   }
