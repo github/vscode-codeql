@@ -1,3 +1,4 @@
+import { statSync } from "fs";
 import { ViewColumn } from "vscode";
 
 import type { App } from "../common/app";
@@ -11,6 +12,7 @@ import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
 import { AbstractWebview } from "../common/vscode/abstract-webview";
+import { withProgress } from "../common/vscode/progress";
 import { telemetryListener } from "../common/vscode/telemetry";
 import type { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import { PerformanceOverviewScanner } from "../log-insights/performance-comparison";
@@ -41,12 +43,22 @@ export class ComparePerformanceView extends AbstractWebview<
 
     await this.waitForPanelLoaded();
 
-    // TODO: try processing in (async) parallel once readJsonl is streaming
-    const fromPerf = await scanLog(
-      fromJsonLog,
-      new PerformanceOverviewScanner(),
-    );
-    const toPerf = await scanLog(toJsonLog, new PerformanceOverviewScanner());
+    function scanLogWithProgress(log: string, logDescription: string) {
+      const bytes = statSync(log).size;
+      return withProgress(
+        async (progress) =>
+          scanLog(log, new PerformanceOverviewScanner(), progress),
+
+        {
+          title: `Scanning evaluator log ${logDescription} (${(bytes / 1024 / 1024).toFixed(1)} MB)`,
+        },
+      );
+    }
+
+    const [fromPerf, toPerf] = await Promise.all([
+      scanLogWithProgress(fromJsonLog, "1/2"),
+      scanLogWithProgress(toJsonLog, "2/2"),
+    ]);
 
     await this.postMessage({
       t: "setPerformanceComparison",
