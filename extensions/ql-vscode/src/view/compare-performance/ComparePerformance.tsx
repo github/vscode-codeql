@@ -357,14 +357,23 @@ export function ComparePerformance(_: Record<string, never>) {
     [setData],
   );
 
+  if (!data) {
+    return <div>Loading performance comparison...</div>;
+  }
+
+  return <ComparePerformanceWithData data={data} />;
+}
+
+function ComparePerformanceWithData(props: {
+  data: SetPerformanceComparisonQueries;
+}) {
+  const { data } = props;
+
   const datasets = useMemo(
-    () =>
-      data == null
-        ? undefined
-        : {
-            from: new ComparisonDataset(data.from),
-            to: new ComparisonDataset(data.to),
-          },
+    () => ({
+      from: new ComparisonDataset(data.from),
+      to: new ComparisonDataset(data.to),
+    }),
     [data],
   );
 
@@ -377,10 +386,6 @@ export function ComparePerformance(_: Record<string, never>) {
   const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("absDelta");
 
   const [metric, setMetric] = useState<Metric>(metrics.tuples);
-
-  if (!datasets) {
-    return <div>Loading performance comparison...</div>;
-  }
 
   const { from, to } = datasets;
 
