@@ -26,6 +26,8 @@ interface OptionalValue {
 }
 
 interface PredicateInfo extends OptionalValue {
+  evaluationCount: number;
+  iterationCount: number;
   pipelines: Record<string, PipelineSummary>;
 }
 
@@ -49,6 +51,8 @@ class ComparisonDataset {
     const index = nameToIndex.get(name);
     if (index == null) {
       return {
+        evaluationCount: 0,
+        iterationCount: 0,
         tuples: 0,
         absentReason: AbsentReason.NotSeen,
         pipelines: {},
@@ -64,6 +68,8 @@ class ComparisonDataset {
       }
     }
     return {
+      evaluationCount: data.evaluationCounts[index],
+      iterationCount: data.iterationCounts[index],
       tuples: tupleCost,
       absentReason,
       pipelines: data.pipelineSummaryList[index],
@@ -187,6 +193,9 @@ interface PipelineStepProps {
   step: string;
 }
 
+/**
+ * Row with details of a pipeline step, or one of the high-level stats appearing above the pipelines (evaluation/iteration counts).
+ */
 function PipelineStep(props: PipelineStepProps) {
   let { before, after, step } = props;
   if (before != null && before < 0) {
@@ -204,6 +213,46 @@ function PipelineStep(props: PipelineStepProps) {
       {delta != null ? renderDelta(delta) : <td></td>}
       <NameCell>{step}</NameCell>
     </PipelineStepTR>
+  );
+}
+
+interface HighLevelStatsProps {
+  before: PredicateInfo;
+  after: PredicateInfo;
+}
+
+function HighLevelStats(props: HighLevelStatsProps) {
+  const { before, after } = props;
+  const hasBefore = before.absentReason !== AbsentReason.NotSeen;
+  const hasAfter = after.absentReason !== AbsentReason.NotSeen;
+  const showEvaluationCount =
+    before.evaluationCount > 1 || after.evaluationCount > 1;
+  return (
+    <>
+      <tr>
+        <ChevronCell></ChevronCell>
+        <NumberHeader>{hasBefore ? "Before" : ""}</NumberHeader>
+        <NumberHeader>{hasAfter ? "After" : ""}</NumberHeader>
+        <NumberHeader>{hasBefore && hasAfter ? "Delta" : ""}</NumberHeader>
+        <NameHeader>Stats</NameHeader>
+      </tr>
+      {showEvaluationCount && (
+        <PipelineStep
+          before={before.evaluationCount || undefined}
+          after={after.evaluationCount || undefined}
+          step="Number of evaluations"
+        />
+      )}
+      <PipelineStep
+        before={before.iterationCount / before.evaluationCount || undefined}
+        after={after.iterationCount / after.evaluationCount || undefined}
+        step={
+          showEvaluationCount
+            ? "Number of iterations per evaluation"
+            : "Number of iterations"
+        }
+      />
+    </>
   );
 }
 
@@ -378,6 +427,7 @@ export function ComparePerformance(_: Record<string, never>) {
             </PredicateTR>
             {expandedPredicates.has(row.name) && (
               <>
+                <HighLevelStats before={row.before} after={row.after} />
                 {collatePipelines(
                   row.before.pipelines,
                   row.after.pipelines,
