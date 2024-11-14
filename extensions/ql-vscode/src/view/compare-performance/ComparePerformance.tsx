@@ -92,10 +92,12 @@ function renderAbsoluteValue(x: OptionalValue) {
 
 function renderDelta(x: number) {
   const sign = x > 0 ? "+" : "";
+  const symbol = x > 0 ? "🔺" : "🟢";
   return (
     <NumberCell>
       {sign}
       {formatDecimal(x)}
+      {symbol}
     </NumberCell>
   );
 }
