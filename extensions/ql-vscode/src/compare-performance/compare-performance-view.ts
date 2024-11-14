@@ -184,7 +184,7 @@ export class ComparePerformanceView extends AbstractWebview<
             );
             await this.fetchAndUnzip(url, downloadPath, progress);
           }
-          if (existsSync(logPath) && readdirSync(logPath).length >= 0) {
+          if (existsSync(logPath) && readdirSync(logPath).length > 0) {
             void extLogger.log(
               `Skipping log extraction to existing '${logPath}'...`,
             );
@@ -226,6 +226,10 @@ export class ComparePerformanceView extends AbstractWebview<
     return;
   }
 
+  /**
+   * XXX Almost identical copy of the one in `database-fetcher.ts`.
+   * There ought to be a generic `downloadArtifactOrSimilar`
+   */
   private async fetchAndUnzip(
     contentUrl: string,
     // (see below) requestHeaders: { [key: string]: string },
@@ -381,6 +385,7 @@ export class ComparePerformanceView extends AbstractWebview<
     });
     execFileSync("unzip", ["-q", "-d", unzipPath, zipFile]);
   }
+
   private async untargz(
     tarballPath: string,
     untarPath: string,
