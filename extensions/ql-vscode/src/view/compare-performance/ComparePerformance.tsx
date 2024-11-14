@@ -1,3 +1,4 @@
+import type { ChangeEvent } from "react";
 import { useMemo, useState, Fragment } from "react";
 import type {
   SetPerformanceComparisonQueries,
@@ -184,6 +185,8 @@ const PipelineStepTR = styled.tr`
   }
 `;
 
+const SortOrderDropdown = styled.select``;
+
 interface PipelineStepProps {
   before: number | undefined;
   after: number | undefined;
@@ -253,6 +256,20 @@ function HighLevelStats(props: HighLevelStatsProps) {
   );
 }
 
+type TRow = {
+  name: string;
+  before: PredicateInfo;
+  after: PredicateInfo;
+  diff: number;
+};
+
+function getSortOrder(sortOrder: "delta" | "absDelta") {
+  if (sortOrder === "absDelta") {
+    return orderBy((row: TRow) => -Math.abs(row.diff));
+  }
+  return orderBy((row: TRow) => row.diff);
+}
+
 function Chevron({ expanded }: { expanded: boolean }) {
   return <Codicon name={expanded ? "chevron-down" : "chevron-right"} />;
 }
@@ -296,6 +313,8 @@ export function ComparePerformance(_: Record<string, never>) {
 
   const [hideCacheHits, setHideCacheHits] = useState(false);
 
+  const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("delta");
+
   if (!datasets) {
     return <div>Loading performance comparison...</div>;
   }
@@ -329,7 +348,7 @@ export function ComparePerformance(_: Record<string, never>) {
       return { name, before, after, diff };
     })
     .filter((x) => !!x)
-    .sort(orderBy((row) => row.diff));
+    .sort(getSortOrder(sortOrder));
 
   let totalBefore = 0;
   let totalAfter = 0;
@@ -363,6 +382,15 @@ export function ComparePerformance(_: Record<string, never>) {
           </label>
         </WarningBox>
       )}
+      <SortOrderDropdown
+        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+          setSortOrder(e.target.value as "delta" | "absDelta")
+        }
+        value={sortOrder}
+      >
+        <option value="delta">Delta</option>
+        <option value="absDelta">Absolute delta</option>
+      </SortOrderDropdown>
       <Table>
         <thead>
           <tr>
