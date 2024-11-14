@@ -25,22 +25,23 @@ type VariantId = string;
 type SourceId = string;
 type TargetId = string;
 
-export type TargetInfo = {
+type TargetInfo = {
   target_id: TargetId;
   variant_id: VariantId;
   source_id: SourceId;
 };
-export type ArtifactDownload = {
+
+type ArtifactDownload = {
   repository: string;
   run_id: number;
   artifact_name: string;
 };
 
-export type TargetDownloads = {
+type TargetDownloads = {
   "evaluator-logs": ArtifactDownload;
 };
 
-export type MinimalDownloadsType = {
+type MinimalDownloadsType = {
   targets: {
     [target: string]: {
       info: TargetInfo;
