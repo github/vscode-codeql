@@ -33,6 +33,7 @@ interface ResultEventBase extends SummaryEventBase {
 export interface ComputeSimple extends ResultEventBase {
   evaluationStrategy: "COMPUTE_SIMPLE";
   ra: Ra;
+  millis: number;
   pipelineRuns?: [PipelineRun];
   queryCausingWork?: string;
   dependencies: { [key: string]: string };
