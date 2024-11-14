@@ -28,6 +28,7 @@ interface OptionalValue {
 interface PredicateInfo extends OptionalValue {
   evaluationCount: number;
   iterationCount: number;
+  timeCost: number;
   pipelines: Record<string, PipelineSummary>;
 }
 
@@ -54,6 +55,7 @@ class ComparisonDataset {
         evaluationCount: 0,
         iterationCount: 0,
         tuples: 0,
+        timeCost: 0,
         absentReason: AbsentReason.NotSeen,
         pipelines: {},
       };
@@ -70,6 +72,7 @@ class ComparisonDataset {
     return {
       evaluationCount: data.evaluationCounts[index],
       iterationCount: data.iterationCounts[index],
+      timeCost: data.timeCosts[index],
       tuples: tupleCost,
       absentReason,
       pipelines: data.pipelineSummaryList[index],
@@ -77,7 +80,7 @@ class ComparisonDataset {
   }
 }
 
-function renderAbsoluteValue(x: OptionalValue) {
+function renderAbsoluteValue(x: PredicateInfo, metric: Metric) {
   switch (x.absentReason) {
     case AbsentReason.NotSeen:
       return <AbsentNumberCell>n/a</AbsentNumberCell>;
@@ -86,18 +89,28 @@ function renderAbsoluteValue(x: OptionalValue) {
     case AbsentReason.Sentinel:
       return <AbsentNumberCell>sentinel empty</AbsentNumberCell>;
     default:
-      return <NumberCell>{formatDecimal(x.tuples)}</NumberCell>;
+      return (
+        <NumberCell>
+          {formatDecimal(metric.get(x))}
+          {renderUnit(metric.unit)}
+        </NumberCell>
+      );
   }
 }
 
-function renderDelta(x: number) {
+function renderDelta(x: number, unit?: string) {
   const sign = x > 0 ? "+" : "";
   return (
     <NumberCell>
       {sign}
       {formatDecimal(x)}
+      {renderUnit(unit)}
     </NumberCell>
   );
+}
+
+function renderUnit(unit: string | undefined) {
+  return unit == null ? "" : ` ${unit}`;
 }
 
 function orderBy<T>(fn: (x: T) => number | string) {
@@ -185,7 +198,7 @@ const PipelineStepTR = styled.tr`
   }
 `;
 
-const SortOrderDropdown = styled.select``;
+const Dropdown = styled.select``;
 
 interface PipelineStepProps {
   before: number | undefined;
@@ -274,6 +287,37 @@ function getSortOrder(sortOrder: "delta" | "absDelta") {
   return orderBy((row: TRow) => row.diff);
 }
 
+interface Metric {
+  title: string;
+  get(info: PredicateInfo): number;
+  unit?: string;
+}
+
+const metrics: Record<string, Metric> = {
+  tuples: {
+    title: "Tuples in pipeline",
+    get: (info) => info.tuples,
+  },
+  time: {
+    title: "Time spent (milliseconds)",
+    get: (info) => info.timeCost,
+    unit: "ms",
+  },
+  evaluations: {
+    title: "Evaluations",
+    get: (info) => info.evaluationCount,
+  },
+  iterations: {
+    title: "Iterations (per evaluation)",
+    get: (info) =>
+      info.absentReason ? 0 : info.iterationCount / info.evaluationCount,
+  },
+  iterationsTotal: {
+    title: "Iterations (total)",
+    get: (info) => info.iterationCount,
+  },
+};
+
 function Chevron({ expanded }: { expanded: boolean }) {
   return <Codicon name={expanded ? "chevron-down" : "chevron-right"} />;
 }
@@ -319,6 +363,8 @@ export function ComparePerformance(_: Record<string, never>) {
 
   const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("delta");
 
+  const [metric, setMetric] = useState<Metric>(metrics.tuples);
+
   if (!datasets) {
     return <div>Loading performance comparison...</div>;
   }
@@ -336,7 +382,9 @@ export function ComparePerformance(_: Record<string, never>) {
     .map((name) => {
       const before = from.getTupleCountInfo(name);
       const after = to.getTupleCountInfo(name);
-      if (before.tuples === after.tuples) {
+      const beforeValue = metric.get(before);
+      const afterValue = metric.get(after);
+      if (beforeValue === afterValue) {
         return undefined!;
       }
       if (
@@ -348,7 +396,7 @@ export function ComparePerformance(_: Record<string, never>) {
           return undefined!;
         }
       }
-      const diff = after.tuples - before.tuples;
+      const diff = afterValue - beforeValue;
       return { name, before, after, diff };
     })
     .filter((x) => !!x)
@@ -359,8 +407,8 @@ export function ComparePerformance(_: Record<string, never>) {
   let totalDiff = 0;
 
   for (const row of rows) {
-    totalBefore += row.before.tuples;
-    totalAfter += row.after.tuples;
+    totalBefore += metric.get(row.before);
+    totalAfter += metric.get(row.after);
     totalDiff += row.diff;
   }
 
@@ -388,7 +436,20 @@ export function ComparePerformance(_: Record<string, never>) {
           </label>
         </WarningBox>
       )}
-      <SortOrderDropdown
+      Compare{" "}
+      <Dropdown
+        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+          setMetric(metrics[e.target.value])
+        }
+      >
+        {Object.entries(metrics).map(([key, value]) => (
+          <option key={key} value={key}>
+            {value.title}
+          </option>
+        ))}
+      </Dropdown>{" "}
+      sorted by{" "}
+      <Dropdown
         onChange={(e: ChangeEvent<HTMLSelectElement>) =>
           setSortOrder(e.target.value as "delta" | "absDelta")
         }
@@ -396,7 +457,7 @@ export function ComparePerformance(_: Record<string, never>) {
       >
         <option value="delta">Delta</option>
         <option value="absDelta">Absolute delta</option>
-      </SortOrderDropdown>
+      </Dropdown>
       <Table>
         <thead>
           <HeaderTR>
@@ -426,9 +487,9 @@ export function ComparePerformance(_: Record<string, never>) {
               <ChevronCell>
                 <Chevron expanded={expandedPredicates.has(row.name)} />
               </ChevronCell>
-              {renderAbsoluteValue(row.before)}
-              {renderAbsoluteValue(row.after)}
-              {renderDelta(row.diff)}
+              {renderAbsoluteValue(row.before, metric)}
+              {renderAbsoluteValue(row.after, metric)}
+              {renderDelta(row.diff, metric.unit)}
               <NameCell>{rowNames[rowIndex]}</NameCell>
             </PredicateTR>
             {expandedPredicates.has(row.name) && (
