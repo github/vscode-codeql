@@ -1,6 +1,7 @@
-import type { SummaryEvent } from "./log-summary";
-import { readJsonlFile } from "../common/jsonl-reader";
 import type { Disposable } from "../common/disposable-object";
+import { readJsonlFile } from "../common/jsonl-reader";
+import type { ProgressCallback } from "../common/vscode/progress";
+import type { SummaryEvent } from "./log-summary";
 
 /**
  * Callback interface used to report diagnostics from a log scanner.
@@ -114,7 +115,7 @@ export class EvaluationLogScannerSet {
 }
 
 /**
- * Scan the evaluator summary log using the given scanner. For conveience, returns the scanner.
+ * Scan the evaluator summary log using the given scanner. For convenience, returns the scanner.
  *
  * @param jsonSummaryLocation The file path of the JSON summary log.
  * @param scanner The scanner to process events from the log
@@ -122,7 +123,14 @@ export class EvaluationLogScannerSet {
 export async function scanLog<T extends EvaluationLogScanner>(
   jsonSummaryLocation: string,
   scanner: T,
+  progress?: ProgressCallback,
 ): Promise<T> {
+  progress?.({
+    // XXX all scans have step 1 - the backing progress tracker allows increments instead of steps - but for now we are happy with a tiny UI that says what is happening
+    message: `Scanning ...`,
+    step: 1,
+    maxStep: 2,
+  });
   await readJsonlFile<SummaryEvent>(jsonSummaryLocation, async (obj) => {
     scanner.onEvent(obj);
   });
