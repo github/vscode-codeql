@@ -1,17 +1,23 @@
 import type { ChangeEvent } from "react";
-import { useMemo, useState, Fragment } from "react";
+import { Fragment, useMemo, useState } from "react";
+import { styled } from "styled-components";
 import type {
   SetPerformanceComparisonQueries,
   ToComparePerformanceViewMessage,
 } from "../../common/interface-types";
-import { useMessageFromExtension } from "../common/useMessageFromExtension";
+import { formatDecimal } from "../../common/number";
 import type {
   PerformanceComparisonDataFromLog,
   PipelineSummary,
 } from "../../log-insights/performance-comparison";
-import { formatDecimal } from "../../common/number";
-import { styled } from "styled-components";
-import { Codicon, ViewTitle, WarningBox } from "../common";
+import {
+  Codicon,
+  ComparePerformanceDescription,
+  InfoBox,
+  ViewTitle,
+  WarningBox,
+} from "../common";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 import { abbreviateRANames, abbreviateRASteps } from "./RAPrettyPrinter";
 
 const enum AbsentReason {
@@ -443,6 +449,11 @@ function ComparePerformanceWithData(props: {
   return (
     <>
       <ViewTitle>Performance comparison</ViewTitle>
+      {data?.description && (
+        <InfoBox>
+          <ComparePerformanceDescription {...data.description} />
+        </InfoBox>
+      )}
       {hasCacheHitMismatch && (
         <WarningBox>
           <strong>Inconsistent cache hits</strong>
