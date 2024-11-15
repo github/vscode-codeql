@@ -22,8 +22,8 @@ import type { ProgressCallback } from "../common/vscode/progress";
 import { reportStreamProgress, withProgress } from "../common/vscode/progress";
 import { downloadTimeout, GITHUB_URL } from "../config";
 import { QueryOutputDir } from "../local-queries/query-output-dir";
-import { tmpDir } from "../tmp-dir";
 import type { ComparePerformanceDescriptionData } from "../log-insights/performance-comparison";
+import { tmpDir } from "../tmp-dir";
 
 export class RemoteLogs {
   private LOG_DOWNLOAD_AND_PROCESS_PROGRESS_STEPS = 4;
@@ -464,16 +464,17 @@ export class RemoteLogs {
     };
   }
 
-  private async getPotentialTargetInfos(
-    experimentName: string,
-  ): Promise<Array<MinimalDownloadsType["targets"]["string"]>> {
+  private async getPotentialTargetInfos(experimentName: string): Promise<{
+    targets: Array<MinimalDownloadsType["targets"]["string"]>;
+    info: MinimalDownloadsType;
+  }> {
     const tasksDir = await this.getTasksForExperiment(experimentName);
 
     const downloads = await this.getDownloadsFromTasks(tasksDir);
     void extLogger.log(
       `Found ${Object.keys(downloads.targets).length} potential targets in experiment ${experimentName}`,
     );
-    return Object.values(downloads.targets);
+    return { targets: Object.values(downloads.targets), info: downloads };
   }
 
   /**
@@ -672,8 +673,9 @@ export class RemoteLogs {
       step: 2,
       maxStep: this.PICK_TARGETS_PROGRESS_STEPS,
     });
-    const targetInfos = await this.getPotentialTargetInfos(experimentChoice);
-    if (targetInfos.length === 0) {
+    const { targets, info } =
+      await this.getPotentialTargetInfos(experimentChoice);
+    if (targets.length === 0) {
       throw new Error(
         `No targets found in experiment ${experimentChoice}. Is the experiment complete enough yet?`,
       );
@@ -684,7 +686,7 @@ export class RemoteLogs {
       maxStep: this.PICK_TARGETS_PROGRESS_STEPS,
     });
     const targetChoice1 = await window.showQuickPick(
-      targetInfos.map((t) => t.info.target_id),
+      targets.map((t) => t.info.target_id),
       {
         title: `Pick target 1`,
         ignoreFocusOut: true,
@@ -693,7 +695,7 @@ export class RemoteLogs {
     if (!targetChoice1) {
       return undefined;
     }
-    const targetInfoChoice1 = targetInfos.find(
+    const targetInfoChoice1 = targets.find(
       (t) => t.info.target_id === targetChoice1,
     )!;
     progress?.({
@@ -702,7 +704,7 @@ export class RemoteLogs {
       maxStep: this.PICK_TARGETS_PROGRESS_STEPS,
     });
     const targetChoice2 = await window.showQuickPick(
-      targetInfos
+      targets
         .filter(
           (t) =>
             t.info.target_id !== targetChoice1 &&
@@ -724,7 +726,7 @@ export class RemoteLogs {
     void extLogger.log(
       `Picked ${experimentChoice} ${targetChoice1} ${targetChoice2}`,
     );
-    const targetInfoChoice2 = targetInfos.find(
+    const targetInfoChoice2 = targets.find(
       (t) => t.info.target_id === targetChoice2,
     )!;
     return {
@@ -733,8 +735,9 @@ export class RemoteLogs {
       description: {
         kind: "remote-logs",
         experimentName: experimentChoice,
-        fromTarget: targetInfoChoice1,
-        toTarget: targetInfoChoice2,
+        fromTarget: targetChoice1,
+        toTarget: targetChoice2,
+        info,
       },
     };
   }

@@ -62,8 +62,9 @@ export type ComparePerformanceDescriptionData =
   | {
       kind: "remote-logs";
       experimentName: string;
-      fromTarget: MinimalDownloadsType["targets"]["string"];
-      toTarget: MinimalDownloadsType["targets"]["string"];
+      fromTarget: string;
+      toTarget: string;
+      info: MinimalDownloadsType;
     };
 
 export class PerformanceOverviewScanner implements EvaluationLogScanner {
