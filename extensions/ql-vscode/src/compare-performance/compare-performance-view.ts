@@ -65,7 +65,7 @@ export class ComparePerformanceView extends AbstractWebview<
       const bytes = statSync(log).size;
       return withProgress(
         async (progress) =>
-          scanLog(log, new PerformanceOverviewScanner(), progress),
+          await scanLog(log, new PerformanceOverviewScanner(), progress),
 
         {
           title: `Scanning evaluator log ${logDescription} (${(bytes / 1024 / 1024).toFixed(1)} MB)`,
