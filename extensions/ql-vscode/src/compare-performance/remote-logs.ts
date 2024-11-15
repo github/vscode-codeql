@@ -23,6 +23,7 @@ import { reportStreamProgress, withProgress } from "../common/vscode/progress";
 import { downloadTimeout, GITHUB_URL } from "../config";
 import { QueryOutputDir } from "../local-queries/query-output-dir";
 import { tmpDir } from "../tmp-dir";
+import type { ComparePerformanceDescriptionData } from "../log-insights/performance-comparison";
 
 export class RemoteLogs {
   private LOG_DOWNLOAD_AND_PROCESS_PROGRESS_STEPS = 4;
@@ -252,6 +253,7 @@ export class RemoteLogs {
     | {
         before: string;
         after: string;
+        description: ComparePerformanceDescriptionData;
       }
     | undefined
   > {
@@ -268,7 +270,11 @@ export class RemoteLogs {
     if (processed.some((d) => typeof d === "undefined")) {
       throw new Error("Silently failed to download or process some logs!?");
     }
-    return { before: processed[0]!, after: processed[1]! };
+    return {
+      before: processed[0]!,
+      after: processed[1]!,
+      description: picked.description,
+    };
   }
 
   /**
@@ -638,6 +644,7 @@ export class RemoteLogs {
     | {
         before: ArtifactDownload;
         after: ArtifactDownload;
+        description: ComparePerformanceDescriptionData;
       }
     | undefined
   > {
@@ -717,10 +724,18 @@ export class RemoteLogs {
     void extLogger.log(
       `Picked ${experimentChoice} ${targetChoice1} ${targetChoice2}`,
     );
+    const targetInfoChoice2 = targetInfos.find(
+      (t) => t.info.target_id === targetChoice2,
+    )!;
     return {
       before: targetInfoChoice1.downloads["evaluator-logs"],
-      after: targetInfos.find((t) => t.info.target_id === targetChoice2)!
-        .downloads["evaluator-logs"],
+      after: targetInfoChoice2.downloads["evaluator-logs"],
+      description: {
+        kind: "remote-logs",
+        experimentName: experimentChoice,
+        fromTarget: targetInfoChoice1,
+        toTarget: targetInfoChoice2,
+      },
     };
   }
 }

@@ -1228,7 +1228,11 @@ async function showPerformanceComparison(
     `Comparing performance of ${from.getQueryName()} and ${to?.getQueryName() ?? "baseline"}`,
   );
 
-  await view.showResults(fromLog, toLog);
+  await view.showResults(fromLog, toLog, {
+    kind: "local-run",
+    fromQuery: from.getQueryName(),
+    toQuery: to.getQueryName(),
+  });
 }
 
 function addUnhandledRejectionListener() {

@@ -27,7 +27,10 @@ import type {
 } from "./raw-result-types";
 import type { AccessPathSuggestionOptions } from "../model-editor/suggestions";
 import type { ModelEvaluationRunState } from "../model-editor/shared/model-evaluation-run-state";
-import type { PerformanceComparisonDataFromLog } from "../log-insights/performance-comparison";
+import type {
+  ComparePerformanceDescriptionData,
+  PerformanceComparisonDataFromLog,
+} from "../log-insights/performance-comparison";
 
 /**
  * This module contains types and code that are shared between
@@ -398,9 +401,9 @@ export interface SetComparisonsMessage {
 }
 
 export type ToComparePerformanceViewMessage = SetPerformanceComparisonQueries;
-
 export interface SetPerformanceComparisonQueries {
   readonly t: "setPerformanceComparison";
+  readonly description: ComparePerformanceDescriptionData;
   readonly from: PerformanceComparisonDataFromLog;
   readonly to: PerformanceComparisonDataFromLog;
   readonly comparison: boolean;
