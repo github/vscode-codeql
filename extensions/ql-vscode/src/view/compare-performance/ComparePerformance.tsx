@@ -186,6 +186,7 @@ const Table = styled.table`
     border: 1px solid var(--vscode-list-activeSelectionBackground);
     margin-bottom: 1em;
   }
+  word-break: break-all;
 `;
 
 const PredicateTR = styled.tr`
