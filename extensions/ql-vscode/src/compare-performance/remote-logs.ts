@@ -14,6 +14,8 @@ import { basename, dirname, join, relative } from "path";
 import { Uri, window, workspace } from "vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { App } from "../common/app";
+import type { ArtifactDownload, MinimalDownloadsType } from "../common/dca";
+import { dcaControllerRepository } from "../common/dca";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import { extLogger } from "../common/logging/vscode";
 import type { ProgressCallback } from "../common/vscode/progress";
@@ -22,39 +24,6 @@ import { downloadTimeout, GITHUB_URL } from "../config";
 import { QueryOutputDir } from "../local-queries/query-output-dir";
 import { tmpDir } from "../tmp-dir";
 
-type VariantId = string;
-type SourceId = string;
-type TargetId = string;
-
-type TargetInfo = {
-  target_id: TargetId;
-  variant_id: VariantId;
-  source_id: SourceId;
-};
-
-type ArtifactDownload = {
-  repository: string;
-  run_id: number;
-  artifact_name: string;
-};
-
-type TargetDownloads = {
-  "evaluator-logs": ArtifactDownload;
-};
-
-type MinimalDownloadsType = {
-  targets: {
-    [target: string]: {
-      info: TargetInfo;
-      downloads: TargetDownloads;
-    };
-  };
-};
-
-const dcaControllerRepository = {
-  owner: "github",
-  repo: "codeql-dca-main",
-};
 export class RemoteLogs {
   private LOG_DOWNLOAD_AND_PROCESS_PROGRESS_STEPS = 4;
   private PICK_TARGETS_PROGRESS_STEPS = 4;
@@ -502,7 +471,7 @@ export class RemoteLogs {
   }
 
   /**
-   * Gets the "downloads" metadata from a taksks directory.
+   * Gets the "downloads" metadata from a tasks directory.
    */
   private async getDownloadsFromTasks(
     tasksDir: string,

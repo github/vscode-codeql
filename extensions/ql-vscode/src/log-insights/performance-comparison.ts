@@ -1,3 +1,4 @@
+import type { MinimalDownloadsType } from "../common/dca";
 import type { EvaluationLogScanner } from "./log-scanner";
 import type { SummaryEvent } from "./log-summary";
 
@@ -51,6 +52,19 @@ export interface PerformanceComparisonDataFromLog {
    */
   pipelineSummaryList: Array<Record<string, PipelineSummary>>;
 }
+
+export type ComparePerformanceDescriptionData =
+  | {
+      kind: "local-run";
+      fromQuery: string;
+      toQuery: string;
+    }
+  | {
+      kind: "remote-logs";
+      experimentName: string;
+      fromTarget: MinimalDownloadsType["targets"]["string"];
+      toTarget: MinimalDownloadsType["targets"]["string"];
+    };
 
 export class PerformanceOverviewScanner implements EvaluationLogScanner {
   private readonly nameToIndex = new Map<string, number>();
