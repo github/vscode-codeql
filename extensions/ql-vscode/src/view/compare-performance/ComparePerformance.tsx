@@ -540,9 +540,7 @@ function ComparePerformanceWithData(props: {
                       <NumberHeader>{second != null && "After"}</NumberHeader>
                       {comparison && (
                         <NumberHeader>
-                          {first != null &&
-                            second != null &&
-                            (comparison ? "Delta" : "Value")}
+                          {first != null && second != null && "Delta"}
                         </NumberHeader>
                       )}
                       <NameHeader>
