@@ -34,7 +34,7 @@ const TargetRow = ({
   info,
 }: {
   kind: string;
-  target: Props["fromTarget"] | Props["toTarget"];
+  target: Exclude<Props["fromTarget"] | Props["toTarget"], undefined>;
   info: Props["info"];
 }) => {
   const targetObj = info.targets[target];
@@ -90,7 +90,9 @@ const TargetTable = ({
         </tr>
       </thead>
       <tbody>
-        <TargetRow kind="from" target={fromTarget} info={info} />
+        {fromTarget ? (
+          <TargetRow kind="from" target={fromTarget} info={info} />
+        ) : null}
         <TargetRow kind="to" target={toTarget} info={info} />
       </tbody>
     </table>

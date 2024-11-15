@@ -62,7 +62,7 @@ export type ComparePerformanceDescriptionData =
   | {
       kind: "remote-logs";
       experimentName: string;
-      fromTarget: string;
+      fromTarget?: string;
       toTarget: string;
       info: MinimalDownloadsType;
     };

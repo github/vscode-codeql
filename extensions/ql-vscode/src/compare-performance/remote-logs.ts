@@ -251,7 +251,7 @@ export class RemoteLogs {
    */
   public async downloadAndProcess(): Promise<
     | {
-        before: string;
+        before: string | undefined;
         after: string;
         description: ComparePerformanceDescriptionData;
       }
@@ -262,17 +262,26 @@ export class RemoteLogs {
       void extLogger.log("No targets picked, aborting download");
       return undefined;
     }
-    const processed = await Promise.all([
-      this.downloadAndProcessLogsForTarget(picked.before),
+    const [processedBefore, processedAfter] = await Promise.all([
+      ...(picked.before
+        ? [this.downloadAndProcessLogsForTarget(picked.before)]
+        : [undefined]),
       this.downloadAndProcessLogsForTarget(picked.after),
     ]);
 
-    if (processed.some((d) => typeof d === "undefined")) {
-      throw new Error("Silently failed to download or process some logs!?");
+    if (picked.before && processedBefore === undefined) {
+      throw new Error(
+        "Silently failed to download or process the 'before' logs!?",
+      );
+    }
+    if (processedAfter === undefined) {
+      throw new Error(
+        "Silently failed to download or process the 'after' logs!?",
+      );
     }
     return {
-      before: processed[0]!,
-      after: processed[1]!,
+      before: processedBefore,
+      after: processedAfter,
       description: picked.description,
     };
   }
@@ -643,7 +652,7 @@ export class RemoteLogs {
 
   private async pickTargets(progress?: ProgressCallback): Promise<
     | {
-        before: ArtifactDownload;
+        before?: ArtifactDownload;
         after: ArtifactDownload;
         description: ComparePerformanceDescriptionData;
       }
@@ -703,6 +712,7 @@ export class RemoteLogs {
       step: 4,
       maxStep: this.PICK_TARGETS_PROGRESS_STEPS,
     });
+    const NONE = "NONE";
     const targetChoice2 = await window.showQuickPick(
       targets
         .filter(
@@ -714,7 +724,8 @@ export class RemoteLogs {
             t.info.source_id === targetInfoChoice1.info.source_id &&
             t.info.variant_id !== targetInfoChoice1.info.variant_id,
         )
-        .map((t) => t.info.target_id),
+        .map((t) => t.info.target_id)
+        .concat(NONE),
       {
         title: `Pick target 2`,
         ignoreFocusOut: true,
@@ -726,6 +737,20 @@ export class RemoteLogs {
     void extLogger.log(
       `Picked ${experimentChoice} ${targetChoice1} ${targetChoice2}`,
     );
+    if (targetChoice2 === NONE) {
+      return {
+        // the convention downstream is that "from" can be optional, but here it is the opposite ...
+        before: undefined,
+        after: targetInfoChoice1.downloads["evaluator-logs"],
+        description: {
+          kind: "remote-logs",
+          experimentName: experimentChoice,
+          fromTarget: undefined,
+          toTarget: targetChoice1,
+          info,
+        },
+      };
+    }
     const targetInfoChoice2 = targets.find(
       (t) => t.info.target_id === targetChoice2,
     )!;
