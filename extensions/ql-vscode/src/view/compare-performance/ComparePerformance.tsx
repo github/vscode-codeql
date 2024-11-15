@@ -216,6 +216,7 @@ const Dropdown = styled.select``;
 interface PipelineStepProps {
   before: number | undefined;
   after: number | undefined;
+  comparison: boolean;
   step: React.ReactNode;
 }
 
@@ -223,7 +224,7 @@ interface PipelineStepProps {
  * Row with details of a pipeline step, or one of the high-level stats appearing above the pipelines (evaluation/iteration counts).
  */
 function PipelineStep(props: PipelineStepProps) {
-  let { before, after, step } = props;
+  let { before, after, comparison, step } = props;
   if (before != null && before < 0) {
     before = undefined;
   }
@@ -234,9 +235,11 @@ function PipelineStep(props: PipelineStepProps) {
   return (
     <PipelineStepTR>
       <ChevronCell />
-      <NumberCell>{before != null ? formatDecimal(before) : ""}</NumberCell>
+      {comparison && (
+        <NumberCell>{before != null ? formatDecimal(before) : ""}</NumberCell>
+      )}
       <NumberCell>{after != null ? formatDecimal(after) : ""}</NumberCell>
-      {delta != null ? renderDelta(delta) : <td></td>}
+      {comparison && (delta != null ? renderDelta(delta) : <td></td>)}
       <NameCell>{step}</NameCell>
     </PipelineStepTR>
   );
@@ -249,10 +252,11 @@ const HeaderTR = styled.tr`
 interface HighLevelStatsProps {
   before: PredicateInfo;
   after: PredicateInfo;
+  comparison: boolean;
 }
 
 function HighLevelStats(props: HighLevelStatsProps) {
-  const { before, after } = props;
+  const { before, after, comparison } = props;
   const hasBefore = before.absentReason !== AbsentReason.NotSeen;
   const hasAfter = after.absentReason !== AbsentReason.NotSeen;
   const showEvaluationCount =
@@ -261,21 +265,25 @@ function HighLevelStats(props: HighLevelStatsProps) {
     <>
       <HeaderTR>
         <ChevronCell></ChevronCell>
-        <NumberHeader>{hasBefore ? "Before" : ""}</NumberHeader>
+        {comparison && <NumberHeader>{hasBefore ? "Before" : ""}</NumberHeader>}
         <NumberHeader>{hasAfter ? "After" : ""}</NumberHeader>
-        <NumberHeader>{hasBefore && hasAfter ? "Delta" : ""}</NumberHeader>
+        {comparison && (
+          <NumberHeader>{hasBefore && hasAfter ? "Delta" : ""}</NumberHeader>
+        )}
         <NameHeader>Stats</NameHeader>
       </HeaderTR>
       {showEvaluationCount && (
         <PipelineStep
           before={before.evaluationCount || undefined}
           after={after.evaluationCount || undefined}
+          comparison={comparison}
           step="Number of evaluations"
         />
       )}
       <PipelineStep
         before={before.iterationCount / before.evaluationCount || undefined}
         after={after.iterationCount / after.evaluationCount || undefined}
+        comparison={comparison}
         step={
           showEvaluationCount
             ? "Number of iterations per evaluation"
@@ -376,6 +384,8 @@ function ComparePerformanceWithData(props: {
     }),
     [data],
   );
+
+  const comparison = data?.comparison;
 
   const [expandedPredicates, setExpandedPredicates] = useState<Set<string>>(
     () => new Set<string>(),
@@ -478,9 +488,9 @@ function ComparePerformanceWithData(props: {
         <thead>
           <HeaderTR>
             <ChevronCell />
-            <NumberHeader>Before</NumberHeader>
-            <NumberHeader>After</NumberHeader>
-            <NumberHeader>Delta</NumberHeader>
+            {comparison && <NumberHeader>Before</NumberHeader>}
+            <NumberHeader>{comparison ? "After" : "Value"}</NumberHeader>
+            {comparison && <NumberHeader>Delta</NumberHeader>}
             <NameHeader>Predicate</NameHeader>
           </HeaderTR>
         </thead>
@@ -503,14 +513,18 @@ function ComparePerformanceWithData(props: {
               <ChevronCell>
                 <Chevron expanded={expandedPredicates.has(row.name)} />
               </ChevronCell>
-              {renderAbsoluteValue(row.before, metric)}
+              {comparison && renderAbsoluteValue(row.before, metric)}
               {renderAbsoluteValue(row.after, metric)}
-              {renderDelta(row.diff, metric.unit)}
+              {comparison && renderDelta(row.diff, metric.unit)}
               <NameCell>{rowNames[rowIndex]}</NameCell>
             </PredicateTR>
             {expandedPredicates.has(row.name) && (
               <>
-                <HighLevelStats before={row.before} after={row.after} />
+                <HighLevelStats
+                  before={row.before}
+                  after={row.after}
+                  comparison={comparison}
+                />
                 {collatePipelines(
                   row.before.pipelines,
                   row.after.pipelines,
@@ -518,18 +532,23 @@ function ComparePerformanceWithData(props: {
                   <Fragment key={pipelineIndex}>
                     <HeaderTR>
                       <td></td>
-                      <NumberHeader>{first != null && "Before"}</NumberHeader>
+                      {comparison && (
+                        <NumberHeader>{first != null && "Before"}</NumberHeader>
+                      )}
                       <NumberHeader>{second != null && "After"}</NumberHeader>
-                      <NumberHeader>
-                        {first != null && second != null && "Delta"}
-                      </NumberHeader>
+                      {comparison && (
+                        <NumberHeader>
+                          {first != null && second != null && "Delta"}
+                        </NumberHeader>
+                      )}
                       <NameHeader>
                         Tuple counts for &apos;{name}&apos; pipeline
-                        {first == null
-                          ? " (after)"
-                          : second == null
-                            ? " (before)"
-                            : ""}
+                        {comparison &&
+                          (first == null
+                            ? " (after)"
+                            : second == null
+                              ? " (before)"
+                              : "")}
                       </NameHeader>
                     </HeaderTR>
                     {abbreviateRASteps(first?.steps ?? second!.steps).map(
@@ -538,6 +557,7 @@ function ComparePerformanceWithData(props: {
                           key={index}
                           before={first?.counts[index]}
                           after={second?.counts[index]}
+                          comparison={comparison}
                           step={step}
                         />
                       ),
@@ -556,9 +576,11 @@ function ComparePerformanceWithData(props: {
           </tr>
           <tr key="total">
             <ChevronCell />
-            <NumberCell>{formatDecimal(totalBefore)}</NumberCell>
+            {comparison && (
+              <NumberCell>{formatDecimal(totalBefore)}</NumberCell>
+            )}
             <NumberCell>{formatDecimal(totalAfter)}</NumberCell>
-            {renderDelta(totalDiff)}
+            {comparison && renderDelta(totalDiff)}
             <NameCell>TOTAL</NameCell>
           </tr>
         </tfoot>

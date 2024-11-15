@@ -403,6 +403,7 @@ export interface SetPerformanceComparisonQueries {
   readonly t: "setPerformanceComparison";
   readonly from: PerformanceComparisonDataFromLog;
   readonly to: PerformanceComparisonDataFromLog;
+  readonly comparison: boolean;
 }
 
 export type FromComparePerformanceViewMessage = CommonFromViewMessages;
