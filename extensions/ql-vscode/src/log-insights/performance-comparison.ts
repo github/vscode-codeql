@@ -80,8 +80,25 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
     iterationCounts: [],
   };
 
+  private truncate(name: string) {
+    name = name.replace(/#[0-9a-f]{8}(?![0-9a-f])/, "");
+    const limit = 300;
+    if (name.length > limit) {
+      const colon = name.lastIndexOf("::");
+      if (colon === -1) {
+        return `${name.substring(0, limit)}...`;
+      } else {
+        const suffix = name.substring(colon);
+        return `(...)${suffix}`;
+      }
+    } else {
+      return name;
+    }
+  }
+
   private getPredicateIndex(name: string): number {
     const { nameToIndex } = this;
+    name = this.truncate(name);
     let index = nameToIndex.get(name);
     if (index === undefined) {
       index = nameToIndex.size;
