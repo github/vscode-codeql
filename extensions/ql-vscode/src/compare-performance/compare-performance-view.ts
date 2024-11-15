@@ -81,6 +81,7 @@ export class ComparePerformanceView extends AbstractWebview<
       t: "setPerformanceComparison",
       from: fromPerf.getData(),
       to: toPerf.getData(),
+      comparison: fromJsonLog !== "",
     });
   }
 
