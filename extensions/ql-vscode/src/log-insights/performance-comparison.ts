@@ -151,6 +151,10 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
           for (let i = 0, length = counts.length; i < length; ++i) {
             // TODO: possibly exclude unions here
             const count = counts[i];
+            if (count < 0) {
+              // Empty RA lines have a tuple count of -1. Do not count them when aggregating.
+              continue;
+            }
             totalTuples += count;
             totalTuplesPerStep[i] += count;
           }
