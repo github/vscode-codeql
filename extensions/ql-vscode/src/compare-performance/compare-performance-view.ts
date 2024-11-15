@@ -17,6 +17,7 @@ import { withProgress } from "../common/vscode/progress";
 import { telemetryListener } from "../common/vscode/telemetry";
 import type { ResultsView } from "../local-queries";
 import { scanLog } from "../log-insights/log-scanner";
+import type { ComparePerformanceDescriptionData } from "../log-insights/performance-comparison";
 import { PerformanceOverviewScanner } from "../log-insights/performance-comparison";
 import type { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import { RemoteLogs } from "./remote-logs";
@@ -45,7 +46,11 @@ export class ComparePerformanceView extends AbstractWebview<
     );
   }
 
-  async showResults(fromJsonLog: string, toJsonLog: string) {
+  async showResults(
+    fromJsonLog: string | undefined,
+    toJsonLog: string,
+    description: ComparePerformanceDescriptionData,
+  ) {
     const panel = await this.getPanel();
     panel.reveal(undefined, false);
 
@@ -69,19 +74,20 @@ export class ComparePerformanceView extends AbstractWebview<
     }
 
     const [fromPerf, toPerf] = await Promise.all([
-      fromJsonLog === ""
-        ? new PerformanceOverviewScanner()
-        : scanLogWithProgress(fromJsonLog, "1/2"),
-      scanLogWithProgress(toJsonLog, fromJsonLog === "" ? "1/1" : "2/2"),
+      fromJsonLog
+        ? scanLogWithProgress(fromJsonLog, "1/2")
+        : new PerformanceOverviewScanner(),
+      scanLogWithProgress(toJsonLog, fromJsonLog ? "2/2" : "1/1"),
     ]);
 
     // TODO: filter out irrelevant common predicates before transfer?
 
     await this.postMessage({
       t: "setPerformanceComparison",
+      description,
       from: fromPerf.getData(),
       to: toPerf.getData(),
-      comparison: fromJsonLog !== "",
+      comparison: !!fromJsonLog,
     });
   }
 
@@ -140,6 +146,6 @@ export class ComparePerformanceView extends AbstractWebview<
       );
       return;
     }
-    await this.showResults(result.before, result.after);
+    await this.showResults(result.before, result.after, result.description);
   }
 }

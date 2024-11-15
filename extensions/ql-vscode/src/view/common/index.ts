@@ -7,3 +7,5 @@ export * from "./SectionTitle";
 export * from "./VerticalSpace";
 export * from "./ViewTitle";
 export * from "./WarningBox";
+export * from "./InfoBox";
+export * from "./ComparePerformanceDescription";
