@@ -1225,9 +1225,14 @@ async function showPerformanceComparison(
   const fromLog = from?.evalutorLogPaths?.jsonSummary;
   const toLog = to.evalutorLogPaths?.jsonSummary;
 
-  if (fromLog === undefined || toLog === undefined) {
+  if (from && fromLog === undefined) {
     return extLogger.showWarningMessage(
-      `Cannot compare performance as the structured logs are missing. Did they queries complete normally?`,
+      `Cannot compare performance as the "from" structured logs are missing. Did they queries complete normally?`,
+    );
+  }
+  if (toLog === undefined) {
+    return extLogger.showWarningMessage(
+      `Cannot compare performance as the "to" structured logs are missing. Did they queries complete normally?`,
     );
   }
   if (from) {
