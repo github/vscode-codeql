@@ -56,7 +56,7 @@ export interface PerformanceComparisonDataFromLog {
 export type ComparePerformanceDescriptionData =
   | {
       kind: "local-run";
-      fromQuery: string;
+      fromQuery?: string;
       toQuery: string;
     }
   | {

@@ -47,7 +47,7 @@ export class ComparePerformanceView extends AbstractWebview<
   }
 
   async showResults(
-    fromJsonLog: string,
+    fromJsonLog: string | undefined,
     toJsonLog: string,
     description: ComparePerformanceDescriptionData,
   ) {
@@ -74,10 +74,10 @@ export class ComparePerformanceView extends AbstractWebview<
     }
 
     const [fromPerf, toPerf] = await Promise.all([
-      fromJsonLog === ""
-        ? new PerformanceOverviewScanner()
-        : scanLogWithProgress(fromJsonLog, "1/2"),
-      scanLogWithProgress(toJsonLog, fromJsonLog === "" ? "1/1" : "2/2"),
+      fromJsonLog
+        ? scanLogWithProgress(fromJsonLog, "1/2")
+        : new PerformanceOverviewScanner(),
+      scanLogWithProgress(toJsonLog, fromJsonLog ? "2/2" : "1/1"),
     ]);
 
     // TODO: filter out irrelevant common predicates before transfer?
@@ -87,7 +87,7 @@ export class ComparePerformanceView extends AbstractWebview<
       description,
       from: fromPerf.getData(),
       to: toPerf.getData(),
-      comparison: fromJsonLog !== "",
+      comparison: !!fromJsonLog,
     });
   }
 

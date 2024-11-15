@@ -10,9 +10,11 @@ export const ComparePerformanceLocalRunDescription = ({
 }: Props) => {
   return (
     <div>
+      (fromQuery?
       <strong>
         Comparison of local runs of {fromQuery} and {toQuery}
       </strong>
+      : Local run of {toQuery})
     </div>
   );
 };

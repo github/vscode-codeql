@@ -1,4 +1,10 @@
+import { watch } from "chokidar";
+import { ensureDir } from "fs-extra";
+import { arch, homedir, platform } from "os";
+import { join } from "path";
+import { lt, parse } from "semver";
 import "source-map-support/register";
+import { dirSync } from "tmp-promise";
 import type { CancellationToken, Disposable, ExtensionContext } from "vscode";
 import {
   env,
@@ -11,40 +17,8 @@ import {
   workspace,
 } from "vscode";
 import type { LanguageClient } from "vscode-languageclient/node";
-import { arch, homedir, platform } from "os";
-import { ensureDir } from "fs-extra";
-import { join } from "path";
-import { dirSync } from "tmp-promise";
-import { lt, parse } from "semver";
-import { watch } from "chokidar";
-import {
-  activate as archiveFilesystemProvider_activate,
-  zipArchiveScheme,
-} from "./common/vscode/archive-filesystem-provider";
+import { prepareCodeTour } from "./code-tour/code-tour";
 import { CliVersionConstraint, CodeQLCliServer } from "./codeql-cli/cli";
-import {
-  ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING,
-  addDatabaseSourceToWorkspace,
-  CliConfigListener,
-  DistributionConfigListener,
-  GitHubDatabaseConfigListener,
-  joinOrderWarningThreshold,
-  QueryHistoryConfigListener,
-  QueryServerConfigListener,
-  VariantAnalysisConfigListener,
-} from "./config";
-import {
-  AstViewer,
-  createLanguageClient,
-  getQueryEditorCommands,
-  install,
-  TemplatePrintAstProvider,
-  TemplatePrintCfgProvider,
-  TemplateQueryDefinitionProvider,
-  TemplateQueryReferenceProvider,
-} from "./language-support";
-import { DatabaseManager } from "./databases/local-databases";
-import { DatabaseUI } from "./databases/local-databases-ui";
 import type { FindDistributionResult } from "./codeql-cli/distribution";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
@@ -57,24 +31,20 @@ import {
   GithubApiError,
   GithubRateLimitedError,
 } from "./codeql-cli/distribution/github-api-error";
-import { tmpDir, tmpDirDisposal } from "./tmp-dir";
-import { prepareCodeTour } from "./code-tour/code-tour";
-import {
-  showBinaryChoiceDialog,
-  showInformationMessageWithAction,
-} from "./common/vscode/dialog";
+import type { App } from "./common/app";
+import type {
+  AllExtensionCommands,
+  BaseCommands,
+  PreActivationCommands,
+  QueryServerCommands,
+} from "./common/commands";
+import { redactableError } from "./common/errors";
 import {
   asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
 } from "./common/helpers-pure";
-import {
-  LocalQueries,
-  QuickEvalCodeLensProvider,
-  ResultsView,
-  WebviewReveal,
-} from "./local-queries";
 import type { BaseLogger } from "./common/logging";
 import {
   showAndLogErrorMessage,
@@ -88,54 +58,84 @@ import {
   languageServerLogger,
   queryServerLogger,
 } from "./common/logging/vscode";
-import { QueryHistoryManager } from "./query-history/query-history-manager";
-import type { CompletedLocalQueryInfo } from "./query-results";
-import { CompareView } from "./compare/compare-view";
+import { VSCodeMockGitHubApiServer } from "./common/mock-gh-api/vscode/vscode-mock-gh-api-server";
+import {
+  activate as archiveFilesystemProvider_activate,
+  zipArchiveScheme,
+} from "./common/vscode/archive-filesystem-provider";
+import { registerCommandWithErrorHandling } from "./common/vscode/commands";
+import {
+  showBinaryChoiceDialog,
+  showInformationMessageWithAction,
+} from "./common/vscode/dialog";
+import { ExtensionApp } from "./common/vscode/extension-app";
+import type { ProgressCallback } from "./common/vscode/progress";
+import { withProgress } from "./common/vscode/progress";
 import {
   initializeTelemetry,
   telemetryListener,
 } from "./common/vscode/telemetry";
-import type { ProgressCallback } from "./common/vscode/progress";
-import { withProgress } from "./common/vscode/progress";
-import { CodeQlStatusBarHandler } from "./status-bar";
-import { getPackagingCommands } from "./packaging";
-import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import { EvalLogViewer } from "./query-evaluation-logging";
-import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
-import { JoinOrderScannerProvider } from "./log-insights/join-order";
-import { LogScannerService } from "./log-insights/log-scanner-service";
-import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
-import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
-import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
-import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
-import { VSCodeMockGitHubApiServer } from "./common/mock-gh-api/vscode/vscode-mock-gh-api-server";
-import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
-import { ExtensionApp } from "./common/vscode/extension-app";
+import { ComparePerformanceView } from "./compare-performance/compare-performance-view";
+import { CompareView } from "./compare/compare-view";
+import {
+  ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING,
+  addDatabaseSourceToWorkspace,
+  CliConfigListener,
+  DistributionConfigListener,
+  GitHubDatabaseConfigListener,
+  joinOrderWarningThreshold,
+  QueryHistoryConfigListener,
+  QueryServerConfigListener,
+  VariantAnalysisConfigListener,
+} from "./config";
+import { DatabaseFetcher } from "./databases/database-fetcher";
 import { DbModule } from "./databases/db-module";
-import { redactableError } from "./common/errors";
+import { GitHubDatabasesModule } from "./databases/github-databases";
+import { DatabaseManager } from "./databases/local-databases";
+import { DatabaseUI } from "./databases/local-databases-ui";
 import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";
-import type { QueryHistoryDirs } from "./query-history/query-history-dirs";
-import type {
-  AllExtensionCommands,
-  BaseCommands,
-  PreActivationCommands,
-  QueryServerCommands,
-} from "./common/commands";
-import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-commands";
-import type { App } from "./common/app";
-import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
-import { ModelEditorModule } from "./model-editor/model-editor-module";
-import { TestManager } from "./query-testing/test-manager";
-import { TestRunner } from "./query-testing/test-runner";
-import { QueryRunner, QueryServerClient } from "./query-server";
-import { QueriesModule } from "./queries-panel/queries-module";
-import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
 import { LanguageContextStore } from "./language-context-store";
 import { LanguageSelectionPanel } from "./language-selection-panel/language-selection-panel";
-import { GitHubDatabasesModule } from "./databases/github-databases";
-import { DatabaseFetcher } from "./databases/database-fetcher";
-import { ComparePerformanceView } from "./compare-performance/compare-performance-view";
+import {
+  AstViewer,
+  createLanguageClient,
+  getQueryEditorCommands,
+  install,
+  TemplatePrintAstProvider,
+  TemplatePrintCfgProvider,
+  TemplateQueryDefinitionProvider,
+  TemplateQueryReferenceProvider,
+} from "./language-support";
+import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-commands";
+import {
+  LocalQueries,
+  QuickEvalCodeLensProvider,
+  ResultsView,
+  WebviewReveal,
+} from "./local-queries";
+import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
+import { JoinOrderScannerProvider } from "./log-insights/join-order";
+import { LogScannerService } from "./log-insights/log-scanner-service";
+import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
+import { ModelEditorModule } from "./model-editor/model-editor-module";
+import { getPackagingCommands } from "./packaging";
+import { QueriesModule } from "./queries-panel/queries-module";
+import { EvalLogViewer } from "./query-evaluation-logging";
+import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
+import type { QueryHistoryDirs } from "./query-history/query-history-dirs";
+import { QueryHistoryManager } from "./query-history/query-history-manager";
+import type { CompletedLocalQueryInfo } from "./query-results";
+import { QueryRunner, QueryServerClient } from "./query-server";
+import { TestManager } from "./query-testing/test-manager";
+import { TestRunner } from "./query-testing/test-runner";
+import { CodeQlStatusBarHandler } from "./status-bar";
+import { tmpDir, tmpDirDisposal } from "./tmp-dir";
+import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
+import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
+import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
+import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
+import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 
 /**
  * extension.ts
@@ -928,8 +928,18 @@ async function activateWithInstalledDistribution(
     async (
       from: CompletedLocalQueryInfo,
       to: CompletedLocalQueryInfo | undefined,
-    ): Promise<void> =>
-      showPerformanceComparison(comparePerformanceView, from, to),
+    ): Promise<void> => {
+      if (to) {
+        return showPerformanceComparison(comparePerformanceView, from, to);
+      } else {
+        // the convention downstream is that `from` is optional, but here it is the opposite...
+        return showPerformanceComparison(
+          comparePerformanceView,
+          undefined,
+          from,
+        );
+      }
+    },
   );
 
   ctx.subscriptions.push(qhm);
@@ -1209,28 +1219,28 @@ async function showResultsForComparison(
 
 async function showPerformanceComparison(
   view: ComparePerformanceView,
-  from: CompletedLocalQueryInfo,
-  to: CompletedLocalQueryInfo | undefined,
+  from: CompletedLocalQueryInfo | undefined,
+  to: CompletedLocalQueryInfo,
 ): Promise<void> {
-  let fromLog = from.evalutorLogPaths?.jsonSummary;
-  let toLog = to?.evalutorLogPaths?.jsonSummary;
+  const fromLog = from?.evalutorLogPaths?.jsonSummary;
+  const toLog = to.evalutorLogPaths?.jsonSummary;
 
-  if (to === undefined) {
-    toLog = fromLog;
-    fromLog = "";
-  }
   if (fromLog === undefined || toLog === undefined) {
     return extLogger.showWarningMessage(
       `Cannot compare performance as the structured logs are missing. Did they queries complete normally?`,
     );
   }
-  await extLogger.log(
-    `Comparing performance of ${from.getQueryName()} and ${to?.getQueryName() ?? "baseline"}`,
-  );
+  if (from) {
+    await extLogger.log(
+      `Comparing performance of ${from.getQueryName()} and to?.getQueryName()`,
+    );
+  } else {
+    void extLogger.log(`Showing performance of ${to.getQueryName()}`);
+  }
 
   await view.showResults(fromLog, toLog, {
     kind: "local-run",
-    fromQuery: from.getQueryName(),
+    fromQuery: from?.getQueryName(),
     toQuery: to.getQueryName(),
   });
 }
