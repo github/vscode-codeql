@@ -383,7 +383,7 @@ function ComparePerformanceWithData(props: {
 
   const [hideCacheHits, setHideCacheHits] = useState(false);
 
-  const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("delta");
+  const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("absDelta");
 
   const [metric, setMetric] = useState<Metric>(metrics.tuples);
 
