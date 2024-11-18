@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { MethodModeling } from "./MethodModeling";
 import { getModelingStatus } from "../../model-editor/shared/modeling-status";
 import type { Method } from "../../model-editor/method";
@@ -12,6 +12,7 @@ import { NoMethodSelected } from "./NoMethodSelected";
 import type { MethodModelingPanelViewState } from "../../model-editor/shared/view-state";
 import { MethodAlreadyModeled } from "./MethodAlreadyModeled";
 import { defaultModelConfig } from "../../model-editor/languages";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 
 type Props = {
   initialViewState?: MethodModelingPanelViewState;
@@ -36,47 +37,33 @@ export function MethodModelingView({
     [modeledMethods, isMethodModified],
   );
 
-  useEffect(() => {
-    const listener = (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToMethodModelingMessage = evt.data;
-        switch (msg.t) {
-          case "setMethodModelingPanelViewState":
-            setViewState(msg.viewState);
-            break;
-          case "setInModelingMode":
-            setInModelingMode(msg.inModelingMode);
-            break;
-          case "setMultipleModeledMethods":
-            setModeledMethods(msg.modeledMethods);
-            break;
-          case "setMethodModified":
-            setIsMethodModified(msg.isModified);
-            break;
-          case "setNoMethodSelected":
-            setMethod(undefined);
-            setModeledMethods([]);
-            setIsMethodModified(false);
-            break;
-          case "setSelectedMethod":
-            setMethod(msg.method);
-            setModeledMethods(msg.modeledMethods);
-            setIsMethodModified(msg.isModified);
-            break;
-          default:
-            assertNever(msg);
-        }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, "");
-        console.error(`Invalid event origin ${origin}`);
-      }
-    };
-    window.addEventListener("message", listener);
-
-    return () => {
-      window.removeEventListener("message", listener);
-    };
+  useMessageFromExtension<ToMethodModelingMessage>((msg) => {
+    switch (msg.t) {
+      case "setMethodModelingPanelViewState":
+        setViewState(msg.viewState);
+        break;
+      case "setInModelingMode":
+        setInModelingMode(msg.inModelingMode);
+        break;
+      case "setMultipleModeledMethods":
+        setModeledMethods(msg.modeledMethods);
+        break;
+      case "setMethodModified":
+        setIsMethodModified(msg.isModified);
+        break;
+      case "setNoMethodSelected":
+        setMethod(undefined);
+        setModeledMethods([]);
+        setIsMethodModified(false);
+        break;
+      case "setSelectedMethod":
+        setMethod(msg.method);
+        setModeledMethods(msg.modeledMethods);
+        setIsMethodModified(msg.isModified);
+        break;
+      default:
+        assertNever(msg);
+    }
   }, []);
 
   if (!inModelingMode || !viewState?.language) {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import type {
   VariantAnalysis as VariantAnalysisDomainModel,
@@ -13,6 +13,7 @@ import type { ToVariantAnalysisMessage } from "../../common/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -77,49 +78,31 @@ export function VariantAnalysis({
     debounceTimeoutMillis: 1000,
   });
 
-  useEffect(() => {
-    const listener = (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToVariantAnalysisMessage = evt.data;
-        if (msg.t === "setVariantAnalysis") {
-          setVariantAnalysis(msg.variantAnalysis);
-          vscode.setState({
-            variantAnalysisId: msg.variantAnalysis.id,
-          });
-        } else if (msg.t === "setFilterSortState") {
-          setFilterSortState(msg.filterSortState);
-        } else if (msg.t === "setRepoResults") {
-          setRepoResults((oldRepoResults) => {
-            const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
-            return [
-              ...oldRepoResults.filter(
-                (v) => !newRepoIds.includes(v.repositoryId),
-              ),
-              ...msg.repoResults,
-            ];
-          });
-        } else if (msg.t === "setRepoStates") {
-          setRepoStates((oldRepoStates) => {
-            const newRepoIds = msg.repoStates.map((r) => r.repositoryId);
-            return [
-              ...oldRepoStates.filter(
-                (v) => !newRepoIds.includes(v.repositoryId),
-              ),
-              ...msg.repoStates,
-            ];
-          });
-        }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, "");
-        console.error(`Invalid event origin ${origin}`);
-      }
-    };
-    window.addEventListener("message", listener);
-
-    return () => {
-      window.removeEventListener("message", listener);
-    };
+  useMessageFromExtension<ToVariantAnalysisMessage>((msg) => {
+    if (msg.t === "setVariantAnalysis") {
+      setVariantAnalysis(msg.variantAnalysis);
+      vscode.setState({
+        variantAnalysisId: msg.variantAnalysis.id,
+      });
+    } else if (msg.t === "setFilterSortState") {
+      setFilterSortState(msg.filterSortState);
+    } else if (msg.t === "setRepoResults") {
+      setRepoResults((oldRepoResults) => {
+        const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
+        return [
+          ...oldRepoResults.filter((v) => !newRepoIds.includes(v.repositoryId)),
+          ...msg.repoResults,
+        ];
+      });
+    } else if (msg.t === "setRepoStates") {
+      setRepoStates((oldRepoStates) => {
+        const newRepoIds = msg.repoStates.map((r) => r.repositoryId);
+        return [
+          ...oldRepoStates.filter((v) => !newRepoIds.includes(v.repositoryId)),
+          ...msg.repoStates,
+        ];
+      });
+    }
   }, []);
 
   const copyRepositoryList = useCallback(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { styled } from "styled-components";
 import { ModelAlertsHeader } from "./ModelAlertsHeader";
 import type { ModelAlertsViewState } from "../../model-editor/shared/view-state";
@@ -18,6 +18,7 @@ import {
 } from "../../model-editor/shared/model-alerts-filter-sort";
 import type { ModelAlertsFilterSortState } from "../../model-editor/shared/model-alerts-filter-sort";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
+import { useMessageFromExtension } from "../common/useMessageFromExtension";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
@@ -67,47 +68,33 @@ export function ModelAlerts({
     null,
   );
 
-  useEffect(() => {
-    const listener = (evt: MessageEvent) => {
-      if (evt.origin === window.origin) {
-        const msg: ToModelAlertsMessage = evt.data;
-        switch (msg.t) {
-          case "setModelAlertsViewState": {
-            setViewState(msg.viewState);
-            break;
-          }
-          case "setVariantAnalysis": {
-            setVariantAnalysis(msg.variantAnalysis);
-            break;
-          }
-          case "setRepoResults": {
-            setRepoResults((oldRepoResults) => {
-              const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
-              return [
-                ...oldRepoResults.filter(
-                  (v) => !newRepoIds.includes(v.repositoryId),
-                ),
-                ...msg.repoResults,
-              ];
-            });
-            break;
-          }
-          case "revealModel": {
-            setRevealedModel(msg.modeledMethod);
-            break;
-          }
-        }
-      } else {
-        // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, "");
-        console.error(`Invalid event origin ${origin}`);
+  useMessageFromExtension<ToModelAlertsMessage>((msg) => {
+    switch (msg.t) {
+      case "setModelAlertsViewState": {
+        setViewState(msg.viewState);
+        break;
       }
-    };
-    window.addEventListener("message", listener);
-
-    return () => {
-      window.removeEventListener("message", listener);
-    };
+      case "setVariantAnalysis": {
+        setVariantAnalysis(msg.variantAnalysis);
+        break;
+      }
+      case "setRepoResults": {
+        setRepoResults((oldRepoResults) => {
+          const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
+          return [
+            ...oldRepoResults.filter(
+              (v) => !newRepoIds.includes(v.repositoryId),
+            ),
+            ...msg.repoResults,
+          ];
+        });
+        break;
+      }
+      case "revealModel": {
+        setRevealedModel(msg.modeledMethod);
+        break;
+      }
+    }
   }, []);
 
   const modelAlerts = useMemo(() => {
