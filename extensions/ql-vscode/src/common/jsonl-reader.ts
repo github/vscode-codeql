@@ -1,4 +1,4 @@
-import { statSync } from "fs";
+import { stat } from "fs/promises";
 import { createReadStream } from "fs-extra";
 import { createInterface } from "readline";
 
@@ -33,7 +33,7 @@ export async function readJsonlFile<T>(
   }
 
   void logger?.log(
-    `Parsing ${path} (${statSync(path).size / 1024 / 1024} MB)...`,
+    `Parsing ${path} (${(await stat(path)).size / 1024 / 1024} MB)...`,
   );
   const fileStream = createReadStream(path, "utf8");
   const rl = createInterface({
@@ -63,4 +63,49 @@ export async function readJsonlFile<T>(
     await handler(parseJsonFromCurrentLines());
   }
   logProgress();
+}
+
+const doubleLineBreakRegexp = /\n\r?\n/;
+
+export async function readJsonlFile2<T>(
+  path: string,
+  handler: (value: T) => Promise<void>,
+  logger?: { log: (message: string) => void },
+): Promise<void> {
+  void logger?.log(
+    `Parsing ${path} (${(await stat(path)).size / 1024 / 1024} MB)...`,
+  );
+  return new Promise((resolve, reject) => {
+    const stream = createReadStream(path, { encoding: "utf8" });
+    let buffer = "";
+    stream.on("data", async (chunk: string) => {
+      const parts = (buffer + chunk).split(doubleLineBreakRegexp);
+      buffer = parts.pop()!;
+      if (parts.length > 0) {
+        try {
+          stream.pause();
+          for (const part of parts) {
+            await handler(JSON.parse(part));
+          }
+          stream.resume();
+        } catch (e) {
+          stream.destroy();
+          reject(e);
+        }
+      }
+    });
+    stream.on("end", async () => {
+      if (buffer.trim().length > 0) {
+        try {
+          await handler(JSON.parse(buffer));
+        } catch (e) {
+          reject(e);
+          return;
+        }
+      }
+      void logger?.log(`Finishing parsing ${path}`);
+      resolve();
+    });
+    stream.on("error", reject);
+  });
 }
