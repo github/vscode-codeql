@@ -2,6 +2,8 @@ import { readFile } from "fs-extra";
 import { readJsonlFile, readJsonlFile2 } from "../../src/common/jsonl-reader";
 import { performance } from "perf_hooks";
 import { join } from "path";
+import { createReadStream } from "fs";
+import { createInterface } from "readline";
 
 /** An "obviously correct" implementation to test against. */
 async function readJsonlReferenceImpl<T>(
@@ -19,6 +21,18 @@ async function readJsonlReferenceImpl<T>(
   }
 }
 
+async function justReadline(
+  path: string,
+  handler: (value: unknown) => Promise<void>,
+) {
+  const stream = createReadStream(path, "utf8");
+  const rl = createInterface(stream);
+
+  for await (const line of rl) {
+    await handler(line);
+  }
+}
+
 type ParserFn = (
   text: string,
   callback: (v: unknown) => Promise<void>,
@@ -28,6 +42,7 @@ const parsers: Record<string, ParserFn> = {
   readJsonlReferenceImpl,
   readJsonlFile,
   readJsonlFile2,
+  justReadline,
 };
 
 async function main() {
