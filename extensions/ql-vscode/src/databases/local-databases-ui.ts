@@ -369,7 +369,7 @@ export class DatabaseUI extends DisposableObject {
         await this.chooseDatabasesParentFolder(progress);
       },
       {
-        title: "Choose a Parent Folder contains all Databases to import",
+        title: "Importing all databases contained in parent folder",
       },
     );
   }
@@ -973,7 +973,7 @@ export class DatabaseUI extends DisposableObject {
 
   /**
    * Import database from uri. Returns the imported database, or `undefined` if the
-   * operation was unsuccessful.
+   * operation was unsuccessful or canceled.
    */
   private async importDatabase(
     uri: Uri,
@@ -1041,13 +1041,13 @@ export class DatabaseUI extends DisposableObject {
         progress({
           step: index + 1,
           maxStep: entries.length,
-          message: `Importing ${entry[0]} (${p.step}/${p.maxStep}): ${p.message}`,
+          message: `Importing '${entry[0]}' (${p.step}/${p.maxStep}): ${p.message}`,
         });
       };
 
       if (!validFileTypes.includes(entry[1])) {
         void this.app.logger.log(
-          `Skip import ${entry}, invalid FileType: ${entry[1]}`,
+          `Skipping import for '${entry}', invalid file type: ${entry[1]}`,
         );
         continue;
       }
@@ -1066,8 +1066,8 @@ export class DatabaseUI extends DisposableObject {
         } else {
           failures.push(entry[0]);
         }
-      } catch {
-        failures.push(entry[0]);
+      } catch (e) {
+        failures.push(`${entry[0]}: ${toErrorMessag(e)}`);
       }
     }
 
@@ -1076,7 +1076,7 @@ export class DatabaseUI extends DisposableObject {
         this.app.logger,
         `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).`,
         {
-          fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).\nFailed databases to import:\n  - ${failures.join("\n  - ")}`,
+          fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).\nFailed databases:\n  - ${failures.join("\n  - ")}`,
         },
       );
     } else if (databases.length === 0) {

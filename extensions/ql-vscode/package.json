@@ -841,7 +841,7 @@
       },
       {
         "command": "codeQL.chooseDatabaseFoldersParent",
-        "title": "CodeQL: Choose Parent Folder and import all databases directly contained in it"
+        "title": "CodeQL: Import All Databases Directly Contained in a Parent Folder"
       },
       {
         "command": "codeQL.chooseDatabaseArchive",
