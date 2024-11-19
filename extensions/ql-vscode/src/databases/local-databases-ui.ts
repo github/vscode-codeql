@@ -1034,14 +1034,14 @@ export class DatabaseUI extends DisposableObject {
       progress({
         step: index + 1,
         maxStep: entries.length,
-        message: `Importing ${entry[0]}`,
+        message: `Importing '${entry[0]}'`,
       });
 
       const subProgress: ProgressCallback = (p) => {
         progress({
           step: index + 1,
           maxStep: entries.length,
-          message: `Importing '${entry[0]}' (${p.step}/${p.maxStep}): ${p.message}`,
+          message: `Importing '${entry[0]}': (${p.step}/${p.maxStep}) ${p.message}`,
         });
       };
 
