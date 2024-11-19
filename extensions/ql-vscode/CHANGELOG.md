@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add a palette command that allows importing all databases directly inside of a parent folder. [3797](https://github.com/github/vscode-codeql/pull/3797)
+
 ## 1.16.1 - 6 November 2024
 
 - Support result columns of type `QlBuiltins::BigInt` in quick evaluations. [#3647](https://github.com/github/vscode-codeql/pull/3647)

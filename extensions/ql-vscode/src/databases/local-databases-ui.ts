@@ -16,6 +16,7 @@ import {
   ThemeIcon,
   ThemeColor,
   workspace,
+  FileType,
 } from "vscode";
 import { pathExists, stat, readdir, remove } from "fs-extra";
 
@@ -36,6 +37,7 @@ import {
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
+  showAndLogInformationMessage,
 } from "../common/logging";
 import type { DatabaseFetcher } from "./database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
@@ -267,6 +269,8 @@ export class DatabaseUI extends DisposableObject {
       "codeQL.getCurrentDatabase": this.handleGetCurrentDatabase.bind(this),
       "codeQL.chooseDatabaseFolder":
         this.handleChooseDatabaseFolderFromPalette.bind(this),
+      "codeQL.chooseDatabaseFoldersParent":
+        this.handleChooseDatabaseFoldersParentFromPalette.bind(this),
       "codeQL.chooseDatabaseArchive":
         this.handleChooseDatabaseArchiveFromPalette.bind(this),
       "codeQL.chooseDatabaseInternet":
@@ -357,6 +361,12 @@ export class DatabaseUI extends DisposableObject {
         title: "Choose a Database from a Folder",
       },
     );
+  }
+
+  private async handleChooseDatabaseFoldersParentFromPalette(): Promise<void> {
+    return withProgress(async (progress) => {
+      await this.chooseDatabasesParentFolder(progress);
+    });
   }
 
   private async handleSetDefaultTourDatabase(): Promise<void> {
@@ -957,6 +967,32 @@ export class DatabaseUI extends DisposableObject {
   }
 
   /**
+   * Import database from uri. Returns the imported database, or `undefined` if the
+   * operation was unsuccessful or canceled.
+   */
+  private async importDatabase(
+    uri: Uri,
+    byFolder: boolean,
+    progress: ProgressCallback,
+  ): Promise<DatabaseItem | undefined> {
+    if (byFolder && !uri.fsPath.endsWith(".testproj")) {
+      const fixedUri = await this.fixDbUri(uri);
+      // we are selecting a database folder
+      return await this.databaseManager.openDatabase(fixedUri, {
+        type: "folder",
+      });
+    } else {
+      // we are selecting a database archive or a .testproj.
+      // Unzip archives (if an archive) and copy into a workspace-controlled area
+      // before importing.
+      return await this.databaseFetcher.importLocalDatabase(
+        uri.toString(true),
+        progress,
+      );
+    }
+  }
+
+  /**
    * Ask the user for a database directory. Returns the chosen database, or `undefined` if the
    * operation was canceled.
    */
@@ -969,21 +1005,89 @@ export class DatabaseUI extends DisposableObject {
       return undefined;
     }
 
-    if (byFolder && !uri.fsPath.endsWith("testproj")) {
-      const fixedUri = await this.fixDbUri(uri);
-      // we are selecting a database folder
-      return await this.databaseManager.openDatabase(fixedUri, {
-        type: "folder",
+    return await this.importDatabase(uri, byFolder, progress);
+  }
+
+  /**
+   * Ask the user for a parent directory that contains all databases.
+   * Returns all valid databases, or `undefined` if the operation was canceled.
+   */
+  private async chooseDatabasesParentFolder(
+    progress: ProgressCallback,
+  ): Promise<DatabaseItem[] | undefined> {
+    const uri = await chooseDatabaseDir(true);
+    if (!uri) {
+      return undefined;
+    }
+
+    const databases: DatabaseItem[] = [];
+    const failures: string[] = [];
+    const entries = await workspace.fs.readDirectory(uri);
+    const validFileTypes = [FileType.File, FileType.Directory];
+
+    for (const [index, entry] of entries.entries()) {
+      progress({
+        step: index + 1,
+        maxStep: entries.length,
+        message: `Importing '${entry[0]}'`,
       });
+
+      const subProgress: ProgressCallback = (p) => {
+        progress({
+          step: index + 1,
+          maxStep: entries.length,
+          message: `Importing '${entry[0]}': (${p.step}/${p.maxStep}) ${p.message}`,
+        });
+      };
+
+      if (!validFileTypes.includes(entry[1])) {
+        void this.app.logger.log(
+          `Skipping import for '${entry}', invalid file type: ${entry[1]}`,
+        );
+        continue;
+      }
+
+      try {
+        const databaseUri = Uri.joinPath(uri, entry[0]);
+        void this.app.logger.log(`Importing from ${databaseUri}`);
+
+        const database = await this.importDatabase(
+          databaseUri,
+          entry[1] === FileType.Directory,
+          subProgress,
+        );
+        if (database) {
+          databases.push(database);
+        } else {
+          failures.push(entry[0]);
+        }
+      } catch (e) {
+        failures.push(`${entry[0]}: ${getErrorMessage(e)}`.trim());
+      }
+    }
+
+    if (failures.length) {
+      void showAndLogErrorMessage(
+        this.app.logger,
+        `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).`,
+        {
+          fullMessage: `Failed to import ${failures.length} database(s), successfully imported ${databases.length} database(s).\nFailed databases:\n  - ${failures.join("\n  - ")}`,
+        },
+      );
+    } else if (databases.length === 0) {
+      void showAndLogErrorMessage(
+        this.app.logger,
+        `No database folder to import.`,
+      );
+      return undefined;
     } else {
-      // we are selecting a database archive or a testproj.
-      // Unzip archives (if an archive) and copy into a workspace-controlled area
-      // before importing.
-      return await this.databaseFetcher.importLocalDatabase(
-        uri.toString(true),
-        progress,
+      void showAndLogInformationMessage(
+        this.app.logger,
+        `Successfully imported ${databases.length} database(s).`,
       );
     }
+
+    return databases;
   }
 
   /**
