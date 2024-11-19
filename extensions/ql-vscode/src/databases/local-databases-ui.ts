@@ -1067,7 +1067,7 @@ export class DatabaseUI extends DisposableObject {
           failures.push(entry[0]);
         }
       } catch (e) {
-        failures.push(`${entry[0]}: ${toErrorMessag(e)}`);
+        failures.push(`${entry[0]}: ${getErrorMessage(e)}`);
       }
     }
 
