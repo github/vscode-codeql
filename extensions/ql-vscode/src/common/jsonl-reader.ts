@@ -15,6 +15,8 @@ export async function readJsonlFile<T>(
   handler: (value: T) => Promise<void>,
   logger?: { log: (message: string) => void },
 ): Promise<void> {
+  // Stream the data as large evaluator logs won't fit in memory.
+  // Also avoid using 'readline' as it is slower than our manual line splitting.
   void logger?.log(
     `Parsing ${path} (${(await stat(path)).size / 1024 / 1024} MB)...`,
   );
