@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Add a palette command that allows importing of all databases inside of a parent folder. [3797](https://github.com/github/vscode-codeql/pull/3797)
+- Add a palette command that allows importing all databases directly inside of a parent folder. [3797](https://github.com/github/vscode-codeql/pull/3797)
 
 ## 1.16.1 - 6 November 2024
 
