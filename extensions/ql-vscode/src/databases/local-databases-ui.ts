@@ -364,14 +364,9 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async handleChooseDatabaseFoldersParentFromPalette(): Promise<void> {
-    return withProgress(
-      async (progress) => {
-        await this.chooseDatabasesParentFolder(progress);
-      },
-      {
-        title: "Importing all databases contained in parent folder",
-      },
-    );
+    return withProgress(async (progress) => {
+      await this.chooseDatabasesParentFolder(progress);
+    });
   }
 
   private async handleSetDefaultTourDatabase(): Promise<void> {
