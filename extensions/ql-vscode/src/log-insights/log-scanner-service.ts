@@ -94,12 +94,12 @@ export class LogScannerService extends DisposableObject {
   public async scanEvalLog(query: QueryHistoryInfo | undefined): Promise<void> {
     this.diagnosticCollection.clear();
 
-    if (query?.t !== "local" || query.evalutorLogPaths === undefined) {
+    if (query?.t !== "local" || query.evaluatorLogPaths === undefined) {
       return;
     }
 
     const { summarySymbols, jsonSummary, humanReadableSummary } =
-      query.evalutorLogPaths;
+      query.evaluatorLogPaths;
 
     if (jsonSummary === undefined || humanReadableSummary === undefined) {
       return;

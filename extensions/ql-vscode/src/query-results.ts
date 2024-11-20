@@ -200,7 +200,7 @@ export class LocalQueryInfo {
     private cancellationSource?: CancellationTokenSource, // used to cancel in progress queries
     public failureReason?: string,
     public completedQuery?: CompletedQueryInfo,
-    public evalutorLogPaths?: EvaluatorLogPaths,
+    public evaluatorLogPaths?: EvaluatorLogPaths,
   ) {
     /**/
   }
@@ -226,7 +226,7 @@ export class LocalQueryInfo {
 
   /** Sets the paths to the various structured evaluator logs. */
   public setEvaluatorLogPaths(logPaths: EvaluatorLogPaths): void {
-    this.evalutorLogPaths = logPaths;
+    this.evaluatorLogPaths = logPaths;
   }
 
   /**

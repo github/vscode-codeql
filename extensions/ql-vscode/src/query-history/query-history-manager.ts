@@ -781,7 +781,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   private async warnNoEvalLogSummary(item: LocalQueryInfo) {
     const evalLogLocation =
-      item.evalutorLogPaths?.log ?? item.initialInfo.outputDir?.evalLogPath;
+      item.evaluatorLogPaths?.log ?? item.initialInfo.outputDir?.evalLogPath;
 
     // Summary log file doesn't exist.
     if (evalLogLocation && (await pathExists(evalLogLocation))) {
@@ -801,7 +801,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     const evalLogLocation =
-      item.evalutorLogPaths?.log ?? item.initialInfo.outputDir?.evalLogPath;
+      item.evaluatorLogPaths?.log ?? item.initialInfo.outputDir?.evalLogPath;
 
     if (evalLogLocation && (await pathExists(evalLogLocation))) {
       await tryOpenExternalFile(this.app.commands, evalLogLocation);
@@ -816,14 +816,14 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // If the summary file location wasn't saved, display error
-    if (!item.evalutorLogPaths?.humanReadableSummary) {
+    if (!item.evaluatorLogPaths?.humanReadableSummary) {
       await this.warnNoEvalLogSummary(item);
       return;
     }
 
     await tryOpenExternalFile(
       this.app.commands,
-      item.evalutorLogPaths.humanReadableSummary,
+      item.evaluatorLogPaths.humanReadableSummary,
     );
   }
 
@@ -833,7 +833,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // If the JSON summary file location wasn't saved, display error
-    if (item.evalutorLogPaths?.jsonSummary === undefined) {
+    if (item.evaluatorLogPaths?.jsonSummary === undefined) {
       await this.warnNoEvalLogSummary(item);
       return;
     }
@@ -841,7 +841,7 @@ export class QueryHistoryManager extends DisposableObject {
     // TODO(angelapwen): Stream the file in.
     try {
       const evalLogData: EvalLogData[] = await parseViewerData(
-        item.evalutorLogPaths.jsonSummary,
+        item.evaluatorLogPaths.jsonSummary,
       );
       const evalLogTreeBuilder = new EvalLogTreeBuilder(
         item.getQueryName(),
@@ -850,7 +850,7 @@ export class QueryHistoryManager extends DisposableObject {
       this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
     } catch {
       throw new Error(
-        `Could not read evaluator log summary JSON file to generate viewer data at ${item.evalutorLogPaths.jsonSummary}.`,
+        `Could not read evaluator log summary JSON file to generate viewer data at ${item.evaluatorLogPaths.jsonSummary}.`,
       );
     }
   }
