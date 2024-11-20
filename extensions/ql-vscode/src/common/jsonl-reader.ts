@@ -41,16 +41,15 @@ export async function readJsonlFile<T>(
       }
     });
     stream.on("end", async () => {
-      if (buffer.trim().length > 0) {
-        try {
+      try {
+        if (buffer.trim().length > 0) {
           await handler(JSON.parse(buffer));
-        } catch (e) {
-          reject(e);
-          return;
         }
+        void logger?.log(`Finished parsing ${path}`);
+        resolve();
+      } catch (e) {
+        reject(e);
       }
-      void logger?.log(`Finished parsing ${path}`);
-      resolve();
     });
     stream.on("error", reject);
   });
