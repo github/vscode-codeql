@@ -1,5 +1,6 @@
 import { stat } from "fs/promises";
 import { createReadStream } from "fs-extra";
+import type { BaseLogger } from "./logging";
 
 const doubleLineBreakRegexp = /\n\r?\n/;
 
