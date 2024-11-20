@@ -1,3 +1,17 @@
+/**
+ * Benchmarks the jsonl-parser against a reference implementation and checks that it generates
+ * the same output.
+ *
+ * Usage:
+ *
+ *   ts-node json-reader.bench.ts [evaluator-log.summary.jsonl] [count]
+ *
+ * The log file defaults to a small checked-in log and count defaults to 100
+ * (and should be lowered significantly for large files).
+ *
+ * At the time of writing it is about as fast as the synchronous reference implementation,
+ * but doesn't run out of memory for large files.
+ */
 import { readFile } from "fs-extra";
 import { readJsonlFile } from "../../src/common/jsonl-reader";
 import { performance } from "perf_hooks";
