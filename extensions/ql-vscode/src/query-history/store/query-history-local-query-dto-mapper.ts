@@ -32,10 +32,15 @@ export function mapLocalQueryItemToDomainModel(
     localQuery.failureReason,
     localQuery.completedQuery &&
       mapCompletedQueryInfoToDomainModel(localQuery.completedQuery),
-    localQuery.evalLogLocation,
-    localQuery.evalLogSummaryLocation,
-    localQuery.jsonEvalLogSummaryLocation,
-    localQuery.evalLogSummarySymbolsLocation,
+    localQuery.evalLogLocation
+      ? {
+          log: localQuery.evalLogLocation,
+          humanReadableSummary: localQuery.evalLogSummaryLocation,
+          jsonSummary: localQuery.jsonEvalLogSummaryLocation,
+          summarySymbols: localQuery.evalLogSummarySymbolsLocation,
+          endSummary: undefined,
+        }
+      : undefined,
   );
 }
 
