@@ -13,7 +13,7 @@ const doubleLineBreakRegexp = /\n\r?\n/;
 export async function readJsonlFile<T>(
   path: string,
   handler: (value: T) => Promise<void>,
-  logger?: { log: (message: string) => void },
+  logger?: BaseLogger,
 ): Promise<void> {
   // Stream the data as large evaluator logs won't fit in memory.
   // Also avoid using 'readline' as it is slower than our manual line splitting.
@@ -48,7 +48,7 @@ export async function readJsonlFile<T>(
           return;
         }
       }
-      void logger?.log(`Finishing parsing ${path}`);
+      void logger?.log(`Finished parsing ${path}`);
       resolve();
     });
     stream.on("error", reject);
