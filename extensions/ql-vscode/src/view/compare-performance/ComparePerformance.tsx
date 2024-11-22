@@ -20,12 +20,14 @@ const enum AbsentReason {
   Sentinel = "Sentinel",
 }
 
-interface OptionalValue {
-  absentReason: AbsentReason | undefined;
-  tuples: number;
+type Optional<T> = AbsentReason | T;
+
+function isPresent<T>(x: Optional<T>): x is T {
+  return typeof x !== "string";
 }
 
-interface PredicateInfo extends OptionalValue {
+interface PredicateInfo {
+  tuples: number;
   evaluationCount: number;
   iterationCount: number;
   timeCost: number;
@@ -47,26 +49,18 @@ class ComparisonDataset {
     this.sentinelEmptyIndices = new Set(data.sentinelEmptyIndices);
   }
 
-  getTupleCountInfo(name: string): PredicateInfo {
+  getTupleCountInfo(name: string): Optional<PredicateInfo> {
     const { data, nameToIndex, cacheHitIndices, sentinelEmptyIndices } = this;
     const index = nameToIndex.get(name);
     if (index == null) {
-      return {
-        evaluationCount: 0,
-        iterationCount: 0,
-        tuples: 0,
-        timeCost: 0,
-        absentReason: AbsentReason.NotSeen,
-        pipelines: {},
-      };
+      return AbsentReason.NotSeen;
     }
     const tupleCost = data.tupleCosts[index];
-    let absentReason: AbsentReason | undefined;
     if (tupleCost === 0) {
       if (sentinelEmptyIndices.has(index)) {
-        absentReason = AbsentReason.Sentinel;
+        return AbsentReason.Sentinel;
       } else if (cacheHitIndices.has(index)) {
-        absentReason = AbsentReason.CacheHit;
+        return AbsentReason.CacheHit;
       }
     }
     return {
@@ -74,14 +68,13 @@ class ComparisonDataset {
       iterationCount: data.iterationCounts[index],
       timeCost: data.timeCosts[index],
       tuples: tupleCost,
-      absentReason,
       pipelines: data.pipelineSummaryList[index],
     };
   }
 }
 
-function renderAbsoluteValue(x: PredicateInfo, metric: Metric) {
-  switch (x.absentReason) {
+function renderAbsoluteValue(x: Optional<PredicateInfo>, metric: Metric) {
+  switch (x) {
     case AbsentReason.NotSeen:
       return <AbsentNumberCell>n/a</AbsentNumberCell>;
     case AbsentReason.CacheHit:
@@ -251,17 +244,18 @@ const HeaderTR = styled.tr`
 `;
 
 interface HighLevelStatsProps {
-  before: PredicateInfo;
-  after: PredicateInfo;
+  before: Optional<PredicateInfo>;
+  after: Optional<PredicateInfo>;
   comparison: boolean;
 }
 
 function HighLevelStats(props: HighLevelStatsProps) {
   const { before, after, comparison } = props;
-  const hasBefore = before.absentReason !== AbsentReason.NotSeen;
-  const hasAfter = after.absentReason !== AbsentReason.NotSeen;
+  const hasBefore = isPresent(before);
+  const hasAfter = isPresent(after);
   const showEvaluationCount =
-    before.evaluationCount > 1 || after.evaluationCount > 1;
+    (hasBefore && before.evaluationCount > 1) ||
+    (hasAfter && after.evaluationCount > 1);
   return (
     <>
       <HeaderTR>
@@ -275,15 +269,19 @@ function HighLevelStats(props: HighLevelStatsProps) {
       </HeaderTR>
       {showEvaluationCount && (
         <PipelineStep
-          before={before.evaluationCount || undefined}
-          after={after.evaluationCount || undefined}
+          before={hasBefore ? before.evaluationCount : undefined}
+          after={hasAfter ? after.evaluationCount : undefined}
           comparison={comparison}
           step="Number of evaluations"
         />
       )}
       <PipelineStep
-        before={before.iterationCount / before.evaluationCount || undefined}
-        after={after.iterationCount / after.evaluationCount || undefined}
+        before={
+          hasBefore ? before.iterationCount / before.evaluationCount : undefined
+        }
+        after={
+          hasAfter ? after.iterationCount / after.evaluationCount : undefined
+        }
         comparison={comparison}
         step={
           showEvaluationCount
@@ -297,8 +295,8 @@ function HighLevelStats(props: HighLevelStatsProps) {
 
 interface TRow {
   name: string;
-  before: PredicateInfo;
-  after: PredicateInfo;
+  before: Optional<PredicateInfo>;
+  after: Optional<PredicateInfo>;
   diff: number;
 }
 
@@ -332,13 +330,22 @@ const metrics: Record<string, Metric> = {
   iterations: {
     title: "Iterations (per evaluation)",
     get: (info) =>
-      info.absentReason ? 0 : info.iterationCount / info.evaluationCount,
+      info.evaluationCount === 0
+        ? 0
+        : info.iterationCount / info.evaluationCount,
   },
   iterationsTotal: {
     title: "Iterations (total)",
     get: (info) => info.iterationCount,
   },
 };
+
+function metricGetOptional(
+  metric: Metric,
+  value: Optional<PredicateInfo>,
+): Optional<number> {
+  return isPresent(value) ? metric.get(value) : value;
+}
 
 function Chevron({ expanded }: { expanded: boolean }) {
   return <Codicon name={expanded ? "chevron-down" : "chevron-right"} />;
@@ -419,21 +426,23 @@ function ComparePerformanceWithData(props: {
       .map((name) => {
         const before = from.getTupleCountInfo(name);
         const after = to.getTupleCountInfo(name);
-        const beforeValue = metric.get(before);
-        const afterValue = metric.get(after);
+        const beforeValue = metricGetOptional(metric, before);
+        const afterValue = metricGetOptional(metric, after);
         if (beforeValue === afterValue) {
           return undefined!;
         }
         if (
-          before.absentReason === AbsentReason.CacheHit ||
-          after.absentReason === AbsentReason.CacheHit
+          before === AbsentReason.CacheHit ||
+          after === AbsentReason.CacheHit
         ) {
           hasCacheHitMismatch.current = true;
           if (hideCacheHits) {
             return undefined!;
           }
         }
-        const diff = afterValue - beforeValue;
+        const diff =
+          (isPresent(afterValue) ? afterValue : 0) -
+          (isPresent(beforeValue) ? beforeValue : 0);
         return { name, before, after, diff } satisfies TRow;
       })
       .filter((x) => !!x)
@@ -445,8 +454,8 @@ function ComparePerformanceWithData(props: {
     let totalAfter = 0;
     let totalDiff = 0;
     for (const row of rows) {
-      totalBefore += metric.get(row.before);
-      totalAfter += metric.get(row.after);
+      totalBefore += isPresent(row.before) ? metric.get(row.before) : 0;
+      totalAfter += isPresent(row.after) ? metric.get(row.after) : 0;
       totalDiff += row.diff;
     }
     return { totalBefore, totalAfter, totalDiff };
@@ -543,8 +552,8 @@ function ComparePerformanceWithData(props: {
                   comparison={comparison}
                 />
                 {collatePipelines(
-                  row.before.pipelines,
-                  row.after.pipelines,
+                  isPresent(row.before) ? row.before.pipelines : {},
+                  isPresent(row.after) ? row.after.pipelines : {},
                 ).map(({ name, first, second }, pipelineIndex) => (
                   <Fragment key={pipelineIndex}>
                     <HeaderTR>
