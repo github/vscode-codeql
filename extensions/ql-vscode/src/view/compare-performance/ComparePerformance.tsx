@@ -295,12 +295,12 @@ function HighLevelStats(props: HighLevelStatsProps) {
   );
 }
 
-type TRow = {
+interface TRow {
   name: string;
   before: PredicateInfo;
   after: PredicateInfo;
   diff: number;
-};
+}
 
 function getSortOrder(sortOrder: "delta" | "absDelta") {
   if (sortOrder === "absDelta") {
@@ -413,7 +413,7 @@ function ComparePerformanceWithData(props: {
 
   const hasCacheHitMismatch = useRef(false);
 
-  const rows = useMemo(() => {
+  const rows: TRow[] = useMemo(() => {
     hasCacheHitMismatch.current = false;
     return Array.from(nameSet)
       .map((name) => {
@@ -434,7 +434,7 @@ function ComparePerformanceWithData(props: {
           }
         }
         const diff = afterValue - beforeValue;
-        return { name, before, after, diff };
+        return { name, before, after, diff } satisfies TRow;
       })
       .filter((x) => !!x)
       .sort(getSortOrder(sortOrder));
