@@ -416,30 +416,29 @@ function ComparePerformanceWithData(props: {
   const rows = useMemo(() => {
     hasCacheHitMismatch.current = false;
     return Array.from(nameSet)
-        .map((name) => {
-          const before = from.getTupleCountInfo(name);
-          const after = to.getTupleCountInfo(name);
-          const beforeValue = metric.get(before);
-          const afterValue = metric.get(after);
-          if (beforeValue === afterValue) {
+      .map((name) => {
+        const before = from.getTupleCountInfo(name);
+        const after = to.getTupleCountInfo(name);
+        const beforeValue = metric.get(before);
+        const afterValue = metric.get(after);
+        if (beforeValue === afterValue) {
+          return undefined!;
+        }
+        if (
+          before.absentReason === AbsentReason.CacheHit ||
+          after.absentReason === AbsentReason.CacheHit
+        ) {
+          hasCacheHitMismatch.current = true;
+          if (hideCacheHits) {
             return undefined!;
           }
-          if (
-            before.absentReason === AbsentReason.CacheHit ||
-            after.absentReason === AbsentReason.CacheHit
-          ) {
-            hasCacheHitMismatch.current = true;
-            if (hideCacheHits) {
-              return undefined!;
-            }
-          }
-          const diff = afterValue - beforeValue;
-          return { name, before, after, diff };
-        })
-        .filter((x) => !!x)
-        .sort(getSortOrder(sortOrder)),
-    [nameSet, from, to, metric, hideCacheHits, sortOrder],
-  );
+        }
+        const diff = afterValue - beforeValue;
+        return { name, before, after, diff };
+      })
+      .filter((x) => !!x)
+      .sort(getSortOrder(sortOrder));
+  }, [nameSet, from, to, metric, hideCacheHits, sortOrder]);
 
   const { totalBefore, totalAfter, totalDiff } = useMemo(() => {
     let totalBefore = 0;
