@@ -48,7 +48,10 @@ export function Graph({ graphData, databaseUri }: GraphProps) {
             d.attributes["xlink:href"] = "#";
             d.attributes["href"] = "#";
             loc.uri = `file://${loc.uri}`;
-            select(this).on("click", () => jumpToLocation(loc, databaseUri));
+            select(this).on("click", (event: Event) => {
+              jumpToLocation(loc, databaseUri);
+              event.preventDefault(); // Avoid resetting scroll position
+            });
           }
         }
         if ("fill" in d.attributes) {
