@@ -73,7 +73,7 @@ class ComparisonDataset {
   }
 }
 
-function renderAbsoluteValue(x: Optional<PredicateInfo>, metric: Metric) {
+function renderOptionalValue(x: Optional<number>, unit?: string) {
   switch (x) {
     case AbsentReason.NotSeen:
       return <AbsentNumberCell>n/a</AbsentNumberCell>;
@@ -84,11 +84,15 @@ function renderAbsoluteValue(x: Optional<PredicateInfo>, metric: Metric) {
     default:
       return (
         <NumberCell>
-          {formatDecimal(metric.get(x))}
-          {renderUnit(metric.unit)}
+          {formatDecimal(x)}
+          {renderUnit(unit)}
         </NumberCell>
       );
   }
+}
+
+function renderPredicateMetric(x: Optional<PredicateInfo>, metric: Metric) {
+  return renderOptionalValue(metricGetOptional(metric, x), metric.unit);
 }
 
 function renderDelta(x: number, unit?: string) {
@@ -539,8 +543,8 @@ function ComparePerformanceWithData(props: {
               <ChevronCell>
                 <Chevron expanded={expandedPredicates.has(row.name)} />
               </ChevronCell>
-              {comparison && renderAbsoluteValue(row.before, metric)}
-              {renderAbsoluteValue(row.after, metric)}
+              {comparison && renderPredicateMetric(row.before, metric)}
+              {renderPredicateMetric(row.after, metric)}
               {comparison && renderDelta(row.diff, metric.unit)}
               <NameCell>{rowNames[rowIndex]}</NameCell>
             </PredicateTR>
