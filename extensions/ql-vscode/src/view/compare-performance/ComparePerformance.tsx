@@ -411,11 +411,11 @@ function ComparePerformanceWithData(props: {
     [from, to],
   );
 
-  const hasCacheHitMismatch = useRef<boolean>(false);
+  const hasCacheHitMismatch = useRef(false);
 
-  const rows = useMemo(
-    () =>
-      Array.from(nameSet)
+  const rows = useMemo(() => {
+    hasCacheHitMismatch.current = false;
+    return Array.from(nameSet)
         .map((name) => {
           const before = from.getTupleCountInfo(name);
           const after = to.getTupleCountInfo(name);
