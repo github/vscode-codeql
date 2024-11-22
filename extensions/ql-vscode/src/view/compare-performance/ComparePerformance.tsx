@@ -441,15 +441,17 @@ function ComparePerformanceWithData(props: {
     [nameSet, from, to, metric, hideCacheHits, sortOrder],
   );
 
-  let totalBefore = 0;
-  let totalAfter = 0;
-  let totalDiff = 0;
-
-  for (const row of rows) {
-    totalBefore += metric.get(row.before);
-    totalAfter += metric.get(row.after);
-    totalDiff += row.diff;
-  }
+  const { totalBefore, totalAfter, totalDiff } = useMemo(() => {
+    let totalBefore = 0;
+    let totalAfter = 0;
+    let totalDiff = 0;
+    for (const row of rows) {
+      totalBefore += metric.get(row.before);
+      totalAfter += metric.get(row.after);
+      totalDiff += row.diff;
+    }
+    return { totalBefore, totalAfter, totalDiff };
+  }, [rows, metric]);
 
   const rowNames = useMemo(
     () => abbreviateRANames(rows.map((row) => row.name)),
