@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import type {
   SetPerformanceComparisonQueries,
   ToComparePerformanceViewMessage,
@@ -411,9 +411,9 @@ function ComparePerformanceWithData(props: {
     [from, to],
   );
 
-  let hasCacheHitMismatch = false;
+  const hasCacheHitMismatch = useRef<boolean>(false);
 
-  const rows = Array.from(nameSet)
+  const rows = useMemo(() => Array.from(nameSet)
     .map((name) => {
       const before = from.getTupleCountInfo(name);
       const after = to.getTupleCountInfo(name);
@@ -426,7 +426,7 @@ function ComparePerformanceWithData(props: {
         before.absentReason === AbsentReason.CacheHit ||
         after.absentReason === AbsentReason.CacheHit
       ) {
-        hasCacheHitMismatch = true;
+        hasCacheHitMismatch.current = true;
         if (hideCacheHits) {
           return undefined!;
         }
@@ -435,7 +435,9 @@ function ComparePerformanceWithData(props: {
       return { name, before, after, diff };
     })
     .filter((x) => !!x)
-    .sort(getSortOrder(sortOrder));
+    .sort(getSortOrder(sortOrder)),
+    [nameSet, from, to, metric, hideCacheHits, sortOrder],
+  );
 
   let totalBefore = 0;
   let totalAfter = 0;
@@ -447,12 +449,15 @@ function ComparePerformanceWithData(props: {
     totalDiff += row.diff;
   }
 
-  const rowNames = abbreviateRANames(rows.map((row) => row.name));
+  const rowNames = useMemo(
+    () => abbreviateRANames(rows.map((row) => row.name)),
+    [rows],
+  );
 
   return (
     <>
       <ViewTitle>Performance comparison</ViewTitle>
-      {hasCacheHitMismatch && (
+      {hasCacheHitMismatch.current && (
         <WarningBox>
           <strong>Inconsistent cache hits</strong>
           <br />
