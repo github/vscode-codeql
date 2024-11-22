@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { useMemo, useState, Fragment } from "react";
+import { Fragment, useMemo, useState } from "react";
 import type {
   SetPerformanceComparisonQueries,
   ToComparePerformanceViewMessage,
@@ -354,6 +354,14 @@ function withToggledValue<T>(set: Set<T>, value: T) {
   return result;
 }
 
+function union<T>(a: Set<T> | T[], b: Set<T> | T[]) {
+  const result = new Set(a);
+  for (const x of b) {
+    result.add(x);
+  }
+  return result;
+}
+
 export function ComparePerformance(_: Record<string, never>) {
   const [data, setData] = useState<
     SetPerformanceComparisonQueries | undefined
@@ -398,10 +406,10 @@ function ComparePerformanceWithData(props: {
 
   const [metric, setMetric] = useState<Metric>(metrics.tuples);
 
-  const nameSet = new Set(from.data.names);
-  for (const name of to.data.names) {
-    nameSet.add(name);
-  }
+  const nameSet = useMemo(
+    () => union(from.data.names, to.data.names),
+    [from, to],
+  );
 
   let hasCacheHitMismatch = false;
 
