@@ -297,7 +297,7 @@ function HighLevelStats(props: HighLevelStatsProps) {
   );
 }
 
-interface TRow {
+interface Row {
   name: string;
   before: Optional<PredicateInfo>;
   after: Optional<PredicateInfo>;
@@ -306,9 +306,9 @@ interface TRow {
 
 function getSortOrder(sortOrder: "delta" | "absDelta") {
   if (sortOrder === "absDelta") {
-    return orderBy((row: TRow) => -Math.abs(row.diff));
+    return orderBy((row: Row) => -Math.abs(row.diff));
   }
-  return orderBy((row: TRow) => row.diff);
+  return orderBy((row: Row) => row.diff);
 }
 
 interface Metric {
@@ -410,7 +410,7 @@ function ComparePerformanceWithData(props: {
 
   const hasCacheHitMismatch = useRef(false);
 
-  const rows: TRow[] = useMemo(() => {
+  const rows: Row[] = useMemo(() => {
     hasCacheHitMismatch.current = false;
     return Array.from(nameSet)
       .map((name) => {
@@ -433,7 +433,7 @@ function ComparePerformanceWithData(props: {
         const diff =
           (isPresent(afterValue) ? afterValue : 0) -
           (isPresent(beforeValue) ? beforeValue : 0);
-        return { name, before, after, diff } satisfies TRow;
+        return { name, before, after, diff } satisfies Row;
       })
       .filter((x) => !!x)
       .sort(getSortOrder(sortOrder));
@@ -542,7 +542,7 @@ function ComparePerformanceWithData(props: {
 
 interface PredicateRowProps {
   renderedName: React.ReactNode;
-  row: TRow;
+  row: Row;
   comparison: boolean;
   metric: Metric;
 }
