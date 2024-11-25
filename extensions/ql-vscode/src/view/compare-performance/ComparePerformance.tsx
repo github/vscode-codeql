@@ -1,5 +1,12 @@
 import type { ChangeEvent } from "react";
-import { Fragment, memo, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  memo,
+  useDeferredValue,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type {
   SetPerformanceComparisonQueries,
   ToComparePerformanceViewMessage,
@@ -13,6 +20,7 @@ import { formatDecimal } from "../../common/number";
 import { styled } from "styled-components";
 import { Codicon, ViewTitle, WarningBox } from "../common";
 import { abbreviateRANames, abbreviateRASteps } from "./RAPrettyPrinter";
+import { Renaming, RenamingInput } from "./RenamingInput";
 
 const enum AbsentReason {
   NotSeen = "NotSeen",
@@ -381,9 +389,13 @@ function addOptionals(a: Optional<number>, b: Optional<number>) {
 /**
  * Returns a "fingerprint" from the given name, which is used to group together similar names.
  */
-export function getNameFingerprint(name: string) {
-  // For now just remove the hash from the name. We identify this as a '#' followed by exactly 8 hexadecimal characters.
-  return name.replace(/#[0-9a-f]{8}(?![0-9a-f])/g, "");
+export function getNameFingerprint(name: string, renamings: Renaming[]) {
+  for (const { patternRegexp, replacement } of renamings) {
+    if (patternRegexp != null) {
+      name = name.replace(patternRegexp, replacement);
+    }
+  }
+  return name;
 }
 
 function Chevron({ expanded }: { expanded: boolean }) {
@@ -486,10 +498,17 @@ function ComparePerformanceWithData(props: {
     return { totalBefore, totalAfter, totalDiff };
   }, [rows, metric]);
 
+  const [renamings, setRenamings] = useState<Renaming[]>(() => [
+    new Renaming("#[0-9a-f]{8}(?![0-9a-f])", "#"),
+  ]);
+
+  // Use deferred value to avoid expensive re-rendering for every keypress in the renaming editor
+  const deferredRenamings = useDeferredValue(renamings);
+
   const rowGroups = useMemo(() => {
     const groupedRows = new Map<string, Row[]>();
     for (const row of rows) {
-      const fingerprint = getNameFingerprint(row.name);
+      const fingerprint = getNameFingerprint(row.name, deferredRenamings);
       const rows = groupedRows.get(fingerprint);
       if (rows) {
         rows.push(row);
@@ -515,7 +534,7 @@ function ComparePerformanceWithData(props: {
         } satisfies RowGroup;
       })
       .sort(getSortOrder(sortOrder));
-  }, [rows, metric, sortOrder]);
+  }, [rows, metric, sortOrder, deferredRenamings]);
 
   const rowGroupNames = useMemo(
     () => abbreviateRANames(rowGroups.map((group) => group.name)),
@@ -544,6 +563,7 @@ function ComparePerformanceWithData(props: {
           </label>
         </WarningBox>
       )}
+      <RenamingInput renamings={renamings} setRenamings={setRenamings} />
       Compare{" "}
       <Dropdown
         onChange={(e: ChangeEvent<HTMLSelectElement>) =>
