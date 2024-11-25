@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, memo, useMemo, useRef, useState } from "react";
 import type {
   SetPerformanceComparisonQueries,
   ToComparePerformanceViewMessage,
@@ -577,15 +577,12 @@ function ComparePerformanceWithData(props: {
           </HeaderTR>
         </thead>
       </Table>
-      {rowGroups.map((rowGroup, rowGroupIndex) => (
-        <PredicateRowGroup
-          key={rowGroupIndex}
-          renderedName={rowGroupNames[rowGroupIndex]}
-          rowGroup={rowGroup}
-          comparison={comparison}
-          metric={metric}
-        />
-      ))}
+      <PredicateTable
+        rowGroups={rowGroups}
+        rowGroupNames={rowGroupNames}
+        comparison={comparison}
+        metric={metric}
+      />
       <Table>
         <tfoot>
           <tr key="spacing">
@@ -605,6 +602,28 @@ function ComparePerformanceWithData(props: {
     </>
   );
 }
+
+interface PredicateTableProps {
+  rowGroups: RowGroup[];
+  rowGroupNames: React.ReactNode[];
+  comparison: boolean;
+  metric: Metric;
+}
+
+function PredicateTableRaw(props: PredicateTableProps) {
+  const { comparison, metric, rowGroupNames, rowGroups } = props;
+  return rowGroups.map((rowGroup, rowGroupIndex) => (
+    <PredicateRowGroup
+      key={rowGroupIndex}
+      renderedName={rowGroupNames[rowGroupIndex]}
+      rowGroup={rowGroup}
+      comparison={comparison}
+      metric={metric}
+    />
+  ));
+}
+
+const PredicateTable = memo(PredicateTableRaw);
 
 interface PredicateRowGroupProps {
   renderedName: React.ReactNode;
