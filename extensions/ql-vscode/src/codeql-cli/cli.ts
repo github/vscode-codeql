@@ -1,5 +1,5 @@
 import { EOL } from "os";
-import { spawn } from "child-process-promise";
+import { spawn } from "cross-spawn";
 import type { ChildProcessWithoutNullStreams } from "child_process";
 import { spawn as spawnChildProcess } from "child_process";
 import { readFile } from "fs-extra";
@@ -716,13 +716,7 @@ export class CodeQLCliServer implements Disposable {
 
     // Spawn the CodeQL process
     const codeqlPath = await this.getCodeQlPath();
-    const childPromise = spawn(codeqlPath, args);
-    // Avoid a runtime message about unhandled rejection.
-    childPromise.catch(() => {
-      /**/
-    });
-
-    const child = childPromise.childProcess;
+    const child = spawn(codeqlPath, args);
 
     let cancellationRegistration: Disposable | undefined = undefined;
     try {
@@ -735,16 +729,28 @@ export class CodeQLCliServer implements Disposable {
       }
       if (logger !== undefined) {
         // The human-readable output goes to stderr.
-        void logStream(child.stderr!, logger);
+        void logStream(child.stderr, logger);
       }
 
-      for await (const event of splitStreamAtSeparators(child.stdout!, [
-        "\0",
-      ])) {
+      for await (const event of splitStreamAtSeparators(child.stdout, ["\0"])) {
         yield event;
       }
 
-      await childPromise;
+      await new Promise((resolve, reject) => {
+        child.on("error", reject);
+
+        child.on("close", (code) => {
+          if (code === 0) {
+            resolve(undefined);
+          } else {
+            reject(
+              new Error(
+                `${command} ${commandArgs.join(" ")} failed with code ${code}`,
+              ),
+            );
+          }
+        });
+      });
     } finally {
       if (cancellationRegistration !== undefined) {
         cancellationRegistration.dispose();
