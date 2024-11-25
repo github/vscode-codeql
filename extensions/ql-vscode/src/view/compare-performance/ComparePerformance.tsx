@@ -355,16 +355,6 @@ function Chevron({ expanded }: { expanded: boolean }) {
   return <Codicon name={expanded ? "chevron-down" : "chevron-right"} />;
 }
 
-function withToggledValue<T>(set: Set<T>, value: T) {
-  const result = new Set(set);
-  if (result.has(value)) {
-    result.delete(value);
-  } else {
-    result.add(value);
-  }
-  return result;
-}
-
 function union<T>(a: Set<T> | T[], b: Set<T> | T[]) {
   const result = new Set(a);
   for (const x of b) {
@@ -406,10 +396,6 @@ function ComparePerformanceWithData(props: {
   );
 
   const comparison = data?.comparison;
-
-  const [expandedPredicates, setExpandedPredicates] = useState<Set<string>>(
-    () => new Set<string>(),
-  );
 
   const [hideCacheHits, setHideCacheHits] = useState(false);
 
@@ -526,78 +512,13 @@ function ComparePerformanceWithData(props: {
         </thead>
       </Table>
       {rows.map((row, rowIndex) => (
-        <Table
-          key={row.name}
-          className={expandedPredicates.has(row.name) ? "expanded" : ""}
-        >
-          <tbody>
-            <PredicateTR
-              className={expandedPredicates.has(row.name) ? "expanded" : ""}
-              key={"main"}
-              onClick={() =>
-                setExpandedPredicates(
-                  withToggledValue(expandedPredicates, row.name),
-                )
-              }
-            >
-              <ChevronCell>
-                <Chevron expanded={expandedPredicates.has(row.name)} />
-              </ChevronCell>
-              {comparison && renderPredicateMetric(row.before, metric)}
-              {renderPredicateMetric(row.after, metric)}
-              {comparison && renderDelta(row.diff, metric.unit)}
-              <NameCell>{rowNames[rowIndex]}</NameCell>
-            </PredicateTR>
-            {expandedPredicates.has(row.name) && (
-              <>
-                <HighLevelStats
-                  before={row.before}
-                  after={row.after}
-                  comparison={comparison}
-                />
-                {collatePipelines(
-                  isPresent(row.before) ? row.before.pipelines : {},
-                  isPresent(row.after) ? row.after.pipelines : {},
-                ).map(({ name, first, second }, pipelineIndex) => (
-                  <Fragment key={pipelineIndex}>
-                    <HeaderTR>
-                      <td></td>
-                      {comparison && (
-                        <NumberHeader>{first != null && "Before"}</NumberHeader>
-                      )}
-                      <NumberHeader>{second != null && "After"}</NumberHeader>
-                      {comparison && (
-                        <NumberHeader>
-                          {first != null && second != null && "Delta"}
-                        </NumberHeader>
-                      )}
-                      <NameHeader>
-                        Tuple counts for &apos;{name}&apos; pipeline
-                        {comparison &&
-                          (first == null
-                            ? " (after)"
-                            : second == null
-                              ? " (before)"
-                              : "")}
-                      </NameHeader>
-                    </HeaderTR>
-                    {abbreviateRASteps(first?.steps ?? second!.steps).map(
-                      (step, index) => (
-                        <PipelineStep
-                          key={index}
-                          before={first?.counts[index]}
-                          after={second?.counts[index]}
-                          comparison={comparison}
-                          step={step}
-                        />
-                      ),
-                    )}
-                  </Fragment>
-                ))}
-              </>
-            )}
-          </tbody>
-        </Table>
+        <PredicateRow
+          key={rowIndex}
+          renderedName={rowNames[rowIndex]}
+          row={row}
+          comparison={comparison}
+          metric={metric}
+        />
       ))}
       <Table>
         <tfoot>
@@ -616,6 +537,85 @@ function ComparePerformanceWithData(props: {
         </tfoot>
       </Table>
     </>
+  );
+}
+
+interface PredicateRowProps {
+  renderedName: React.ReactNode;
+  row: TRow;
+  comparison: boolean;
+  metric: Metric;
+}
+
+function PredicateRow(props: PredicateRowProps) {
+  const [isExpanded, setExpanded] = useState(false);
+  const { renderedName, row, comparison, metric } = props;
+  return (
+    <Table className={isExpanded ? "expanded" : ""}>
+      <tbody>
+        <PredicateTR
+          className={isExpanded ? "expanded" : ""}
+          key={"main"}
+          onClick={() => setExpanded(!isExpanded)}
+        >
+          <ChevronCell>
+            <Chevron expanded={isExpanded} />
+          </ChevronCell>
+          {comparison && renderPredicateMetric(row.before, metric)}
+          {renderPredicateMetric(row.after, metric)}
+          {comparison && renderDelta(row.diff, metric.unit)}
+          <NameCell>{renderedName}</NameCell>
+        </PredicateTR>
+        {isExpanded && (
+          <>
+            <HighLevelStats
+              before={row.before}
+              after={row.after}
+              comparison={comparison}
+            />
+            {collatePipelines(
+              isPresent(row.before) ? row.before.pipelines : {},
+              isPresent(row.after) ? row.after.pipelines : {},
+            ).map(({ name, first, second }, pipelineIndex) => (
+              <Fragment key={pipelineIndex}>
+                <HeaderTR>
+                  <td></td>
+                  {comparison && (
+                    <NumberHeader>{first != null && "Before"}</NumberHeader>
+                  )}
+                  <NumberHeader>{second != null && "After"}</NumberHeader>
+                  {comparison && (
+                    <NumberHeader>
+                      {first != null && second != null && "Delta"}
+                    </NumberHeader>
+                  )}
+                  <NameHeader>
+                    Tuple counts for &apos;{name}&apos; pipeline
+                    {comparison &&
+                      (first == null
+                        ? " (after)"
+                        : second == null
+                          ? " (before)"
+                          : "")}
+                  </NameHeader>
+                </HeaderTR>
+                {abbreviateRASteps(first?.steps ?? second!.steps).map(
+                  (step, index) => (
+                    <PipelineStep
+                      key={index}
+                      before={first?.counts[index]}
+                      after={second?.counts[index]}
+                      comparison={comparison}
+                      step={step}
+                    />
+                  ),
+                )}
+              </Fragment>
+            ))}
+          </>
+        )}
+      </tbody>
+    </Table>
   );
 }
 
