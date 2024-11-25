@@ -70,14 +70,14 @@ function parseName(text: string): QualifiedName {
     let args: QualifiedName[] | undefined;
     if (skipToken(">")) {
       args = [];
-      while (peek() !== "<") {
+      while (tokens.length > 0 && peek() !== "<") {
         args.push(parseQName());
         skipToken(",");
       }
       args.reverse();
       skipToken("<");
     }
-    const name = next();
+    const name = tokens.length === 0 ? "" : next();
     const prefix = skipToken("::") ? parseQName() : undefined;
     return {
       prefix,
