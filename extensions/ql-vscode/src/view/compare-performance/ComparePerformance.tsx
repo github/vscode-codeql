@@ -304,11 +304,22 @@ interface Row {
   diff: number;
 }
 
+/**
+ * A set of predicates that have been grouped together because their names have the same fingerprint.
+ */
+interface RowGroup {
+  name: string;
+  rows: Row[];
+  before: Optional<number>;
+  after: Optional<number>;
+  diff: number;
+}
+
 function getSortOrder(sortOrder: "delta" | "absDelta") {
   if (sortOrder === "absDelta") {
-    return orderBy((row: Row) => -Math.abs(row.diff));
+    return orderBy((row: { diff: number }) => -Math.abs(row.diff));
   }
-  return orderBy((row: Row) => row.diff);
+  return orderBy((row: { diff: number }) => row.diff);
 }
 
 interface Metric {
@@ -349,6 +360,30 @@ function metricGetOptional(
   value: Optional<PredicateInfo>,
 ): Optional<number> {
   return isPresent(value) ? metric.get(value) : value;
+}
+
+function addOptionals(a: Optional<number>, b: Optional<number>) {
+  if (isPresent(a) && isPresent(b)) {
+    return a + b;
+  }
+  if (isPresent(a)) {
+    return a;
+  }
+  if (isPresent(b)) {
+    return b;
+  }
+  if (a === b) {
+    return a; // If absent for the same reason, preserve that reason
+  }
+  return 0; // Otherwise collapse to zero
+}
+
+/**
+ * Returns a "fingerprint" from the given name, which is used to group together similar names.
+ */
+export function getNameFingerprint(name: string) {
+  // For now just remove the hash from the name. We identify this as a '#' followed by exactly 8 hexadecimal characters.
+  return name.replace(/#[0-9a-f]{8}(?![0-9a-f])/g, "");
 }
 
 function Chevron({ expanded }: { expanded: boolean }) {
@@ -451,9 +486,40 @@ function ComparePerformanceWithData(props: {
     return { totalBefore, totalAfter, totalDiff };
   }, [rows, metric]);
 
-  const rowNames = useMemo(
-    () => abbreviateRANames(rows.map((row) => row.name)),
-    [rows],
+  const rowGroups = useMemo(() => {
+    const groupedRows = new Map<string, Row[]>();
+    for (const row of rows) {
+      const fingerprint = getNameFingerprint(row.name);
+      const rows = groupedRows.get(fingerprint);
+      if (rows) {
+        rows.push(row);
+      } else {
+        groupedRows.set(fingerprint, [row]);
+      }
+    }
+    return Array.from(groupedRows.entries())
+      .map(([fingerprint, rows]) => {
+        const before = rows
+          .map((row) => metricGetOptional(metric, row.before))
+          .reduce(addOptionals);
+        const after = rows
+          .map((row) => metricGetOptional(metric, row.after))
+          .reduce(addOptionals);
+        return {
+          name: rows.length === 1 ? rows[0].name : fingerprint,
+          before,
+          after,
+          diff:
+            (isPresent(after) ? after : 0) - (isPresent(before) ? before : 0),
+          rows,
+        } satisfies RowGroup;
+      })
+      .sort(getSortOrder(sortOrder));
+  }, [rows, metric, sortOrder]);
+
+  const rowGroupNames = useMemo(
+    () => abbreviateRANames(rowGroups.map((group) => group.name)),
+    [rowGroups],
   );
 
   return (
@@ -511,11 +577,11 @@ function ComparePerformanceWithData(props: {
           </HeaderTR>
         </thead>
       </Table>
-      {rows.map((row, rowIndex) => (
-        <PredicateRow
-          key={rowIndex}
-          renderedName={rowNames[rowIndex]}
-          row={row}
+      {rowGroups.map((rowGroup, rowGroupIndex) => (
+        <PredicateRowGroup
+          key={rowGroupIndex}
+          renderedName={rowGroupNames[rowGroupIndex]}
+          rowGroup={rowGroup}
           comparison={comparison}
           metric={metric}
         />
@@ -537,6 +603,59 @@ function ComparePerformanceWithData(props: {
         </tfoot>
       </Table>
     </>
+  );
+}
+
+interface PredicateRowGroupProps {
+  renderedName: React.ReactNode;
+  rowGroup: RowGroup;
+  comparison: boolean;
+  metric: Metric;
+}
+
+function PredicateRowGroup(props: PredicateRowGroupProps) {
+  const { renderedName, rowGroup, comparison, metric } = props;
+  const [isExpanded, setExpanded] = useState(false);
+  const rowNames = useMemo(
+    () => abbreviateRANames(rowGroup.rows.map((row) => row.name)),
+    [rowGroup],
+  );
+  if (rowGroup.rows.length === 1) {
+    return <PredicateRow row={rowGroup.rows[0]} {...props} />;
+  }
+  return (
+    <Table className={isExpanded ? "expanded" : ""}>
+      <tbody>
+        <PredicateTR
+          className={isExpanded ? "expanded" : ""}
+          key={"main"}
+          onClick={() => setExpanded(!isExpanded)}
+        >
+          <ChevronCell>
+            <Chevron expanded={isExpanded} />
+          </ChevronCell>
+          {comparison && renderOptionalValue(rowGroup.before)}
+          {renderOptionalValue(rowGroup.after)}
+          {comparison && renderDelta(rowGroup.diff, metric.unit)}
+          <NameCell>
+            {renderedName} ({rowGroup.rows.length} predicates)
+          </NameCell>
+        </PredicateTR>
+        {isExpanded &&
+          rowGroup.rows.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              <td colSpan={5}>
+                <PredicateRow
+                  renderedName={rowNames[rowIndex]}
+                  row={row}
+                  comparison={comparison}
+                  metric={metric}
+                />
+              </td>
+            </tr>
+          ))}
+      </tbody>
+    </Table>
   );
 }
 
