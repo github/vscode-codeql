@@ -99,8 +99,15 @@ function renderOptionalValue(x: Optional<number>, unit?: string) {
   }
 }
 
-function renderPredicateMetric(x: Optional<PredicateInfo>, metric: Metric) {
-  return renderOptionalValue(metricGetOptional(metric, x), metric.unit);
+function renderPredicateMetric(
+  x: Optional<PredicateInfo>,
+  metric: Metric,
+  isPerEvaluation: boolean,
+) {
+  return renderOptionalValue(
+    metricGetOptional(metric, x, isPerEvaluation),
+    metric.unit,
+  );
 }
 
 function renderDelta(x: number, unit?: string) {
@@ -338,11 +345,11 @@ interface Metric {
 
 const metrics: Record<string, Metric> = {
   tuples: {
-    title: "Tuples in pipeline",
+    title: "Tuple count",
     get: (info) => info.tuples,
   },
   time: {
-    title: "Time spent (milliseconds)",
+    title: "Time spent",
     get: (info) => info.timeCost,
     unit: "ms",
   },
@@ -350,24 +357,22 @@ const metrics: Record<string, Metric> = {
     title: "Evaluations",
     get: (info) => info.evaluationCount,
   },
-  iterations: {
-    title: "Iterations (per evaluation)",
-    get: (info) =>
-      info.evaluationCount === 0
-        ? 0
-        : info.iterationCount / info.evaluationCount,
-  },
   iterationsTotal: {
-    title: "Iterations (total)",
+    title: "Iterations",
     get: (info) => info.iterationCount,
   },
 };
 
 function metricGetOptional(
   metric: Metric,
-  value: Optional<PredicateInfo>,
+  info: Optional<PredicateInfo>,
+  isPerEvaluation: boolean,
 ): Optional<number> {
-  return isPresent(value) ? metric.get(value) : value;
+  if (!isPresent(info)) {
+    return info;
+  }
+  const value = metric.get(info);
+  return isPerEvaluation ? (value / info.evaluationCount) | 0 : value;
 }
 
 function addOptionals(a: Optional<number>, b: Optional<number>) {
@@ -450,6 +455,8 @@ function ComparePerformanceWithData(props: {
 
   const [metric, setMetric] = useState<Metric>(metrics.tuples);
 
+  const [isPerEvaluation, setPerEvaluation] = useState(false);
+
   const nameSet = useMemo(
     () => union(from.data.names, to.data.names),
     [from, to],
@@ -463,8 +470,8 @@ function ComparePerformanceWithData(props: {
       .map((name) => {
         const before = from.getTupleCountInfo(name);
         const after = to.getTupleCountInfo(name);
-        const beforeValue = metricGetOptional(metric, before);
-        const afterValue = metricGetOptional(metric, after);
+        const beforeValue = metricGetOptional(metric, before, isPerEvaluation);
+        const afterValue = metricGetOptional(metric, after, isPerEvaluation);
         if (beforeValue === afterValue) {
           return undefined!;
         }
@@ -484,7 +491,7 @@ function ComparePerformanceWithData(props: {
       })
       .filter((x) => !!x)
       .sort(getSortOrder(sortOrder));
-  }, [nameSet, from, to, metric, hideCacheHits, sortOrder]);
+  }, [nameSet, from, to, metric, hideCacheHits, sortOrder, isPerEvaluation]);
 
   const { totalBefore, totalAfter, totalDiff } = useMemo(() => {
     let totalBefore = 0;
@@ -519,10 +526,10 @@ function ComparePerformanceWithData(props: {
     return Array.from(groupedRows.entries())
       .map(([fingerprint, rows]) => {
         const before = rows
-          .map((row) => metricGetOptional(metric, row.before))
+          .map((row) => metricGetOptional(metric, row.before, isPerEvaluation))
           .reduce(addOptionals);
         const after = rows
-          .map((row) => metricGetOptional(metric, row.after))
+          .map((row) => metricGetOptional(metric, row.after, isPerEvaluation))
           .reduce(addOptionals);
         return {
           name: rows.length === 1 ? rows[0].name : fingerprint,
@@ -534,7 +541,7 @@ function ComparePerformanceWithData(props: {
         } satisfies RowGroup;
       })
       .sort(getSortOrder(sortOrder));
-  }, [rows, metric, sortOrder, deferredRenamings]);
+  }, [rows, metric, sortOrder, deferredRenamings, isPerEvaluation]);
 
   const rowGroupNames = useMemo(
     () => abbreviateRANames(rowGroups.map((group) => group.name)),
@@ -576,6 +583,14 @@ function ComparePerformanceWithData(props: {
           </option>
         ))}
       </Dropdown>{" "}
+      <Dropdown
+        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+          setPerEvaluation(e.target.value === "per-evaluation")
+        }
+      >
+        <option value="total">Overall</option>
+        <option value="per-evaluation">Per evaluation</option>
+      </Dropdown>{" "}
       sorted by{" "}
       <Dropdown
         onChange={(e: ChangeEvent<HTMLSelectElement>) =>
@@ -602,6 +617,7 @@ function ComparePerformanceWithData(props: {
         rowGroupNames={rowGroupNames}
         comparison={comparison}
         metric={metric}
+        isPerEvaluation={isPerEvaluation}
       />
       <Table>
         <tfoot>
@@ -628,10 +644,12 @@ interface PredicateTableProps {
   rowGroupNames: React.ReactNode[];
   comparison: boolean;
   metric: Metric;
+  isPerEvaluation: boolean;
 }
 
 function PredicateTableRaw(props: PredicateTableProps) {
-  const { comparison, metric, rowGroupNames, rowGroups } = props;
+  const { comparison, metric, rowGroupNames, rowGroups, isPerEvaluation } =
+    props;
   return rowGroups.map((rowGroup, rowGroupIndex) => (
     <PredicateRowGroup
       key={rowGroupIndex}
@@ -639,6 +657,7 @@ function PredicateTableRaw(props: PredicateTableProps) {
       rowGroup={rowGroup}
       comparison={comparison}
       metric={metric}
+      isPerEvaluation={isPerEvaluation}
     />
   ));
 }
@@ -650,10 +669,11 @@ interface PredicateRowGroupProps {
   rowGroup: RowGroup;
   comparison: boolean;
   metric: Metric;
+  isPerEvaluation: boolean;
 }
 
 function PredicateRowGroup(props: PredicateRowGroupProps) {
-  const { renderedName, rowGroup, comparison, metric } = props;
+  const { renderedName, rowGroup, comparison, metric, isPerEvaluation } = props;
   const [isExpanded, setExpanded] = useState(false);
   const rowNames = useMemo(
     () => abbreviateRANames(rowGroup.rows.map((row) => row.name)),
@@ -689,6 +709,7 @@ function PredicateRowGroup(props: PredicateRowGroupProps) {
                   row={row}
                   comparison={comparison}
                   metric={metric}
+                  isPerEvaluation={isPerEvaluation}
                 />
               </td>
             </tr>
@@ -703,11 +724,16 @@ interface PredicateRowProps {
   row: Row;
   comparison: boolean;
   metric: Metric;
+  isPerEvaluation: boolean;
 }
 
 function PredicateRow(props: PredicateRowProps) {
   const [isExpanded, setExpanded] = useState(false);
-  const { renderedName, row, comparison, metric } = props;
+  const { renderedName, row, comparison, metric, isPerEvaluation } = props;
+  const evaluationFactorBefore =
+    isPerEvaluation && isPresent(row.before) ? row.before.evaluationCount : 1;
+  const evaluationFactorAfter =
+    isPerEvaluation && isPresent(row.after) ? row.after.evaluationCount : 1;
   return (
     <Table className={isExpanded ? "expanded" : ""}>
       <tbody>
@@ -719,8 +745,9 @@ function PredicateRow(props: PredicateRowProps) {
           <ChevronCell>
             <Chevron expanded={isExpanded} />
           </ChevronCell>
-          {comparison && renderPredicateMetric(row.before, metric)}
-          {renderPredicateMetric(row.after, metric)}
+          {comparison &&
+            renderPredicateMetric(row.before, metric, isPerEvaluation)}
+          {renderPredicateMetric(row.after, metric, isPerEvaluation)}
           {comparison && renderDelta(row.diff, metric.unit)}
           <NameCell>{renderedName}</NameCell>
         </PredicateTR>
@@ -761,8 +788,14 @@ function PredicateRow(props: PredicateRowProps) {
                   (step, index) => (
                     <PipelineStep
                       key={index}
-                      before={first?.counts[index]}
-                      after={second?.counts[index]}
+                      before={
+                        first &&
+                        (first.counts[index] / evaluationFactorBefore) | 0
+                      }
+                      after={
+                        second &&
+                        (second.counts[index] / evaluationFactorAfter) | 0
+                      }
                       comparison={comparison}
                       step={step}
                     />
