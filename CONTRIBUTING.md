@@ -78,7 +78,7 @@ $ vscode/scripts/code-cli.sh --install-extension dist/vscode-codeql-*.vsix # if 
 
 ### Debugging
 
-You can use VS Code to debug the extension without explicitly installing it. Just open this directory as a workspace in VS Code, and hit `F5` to start a debugging session.
+You can use VS Code to debug the extension without explicitly installing it. Just open this repository's root directory as a workspace in VS Code, and hit `F5` to start a debugging session.
 
 ### Storybook
 
