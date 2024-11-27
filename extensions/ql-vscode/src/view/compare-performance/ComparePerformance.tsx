@@ -417,7 +417,7 @@ function addOptionals(a: Optional<number>, b: Optional<number>) {
 /**
  * Returns a "fingerprint" from the given name, which is used to group together similar names.
  */
-export function getNameFingerprint(name: string, renamings: Renaming[]) {
+function getNameFingerprint(name: string, renamings: Renaming[]) {
   for (const { patternRegexp, replacement } of renamings) {
     if (patternRegexp != null) {
       name = name.replace(patternRegexp, replacement);
