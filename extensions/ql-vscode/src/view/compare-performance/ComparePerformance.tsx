@@ -611,6 +611,20 @@ function ComparePerformanceWithData(props: {
             <NameHeader>Predicate</NameHeader>
           </HeaderTR>
         </thead>
+        <tbody>
+          <tr key="total">
+            <ChevronCell />
+            {comparison && renderOptionalValue(totalBefore, metric.unit)}
+            {renderOptionalValue(totalAfter, metric.unit)}
+            {comparison && renderDelta(totalDiff, metric.unit)}
+            <NameCell>
+              <strong>TOTAL</strong>
+            </NameCell>
+          </tr>
+          <tr key="spacing">
+            <td colSpan={5} style={{ height: "1em" }}></td>
+          </tr>
+        </tbody>
       </Table>
       <PredicateTable
         rowGroups={rowGroups}
@@ -619,22 +633,6 @@ function ComparePerformanceWithData(props: {
         metric={metric}
         isPerEvaluation={isPerEvaluation}
       />
-      <Table>
-        <tfoot>
-          <tr key="spacing">
-            <td colSpan={5} style={{ height: "1em" }}></td>
-          </tr>
-          <tr key="total">
-            <ChevronCell />
-            {comparison && (
-              <NumberCell>{formatDecimal(totalBefore)}</NumberCell>
-            )}
-            <NumberCell>{formatDecimal(totalAfter)}</NumberCell>
-            {comparison && renderDelta(totalDiff)}
-            <NameCell>TOTAL</NameCell>
-          </tr>
-        </tfoot>
-      </Table>
     </>
   );
 }
