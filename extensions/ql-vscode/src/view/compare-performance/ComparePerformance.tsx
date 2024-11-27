@@ -591,16 +591,20 @@ function ComparePerformanceWithData(props: {
         <option value="total">Overall</option>
         <option value="per-evaluation">Per evaluation</option>
       </Dropdown>{" "}
-      sorted by{" "}
-      <Dropdown
-        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-          setSortOrder(e.target.value as "delta" | "absDelta")
-        }
-        value={sortOrder}
-      >
-        <option value="delta">Delta</option>
-        <option value="absDelta">Absolute delta</option>
-      </Dropdown>
+      {comparison && (
+        <>
+          sorted by{" "}
+          <Dropdown
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              setSortOrder(e.target.value as "delta" | "absDelta")
+            }
+            value={sortOrder}
+          >
+            <option value="delta">Delta</option>
+            <option value="absDelta">Absolute delta</option>
+          </Dropdown>
+        </>
+      )}
       <Table>
         <thead>
           <HeaderTR>
