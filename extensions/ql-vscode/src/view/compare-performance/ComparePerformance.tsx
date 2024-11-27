@@ -262,6 +262,32 @@ const HeaderTR = styled.tr`
   background-color: var(--vscode-sideBar-background);
 `;
 
+interface HeaderRowProps {
+  hasBefore?: boolean;
+  hasAfter?: boolean;
+  comparison: boolean;
+  title: React.ReactNode;
+}
+
+function HeaderRow(props: HeaderRowProps) {
+  const { comparison, hasBefore, hasAfter, title } = props;
+  return (
+    <HeaderTR>
+      <ChevronCell />
+      {comparison ? (
+        <>
+          <NumberHeader>{hasBefore ? "Before" : ""}</NumberHeader>
+          <NumberHeader>{hasAfter ? "After" : ""}</NumberHeader>
+          <NumberHeader>{hasBefore && hasAfter ? "Delta" : ""}</NumberHeader>
+        </>
+      ) : (
+        <NumberHeader>Value</NumberHeader>
+      )}
+      <NameHeader>{title}</NameHeader>
+    </HeaderTR>
+  );
+}
+
 interface HighLevelStatsProps {
   before: Optional<PredicateInfo>;
   after: Optional<PredicateInfo>;
@@ -277,15 +303,12 @@ function HighLevelStats(props: HighLevelStatsProps) {
     (hasAfter && after.evaluationCount > 1);
   return (
     <>
-      <HeaderTR>
-        <ChevronCell></ChevronCell>
-        {comparison && <NumberHeader>{hasBefore ? "Before" : ""}</NumberHeader>}
-        <NumberHeader>{hasAfter ? "After" : ""}</NumberHeader>
-        {comparison && (
-          <NumberHeader>{hasBefore && hasAfter ? "Delta" : ""}</NumberHeader>
-        )}
-        <NameHeader>Stats</NameHeader>
-      </HeaderTR>
+      <HeaderRow
+        hasBefore={hasBefore}
+        hasAfter={hasAfter}
+        title="Stats"
+        comparison={comparison}
+      />
       {showEvaluationCount && (
         <PipelineStep
           before={hasBefore ? before.evaluationCount : undefined}
@@ -607,13 +630,7 @@ function ComparePerformanceWithData(props: {
       )}
       <Table>
         <thead>
-          <HeaderTR>
-            <ChevronCell />
-            {comparison && <NumberHeader>Before</NumberHeader>}
-            <NumberHeader>{comparison ? "After" : "Value"}</NumberHeader>
-            {comparison && <NumberHeader>Delta</NumberHeader>}
-            <NameHeader>Predicate</NameHeader>
-          </HeaderTR>
+          <HeaderRow comparison={comparison} title="Predicate" />
         </thead>
         <tbody>
           <tr key="total">
@@ -765,27 +782,22 @@ function PredicateRow(props: PredicateRowProps) {
               isPresent(row.after) ? row.after.pipelines : {},
             ).map(({ name, first, second }, pipelineIndex) => (
               <Fragment key={pipelineIndex}>
-                <HeaderTR>
-                  <td></td>
-                  {comparison && (
-                    <NumberHeader>{first != null && "Before"}</NumberHeader>
-                  )}
-                  <NumberHeader>{second != null && "After"}</NumberHeader>
-                  {comparison && (
-                    <NumberHeader>
-                      {first != null && second != null && "Delta"}
-                    </NumberHeader>
-                  )}
-                  <NameHeader>
-                    Tuple counts for &apos;{name}&apos; pipeline
-                    {comparison &&
-                      (first == null
-                        ? " (after)"
-                        : second == null
-                          ? " (before)"
-                          : "")}
-                  </NameHeader>
-                </HeaderTR>
+                <HeaderRow
+                  hasBefore={first != null}
+                  hasAfter={second != null}
+                  comparison={comparison}
+                  title={
+                    <>
+                      Tuple counts for &apos;{name}&apos; pipeline
+                      {comparison &&
+                        (first == null
+                          ? " (after)"
+                          : second == null
+                            ? " (before)"
+                            : "")}
+                    </>
+                  }
+                />
                 {abbreviateRASteps(first?.steps ?? second!.steps).map(
                   (step, index) => (
                     <PipelineStep
