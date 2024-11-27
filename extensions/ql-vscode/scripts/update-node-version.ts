@@ -86,6 +86,7 @@ async function updateNodeVersion() {
       execSync(`npm view --json "@types/node@${typesNodeVersion}"`, {
         encoding: "utf-8",
         stdio: "pipe",
+        maxBuffer: 10 * 1024 * 1024,
       });
 
       console.log(`@types/node@${typesNodeVersion} exists`);
