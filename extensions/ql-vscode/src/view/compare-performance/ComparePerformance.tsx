@@ -574,7 +574,7 @@ function ComparePerformanceWithData(props: {
   return (
     <>
       <ViewTitle>Performance comparison</ViewTitle>
-      {hasCacheHitMismatch.current && (
+      {comparison && hasCacheHitMismatch.current && (
         <WarningBox>
           <strong>Inconsistent cache hits</strong>
           <br />
