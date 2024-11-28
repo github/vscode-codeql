@@ -8,7 +8,10 @@ import type { Log } from "sarif";
 import { SemVer } from "semver";
 import type { Readable } from "stream";
 import tk from "tree-kill";
-import type { CancellationToken, Disposable, Uri } from "vscode";
+import type { CancellationToken, Disposable } from "vscode";
+import { Uri } from "vscode";
+
+import { existsSync } from "fs";
 
 import type {
   BqrsInfo,
@@ -37,6 +40,11 @@ import { LOGGING_FLAGS } from "./cli-command";
 import type { CliFeatures, VersionAndFeatures } from "./cli-version";
 import { ExitCodeError, getCliError } from "./cli-errors";
 import { UserCancellationException } from "../common/vscode/progress";
+import type { LanguageClient } from "vscode-languageclient/node";
+import {
+  DidChangeWatchedFilesNotification,
+  FileChangeType,
+} from "vscode-languageclient/node";
 
 /**
  * The version of the SARIF format that we are using.
@@ -277,6 +285,7 @@ export class CodeQLCliServer implements Disposable {
 
   constructor(
     private readonly app: App,
+    private readonly languageClient: LanguageClient,
     private distributionProvider: DistributionProvider,
     private cliConfig: CliConfig,
     public readonly logger: Logger,
@@ -1584,11 +1593,13 @@ export class CodeQLCliServer implements Disposable {
   async packAdd(dir: string, queryLanguage: QueryLanguage) {
     const args = ["--dir", dir];
     args.push(`codeql/${queryLanguage}-all`);
-    return this.runCodeQlCliCommand(
+    const ret = await this.runCodeQlCliCommand(
       ["pack", "add"],
       args,
       `Adding and installing ${queryLanguage} pack dependency.`,
     );
+    await this.notifyPackChanged(dir);
+    return ret;
   }
 
   /**
@@ -1628,11 +1639,13 @@ export class CodeQLCliServer implements Disposable {
         ...this.getAdditionalPacksArg(workspaceFolders),
       );
     }
-    return this.runJsonCodeQlCliCommandWithAuthentication(
+    const ret = await this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "install"],
       args,
       "Installing pack dependencies",
     );
+    await this.notifyPackChanged(dir);
+    return ret;
   }
 
   /**
@@ -1748,6 +1761,29 @@ export class CodeQLCliServer implements Disposable {
       listener(this._versionAndFeatures);
     }
     this._versionChangedListeners.push(listener);
+  }
+
+  private async notifyPackChanged(packDir: string) {
+    const packFilePath = join(packDir, "codeql-pack.yml");
+    if (!existsSync(packFilePath)) {
+      throw new Error(`Pack file ${packFilePath} does not exist`);
+    }
+    await this.languageClient.sendNotification(
+      DidChangeWatchedFilesNotification.type,
+      {
+        changes: [
+          {
+            type: FileChangeType.Changed,
+            uri: Uri.file(packFilePath).toString(),
+          },
+        ],
+      },
+    );
+
+    // restarting the language client has the effect of removing compilation
+    // errors in open ql/qll files that are caused by the pack not having been
+    // installed previously:
+    await this.languageClient.restart();
   }
 
   private async refreshVersion(): Promise<VersionAndFeatures> {
