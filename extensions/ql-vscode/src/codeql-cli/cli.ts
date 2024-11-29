@@ -1634,7 +1634,7 @@ export class CodeQLCliServer implements Disposable {
       args.push(
         // Allow prerelease packs from the ql submodule.
         "--allow-prerelease",
-        // Allow the use of --additional-packs argument without issueing a warning
+        // Allow the use of --additional-packs argument without issuing a warning
         "--no-strict-mode",
         ...this.getAdditionalPacksArg(workspaceFolders),
       );
