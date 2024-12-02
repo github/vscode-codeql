@@ -37,6 +37,7 @@ import { LOGGING_FLAGS } from "./cli-command";
 import type { CliFeatures, VersionAndFeatures } from "./cli-version";
 import { ExitCodeError, getCliError } from "./cli-errors";
 import { UserCancellationException } from "../common/vscode/progress";
+import type { LanguageClient } from "vscode-languageclient/node";
 
 /**
  * The version of the SARIF format that we are using.
@@ -277,6 +278,7 @@ export class CodeQLCliServer implements Disposable {
 
   constructor(
     private readonly app: App,
+    private readonly languageClient: LanguageClient,
     private distributionProvider: DistributionProvider,
     private cliConfig: CliConfig,
     public readonly logger: Logger,
@@ -1584,11 +1586,13 @@ export class CodeQLCliServer implements Disposable {
   async packAdd(dir: string, queryLanguage: QueryLanguage) {
     const args = ["--dir", dir];
     args.push(`codeql/${queryLanguage}-all`);
-    return this.runCodeQlCliCommand(
+    const ret = await this.runCodeQlCliCommand(
       ["pack", "add"],
       args,
       `Adding and installing ${queryLanguage} pack dependency.`,
     );
+    await this.notifyPackInstalled();
+    return ret;
   }
 
   /**
@@ -1623,16 +1627,18 @@ export class CodeQLCliServer implements Disposable {
       args.push(
         // Allow prerelease packs from the ql submodule.
         "--allow-prerelease",
-        // Allow the use of --additional-packs argument without issueing a warning
+        // Allow the use of --additional-packs argument without issuing a warning
         "--no-strict-mode",
         ...this.getAdditionalPacksArg(workspaceFolders),
       );
     }
-    return this.runJsonCodeQlCliCommandWithAuthentication(
+    const ret = await this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "install"],
       args,
       "Installing pack dependencies",
     );
+    await this.notifyPackInstalled();
+    return ret;
   }
 
   /**
@@ -1748,6 +1754,17 @@ export class CodeQLCliServer implements Disposable {
       listener(this._versionAndFeatures);
     }
     this._versionChangedListeners.push(listener);
+  }
+
+  /**
+   * This method should be called after a pack has been installed.
+   *
+   * This restarts the language client. Restarting the language client has the
+   * effect of removing compilation errors in open ql/qll files that are caused
+   * by the pack not having been installed previously.
+   */
+  private async notifyPackInstalled() {
+    await this.languageClient.restart();
   }
 
   private async refreshVersion(): Promise<VersionAndFeatures> {

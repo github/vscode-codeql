@@ -748,9 +748,13 @@ async function activateWithInstalledDistribution(
     );
   ctx.subscriptions.push(qlConfigurationListener);
 
+  void extLogger.log("Initializing CodeQL language server.");
+  const languageClient = createLanguageClient(qlConfigurationListener);
+
   void extLogger.log("Initializing CodeQL cli server...");
   const cliServer = new CodeQLCliServer(
     app,
+    languageClient,
     distributionManager,
     new CliConfigListener(),
     extLogger,
@@ -960,9 +964,6 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push({ dispose: qhelpTmpDir.removeCallback });
 
   ctx.subscriptions.push(tmpDirDisposal);
-
-  void extLogger.log("Initializing CodeQL language server.");
-  const languageClient = createLanguageClient(qlConfigurationListener);
 
   const localQueries = new LocalQueries(
     app,
