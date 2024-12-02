@@ -8,10 +8,7 @@ import type { Log } from "sarif";
 import { SemVer } from "semver";
 import type { Readable } from "stream";
 import tk from "tree-kill";
-import type { CancellationToken, Disposable } from "vscode";
-import { Uri } from "vscode";
-
-import { existsSync } from "fs";
+import type { CancellationToken, Disposable, Uri } from "vscode";
 
 import type {
   BqrsInfo,
@@ -41,10 +38,6 @@ import type { CliFeatures, VersionAndFeatures } from "./cli-version";
 import { ExitCodeError, getCliError } from "./cli-errors";
 import { UserCancellationException } from "../common/vscode/progress";
 import type { LanguageClient } from "vscode-languageclient/node";
-import {
-  DidChangeWatchedFilesNotification,
-  FileChangeType,
-} from "vscode-languageclient/node";
 
 /**
  * The version of the SARIF format that we are using.
@@ -1598,7 +1591,7 @@ export class CodeQLCliServer implements Disposable {
       args,
       `Adding and installing ${queryLanguage} pack dependency.`,
     );
-    await this.notifyPackChanged(dir);
+    await this.notifyPackInstalled();
     return ret;
   }
 
@@ -1644,7 +1637,7 @@ export class CodeQLCliServer implements Disposable {
       args,
       "Installing pack dependencies",
     );
-    await this.notifyPackChanged(dir);
+    await this.notifyPackInstalled();
     return ret;
   }
 
@@ -1763,26 +1756,14 @@ export class CodeQLCliServer implements Disposable {
     this._versionChangedListeners.push(listener);
   }
 
-  private async notifyPackChanged(packDir: string) {
-    const packFilePath = join(packDir, "codeql-pack.yml");
-    if (!existsSync(packFilePath)) {
-      throw new Error(`Pack file ${packFilePath} does not exist`);
-    }
-    await this.languageClient.sendNotification(
-      DidChangeWatchedFilesNotification.type,
-      {
-        changes: [
-          {
-            type: FileChangeType.Changed,
-            uri: Uri.file(packFilePath).toString(),
-          },
-        ],
-      },
-    );
-
-    // restarting the language client has the effect of removing compilation
-    // errors in open ql/qll files that are caused by the pack not having been
-    // installed previously:
+  /**
+   * This method should be called after a pack has been installed.
+   *
+   * This restarts the language client. Restarting the language client has the
+   * effect of removing compilation errors in open ql/qll files that are caused
+   * by the pack not having been installed previously.
+   */
+  private async notifyPackInstalled() {
     await this.languageClient.restart();
   }
 
