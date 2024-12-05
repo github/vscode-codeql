@@ -166,6 +166,12 @@ const TELEMETRY_SETTING = new Setting("telemetry", ROOT_SETTING);
 
 export const LOG_TELEMETRY = new Setting("logTelemetry", TELEMETRY_SETTING);
 
+// Legacy setting that is no longer used, but is used for showing a message when the user upgrades.
+export const ENABLE_TELEMETRY = new Setting(
+  "enableTelemetry",
+  TELEMETRY_SETTING,
+);
+
 // Distribution configuration
 const DISTRIBUTION_SETTING = new Setting("cli", ROOT_SETTING);
 export const CUSTOM_CODEQL_PATH_SETTING = new Setting(

@@ -1,6 +1,7 @@
 import type { Extension, ExtensionContext } from "vscode";
+import { ConfigurationTarget, env, Uri, window } from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
-import { LOG_TELEMETRY, isCanary } from "../../config";
+import { ENABLE_TELEMETRY, isCanary, LOG_TELEMETRY } from "../../config";
 import type { TelemetryClient } from "applicationinsights";
 import { extLogger } from "../logging/vscode";
 import { UserCancellationException } from "./progress";
@@ -159,6 +160,45 @@ export class ExtensionTelemetryListener implements AppTelemetry, Disposable {
   }
 }
 
+async function notifyTelemetryChange() {
+  const continueItem = { title: "Continue", isCloseAffordance: false };
+  const vsCodeTelemetryItem = {
+    title: "More Information about VS Code Telemetry",
+    isCloseAffordance: false,
+  };
+  const codeqlTelemetryItem = {
+    title: "More Information about CodeQL Telemetry",
+    isCloseAffordance: false,
+  };
+  let chosenItem;
+
+  do {
+    chosenItem = await window.showInformationMessage(
+      "The CodeQL extension now follows VS Code's telemetry settings. VS Code telemetry is currently enabled. Learn how to update your telemetry settings by clicking the links below.",
+      { modal: true },
+      continueItem,
+      vsCodeTelemetryItem,
+      codeqlTelemetryItem,
+    );
+    if (chosenItem === vsCodeTelemetryItem) {
+      await env.openExternal(
+        Uri.parse(
+          "https://code.visualstudio.com/docs/getstarted/telemetry",
+          true,
+        ),
+      );
+    }
+    if (chosenItem === codeqlTelemetryItem) {
+      await env.openExternal(
+        Uri.parse(
+          "https://docs.github.com/en/code-security/codeql-for-vs-code/using-the-advanced-functionality-of-the-codeql-for-vs-code-extension/telemetry-in-codeql-for-visual-studio-code",
+          true,
+        ),
+      );
+    }
+  } while (chosenItem !== continueItem);
+}
+
 /**
  * The global Telemetry instance
  */
@@ -172,11 +212,28 @@ export async function initializeTelemetry(
   if (telemetryListener !== undefined) {
     throw new Error("Telemetry is already initialized");
   }
+
+  if (ENABLE_TELEMETRY.getValue<boolean | undefined>() === false) {
+    if (env.isTelemetryEnabled) {
+      // Await this so that the user is notified before any telemetry is sent
+      await notifyTelemetryChange();
+    }
+
+    // Remove the deprecated telemetry setting
+    ENABLE_TELEMETRY.updateValue(undefined, ConfigurationTarget.Global);
+    ENABLE_TELEMETRY.updateValue(undefined, ConfigurationTarget.Workspace);
+    ENABLE_TELEMETRY.updateValue(
+      undefined,
+      ConfigurationTarget.WorkspaceFolder,
+    );
+  }
+
   telemetryListener = new ExtensionTelemetryListener(
     extension.id,
     extension.packageJSON.version,
     key,
   );
   ctx.subscriptions.push(telemetryListener);
+
   return telemetryListener;
 }
