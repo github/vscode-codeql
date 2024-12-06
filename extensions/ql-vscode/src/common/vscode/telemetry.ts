@@ -1,26 +1,15 @@
-import type {
-  Extension,
-  ExtensionContext,
-  ConfigurationChangeEvent,
-} from "vscode";
-import { ConfigurationTarget, env } from "vscode";
+import type { Extension, ExtensionContext } from "vscode";
+import { ConfigurationTarget, env, Uri, window } from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
-import {
-  ConfigListener,
-  CANARY_FEATURES,
-  ENABLE_TELEMETRY,
-  LOG_TELEMETRY,
-  isIntegrationTestMode,
-  isCanary,
-} from "../../config";
+import { ENABLE_TELEMETRY, isCanary, LOG_TELEMETRY } from "../../config";
 import type { TelemetryClient } from "applicationinsights";
 import { extLogger } from "../logging/vscode";
 import { UserCancellationException } from "./progress";
-import { showBinaryChoiceWithUrlDialog } from "./dialog";
 import type { RedactableError } from "../errors";
 import type { SemVer } from "semver";
 import type { AppTelemetry } from "../telemetry";
 import type { EnvelopeTelemetry } from "applicationinsights/out/Declarations/Contracts";
+import type { Disposable } from "../disposable-object";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
@@ -55,80 +44,25 @@ const baseDataPropertiesToRemove = [
 
 const NOT_SET_CLI_VERSION = "not-set";
 
-export class ExtensionTelemetryListener
-  extends ConfigListener
-  implements AppTelemetry
-{
-  private reporter?: TelemetryReporter;
+export class ExtensionTelemetryListener implements AppTelemetry, Disposable {
+  private readonly reporter: TelemetryReporter;
 
   private cliVersionStr = NOT_SET_CLI_VERSION;
 
-  constructor(
-    private readonly id: string,
-    private readonly version: string,
-    private readonly key: string,
-    private readonly ctx: ExtensionContext,
-  ) {
-    super();
-
-    env.onDidChangeTelemetryEnabled(async () => {
-      await this.initialize();
-    });
-  }
-
-  /**
-   * This function handles changes to relevant configuration elements. There are 2 configuration
-   * ids that this function cares about:
-   *
-   *     * `codeQL.telemetry.enableTelemetry`: If this one has changed, then we need to re-initialize
-   *        the reporter and the reporter may wind up being removed.
-   *     * `codeQL.canary`: A change here could possibly re-trigger a dialog popup.
-   *
-   * Note that the global telemetry setting also gate-keeps whether or not to send telemetry events
-   * to Application Insights. However, this gatekeeping happens inside of the vscode-extension-telemetry
-   * package. So, this does not need to be handled here.
-   *
-   * @param e the configuration change event
-   */
-  async handleDidChangeConfiguration(
-    e: ConfigurationChangeEvent,
-  ): Promise<void> {
-    if (e.affectsConfiguration(ENABLE_TELEMETRY.qualifiedName)) {
-      await this.initialize();
-    }
-
-    // Re-request telemetry so that users can see the dialog again.
-    // Re-request if codeQL.canary is being set to `true` and telemetry
-    // is not currently enabled.
-    if (
-      e.affectsConfiguration(CANARY_FEATURES.qualifiedName) &&
-      CANARY_FEATURES.getValue() &&
-      !ENABLE_TELEMETRY.getValue()
-    ) {
-      await this.setTelemetryRequested(false);
-      await this.requestTelemetryPermission();
-    }
-  }
-
-  async initialize() {
-    await this.requestTelemetryPermission();
-
-    this.disposeReporter();
-
-    if (ENABLE_TELEMETRY.getValue<boolean>()) {
-      this.createReporter();
-    }
-  }
-
-  private createReporter() {
+  constructor(id: string, version: string, key: string) {
+    // We can always initialize this and send events using it because the vscode-extension-telemetry will check
+    // whether the `telemetry.telemetryLevel` setting is enabled.
     this.reporter = new TelemetryReporter(
-      this.id,
-      this.version,
-      this.key,
+      id,
+      version,
+      key,
       /* anonymize stack traces */ true,
     );
-    this.push(this.reporter);
 
+    this.addTelemetryProcessor();
+  }
+
+  private addTelemetryProcessor() {
     // The appInsightsClient field is private but we want to access it anyway
     const client = this.reporter["appInsightsClient"] as TelemetryClient;
     if (client) {
@@ -151,14 +85,10 @@ export class ExtensionTelemetryListener
   }
 
   dispose() {
-    super.dispose();
-    void this.reporter?.dispose();
+    void this.reporter.dispose();
   }
 
   sendCommandUsage(name: string, executionTime: number, error?: Error): void {
-    if (!this.reporter) {
-      return;
-    }
     const status = !error
       ? CommandCompletion.Success
       : error instanceof UserCancellationException
@@ -178,10 +108,6 @@ export class ExtensionTelemetryListener
   }
 
   sendUIInteraction(name: string): void {
-    if (!this.reporter) {
-      return;
-    }
-
     this.reporter.sendTelemetryEvent(
       "ui-interaction",
       {
@@ -197,10 +123,6 @@ export class ExtensionTelemetryListener
     error: RedactableError,
     extraProperties?: { [key: string]: string },
   ): void {
-    if (!this.reporter) {
-      return;
-    }
-
     const properties: { [key: string]: string } = {
       isCanary: isCanary().toString(),
       cliVersion: this.cliVersionStr,
@@ -215,10 +137,6 @@ export class ExtensionTelemetryListener
   }
 
   sendConfigInformation(config: Record<string, string>): void {
-    if (!this.reporter) {
-      return;
-    }
-
     this.reporter.sendTelemetryEvent(
       "config",
       {
@@ -231,37 +149,6 @@ export class ExtensionTelemetryListener
   }
 
   /**
-   * Displays a popup asking the user if they want to enable telemetry
-   * for this extension.
-   */
-  async requestTelemetryPermission() {
-    if (!this.wasTelemetryRequested()) {
-      // if global telemetry is disabled, avoid showing the dialog or making any changes
-      let result = undefined;
-      if (
-        env.isTelemetryEnabled &&
-        // Avoid showing the dialog if we are in integration test mode.
-        !isIntegrationTestMode()
-      ) {
-        // Extension won't start until this completes.
-        result = await showBinaryChoiceWithUrlDialog(
-          "Does the CodeQL Extension by GitHub have your permission to collect usage data and metrics to help us improve CodeQL for VSCode?",
-          "https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code",
-        );
-      }
-      if (result !== undefined) {
-        await Promise.all([
-          this.setTelemetryRequested(true),
-          ENABLE_TELEMETRY.updateValue<boolean>(
-            result,
-            ConfigurationTarget.Global,
-          ),
-        ]);
-      }
-    }
-  }
-
-  /**
    * Exposed for testing
    */
   get _reporter() {
@@ -271,21 +158,45 @@ export class ExtensionTelemetryListener
   set cliVersion(version: SemVer | undefined) {
     this.cliVersionStr = version ? version.toString() : NOT_SET_CLI_VERSION;
   }
+}
 
-  private disposeReporter() {
-    if (this.reporter) {
-      void this.reporter.dispose();
-      this.reporter = undefined;
+async function notifyTelemetryChange() {
+  const continueItem = { title: "Continue", isCloseAffordance: false };
+  const vsCodeTelemetryItem = {
+    title: "More Information about VS Code Telemetry",
+    isCloseAffordance: false,
+  };
+  const codeqlTelemetryItem = {
+    title: "More Information about CodeQL Telemetry",
+    isCloseAffordance: false,
+  };
+  let chosenItem;
+
+  do {
+    chosenItem = await window.showInformationMessage(
+      "The CodeQL extension now follows VS Code's telemetry settings. VS Code telemetry is currently enabled. Learn how to update your telemetry settings by clicking the links below.",
+      { modal: true },
+      continueItem,
+      vsCodeTelemetryItem,
+      codeqlTelemetryItem,
+    );
+    if (chosenItem === vsCodeTelemetryItem) {
+      await env.openExternal(
+        Uri.parse(
+          "https://code.visualstudio.com/docs/getstarted/telemetry",
+          true,
+        ),
+      );
     }
-  }
-
-  private wasTelemetryRequested(): boolean {
-    return !!this.ctx.globalState.get<boolean>("telemetry-request-viewed");
-  }
-
-  private async setTelemetryRequested(newValue: boolean): Promise<void> {
-    await this.ctx.globalState.update("telemetry-request-viewed", newValue);
-  }
+    if (chosenItem === codeqlTelemetryItem) {
+      await env.openExternal(
+        Uri.parse(
+          "https://docs.github.com/en/code-security/codeql-for-vs-code/using-the-advanced-functionality-of-the-codeql-for-vs-code-extension/telemetry-in-codeql-for-visual-studio-code",
+          true,
+        ),
+      );
+    }
+  } while (chosenItem !== continueItem);
 }
 
 /**
@@ -301,15 +212,28 @@ export async function initializeTelemetry(
   if (telemetryListener !== undefined) {
     throw new Error("Telemetry is already initialized");
   }
+
+  if (ENABLE_TELEMETRY.getValue<boolean | undefined>() === false) {
+    if (env.isTelemetryEnabled) {
+      // Await this so that the user is notified before any telemetry is sent
+      await notifyTelemetryChange();
+    }
+
+    // Remove the deprecated telemetry setting
+    ENABLE_TELEMETRY.updateValue(undefined, ConfigurationTarget.Global);
+    ENABLE_TELEMETRY.updateValue(undefined, ConfigurationTarget.Workspace);
+    ENABLE_TELEMETRY.updateValue(
+      undefined,
+      ConfigurationTarget.WorkspaceFolder,
+    );
+  }
+
   telemetryListener = new ExtensionTelemetryListener(
     extension.id,
     extension.packageJSON.version,
     key,
-    ctx,
   );
-  // do not await initialization, since doing so will sometimes cause a modal popup.
-  // this is a particular problem during integration tests, which will hang if a modal popup is displayed.
-  void telemetryListener.initialize();
   ctx.subscriptions.push(telemetryListener);
+
   return telemetryListener;
 }

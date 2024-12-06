@@ -1,6 +1,5 @@
 {
   "workbench.startupEditor": "none",
   "security.workspace.trust.enabled": false,
-  "codeQL.cli.executablePath": "/opt/codeql/codeql",
-  "codeQL.telemetry.enableTelemetry": false
+  "codeQL.cli.executablePath": "/opt/codeql/codeql"
 }

@@ -3,9 +3,7 @@ import type { ExtensionContext } from "vscode";
 export function createMockExtensionContext(): ExtensionContext {
   return {
     globalState: {
-      _state: {
-        "telemetry-request-viewed": true,
-      } as Record<string, any>,
+      _state: {} as Record<string, any>,
       get(key: string) {
         return this._state[key];
       },

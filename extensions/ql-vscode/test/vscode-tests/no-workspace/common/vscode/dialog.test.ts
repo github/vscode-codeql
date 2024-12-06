@@ -1,7 +1,6 @@
 import { window } from "vscode";
 import {
   showBinaryChoiceDialog,
-  showBinaryChoiceWithUrlDialog,
   showInformationMessageWithAction,
   showNeverAskAgainDialog,
 } from "../../../../../src/common/vscode/dialog";
@@ -65,57 +64,6 @@ describe("showInformationMessageWithAction", () => {
     showInformationMessageSpy.mockResolvedValueOnce(undefined);
     const val = await showInformationMessageWithAction("xxx", "yyy");
     expect(val).toBe(false);
-  });
-});
-
-describe("showBinaryChoiceWithUrlDialog", () => {
-  let showInformationMessageSpy: jest.SpiedFunction<
-    typeof window.showInformationMessage
-  >;
-
-  beforeEach(() => {
-    showInformationMessageSpy = jest
-      .spyOn(window, "showInformationMessage")
-      .mockResolvedValue(undefined);
-  });
-
-  const resolveArg =
-    (index: number) =>
-    (...args: any[]) =>
-      Promise.resolve(args[index]);
-
-  it("should show a binary choice dialog with a url and return `yes`", async () => {
-    // pretend user clicks on the url twice and then clicks 'yes'
-    showInformationMessageSpy
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(3));
-    const val = await showBinaryChoiceWithUrlDialog("xxx", "invalid:url");
-    expect(val).toBe(true);
-  });
-
-  it("should show a binary choice dialog with a url and return `no`", async () => {
-    // pretend user clicks on the url twice and then clicks 'no'
-    showInformationMessageSpy
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(4));
-    const val = await showBinaryChoiceWithUrlDialog("xxx", "invalid:url");
-    expect(val).toBe(false);
-  });
-
-  it("should show a binary choice dialog and exit after clcking `more info` 5 times", async () => {
-    // pretend user clicks on the url twice and then clicks 'no'
-    showInformationMessageSpy
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(2))
-      .mockImplementation(resolveArg(2));
-    const val = await showBinaryChoiceWithUrlDialog("xxx", "invalid:url");
-    // No choice was made
-    expect(val).toBeUndefined();
-    expect(showInformationMessageSpy).toHaveBeenCalledTimes(5);
   });
 });
 

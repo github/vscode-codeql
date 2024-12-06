@@ -2,7 +2,8 @@
 
 ## [UNRELEASED]
 
-- Add a palette command that allows importing all databases directly inside of a parent folder. [3797](https://github.com/github/vscode-codeql/pull/3797)
+- Add a palette command that allows importing all databases directly inside of a parent folder. [#3797](https://github.com/github/vscode-codeql/pull/3797)
+- Only use VS Code telemetry settings instead of using `codeQL.telemetry.enableTelemetry` [#3853](https://github.com/github/vscode-codeql/pull/3853)
 
 ## 1.16.1 - 6 November 2024
 

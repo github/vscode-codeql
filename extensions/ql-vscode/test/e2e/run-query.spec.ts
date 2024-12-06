@@ -5,11 +5,6 @@ test("run query and open it from history", async ({ page }) => {
 
   await page.getByRole("tab", { name: "CodeQL" }).locator("a").click();
 
-  // decline extension telemetry
-  await page.getByRole("button", { name: "No", exact: true }).click({
-    timeout: 60000,
-  });
-
   await page.keyboard.press("Control+Shift+P");
   await page.keyboard.type("Create Query");
   await page.keyboard.press("Enter");
