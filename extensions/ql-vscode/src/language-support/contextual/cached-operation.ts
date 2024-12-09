@@ -7,6 +7,7 @@ export class CachedOperation<S extends unknown[], U> {
   private readonly operation: (t: string, ...args: S) => Promise<U>;
   private readonly cached: Map<string, U>;
   private readonly lru: string[];
+  private generation: number;
   private readonly inProgressCallbacks: Map<
     string,
     Array<[(u: U) => void, (reason?: Error) => void]>
@@ -17,6 +18,7 @@ export class CachedOperation<S extends unknown[], U> {
     private cacheSize = 100,
   ) {
     this.operation = operation;
+    this.generation = 0;
     this.lru = [];
     this.inProgressCallbacks = new Map<
       string,
@@ -46,7 +48,7 @@ export class CachedOperation<S extends unknown[], U> {
         inProgressCallback.push([resolve, reject]);
       });
     }
-
+    const origGeneration = this.generation;
     // Otherwise compute the new value, but leave a callback to allow sharing work
     const callbacks: Array<[(u: U) => void, (reason?: Error) => void]> = [];
     this.inProgressCallbacks.set(t, callbacks);
@@ -54,6 +56,11 @@ export class CachedOperation<S extends unknown[], U> {
       const result = await this.operation(t, ...args);
       callbacks.forEach((f) => f[0](result));
       this.inProgressCallbacks.delete(t);
+      if (this.generation !== origGeneration) {
+        // Cache was reset in the meantime so don't trust this
+        // result enough to cache it.
+        return result;
+      }
       if (this.lru.length > this.cacheSize) {
         const toRemove = this.lru.shift()!;
         this.cached.delete(toRemove);
@@ -68,5 +75,12 @@ export class CachedOperation<S extends unknown[], U> {
     } finally {
       this.inProgressCallbacks.delete(t);
     }
+  }
+
+  reset() {
+    this.cached.clear();
+    this.lru.length = 0;
+    this.generation++;
+    this.inProgressCallbacks.clear();
   }
 }
