@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   code-server:
     build:
@@ -38,7 +36,7 @@ services:
     depends_on:
       - files-init
   files-init:
-    image: alpine:3.19.1
+    image: alpine:3.21.0
     restart: "no"
     # Since we're not running the code-server container using the same user as our host user,
     # we need to set the permissions on the mounted volumes to match the user inside the container.
