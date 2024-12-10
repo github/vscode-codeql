@@ -75,6 +75,7 @@ import type { App } from "../common/app";
 import type { Disposable } from "../common/disposable-object";
 import type { RawResultSet } from "../common/raw-result-types";
 import type { BqrsResultSetSchema } from "../common/bqrs-cli-types";
+import { CachedOperation } from "../language-support/contextual/cached-operation";
 
 /**
  * results-view.ts
@@ -177,6 +178,8 @@ export class ResultsView extends AbstractWebview<
   // Event listeners that should be disposed of when the view is disposed.
   private disposableEventListeners: Disposable[] = [];
 
+  private schemaCache: CachedOperation<[], BqrsResultSetSchema[]>;
+
   constructor(
     app: App,
     private databaseManager: DatabaseManager,
@@ -205,6 +208,10 @@ export class ResultsView extends AbstractWebview<
           }
         }
       }),
+    );
+
+    this.schemaCache = new CachedOperation(
+      this.getResultSetSchemasImpl.bind(this),
     );
   }
 
@@ -420,6 +427,7 @@ export class ResultsView extends AbstractWebview<
       );
       return;
     }
+    this.schemaCache.reset();
     // Notify the webview that it should expect new results.
     await this.postMessage({ t: "resultsUpdating" });
     await this._displayedQuery.completedQuery.updateSortState(
@@ -610,6 +618,12 @@ export class ResultsView extends AbstractWebview<
     selectedTable = "",
   ): Promise<BqrsResultSetSchema[]> {
     const resultsPath = completedQuery.getResultsPath(selectedTable);
+    return this.schemaCache.get(resultsPath);
+  }
+
+  private async getResultSetSchemasImpl(
+    resultsPath: string,
+  ): Promise<BqrsResultSetSchema[]> {
     const schemas = await this.cliServer.bqrsInfo(
       resultsPath,
       PAGE_SIZE.getValue(),
