@@ -41,6 +41,13 @@ export abstract class AbstractWebview<
 
   constructor(protected readonly app: App) {}
 
+  public hidePanel() {
+    if (this.panel !== undefined) {
+      this.panel.dispose();
+      this.panel = undefined;
+    }
+  }
+
   public async restoreView(panel: WebviewPanel): Promise<void> {
     this.panel = panel;
     const config = await this.getPanelConfig();
