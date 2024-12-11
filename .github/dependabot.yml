@@ -38,7 +38,7 @@ updates:
     labels:
       - "Update dependencies"
   - package-ecosystem: docker
-    directory: "extensions/ql-vscode/test/e2e"
+    directory: "extensions/ql-vscode/test/e2e/docker"
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
