@@ -244,7 +244,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
    */
   async chooseResultSet(cliServer: CodeQLCliServer) {
     const resultSets = (
-      await cliServer.bqrsInfo(this.resultsPaths.resultsPath, 0)
+      await cliServer.bqrsInfo(this.resultsPaths.resultsPath)
     )["result-sets"];
     if (!resultSets.length) {
       return undefined;
