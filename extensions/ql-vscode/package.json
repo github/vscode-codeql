@@ -2001,7 +2001,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@babel/preset-env": "^7.24.4",
     "@babel/preset-react": "^7.25.9",
-    "@babel/preset-typescript": "^7.21.4",
+    "@babel/preset-typescript": "^7.26.0",
     "@faker-js/faker": "^9.0.3",
     "@github/markdownlint-github": "^0.6.3",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
