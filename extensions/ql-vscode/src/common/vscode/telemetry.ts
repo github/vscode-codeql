@@ -1,46 +1,21 @@
-import type { Extension, ExtensionContext } from "vscode";
+import type { ExtensionContext } from "vscode";
 import { ConfigurationTarget, env, Uri, window } from "vscode";
-import TelemetryReporter from "vscode-extension-telemetry";
-import { ENABLE_TELEMETRY, isCanary, LOG_TELEMETRY } from "../../config";
-import type { TelemetryClient } from "applicationinsights";
-import { extLogger } from "../logging/vscode";
+import TelemetryReporter from "@vscode/extension-telemetry";
+import { ENABLE_TELEMETRY, isCanary } from "../../config";
 import { UserCancellationException } from "./progress";
 import type { RedactableError } from "../errors";
 import type { SemVer } from "semver";
 import type { AppTelemetry } from "../telemetry";
-import type { EnvelopeTelemetry } from "applicationinsights/out/Declarations/Contracts";
 import type { Disposable } from "../disposable-object";
 
-// Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
-const key = "REPLACE-APP-INSIGHTS-KEY";
+const DEFAULT_CONNECTION_STRING =
+  "InstrumentationKey=ccd156f7-4e30-4c1f-9927-dc0b88e87182;IngestionEndpoint=https://eastus-1.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/;ApplicationId=beaf6f51-02b3-4426-b4b8-941aaec7a5af";
 
 enum CommandCompletion {
   Success = "Success",
   Failed = "Failed",
   Cancelled = "Cancelled",
 }
-
-// Avoid sending the following data to App insights since we don't need it.
-const tagsToRemove = [
-  "ai.application.ver",
-  "ai.device.id",
-  "ai.cloud.roleInstance",
-  "ai.cloud.role",
-  "ai.device.id",
-  "ai.device.osArchitecture",
-  "ai.device.osPlatform",
-  "ai.device.osVersion",
-  "ai.internal.sdkVersion",
-  "ai.session.id",
-];
-
-const baseDataPropertiesToRemove = [
-  "common.os",
-  "common.platformversion",
-  "common.remotename",
-  "common.uikind",
-  "common.vscodesessionid",
-];
 
 const NOT_SET_CLI_VERSION = "not-set";
 
@@ -49,39 +24,9 @@ export class ExtensionTelemetryListener implements AppTelemetry, Disposable {
 
   private cliVersionStr = NOT_SET_CLI_VERSION;
 
-  constructor(id: string, version: string, key: string) {
-    // We can always initialize this and send events using it because the vscode-extension-telemetry will check
-    // whether the `telemetry.telemetryLevel` setting is enabled.
-    this.reporter = new TelemetryReporter(
-      id,
-      version,
-      key,
-      /* anonymize stack traces */ true,
-    );
-
-    this.addTelemetryProcessor();
-  }
-
-  private addTelemetryProcessor() {
-    // The appInsightsClient field is private but we want to access it anyway
-    const client = this.reporter["appInsightsClient"] as TelemetryClient;
-    if (client) {
-      // add a telemetry processor to delete unwanted properties
-      client.addTelemetryProcessor((envelope: EnvelopeTelemetry) => {
-        tagsToRemove.forEach((tag) => delete envelope.tags[tag]);
-        const baseDataProperties = envelope.data.baseData?.properties;
-        if (baseDataProperties) {
-          baseDataPropertiesToRemove.forEach(
-            (prop) => delete baseDataProperties[prop],
-          );
-        }
-
-        if (LOG_TELEMETRY.getValue<boolean>()) {
-          void extLogger.log(`Telemetry: ${JSON.stringify(envelope)}`);
-        }
-        return true;
-      });
-    }
+  constructor(connectionString: string) {
+    // We can always initialize this and send events because @vscode/extension-telemetry will check whether telemetry is enabled
+    this.reporter = new TelemetryReporter(connectionString);
   }
 
   dispose() {
@@ -206,7 +151,6 @@ async function notifyTelemetryChange() {
 export let telemetryListener: ExtensionTelemetryListener | undefined;
 
 export async function initializeTelemetry(
-  extension: Extension<unknown>,
   ctx: ExtensionContext,
 ): Promise<ExtensionTelemetryListener> {
   if (telemetryListener !== undefined) {
@@ -228,11 +172,7 @@ export async function initializeTelemetry(
     );
   }
 
-  telemetryListener = new ExtensionTelemetryListener(
-    extension.id,
-    extension.packageJSON.version,
-    key,
-  );
+  telemetryListener = new ExtensionTelemetryListener(DEFAULT_CONNECTION_STRING);
   ctx.subscriptions.push(telemetryListener);
 
   return telemetryListener;

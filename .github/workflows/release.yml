@@ -31,10 +31,7 @@ jobs:
         shell: bash
 
       - name: Build
-        env:
-          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
         run: |
-          echo "APP INSIGHTS KEY LENGTH: ${#APP_INSIGHTS_KEY}"
           cd extensions/ql-vscode
           npm run build -- --release
         shell: bash

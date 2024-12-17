@@ -336,7 +336,7 @@ export async function activate(
 
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
-  const telemetryListener = await initializeTelemetry(extension, ctx);
+  const telemetryListener = await initializeTelemetry(ctx);
   addUnhandledRejectionListener();
   install();
 

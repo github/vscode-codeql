@@ -9,7 +9,6 @@ import {
 } from "./typescript";
 import { compileTextMateGrammar } from "./textmate";
 import { packageExtension } from "./package";
-import { injectAppInsightsKey } from "./appInsights";
 import {
   checkViewTypeScript,
   compileViewEsbuild,
@@ -48,12 +47,7 @@ export {
   compileEsbuild,
   copyWasmFiles,
   checkTypeScript,
-  injectAppInsightsKey,
   compileViewEsbuild,
   checkViewTypeScript,
 };
-export default series(
-  buildWithoutPackage,
-  injectAppInsightsKey,
-  packageExtension,
-);
+export default series(buildWithoutPackage, packageExtension);

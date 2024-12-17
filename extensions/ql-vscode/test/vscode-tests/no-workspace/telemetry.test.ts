@@ -1,4 +1,4 @@
-import TelemetryReporter from "vscode-extension-telemetry";
+import TelemetryReporter from "@vscode/extension-telemetry";
 import { workspace, env } from "vscode";
 import {
   ExtensionTelemetryListener,
@@ -46,9 +46,7 @@ describe("telemetry reporting", () => {
       jest.spyOn(env, "isTelemetryEnabled", "get").mockReturnValue(true);
 
       telemetryListener = new ExtensionTelemetryListener(
-        "my-id",
-        "1.2.3",
-        "fake-key",
+        "fake-connection-string",
       );
       await wait(100);
     } catch (e) {

@@ -34,8 +34,6 @@ jobs:
 
       - name: Build
         working-directory: extensions/ql-vscode
-        env:
-          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
         run: |
           npm run build
         shell: bash
@@ -218,8 +216,6 @@ jobs:
 
       - name: Build
         working-directory: extensions/ql-vscode
-        env:
-          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
         run: |
           npm run build
         shell: bash
