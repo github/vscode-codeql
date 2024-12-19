@@ -2000,7 +2000,7 @@
     "@babel/core": "^7.24.6",
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@babel/preset-env": "^7.24.4",
-    "@babel/preset-react": "^7.25.9",
+    "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.26.0",
     "@faker-js/faker": "^9.0.3",
     "@github/markdownlint-github": "^0.6.3",
