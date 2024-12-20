@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.7.0 - 20 December 2024
 
 - Add a palette command that allows importing all databases directly inside of a parent folder. [#3797](https://github.com/github/vscode-codeql/pull/3797)
