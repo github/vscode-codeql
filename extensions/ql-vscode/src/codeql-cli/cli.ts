@@ -1904,7 +1904,7 @@ function shouldDebugCliServer() {
 export class CliVersionConstraint {
   // The oldest version of the CLI that we support. This is used to determine
   // whether to show a warning about the CLI being too old on startup.
-  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.16.6");
+  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.18.4");
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
