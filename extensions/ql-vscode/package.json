@@ -42,13 +42,6 @@
     "workspaceContains:.git"
   ],
   "main": "./out/extension",
-  "files": [
-    "gen/*.js",
-    "media/**",
-    "out/**",
-    "package.json",
-    "language-configuration.json"
-  ],
   "contributes": {
     "configurationDefaults": {
       "[ql]": {
