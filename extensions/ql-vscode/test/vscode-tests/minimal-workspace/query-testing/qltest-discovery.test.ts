@@ -3,6 +3,7 @@ import { Uri } from "vscode";
 import { remove } from "fs-extra";
 import { join } from "path";
 
+import { isIOError } from "../../../../src/common/files";
 import { QLTestDiscovery } from "../../../../src/query-testing/qltest-discovery";
 import type { DirectoryResult } from "tmp-promise";
 import { dir } from "tmp-promise";
@@ -49,7 +50,15 @@ describe("qltest-discovery", () => {
     });
 
     afterEach(async () => {
-      await directory.cleanup();
+      try {
+        await directory.cleanup();
+      } catch (e) {
+        if (isIOError(e) && e.code === "ENOENT") {
+          // This is fine, the directory was already removed
+        } else {
+          throw e;
+        }
+      }
     });
 
     it("should run discovery", async () => {
