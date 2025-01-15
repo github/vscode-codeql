@@ -291,7 +291,7 @@ describe("query-results", () => {
         });
 
         const finished = new Promise((res, rej) => {
-          validSarifStream.addListener("close", res);
+          validSarifStream.addListener("close", () => res(undefined));
           validSarifStream.addListener("error", rej);
         });
 
@@ -357,7 +357,7 @@ describe("query-results", () => {
         });
 
         const finished = new Promise((res, rej) => {
-          invalidSarifStream.addListener("close", res);
+          invalidSarifStream.addListener("close", () => res(undefined));
           invalidSarifStream.addListener("error", rej);
         });
 

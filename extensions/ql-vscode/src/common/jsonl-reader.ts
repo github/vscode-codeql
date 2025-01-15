@@ -24,7 +24,12 @@ export async function readJsonlFile<T>(
   return new Promise((resolve, reject) => {
     const stream = createReadStream(path, { encoding: "utf8" });
     let buffer = "";
-    stream.on("data", async (chunk: string) => {
+    stream.on("data", async (chunk: string | Buffer) => {
+      if (typeof chunk !== "string") {
+        // This should never happen because we specify the encoding as "utf8".
+        throw new Error("Invalid chunk");
+      }
+
       const parts = (buffer + chunk).split(doubleLineBreakRegexp);
       buffer = parts.pop()!;
       if (parts.length > 0) {
