@@ -1237,7 +1237,7 @@
         {
           "command": "codeQLQueryHistory.comparePerformanceWith",
           "group": "3_queryHistory@1",
-          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
+          "when": "viewItem == rawResultsItem && config.codeQL.canary || viewItem == interpretedResultsItem && config.codeQL.canary"
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
