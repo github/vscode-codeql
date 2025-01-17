@@ -67,6 +67,7 @@ function parseName(text: string): QualifiedName {
   }
 
   function parseQName(): QualifiedName {
+    // Note that the tokens stream is parsed in reverse order. This is simpler, but may look confusing initially.
     let args: QualifiedName[] | undefined;
     if (skipToken(">")) {
       args = [];
