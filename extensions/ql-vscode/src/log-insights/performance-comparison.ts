@@ -115,9 +115,13 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       }
       case "CACHE_HIT":
       case "CACHACA": {
-        this.data.cacheHitIndices.push(
-          this.getPredicateIndex(event.predicateName),
-        );
+        // Record a cache hit, but only if the predicate has not been seen before.
+        // We're mainly interested in the reuse of caches from an earlier query run as they can distort comparisons.
+        if (!this.nameToIndex.has(event.predicateName)) {
+          this.data.cacheHitIndices.push(
+            this.getPredicateIndex(event.predicateName),
+          );
+        }
         break;
       }
       case "SENTINEL_EMPTY": {
