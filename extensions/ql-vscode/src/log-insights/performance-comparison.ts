@@ -17,7 +17,14 @@ export interface PipelineSummary {
  * to a web view (which rules out `Map` values, for example).
  */
 export interface PerformanceComparisonDataFromLog {
-  /** Names of predicates mentioned in the log */
+  /**
+   * Names of predicates mentioned in the log.
+   *
+   * For compactness, details of these predicates are stored in a "struct of arrays" style.
+   *
+   * All fields (except those ending with `Indices`) should contain an array of the same length as `names`;
+   * details of a given predicate should be stored at the same index in each of those arrays.
+   */
   names: string[];
 
   /** Number of milliseconds spent evaluating the `i`th predicate from the `names` array. */
