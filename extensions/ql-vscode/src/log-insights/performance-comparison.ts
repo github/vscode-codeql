@@ -51,8 +51,6 @@ export interface PerformanceComparisonDataFromLog {
 
   /**
    * All the pipeline runs seen for the `i`th predicate from the `names` array.
-   *
-   * TODO: replace with more compact representation
    */
   pipelineSummaryList: Array<Record<string, PipelineSummary>>;
 }
@@ -161,7 +159,6 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
           });
           const { counts: totalTuplesPerStep } = pipelineSummary;
           for (let i = 0, length = counts.length; i < length; ++i) {
-            // TODO: possibly exclude unions here
             const count = counts[i];
             if (count < 0) {
               // Empty RA lines have a tuple count of -1. Do not count them when aggregating.
