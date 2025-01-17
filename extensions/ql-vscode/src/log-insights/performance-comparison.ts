@@ -41,8 +41,6 @@ export interface PerformanceComparisonDataFromLog {
 
   /**
    * List of indices into the `names` array for which we have seen a cache hit.
-   *
-   * TODO: only count cache hits prior to first evaluation?
    */
   cacheHitIndices: number[];
 
