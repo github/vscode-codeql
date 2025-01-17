@@ -689,14 +689,12 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    // TODO: reduce duplication with 'handleCompareWith'
     multiSelect ||= [singleItem];
 
     if (
       !this.isSuccessfulCompletedLocalQueryInfo(singleItem) ||
       !multiSelect.every(this.isSuccessfulCompletedLocalQueryInfo)
     ) {
-      // TODO: support performance comparison with partially-evaluated query (technically possible)
       throw new Error(
         "Please only select local queries that have completed successfully.",
       );
