@@ -1128,8 +1128,6 @@ export class QueryHistoryManager extends DisposableObject {
     fromItem: CompletedLocalQueryInfo,
     allSelectedItems: CompletedLocalQueryInfo[],
   ): Promise<CompletedLocalQueryInfo | undefined> {
-    const dbName = fromItem.databaseName;
-
     // If exactly 2 items are selected, return the one that
     // isn't being used as the "from" item.
     if (allSelectedItems.length === 2) {
@@ -1137,9 +1135,6 @@ export class QueryHistoryManager extends DisposableObject {
         fromItem === allSelectedItems[0]
           ? allSelectedItems[1]
           : allSelectedItems[0];
-      if (otherItem.databaseName !== dbName) {
-        throw new Error("Query databases must be the same.");
-      }
       return otherItem;
     }
 
@@ -1150,10 +1145,7 @@ export class QueryHistoryManager extends DisposableObject {
     // Otherwise, present a dialog so the user can choose the item they want to use.
     const comparableQueryLabels = this.treeDataProvider.allHistory
       .filter(this.isSuccessfulCompletedLocalQueryInfo)
-      .filter(
-        (otherItem) =>
-          otherItem !== fromItem && otherItem.databaseName === dbName,
-      )
+      .filter((otherItem) => otherItem !== fromItem)
       .map((item) => ({
         label: this.labelProvider.getLabel(item),
         description: item.databaseName,
