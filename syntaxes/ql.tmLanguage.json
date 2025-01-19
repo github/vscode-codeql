@@ -675,9 +675,9 @@
               "begin": "(?x)(?<=/\\*\\*)([^*]|\\*(?!/))*$",
               "while": "(?x)(^|\\G)\\s*([^*]|\\*(?!/))(?=([^*]|[*](?!/))*$)",
               "patterns": [
-
-
-
+                
+                
+                
                 {
                   "match": "(?x)\\G\\s* (@\\S+)",
                   "name": "keyword.tag.ql"
@@ -1469,7 +1469,7 @@
       }
     },
     "select-as-clause": {
-      "end": "(?x)(?<=(?:[0-9A-Za-z_])(?:(?!(?:[0-9A-Za-z_]))))",
+      "end": "(?x)(?<=(?:[0-9A-Za-z_]))(?:(?!(?:[0-9A-Za-z_])))",
       "match": "(?x)meta.block.select-as-clause.ql",
       "patterns": [
         {
