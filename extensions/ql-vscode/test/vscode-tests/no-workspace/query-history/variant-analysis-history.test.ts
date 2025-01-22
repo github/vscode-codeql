@@ -105,6 +105,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
       }),
       new LanguageContextStore(app),
       asyncNoop,
+      asyncNoop,
     );
     disposables.push(qhm);
 

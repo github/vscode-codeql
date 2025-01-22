@@ -38,6 +38,7 @@ describe("HistoryTreeDataProvider", () => {
   let app: App;
   let configListener: QueryHistoryConfigListener;
   const doCompareCallback = jest.fn();
+  const doComparePerformanceCallback = jest.fn();
 
   let queryHistoryManager: QueryHistoryManager;
 
@@ -506,6 +507,7 @@ describe("HistoryTreeDataProvider", () => {
       }),
       languageContext,
       doCompareCallback,
+      doComparePerformanceCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];
     await workspace.saveAll();
