@@ -1,25 +1,12 @@
 name: Bump CLI version
 on:
   workflow_dispatch:
-    inputs:
-      option:
-        description: "Option"
-        required: true
-        default: 'replace'
-        type: choice
-        options:
-          - prepend
-          - replace
-      version:
-        description: |
-          The version to prepend to the supported versions file. This should be in the form: `vA.B.C`.
-        required: false
-        type: string
   pull_request:
     branches: [main]
     paths:
       - .github/actions/create-pr/action.yml
       - .github/workflows/bump-cli.yml
+      - extensions/ql-vscode/scripts/bump-supported-cli-versions.ts
   schedule:
   - cron: 0 0 */14 * * # run every 14 days
 
@@ -34,28 +21,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 1
+          node-version-file: extensions/ql-vscode/.nvmrc
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
+      - name: Install dependencies
+        working-directory: extensions/ql-vscode
+        run: |
+          npm ci
+        shell: bash
       - name: Bump CLI
-        if: ${{ inputs.option == 'replace' }}
+        working-directory: extensions/ql-vscode
+        id: bump-cli
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          scripts/replace-cli-version.sh
-      - name: Prepend another version
-        if: ${{ inputs.option == 'prepend' }}
-        run: |
-          cat extensions/ql-vscode/supported_cli_versions.json | jq '. |= ["${{ inputs.version }}"] + .' > supported_cli_versions_temp.json
-          mv supported_cli_versions_temp.json extensions/ql-vscode/supported_cli_versions.json
-          echo "LATEST_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
-          echo "PREVIOUS_VERSION=`jq -r '.[1]' extensions/ql-vscode/supported_cli_versions.json`" >> $GITHUB_ENV
+          npx vite-node scripts/bump-supported-cli-versions.ts
+        shell: bash
       - name: Commit, Push and Open a PR
         uses: ./.github/actions/create-pr
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: main
           head-branch: github-action/bump-cli
-          commit-message: Bump CLI version from ${{ env.PREVIOUS_VERSION }} to ${{ env.LATEST_VERSION }} for integration tests
-          title: Bump CLI Version to ${{ env.LATEST_VERSION }} for integration tests
+          commit-message: Bump CLI version from ${{ steps.bump-cli.outputs.PREVIOUS_VERSION }} to ${{ steps.bump-cli.outputs.LATEST_VERSION }} for integration tests
+          title: Bump CLI Version to ${{ steps.bump-cli.outputs.LATEST_VERSION }} for integration tests
           body: >
-            Bumps CLI version from ${{ env.PREVIOUS_VERSION }} to ${{ env.LATEST_VERSION }}
+            Bumps CLI version from ${{ steps.bump-cli.outputs.PREVIOUS_VERSION }} to ${{ steps.bump-cli.outputs.LATEST_VERSION }}
