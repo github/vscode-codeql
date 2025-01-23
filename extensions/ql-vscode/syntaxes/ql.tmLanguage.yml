@@ -1065,7 +1065,7 @@ repository:
     beginPattern: '#as'
     # Ends after the first identifier we encounter.
     # REVIEW: Make similar to import-as-clause.
-    end: '(?<=(?#id-character)(?#end-of-id))'
+    end: '(?<=(?#id-character))(?#end-of-id)'
     match: meta.block.select-as-clause.ql
     patterns:
     - include: '#non-context-sensitive'

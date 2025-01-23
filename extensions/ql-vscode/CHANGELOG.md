@@ -5,6 +5,7 @@
 ## 1.17.1 - 23 January 2025
 
 - Remove support for CodeQL CLI versions older than 2.18.4. [#3895](https://github.com/github/vscode-codeql/pull/3895)
+- Fix regex in CodeQL TextMate grammar that was silently failing. [#3903](https://github.com/github/vscode-codeql/pull/3903)
 
 ## 1.17.0 - 20 December 2024
 
