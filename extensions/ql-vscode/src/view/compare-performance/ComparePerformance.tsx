@@ -798,7 +798,7 @@ function PredicateRow(props: PredicateRowProps) {
                     </>
                   }
                 />
-                {abbreviateRASteps(first?.steps ?? second!.steps).map(
+                {abbreviateRASteps(first?.steps ?? second?.steps ?? []).map(
                   (step, index) => (
                     <PipelineStep
                       key={index}
