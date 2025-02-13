@@ -11,6 +11,12 @@ on:
 jobs:
   codeql:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language:
+          - javascript
+          - actions
+      fail-fast: false
 
     permissions:
       contents: read
@@ -24,7 +30,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@main
         with:
-            languages: javascript
+            languages: ${{ matrix.language }}
             config-file: ./.github/codeql/codeql-config.yml
             tools: latest
 
