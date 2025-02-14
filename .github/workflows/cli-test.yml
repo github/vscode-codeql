@@ -17,6 +17,8 @@ jobs:
   find-nightly:
     name: Find Nightly Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       url: ${{ steps.get-url.outputs.nightly-url }}
     steps:
@@ -33,6 +35,8 @@ jobs:
   set-matrix:
     name: Set Matrix for cli-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,6 +51,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: [find-nightly, set-matrix]
     timeout-minutes: 30
+    permissions:
+      contents: read
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]

@@ -16,6 +16,8 @@ jobs:
   build:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -156,6 +158,8 @@ jobs:
     needs: build
     environment: publish-open-vsx
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
     steps:
