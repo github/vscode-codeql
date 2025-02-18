@@ -97,14 +97,12 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
   }
 
   onEvent(event: SummaryEvent): void {
-    if (
-      event.completionType !== undefined &&
-      event.completionType !== "SUCCESS"
-    ) {
+    const { completionType, evaluationStrategy, predicateName } = event;
+    if (completionType !== undefined && completionType !== "SUCCESS") {
       return; // Skip any evaluation that wasn't successful
     }
 
-    switch (event.evaluationStrategy) {
+    switch (evaluationStrategy) {
       case "EXTENSIONAL":
       case "COMPUTED_EXTENSIONAL": {
         break;
@@ -113,26 +111,24 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       case "CACHACA": {
         // Record a cache hit, but only if the predicate has not been seen before.
         // We're mainly interested in the reuse of caches from an earlier query run as they can distort comparisons.
-        if (!this.nameToIndex.has(event.predicateName)) {
-          this.data.cacheHitIndices.push(
-            this.getPredicateIndex(event.predicateName),
-          );
+        if (!this.nameToIndex.has(predicateName)) {
+          this.data.cacheHitIndices.push(this.getPredicateIndex(predicateName));
         }
         break;
       }
       case "SENTINEL_EMPTY": {
         this.data.sentinelEmptyIndices.push(
-          this.getPredicateIndex(event.predicateName),
+          this.getPredicateIndex(predicateName),
         );
         break;
       }
       case "COMPUTE_RECURSIVE":
       case "COMPUTE_SIMPLE":
       case "IN_LAYER": {
-        const index = this.getPredicateIndex(event.predicateName);
+        const index = this.getPredicateIndex(predicateName);
         let totalTime = 0;
         let totalTuples = 0;
-        if (event.evaluationStrategy !== "IN_LAYER") {
+        if (evaluationStrategy !== "IN_LAYER") {
           totalTime += event.millis;
         } else {
           // IN_LAYER events do no record of their total time.
