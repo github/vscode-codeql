@@ -1271,7 +1271,7 @@
     "@types/vscode": "^1.59.0",
     "@types/webpack": "^5.28.0",
     "@types/xml2js": "~0.4.4",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^4.26.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^1.8.7",
