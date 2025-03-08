@@ -11,28 +11,8 @@ import {
 } from "../../../../../src/databases/github-databases/api";
 import type { Credentials } from "../../../../../src/common/authentication";
 import type { Octokit } from "@octokit/rest";
-import { AppOctokit } from "../../../../../src/common/octokit";
 import { RequestError } from "@octokit/request-error";
 import { window } from "vscode";
-
-// Mock the AppOctokit constructor to ensure we aren't making any network requests
-jest.mock("../../../../../src/common/octokit", () => ({
-  AppOctokit: jest.fn(),
-}));
-const appMockListCodeqlDatabases = mockedOctokitFunction<
-  "codeScanning",
-  "listCodeqlDatabases"
->();
-const appOctokit = mockedObject<Octokit>({
-  rest: {
-    codeScanning: {
-      listCodeqlDatabases: appMockListCodeqlDatabases,
-    },
-  },
-});
-beforeEach(() => {
-  (AppOctokit as unknown as jest.Mock).mockImplementation(() => appOctokit);
-});
 
 describe("listDatabases", () => {
   const owner = "github";
@@ -161,29 +141,59 @@ describe("listDatabases", () => {
   });
 
   describe("when the user does not have an access token", () => {
-    describe("when the repo is public", () => {
-      beforeEach(() => {
-        credentials = mockedObject<Credentials>({
-          getExistingAccessToken: () => undefined,
-        });
+    beforeEach(() => {
+      credentials = mockedObject<Credentials>({
+        getExistingAccessToken: () => undefined,
+        getOctokit: () => octokit,
+      });
+    });
 
-        mockListCodeqlDatabases.mockResolvedValue(undefined);
-        appMockListCodeqlDatabases.mockResolvedValue(successfulMockApiResponse);
+    describe("when answering connect to prompt", () => {
+      beforeEach(() => {
+        showNeverAskAgainDialogSpy.mockResolvedValue("Connect");
       });
 
       it("returns the databases", async () => {
         const result = await listDatabases(owner, repo, credentials, config);
         expect(result).toEqual({
           databases,
-          promptedForCredentials: false,
-          octokit: appOctokit,
+          promptedForCredentials: true,
+          octokit,
         });
-        expect(showNeverAskAgainDialogSpy).not.toHaveBeenCalled();
+        expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
+        expect(mockListCodeqlDatabases).toHaveBeenCalled();
+      });
+
+      describe("when the request fails with a 404", () => {
+        beforeEach(() => {
+          mockListCodeqlDatabases.mockRejectedValue(
+            new RequestError("Not found", 404, {
+              request: {
+                method: "GET",
+                url: "",
+                headers: {},
+              },
+              response: {
+                status: 404,
+                headers: {},
+                url: "",
+                data: {},
+                retryCount: 0,
+              },
+            }),
+          );
+        });
+
+        it("throws an error", async () => {
+          await expect(
+            listDatabases(owner, repo, credentials, config),
+          ).rejects.toThrow("Not found");
+        });
       });
 
       describe("when the request fails with a 500", () => {
         beforeEach(() => {
-          appMockListCodeqlDatabases.mockRejectedValue(
+          mockListCodeqlDatabases.mockRejectedValue(
             new RequestError("Internal server error", 500, {
               request: {
                 method: "GET",
@@ -205,151 +215,49 @@ describe("listDatabases", () => {
           await expect(
             listDatabases(owner, repo, credentials, config),
           ).rejects.toThrow("Internal server error");
-          expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
         });
       });
     });
 
-    describe("when the repo is private", () => {
+    describe("when cancelling prompt", () => {
       beforeEach(() => {
-        credentials = mockedObject<Credentials>({
-          getExistingAccessToken: () => undefined,
-          getOctokit: () => octokit,
-        });
-
-        appMockListCodeqlDatabases.mockRejectedValue(
-          new RequestError("Not found", 404, {
-            request: {
-              method: "GET",
-              url: "",
-              headers: {},
-            },
-            response: {
-              status: 404,
-              headers: {},
-              url: "",
-              data: {},
-              retryCount: 0,
-            },
-          }),
-        );
+        showNeverAskAgainDialogSpy.mockResolvedValue(undefined);
       });
 
-      describe("when answering connect to prompt", () => {
-        beforeEach(() => {
-          showNeverAskAgainDialogSpy.mockResolvedValue("Connect");
-        });
+      it("returns undefined", async () => {
+        const result = await listDatabases(owner, repo, credentials, config);
+        expect(result).toEqual(undefined);
+        expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
+        expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
+        expect(setDownload).not.toHaveBeenCalled();
+      });
+    });
 
-        it("returns the databases", async () => {
-          const result = await listDatabases(owner, repo, credentials, config);
-          expect(result).toEqual({
-            databases,
-            promptedForCredentials: true,
-            octokit,
-          });
-          expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
-          expect(appMockListCodeqlDatabases).toHaveBeenCalled();
-          expect(mockListCodeqlDatabases).toHaveBeenCalled();
-        });
-
-        describe("when the request fails with a 404", () => {
-          beforeEach(() => {
-            mockListCodeqlDatabases.mockRejectedValue(
-              new RequestError("Not found", 404, {
-                request: {
-                  method: "GET",
-                  url: "",
-                  headers: {},
-                },
-                response: {
-                  status: 404,
-                  headers: {},
-                  url: "",
-                  data: {},
-                  retryCount: 0,
-                },
-              }),
-            );
-          });
-
-          it("throws an error", async () => {
-            await expect(
-              listDatabases(owner, repo, credentials, config),
-            ).rejects.toThrow("Not found");
-          });
-        });
-
-        describe("when the request fails with a 500", () => {
-          beforeEach(() => {
-            mockListCodeqlDatabases.mockRejectedValue(
-              new RequestError("Internal server error", 500, {
-                request: {
-                  method: "GET",
-                  url: "",
-                  headers: {},
-                },
-                response: {
-                  status: 500,
-                  headers: {},
-                  url: "",
-                  data: {},
-                  retryCount: 0,
-                },
-              }),
-            );
-          });
-
-          it("throws an error", async () => {
-            await expect(
-              listDatabases(owner, repo, credentials, config),
-            ).rejects.toThrow("Internal server error");
-          });
-        });
+    describe("when answering not now to prompt", () => {
+      beforeEach(() => {
+        showNeverAskAgainDialogSpy.mockResolvedValue("Not now");
       });
 
-      describe("when cancelling prompt", () => {
-        beforeEach(() => {
-          showNeverAskAgainDialogSpy.mockResolvedValue(undefined);
-        });
+      it("returns undefined", async () => {
+        const result = await listDatabases(owner, repo, credentials, config);
+        expect(result).toEqual(undefined);
+        expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
+        expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
+        expect(setDownload).not.toHaveBeenCalled();
+      });
+    });
 
-        it("returns undefined", async () => {
-          const result = await listDatabases(owner, repo, credentials, config);
-          expect(result).toEqual(undefined);
-          expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
-          expect(appMockListCodeqlDatabases).toHaveBeenCalled();
-          expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
-          expect(setDownload).not.toHaveBeenCalled();
-        });
+    describe("when answering never to prompt", () => {
+      beforeEach(() => {
+        showNeverAskAgainDialogSpy.mockResolvedValue("Never");
       });
 
-      describe("when answering not now to prompt", () => {
-        beforeEach(() => {
-          showNeverAskAgainDialogSpy.mockResolvedValue("Not now");
-        });
-
-        it("returns undefined", async () => {
-          const result = await listDatabases(owner, repo, credentials, config);
-          expect(result).toEqual(undefined);
-          expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
-          expect(appMockListCodeqlDatabases).toHaveBeenCalled();
-          expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
-          expect(setDownload).not.toHaveBeenCalled();
-        });
-      });
-
-      describe("when answering never to prompt", () => {
-        beforeEach(() => {
-          showNeverAskAgainDialogSpy.mockResolvedValue("Never");
-        });
-
-        it("returns undefined and sets the config to 'never'", async () => {
-          const result = await listDatabases(owner, repo, credentials, config);
-          expect(result).toEqual(undefined);
-          expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
-          expect(appMockListCodeqlDatabases).toHaveBeenCalled();
-          expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
-          expect(setDownload).toHaveBeenCalledWith("never");
-        });
+      it("returns undefined and sets the config to 'never'", async () => {
+        const result = await listDatabases(owner, repo, credentials, config);
+        expect(result).toEqual(undefined);
+        expect(showNeverAskAgainDialogSpy).toHaveBeenCalled();
+        expect(mockListCodeqlDatabases).not.toHaveBeenCalled();
+        expect(setDownload).toHaveBeenCalledWith("never");
       });
     });
   });

@@ -1,11 +1,8 @@
-import { RequestError } from "@octokit/request-error";
 import type { Octokit } from "@octokit/rest";
 import type { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import type { GitHubDatabaseConfig } from "../../config";
-import { hasGhecDrUri } from "../../config";
 import type { Credentials } from "../../common/authentication";
-import { AppOctokit } from "../../common/octokit";
 import type { ProgressCallback } from "../../common/vscode/progress";
 import { getErrorMessage } from "../../common/helpers-pure";
 import { getLanguageDisplayName } from "../../common/query-language";
@@ -68,52 +65,21 @@ export async function listDatabases(
   credentials: Credentials,
   config: GitHubDatabaseConfig,
 ): Promise<ListDatabasesResult | undefined> {
-  // On GHEC-DR, unauthenticated requests will never work, so we should always ask
-  // for authentication.
-  const hasAccessToken =
-    !!(await credentials.getExistingAccessToken()) || hasGhecDrUri();
+  const hasAccessToken = !!(await credentials.getExistingAccessToken());
 
-  let octokit = hasAccessToken
-    ? await credentials.getOctokit()
-    : new AppOctokit();
-
-  let promptedForCredentials = false;
-
-  let databases: CodeqlDatabase[];
-  try {
-    const response = await octokit.rest.codeScanning.listCodeqlDatabases({
-      owner,
-      repo,
-    });
-    databases = response.data;
-  } catch (e) {
-    // If we get a 404 when we don't have an access token, it might be because
-    // the repository is private/internal. Therefore, we should ask the user
-    // whether they want to connect to GitHub and try again.
-    if (e instanceof RequestError && e.status === 404 && !hasAccessToken) {
-      // Check whether the user wants to connect to GitHub
-      if (!(await askForGitHubConnect(config))) {
-        return;
-      }
-
-      // Prompt for credentials
-      octokit = await credentials.getOctokit();
-
-      promptedForCredentials = true;
-
-      const response = await octokit.rest.codeScanning.listCodeqlDatabases({
-        owner,
-        repo,
-      });
-      databases = response.data;
-    } else {
-      throw e;
-    }
+  if (!hasAccessToken && !(await askForGitHubConnect(config))) {
+    return undefined;
   }
+  const octokit = await credentials.getOctokit();
+
+  const response = await octokit.rest.codeScanning.listCodeqlDatabases({
+    owner,
+    repo,
+  });
 
   return {
-    promptedForCredentials,
-    databases,
+    promptedForCredentials: !hasAccessToken,
+    databases: response.data,
     octokit,
   };
 }
