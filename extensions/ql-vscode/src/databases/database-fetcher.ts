@@ -28,11 +28,8 @@ import {
   allowHttp,
   downloadTimeout,
   getGitHubInstanceUrl,
-  hasGhecDrUri,
-  isCanary,
 } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
-import { AppOctokit } from "../common/octokit";
 import type { DatabaseOrigin } from "./local-databases/database-origin";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import type { App } from "../common/app";
@@ -187,12 +184,7 @@ export class DatabaseFetcher {
       throw new Error(`Invalid GitHub repository: ${githubRepo}`);
     }
 
-    const credentials =
-      isCanary() || hasGhecDrUri() ? this.app.credentials : undefined;
-
-    const octokit = credentials
-      ? await credentials.getOctokit()
-      : new AppOctokit();
+    const octokit = await this.app.credentials.getOctokit();
 
     const result = await convertGithubNwoToDatabaseUrl(
       nwo,
