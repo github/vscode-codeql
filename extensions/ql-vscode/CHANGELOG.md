@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Always authenticate when downloading databases from github, instead of only when in canary mode. [#3941](https://github.com/github/vscode-codeql/pull/3941)
+- Always authenticate when downloading databases from GitHub, instead of only when in canary mode. [#3941](https://github.com/github/vscode-codeql/pull/3941)
 
 ## 1.17.1 - 23 January 2025
 
