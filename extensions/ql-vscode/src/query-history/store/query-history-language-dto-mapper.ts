@@ -6,6 +6,8 @@ export function mapQueryLanguageToDomainModel(
   language: QueryLanguageDto,
 ): QueryLanguage {
   switch (language) {
+    case QueryLanguageDto.Actions:
+      return QueryLanguage.Actions;
     case QueryLanguageDto.CSharp:
       return QueryLanguage.CSharp;
     case QueryLanguageDto.Cpp:

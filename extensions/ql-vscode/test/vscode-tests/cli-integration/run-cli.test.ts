@@ -16,7 +16,7 @@ import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
 import type { BaseLogger } from "../../../src/common/logging";
 import { getQlPackForDbscheme } from "../../../src/databases/qlpack";
-import { dbSchemeToLanguage } from "../../../src/common/query-language";
+import { languageToDbScheme } from "../../../src/common/query-language";
 
 /**
  * Perform proper integration tests by running the CLI
@@ -26,14 +26,6 @@ describe("Use cli", () => {
   let supportedLanguages: string[];
 
   let logSpy: jest.SpiedFunction<BaseLogger["log"]>;
-
-  const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
-    (acc, [k, v]) => {
-      acc[v] = k;
-      return acc;
-    },
-    {} as { [k: string]: string },
-  );
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();
@@ -107,10 +99,15 @@ describe("Use cli", () => {
   itWithCodeQL()(
     "should resolve printAST queries for supported languages",
     async () => {
-      for (const lang of supportedLanguages) {
+      for (let lang of supportedLanguages) {
         if (lang === "go") {
           // The codeql-go submodule is not available in the integration tests.
           return;
+        }
+
+        if (lang === "actions") {
+          // The actions queries use the javascript dbscheme.
+          lang = "javascript";
         }
 
         console.log(`resolving printAST queries for ${lang}`);

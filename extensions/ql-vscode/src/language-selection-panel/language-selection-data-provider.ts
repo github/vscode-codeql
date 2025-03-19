@@ -9,6 +9,7 @@ import {
 
 const ALL_LANGUAGE_SELECTION_OPTIONS = [
   undefined, // All languages
+  QueryLanguage.Actions,
   QueryLanguage.Cpp,
   QueryLanguage.CSharp,
   QueryLanguage.Go,
