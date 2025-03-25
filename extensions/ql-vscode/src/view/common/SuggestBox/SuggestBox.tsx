@@ -14,7 +14,7 @@ import {
   useRole,
 } from "@floating-ui/react";
 import { css, styled } from "styled-components";
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
+import { VscodeTextfield } from "@vscode-elements/react-elements";
 import type { Option } from "./options";
 import { findMatchingOptions } from "./options";
 import { SuggestBoxItem } from "./SuggestBoxItem";
@@ -22,7 +22,7 @@ import { LabelText } from "./LabelText";
 import type { Diagnostic } from "./diagnostics";
 import { useOpenKey } from "./useOpenKey";
 
-const Input = styled(VSCodeTextField)<{ $error: boolean }>`
+const Input = styled(VscodeTextfield)<{ $error: boolean }>`
   width: 100%;
   font-family: var(--vscode-editor-font-family);
 
@@ -96,7 +96,7 @@ export type SuggestBoxProps<
 
   /**
    * Can be used to render a different component for the input. This is used
-   * in testing to use default HTML components rather than the VSCodeTextField
+   * in testing to use default HTML components rather than the VscodeTextField
    * for easier testing.
    * @param props The props returned by `getReferenceProps` of {@link useInteractions}
    */
