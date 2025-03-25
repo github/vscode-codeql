@@ -1,5 +1,6 @@
 import type { Meta, StoryFn } from "@storybook/react";
-import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton } from "@vscode-elements/react-elements";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { Alert } from "../../view/common";
@@ -84,8 +85,8 @@ ErrorWithButtons.args = {
     "Request to https://api.github.com/repos/octodemo/Hello-World/code-scanning/codeql/queries failed. Try running this query again.",
   actions: (
     <>
-      <VSCodeButton appearance="secondary">View actions logs</VSCodeButton>
-      <VSCodeButton>Retry</VSCodeButton>
+      <VscodeButton appearance="secondary">View actions logs</VscodeButton>
+      <VscodeButton>Retry</VscodeButton>
     </>
   ),
 };

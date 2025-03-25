@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ToModelEditorMessage } from "../../common/interface-types";
-import {
-  VSCodeButton,
-  VSCodeCheckbox,
-  VSCodeTag,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodeCheckbox, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton } from "@vscode-elements/react-elements";
 import { styled } from "styled-components";
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
@@ -334,27 +331,27 @@ export function ModelEditor({
           </HeaderRow>
           <HeaderRow>
             <ButtonsContainer>
-              <VSCodeButton
+              <VscodeButton
                 onClick={onSaveAllClick}
                 disabled={modifiedSignatures.size === 0}
               >
                 {selectedSignatures.size === 0 ? "Save all" : "Save selected"}
-              </VSCodeButton>
-              <VSCodeButton
+              </VscodeButton>
+              <VscodeButton
                 appearance="secondary"
                 onClick={onDeselectAllClick}
                 disabled={selectedSignatures.size === 0}
               >
                 Deselect all
-              </VSCodeButton>
-              <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+              </VscodeButton>
+              <VscodeButton appearance="secondary" onClick={onRefreshClick}>
                 Refresh
-              </VSCodeButton>
+              </VscodeButton>
               {viewState.showGenerateButton &&
                 viewState.mode === Mode.Framework && (
-                  <VSCodeButton onClick={onGenerateFromSourceClick}>
+                  <VscodeButton onClick={onGenerateFromSourceClick}>
                     Generate
-                  </VSCodeButton>
+                  </VscodeButton>
                 )}
               <ModelEvaluation
                 viewState={viewState}

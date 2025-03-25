@@ -1,8 +1,5 @@
-import {
-  VSCodeBadge,
-  VSCodeButton,
-  VSCodeLink,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodeBadge, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton } from "@vscode-elements/react-elements";
 import {
   forwardRef,
   useCallback,
@@ -63,7 +60,7 @@ const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
 `;
 
-const CodiconRow = styled(VSCodeButton)`
+const CodiconRow = styled(VscodeButton)`
   min-height: calc(var(--input-height) * 1px);
   align-items: center;
 `;
