@@ -79,6 +79,7 @@ describe("SkeletonQueryWizard", () => {
         .fn()
         .mockResolvedValue([
           "ruby",
+          "rust",
           "javascript",
           "go",
           "java",

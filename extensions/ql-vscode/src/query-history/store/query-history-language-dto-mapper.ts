@@ -20,6 +20,8 @@ export function mapQueryLanguageToDomainModel(
       return QueryLanguage.Python;
     case QueryLanguageDto.Ruby:
       return QueryLanguage.Ruby;
+    case QueryLanguageDto.Rust:
+      return QueryLanguage.Rust;
     case QueryLanguageDto.Swift:
       return QueryLanguage.Swift;
     default:

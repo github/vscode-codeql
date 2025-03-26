@@ -20,6 +20,8 @@ export function mapQueryLanguageToDto(
       return QueryLanguageDto.Python;
     case QueryLanguage.Ruby:
       return QueryLanguageDto.Ruby;
+    case QueryLanguage.Rust:
+      return QueryLanguageDto.Rust;
     case QueryLanguage.Swift:
       return QueryLanguageDto.Swift;
     default:

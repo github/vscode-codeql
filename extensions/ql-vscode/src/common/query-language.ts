@@ -6,6 +6,7 @@ export enum QueryLanguage {
   Javascript = "javascript",
   Python = "python",
   Ruby = "ruby",
+  Rust = "rust",
   Swift = "swift",
 }
 
@@ -25,6 +26,8 @@ export function getLanguageDisplayName(language: string): string {
       return "Python";
     case QueryLanguage.Ruby:
       return "Ruby";
+    case QueryLanguage.Rust:
+      return "Rust";
     case QueryLanguage.Swift:
       return "Swift";
     default:
@@ -43,6 +46,7 @@ export const PACKS_BY_QUERY_LANGUAGE = {
   [QueryLanguage.Javascript]: ["codeql/javascript-queries"],
   [QueryLanguage.Python]: ["codeql/python-queries"],
   [QueryLanguage.Ruby]: ["codeql/ruby-queries"],
+  [QueryLanguage.Rust]: ["codeql/rust-queries"],
 };
 
 export const dbSchemeToLanguage: Record<string, QueryLanguage> = {
@@ -53,6 +57,7 @@ export const dbSchemeToLanguage: Record<string, QueryLanguage> = {
   "semmlecode.csharp.dbscheme": QueryLanguage.CSharp,
   "go.dbscheme": QueryLanguage.Go,
   "ruby.dbscheme": QueryLanguage.Ruby,
+  "rust.dbscheme": QueryLanguage.Rust,
   "swift.dbscheme": QueryLanguage.Swift,
 };
 
