@@ -52,32 +52,26 @@ describe(MultipleModeledMethodsPanel.name, () => {
       ).toHaveValue("none");
     });
 
-    it("disables all pagination", () => {
+    it("disables all pagination", async () => {
       render();
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeDisabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeDisabled();
+      const prevButton = await screen.findByLabelText("Previous modeling");
+      const nextButton = await screen.findByLabelText("Next modeling");
+
+      expect(prevButton).toBeDisabled();
+      expect(nextButton).toBeDisabled();
       expect(screen.queryByText("0/0")).not.toBeInTheDocument();
       expect(screen.queryByText("1/0")).not.toBeInTheDocument();
     });
 
-    it("cannot add or delete modeling", () => {
+    it("cannot add or delete modeling", async () => {
       render();
 
-      expect(
-        screen
-          .getByLabelText("Delete modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeDisabled();
-      expect(
-        screen.getByLabelText("Add modeling").getElementsByTagName("input")[0],
-      ).toBeDisabled();
+      const deleteButton = await screen.findByLabelText("Delete modeling");
+      const addButton = await screen.findByLabelText("Add modeling");
+
+      expect(deleteButton).toBeDisabled();
+      expect(addButton).toBeDisabled();
     });
   });
 
@@ -104,28 +98,22 @@ describe(MultipleModeledMethodsPanel.name, () => {
       ).toHaveValue("sink");
     });
 
-    it("disables all pagination", () => {
+    it("disables all pagination", async () => {
       render();
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeDisabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeDisabled();
+      const prevButton = await screen.findByLabelText("Previous modeling");
+      const nextButton = await screen.findByLabelText("Next modeling");
+
+      expect(prevButton).toBeDisabled();
+      expect(nextButton).toBeDisabled();
       expect(screen.queryByText("1/1")).not.toBeInTheDocument();
     });
 
-    it("cannot delete modeling", () => {
+    it("cannot delete modeling", async () => {
       render();
 
-      expect(
-        screen
-          .getByLabelText("Delete modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeDisabled();
+      const deleteButton = await screen.findByLabelText("Delete modeling");
+      expect(deleteButton).toBeDisabled();
     });
 
     it("can add modeling", async () => {
@@ -199,37 +187,26 @@ describe(MultipleModeledMethodsPanel.name, () => {
     it("disables the correct pagination", async () => {
       render();
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeDisabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeEnabled();
+      const prevButton = await screen.findByLabelText("Previous modeling");
+      const nextButton = await screen.findByLabelText("Next modeling");
+
+      expect(prevButton).toBeDisabled();
+      expect(nextButton).toBeEnabled();
     });
 
     it("can use the pagination", async () => {
       render();
 
-      await userEvent.click(screen.getByLabelText("Next modeling"));
+      const prevButton = await screen.findByLabelText("Previous modeling");
+      const nextButton = await screen.findByLabelText("Next modeling");
 
+      await userEvent.click(nextButton);
       await waitFor(() => {
-        expect(
-          screen
-            .getByLabelText("Previous modeling")
-            .getElementsByTagName("input")[0],
-        ).toBeEnabled();
+        expect(prevButton).toBeEnabled();
       });
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeEnabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeDisabled();
+      expect(prevButton).toBeEnabled();
+      expect(nextButton).toBeDisabled();
       expect(screen.getByText("2/2")).toBeInTheDocument();
 
       expect(
@@ -445,34 +422,20 @@ describe(MultipleModeledMethodsPanel.name, () => {
     it("can use the pagination", async () => {
       render();
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeDisabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeEnabled();
+      const prevButton = await screen.findByLabelText("Previous modeling");
+      const nextButton = await screen.findByLabelText("Next modeling");
+      expect(prevButton).toBeDisabled();
+      expect(nextButton).toBeEnabled();
       expect(screen.getByText("1/3")).toBeInTheDocument();
 
-      await userEvent.click(screen.getByLabelText("Next modeling"));
+      await userEvent.click(nextButton);
 
       await waitFor(() => {
-        expect(
-          screen
-            .getByLabelText("Previous modeling")
-            .getElementsByTagName("input")[0],
-        ).toBeEnabled();
+        expect(prevButton).toBeEnabled();
       });
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeEnabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeEnabled();
+      expect(prevButton).toBeEnabled();
+      expect(nextButton).toBeEnabled();
       expect(screen.getByText("2/3")).toBeInTheDocument();
 
       expect(
@@ -481,16 +444,10 @@ describe(MultipleModeledMethodsPanel.name, () => {
         }),
       ).toHaveValue("source");
 
-      await userEvent.click(screen.getByLabelText("Next modeling"));
+      await userEvent.click(nextButton);
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeEnabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeDisabled();
+      expect(prevButton).toBeEnabled();
+      expect(nextButton).toBeDisabled();
       expect(screen.getByText("3/3")).toBeInTheDocument();
 
       expect(
@@ -499,24 +456,14 @@ describe(MultipleModeledMethodsPanel.name, () => {
         }),
       ).toHaveValue("local");
 
-      await userEvent.click(screen.getByLabelText("Previous modeling"));
+      await userEvent.click(prevButton);
 
       await waitFor(() => {
-        expect(
-          screen
-            .getByLabelText("Next modeling")
-            .getElementsByTagName("input")[0],
-        ).toBeEnabled();
+        expect(nextButton).toBeEnabled();
       });
 
-      expect(
-        screen
-          .getByLabelText("Previous modeling")
-          .getElementsByTagName("input")[0],
-      ).toBeEnabled();
-      expect(
-        screen.getByLabelText("Next modeling").getElementsByTagName("input")[0],
-      ).toBeEnabled();
+      expect(prevButton).toBeEnabled();
+      expect(nextButton).toBeEnabled();
       expect(screen.getByText("2/3")).toBeInTheDocument();
 
       expect(
