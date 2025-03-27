@@ -521,12 +521,11 @@ describe(MultipleModeledMethodsPanel.name, () => {
 
     const render = createRender(modeledMethods);
 
-    it("can add modeling", () => {
+    it("can add modeling", async () => {
       render();
 
-      expect(
-        screen.getByLabelText("Add modeling").getElementsByTagName("input")[0],
-      ).toBeEnabled();
+      const addButton = await screen.findByLabelText("Add modeling");
+      expect(addButton).toBeEnabled();
     });
 
     it("can delete first modeling", async () => {
