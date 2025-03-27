@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.17.2 - 27 March 2025
 
 - Always authenticate when downloading databases from GitHub, instead of only when in canary mode. [#3941](https://github.com/github/vscode-codeql/pull/3941)
 
