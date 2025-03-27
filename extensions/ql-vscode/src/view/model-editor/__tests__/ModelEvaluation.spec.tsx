@@ -39,47 +39,47 @@ describe(ModelEvaluation.name, () => {
   });
 
   describe("when showEvaluationUi is true", () => {
-    it("renders evaluation UI with 'Evaluate' button enabled", () => {
+    it("renders evaluation UI with 'Evaluate' button enabled", async () => {
       render();
 
-      const evaluateButton = screen.queryByText("Evaluate");
+      const evaluateButton = await screen.findByText("Evaluate");
       expect(evaluateButton).toBeInTheDocument();
-      expect(evaluateButton?.getElementsByTagName("input")[0]).toBeEnabled();
+      expect(evaluateButton).toBeEnabled();
 
       expect(screen.queryByText("Stop evaluation")).not.toBeInTheDocument();
 
       expect(screen.queryByText("Evaluation run")).not.toBeInTheDocument();
     });
 
-    it("disables 'Evaluate' button when there are no custom models", () => {
+    it("disables 'Evaluate' button when there are no custom models", async () => {
       render({
         modeledMethods: {},
       });
 
-      const evaluateButton = screen.queryByText("Evaluate");
+      const evaluateButton = await screen.findByText("Evaluate");
       expect(evaluateButton).toBeInTheDocument();
-      expect(evaluateButton?.getElementsByTagName("input")[0]).toBeDisabled();
+      expect(evaluateButton).toBeDisabled();
 
       expect(screen.queryByText("Stop evaluation")).not.toBeInTheDocument();
 
       expect(screen.queryByText("Evaluation run")).not.toBeInTheDocument();
     });
 
-    it("disables 'Evaluate' button when there are unsaved changes", () => {
+    it("disables 'Evaluate' button when there are unsaved changes", async () => {
       render({
         modifiedSignatures: new Set([method.signature]),
       });
 
-      const evaluateButton = screen.queryByText("Evaluate");
+      const evaluateButton = await screen.findByText("Evaluate");
       expect(evaluateButton).toBeInTheDocument();
-      expect(evaluateButton?.getElementsByTagName("input")[0]).toBeDisabled();
+      expect(evaluateButton).toBeDisabled();
 
       expect(screen.queryByText("Stop evaluation")).not.toBeInTheDocument();
 
       expect(screen.queryByText("Evaluation run")).not.toBeInTheDocument();
     });
 
-    it("renders 'Evaluate' button and 'Evaluation run' link when there is a completed evaluation", () => {
+    it("renders 'Evaluate' button and 'Evaluation run' link when there is a completed evaluation", async () => {
       render({
         evaluationRun: {
           isPreparing: false,
@@ -89,16 +89,16 @@ describe(ModelEvaluation.name, () => {
         },
       });
 
-      const evaluateButton = screen.queryByText("Evaluate");
+      const evaluateButton = await screen.findByText("Evaluate");
       expect(evaluateButton).toBeInTheDocument();
-      expect(evaluateButton?.getElementsByTagName("input")[0]).toBeEnabled();
+      expect(evaluateButton).toBeEnabled();
 
       expect(screen.queryByText("Evaluation run")).toBeInTheDocument();
 
       expect(screen.queryByText("Stop evaluation")).not.toBeInTheDocument();
     });
 
-    it("renders 'Stop evaluation' button when there is an in progress evaluation, but no variant analysis yet", () => {
+    it("renders 'Stop evaluation' button when there is an in progress evaluation, but no variant analysis yet", async () => {
       render({
         evaluationRun: {
           isPreparing: true,
@@ -106,18 +106,16 @@ describe(ModelEvaluation.name, () => {
         },
       });
 
-      const stopEvaluationButton = screen.queryByText("Stop evaluation");
+      const stopEvaluationButton = await screen.findByText("Stop evaluation");
       expect(stopEvaluationButton).toBeInTheDocument();
-      expect(
-        stopEvaluationButton?.getElementsByTagName("input")[0],
-      ).toBeEnabled();
+      expect(stopEvaluationButton).toBeEnabled();
 
       expect(screen.queryByText("Evaluation run")).not.toBeInTheDocument();
 
       expect(screen.queryByText("Evaluate")).not.toBeInTheDocument();
     });
 
-    it("renders 'Stop evaluation' button and 'Evaluation run' link when there is an in progress evaluation with variant analysis", () => {
+    it("renders 'Stop evaluation' button and 'Evaluation run' link when there is an in progress evaluation with variant analysis", async () => {
       render({
         evaluationRun: {
           isPreparing: false,
@@ -127,11 +125,9 @@ describe(ModelEvaluation.name, () => {
         },
       });
 
-      const stopEvaluationButton = screen.queryByText("Stop evaluation");
+      const stopEvaluationButton = await screen.findByText("Stop evaluation");
       expect(stopEvaluationButton).toBeInTheDocument();
-      expect(
-        stopEvaluationButton?.getElementsByTagName("input")[0],
-      ).toBeEnabled();
+      expect(stopEvaluationButton).toBeEnabled();
 
       expect(screen.queryByText("Evaluation run")).toBeInTheDocument();
 
