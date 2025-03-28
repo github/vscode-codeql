@@ -16,6 +16,7 @@ const ALL_LANGUAGE_SELECTION_OPTIONS = [
   QueryLanguage.Javascript,
   QueryLanguage.Python,
   QueryLanguage.Ruby,
+  QueryLanguage.Rust,
   QueryLanguage.Swift,
 ];
 

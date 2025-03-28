@@ -21,5 +21,6 @@ export enum QueryLanguageDto {
   Javascript = "javascript",
   Python = "python",
   Ruby = "ruby",
+  Rust = "rust",
   Swift = "swift",
 }
