@@ -64,6 +64,7 @@ export class HistoryItemLabelProvider {
     const rawLabel =
       item.userSpecifiedLabel ?? (this.config.format || "${queryName}");
 
+    legacyLabelRegex.lastIndex = 0; // Reset the regex index to start searching from the start of the string if the strings are the same
     if (legacyLabelRegex.test(rawLabel)) {
       return this.legacyInterpolate(rawLabel, variables);
     }
