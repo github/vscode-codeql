@@ -1,4 +1,4 @@
-import { render as reactRender, screen } from "@testing-library/react";
+import { render as reactRender, screen, waitFor } from "@testing-library/react";
 import type { Props } from "../ModelEvaluation";
 import { ModelEvaluation } from "../ModelEvaluation";
 import { createMockModelEditorViewState } from "../../../../test/factories/model-editor/view-state";
@@ -58,7 +58,9 @@ describe(ModelEvaluation.name, () => {
 
       const evaluateButton = await screen.findByText("Evaluate");
       expect(evaluateButton).toBeInTheDocument();
-      expect(evaluateButton).toBeDisabled();
+      await waitFor(() => {
+        expect(evaluateButton).toBeDisabled();
+      });
 
       expect(screen.queryByText("Stop evaluation")).not.toBeInTheDocument();
 
@@ -72,7 +74,9 @@ describe(ModelEvaluation.name, () => {
 
       const evaluateButton = await screen.findByText("Evaluate");
       expect(evaluateButton).toBeInTheDocument();
-      expect(evaluateButton).toBeDisabled();
+      await waitFor(() => {
+        expect(evaluateButton).toBeDisabled();
+      });
 
       expect(screen.queryByText("Stop evaluation")).not.toBeInTheDocument();
 

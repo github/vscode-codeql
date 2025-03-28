@@ -2,6 +2,7 @@ import {
   getAllByRole,
   render as reactRender,
   screen,
+  waitFor,
 } from "@testing-library/react";
 import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import type { MethodRowProps } from "../MethodRow";
@@ -245,7 +246,9 @@ describe(MethodRow.name, () => {
 
     const addButton = await screen.findByLabelText("Add new model");
     expect(addButton).toBeInTheDocument();
-    expect(addButton).toBeDisabled();
+    await waitFor(() => {
+      expect(addButton).toBeDisabled();
+    });
 
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
@@ -257,7 +260,9 @@ describe(MethodRow.name, () => {
 
     const addButton = await screen.findByLabelText("Add new model");
     expect(addButton).toBeInTheDocument();
-    expect(addButton).toBeDisabled();
+    await waitFor(() => {
+      expect(addButton).toBeDisabled();
+    });
 
     expect(screen.queryByLabelText("Remove model")).not.toBeInTheDocument();
   });
