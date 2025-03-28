@@ -15,6 +15,12 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
+// Surpress warning from @vscode-elements about registering custom elements
+Object.defineProperty(window, "__vscodeElements_disableRegistryWarning__", {
+  writable: false,
+  value: true,
+});
+
 // Used by Primer React
 window.CSS.supports = jest.fn().mockResolvedValue(false);
 
