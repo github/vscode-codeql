@@ -45,6 +45,7 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
   javascript: "d3/d3",
   python: "pallets/flask",
   ruby: "jekyll/jekyll",
+  rust: "sharkdp/bat",
   swift: "Alamofire/Alamofire",
 };
 
