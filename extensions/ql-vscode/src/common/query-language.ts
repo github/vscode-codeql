@@ -1,4 +1,5 @@
 export enum QueryLanguage {
+  Actions = "actions",
   CSharp = "csharp",
   Cpp = "cpp",
   Go = "go",
@@ -12,6 +13,8 @@ export enum QueryLanguage {
 
 export function getLanguageDisplayName(language: string): string {
   switch (language) {
+    case QueryLanguage.Actions:
+      return "Actions";
     case QueryLanguage.CSharp:
       return "C#";
     case QueryLanguage.Cpp:
@@ -36,6 +39,7 @@ export function getLanguageDisplayName(language: string): string {
 }
 
 export const PACKS_BY_QUERY_LANGUAGE = {
+  [QueryLanguage.Actions]: ["codeql/actions-queries"],
   [QueryLanguage.Cpp]: ["codeql/cpp-queries"],
   [QueryLanguage.CSharp]: [
     "codeql/csharp-queries",
@@ -50,7 +54,7 @@ export const PACKS_BY_QUERY_LANGUAGE = {
 };
 
 export const dbSchemeToLanguage: Record<string, QueryLanguage> = {
-  "semmlecode.javascript.dbscheme": QueryLanguage.Javascript,
+  "semmlecode.javascript.dbscheme": QueryLanguage.Javascript, // This can also be QueryLanguage.Actions
   "semmlecode.cpp.dbscheme": QueryLanguage.Cpp,
   "semmlecode.dbscheme": QueryLanguage.Java,
   "semmlecode.python.dbscheme": QueryLanguage.Python,
@@ -60,6 +64,18 @@ export const dbSchemeToLanguage: Record<string, QueryLanguage> = {
   "rust.dbscheme": QueryLanguage.Rust,
   "swift.dbscheme": QueryLanguage.Swift,
 };
+
+export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
+  (acc, [k, v]) => {
+    acc[v] = k;
+    return acc;
+  },
+  {} as { [k: string]: string },
+);
+
+// Actions dbscheme is the same as Javascript dbscheme
+languageToDbScheme[QueryLanguage.Actions] =
+  languageToDbScheme[QueryLanguage.Javascript];
 
 export function isQueryLanguage(language: string): language is QueryLanguage {
   return Object.values(QueryLanguage).includes(language as QueryLanguage);
