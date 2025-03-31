@@ -12,6 +12,7 @@ function ignoreFile(file: string): boolean {
       join("test", "vscode-tests", "jest-runner-vscode-codeql-cli.ts"),
       file,
     ) ||
+    pathsEqual(join("src", "view", "jest-environment-jsdom.ts"), file) ||
     basename(file) === "jest.config.ts" ||
     basename(file) === "index.tsx" ||
     basename(file) === "index.ts" ||
