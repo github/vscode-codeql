@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import { formatDate } from "../../common/date";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
+import { Link } from "../common/Link";
 
 export type VariantAnalysisStatusStatsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -37,7 +37,7 @@ export const VariantAnalysisStatusStats = ({
         <span>{completedAt !== undefined ? formatDate(completedAt) : "-"}</span>
       )}
       {onViewLogsClick && (
-        <VSCodeLink onClick={onViewLogsClick}>View actions logs</VSCodeLink>
+        <Link onClick={onViewLogsClick}>View actions logs</Link>
       )}
     </Container>
   );

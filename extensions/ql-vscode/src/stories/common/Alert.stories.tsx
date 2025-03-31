@@ -1,8 +1,9 @@
 import type { Meta, StoryFn } from "@storybook/react";
-import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { Alert } from "../../view/common";
+import { Link } from "../../view/common/Link";
 
 export default {
   title: "Alert",
@@ -24,7 +25,7 @@ Warning.args = {
   title: "This query found a warning",
   message: (
     <>
-      Warning content with <VSCodeLink>links</VSCodeLink>
+      Warning content with <Link>links</Link>
     </>
   ),
 };
@@ -50,7 +51,7 @@ Error.args = {
   title: "This query found an error",
   message: (
     <>
-      Error content with <VSCodeLink>links</VSCodeLink>
+      Error content with <Link>links</Link>
     </>
   ),
 };
@@ -70,8 +71,7 @@ ErrorExample.args = {
     <>
       Request to
       https://api.github.com/repos/octodemo/Hello-World/code-scanning/codeql/queries
-      failed. <VSCodeLink>View actions logs</VSCodeLink> and try running this
-      query again.
+      failed. <Link>View actions logs</Link> and try running this query again.
     </>
   ),
 };

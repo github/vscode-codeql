@@ -1,10 +1,9 @@
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
-
 import type { CellValue } from "../../common/raw-result-types";
 import { sendTelemetry } from "../common/telemetry";
 import { convertNonPrintableChars } from "../../common/text-utils";
 import { tryGetRemoteLocation } from "../../common/bqrs-utils";
 import { RawNumberValue } from "../common/RawNumberValue";
+import { Link } from "../common/Link";
 
 type CellProps = {
   value: CellValue;
@@ -35,9 +34,9 @@ export const RawResultCell = ({
       const safeLabel = convertNonPrintableChars(value.value.label);
       if (url) {
         return (
-          <VSCodeLink onClick={sendRawResultsLinkTelemetry} href={url}>
+          <Link onClick={sendRawResultsLinkTelemetry} href={url}>
             {safeLabel}
-          </VSCodeLink>
+          </Link>
         );
       } else {
         return <span>{safeLabel}</span>;
