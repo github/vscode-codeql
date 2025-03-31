@@ -2098,7 +2098,7 @@
     "ts-node": "^10.9.2",
     "ts-unused-exports": "^10.1.0",
     "typescript": "^5.6.2",
-    "vite": "^6.2.3",
+    "vite": "^6.2.4",
     "vite-node": "^3.0.7"
   },
   "lint-staged": {
