@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { Link } from "../Link";
 
 import type {
   AnalysisMessage,
@@ -39,7 +39,7 @@ const CodeSnippetMessageContainer = styled.div<CodeSnippetMessageContainerProps>
   padding-bottom: 1em;
 `;
 
-const LocationLink = styled(VSCodeLink)`
+const LocationLink = styled(Link)`
   font-family: var(--vscode-editor-font-family);
 `;
 

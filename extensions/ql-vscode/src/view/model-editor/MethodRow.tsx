@@ -1,8 +1,4 @@
-import {
-  VSCodeBadge,
-  VSCodeButton,
-  VSCodeLink,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodeBadge, VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import {
   forwardRef,
   useCallback,
@@ -13,6 +9,7 @@ import {
 } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
+import { Link } from "../common/Link";
 
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
@@ -59,7 +56,7 @@ const UsagesButton = styled(VSCodeBadge)`
   cursor: pointer;
 `;
 
-const ViewLink = styled(VSCodeLink)`
+const ViewLink = styled(Link)`
   white-space: nowrap;
 `;
 

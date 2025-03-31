@@ -1,7 +1,7 @@
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
+import { Link } from "./Link";
 
-export const LinkIconButton = styled(VSCodeLink)`
+export const LinkIconButton = styled(Link)`
   .codicon {
     vertical-align: text-bottom;
   }
