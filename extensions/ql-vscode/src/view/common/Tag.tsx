@@ -1,10 +1,10 @@
 import { styled } from "styled-components";
 
-export const Tag = styled.div`
-  background-color: var(--vscode-badge-background);
-  border: 1px solid var(--vscode-button-border, transparent);
+export const Tag = styled.span`
+  background-color: #4d4d4d;
+  border: 1px solid transparent;
   border-radius: 2px;
-  color: var(--vscode-badge-foreground);
+  color: #ffffff;
   padding: 2px 4px;
   text-transform: uppercase;
   box-sizing: border-box;
