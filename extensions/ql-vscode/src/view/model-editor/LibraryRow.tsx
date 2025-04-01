@@ -7,14 +7,11 @@ import { calculateModeledPercentage } from "../../model-editor/shared/modeled-pe
 import { percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../model-editor/shared/mode";
-import {
-  VSCodeButton,
-  VSCodeDivider,
-  VSCodeTag,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
+import { Tag } from "../common/Tag";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -169,7 +166,7 @@ export const LibraryRow = ({
           <ModeledPercentage>
             {percentFormatter.format(modeledPercentage / 100)} modeled
           </ModeledPercentage>
-          {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
+          {hasUnsavedChanges ? <Tag>UNSAVED</Tag> : null}
         </NameContainer>
         {viewState.showGenerateButton &&
           viewState.mode === Mode.Application && (

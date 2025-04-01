@@ -4,7 +4,7 @@ import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator
 import type { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
-import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { Tag } from "../common/Tag";
 import { ReviewInEditorButton } from "./ReviewInEditorButton";
 import { MultipleModeledMethodsPanel } from "./MultipleModeledMethodsPanel";
 import type { QueryLanguage } from "../../common/query-language";
@@ -39,14 +39,12 @@ const DependencyContainer = styled.div`
   margin-bottom: 0.8rem;
 `;
 
-const StyledVSCodeTag = styled(VSCodeTag)<{ $visible: boolean }>`
+const StyledTag = styled(Tag)<{ $visible: boolean }>`
   visibility: ${(props) => (props.$visible ? "visible" : "hidden")};
 `;
 
 const UnsavedTag = ({ modelingStatus }: { modelingStatus: ModelingStatus }) => (
-  <StyledVSCodeTag $visible={modelingStatus === "unsaved"}>
-    Unsaved
-  </StyledVSCodeTag>
+  <StyledTag $visible={modelingStatus === "unsaved"}>Unsaved</StyledTag>
 );
 
 export type MethodModelingProps = {
