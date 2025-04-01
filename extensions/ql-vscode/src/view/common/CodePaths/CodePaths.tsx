@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { Link } from "../Link";
 
 import type {
   AnalysisMessage,
@@ -8,7 +8,7 @@ import type {
 } from "../../../variant-analysis/shared/analysis-result";
 import { vscode } from "../../vscode-api";
 
-const ShowPathsLink = styled(VSCodeLink)`
+const ShowPathsLink = styled(Link)`
   cursor: pointer;
 `;
 

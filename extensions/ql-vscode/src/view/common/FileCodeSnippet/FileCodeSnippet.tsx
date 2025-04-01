@@ -1,5 +1,4 @@
 import { styled } from "styled-components";
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
 import type {
   AnalysisMessage,
@@ -12,6 +11,7 @@ import { createRemoteFileRef } from "../../../common/location-link-utils";
 import { CodeSnippetMessage } from "./CodeSnippetMessage";
 import { CodeSnippetLine } from "./CodeSnippetLine";
 import { sendTelemetry } from "../telemetry";
+import { Link } from "../Link";
 
 const borderColor = "var(--vscode-editor-snippetFinalTabstopHighlightBorder)";
 
@@ -72,12 +72,9 @@ export const FileCodeSnippet = ({
     return (
       <Container>
         <TitleContainer>
-          <VSCodeLink
-            onClick={sendCodeSnippetTitleLinkTelemetry}
-            href={titleFileUri}
-          >
+          <Link onClick={sendCodeSnippetTitleLinkTelemetry} href={titleFileUri}>
             {fileLink.filePath}
-          </VSCodeLink>
+          </Link>
         </TitleContainer>
         {message && severity && (
           <CodeSnippetMessage message={message} severity={severity}>
@@ -93,12 +90,9 @@ export const FileCodeSnippet = ({
   return (
     <Container>
       <TitleContainer>
-        <VSCodeLink
-          onClick={sendCodeSnippetTitleLinkTelemetry}
-          href={titleFileUri}
-        >
+        <Link onClick={sendCodeSnippetTitleLinkTelemetry} href={titleFileUri}>
           {fileLink.filePath}
-        </VSCodeLink>
+        </Link>
       </TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (

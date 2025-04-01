@@ -1,11 +1,12 @@
 import { styled } from "styled-components";
-import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-evaluation-run-state";
 import { ModelEditorProgressRing } from "./ModelEditorProgressRing";
 import { LinkIconButton } from "../common/LinkIconButton";
+import { Link } from "../common/Link";
 
 export type Props = {
   viewState: ModelEditorViewState;
@@ -17,7 +18,7 @@ export type Props = {
   evaluationRun: ModelEvaluationRunState | undefined;
 };
 
-const RunLink = styled(VSCodeLink)`
+const RunLink = styled(Link)`
   display: flex;
   align-items: center;
 `;

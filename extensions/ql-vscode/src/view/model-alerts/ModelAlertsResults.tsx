@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
 import { Codicon } from "../common";
-import { VSCodeBadge, VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatDecimal } from "../../common/number";
 import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
@@ -10,6 +10,7 @@ import { ModelDetails } from "./ModelDetails";
 import { vscode } from "../vscode-api";
 import { createModeledMethodKey } from "../../model-editor/modeled-method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
+import { Link } from "../common/Link";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -39,7 +40,7 @@ const ModelTypeText = styled.span`
   color: var(--vscode-descriptionForeground);
 `;
 
-const ViewLink = styled(VSCodeLink)`
+const ViewLink = styled(Link)`
   white-space: nowrap;
   padding: 0 0 0.25em 1em;
 `;

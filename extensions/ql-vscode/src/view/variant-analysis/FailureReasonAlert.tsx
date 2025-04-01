@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import { Alert } from "../common";
 import { vscode } from "../vscode-api";
 import { VariantAnalysisFailureReason } from "../../variant-analysis/shared/variant-analysis";
+import { Link } from "../common/Link";
 
 type Props = {
   failureReason: VariantAnalysisFailureReason;
@@ -33,8 +33,8 @@ const getMessage = (failureReason: VariantAnalysisFailureReason): ReactNode => {
       return (
         <>
           The GitHub Actions workflow run has failed.{" "}
-          <VSCodeLink onClick={openLogs}>View actions logs</VSCodeLink> and try
-          running this query again.
+          <Link onClick={openLogs}>View actions logs</Link> and try running this
+          query again.
         </>
       );
     case VariantAnalysisFailureReason.InternalError:
