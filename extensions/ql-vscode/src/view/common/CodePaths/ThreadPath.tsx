@@ -1,5 +1,5 @@
 import { styled } from "styled-components";
-import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { Tag } from "../Tag";
 
 import type {
   AnalysisMessage,
@@ -56,12 +56,12 @@ export const ThreadPath = ({
       </TitleContainer>
       {isSource && (
         <TagContainer>
-          <VSCodeTag>Source</VSCodeTag>
+          <Tag>Source</Tag>
         </TagContainer>
       )}
       {isSink && (
         <TagContainer>
-          <VSCodeTag>Sink</VSCodeTag>
+          <Tag>Sink</Tag>
         </TagContainer>
       )}
     </HeaderContainer>

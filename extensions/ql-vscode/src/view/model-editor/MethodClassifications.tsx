@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import type { Method } from "../../model-editor/method";
 import { CallClassification } from "../../model-editor/method";
-import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
+import { Tag } from "../common/Tag";
 
 const ClassificationsContainer = styled.div`
   display: inline-flex;
@@ -10,7 +10,7 @@ const ClassificationsContainer = styled.div`
   gap: 0.5rem;
 `;
 
-const ClassificationTag = styled(VSCodeTag)`
+const ClassificationTag = styled(Tag)`
   font-size: 0.75em;
   white-space: nowrap;
 `;
