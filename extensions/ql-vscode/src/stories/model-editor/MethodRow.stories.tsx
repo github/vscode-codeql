@@ -112,6 +112,7 @@ Source.args = {
   modeledMethods: [{ ...modeledMethod, type: "source" }],
   methodCanBeModeled: true,
   viewState,
+  onChange: () => {},
 };
 
 export const Sink = Template.bind({});
@@ -120,6 +121,7 @@ Sink.args = {
   modeledMethods: [{ ...modeledMethod, type: "sink" }],
   methodCanBeModeled: true,
   viewState,
+  onChange: () => {},
 };
 
 export const Summary = Template.bind({});
@@ -136,6 +138,7 @@ Neutral.args = {
   modeledMethods: [{ ...modeledMethod, type: "neutral" }],
   methodCanBeModeled: true,
   viewState,
+  onChange: () => {},
 };
 
 export const AlreadyModeled = Template.bind({});
@@ -155,6 +158,7 @@ MultipleModelings.args = {
   ],
   methodCanBeModeled: true,
   viewState,
+  onChange: () => {},
 };
 
 export const ValidationError = Template.bind({});
@@ -166,6 +170,7 @@ ValidationError.args = {
   ],
   methodCanBeModeled: true,
   viewState,
+  onChange: () => {},
 };
 
 export const MultipleValidationErrors = Template.bind({});
@@ -180,4 +185,5 @@ MultipleValidationErrors.args = {
   ],
   methodCanBeModeled: true,
   viewState,
+  onChange: () => {},
 };
