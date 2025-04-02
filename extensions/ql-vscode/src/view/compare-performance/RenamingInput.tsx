@@ -1,7 +1,6 @@
 import type { ChangeEvent } from "react";
 import { styled } from "styled-components";
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
-import { VscodeButton } from "@vscode-elements/react-elements";
+import { VscodeButton, VscodeTextfield } from "@vscode-elements/react-elements";
 import { Codicon } from "../common";
 
 export class Renaming {
@@ -23,7 +22,7 @@ function tryCompilePattern(pattern: string): RegExp | undefined {
   }
 }
 
-const Input = styled(VSCodeTextField)`
+const Input = styled(VscodeTextfield)`
   width: 20em;
 `;
 

@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 import { styled } from "styled-components";
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
+import { VscodeTextfield } from "@vscode-elements/react-elements";
 import { Codicon } from "./icon";
 
-const TextField = styled(VSCodeTextField)`
+const TextField = styled(VscodeTextfield)`
   width: 100%;
 `;
 
