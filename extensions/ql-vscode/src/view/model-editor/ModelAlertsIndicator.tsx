@@ -2,10 +2,10 @@ import { styled } from "styled-components";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
+import { VscodeBadge } from "@vscode-elements/react-elements";
 import { vscode } from "../vscode-api";
 
-const ModelAlertsButton = styled(VSCodeBadge)`
+const ModelAlertsButton = styled(VscodeBadge)`
   cursor: pointer;
 `;
 

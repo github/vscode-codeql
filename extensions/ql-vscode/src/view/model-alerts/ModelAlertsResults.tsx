@@ -1,7 +1,7 @@
 import { styled } from "styled-components";
 import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
 import { Codicon } from "../common";
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
+import { VscodeBadge } from "@vscode-elements/react-elements";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatDecimal } from "../../common/number";
 import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
@@ -103,7 +103,7 @@ export const ModelAlertsResults = ({
         {!isExpanded && (
           <ExpandCollapseCodicon name="chevron-right" label="Expand" />
         )}
-        <VSCodeBadge>{formatDecimal(modelAlerts.alerts.length)}</VSCodeBadge>
+        <VscodeBadge>{formatDecimal(modelAlerts.alerts.length)}</VscodeBadge>
         <MethodName {...modelAlerts.model}></MethodName>
         <ModelTypeText>{modelAlerts.model.type}</ModelTypeText>
         <ViewLink

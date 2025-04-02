@@ -1,5 +1,4 @@
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
-import { VscodeButton } from "@vscode-elements/react-elements";
+import { VscodeBadge, VscodeButton } from "@vscode-elements/react-elements";
 import {
   forwardRef,
   useCallback,
@@ -53,7 +52,7 @@ const ModelButtonsContainer = styled.div`
   gap: 1em;
 `;
 
-const UsagesButton = styled(VSCodeBadge)`
+const UsagesButton = styled(VscodeBadge)`
   cursor: pointer;
 `;
 

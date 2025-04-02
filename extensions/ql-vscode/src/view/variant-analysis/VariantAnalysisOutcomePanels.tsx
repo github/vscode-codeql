@@ -2,11 +2,11 @@ import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { styled } from "styled-components";
 import {
-  VSCodeBadge,
   VSCodePanels,
   VSCodePanelTab,
   VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react";
+import { VscodeBadge } from "@vscode-elements/react-elements";
 import { formatDecimal } from "../../common/number";
 import type {
   VariantAnalysis,
@@ -158,25 +158,25 @@ export const VariantAnalysisOutcomePanels = ({
         {scannedReposCount > 0 && (
           <Tab>
             Analyzed
-            <VSCodeBadge appearance="secondary">
+            <VscodeBadge appearance="secondary">
               {formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}
-            </VSCodeBadge>
+            </VscodeBadge>
           </Tab>
         )}
         {notFoundRepos?.repositoryCount && (
           <Tab>
             No access
-            <VSCodeBadge appearance="secondary">
+            <VscodeBadge appearance="secondary">
               {formatDecimal(notFoundRepos.repositoryCount)}
-            </VSCodeBadge>
+            </VscodeBadge>
           </Tab>
         )}
         {noCodeqlDbRepos?.repositoryCount && (
           <Tab>
             No database
-            <VSCodeBadge appearance="secondary">
+            <VscodeBadge appearance="secondary">
               {formatDecimal(noCodeqlDbRepos.repositoryCount)}
-            </VSCodeBadge>
+            </VscodeBadge>
           </Tab>
         )}
         {scannedReposCount > 0 && (

@@ -1,7 +1,8 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
-import { VSCodeBadge, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
+import { VscodeBadge } from "@vscode-elements/react-elements";
 import type { VariantAnalysisScannedRepositoryState } from "../../variant-analysis/shared/variant-analysis";
 import {
   isCompletedAnalysisRepoStatus,
@@ -269,9 +270,9 @@ export const RepoRow = ({
           <ExpandCollapseCodicon name="chevron-right" label="Expand" />
         )}
         {resultsLoading && <LoadingIcon label="Results are loading" />}
-        <VSCodeBadge>
+        <VscodeBadge>
           {resultCount === undefined ? "-" : formatDecimal(resultCount)}
-        </VSCodeBadge>
+        </VscodeBadge>
         <span>{repository.fullName}</span>
         <Visibility isPrivate={repository.private} />
         <span>

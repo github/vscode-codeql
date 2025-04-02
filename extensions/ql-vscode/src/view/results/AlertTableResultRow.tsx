@@ -13,7 +13,7 @@ import { SarifLocation } from "./locations/SarifLocation";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { AlertTablePathRow } from "./AlertTablePathRow";
 import type { UserSettings } from "../../common/interface-types";
-import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react";
+import { VscodeBadge } from "@vscode-elements/react-elements";
 
 export interface Props {
   result: Result;
@@ -109,7 +109,7 @@ export function AlertTableResultRow(props: Props) {
             />
             <td className="vscode-codeql__icon-cell">{listUnordered}</td>
             <td className="vscode-codeql__icon-cell">
-              <VSCodeBadge title="Shortest path">{shortestPath}</VSCodeBadge>
+              <VscodeBadge title="Shortest path">{shortestPath}</VscodeBadge>
             </td>
             <td colSpan={3}>{msg}</td>
           </>
