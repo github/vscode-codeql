@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ToModelEditorMessage } from "../../common/interface-types";
-import { VSCodeCheckbox, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton, VscodeCheckbox } from "@vscode-elements/react-elements";
 import { styled } from "styled-components";
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
@@ -18,7 +19,6 @@ import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { ModelEvaluation } from "./ModelEvaluation";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
-import { VscodeButton } from "@vscode-elements/react-elements";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -367,12 +367,12 @@ export function ModelEditor({
         </HeaderColumn>
         <HeaderSpacer />
         <HeaderColumn>
-          <VSCodeCheckbox
+          <VscodeCheckbox
             checked={hideModeledMethods}
             onChange={onHideModeledMethods}
           >
             Hide modeled methods
-          </VSCodeCheckbox>
+          </VscodeCheckbox>
         </HeaderColumn>
       </HeaderContainer>
 

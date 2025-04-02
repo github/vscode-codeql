@@ -1,8 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
-import { VscodeBadge } from "@vscode-elements/react-elements";
+import { VscodeBadge, VscodeCheckbox } from "@vscode-elements/react-elements";
 import type { VariantAnalysisScannedRepositoryState } from "../../variant-analysis/shared/variant-analysis";
 import {
   isCompletedAnalysisRepoStatus,
@@ -255,7 +254,7 @@ export const RepoRow = ({
         disabled={disabled}
         aria-expanded={isExpanded}
       >
-        <VSCodeCheckbox
+        <VscodeCheckbox
           onChange={onChangeCheckbox}
           onClick={onClickCheckbox}
           checked={selected}
