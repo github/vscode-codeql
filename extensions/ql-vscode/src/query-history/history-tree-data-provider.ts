@@ -138,12 +138,12 @@ export class HistoryTreeDataProvider
 
             const resultCount1 =
               h1.t === "local"
-                ? h1.completedQuery?.resultCount ?? -1
-                : h1.resultCount ?? -1;
+                ? (h1.completedQuery?.resultCount ?? -1)
+                : (h1.resultCount ?? -1);
             const resultCount2 =
               h2.t === "local"
-                ? h2.completedQuery?.resultCount ?? -1
-                : h2.resultCount ?? -1;
+                ? (h2.completedQuery?.resultCount ?? -1)
+                : (h2.resultCount ?? -1);
 
             switch (this.sortOrder) {
               case SortOrder.NameAsc:
