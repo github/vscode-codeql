@@ -69,7 +69,7 @@ export function getErrorMessage(e: unknown): string {
 }
 
 export function getErrorStack(e: unknown): string {
-  return e instanceof Error ? e.stack ?? "" : "";
+  return e instanceof Error ? (e.stack ?? "") : "";
 }
 
 export function asError(e: unknown): Error {
