@@ -2,11 +2,10 @@ import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { styled } from "styled-components";
 import {
-  VSCodePanels,
-  VSCodePanelTab,
-  VSCodePanelView,
-} from "@vscode/webview-ui-toolkit/react";
-import { VscodeBadge } from "@vscode-elements/react-elements";
+  VscodeTabHeader,
+  VscodeTabPanel,
+  VscodeTabs,
+} from "@vscode-elements/react-elements";
 import { formatDecimal } from "../../common/number";
 import type {
   VariantAnalysis,
@@ -21,6 +20,7 @@ import type { RepositoriesFilterSortState } from "../../variant-analysis/shared/
 import { RepositoriesSearchSortRow } from "./RepositoriesSearchSortRow";
 import { FailureReasonAlert } from "./FailureReasonAlert";
 import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
+import { Badge } from "../common/Badge";
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -34,8 +34,27 @@ export type VariantAnalysisOutcomePanelProps = {
   setFilterSortState: Dispatch<SetStateAction<RepositoriesFilterSortState>>;
 };
 
-const Tab = styled(VSCodePanelTab)`
+const Tabs = styled(VscodeTabs)`
+  column-gap: 32px;
+
+  > vscode-tab-header {
+    margin-right: 32px;
+  }
+`;
+
+const TabHeader = styled(VscodeTabHeader)`
   text-transform: uppercase;
+
+  > * {
+    // This copies the styles from VSCodePanelTab
+    &:last-child {
+      margin-left: 8px;
+    }
+  }
+`;
+
+const TabPanel = styled(VscodeTabPanel)`
+  padding: 10px 6px;
 `;
 
 const WarningsContainer = styled.div`
@@ -154,33 +173,33 @@ export const VariantAnalysisOutcomePanels = ({
         onResultFormatChange={setResultFormat}
         variantAnalysisQueryKind={variantAnalysis.query.kind}
       />
-      <VSCodePanels>
+      <Tabs>
         {scannedReposCount > 0 && (
-          <Tab>
+          <TabHeader>
             Analyzed
-            <VscodeBadge appearance="secondary">
+            <Badge appearance="secondary" variant="counter">
               {formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}
-            </VscodeBadge>
-          </Tab>
+            </Badge>
+          </TabHeader>
         )}
         {notFoundRepos?.repositoryCount && (
-          <Tab>
+          <TabHeader>
             No access
-            <VscodeBadge appearance="secondary">
+            <Badge appearance="secondary" variant="counter">
               {formatDecimal(notFoundRepos.repositoryCount)}
-            </VscodeBadge>
-          </Tab>
+            </Badge>
+          </TabHeader>
         )}
         {noCodeqlDbRepos?.repositoryCount && (
-          <Tab>
+          <TabHeader>
             No database
-            <VscodeBadge appearance="secondary">
+            <Badge appearance="secondary" variant="counter">
               {formatDecimal(noCodeqlDbRepos.repositoryCount)}
-            </VscodeBadge>
-          </Tab>
+            </Badge>
+          </TabHeader>
         )}
         {scannedReposCount > 0 && (
-          <VSCodePanelView>
+          <TabPanel>
             <VariantAnalysisAnalyzedRepos
               variantAnalysis={variantAnalysis}
               repositoryStates={repositoryStates}
@@ -190,29 +209,29 @@ export const VariantAnalysisOutcomePanels = ({
               selectedRepositoryIds={selectedRepositoryIds}
               setSelectedRepositoryIds={setSelectedRepositoryIds}
             />
-          </VSCodePanelView>
+          </TabPanel>
         )}
         {notFoundRepos?.repositoryCount && (
-          <VSCodePanelView>
+          <TabPanel>
             <VariantAnalysisSkippedRepositoriesTab
               alertTitle="No access"
               alertMessage="The following repositories can't be analyzed because they don’t exist or you don’t have access."
               skippedRepositoryGroup={notFoundRepos}
               filterSortState={filterSortState}
             />
-          </VSCodePanelView>
+          </TabPanel>
         )}
         {noCodeqlDbRepos?.repositoryCount && (
-          <VSCodePanelView>
+          <TabPanel>
             <VariantAnalysisSkippedRepositoriesTab
               alertTitle="No CodeQL database"
               alertMessage="The following repositories can't be analyzed because they don't currently have a CodeQL database available for the selected language."
               skippedRepositoryGroup={noCodeqlDbRepos}
               filterSortState={filterSortState}
             />
-          </VSCodePanelView>
+          </TabPanel>
         )}
-      </VSCodePanels>
+      </Tabs>
     </>
   );
 };
