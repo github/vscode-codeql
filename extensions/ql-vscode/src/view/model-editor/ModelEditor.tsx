@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ToModelEditorMessage } from "../../common/interface-types";
-import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { VscodeButton, VscodeCheckbox } from "@vscode-elements/react-elements";
 import { styled } from "styled-components";
 import type { Method } from "../../model-editor/method";
@@ -19,6 +18,7 @@ import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { ModelEvaluation } from "./ModelEvaluation";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
+import { Tag } from "../common/Tag";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -302,9 +302,9 @@ export function ModelEditor({
             <ViewTitle>
               {getLanguageDisplayName(viewState.extensionPack.language)}
             </ViewTitle>
-            <VSCodeTag>
+            <Tag>
               {percentFormatter.format(modeledPercentage / 100)} modeled
-            </VSCodeTag>
+            </Tag>
           </HeaderRow>
           <HeaderRow>
             <>{viewState.extensionPack.name}</>
