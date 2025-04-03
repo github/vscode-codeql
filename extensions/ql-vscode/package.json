@@ -1976,7 +1976,6 @@
     "@vscode/codicons": "^0.0.36",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.68.0",
-    "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
     "chokidar": "^3.6.0",
     "d3": "^7.9.0",

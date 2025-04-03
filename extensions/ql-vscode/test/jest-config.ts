@@ -8,7 +8,6 @@ const transformScopes = [
   "@lit-labs",
 ];
 const transformPackages = [
-  "@vscode/webview-ui-toolkit",
   "before-after-hook",
   "d3",
   "data-uri-to-buffer",
