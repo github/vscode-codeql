@@ -7,7 +7,7 @@ import { calculateModeledPercentage } from "../../model-editor/shared/modeled-pe
 import { percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../model-editor/shared/mode";
-import { VSCodeButton, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton, VscodeDivider } from "@vscode-elements/react-elements";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
@@ -34,7 +34,7 @@ const TitleContainer = styled.button`
   cursor: pointer;
 `;
 
-const SectionDivider = styled(VSCodeDivider)`
+const SectionDivider = styled(VscodeDivider)`
   padding-top: 0.3rem;
   padding-bottom: 0.3rem;
 `;
@@ -170,16 +170,16 @@ export const LibraryRow = ({
         </NameContainer>
         {viewState.showGenerateButton &&
           viewState.mode === Mode.Application && (
-            <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
+            <VscodeButton appearance="icon" onClick={handleModelFromSource}>
               <Codicon name="code" label="Model from source" />
               &nbsp;Model from source
-            </VSCodeButton>
+            </VscodeButton>
           )}
         {viewState.mode === Mode.Application && (
-          <VSCodeButton appearance="icon" onClick={handleModelDependency}>
+          <VscodeButton appearance="icon" onClick={handleModelDependency}>
             <Codicon name="references" label="Model dependency" />
             &nbsp;Model dependency
-          </VSCodeButton>
+          </VscodeButton>
         )}
       </TitleContainer>
       {isExpanded && (
@@ -200,9 +200,9 @@ export const LibraryRow = ({
           />
           <SectionDivider />
           <ButtonsContainer>
-            <VSCodeButton onClick={handleSave} disabled={!hasUnsavedChanges}>
+            <VscodeButton onClick={handleSave} disabled={!hasUnsavedChanges}>
               {selectedSignatures.size === 0 ? "Save" : "Save selected"}
-            </VSCodeButton>
+            </VscodeButton>
           </ButtonsContainer>
         </>
       )}

@@ -1,10 +1,13 @@
 import { useCallback } from "react";
 import { styled } from "styled-components";
-import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
+import {
+  VscodeOption,
+  VscodeSingleSelect,
+} from "@vscode-elements/react-elements";
 import { Codicon } from "../common";
 import { FilterKey } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
-const Dropdown = styled(VSCodeDropdown)`
+const Dropdown = styled(VscodeSingleSelect)`
   width: 100%;
 `;
 
@@ -28,8 +31,8 @@ export const RepositoriesFilter = ({ value, onChange, className }: Props) => {
   return (
     <Dropdown value={value} onInput={handleInput} className={className}>
       <Codicon name="list-filter" label="Filter..." slot="indicator" />
-      <VSCodeOption value={FilterKey.All}>All</VSCodeOption>
-      <VSCodeOption value={FilterKey.WithResults}>With results</VSCodeOption>
+      <VscodeOption value={FilterKey.All}>All</VscodeOption>
+      <VscodeOption value={FilterKey.WithResults}>With results</VscodeOption>
     </Dropdown>
   );
 };

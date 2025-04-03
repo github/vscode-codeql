@@ -7,7 +7,6 @@ import {
 } from "../../model-editor/shared/multiple-modeled-methods";
 import { styled } from "styled-components";
 import { MethodModelingInputs } from "./MethodModelingInputs";
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { Codicon } from "../common";
 import { validateModeledMethods } from "../../model-editor/shared/validation";
 import { ModeledMethodAlert } from "./ModeledMethodAlert";
@@ -15,6 +14,7 @@ import type { QueryLanguage } from "../../common/query-language";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { sendTelemetry } from "../common/telemetry";
 import type { ModelConfig } from "../../model-editor/languages";
+import { VscodeButton } from "@vscode-elements/react-elements";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
@@ -168,20 +168,20 @@ export const MultipleModeledMethodsPanel = ({
       )}
       <Footer>
         <PaginationActions>
-          <VSCodeButton
+          <VscodeButton
             appearance="icon"
             aria-label="Previous modeling"
             onClick={handlePreviousClick}
             disabled={modeledMethods.length < 2 || selectedIndex === 0}
           >
             <Codicon name="chevron-left" />
-          </VSCodeButton>
+          </VscodeButton>
           {modeledMethods.length > 1 && (
             <div>
               {selectedIndex + 1}/{modeledMethods.length}
             </div>
           )}
-          <VSCodeButton
+          <VscodeButton
             appearance="icon"
             aria-label="Next modeling"
             onClick={handleNextClick}
@@ -191,25 +191,25 @@ export const MultipleModeledMethodsPanel = ({
             }
           >
             <Codicon name="chevron-right" />
-          </VSCodeButton>
+          </VscodeButton>
         </PaginationActions>
         <ModificationActions>
-          <VSCodeButton
+          <VscodeButton
             appearance="icon"
             aria-label="Delete modeling"
             onClick={handleRemoveClick}
             disabled={!canRemoveModeledMethod(modeledMethods)}
           >
             <Codicon name="trash" />
-          </VSCodeButton>
-          <VSCodeButton
+          </VscodeButton>
+          <VscodeButton
             appearance="icon"
             aria-label="Add modeling"
             onClick={handleAddClick}
             disabled={!canAddNewModeledMethod(modeledMethods)}
           >
             <Codicon name="add" />
-          </VSCodeButton>
+          </VscodeButton>
         </ModificationActions>
       </Footer>
     </Container>

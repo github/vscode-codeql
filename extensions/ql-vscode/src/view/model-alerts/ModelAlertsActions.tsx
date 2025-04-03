@@ -1,6 +1,6 @@
 import { styled } from "styled-components";
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
+import { VscodeButton } from "@vscode-elements/react-elements";
 
 type ModelAlertsActionsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -14,7 +14,7 @@ const Container = styled.div`
   gap: 1em;
 `;
 
-const Button = styled(VSCodeButton)`
+const Button = styled(VscodeButton)`
   white-space: nowrap;
 `;
 
