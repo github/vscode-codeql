@@ -1,4 +1,4 @@
-import { VscodeBadge, VscodeButton } from "@vscode-elements/react-elements";
+import { VscodeButton } from "@vscode-elements/react-elements";
 import {
   forwardRef,
   useCallback,
@@ -35,6 +35,7 @@ import { ModelOutputSuggestBox } from "./ModelOutputSuggestBox";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { ModelAlertsIndicator } from "./ModelAlertsIndicator";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
+import { Badge } from "../common/Badge";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -52,7 +53,7 @@ const ModelButtonsContainer = styled.div`
   gap: 1em;
 `;
 
-const UsagesButton = styled(VscodeBadge)`
+const UsagesButton = styled(Badge)`
   cursor: pointer;
 `;
 

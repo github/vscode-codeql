@@ -1,7 +1,6 @@
 import { styled } from "styled-components";
 import type { ModelAlerts } from "../../model-editor/model-alerts/model-alerts";
 import { Codicon } from "../common";
-import { VscodeBadge } from "@vscode-elements/react-elements";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatDecimal } from "../../common/number";
 import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
@@ -11,6 +10,7 @@ import { vscode } from "../vscode-api";
 import { createModeledMethodKey } from "../../model-editor/modeled-method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { Link } from "../common/Link";
+import { Badge } from "../common/Badge";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -103,7 +103,7 @@ export const ModelAlertsResults = ({
         {!isExpanded && (
           <ExpandCollapseCodicon name="chevron-right" label="Expand" />
         )}
-        <VscodeBadge>{formatDecimal(modelAlerts.alerts.length)}</VscodeBadge>
+        <Badge>{formatDecimal(modelAlerts.alerts.length)}</Badge>
         <MethodName {...modelAlerts.model}></MethodName>
         <ModelTypeText>{modelAlerts.model.type}</ModelTypeText>
         <ViewLink
