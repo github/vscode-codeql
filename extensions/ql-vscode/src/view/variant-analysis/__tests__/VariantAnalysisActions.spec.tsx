@@ -50,7 +50,7 @@ describe(VariantAnalysisActions.name, () => {
       variantAnalysisStatus: VariantAnalysisStatus.Canceling,
     });
 
-    const button = screen.getByText("Stopping query");
+    const button = await screen.findByText("Stopping query");
     expect(button).toBeInTheDocument();
     expect(button).toBeDisabled();
   });
