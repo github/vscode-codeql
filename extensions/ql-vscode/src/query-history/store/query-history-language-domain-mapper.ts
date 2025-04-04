@@ -6,6 +6,8 @@ export function mapQueryLanguageToDto(
   language: QueryLanguage,
 ): QueryLanguageDto {
   switch (language) {
+    case QueryLanguage.Actions:
+      return QueryLanguageDto.Actions;
     case QueryLanguage.CSharp:
       return QueryLanguageDto.CSharp;
     case QueryLanguage.Cpp:
