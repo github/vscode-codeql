@@ -177,7 +177,7 @@ export const VariantAnalysisOutcomePanels = ({
         {scannedReposCount > 0 && (
           <TabHeader>
             Analyzed
-            <Badge appearance="secondary" variant="counter">
+            <Badge>
               {formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}
             </Badge>
           </TabHeader>
@@ -185,17 +185,13 @@ export const VariantAnalysisOutcomePanels = ({
         {notFoundRepos?.repositoryCount && (
           <TabHeader>
             No access
-            <Badge appearance="secondary" variant="counter">
-              {formatDecimal(notFoundRepos.repositoryCount)}
-            </Badge>
+            <Badge>{formatDecimal(notFoundRepos.repositoryCount)}</Badge>
           </TabHeader>
         )}
         {noCodeqlDbRepos?.repositoryCount && (
           <TabHeader>
             No database
-            <Badge appearance="secondary" variant="counter">
-              {formatDecimal(noCodeqlDbRepos.repositoryCount)}
-            </Badge>
+            <Badge>{formatDecimal(noCodeqlDbRepos.repositoryCount)}</Badge>
           </TabHeader>
         )}
         {scannedReposCount > 0 && (
