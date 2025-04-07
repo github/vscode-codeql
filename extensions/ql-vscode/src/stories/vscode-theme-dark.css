@@ -18,6 +18,7 @@
   --vscode-descriptionForeground: rgba(204, 204, 204, 0.7);
   --vscode-icon-foreground: #c5c5c5;
   --vscode-focusBorder: #007fd4;
+  --vscode-contrastActiveBorder: #f38518;
   --vscode-textSeparator-foreground: rgba(255, 255, 255, 0.18);
   --vscode-textLink-foreground: #3794ff;
   --vscode-textLink-activeForeground: #3794ff;
