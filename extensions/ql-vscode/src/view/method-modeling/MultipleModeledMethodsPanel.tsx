@@ -14,7 +14,6 @@ import type { QueryLanguage } from "../../common/query-language";
 import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empty";
 import { sendTelemetry } from "../common/telemetry";
 import type { ModelConfig } from "../../model-editor/languages";
-import { VscodeButton } from "@vscode-elements/react-elements";
 import { ActionButton } from "../common/ActionButton/ActionButton";
 
 export type MultipleModeledMethodsPanelProps = {
