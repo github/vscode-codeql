@@ -1,4 +1,3 @@
-import { VscodeButton } from "@vscode-elements/react-elements";
 import {
   forwardRef,
   useCallback,
@@ -10,6 +9,8 @@ import {
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 import { Link } from "../common/Link";
+import { ActionButton } from "../common/ActionButton/ActionButton";
+import "../common/ActionButton/ActionButton.css";
 
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
@@ -61,7 +62,7 @@ const ViewLink = styled(Link)`
   white-space: nowrap;
 `;
 
-const CodiconRow = styled(VscodeButton)`
+const CodiconRow = styled(ActionButton)`
   min-height: calc(var(--input-height) * 1px);
   align-items: center;
 `;
@@ -319,7 +320,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   ></ModelAlertsIndicator>
                   {index === 0 ? (
                     <CodiconRow
-                      appearance="icon"
                       aria-label="Add new model"
                       onClick={(event: React.MouseEvent) => {
                         event.stopPropagation();
@@ -331,7 +331,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     </CodiconRow>
                   ) : (
                     <CodiconRow
-                      appearance="icon"
                       aria-label="Remove model"
                       onClick={(event: React.MouseEvent) => {
                         event.stopPropagation();

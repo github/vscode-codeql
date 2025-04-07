@@ -15,6 +15,7 @@ import { createEmptyModeledMethod } from "../../model-editor/modeled-method-empt
 import { sendTelemetry } from "../common/telemetry";
 import type { ModelConfig } from "../../model-editor/languages";
 import { VscodeButton } from "@vscode-elements/react-elements";
+import { ActionButton } from "../common/ActionButton/ActionButton";
 
 export type MultipleModeledMethodsPanelProps = {
   language: QueryLanguage;
@@ -168,21 +169,19 @@ export const MultipleModeledMethodsPanel = ({
       )}
       <Footer>
         <PaginationActions>
-          <VscodeButton
-            appearance="icon"
+          <ActionButton
             aria-label="Previous modeling"
             onClick={handlePreviousClick}
             disabled={modeledMethods.length < 2 || selectedIndex === 0}
           >
             <Codicon name="chevron-left" />
-          </VscodeButton>
+          </ActionButton>
           {modeledMethods.length > 1 && (
             <div>
               {selectedIndex + 1}/{modeledMethods.length}
             </div>
           )}
-          <VscodeButton
-            appearance="icon"
+          <ActionButton
             aria-label="Next modeling"
             onClick={handleNextClick}
             disabled={
@@ -191,25 +190,23 @@ export const MultipleModeledMethodsPanel = ({
             }
           >
             <Codicon name="chevron-right" />
-          </VscodeButton>
+          </ActionButton>
         </PaginationActions>
         <ModificationActions>
-          <VscodeButton
-            appearance="icon"
+          <ActionButton
             aria-label="Delete modeling"
             onClick={handleRemoveClick}
             disabled={!canRemoveModeledMethod(modeledMethods)}
           >
             <Codicon name="trash" />
-          </VscodeButton>
-          <VscodeButton
-            appearance="icon"
+          </ActionButton>
+          <ActionButton
             aria-label="Add modeling"
             onClick={handleAddClick}
             disabled={!canAddNewModeledMethod(modeledMethods)}
           >
             <Codicon name="add" />
-          </VscodeButton>
+          </ActionButton>
         </ModificationActions>
       </Footer>
     </Container>

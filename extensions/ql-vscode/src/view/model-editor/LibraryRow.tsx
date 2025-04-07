@@ -12,6 +12,7 @@ import type { ModelEditorViewState } from "../../model-editor/shared/view-state"
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { Tag } from "../common/Tag";
+import { ActionButton } from "../common/ActionButton/ActionButton";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -170,16 +171,16 @@ export const LibraryRow = ({
         </NameContainer>
         {viewState.showGenerateButton &&
           viewState.mode === Mode.Application && (
-            <VscodeButton appearance="icon" onClick={handleModelFromSource}>
+            <ActionButton onClick={handleModelFromSource}>
               <Codicon name="code" label="Model from source" />
               &nbsp;Model from source
-            </VscodeButton>
+            </ActionButton>
           )}
         {viewState.mode === Mode.Application && (
-          <VscodeButton appearance="icon" onClick={handleModelDependency}>
+          <ActionButton onClick={handleModelDependency}>
             <Codicon name="references" label="Model dependency" />
             &nbsp;Model dependency
-          </VscodeButton>
+          </ActionButton>
         )}
       </TitleContainer>
       {isExpanded && (
