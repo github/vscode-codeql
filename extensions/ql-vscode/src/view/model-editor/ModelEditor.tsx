@@ -338,13 +338,13 @@ export function ModelEditor({
                 {selectedSignatures.size === 0 ? "Save all" : "Save selected"}
               </VscodeButton>
               <VscodeButton
-                appearance="secondary"
+                secondary
                 onClick={onDeselectAllClick}
                 disabled={selectedSignatures.size === 0}
               >
                 Deselect all
               </VscodeButton>
-              <VscodeButton appearance="secondary" onClick={onRefreshClick}>
+              <VscodeButton secondary onClick={onRefreshClick}>
                 Refresh
               </VscodeButton>
               {viewState.showGenerateButton &&

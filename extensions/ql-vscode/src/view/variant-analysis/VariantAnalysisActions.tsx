@@ -67,7 +67,7 @@ export const VariantAnalysisActions = ({
       {showResultActions && (
         <>
           <Button
-            appearance="secondary"
+            secondary
             onClick={onCopyRepositoryListClick}
             disabled={copyRepositoryListDisabled}
           >
@@ -96,7 +96,7 @@ export const VariantAnalysisActions = ({
       )}
       {variantAnalysisStatus === VariantAnalysisStatus.InProgress && (
         <Button
-          appearance="secondary"
+          secondary
           onClick={onStopQueryClick}
           disabled={stopQueryDisabled}
         >
@@ -104,7 +104,7 @@ export const VariantAnalysisActions = ({
         </Button>
       )}
       {variantAnalysisStatus === VariantAnalysisStatus.Canceling && (
-        <Button appearance="secondary" disabled={true}>
+        <Button secondary disabled={true}>
           Stopping query
         </Button>
       )}

@@ -25,12 +25,12 @@ export const ModelAlertsActions = ({
   return (
     <Container>
       {variantAnalysisStatus === VariantAnalysisStatus.InProgress && (
-        <Button appearance="secondary" onClick={onStopRunClick}>
+        <Button secondary onClick={onStopRunClick}>
           Stop evaluation
         </Button>
       )}
       {variantAnalysisStatus === VariantAnalysisStatus.Canceling && (
-        <Button appearance="secondary" disabled={true}>
+        <Button secondary disabled={true}>
           Stopping evaluation
         </Button>
       )}

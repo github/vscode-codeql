@@ -55,14 +55,14 @@ export const ModelEvaluation = ({
       {shouldShowEvaluateButton && (
         <VscodeButton
           onClick={onStartEvaluation}
-          appearance="secondary"
+          secondary
           disabled={!customModelsExist || unsavedChanges}
         >
           Evaluate
         </VscodeButton>
       )}
       {shouldShowStopButton && (
-        <VscodeButton onClick={onStopEvaluation} appearance="secondary">
+        <VscodeButton onClick={onStopEvaluation} secondary>
           <ModelEditorProgressRing />
           Stop evaluation
         </VscodeButton>

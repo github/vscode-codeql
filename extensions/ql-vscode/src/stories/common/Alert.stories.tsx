@@ -84,7 +84,7 @@ ErrorWithButtons.args = {
     "Request to https://api.github.com/repos/octodemo/Hello-World/code-scanning/codeql/queries failed. Try running this query again.",
   actions: (
     <>
-      <VscodeButton appearance="secondary">View actions logs</VscodeButton>
+      <VscodeButton secondary>View actions logs</VscodeButton>
       <VscodeButton>Retry</VscodeButton>
     </>
   ),
