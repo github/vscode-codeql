@@ -28,6 +28,9 @@ window.ElementInternals.prototype.setFormValue = jest
 window.ElementInternals.prototype.setValidity = jest
   .fn()
   .mockReturnValue(undefined);
+window.HTMLSlotElement.prototype.assignedElements = jest
+  .fn()
+  .mockReturnValue([]);
 
 // Store this on the window so we can mock it
 window.vsCodeApi = {
