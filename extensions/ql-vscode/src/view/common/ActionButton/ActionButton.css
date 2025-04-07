@@ -1,0 +1,58 @@
+.vscode-action-button {
+  align-items: center;
+  background-color: transparent;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  color: var(--vscode-foreground);
+  display: inline-flex;
+  cursor: pointer;
+  padding: 0;
+  user-select: none;
+}
+
+.vscode-action-button:disabled {
+  color: var(--vscode-disabledForeground);
+  cursor: default;
+  pointer-events: none;
+}
+
+.vscode-action-button .codicon,
+.vscode-action-button svg {
+  color: var(--vscode-icon-foreground);
+  display: block;
+  padding: 2px;
+}
+
+.vscode-action-button svg {
+  box-sizing: content-box;
+  height: 16px;
+  width: 16px;
+}
+
+.vscode-action-button:disabled .codicon,
+.vscode-action-button:disabled svg {
+  color: var(--vscode-disabledForeground);
+}
+
+.vscode-action-button:hover {
+  background-color: var(--vscode-toolbar-hoverBackground);
+}
+
+.vscode-action-button:active {
+  background-color: var(--vscode-toolbar-activeBackground);
+}
+
+.vscode-action-button:focus {
+  outline: none;
+}
+
+.vscode-action-button:focus-visible {
+  border-color: var(--vscode-focusBorder);
+}
+
+.label {
+  display: block;
+  padding: 0 5px 0 2px;
+}
