@@ -14,6 +14,7 @@ export type QueryHistoryItemDto =
   | QueryHistoryVariantAnalysisDto;
 
 export enum QueryLanguageDto {
+  Actions = "actions",
   CSharp = "csharp",
   Cpp = "cpp",
   Go = "go",
