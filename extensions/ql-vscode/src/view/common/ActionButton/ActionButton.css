@@ -1,3 +1,5 @@
+/* Styles have been copied from https://vscode-elements.github.io/elements-lite/components/action-button/configurator/ */
+
 .vscode-action-button {
   align-items: center;
   background-color: transparent;
@@ -38,6 +40,8 @@
 
 .vscode-action-button:hover {
   background-color: var(--vscode-toolbar-hoverBackground);
+  outline: 1px dotted var(--vscode-contrastActiveBorder);
+  outline-offset: -1px;
 }
 
 .vscode-action-button:active {
