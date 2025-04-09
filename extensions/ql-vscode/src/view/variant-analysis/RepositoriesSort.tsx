@@ -29,7 +29,7 @@ export const RepositoriesSort = ({ value, onChange, className }: Props) => {
   );
 
   return (
-    <Dropdown value={value} onInput={handleInput} className={className}>
+    <Dropdown value={value} onChange={handleInput} className={className}>
       <Codicon name="sort-precedence" label="Sort..." slot="indicator" />
       <VscodeOption value={SortKey.Alphabetically}>Alphabetically</VscodeOption>
       <VscodeOption value={SortKey.NumberOfResults}>

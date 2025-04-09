@@ -29,7 +29,7 @@ export const RepositoriesFilter = ({ value, onChange, className }: Props) => {
   );
 
   return (
-    <Dropdown value={value} onInput={handleInput} className={className}>
+    <Dropdown value={value} onChange={handleInput} className={className}>
       <Codicon name="list-filter" label="Filter..." slot="indicator" />
       <VscodeOption value={FilterKey.All}>All</VscodeOption>
       <VscodeOption value={FilterKey.WithResults}>With results</VscodeOption>
