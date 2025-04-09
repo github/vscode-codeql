@@ -62,6 +62,10 @@ const MetadataContainer = styled.div`
   margin-left: auto;
 `;
 
+const Checkbox = styled(VscodeCheckbox)`
+  margin-right: -9px; // VscodeCheckbox has 9px margin on the right by default
+`;
+
 type VisibilityProps = {
   isPrivate?: boolean;
 };
@@ -255,7 +259,7 @@ export const RepoRow = ({
         disabled={disabled}
         aria-expanded={isExpanded}
       >
-        <VscodeCheckbox
+        <Checkbox
           onChange={onChangeCheckbox}
           onClick={onClickCheckbox}
           checked={selected}
