@@ -7,6 +7,10 @@ const TextField = styled(VscodeTextfield)`
   width: 100%;
 `;
 
+const SearchIcon = styled(Codicon)`
+  margin: 0 8px;
+`;
+
 type Props = {
   value: string;
   placeholder: string;
@@ -37,7 +41,7 @@ export const SearchBox = ({
       onInput={handleInput}
       className={className}
     >
-      <Codicon name="search" label="Search..." slot="start" />
+      <SearchIcon name="search" label="Search..." slot="content-before" />
     </TextField>
   );
 };
