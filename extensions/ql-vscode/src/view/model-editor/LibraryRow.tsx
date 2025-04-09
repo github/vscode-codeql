@@ -36,8 +36,8 @@ const TitleContainer = styled.button`
 `;
 
 const SectionDivider = styled(VscodeDivider)`
-  padding-top: 0.3rem;
-  padding-bottom: 0.3rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.8rem;
 `;
 
 const NameContainer = styled.div`
