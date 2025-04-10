@@ -2080,7 +2080,7 @@
     "gulp-esbuild": "^0.14.0",
     "gulp-replace": "^1.1.3",
     "gulp-typescript": "^5.0.1",
-    "husky": "^9.1.5",
+    "husky": "^9.1.7",
     "jest": "^30.0.0-alpha.7",
     "jest-runner-vscode": "^3.0.1",
     "jsdom": "^26.0.0",
