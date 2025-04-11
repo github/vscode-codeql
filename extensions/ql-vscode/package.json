@@ -1969,8 +1969,8 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.0",
-    "@octokit/plugin-retry": "^7.2.0",
-    "@octokit/plugin-throttling": "^9.6.0",
+    "@octokit/plugin-retry": "^7.2.1",
+    "@octokit/plugin-throttling": "^9.6.1",
     "@octokit/rest": "^21.1.1",
     "@vscode/codicons": "^0.0.36",
     "@vscode/debugadapter": "^1.59.0",
