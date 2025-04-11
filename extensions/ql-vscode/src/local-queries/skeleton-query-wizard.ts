@@ -38,6 +38,7 @@ import { getQlPackLanguage } from "../common/qlpack-language";
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
 export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
+  actions: "github/codeql",
   cpp: "google/brotli",
   csharp: "restsharp/RestSharp",
   go: "spf13/cobra",

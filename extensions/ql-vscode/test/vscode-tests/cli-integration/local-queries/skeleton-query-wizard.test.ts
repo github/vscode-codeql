@@ -78,6 +78,7 @@ describe("SkeletonQueryWizard", () => {
       getSupportedLanguages: jest
         .fn()
         .mockResolvedValue([
+          "actions",
           "ruby",
           "rust",
           "javascript",
