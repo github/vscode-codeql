@@ -1,9 +1,4 @@
-import {
-  act,
-  render as reactRender,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { act, render as reactRender, screen } from "@testing-library/react";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
@@ -403,7 +398,8 @@ describe(RepoRow.name, () => {
       status: VariantAnalysisRepoStatus.InProgress,
     });
 
-    expect(screen.getByRole("checkbox")).toBeDisabled();
+    const checkbox = await screen.findByRole("checkbox");
+    expect(checkbox).toBeDisabled();
   });
 
   it("does not allow selecting the item if the item has not been downloaded", async () => {
@@ -411,7 +407,8 @@ describe(RepoRow.name, () => {
       status: VariantAnalysisRepoStatus.Succeeded,
     });
 
-    expect(screen.getByRole("checkbox")).toBeDisabled();
+    const checkbox = await screen.findByRole("checkbox");
+    expect(checkbox).toBeDisabled();
   });
 
   it("does not allow selecting the item if the item has not been downloaded successfully", async () => {
@@ -423,11 +420,8 @@ describe(RepoRow.name, () => {
       },
     });
 
-    // It seems like sometimes the first render doesn't have the checkbox disabled
-    // Might be related to https://github.com/microsoft/vscode-webview-ui-toolkit/issues/404
-    await waitFor(() => {
-      expect(screen.getByRole("checkbox")).toBeDisabled();
-    });
+    const checkbox = await screen.findByRole("checkbox");
+    expect(checkbox).toBeDisabled();
   });
 
   it("allows selecting the item if the item has been downloaded", async () => {
@@ -440,6 +434,7 @@ describe(RepoRow.name, () => {
       },
     });
 
-    expect(screen.getByRole("checkbox")).toBeEnabled();
+    const checkbox = await screen.findByRole("checkbox");
+    expect(checkbox).toBeEnabled();
   });
 });

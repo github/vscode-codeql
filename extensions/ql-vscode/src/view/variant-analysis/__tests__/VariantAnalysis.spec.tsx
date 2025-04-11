@@ -1,4 +1,4 @@
-import { render as reactRender, screen, waitFor } from "@testing-library/react";
+import { render as reactRender, screen } from "@testing-library/react";
 import {
   VariantAnalysisFailureReason,
   VariantAnalysisStatus,
@@ -57,9 +57,6 @@ describe(VariantAnalysis.name, () => {
     const variantAnalysis = createMockVariantAnalysis({});
     render({ variantAnalysis });
 
-    await waitFor(() => screen.getByDisplayValue("All"));
-    await waitFor(() => screen.getByDisplayValue("Number of results"));
-
     await postMessage<ToVariantAnalysisMessage>({
       t: "setFilterSortState",
       filterSortState: {
@@ -69,8 +66,11 @@ describe(VariantAnalysis.name, () => {
       },
     });
 
-    expect(screen.getByDisplayValue("With results")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Alphabetically")).toBeInTheDocument();
+    const withResults = await screen.findByText("With results");
+    expect(withResults).toBeInTheDocument();
+
+    const alphabetically = await screen.findByText("Alphabetically");
+    expect(alphabetically).toBeInTheDocument();
 
     expect(screen.queryByDisplayValue("All")).not.toBeInTheDocument();
     expect(

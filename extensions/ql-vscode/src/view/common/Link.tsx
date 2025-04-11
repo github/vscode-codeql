@@ -3,12 +3,12 @@ import { styled } from "styled-components";
 export const Link = styled.a`
   background: transparent;
   box-sizing: border-box;
-  color: var(--link-foreground);
+  color: var(--vscode-textLink-foreground);
   cursor: pointer;
   fill: currentcolor;
-  font-family: var(--font-family);
-  font-size: var(--type-ramp-base-font-size);
-  line-height: var(--type-ramp-base-line-height);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  line-height: normal;
   outline: none;
 
   &:hover {

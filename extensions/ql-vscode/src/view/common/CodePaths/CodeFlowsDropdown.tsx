@@ -1,6 +1,9 @@
 import type { ChangeEvent, SetStateAction } from "react";
 import { useCallback } from "react";
-import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
+import {
+  VscodeOption,
+  VscodeSingleSelect,
+} from "@vscode-elements/react-elements";
 
 import type { CodeFlow } from "../../../variant-analysis/shared/analysis-result";
 
@@ -35,12 +38,12 @@ export const CodeFlowsDropdown = ({
     .toString();
 
   return (
-    <VSCodeDropdown value={value} onChange={handleChange}>
+    <VscodeSingleSelect value={value} onChange={handleChange}>
       {codeFlows.map((codeFlow, index) => (
-        <VSCodeOption key={index} value={index.toString()}>
+        <VscodeOption key={index} value={index.toString()}>
           {getCodeFlowName(codeFlow)}
-        </VSCodeOption>
+        </VscodeOption>
       ))}
-    </VSCodeDropdown>
+    </VscodeSingleSelect>
   );
 };

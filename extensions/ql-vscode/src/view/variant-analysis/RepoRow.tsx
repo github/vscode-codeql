@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
-import { VSCodeBadge, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
+import { VscodeCheckbox } from "@vscode-elements/react-elements";
 import type { VariantAnalysisScannedRepositoryState } from "../../variant-analysis/shared/variant-analysis";
 import {
   isCompletedAnalysisRepoStatus,
@@ -27,6 +27,7 @@ import StarCount from "../common/StarCount";
 import { useTelemetryOnChange } from "../common/telemetry";
 import { DeterminateProgressRing } from "../common/DeterminateProgressRing";
 import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
+import { Badge } from "../common/Badge";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -59,6 +60,10 @@ const VisibilityText = styled.span`
 const MetadataContainer = styled.div`
   display: flex;
   margin-left: auto;
+`;
+
+const Checkbox = styled(VscodeCheckbox)`
+  margin-right: -9px; // VscodeCheckbox has 9px margin on the right by default
 `;
 
 type VisibilityProps = {
@@ -254,7 +259,7 @@ export const RepoRow = ({
         disabled={disabled}
         aria-expanded={isExpanded}
       >
-        <VSCodeCheckbox
+        <Checkbox
           onChange={onChangeCheckbox}
           onClick={onClickCheckbox}
           checked={selected}
@@ -269,9 +274,9 @@ export const RepoRow = ({
           <ExpandCollapseCodicon name="chevron-right" label="Expand" />
         )}
         {resultsLoading && <LoadingIcon label="Results are loading" />}
-        <VSCodeBadge>
+        <Badge>
           {resultCount === undefined ? "-" : formatDecimal(resultCount)}
-        </VSCodeBadge>
+        </Badge>
         <span>{repository.fullName}</span>
         <Visibility isPrivate={repository.private} />
         <span>

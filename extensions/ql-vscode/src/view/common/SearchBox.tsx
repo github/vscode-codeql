@@ -1,10 +1,14 @@
 import { useCallback } from "react";
 import { styled } from "styled-components";
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
+import { VscodeTextfield } from "@vscode-elements/react-elements";
 import { Codicon } from "./icon";
 
-const TextField = styled(VSCodeTextField)`
+const TextField = styled(VscodeTextfield)`
   width: 100%;
+`;
+
+const SearchIcon = styled(Codicon)`
+  margin: 0 8px;
 `;
 
 type Props = {
@@ -37,7 +41,7 @@ export const SearchBox = ({
       onInput={handleInput}
       className={className}
     >
-      <Codicon name="search" label="Search..." slot="start" />
+      <SearchIcon name="search" label="Search..." slot="content-before" />
     </TextField>
   );
 };
