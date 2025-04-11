@@ -10,7 +10,6 @@ import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 import { Link } from "../common/Link";
 import { ActionButton } from "../common/ActionButton/ActionButton";
-import "../common/ActionButton/ActionButton.css";
 
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
