@@ -39,7 +39,7 @@
 
 .actionButton:hover {
   background-color: var(--vscode-toolbar-hoverBackground);
-  outline: 1px dotted var(--vscode-contrastActiveBorder);
+  outline: 1px dotted var(--vscode-contrastActiveBorder, #f38518);
   outline-offset: -1px;
 }
 
