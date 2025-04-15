@@ -55,6 +55,7 @@ const ModelButtonsContainer = styled.div`
 
 const UsagesButton = styled(Badge)`
   cursor: pointer;
+  display: table;
 `;
 
 const ViewLink = styled(Link)`
