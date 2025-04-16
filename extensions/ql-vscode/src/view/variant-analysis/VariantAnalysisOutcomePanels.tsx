@@ -46,7 +46,7 @@ const TabHeader = styled(VscodeTabHeader)`
   text-transform: uppercase;
 
   > * {
-    // This copies the styles from VSCodePanelTab
+    // This copies the styles from @vscode/webview-ui-toolkit's VSCodePanelTab
     &:last-child {
       margin-left: 8px;
     }
