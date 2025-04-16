@@ -182,18 +182,20 @@ export const VariantAnalysisOutcomePanels = ({
             </Badge>
           </TabHeader>
         )}
-        {notFoundRepos?.repositoryCount && (
-          <TabHeader>
-            No access
-            <Badge>{formatDecimal(notFoundRepos.repositoryCount)}</Badge>
-          </TabHeader>
-        )}
-        {noCodeqlDbRepos?.repositoryCount && (
-          <TabHeader>
-            No database
-            <Badge>{formatDecimal(noCodeqlDbRepos.repositoryCount)}</Badge>
-          </TabHeader>
-        )}
+        {notFoundRepos?.repositoryCount !== undefined &&
+          notFoundRepos?.repositoryCount > 0 && (
+            <TabHeader>
+              No access
+              <Badge>{formatDecimal(notFoundRepos.repositoryCount)}</Badge>
+            </TabHeader>
+          )}
+        {noCodeqlDbRepos?.repositoryCount !== undefined &&
+          noCodeqlDbRepos?.repositoryCount > 0 && (
+            <TabHeader>
+              No database
+              <Badge>{formatDecimal(noCodeqlDbRepos.repositoryCount)}</Badge>
+            </TabHeader>
+          )}
         {scannedReposCount > 0 && (
           <TabPanel>
             <VariantAnalysisAnalyzedRepos
@@ -207,26 +209,28 @@ export const VariantAnalysisOutcomePanels = ({
             />
           </TabPanel>
         )}
-        {notFoundRepos?.repositoryCount && (
-          <TabPanel>
-            <VariantAnalysisSkippedRepositoriesTab
-              alertTitle="No access"
-              alertMessage="The following repositories can't be analyzed because they don’t exist or you don’t have access."
-              skippedRepositoryGroup={notFoundRepos}
-              filterSortState={filterSortState}
-            />
-          </TabPanel>
-        )}
-        {noCodeqlDbRepos?.repositoryCount && (
-          <TabPanel>
-            <VariantAnalysisSkippedRepositoriesTab
-              alertTitle="No CodeQL database"
-              alertMessage="The following repositories can't be analyzed because they don't currently have a CodeQL database available for the selected language."
-              skippedRepositoryGroup={noCodeqlDbRepos}
-              filterSortState={filterSortState}
-            />
-          </TabPanel>
-        )}
+        {notFoundRepos?.repositoryCount !== undefined &&
+          notFoundRepos?.repositoryCount > 0 && (
+            <TabPanel>
+              <VariantAnalysisSkippedRepositoriesTab
+                alertTitle="No access"
+                alertMessage="The following repositories can't be analyzed because they don’t exist or you don’t have access."
+                skippedRepositoryGroup={notFoundRepos}
+                filterSortState={filterSortState}
+              />
+            </TabPanel>
+          )}
+        {noCodeqlDbRepos?.repositoryCount !== undefined &&
+          noCodeqlDbRepos?.repositoryCount > 0 && (
+            <TabPanel>
+              <VariantAnalysisSkippedRepositoriesTab
+                alertTitle="No CodeQL database"
+                alertMessage="The following repositories can't be analyzed because they don't currently have a CodeQL database available for the selected language."
+                skippedRepositoryGroup={noCodeqlDbRepos}
+                filterSortState={filterSortState}
+              />
+            </TabPanel>
+          )}
       </Tabs>
     </>
   );
