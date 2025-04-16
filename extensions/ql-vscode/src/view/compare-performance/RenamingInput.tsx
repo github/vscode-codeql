@@ -1,9 +1,6 @@
 import type { ChangeEvent } from "react";
 import { styled } from "styled-components";
-import {
-  VSCodeButton,
-  VSCodeTextField,
-} from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton, VscodeTextfield } from "@vscode-elements/react-elements";
 import { Codicon } from "../common";
 
 export class Renaming {
@@ -25,7 +22,7 @@ function tryCompilePattern(pattern: string): RegExp | undefined {
   }
 }
 
-const Input = styled(VSCodeTextField)`
+const Input = styled(VscodeTextfield)`
   width: 20em;
 `;
 
@@ -86,21 +83,21 @@ export function RenamingInput(props: RenamingInputProps) {
               setRenamings(newRenamings);
             }}
           ></Input>
-          <VSCodeButton
+          <VscodeButton
             onClick={() =>
               setRenamings(renamings.filter((_, i) => i !== index))
             }
           >
             <Codicon name="trash" />
-          </VSCodeButton>
+          </VscodeButton>
           <br />
         </Row>
       ))}
-      <VSCodeButton
+      <VscodeButton
         onClick={() => setRenamings([...renamings, new Renaming("", "")])}
       >
         Add renaming rule
-      </VSCodeButton>
+      </VscodeButton>
     </Details>
   );
 }

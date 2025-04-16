@@ -1,5 +1,4 @@
 import { styled } from "styled-components";
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
@@ -7,6 +6,7 @@ import { modelEvaluationRunIsRunning } from "../../model-editor/shared/model-eva
 import { ModelEditorProgressRing } from "./ModelEditorProgressRing";
 import { LinkIconButton } from "../common/LinkIconButton";
 import { Link } from "../common/Link";
+import { VscodeButton } from "@vscode-elements/react-elements";
 
 export type Props = {
   viewState: ModelEditorViewState;
@@ -53,19 +53,19 @@ export const ModelEvaluation = ({
   return (
     <>
       {shouldShowEvaluateButton && (
-        <VSCodeButton
+        <VscodeButton
           onClick={onStartEvaluation}
-          appearance="secondary"
+          secondary
           disabled={!customModelsExist || unsavedChanges}
         >
           Evaluate
-        </VSCodeButton>
+        </VscodeButton>
       )}
       {shouldShowStopButton && (
-        <VSCodeButton onClick={onStopEvaluation} appearance="secondary">
+        <VscodeButton onClick={onStopEvaluation} secondary>
           <ModelEditorProgressRing />
           Stop evaluation
-        </VSCodeButton>
+        </VscodeButton>
       )}
       {shouldShowEvaluationRunLink && (
         <RunLink>

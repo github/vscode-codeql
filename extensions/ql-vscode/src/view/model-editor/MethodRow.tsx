@@ -1,4 +1,3 @@
-import { VSCodeBadge, VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import {
   forwardRef,
   useCallback,
@@ -10,6 +9,7 @@ import {
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 import { Link } from "../common/Link";
+import { ActionButton } from "../common/ActionButton/ActionButton";
 
 import type { Method } from "../../model-editor/method";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
@@ -35,6 +35,7 @@ import { ModelOutputSuggestBox } from "./ModelOutputSuggestBox";
 import { getModelsAsDataLanguage } from "../../model-editor/languages";
 import { ModelAlertsIndicator } from "./ModelAlertsIndicator";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
+import { Badge } from "../common/Badge";
 
 const ApiOrMethodRow = styled.div`
   min-height: calc(var(--input-height) * 1px);
@@ -52,15 +53,16 @@ const ModelButtonsContainer = styled.div`
   gap: 1em;
 `;
 
-const UsagesButton = styled(VSCodeBadge)`
+const UsagesButton = styled(Badge)`
   cursor: pointer;
+  display: table;
 `;
 
 const ViewLink = styled(Link)`
   white-space: nowrap;
 `;
 
-const CodiconRow = styled(VSCodeButton)`
+const CodiconRow = styled(ActionButton)`
   min-height: calc(var(--input-height) * 1px);
   align-items: center;
 `;
@@ -318,7 +320,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                   ></ModelAlertsIndicator>
                   {index === 0 ? (
                     <CodiconRow
-                      appearance="icon"
                       aria-label="Add new model"
                       onClick={(event: React.MouseEvent) => {
                         event.stopPropagation();
@@ -330,7 +331,6 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
                     </CodiconRow>
                   ) : (
                     <CodiconRow
-                      appearance="icon"
                       aria-label="Remove model"
                       onClick={(event: React.MouseEvent) => {
                         event.stopPropagation();

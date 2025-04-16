@@ -431,4 +431,7 @@ WithCodeFlows.args = {
       showRawResults={() => action("show-raw-results")}
     />
   ),
+  userSettings: {
+    shouldShowProvenance: true,
+  },
 };

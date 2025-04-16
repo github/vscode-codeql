@@ -1,0 +1,56 @@
+/* Styles have been copied from https://vscode-elements.github.io/elements-lite/components/action-button/configurator/ */
+.actionButton {
+  align-items: center;
+  background-color: transparent;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  color: var(--vscode-foreground);
+  display: inline-flex;
+  cursor: pointer;
+  padding: 0;
+  user-select: none;
+}
+
+.actionButton:disabled {
+  color: var(--vscode-disabledForeground);
+  cursor: default;
+  pointer-events: none;
+}
+
+.actionButton :global(.codicon),
+.actionButton svg {
+  color: var(--vscode-icon-foreground);
+  display: block;
+  padding: 2px;
+}
+
+.actionButton svg {
+  box-sizing: content-box;
+  height: 16px;
+  width: 16px;
+}
+
+.actionButton:disabled :global(.codicon),
+.actionButton:disabled svg {
+  color: var(--vscode-disabledForeground);
+}
+
+.actionButton:hover {
+  background-color: var(--vscode-toolbar-hoverBackground);
+  outline: 1px dotted var(--vscode-contrastActiveBorder, transparent);
+  outline-offset: -1px;
+}
+
+.actionButton:active {
+  background-color: var(--vscode-toolbar-activeBackground);
+}
+
+.actionButton:focus {
+  outline: none;
+}
+
+.actionButton:focus-visible {
+  border-color: var(--vscode-focusBorder);
+}

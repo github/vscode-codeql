@@ -4,8 +4,8 @@ import type {
   ModeledMethod,
   TypeModeledMethod,
 } from "../../model-editor/modeled-method";
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 import { useDebounceCallback } from "../common/useDebounceCallback";
+import { VscodeTextfield } from "@vscode-elements/react-elements";
 
 type Props = {
   modeledMethod: TypeModeledMethod;
@@ -53,7 +53,7 @@ export const ModelTypeTextbox = ({
   );
 
   return (
-    <VSCodeTextField
+    <VscodeTextfield
       value={value}
       onInput={handleChange}
       onClick={stopClickPropagation}

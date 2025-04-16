@@ -7,11 +7,12 @@ import { calculateModeledPercentage } from "../../model-editor/shared/modeled-pe
 import { percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../model-editor/shared/mode";
-import { VSCodeButton, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
+import { VscodeButton, VscodeDivider } from "@vscode-elements/react-elements";
 import type { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import type { AccessPathSuggestionOptions } from "../../model-editor/suggestions";
 import type { ModelEvaluationRunState } from "../../model-editor/shared/model-evaluation-run-state";
 import { Tag } from "../common/Tag";
+import { ActionButton } from "../common/ActionButton/ActionButton";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -34,9 +35,9 @@ const TitleContainer = styled.button`
   cursor: pointer;
 `;
 
-const SectionDivider = styled(VSCodeDivider)`
-  padding-top: 0.3rem;
-  padding-bottom: 0.3rem;
+const SectionDivider = styled(VscodeDivider)`
+  margin-top: 0.3rem;
+  margin-bottom: 0.8rem;
 `;
 
 const NameContainer = styled.div`
@@ -170,16 +171,16 @@ export const LibraryRow = ({
         </NameContainer>
         {viewState.showGenerateButton &&
           viewState.mode === Mode.Application && (
-            <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
+            <ActionButton onClick={handleModelFromSource}>
               <Codicon name="code" label="Model from source" />
               &nbsp;Model from source
-            </VSCodeButton>
+            </ActionButton>
           )}
         {viewState.mode === Mode.Application && (
-          <VSCodeButton appearance="icon" onClick={handleModelDependency}>
+          <ActionButton onClick={handleModelDependency}>
             <Codicon name="references" label="Model dependency" />
             &nbsp;Model dependency
-          </VSCodeButton>
+          </ActionButton>
         )}
       </TitleContainer>
       {isExpanded && (
@@ -200,9 +201,9 @@ export const LibraryRow = ({
           />
           <SectionDivider />
           <ButtonsContainer>
-            <VSCodeButton onClick={handleSave} disabled={!hasUnsavedChanges}>
+            <VscodeButton onClick={handleSave} disabled={!hasUnsavedChanges}>
               {selectedSignatures.size === 0 ? "Save" : "Save selected"}
-            </VSCodeButton>
+            </VscodeButton>
           </ButtonsContainer>
         </>
       )}

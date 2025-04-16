@@ -1,10 +1,13 @@
 import { useCallback } from "react";
 import { styled } from "styled-components";
-import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
+import {
+  VscodeOption,
+  VscodeSingleSelect,
+} from "@vscode-elements/react-elements";
 import { SortKey } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { Codicon } from "../common";
 
-const Dropdown = styled(VSCodeDropdown)`
+const Dropdown = styled(VscodeSingleSelect)`
   width: 100%;
 `;
 
@@ -26,13 +29,13 @@ export const RepositoriesSort = ({ value, onChange, className }: Props) => {
   );
 
   return (
-    <Dropdown value={value} onInput={handleInput} className={className}>
+    <Dropdown value={value} onChange={handleInput} className={className}>
       <Codicon name="sort-precedence" label="Sort..." slot="indicator" />
-      <VSCodeOption value={SortKey.Alphabetically}>Alphabetically</VSCodeOption>
-      <VSCodeOption value={SortKey.NumberOfResults}>
+      <VscodeOption value={SortKey.Alphabetically}>Alphabetically</VscodeOption>
+      <VscodeOption value={SortKey.NumberOfResults}>
         Number of results
-      </VSCodeOption>
-      <VSCodeOption value={SortKey.Popularity}>Popularity</VSCodeOption>
+      </VscodeOption>
+      <VscodeOption value={SortKey.Popularity}>Popularity</VscodeOption>
     </Dropdown>
   );
 };

@@ -1,10 +1,13 @@
 import { useCallback } from "react";
 import { styled } from "styled-components";
-import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
+import {
+  VscodeOption,
+  VscodeSingleSelect,
+} from "@vscode-elements/react-elements";
 import { Codicon } from "../common";
 import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
-const Dropdown = styled(VSCodeDropdown)`
+const Dropdown = styled(VscodeSingleSelect)`
   width: 100%;
 `;
 
@@ -30,14 +33,14 @@ export const RepositoriesResultFormat = ({
   );
 
   return (
-    <Dropdown value={value} onInput={handleInput} className={className}>
+    <Dropdown value={value} onChange={handleInput} className={className}>
       <Codicon name="table" label="Result format..." slot="indicator" />
-      <VSCodeOption value={ResultFormat.Alerts}>
+      <VscodeOption value={ResultFormat.Alerts}>
         {ResultFormat.Alerts}
-      </VSCodeOption>
-      <VSCodeOption value={ResultFormat.RawResults}>
+      </VscodeOption>
+      <VscodeOption value={ResultFormat.RawResults}>
         {ResultFormat.RawResults}
-      </VSCodeOption>
+      </VscodeOption>
     </Dropdown>
   );
 };

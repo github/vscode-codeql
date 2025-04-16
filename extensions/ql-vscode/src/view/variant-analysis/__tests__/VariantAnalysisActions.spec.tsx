@@ -50,9 +50,9 @@ describe(VariantAnalysisActions.name, () => {
       variantAnalysisStatus: VariantAnalysisStatus.Canceling,
     });
 
-    const button = screen.getByText("Stopping query");
+    const button = await screen.findByText("Stopping query");
     expect(button).toBeInTheDocument();
-    expect(button.getElementsByTagName("input")[0]).toBeDisabled();
+    expect(button).toBeDisabled();
   });
 
   it("does not render a stop query button when canceling", async () => {
