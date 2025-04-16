@@ -19,7 +19,7 @@
   pointer-events: none;
 }
 
-.actionButton .codicon,
+.actionButton :global(.codicon),
 .actionButton svg {
   color: var(--vscode-icon-foreground);
   display: block;
@@ -32,7 +32,7 @@
   width: 16px;
 }
 
-.actionButton:disabled .codicon,
+.actionButton:disabled :global(.codicon),
 .actionButton:disabled svg {
   color: var(--vscode-disabledForeground);
 }
@@ -53,9 +53,4 @@
 
 .actionButton:focus-visible {
   border-color: var(--vscode-focusBorder);
-}
-
-.label {
-  display: block;
-  padding: 0 5px 0 2px;
 }
