@@ -91,6 +91,14 @@ async function runSingleGenerateQuery(
   if (!completedQuery) {
     return undefined;
   }
+  const queryResults = Array.from(completedQuery.results.values());
+  if (queryResults.length !== 1) {
+    throw new Error(
+      `Expected exactly one query result, but got ${queryResults.length}`,
+    );
+  }
 
-  return cliServer.bqrsDecodeAll(completedQuery.outputDir.bqrsPath);
+  return cliServer.bqrsDecodeAll(
+    completedQuery.outputDir.getBqrsPath(queryResults[0].outputBaseName),
+  );
 }

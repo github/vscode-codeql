@@ -2,7 +2,6 @@ import { readFileSync } from "fs-extra";
 
 import type { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { Uri } from "vscode";
-import { QueryOutputDir } from "../../../../../src/local-queries/query-output-dir";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 import path from "path";
 import { AstBuilder } from "../../../../../src/language-support";
@@ -141,7 +140,7 @@ describe("AstBuilder", () => {
 
   function createAstBuilder() {
     return new AstBuilder(
-      new QueryOutputDir("/a/b/c"),
+      path.normalize("/a/b/c/results.bqrs"),
       mockCli,
       mockDatabaseItem({
         resolveSourceFile: undefined,

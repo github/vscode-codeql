@@ -162,7 +162,7 @@ describeWithCodeQL()("Queries", () => {
 
     async function runQueryWithExtensions() {
       console.log("Calling compileAndRunQuery");
-      const result = await compileAndRunQuery(
+      const completedQuery = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
@@ -176,12 +176,14 @@ describeWithCodeQL()("Queries", () => {
       console.log("Completed compileAndRunQuery");
 
       // Check that query was successful
-      expect(result.resultType).toBe(QueryResultType.SUCCESS);
+      const results = Array.from(completedQuery.results.values());
+      expect(results.length).toBe(1);
+      expect(results[0].resultType).toBe(QueryResultType.SUCCESS);
 
       console.log("Loading query results");
       // Load query results
       const chunk = await qs.cliServer.bqrsDecode(
-        result.outputDir.bqrsPath,
+        completedQuery.outputDir.getBqrsPath(results[0].outputBaseName),
         SELECT_QUERY_NAME,
         {
           // there should only be one result
@@ -198,7 +200,7 @@ describeWithCodeQL()("Queries", () => {
 
   describe.each(MODES)("running queries (%s)", (mode) => {
     it("should run a query", async () => {
-      const result = await compileAndRunQuery(
+      const completedQuery = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
@@ -211,13 +213,15 @@ describeWithCodeQL()("Queries", () => {
       );
 
       // just check that the query was successful
-      expect(result.resultType).toBe(QueryResultType.SUCCESS);
+      const results = Array.from(completedQuery.results.values());
+      expect(results.length).toBe(1);
+      expect(results[0].resultType).toBe(QueryResultType.SUCCESS);
     });
 
     // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
     it("should restart the database and run a query", async () => {
       await appCommandManager.execute("codeQL.restartQueryServer");
-      const result = await compileAndRunQuery(
+      const completedQuery = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
@@ -229,7 +233,9 @@ describeWithCodeQL()("Queries", () => {
         undefined,
       );
 
-      expect(result.resultType).toBe(QueryResultType.SUCCESS);
+      const results = Array.from(completedQuery.results.values());
+      expect(results.length).toBe(1);
+      expect(results[0].resultType).toBe(QueryResultType.SUCCESS);
     });
   });
 

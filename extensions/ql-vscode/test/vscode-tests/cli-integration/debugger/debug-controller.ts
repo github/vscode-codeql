@@ -83,14 +83,17 @@ class Tracker implements DebugAdapterTracker {
           kind: "evaluationCompleted",
           started: this.started!,
           results: {
-            ...this.started!,
-            ...this.completed!,
+            id: this.started!.id,
+            results: new Map([[this.queryPath!, this.completed!]]),
             outputDir: new QueryOutputDir(this.started!.outputDir),
-            queryTarget: {
-              queryPath: this.queryPath!,
-              quickEvalPosition:
-                this.started!.quickEvalContext?.quickEvalPosition,
-            },
+            queryTargets: [
+              {
+                queryPath: this.queryPath!,
+                outputBaseName: "results",
+                quickEvalPosition:
+                  this.started!.quickEvalContext?.quickEvalPosition,
+              },
+            ],
             dbPath: this.database!,
           },
         });
@@ -350,15 +353,19 @@ class DebugController
 
   public async expectSucceeded(): Promise<EvaluationCompletedEvent> {
     const event = await this.expectCompleted();
-    if (event.results.resultType !== QueryResultType.SUCCESS) {
-      expect(event.results.message).toBe("success");
+    const results = Array.from(event.results.results.values());
+    expect(results.length).toBe(1);
+    if (results[0].resultType !== QueryResultType.SUCCESS) {
+      expect(results[0].message).toBe("success");
     }
     return event;
   }
 
   public async expectFailed(): Promise<EvaluationCompletedEvent> {
     const event = await this.expectCompleted();
-    expect(event.results.resultType).not.toEqual(QueryResultType.SUCCESS);
+    const results = Array.from(event.results.results.values());
+    expect(results.length).toBe(1);
+    expect(results[0].resultType).not.toEqual(QueryResultType.SUCCESS);
     return event;
   }
 

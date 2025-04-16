@@ -172,10 +172,19 @@ export async function runModelEditorQueries(
     maxStep: externalApiQueriesProgressMaxStep,
   });
 
+  const queryResults = Array.from(completedQuery.results.values());
+  if (queryResults.length !== 1) {
+    throw new Error(
+      `Expected exactly one query result, but got ${queryResults.length}`,
+    );
+  }
+
   const bqrsChunk = await readQueryResults({
     cliServer,
     logger,
-    bqrsPath: completedQuery.outputDir.bqrsPath,
+    bqrsPath: completedQuery.outputDir.getBqrsPath(
+      queryResults[0].outputBaseName,
+    ),
   });
   if (!bqrsChunk) {
     return;

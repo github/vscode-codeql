@@ -39,6 +39,7 @@ export interface EvaluationCompletedEvent extends Event {
     resultType: QueryResultType;
     message: string | undefined;
     evaluationTime: number;
+    outputBaseName: string;
   };
 }
 
