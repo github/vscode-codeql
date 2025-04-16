@@ -16,7 +16,7 @@ import type { BaseLogger, LogOptions } from "../common/logging";
 import { queryServerLogger } from "../common/logging/vscode";
 import { QueryResultType } from "../query-server/messages";
 import type {
-  CoreQueryResults,
+  CoreQueryResult,
   CoreQueryRun,
   QueryRunner,
 } from "../query-server";
@@ -25,6 +25,7 @@ import type * as CodeQLProtocol from "./debug-protocol";
 import type { QuickEvalContext } from "../run-queries-shared";
 import { getErrorMessage } from "../common/helpers-pure";
 import { DisposableObject } from "../common/disposable-object";
+import { basename } from "path";
 
 // More complete implementations of `Event` for certain events, because the classes from
 // `@vscode/debugadapter` make it more difficult to provide some of the message values.
@@ -107,9 +108,9 @@ class EvaluationCompletedEvent
   public readonly event = "codeql-evaluation-completed";
   public readonly body: CodeQLProtocol.EvaluationCompletedEvent["body"];
 
-  constructor(results: CoreQueryResults) {
+  constructor(result: CoreQueryResult) {
     super("codeql-evaluation-completed");
-    this.body = results;
+    this.body = result;
   }
 }
 
@@ -143,6 +144,7 @@ const QUERY_THREAD_NAME = "Evaluation thread";
 class RunningQuery extends DisposableObject {
   private readonly tokenSource = this.push(new CancellationTokenSource());
   public readonly queryRun: CoreQueryRun;
+  private readonly queryPath: string;
 
   public constructor(
     queryRunner: QueryRunner,
@@ -154,12 +156,15 @@ class RunningQuery extends DisposableObject {
   ) {
     super();
 
+    this.queryPath = config.query;
     // Create the query run, which will give us some information about the query even before the
     // evaluation has completed.
     this.queryRun = queryRunner.createQueryRun(
       config.database,
       {
-        queryPath: config.query,
+        queryInputsOutputs: [
+          { queryPath: this.queryPath, outputBaseName: "results" },
+        ],
         quickEvalPosition: quickEvalContext?.quickEvalPosition,
         quickEvalCountOnly: quickEvalContext?.quickEvalCount,
       },
@@ -168,7 +173,7 @@ class RunningQuery extends DisposableObject {
       config.extensionPacks,
       config.additionalRunQueryArgs,
       queryStorageDir,
-      undefined,
+      basename(config.query),
       undefined,
     );
   }
@@ -208,7 +213,7 @@ class RunningQuery extends DisposableObject {
       progressStart.body.cancellable = true;
       this.sendEvent(progressStart);
       try {
-        return await this.queryRun.evaluate(
+        const completedQuery = await this.queryRun.evaluate(
           (p) => {
             const progressUpdate = new ProgressUpdateEvent(
               this.queryRun.id,
@@ -220,6 +225,14 @@ class RunningQuery extends DisposableObject {
           this.tokenSource.token,
           this.logger,
         );
+        return (
+          completedQuery.results.get(this.queryPath) ?? {
+            resultType: QueryResultType.OTHER_ERROR,
+            message: "Missing query results",
+            evaluationTime: 0,
+            outputBaseName: "unknown",
+          }
+        );
       } finally {
         this.sendEvent(new ProgressEndEvent(this.queryRun.id));
       }
@@ -229,6 +242,7 @@ class RunningQuery extends DisposableObject {
         resultType: QueryResultType.OTHER_ERROR,
         message,
         evaluationTime: 0,
+        outputBaseName: "unknown",
       };
     }
   }

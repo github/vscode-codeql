@@ -237,12 +237,12 @@ describe("write and read", () => {
     dbPath = "/a/b/c",
   ): QueryWithResults {
     // pretend that the results path exists
-    const resultsPath = join(queryPath, "results.bqrs");
     mkdirpSync(queryPath);
-    writeFileSync(resultsPath, "", "utf8");
+    writeFileSync(join(queryPath, "results.bqrs"), "", "utf8");
 
     const queryEvalInfo = new QueryEvaluationInfo(
       queryPath,
+      "results",
       Uri.file(dbPath).fsPath,
       true,
       undefined,

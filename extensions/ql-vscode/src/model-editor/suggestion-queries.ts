@@ -109,7 +109,15 @@ export async function runSuggestionsQuery(
     maxStep,
   });
 
-  const bqrs = await cliServer.bqrsDecodeAll(completedQuery.outputDir.bqrsPath);
+  const queryResults = Array.from(completedQuery.results.values());
+  if (queryResults.length !== 1) {
+    throw new Error(
+      `Expected exactly one query result, but got ${queryResults.length}`,
+    );
+  }
+  const bqrs = await cliServer.bqrsDecodeAll(
+    completedQuery.outputDir.getBqrsPath(queryResults[0].outputBaseName),
+  );
 
   progress({
     message: "Finalizing results",

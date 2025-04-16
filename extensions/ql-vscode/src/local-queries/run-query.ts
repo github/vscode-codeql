@@ -34,7 +34,7 @@ export async function runQuery({
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
     {
-      queryPath,
+      queryInputsOutputs: [{ queryPath, outputBaseName: "results" }],
       quickEvalPosition: undefined,
       quickEvalCountOnly: false,
     },
@@ -43,7 +43,7 @@ export async function runQuery({
     extensionPacks,
     {},
     queryStorageDir,
-    undefined,
+    basename(queryPath),
     undefined,
   );
 
@@ -54,13 +54,14 @@ export async function runQuery({
 
   try {
     const completedQuery = await queryRun.evaluate(progress, token, teeLogger);
+    const result = completedQuery.results.get(queryPath);
 
-    if (completedQuery.resultType !== QueryResultType.SUCCESS) {
+    if (result?.resultType !== QueryResultType.SUCCESS) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
         telemetryListener,
         redactableError`Failed to run ${basename(queryPath)} query: ${
-          completedQuery.message ?? "No message"
+          result?.message ?? "No message"
         }`,
       );
       return;

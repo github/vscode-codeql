@@ -8,7 +8,7 @@ import { debug, Uri, CancellationTokenSource } from "vscode";
 import type { DebuggerCommands } from "../common/commands";
 import type { DatabaseManager } from "../databases/local-databases";
 import { DisposableObject } from "../common/disposable-object";
-import type { CoreQueryResults } from "../query-server";
+import type { CoreQueryResult } from "../query-server";
 import {
   getQuickEvalContext,
   saveBeforeStart,
@@ -134,8 +134,15 @@ class QLDebugAdapterTracker
     body: EvaluationCompletedEvent["body"],
   ): Promise<void> {
     if (this.localQueryRun !== undefined) {
-      const results: CoreQueryResults = body;
-      await this.localQueryRun.complete(results, (_) => {});
+      const results: CoreQueryResult = body;
+      await this.localQueryRun.complete(
+        {
+          results: new Map<string, CoreQueryResult>([
+            [this.configuration.query, results],
+          ]),
+        },
+        (_) => {},
+      );
       this.localQueryRun = undefined;
     }
   }

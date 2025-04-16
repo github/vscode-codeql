@@ -30,19 +30,11 @@ function findQueryEvalLogEndSummaryFile(resultPath: string): string {
 export class QueryOutputDir {
   constructor(public readonly querySaveDir: string) {}
 
-  get dilPath() {
-    return join(this.querySaveDir, "results.dil");
-  }
-
   /**
    * Get the path that the compiled query is if it exists. Note that it only exists when using the legacy query server.
    */
   get compileQueryPath() {
     return join(this.querySaveDir, "compiledQuery.qlo");
-  }
-
-  get csvPath() {
-    return join(this.querySaveDir, "results.csv");
   }
 
   get logPath() {
@@ -69,7 +61,25 @@ export class QueryOutputDir {
     return findQueryEvalLogEndSummaryFile(this.querySaveDir);
   }
 
-  get bqrsPath() {
-    return join(this.querySaveDir, "results.bqrs");
+  getBqrsPath(outputBaseName: string): string {
+    return join(this.querySaveDir, `${outputBaseName}.bqrs`);
+  }
+
+  getInterpretedResultsPath(
+    metadataKind: string | undefined,
+    outputBaseName: string,
+  ): string {
+    return join(
+      this.querySaveDir,
+      `${outputBaseName}-${metadataKind === "graph" ? "graph" : `interpreted.sarif`}`,
+    );
+  }
+
+  getCsvPath(outputBaseName: string): string {
+    return join(this.querySaveDir, `${outputBaseName}.csv`);
+  }
+
+  getDilPath(outputBaseName: string): string {
+    return join(this.querySaveDir, `${outputBaseName}.dil`);
   }
 }

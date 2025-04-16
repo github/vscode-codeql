@@ -556,10 +556,14 @@ export class ResultsView extends AbstractWebview<
     await this.postMessage({
       t: "setState",
       interpretation: interpretationPage,
-      origResultsPaths: fullQuery.completedQuery.query.resultsPaths,
+      origResultsPaths: {
+        resultsPath: fullQuery.completedQuery.query.resultsPath,
+        interpretedResultsPath:
+          fullQuery.completedQuery.query.interpretedResultsPath,
+      },
       resultsPath: this.convertPathToWebviewUri(
         panel,
-        fullQuery.completedQuery.query.resultsPaths.resultsPath,
+        fullQuery.completedQuery.query.resultsPath,
       ),
       parsedResultSets,
       sortedResultsMap,
@@ -704,10 +708,14 @@ export class ResultsView extends AbstractWebview<
     await this.postMessage({
       t: "setState",
       interpretation: this._interpretation,
-      origResultsPaths: results.completedQuery.query.resultsPaths,
+      origResultsPaths: {
+        resultsPath: results.completedQuery.query.resultsPath,
+        interpretedResultsPath:
+          results.completedQuery.query.interpretedResultsPath,
+      },
       resultsPath: this.convertPathToWebviewUri(
         panel,
-        results.completedQuery.query.resultsPaths.resultsPath,
+        results.completedQuery.query.resultsPath,
       ),
       parsedResultSets,
       sortedResultsMap,
@@ -842,7 +850,10 @@ export class ResultsView extends AbstractWebview<
               };
         await this._getInterpretedResults(
           query.metadata,
-          query.resultsPaths,
+          {
+            resultsPath: query.resultsPath,
+            interpretedResultsPath: query.interpretedResultsPath,
+          },
           sourceInfo,
           sourceLocationPrefix,
           sortState,

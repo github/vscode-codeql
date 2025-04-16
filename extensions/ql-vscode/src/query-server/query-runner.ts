@@ -20,15 +20,26 @@ import {
   upgradeDatabase,
 } from "./messages";
 import type { BaseLogger, Logger } from "../common/logging";
-import { basename, join } from "path";
+import { join } from "path";
 import { nanoid } from "nanoid";
 import type { QueryServerClient } from "./query-server-client";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 
-export interface CoreQueryTarget {
-  /** The full path to the query. */
+export interface CoreQueryInputOutput {
+  /** Path to the query source file. */
   queryPath: string;
+
+  /**
+   * Base name to use for output files, without extension. For example, "foo" will result in the
+   * BQRS file being written to "<outputdir>/foo.bqrs".
+   */
+  outputBaseName: string;
+}
+
+export interface CoreQueryTarget {
+  /** Paths to the queries and their corresponding output file names. */
+  queryInputsOutputs: CoreQueryInputOutput[];
   /**
    * Optional position of text to be used as QuickEval target. This need not be in the same file as
    * `query`.
@@ -40,10 +51,21 @@ export interface CoreQueryTarget {
   quickEvalCountOnly?: boolean;
 }
 
-export interface CoreQueryResults {
+export interface CoreQueryResult {
   readonly resultType: QueryResultType;
   readonly message: string | undefined;
   readonly evaluationTime: number;
+
+  /**
+   * The base name of the output file. Append '.bqrs' and join with the output directory to get the
+   * path to the BQRS.
+   */
+  readonly outputBaseName: string;
+}
+
+export interface CoreQueryResults {
+  /** A map from query path to its results. */
+  readonly results: Map<string, CoreQueryResult>;
 }
 
 export interface CoreQueryRun {
@@ -219,9 +241,10 @@ export class QueryRunner {
     extensionPacks: string[] | undefined,
     additionalRunQueryArgs: Record<string, unknown>,
     queryStorageDir: string,
-    id = `${basename(query.queryPath)}-${nanoid()}`,
+    queryBasename: string,
     templates: Record<string, string> | undefined,
   ): CoreQueryRun {
+    const id = `${queryBasename}-${nanoid()}`;
     const outputDir = new QueryOutputDir(join(queryStorageDir, id));
 
     return {

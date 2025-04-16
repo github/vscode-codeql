@@ -86,7 +86,10 @@ export interface QueryEvaluationInfoDto {
   databaseHasMetadataFile: boolean;
   quickEvalPosition?: PositionDto;
   metadata?: QueryMetadataDto;
-  resultsPaths: {
+  outputBaseName?: string;
+
+  // Superceded by outputBaseName
+  resultsPaths?: {
     resultsPath: string;
     interpretedResultsPath: string;
   };
