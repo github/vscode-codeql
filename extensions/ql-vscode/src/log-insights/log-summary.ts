@@ -1,7 +1,7 @@
 export interface PipelineRun {
   raReference: string;
-  counts: number[];
-  duplicationPercentages: number[];
+  counts?: number[];
+  duplicationPercentages?: number[];
 }
 
 interface Ra {

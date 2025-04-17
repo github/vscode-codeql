@@ -151,7 +151,9 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
           pipelineSummaryList,
         } = this.data;
         const pipelineSummaries = pipelineSummaryList[index];
-        for (const { counts, raReference } of event.pipelineRuns ?? []) {
+        for (const pipelineRun of event.pipelineRuns ?? []) {
+          const counts = pipelineRun.counts || [];
+          const raReference = pipelineRun.raReference;
           // Get or create the pipeline summary for this RA
           const pipelineSummary = (pipelineSummaries[raReference] ??= {
             steps: event.ra[raReference],
