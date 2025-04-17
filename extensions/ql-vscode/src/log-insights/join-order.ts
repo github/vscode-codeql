@@ -488,7 +488,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
       // Pointwise sum the tuple counts
       const newTupleCounts = pointwiseSum(
         bucket.tupleCounts,
-        new Int32Array(run.counts),
+        new Int32Array(run.counts ?? []),
         this.problemReporter,
       );
       const resultSize = bucket.resultSize + deltaSize;
