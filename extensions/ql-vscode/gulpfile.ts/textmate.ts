@@ -9,6 +9,7 @@ import type {
   Pattern,
   TextmateGrammar,
 } from "./textmate-grammar";
+import { pipeline } from "stream/promises";
 
 /**
  * Replaces all rule references with the match pattern of the referenced rule.
@@ -276,7 +277,9 @@ export function transpileTextMateGrammar() {
 }
 
 export function compileTextMateGrammar() {
-  return src("syntaxes/*.tmLanguage.yml")
-    .pipe(transpileTextMateGrammar())
-    .pipe(dest("out/syntaxes"));
+  return pipeline(
+    src("syntaxes/*.tmLanguage.yml"),
+    transpileTextMateGrammar(),
+    dest("out/syntaxes"),
+  );
 }
