@@ -81,7 +81,7 @@ class ComparisonDataset {
   }
 }
 
-function renderOptionalValue(x: Optional<number>, unit?: string) {
+function renderOptionalValue(x: Optional<number>, unit: string | undefined) {
   switch (x) {
     case AbsentReason.NotSeen:
       return <AbsentNumberCell>n/a</AbsentNumberCell>;
@@ -712,8 +712,8 @@ function PredicateRowGroup(props: PredicateRowGroupProps) {
           <ChevronCell>
             <Chevron expanded={isExpanded} />
           </ChevronCell>
-          {comparison && renderOptionalValue(rowGroup.before)}
-          {renderOptionalValue(rowGroup.after)}
+          {comparison && renderOptionalValue(rowGroup.before, metric.unit)}
+          {renderOptionalValue(rowGroup.after, metric.unit)}
           {comparison && renderDelta(rowGroup.diff, metric.unit)}
           <NameCell>
             {renderedName} ({rowGroup.rows.length} predicates)
