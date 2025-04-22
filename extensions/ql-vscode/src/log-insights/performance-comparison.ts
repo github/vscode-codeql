@@ -75,6 +75,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
     dependencyLists: [],
   };
   private readonly raToIndex = new Map<string, number>();
+  private readonly nameToIndex = new Map<string, number>();
 
   private getPredicateIndex(name: string, ra: string): number {
     let index = this.raToIndex.get(ra);
@@ -114,8 +115,21 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
     }
 
     switch (evaluationStrategy) {
-      case "EXTENSIONAL":
+      case "EXTENSIONAL": {
+        break;
+      }
       case "COMPUTED_EXTENSIONAL": {
+        if (predicateName.startsWith("cached_")) {
+          // Add a dependency from a cached COMPUTED_EXTENSIONAL to the predicate with the actual contents.
+          // The raHash of the this event may appear in a CACHE_HIT events in the other event log. The dependency
+          // we're adding here is needed in order to associate the original predicate with such a cache hit.
+          const originalName = predicateName.substring("cached_".length);
+          const originalIndex = this.nameToIndex.get(originalName);
+          if (originalIndex != null) {
+            const index = this.getPredicateIndex(predicateName, raHash);
+            this.data.dependencyLists[index].push(originalIndex);
+          }
+        }
         break;
       }
       case "CACHE_HIT":
@@ -140,6 +154,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       case "NAMED_LOCAL":
       case "IN_LAYER": {
         const index = this.getPredicateIndex(predicateName, raHash);
+        this.nameToIndex.set(predicateName, index);
         let totalTime = 0;
         let totalTuples = 0;
         if (evaluationStrategy === "COMPUTE_SIMPLE") {
