@@ -128,11 +128,12 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
         const index = this.getPredicateIndex(predicateName);
         let totalTime = 0;
         let totalTuples = 0;
-        if (evaluationStrategy !== "IN_LAYER") {
+        if (evaluationStrategy === "COMPUTE_SIMPLE") {
           totalTime += event.millis;
         } else {
-          // IN_LAYER events do no record of their total time.
-          // Make a best-effort estimate by adding up the positive iteration times (they can be negative).
+          // Make a best-effort estimate of the total time by adding up the positive iteration times (they can be negative).
+          // Note that for COMPUTE_RECURSIVE the "millis" field contain the total time of the SCC, not just that predicate,
+          // but we don't have a good way to show that in the UI, so we rely on the accumulated iteration times.
           for (const millis of event.predicateIterationMillis ?? []) {
             if (millis > 0) {
               totalTime += millis;
