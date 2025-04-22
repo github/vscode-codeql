@@ -27,6 +27,9 @@ export interface PerformanceComparisonDataFromLog {
    */
   names: string[];
 
+  /** RA hash of the `i`th predicate event */
+  raHashes: string[];
+
   /** Number of milliseconds spent evaluating the `i`th predicate from the `names` array. */
   timeCosts: number[];
 
@@ -56,9 +59,9 @@ export interface PerformanceComparisonDataFromLog {
 }
 
 export class PerformanceOverviewScanner implements EvaluationLogScanner {
-  private readonly nameToIndex = new Map<string, number>();
   private readonly data: PerformanceComparisonDataFromLog = {
     names: [],
+    raHashes: [],
     timeCosts: [],
     tupleCosts: [],
     cacheHitIndices: [],
@@ -66,28 +69,33 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
     pipelineSummaryList: [],
     evaluationCounts: [],
     iterationCounts: [],
+    dependencyLists: [],
   };
+  private readonly raToIndex = new Map<string, number>();
 
-  private getPredicateIndex(name: string): number {
-    const { nameToIndex } = this;
-    let index = nameToIndex.get(name);
+  private getPredicateIndex(name: string, ra: string): number {
+    let index = this.raToIndex.get(ra);
     if (index === undefined) {
-      index = nameToIndex.size;
-      nameToIndex.set(name, index);
+      index = this.raToIndex.size;
+      this.raToIndex.set(ra, index);
       const {
         names,
+        raHashes,
         timeCosts,
         tupleCosts,
         iterationCounts,
         evaluationCounts,
         pipelineSummaryList,
+        dependencyLists,
       } = this.data;
       names.push(name);
+      raHashes.push(ra);
       timeCosts.push(0);
       tupleCosts.push(0);
       iterationCounts.push(0);
       evaluationCounts.push(0);
       pipelineSummaryList.push({});
+      dependencyLists.push([]);
     }
     return index;
   }
@@ -97,7 +105,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
   }
 
   onEvent(event: SummaryEvent): void {
-    const { completionType, evaluationStrategy, predicateName } = event;
+    const { completionType, evaluationStrategy, predicateName, raHash } = event;
     if (completionType !== undefined && completionType !== "SUCCESS") {
       return; // Skip any evaluation that wasn't successful
     }
@@ -111,14 +119,16 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       case "CACHACA": {
         // Record a cache hit, but only if the predicate has not been seen before.
         // We're mainly interested in the reuse of caches from an earlier query run as they can distort comparisons.
-        if (!this.nameToIndex.has(predicateName)) {
-          this.data.cacheHitIndices.push(this.getPredicateIndex(predicateName));
+        if (!this.raToIndex.has(raHash)) {
+          this.data.cacheHitIndices.push(
+            this.getPredicateIndex(predicateName, raHash),
+          );
         }
         break;
       }
       case "SENTINEL_EMPTY": {
         this.data.sentinelEmptyIndices.push(
-          this.getPredicateIndex(predicateName),
+          this.getPredicateIndex(predicateName, raHash),
         );
         break;
       }
@@ -126,7 +136,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       case "COMPUTE_SIMPLE":
       case "NAMED_LOCAL":
       case "IN_LAYER": {
-        const index = this.getPredicateIndex(predicateName);
+        const index = this.getPredicateIndex(predicateName, raHash);
         let totalTime = 0;
         let totalTuples = 0;
         if (evaluationStrategy === "COMPUTE_SIMPLE") {
