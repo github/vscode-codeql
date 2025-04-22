@@ -4,6 +4,7 @@ import esbuild from "gulp-esbuild";
 import type { reporter } from "gulp-typescript";
 import { createProject } from "gulp-typescript";
 import del from "del";
+import { pipeline } from "stream/promises";
 
 export function goodReporter(): reporter.Reporter {
   return {
@@ -37,23 +38,23 @@ export function cleanOutput() {
 }
 
 export function compileEsbuild() {
-  return src("./src/extension.ts")
-    .pipe(
-      esbuild({
-        outfile: "extension.js",
-        bundle: true,
-        external: ["vscode", "fsevents"],
-        format: "cjs",
-        platform: "node",
-        target: "es2020",
-        sourcemap: "linked",
-        sourceRoot: "..",
-        loader: {
-          ".node": "copy",
-        },
-      }),
-    )
-    .pipe(dest("out"));
+  return pipeline(
+    src("./src/extension.ts"),
+    esbuild({
+      outfile: "extension.js",
+      bundle: true,
+      external: ["vscode", "fsevents"],
+      format: "cjs",
+      platform: "node",
+      target: "es2020",
+      sourcemap: "linked",
+      sourceRoot: "..",
+      loader: {
+        ".node": "copy",
+      },
+    }),
+    dest("out"),
+  );
 }
 
 export function watchEsbuild() {
