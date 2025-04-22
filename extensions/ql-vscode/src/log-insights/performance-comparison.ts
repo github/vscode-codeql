@@ -56,6 +56,9 @@ export interface PerformanceComparisonDataFromLog {
    * All the pipeline runs seen for the `i`th predicate from the `names` array.
    */
   pipelineSummaryList: Array<Record<string, PipelineSummary>>;
+
+  /** All dependencies of the `i`th predicate from the `names` array, encoded as a list of indices in `names`. */
+  dependencyLists: number[][];
 }
 
 export class PerformanceOverviewScanner implements EvaluationLogScanner {
@@ -157,8 +160,10 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
           iterationCounts,
           evaluationCounts,
           pipelineSummaryList,
+          dependencyLists,
         } = this.data;
         const pipelineSummaries = pipelineSummaryList[index];
+        const dependencyList = dependencyLists[index];
         for (const { counts, raReference } of event.pipelineRuns ?? []) {
           // Get or create the pipeline summary for this RA
           const pipelineSummary = (pipelineSummaries[raReference] ??= {
@@ -176,6 +181,12 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
             }
             totalTuples += count;
             totalTuplesPerStep[i] += count;
+          }
+        }
+        for (const dependencyHash of Object.values(event.dependencies ?? {})) {
+          const dependencyIndex = this.raToIndex.get(dependencyHash);
+          if (dependencyIndex != null) {
+            dependencyList.push(dependencyIndex);
           }
         }
         timeCosts[index] += totalTime;

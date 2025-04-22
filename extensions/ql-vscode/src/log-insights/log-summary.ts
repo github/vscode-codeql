@@ -29,6 +29,7 @@ interface SummaryEventBase {
 
 interface ResultEventBase extends SummaryEventBase {
   resultSize: number;
+  dependencies?: { [key: string]: string };
 }
 
 export interface ComputeSimple extends ResultEventBase {
@@ -67,7 +68,6 @@ export interface NamedLocal extends ResultEventBase {
   ra: Ra;
   pipelineRuns: PipelineRun[];
   queryCausingWork?: string;
-  dependencies: { [key: string]: string };
   predicateIterationMillis: number[];
 }
 
