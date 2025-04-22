@@ -124,6 +124,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       }
       case "COMPUTE_RECURSIVE":
       case "COMPUTE_SIMPLE":
+      case "NAMED_LOCAL":
       case "IN_LAYER": {
         const index = this.getPredicateIndex(predicateName);
         let totalTime = 0;

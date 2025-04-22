@@ -16,7 +16,8 @@ type EvaluationStrategy =
   | "EXTENSIONAL"
   | "SENTINEL_EMPTY"
   | "CACHACA"
-  | "CACHE_HIT";
+  | "CACHE_HIT"
+  | "NAMED_LOCAL";
 
 interface SummaryEventBase {
   evaluationStrategy: EvaluationStrategy;
@@ -60,6 +61,16 @@ export interface InLayer extends ResultEventBase {
   predicateIterationMillis: number[];
 }
 
+export interface NamedLocal extends ResultEventBase {
+  evaluationStrategy: "NAMED_LOCAL";
+  deltaSizes: number[];
+  ra: Ra;
+  pipelineRuns: PipelineRun[];
+  queryCausingWork?: string;
+  dependencies: { [key: string]: string };
+  predicateIterationMillis: number[];
+}
+
 interface ComputedExtensional extends ResultEventBase {
   evaluationStrategy: "COMPUTED_EXTENSIONAL";
   queryCausingWork?: string;
@@ -92,4 +103,5 @@ export type SummaryEvent =
   | Extensional
   | SentinelEmpty
   | Cachaca
-  | CacheHit;
+  | CacheHit
+  | NamedLocal;
