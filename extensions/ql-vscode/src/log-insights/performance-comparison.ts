@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import type { EvaluationLogScanner } from "./log-scanner";
 import type { SummaryEvent } from "./log-summary";
 
@@ -5,6 +6,7 @@ export interface PipelineSummary {
   steps: string[];
   /** Total counts for each step in the RA array, across all iterations */
   counts: number[];
+  hash: string;
 }
 
 /**
@@ -188,6 +190,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
           const pipelineSummary = (pipelineSummaries[raReference] ??= {
             steps: event.ra[raReference],
             counts: counts.map(() => 0),
+            hash: getPipelineHash(event.ra[raReference]),
           });
           const { counts: totalTuplesPerStep } = pipelineSummary;
           for (let i = 0, length = counts.length; i < length; ++i) {
@@ -231,4 +234,12 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
   }
 
   onDone(): void {}
+}
+
+function getPipelineHash(steps: string[]) {
+  const md5 = createHash("md5");
+  for (const step of steps) {
+    md5.write(step);
+  }
+  return md5.digest("base64");
 }
