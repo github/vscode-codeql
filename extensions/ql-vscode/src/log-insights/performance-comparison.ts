@@ -144,9 +144,12 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
         break;
       }
       case "SENTINEL_EMPTY": {
-        this.data.sentinelEmptyIndices.push(
-          this.getPredicateIndex(predicateName, raHash),
-        );
+        const index = this.getPredicateIndex(predicateName, raHash);
+        this.data.sentinelEmptyIndices.push(index);
+        const sentinelIndex = this.raToIndex.get(event.sentinelRaHash);
+        if (sentinelIndex != null) {
+          this.data.dependencyLists[index].push(sentinelIndex); // needed for matching up cache hits
+        }
         break;
       }
       case "COMPUTE_RECURSIVE":
