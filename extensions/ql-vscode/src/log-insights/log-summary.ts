@@ -30,6 +30,7 @@ interface SummaryEventBase {
 interface ResultEventBase extends SummaryEventBase {
   resultSize: number;
   dependencies?: { [key: string]: string };
+  mainHash?: string;
 }
 
 export interface ComputeSimple extends ResultEventBase {

@@ -75,6 +75,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
     dependencyLists: [],
   };
   private readonly raToIndex = new Map<string, number>();
+  private readonly mainHashToRepr = new Map<string, number>();
   private readonly nameToIndex = new Map<string, number>();
 
   private getPredicateIndex(name: string, ra: string): number {
@@ -205,6 +206,19 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
           const dependencyIndex = this.raToIndex.get(dependencyHash);
           if (dependencyIndex != null) {
             dependencyList.push(dependencyIndex);
+          }
+        }
+        // For predicates in the same SCC, add two-way dependencies with an arbitrary SCC member
+        const sccHash =
+          event.mainHash ??
+          (evaluationStrategy === "COMPUTE_RECURSIVE" ? raHash : null);
+        if (sccHash != null) {
+          const mainIndex = this.mainHashToRepr.get(sccHash);
+          if (mainIndex == null) {
+            this.mainHashToRepr.set(sccHash, index);
+          } else {
+            dependencyLists[index].push(mainIndex);
+            dependencyLists[mainIndex].push(index);
           }
         }
         timeCosts[index] += totalTime;
