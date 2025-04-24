@@ -8,18 +8,30 @@ import type { SummaryEvent } from "./log-summary";
  */
 export interface EvaluationLogProblemReporter {
   /**
-   * Report a potential problem detected in the evaluation log.
+   * Report a potential problem detected in the evaluation log for a non-recursive predicate.
    *
    * @param predicateName The mangled name of the predicate with the problem.
    * @param raHash The RA hash of the predicate with the problem.
-   * @param iteration The iteration number with the problem. For a non-recursive predicate, this
-   * must be zero.
    * @param message The problem message.
    */
-  reportProblem(
+  reportProblemNonRecursive(
     predicateName: string,
     raHash: string,
-    iteration: number,
+    message: string,
+  ): void;
+
+  /**
+   * Report a potential problem detected in the evaluation log for the summary of a recursive pipeline.
+   *
+   * @param predicateName The mangled name of the predicate with the problem.
+   * @param raHash The RA hash of the predicate with the problem.
+   * @param order The particular order (pipeline name) that had the problem.
+   * @param message The problem message.
+   */
+  reportProblemForRecursionSummary(
+    predicateName: string,
+    raHash: string,
+    order: string,
     message: string,
   ): void;
 

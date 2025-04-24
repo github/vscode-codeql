@@ -28,17 +28,41 @@ class ProblemReporter implements EvaluationLogProblemReporter {
 
   constructor(private readonly symbols: SummarySymbols | undefined) {}
 
-  public reportProblem(
+  public reportProblemNonRecursive(
     predicateName: string,
     raHash: string,
-    iteration: number,
     message: string,
   ): void {
     const nameWithHash = predicateSymbolKey(predicateName, raHash);
     const predicateSymbol = this.symbols?.predicates[nameWithHash];
     let predicateInfo: PipelineInfo | undefined = undefined;
     if (predicateSymbol !== undefined) {
-      predicateInfo = predicateSymbol.iterations[iteration];
+      predicateInfo = predicateSymbol.iterations[0];
+    }
+    if (predicateInfo !== undefined) {
+      const range = new Range(
+        predicateInfo.raStartLine,
+        0,
+        predicateInfo.raEndLine + 1,
+        0,
+      );
+      this.diagnostics.push(
+        new Diagnostic(range, message, DiagnosticSeverity.Error),
+      );
+    }
+  }
+
+  public reportProblemForRecursionSummary(
+    predicateName: string,
+    raHash: string,
+    order: string,
+    message: string,
+  ): void {
+    const nameWithHash = predicateSymbolKey(predicateName, raHash);
+    const predicateSymbol = this.symbols?.predicates[nameWithHash];
+    let predicateInfo: PipelineInfo | undefined = undefined;
+    if (predicateSymbol !== undefined) {
+      predicateInfo = predicateSymbol.recursionSummaries[order];
     }
     if (predicateInfo !== undefined) {
       const range = new Range(

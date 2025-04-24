@@ -18,6 +18,11 @@ interface PredicateSymbol {
    * `PipelineInfo` for each iteration. A non-recursive predicate will have a single iteration `0`.
    */
   iterations: Record<number, PipelineInfo>;
+
+  /**
+   * `PipelineInfo` for each order, summarised for all iterations that used that order. Empty for non-recursive predicates.
+   */
+  recursionSummaries: Record<string, PipelineInfo>;
 }
 
 /**
@@ -105,6 +110,7 @@ async function generateSummarySymbols(
           if (symbol === undefined) {
             symbol = {
               iterations: {},
+              recursionSummaries: {},
             };
             symbols.predicates[predicateName] = symbol;
           }
