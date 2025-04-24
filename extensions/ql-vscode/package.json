@@ -2093,7 +2093,7 @@
     "storybook": "^8.6.12",
     "tar-stream": "^3.1.7",
     "through2": "^4.0.2",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.3.2",
     "ts-json-schema-generator": "^2.3.0",
     "ts-node": "^10.9.2",
     "ts-unused-exports": "^10.1.0",
