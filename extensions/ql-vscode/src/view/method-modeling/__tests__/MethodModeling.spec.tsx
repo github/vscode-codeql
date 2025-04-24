@@ -13,7 +13,7 @@ describe(MethodModeling.name, () => {
   it("renders method modeling panel", () => {
     const method = createMethod();
     const modeledMethod = createSinkModeledMethod();
-    const onChange = jest.fn();
+    const onChange = vi.fn();
 
     render({
       language: QueryLanguage.Java,

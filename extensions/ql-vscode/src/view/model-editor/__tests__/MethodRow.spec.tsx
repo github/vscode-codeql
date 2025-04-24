@@ -29,8 +29,8 @@ describe(MethodRow.name, () => {
     kind: "taint",
     provenance: "manual",
   };
-  const onChange = jest.fn();
-  const onMethodClick = jest.fn();
+  const onChange = vi.fn();
+  const onMethodClick = vi.fn();
 
   const viewState = createMockModelEditorViewState();
 

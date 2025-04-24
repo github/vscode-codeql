@@ -77,8 +77,8 @@ const options: TestOption[] = [
 ];
 
 describe("SuggestBox", () => {
-  const onChange = jest.fn();
-  const parseValueToTokens = jest.fn();
+  const onChange = vi.fn();
+  const parseValueToTokens = vi.fn();
   const render = (props?: Partial<SuggestBoxProps<TestOption>>) =>
     reactRender(
       <SuggestBox

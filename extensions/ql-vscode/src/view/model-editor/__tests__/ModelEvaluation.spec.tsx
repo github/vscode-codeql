@@ -19,9 +19,9 @@ describe(ModelEvaluation.name, () => {
         viewState={createMockModelEditorViewState({ showEvaluationUi: true })}
         modeledMethods={modeledMethodsMap}
         modifiedSignatures={new Set()}
-        onStartEvaluation={jest.fn()}
-        onStopEvaluation={jest.fn()}
-        openModelAlertsView={jest.fn()}
+        onStartEvaluation={vi.fn()}
+        onStopEvaluation={vi.fn()}
+        openModelAlertsView={vi.fn()}
         evaluationRun={undefined}
         {...props}
       />,

@@ -83,7 +83,7 @@ describe(VariantAnalysisOutcomePanels.name, () => {
           ...variantAnalysis,
         }}
         filterSortState={defaultFilterSortState}
-        setFilterSortState={jest.fn()}
+        setFilterSortState={vi.fn()}
         {...props}
       />,
     );

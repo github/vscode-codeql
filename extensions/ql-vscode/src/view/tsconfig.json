@@ -19,7 +19,8 @@
       {
         "name": "typescript-plugin-css-modules"
       }
-    ]
+    ],
+    "types": ["vitest/globals"]
   },
   "exclude": ["node_modules"]
 }

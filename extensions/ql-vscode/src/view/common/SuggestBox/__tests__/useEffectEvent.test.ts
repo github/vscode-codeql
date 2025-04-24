@@ -3,8 +3,8 @@ import { useEffectEvent } from "../useEffectEvent";
 
 describe("useEffectEvent", () => {
   it("does not change reference when changing the callback function", () => {
-    const callback1 = jest.fn();
-    const callback2 = jest.fn();
+    const callback1 = vi.fn();
+    const callback2 = vi.fn();
 
     const { result, rerender } = renderHook(
       (callback) => useEffectEvent(callback),

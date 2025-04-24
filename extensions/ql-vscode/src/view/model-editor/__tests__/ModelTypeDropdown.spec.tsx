@@ -7,7 +7,7 @@ import { createMethod } from "../../../../test/factories/model-editor/method-fac
 import { defaultModelConfig } from "../../../model-editor/languages";
 
 describe(ModelTypeDropdown.name, () => {
-  const onChange = jest.fn();
+  const onChange = vi.fn();
 
   beforeEach(() => {
     onChange.mockReset();

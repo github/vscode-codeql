@@ -5,9 +5,9 @@ import type { VariantAnalysisActionsProps } from "../VariantAnalysisActions";
 import { VariantAnalysisActions } from "../VariantAnalysisActions";
 
 describe(VariantAnalysisActions.name, () => {
-  const onStopQueryClick = jest.fn();
-  const onCopyRepositoryListClick = jest.fn();
-  const onExportResultsClick = jest.fn();
+  const onStopQueryClick = vi.fn();
+  const onCopyRepositoryListClick = vi.fn();
+  const onExportResultsClick = vi.fn();
 
   afterEach(() => {
     onStopQueryClick.mockReset();

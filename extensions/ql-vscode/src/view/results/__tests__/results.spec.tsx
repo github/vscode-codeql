@@ -5,14 +5,11 @@ import type {
   IntoResultsViewMsg,
 } from "../../../common/interface-types";
 import { SortDirection } from "../../../common/interface-types";
-import { readJSONSync } from "fs-extra";
-import { resolve } from "path";
 import { postMessage } from "../../common/post-message";
 import { ColumnKind } from "../../../common/raw-result-types";
 
-const exampleSarif = readJSONSync(
-  resolve(__dirname, "../../../../test/data/sarif/validSarif.sarif"),
-);
+// eslint-disable-next-line import/no-namespace
+import * as exampleSarif from "./validSarif.sarif.json";
 
 describe(ResultsApp.name, () => {
   const render = () => reactRender(<ResultsApp />);

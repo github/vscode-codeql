@@ -4,11 +4,11 @@ import type { QueryDetailsProps } from "../QueryDetails";
 import { QueryDetails } from "../QueryDetails";
 
 describe(QueryDetails.name, () => {
-  const onOpenQueryFileClick = jest.fn();
-  const onViewQueryTextClick = jest.fn();
-  const onStopQueryClick = jest.fn();
-  const onCopyRepositoryListClick = jest.fn();
-  const onExportResultsClick = jest.fn();
+  const onOpenQueryFileClick = vi.fn();
+  const onViewQueryTextClick = vi.fn();
+  const onStopQueryClick = vi.fn();
+  const onCopyRepositoryListClick = vi.fn();
+  const onExportResultsClick = vi.fn();
 
   afterEach(() => {
     onOpenQueryFileClick.mockReset();

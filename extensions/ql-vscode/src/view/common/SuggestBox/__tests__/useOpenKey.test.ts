@@ -5,7 +5,7 @@ import { mockedObject } from "../../../../../test/mocked-object";
 import { useOpenKey } from "../useOpenKey";
 
 describe("useOpenKey", () => {
-  const onOpenChange = jest.fn();
+  const onOpenChange = vi.fn();
 
   beforeEach(() => {
     onOpenChange.mockReset();
@@ -41,7 +41,7 @@ describe("useOpenKey", () => {
     ctrlKey = false,
     metaKey = false,
     shiftKey = false,
-    preventDefault = jest.fn(),
+    preventDefault = vi.fn(),
   }: Partial<KeyboardEvent>) =>
     mockedObject<KeyboardEvent>({
       key,
@@ -183,7 +183,7 @@ describe("useOpenKey", () => {
     rerender(
       mockedObject<FloatingContext>({
         open: true,
-        onOpenChange: jest.fn(),
+        onOpenChange: vi.fn(),
       }),
     );
 

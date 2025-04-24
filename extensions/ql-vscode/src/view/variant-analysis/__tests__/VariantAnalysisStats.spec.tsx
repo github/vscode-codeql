@@ -5,7 +5,7 @@ import { VariantAnalysisStats } from "../VariantAnalysisStats";
 import { userEvent } from "@testing-library/user-event";
 
 describe(VariantAnalysisStats.name, () => {
-  const onViewLogsClick = jest.fn();
+  const onViewLogsClick = vi.fn();
 
   afterEach(() => {
     onViewLogsClick.mockReset();

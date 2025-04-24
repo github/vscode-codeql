@@ -18,8 +18,8 @@ describe(AlertTableResultRow.name, () => {
         databaseUri={"dbUri"}
         sourceLocationPrefix="src"
         userSettings={{ shouldShowProvenance: false }}
-        updateSelectionCallback={jest.fn()}
-        toggleExpanded={jest.fn()}
+        updateSelectionCallback={vi.fn()}
+        toggleExpanded={vi.fn()}
         {...props}
       />,
     );

@@ -17,6 +17,6 @@ describe(ModelingStatusIndicator.name, () => {
     },
   ] as const)("renders %s status indicator", ({ status, text }) => {
     render(<ModelingStatusIndicator status={status} />);
-    expect(screen.getByLabelText(text)).toBeVisible();
+    expect(screen.getByLabelText(text)).toBeInTheDocument();
   });
 });

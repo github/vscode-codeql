@@ -35,8 +35,8 @@ describe(ModeledMethodDataGrid.name, () => {
     methodParameters: "()",
     supported: true,
   });
-  const onChange = jest.fn();
-  const onMethodClick = jest.fn();
+  const onChange = vi.fn();
+  const onMethodClick = vi.fn();
 
   const viewState = createMockModelEditorViewState();
 

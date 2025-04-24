@@ -9,7 +9,7 @@ import {
 import { QueryLanguage } from "../../../common/query-language";
 
 describe(ModelKindDropdown.name, () => {
-  const onChange = jest.fn();
+  const onChange = vi.fn();
 
   beforeEach(() => {
     onChange.mockReset();

@@ -32,10 +32,10 @@ describe(ModeledMethodsList.name, () => {
     methodName: "println",
     methodParameters: "(String)",
   });
-  const onChange = jest.fn();
-  const onMethodClick = jest.fn();
-  const onSaveModelClick = jest.fn();
-  const onModelDependencyClick = jest.fn();
+  const onChange = vi.fn();
+  const onMethodClick = vi.fn();
+  const onSaveModelClick = vi.fn();
+  const onModelDependencyClick = vi.fn();
 
   const viewState = createMockModelEditorViewState();
 
@@ -63,7 +63,7 @@ describe(ModeledMethodsList.name, () => {
         onChange={onChange}
         onMethodClick={onMethodClick}
         onSaveModelClick={onSaveModelClick}
-        onGenerateFromSourceClick={jest.fn()}
+        onGenerateFromSourceClick={vi.fn()}
         onModelDependencyClick={onModelDependencyClick}
         {...props}
       />,

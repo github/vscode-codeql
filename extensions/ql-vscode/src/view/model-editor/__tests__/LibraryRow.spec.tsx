@@ -7,10 +7,10 @@ import { createMockModelEditorViewState } from "../../../../test/factories/model
 
 describe(LibraryRow.name, () => {
   const method = createMethod();
-  const onChange = jest.fn();
-  const onMethodClick = jest.fn();
-  const onSaveModelClick = jest.fn();
-  const onModelDependencyClick = jest.fn();
+  const onChange = vi.fn();
+  const onMethodClick = vi.fn();
+  const onSaveModelClick = vi.fn();
+  const onModelDependencyClick = vi.fn();
 
   const viewState = createMockModelEditorViewState();
 
@@ -40,7 +40,7 @@ describe(LibraryRow.name, () => {
         onChange={onChange}
         onMethodClick={onMethodClick}
         onSaveModelClick={onSaveModelClick}
-        onGenerateFromSourceClick={jest.fn()}
+        onGenerateFromSourceClick={vi.fn()}
         onModelDependencyClick={onModelDependencyClick}
         {...props}
       />,

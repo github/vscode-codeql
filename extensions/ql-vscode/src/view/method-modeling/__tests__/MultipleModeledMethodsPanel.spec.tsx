@@ -15,7 +15,7 @@ import { defaultModelConfig } from "../../../model-editor/languages";
 describe(MultipleModeledMethodsPanel.name, () => {
   const language = QueryLanguage.Java;
   const method = createMethod();
-  const onChange = jest.fn<void, [string, ModeledMethod[]]>();
+  const onChange = vi.fn<void, [string, ModeledMethod[]]>();
   const modelConfig = defaultModelConfig;
 
   const baseProps = {

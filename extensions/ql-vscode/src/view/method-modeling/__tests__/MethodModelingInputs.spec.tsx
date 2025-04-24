@@ -19,7 +19,7 @@ describe(MethodModelingInputs.name, () => {
   const method = createMethod();
   const modeledMethod = createSinkModeledMethod();
   const modelConfig = defaultModelConfig;
-  const onChange = jest.fn();
+  const onChange = vi.fn();
 
   it("renders the method modeling inputs", () => {
     render({
