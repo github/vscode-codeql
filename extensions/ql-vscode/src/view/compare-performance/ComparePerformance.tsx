@@ -97,6 +97,75 @@ class ComparisonDataset {
       pipelines: data.pipelineSummaryList[index],
     };
   }
+
+  /**
+   * Returns the RA hashes of all predicates that were evaluated in this data set, but not seen in `other`,
+   * because in `other` the dependency upon these predicates was cut off by a cache hit.
+   *
+   * For example, suppose predicate `A` depends on `B`, which depends on `C`, and the
+   * predicates were evaluated in the first log but not the second:
+   * ```
+   *                  first eval. log        second eval. log
+   * predicate A      seen evaluation        seen cache hit
+   *    |
+   *    V
+   * predicate B      seen evaluation        not seen
+   *    |
+   *    V
+   * predicate C      seen evaluation        not seen
+   * ```
+   *
+   * To ensure a meaningful comparison, we want to omit `predicate A` from the comparison view because of the cache hit.
+   *
+   * But predicates B and C did not have a recorded cache hit in the second log, because they were never scheduled for evaluation.
+   * Given the dependency graph, the most likely explanation is that they would have been evaluated if `A` had not been a cache hit.
+   * We therefore say that B and C are "shadowed" by the cache hit on A.
+   *
+   * The dependency graph is only visible in the first evaluation log, because `B` and `C` do not exist in the second log.
+   * So to compute this, we use the dependency graph from one log together with the set of cache hits in the other log.
+   */
+  getPredicatesShadowedByCacheHit(other: ComparisonDataset) {
+    const {
+      data: { dependencyLists, raHashes, names },
+      raToIndex,
+    } = this;
+    const cacheHits = new Set<string>();
+
+    function visit(index: number, raHash: string) {
+      if (cacheHits.has(raHash)) {
+        return;
+      }
+      cacheHits.add(raHash);
+      const dependencies = dependencyLists[index];
+      for (const dep of dependencies) {
+        const name = names[dep];
+        if (!other.nameToIndex.has(name)) {
+          visit(dep, raHashes[dep]);
+        }
+      }
+    }
+
+    for (const otherCacheHit of other.cacheHitIndices) {
+      {
+        // Look up by RA hash
+        const raHash = other.data.raHashes[otherCacheHit];
+        const ownIndex = raToIndex.get(raHash);
+        if (ownIndex != null) {
+          visit(ownIndex, raHash);
+        }
+      }
+      {
+        // Look up by name
+        const name = other.data.names[otherCacheHit];
+        const ownIndex = this.nameToIndex.get(name);
+        if (ownIndex != null) {
+          visit(ownIndex, this.data.raHashes[ownIndex]);
+        }
+      }
+    }
+
+    return cacheHits;
+  }
 }
 
 function renderOptionalValue(x: Optional<number>, unit: string | undefined) {
@@ -503,6 +572,17 @@ function ComparePerformanceWithData(props: {
 
   const hasCacheHitMismatch = useRef(false);
 
+  const shadowedCacheHitsFrom = useMemo(
+    () =>
+      hideCacheHits ? from.getPredicatesShadowedByCacheHit(to) : new Set(),
+    [from, to, hideCacheHits],
+  );
+  const shadowedCacheHitsTo = useMemo(
+    () =>
+      hideCacheHits ? to.getPredicatesShadowedByCacheHit(from) : new Set(),
+    [from, to, hideCacheHits],
+  );
+
   const rows: Row[] = useMemo(() => {
     hasCacheHitMismatch.current = false;
     return Array.from(keySet)
@@ -522,6 +602,16 @@ function ComparePerformanceWithData(props: {
           if (hideCacheHits) {
             return undefined!;
           }
+        }
+        if (
+          (isPresent(before) &&
+            !isPresent(after) &&
+            shadowedCacheHitsFrom.has(before.raHash)) ||
+          (isPresent(after) &&
+            !isPresent(before) &&
+            shadowedCacheHitsTo.has(after.raHash))
+        ) {
+          return undefined!;
         }
         const diff =
           (isPresent(afterValue) ? afterValue : 0) -
