@@ -18,7 +18,7 @@ import type {
 } from "../../log-insights/performance-comparison";
 import { formatDecimal } from "../../common/number";
 import { styled } from "styled-components";
-import { Codicon, ViewTitle, WarningBox } from "../common";
+import { Codicon, ViewTitle } from "../common";
 import { abbreviateRANames, abbreviateRASteps } from "./RAPrettyPrinter";
 import { Renaming, RenamingInput } from "./RenamingInput";
 
@@ -560,7 +560,7 @@ function ComparePerformanceWithData(props: {
 
   const comparison = data?.comparison;
 
-  const [hideCacheHits, setHideCacheHits] = useState(false);
+  const [hideCacheHits, setHideCacheHits] = useState(true);
 
   const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("absDelta");
 
@@ -686,23 +686,14 @@ function ComparePerformanceWithData(props: {
     <>
       <ViewTitle>Performance comparison</ViewTitle>
       {comparison && hasCacheHitMismatch.current && (
-        <WarningBox>
-          <strong>Inconsistent cache hits</strong>
-          <br />
-          Some predicates had a cache hit on one side but not the other. For
-          more accurate results, try running the{" "}
-          <strong>CodeQL: Clear Cache</strong> command before each query.
-          <br />
-          <br />
-          <label>
-            <input
-              type="checkbox"
-              checked={hideCacheHits}
-              onChange={() => setHideCacheHits(!hideCacheHits)}
-            />
-            Hide predicates with cache hits
-          </label>
-        </WarningBox>
+        <label>
+          <input
+            type="checkbox"
+            checked={hideCacheHits}
+            onChange={() => setHideCacheHits(!hideCacheHits)}
+          />
+          Hide differences due to cache hits
+        </label>
       )}
       <RenamingInput renamings={renamings} setRenamings={setRenamings} />
       Compare{" "}
