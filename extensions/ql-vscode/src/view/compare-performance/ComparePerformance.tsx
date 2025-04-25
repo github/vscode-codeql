@@ -35,6 +35,8 @@ function isPresent<T>(x: Optional<T>): x is T {
 }
 
 interface PredicateInfo {
+  name: string;
+  raHash: string;
   tuples: number;
   evaluationCount: number;
   iterationCount: number;
@@ -43,23 +45,37 @@ interface PredicateInfo {
 }
 
 class ComparisonDataset {
+  /**
+   * Predicates indexed by a key consisting of the name and its pipeline hash.
+   * Unlike the RA hash, the pipeline hash only depends on the predicate's own pipeline.
+   */
+  public keyToIndex = new Map<string, number>();
+  public raToIndex = new Map<string, number>();
   public nameToIndex = new Map<string, number>();
   public cacheHitIndices: Set<number>;
   public sentinelEmptyIndices: Set<number>;
 
-  constructor(public data: PerformanceComparisonDataFromLog) {
-    const { names } = data;
-    const { nameToIndex } = this;
+  constructor(private data: PerformanceComparisonDataFromLog) {
+    const { names, raHashes, pipelineSummaryList } = data;
+    const { keyToIndex, raToIndex, nameToIndex } = this;
     for (let i = 0; i < names.length; i++) {
-      nameToIndex.set(names[i], i);
+      const name = names[i];
+      const pipelineHash = getPipelineSummaryHash(pipelineSummaryList[i]);
+      keyToIndex.set(`${name}@${pipelineHash}`, i);
+      nameToIndex.set(name, i);
+      raToIndex.set(raHashes[i], i);
     }
     this.cacheHitIndices = new Set(data.cacheHitIndices);
     this.sentinelEmptyIndices = new Set(data.sentinelEmptyIndices);
   }
 
-  getTupleCountInfo(name: string): Optional<PredicateInfo> {
-    const { data, nameToIndex, cacheHitIndices, sentinelEmptyIndices } = this;
-    const index = nameToIndex.get(name);
+  keys() {
+    return Array.from(this.keyToIndex.keys());
+  }
+
+  getTupleCountInfo(key: string): Optional<PredicateInfo> {
+    const { data, keyToIndex, cacheHitIndices, sentinelEmptyIndices } = this;
+    const index = keyToIndex.get(key);
     if (index == null) {
       return AbsentReason.NotSeen;
     }
@@ -72,6 +88,8 @@ class ComparisonDataset {
       }
     }
     return {
+      name: data.names[index],
+      raHash: data.raHashes[index],
       evaluationCount: data.evaluationCounts[index],
       iterationCount: data.iterationCounts[index],
       timeCost: data.timeCosts[index],
@@ -336,6 +354,7 @@ function HighLevelStats(props: HighLevelStatsProps) {
 }
 
 interface Row {
+  key: string;
   name: string;
   before: Optional<PredicateInfo>;
   after: Optional<PredicateInfo>;
@@ -480,19 +499,16 @@ function ComparePerformanceWithData(props: {
 
   const [isPerEvaluation, setPerEvaluation] = useState(false);
 
-  const nameSet = useMemo(
-    () => union(from.data.names, to.data.names),
-    [from, to],
-  );
+  const keySet = useMemo(() => union(from.keys(), to.keys()), [from, to]);
 
   const hasCacheHitMismatch = useRef(false);
 
   const rows: Row[] = useMemo(() => {
     hasCacheHitMismatch.current = false;
-    return Array.from(nameSet)
-      .map((name) => {
-        const before = from.getTupleCountInfo(name);
-        const after = to.getTupleCountInfo(name);
+    return Array.from(keySet)
+      .map((key) => {
+        const before = from.getTupleCountInfo(key);
+        const after = to.getTupleCountInfo(key);
         const beforeValue = metricGetOptional(metric, before, isPerEvaluation);
         const afterValue = metricGetOptional(metric, after, isPerEvaluation);
         if (beforeValue === afterValue) {
@@ -510,11 +526,16 @@ function ComparePerformanceWithData(props: {
         const diff =
           (isPresent(afterValue) ? afterValue : 0) -
           (isPresent(beforeValue) ? beforeValue : 0);
-        return { name, before, after, diff } satisfies Row;
+        const name = isPresent(before)
+          ? before.name
+          : isPresent(after)
+            ? after.name
+            : key;
+        return { key, name, before, after, diff } satisfies Row;
       })
       .filter((x) => !!x)
       .sort(getSortOrder(sortOrder));
-  }, [nameSet, from, to, metric, hideCacheHits, sortOrder, isPerEvaluation]);
+  }, [keySet, from, to, metric, hideCacheHits, sortOrder, isPerEvaluation]);
 
   const { totalBefore, totalAfter, totalDiff } = useMemo(() => {
     let totalBefore = 0;
@@ -859,4 +880,15 @@ function collatePipelines(
 
 function samePipeline(a: string[], b: string[]) {
   return a.length === b.length && a.every((x, i) => x === b[i]);
+}
+
+function getPipelineSummaryHash(pipelines: Record<string, PipelineSummary>) {
+  // Note: we can't import "crypto" here because it is not available in the browser,
+  // so we just concatenate the hashes of the individual pipelines.
+  const keys = Object.keys(pipelines).sort();
+  let result = "";
+  for (const key of keys) {
+    result += `${pipelines[key].hash};`;
+  }
+  return result;
 }
