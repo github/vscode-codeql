@@ -62,7 +62,7 @@ describe("log scanners", () => {
     );
     expect(problemReporter.problems[0].order).toBe("order_500000");
     expect(problemReporter.problems[0].message).toBe(
-      "The order_500000 pipeline for 'Enclosing::exprEnclosingElement#c50c5fbf#ff' has an inefficient join order. Its join order metric is 98.07, which is larger than the threshold of 50.00.",
+      "The order_500000 pipeline for 'Enclosing::exprEnclosingElement#c50c5fbf#ff@7cc60wto' has an inefficient join order. Its join order metric is 98.07, which is larger than the threshold of 50.00.",
     );
 
     expect(problemReporter.problems[1].predicateName).toBe("#select#ff");
@@ -71,7 +71,7 @@ describe("log scanners", () => {
     );
     expect(problemReporter.problems[1].order).toBeUndefined();
     expect(problemReporter.problems[1].message).toBe(
-      "'#select#ff' has an inefficient join order. Its join order metric is 4961.83, which is larger than the threshold of 50.00.",
+      "'#select#ff@1bb43c97' has an inefficient join order. Its join order metric is 4961.83, which is larger than the threshold of 50.00.",
     );
   });
 });

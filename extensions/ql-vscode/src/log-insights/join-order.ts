@@ -205,9 +205,10 @@ class JoinOrderScanner {
             resultSize!,
           );
           if (metric >= this.warningThreshold) {
-            const message = `'${
-              event.predicateName
-            }' has an inefficient join order. Its join order metric is ${metric.toFixed(
+            const message = `'${event.predicateName}@${event.raHash.substring(
+              0,
+              8,
+            )}' has an inefficient join order. Its join order metric is ${metric.toFixed(
               2,
             )}, which is larger than the threshold of ${this.warningThreshold.toFixed(
               2,
@@ -243,9 +244,10 @@ class JoinOrderScanner {
                   resultSize,
                 );
                 if (metric >= this.warningThreshold) {
-                  const message = `The ${raReference} pipeline for '${
-                    predicateName
-                  }' has an inefficient join order. Its join order metric is ${metric.toFixed(
+                  const message = `The ${raReference} pipeline for '${predicateName}@${raHash.substring(
+                    0,
+                    8,
+                  )}' has an inefficient join order. Its join order metric is ${metric.toFixed(
                     2,
                   )}, which is larger than the threshold of ${this.warningThreshold.toFixed(
                     2,
