@@ -625,7 +625,17 @@ function ComparePerformanceWithData(props: {
       })
       .filter((x) => !!x)
       .sort(getSortOrder(sortOrder));
-  }, [keySet, from, to, metric, hideCacheHits, sortOrder, isPerEvaluation]);
+  }, [
+    keySet,
+    from,
+    to,
+    metric,
+    hideCacheHits,
+    sortOrder,
+    isPerEvaluation,
+    shadowedCacheHitsFrom,
+    shadowedCacheHitsTo,
+  ]);
 
   const { totalBefore, totalAfter, totalDiff } = useMemo(() => {
     let totalBefore = 0;
