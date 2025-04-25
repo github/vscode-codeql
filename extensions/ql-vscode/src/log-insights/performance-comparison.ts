@@ -1,4 +1,3 @@
-import type { EvaluationLogScanner } from "./log-scanner";
 import type { SummaryEvent } from "./log-summary";
 
 export interface PipelineSummary {
@@ -55,7 +54,7 @@ export interface PerformanceComparisonDataFromLog {
   pipelineSummaryList: Array<Record<string, PipelineSummary>>;
 }
 
-export class PerformanceOverviewScanner implements EvaluationLogScanner {
+export class PerformanceOverviewScanner {
   private readonly nameToIndex = new Map<string, number>();
   private readonly data: PerformanceComparisonDataFromLog = {
     names: [],
@@ -178,6 +177,4 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       }
     }
   }
-
-  onDone(): void {}
 }

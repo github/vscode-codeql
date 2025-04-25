@@ -1,28 +1,39 @@
+import { scanAndReportJoinOrderProblems } from "../../src/log-insights/join-order";
 import type { EvaluationLogProblemReporter } from "../../src/log-insights/log-scanner";
-import { EvaluationLogScannerSet } from "../../src/log-insights/log-scanner";
-import { JoinOrderScannerProvider } from "../../src/log-insights/join-order";
 import { join } from "path";
 
 interface TestProblem {
   predicateName: string;
   raHash: string;
-  iteration: number;
+  order: string | undefined;
   message: string;
 }
 
 class TestProblemReporter implements EvaluationLogProblemReporter {
   public readonly problems: TestProblem[] = [];
 
-  public reportProblem(
+  public reportProblemNonRecursive(
     predicateName: string,
     raHash: string,
-    iteration: number,
     message: string,
   ): void {
     this.problems.push({
       predicateName,
       raHash,
-      iteration,
+      order: undefined,
+      message,
+    });
+  }
+  public reportProblemForRecursionSummary(
+    predicateName: string,
+    raHash: string,
+    order: string,
+    message: string,
+  ): void {
+    this.problems.push({
+      predicateName,
+      raHash,
+      order,
       message,
     });
   }
@@ -34,23 +45,33 @@ class TestProblemReporter implements EvaluationLogProblemReporter {
 
 describe("log scanners", () => {
   it("should detect bad join orders", async () => {
-    const scanners = new EvaluationLogScannerSet();
-    scanners.registerLogScannerProvider(new JoinOrderScannerProvider(() => 50));
     const summaryPath = join(
       __dirname,
       "data/evaluator-log-summaries/bad-join-order.jsonl",
     );
     const problemReporter = new TestProblemReporter();
-    await scanners.scanLog(summaryPath, problemReporter);
+    await scanAndReportJoinOrderProblems(summaryPath, problemReporter, 50);
 
-    expect(problemReporter.problems.length).toBe(1);
-    expect(problemReporter.problems[0].predicateName).toBe("#select#ff");
+    expect(problemReporter.problems.length).toBe(2);
+
+    expect(problemReporter.problems[0].predicateName).toBe(
+      "Enclosing::exprEnclosingElement#c50c5fbf#ff",
+    );
     expect(problemReporter.problems[0].raHash).toBe(
+      "7cc60wtoigvl1lheqqa12d8fmi4",
+    );
+    expect(problemReporter.problems[0].order).toBe("order_500000");
+    expect(problemReporter.problems[0].message).toBe(
+      "The order_500000 pipeline for 'Enclosing::exprEnclosingElement#c50c5fbf#ff' has an inefficient join order. Its join order metric is 98.07, which is larger than the threshold of 50.00.",
+    );
+
+    expect(problemReporter.problems[1].predicateName).toBe("#select#ff");
+    expect(problemReporter.problems[1].raHash).toBe(
       "1bb43c97jpmuh8r2v0f9hktim63",
     );
-    expect(problemReporter.problems[0].iteration).toBe(0);
-    expect(problemReporter.problems[0].message).toBe(
-      "Relation '#select#ff' has an inefficient join order. Its join order metric is 4961.83, which is larger than the threshold of 50.00.",
+    expect(problemReporter.problems[1].order).toBeUndefined();
+    expect(problemReporter.problems[1].message).toBe(
+      "'#select#ff' has an inefficient join order. Its join order metric is 4961.83, which is larger than the threshold of 50.00.",
     );
   });
 });

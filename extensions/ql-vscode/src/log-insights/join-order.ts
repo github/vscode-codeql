@@ -1,8 +1,5 @@
-import type {
-  EvaluationLogProblemReporter,
-  EvaluationLogScanner,
-  EvaluationLogScannerProvider,
-} from "./log-scanner";
+import { readJsonlFile } from "../common/jsonl-reader";
+import type { EvaluationLogProblemReporter } from "./log-scanner";
 import type {
   InLayer,
   ComputeRecursive,
@@ -129,36 +126,18 @@ interface Bucket {
   dependentPredicateSizes: Map<string, number>;
 }
 
-class JoinOrderScanner implements EvaluationLogScanner {
+class PredicateSizeScanner {
   // Map a predicate hash to its result size
-  private readonly predicateSizes = new Map<string, number>();
-  private readonly layerEvents = new Map<
-    string,
-    Array<ComputeRecursive | InLayer>
-  >();
+  readonly predicateSizes = new Map<string, number>();
+  readonly layerEvents = new Map<string, Array<ComputeRecursive | InLayer>>();
 
-  constructor(
-    private readonly problemReporter: EvaluationLogProblemReporter,
-    private readonly warningThreshold: number,
-  ) {}
-
-  public onEvent(event: SummaryEvent): void {
+  onEvent(event: SummaryEvent): void {
     if (
       event.completionType !== undefined &&
       event.completionType !== "SUCCESS"
     ) {
       return; // Skip any evaluation that wasn't successful
     }
-
-    this.recordPredicateSizes(event);
-    this.computeBadnessMetric(event);
-  }
-
-  public onDone(): void {
-    void this;
-  }
-
-  private recordPredicateSizes(event: SummaryEvent): void {
     switch (event.evaluationStrategy) {
       case "EXTENSIONAL":
       case "COMPUTED_EXTENSIONAL":
@@ -185,8 +164,20 @@ class JoinOrderScanner implements EvaluationLogScanner {
       }
     }
   }
+}
 
-  private computeBadnessMetric(event: SummaryEvent): void {
+class JoinOrderScanner {
+  constructor(
+    private readonly predicateSizes: Map<string, number>,
+    private readonly layerEvents: Map<
+      string,
+      Array<ComputeRecursive | InLayer>
+    >,
+    private readonly problemReporter: EvaluationLogProblemReporter,
+    private readonly warningThreshold: number,
+  ) {}
+
+  public onEvent(event: SummaryEvent): void {
     if (
       event.completionType !== undefined &&
       event.completionType !== "SUCCESS"
@@ -475,13 +466,26 @@ class JoinOrderScanner implements EvaluationLogScanner {
   }
 }
 
-export class JoinOrderScannerProvider implements EvaluationLogScannerProvider {
-  constructor(private readonly getThreshdold: () => number) {}
+export async function scanAndReportJoinOrderProblems(
+  jsonSummaryLocation: string,
+  problemReporter: EvaluationLogProblemReporter,
+  warningThreshold: number,
+) {
+  // Do two passes over the summary JSON. The first pass collects the sizes of predicates, along
+  // with collecting layer events for each recursive SCC.
+  const predicateSizeScanner = new PredicateSizeScanner();
+  await readJsonlFile<SummaryEvent>(jsonSummaryLocation, async (obj) => {
+    predicateSizeScanner.onEvent(obj);
+  });
 
-  public createScanner(
-    problemReporter: EvaluationLogProblemReporter,
-  ): EvaluationLogScanner {
-    const threshold = this.getThreshdold();
-    return new JoinOrderScanner(problemReporter, threshold);
-  }
+  // The second pass takes the information from the first pass, computes join order scores, and reports those that exceed the threshold.
+  const joinOrderScanner = new JoinOrderScanner(
+    predicateSizeScanner.predicateSizes,
+    predicateSizeScanner.layerEvents,
+    problemReporter,
+    warningThreshold,
+  );
+  await readJsonlFile<SummaryEvent>(jsonSummaryLocation, async (obj) => {
+    joinOrderScanner.onEvent(obj);
+  });
 }

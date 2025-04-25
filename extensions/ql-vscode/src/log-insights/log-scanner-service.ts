@@ -2,11 +2,12 @@ import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 import type { EvaluationLogProblemReporter } from "./log-scanner";
-import { EvaluationLogScannerSet } from "./log-scanner";
 import type { PipelineInfo, SummarySymbols } from "./summary-parser";
 import { readFile } from "fs-extra";
 import { extLogger } from "../common/logging/vscode";
 import type { QueryHistoryManager } from "../query-history/query-history-manager";
+import { scanAndReportJoinOrderProblems } from "./join-order";
+import { joinOrderWarningThreshold } from "../config";
 
 /**
  * Compute the key used to find a predicate in the summary symbols.
@@ -83,7 +84,6 @@ class ProblemReporter implements EvaluationLogProblemReporter {
 }
 
 export class LogScannerService extends DisposableObject {
-  public readonly scanners = new EvaluationLogScannerSet();
   private readonly diagnosticCollection = this.push(
     languages.createDiagnosticCollection("ql-eval-log"),
   );
@@ -151,9 +151,11 @@ export class LogScannerService extends DisposableObject {
       );
     }
     const problemReporter = new ProblemReporter(symbols);
-
-    await this.scanners.scanLog(jsonSummaryLocation, problemReporter);
-
+    await scanAndReportJoinOrderProblems(
+      jsonSummaryLocation,
+      problemReporter,
+      joinOrderWarningThreshold(),
+    );
     return problemReporter.diagnostics;
   }
 }
