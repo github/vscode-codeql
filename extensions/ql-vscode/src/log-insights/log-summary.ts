@@ -63,7 +63,7 @@ export interface InLayer extends ResultEventBase {
   predicateIterationMillis: number[];
 }
 
-export interface NamedLocal extends ResultEventBase {
+interface NamedLocal extends ResultEventBase {
   evaluationStrategy: "NAMED_LOCAL";
   deltaSizes: number[];
   ra: Ra;
