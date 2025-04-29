@@ -159,7 +159,7 @@ class ComparisonDataset {
         const name = other.data.names[otherCacheHit];
         const ownIndex = this.nameToIndex.get(name);
         if (ownIndex != null) {
-          visit(ownIndex, this.data.raHashes[ownIndex]);
+          visit(ownIndex, raHashes[ownIndex]);
         }
       }
     }

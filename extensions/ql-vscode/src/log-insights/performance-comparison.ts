@@ -124,7 +124,7 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       case "COMPUTED_EXTENSIONAL": {
         if (predicateName.startsWith("cached_")) {
           // Add a dependency from a cached COMPUTED_EXTENSIONAL to the predicate with the actual contents.
-          // The raHash of the this event may appear in a CACHE_HIT events in the other event log. The dependency
+          // The raHash of the this event may appear in a CACHE_HIT event in the other event log. The dependency
           // we're adding here is needed in order to associate the original predicate with such a cache hit.
           const originalName = predicateName.substring("cached_".length);
           const originalIndex = this.nameToIndex.get(originalName);
