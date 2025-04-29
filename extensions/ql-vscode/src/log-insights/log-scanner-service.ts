@@ -2,11 +2,12 @@ import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 import type { EvaluationLogProblemReporter } from "./log-scanner";
-import { EvaluationLogScannerSet } from "./log-scanner";
 import type { PipelineInfo, SummarySymbols } from "./summary-parser";
 import { readFile } from "fs-extra";
 import { extLogger } from "../common/logging/vscode";
 import type { QueryHistoryManager } from "../query-history/query-history-manager";
+import { scanAndReportJoinOrderProblems } from "./join-order";
+import { joinOrderWarningThreshold } from "../config";
 
 /**
  * Compute the key used to find a predicate in the summary symbols.
@@ -28,17 +29,41 @@ class ProblemReporter implements EvaluationLogProblemReporter {
 
   constructor(private readonly symbols: SummarySymbols | undefined) {}
 
-  public reportProblem(
+  public reportProblemNonRecursive(
     predicateName: string,
     raHash: string,
-    iteration: number,
     message: string,
   ): void {
     const nameWithHash = predicateSymbolKey(predicateName, raHash);
     const predicateSymbol = this.symbols?.predicates[nameWithHash];
     let predicateInfo: PipelineInfo | undefined = undefined;
     if (predicateSymbol !== undefined) {
-      predicateInfo = predicateSymbol.iterations[iteration];
+      predicateInfo = predicateSymbol.iterations[0];
+    }
+    if (predicateInfo !== undefined) {
+      const range = new Range(
+        predicateInfo.raStartLine,
+        0,
+        predicateInfo.raEndLine + 1,
+        0,
+      );
+      this.diagnostics.push(
+        new Diagnostic(range, message, DiagnosticSeverity.Error),
+      );
+    }
+  }
+
+  public reportProblemForRecursionSummary(
+    predicateName: string,
+    raHash: string,
+    order: string,
+    message: string,
+  ): void {
+    const nameWithHash = predicateSymbolKey(predicateName, raHash);
+    const predicateSymbol = this.symbols?.predicates[nameWithHash];
+    let predicateInfo: PipelineInfo | undefined = undefined;
+    if (predicateSymbol !== undefined) {
+      predicateInfo = predicateSymbol.recursionSummaries[order];
     }
     if (predicateInfo !== undefined) {
       const range = new Range(
@@ -59,7 +84,6 @@ class ProblemReporter implements EvaluationLogProblemReporter {
 }
 
 export class LogScannerService extends DisposableObject {
-  public readonly scanners = new EvaluationLogScannerSet();
   private readonly diagnosticCollection = this.push(
     languages.createDiagnosticCollection("ql-eval-log"),
   );
@@ -127,9 +151,11 @@ export class LogScannerService extends DisposableObject {
       );
     }
     const problemReporter = new ProblemReporter(symbols);
-
-    await this.scanners.scanLog(jsonSummaryLocation, problemReporter);
-
+    await scanAndReportJoinOrderProblems(
+      jsonSummaryLocation,
+      problemReporter,
+      joinOrderWarningThreshold(),
+    );
     return problemReporter.diagnostics;
   }
 }

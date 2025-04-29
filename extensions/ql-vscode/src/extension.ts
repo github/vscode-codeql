@@ -28,7 +28,6 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   GitHubDatabaseConfigListener,
-  joinOrderWarningThreshold,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
   VariantAnalysisConfigListener,
@@ -102,7 +101,6 @@ import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { EvalLogViewer } from "./query-evaluation-logging";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
-import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
@@ -941,11 +939,6 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing evaluation log scanners.");
   const logScannerService = new LogScannerService(qhm);
   ctx.subscriptions.push(logScannerService);
-  ctx.subscriptions.push(
-    logScannerService.scanners.registerLogScannerProvider(
-      new JoinOrderScannerProvider(() => joinOrderWarningThreshold()),
-    ),
-  );
 
   void extLogger.log("Initializing compare view.");
   const compareView = new CompareView(
