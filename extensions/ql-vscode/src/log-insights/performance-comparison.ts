@@ -1,5 +1,4 @@
 import { createHash } from "crypto";
-import type { EvaluationLogScanner } from "./log-scanner";
 import type { SummaryEvent } from "./log-summary";
 
 export interface PipelineSummary {
@@ -63,7 +62,7 @@ export interface PerformanceComparisonDataFromLog {
   dependencyLists: number[][];
 }
 
-export class PerformanceOverviewScanner implements EvaluationLogScanner {
+export class PerformanceOverviewScanner {
   private readonly data: PerformanceComparisonDataFromLog = {
     names: [],
     raHashes: [],
@@ -232,8 +231,6 @@ export class PerformanceOverviewScanner implements EvaluationLogScanner {
       }
     }
   }
-
-  onDone(): void {}
 }
 
 function getPipelineHash(steps: string[]) {

@@ -1,8 +1,5 @@
-import type {
-  EvaluationLogProblemReporter,
-  EvaluationLogScanner,
-  EvaluationLogScannerProvider,
-} from "./log-scanner";
+import { readJsonlFile } from "../common/jsonl-reader";
+import type { EvaluationLogProblemReporter } from "./log-scanner";
 import type {
   InLayer,
   ComputeRecursive,
@@ -17,23 +14,6 @@ import type {
 function safeMax(it?: Iterable<number>) {
   const m = Math.max(...(it || []));
   return Number.isFinite(m) ? m : 0;
-}
-
-/**
- * Compute a key for the maps that that is sent to report generation.
- * Should only be used on events that are known to define queryCausingWork.
- */
-function makeKey(
-  queryCausingWork: string | undefined,
-  predicate: string,
-  suffix = "",
-): string {
-  if (queryCausingWork === undefined) {
-    throw new Error(
-      "queryCausingWork was not defined on an event we expected it to be defined for!",
-    );
-  }
-  return `${queryCausingWork}:${predicate}${suffix ? ` ${suffix}` : ""}`;
 }
 
 function getDependentPredicates(operations: string[]): string[] {
@@ -128,14 +108,6 @@ function pointwiseSum(
   return result;
 }
 
-function pushValue<K, V>(m: Map<K, V[]>, k: K, v: V) {
-  if (!m.has(k)) {
-    m.set(k, []);
-  }
-  m.get(k)!.push(v);
-  return m;
-}
-
 function computeJoinOrderBadness(
   maxTupleCount: number,
   maxDependentPredicateSize: number,
@@ -154,41 +126,18 @@ interface Bucket {
   dependentPredicateSizes: Map<string, number>;
 }
 
-class JoinOrderScanner implements EvaluationLogScanner {
+class PredicateSizeScanner {
   // Map a predicate hash to its result size
-  private readonly predicateSizes = new Map<string, number>();
-  private readonly layerEvents = new Map<
-    string,
-    Array<ComputeRecursive | InLayer>
-  >();
-  // Map a key of the form 'query-with-demand : predicate name' to its badness input.
-  private readonly maxTupleCountMap = new Map<string, number[]>();
-  private readonly resultSizeMap = new Map<string, number[]>();
-  private readonly maxDependentPredicateSizeMap = new Map<string, number[]>();
-  private readonly joinOrderMetricMap = new Map<string, number>();
+  readonly predicateSizes = new Map<string, number>();
+  readonly layerEvents = new Map<string, Array<ComputeRecursive | InLayer>>();
 
-  constructor(
-    private readonly problemReporter: EvaluationLogProblemReporter,
-    private readonly warningThreshold: number,
-  ) {}
-
-  public onEvent(event: SummaryEvent): void {
+  onEvent(event: SummaryEvent): void {
     if (
       event.completionType !== undefined &&
       event.completionType !== "SUCCESS"
     ) {
       return; // Skip any evaluation that wasn't successful
     }
-
-    this.recordPredicateSizes(event);
-    this.computeBadnessMetric(event);
-  }
-
-  public onDone(): void {
-    void this;
-  }
-
-  private recordPredicateSizes(event: SummaryEvent): void {
     switch (event.evaluationStrategy) {
       case "EXTENSIONAL":
       case "COMPUTED_EXTENSIONAL":
@@ -215,29 +164,20 @@ class JoinOrderScanner implements EvaluationLogScanner {
       }
     }
   }
+}
 
-  private reportProblemIfNecessary(
-    event: SummaryEvent,
-    iteration: number,
-    metric: number,
-  ): void {
-    if (metric >= this.warningThreshold) {
-      this.problemReporter.reportProblem(
-        event.predicateName,
-        event.raHash,
-        iteration,
-        `Relation '${
-          event.predicateName
-        }' has an inefficient join order. Its join order metric is ${metric.toFixed(
-          2,
-        )}, which is larger than the threshold of ${this.warningThreshold.toFixed(
-          2,
-        )}.`,
-      );
-    }
-  }
+class JoinOrderScanner {
+  constructor(
+    private readonly predicateSizes: Map<string, number>,
+    private readonly layerEvents: Map<
+      string,
+      Array<ComputeRecursive | InLayer>
+    >,
+    private readonly problemReporter: EvaluationLogProblemReporter,
+    private readonly warningThreshold: number,
+  ) {}
 
-  private computeBadnessMetric(event: SummaryEvent): void {
+  public onEvent(event: SummaryEvent): void {
     if (
       event.completionType !== undefined &&
       event.completionType !== "SUCCESS"
@@ -252,7 +192,6 @@ class JoinOrderScanner implements EvaluationLogScanner {
         }
         // Compute the badness metric for a non-recursive predicate. The metric in this case is defined as:
         // badness = (max tuple count in the pipeline) / (largest predicate this pipeline depends on)
-        const key = makeKey(event.queryCausingWork, event.predicateName);
         const resultSize = event.resultSize;
 
         // There is only one entry in `pipelineRuns` if it's a non-recursive predicate.
@@ -260,20 +199,26 @@ class JoinOrderScanner implements EvaluationLogScanner {
           this.badnessInputsForNonRecursiveDelta(event.pipelineRuns[0], event);
 
         if (maxDependentPredicateSize > 0) {
-          pushValue(this.maxTupleCountMap, key, maxTupleCount);
-          pushValue(this.resultSizeMap, key, resultSize);
-          pushValue(
-            this.maxDependentPredicateSizeMap,
-            key,
-            maxDependentPredicateSize,
-          );
           const metric = computeJoinOrderBadness(
             maxTupleCount,
             maxDependentPredicateSize,
             resultSize!,
           );
-          this.joinOrderMetricMap.set(key, metric);
-          this.reportProblemIfNecessary(event, 0, metric);
+          if (metric >= this.warningThreshold) {
+            const message = `'${event.predicateName}@${event.raHash.substring(
+              0,
+              8,
+            )}' has an inefficient join order. Its join order metric is ${metric.toFixed(
+              2,
+            )}, which is larger than the threshold of ${this.warningThreshold.toFixed(
+              2,
+            )}.`;
+            this.problemReporter.reportProblemNonRecursive(
+              event.predicateName,
+              event.raHash,
+              message,
+            );
+          }
         }
         break;
       }
@@ -282,39 +227,40 @@ class JoinOrderScanner implements EvaluationLogScanner {
         // Compute the badness metric for a recursive predicate for each ordering.
         const sccMetricInput = this.badnessInputsForRecursiveDelta(event);
         // Loop through each predicate in the SCC
-        sccMetricInput.forEach((buckets, predicate) => {
-          // Loop through each ordering of the predicate
-          buckets.forEach((bucket, raReference) => {
-            // Format the key as demanding-query:name (ordering)
-            const key = makeKey(
-              event.queryCausingWork,
-              predicate,
-              `(${raReference})`,
-            );
-            const maxTupleCount = Math.max(...bucket.tupleCounts);
-            const resultSize = bucket.resultSize;
-            const maxDependentPredicateSize = Math.max(
-              ...bucket.dependentPredicateSizes.values(),
-            );
+        sccMetricInput.forEach((hashToOrderToBucket, predicateName) => {
+          hashToOrderToBucket.forEach((orderToBucket, raHash) => {
+            // Loop through each ordering of the predicate.
+            orderToBucket.forEach((bucket, raReference) => {
+              const maxDependentPredicateSize = Math.max(
+                ...bucket.dependentPredicateSizes.values(),
+              );
 
-            if (maxDependentPredicateSize > 0) {
-              pushValue(this.maxTupleCountMap, key, maxTupleCount);
-              pushValue(this.resultSizeMap, key, resultSize);
-              pushValue(
-                this.maxDependentPredicateSizeMap,
-                key,
-                maxDependentPredicateSize,
-              );
-              const metric = computeJoinOrderBadness(
-                maxTupleCount,
-                maxDependentPredicateSize,
-                resultSize,
-              );
-              const oldMetric = this.joinOrderMetricMap.get(key);
-              if (oldMetric === undefined || metric > oldMetric) {
-                this.joinOrderMetricMap.set(key, metric);
+              if (maxDependentPredicateSize > 0) {
+                const maxTupleCount = Math.max(...bucket.tupleCounts);
+                const resultSize = bucket.resultSize;
+                const metric = computeJoinOrderBadness(
+                  maxTupleCount,
+                  maxDependentPredicateSize,
+                  resultSize,
+                );
+                if (metric >= this.warningThreshold) {
+                  const message = `The ${raReference} pipeline for '${predicateName}@${raHash.substring(
+                    0,
+                    8,
+                  )}' has an inefficient join order. Its join order metric is ${metric.toFixed(
+                    2,
+                  )}, which is larger than the threshold of ${this.warningThreshold.toFixed(
+                    2,
+                  )}.`;
+                  this.problemReporter.reportProblemForRecursionSummary(
+                    predicateName,
+                    raHash,
+                    raReference,
+                    message,
+                  );
+                }
               }
-            }
+            });
           });
         });
         break;
@@ -457,20 +403,28 @@ class JoinOrderScanner implements EvaluationLogScanner {
    */
   private badnessInputsForRecursiveDelta(
     event: ComputeRecursive,
-  ): Map<string, Map<string, Bucket>> {
-    // nameToOrderToBucket : predicate name -> ordering (i.e., standard, order_500000, etc.) -> bucket
-    const nameToOrderToBucket = new Map<string, Map<string, Bucket>>();
+  ): Map<string, Map<string, Map<string, Bucket>>> {
+    // nameToHashToOrderToBucket : predicate name -> RA hash -> ordering (i.e., standard, order_500000, etc.) -> bucket
+    const nameToHashToOrderToBucket = new Map<
+      string,
+      Map<string, Map<string, Bucket>>
+    >();
 
     // Iterate through the SCC and compute the metric inputs
     this.iterateSCC(event, (inLayerEvent, run, iteration) => {
       const raReference = run.raReference;
       const predicateName = inLayerEvent.predicateName;
-      if (!nameToOrderToBucket.has(predicateName)) {
-        nameToOrderToBucket.set(predicateName, new Map());
+      if (!nameToHashToOrderToBucket.has(predicateName)) {
+        nameToHashToOrderToBucket.set(predicateName, new Map());
       }
-      const orderTobucket = nameToOrderToBucket.get(predicateName)!;
-      if (!orderTobucket.has(raReference)) {
-        orderTobucket.set(raReference, {
+      const hashToOrderToBucket = nameToHashToOrderToBucket.get(predicateName)!;
+      const raHash = inLayerEvent.raHash;
+      if (!hashToOrderToBucket.has(raHash)) {
+        hashToOrderToBucket.set(raHash, new Map());
+      }
+      const orderToBucket = hashToOrderToBucket.get(raHash)!;
+      if (!orderToBucket.has(raReference)) {
+        orderToBucket.set(raReference, {
           tupleCounts: new Int32Array(0),
           resultSize: 0,
           dependentPredicateSizes: new Map(),
@@ -484,7 +438,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         iteration,
       );
 
-      const bucket = orderTobucket.get(raReference)!;
+      const bucket = orderToBucket.get(raReference)!;
       // Pointwise sum the tuple counts
       const newTupleCounts = pointwiseSum(
         bucket.tupleCounts,
@@ -504,23 +458,36 @@ class JoinOrderScanner implements EvaluationLogScanner {
         );
       }
 
-      orderTobucket.set(raReference, {
+      orderToBucket.set(raReference, {
         tupleCounts: newTupleCounts,
         resultSize,
         dependentPredicateSizes: newDependentPredicateSizes,
       });
     });
-    return nameToOrderToBucket;
+    return nameToHashToOrderToBucket;
   }
 }
 
-export class JoinOrderScannerProvider implements EvaluationLogScannerProvider {
-  constructor(private readonly getThreshdold: () => number) {}
+export async function scanAndReportJoinOrderProblems(
+  jsonSummaryLocation: string,
+  problemReporter: EvaluationLogProblemReporter,
+  warningThreshold: number,
+) {
+  // Do two passes over the summary JSON. The first pass collects the sizes of predicates, along
+  // with collecting layer events for each recursive SCC.
+  const predicateSizeScanner = new PredicateSizeScanner();
+  await readJsonlFile<SummaryEvent>(jsonSummaryLocation, async (obj) => {
+    predicateSizeScanner.onEvent(obj);
+  });
 
-  public createScanner(
-    problemReporter: EvaluationLogProblemReporter,
-  ): EvaluationLogScanner {
-    const threshold = this.getThreshdold();
-    return new JoinOrderScanner(problemReporter, threshold);
-  }
+  // The second pass takes the information from the first pass, computes join order scores, and reports those that exceed the threshold.
+  const joinOrderScanner = new JoinOrderScanner(
+    predicateSizeScanner.predicateSizes,
+    predicateSizeScanner.layerEvents,
+    problemReporter,
+    warningThreshold,
+  );
+  await readJsonlFile<SummaryEvent>(jsonSummaryLocation, async (obj) => {
+    joinOrderScanner.onEvent(obj);
+  });
 }

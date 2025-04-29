@@ -8,6 +8,8 @@ queries:
     uses: ./.github/codeql/queries
 paths:
   - ./extensions/ql-vscode
+  - ./.github/workflows
+  - ./.github/actions
 paths-ignore:
   - '**/node_modules'
   - '**/build'

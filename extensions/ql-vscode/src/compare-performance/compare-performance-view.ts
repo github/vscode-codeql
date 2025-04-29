@@ -16,8 +16,9 @@ import { withProgress } from "../common/vscode/progress";
 import { telemetryListener } from "../common/vscode/telemetry";
 import type { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import { PerformanceOverviewScanner } from "../log-insights/performance-comparison";
-import { scanLog } from "../log-insights/log-scanner";
 import type { ResultsView } from "../local-queries";
+import { readJsonlFile } from "../common/jsonl-reader";
+import type { SummaryEvent } from "../log-insights/log-summary";
 
 export class ComparePerformanceView extends AbstractWebview<
   ToComparePerformanceViewMessage,
@@ -46,8 +47,20 @@ export class ComparePerformanceView extends AbstractWebview<
     function scanLogWithProgress(log: string, logDescription: string) {
       const bytes = statSync(log).size;
       return withProgress(
-        async (progress) =>
-          scanLog(log, new PerformanceOverviewScanner(), progress),
+        async (progress) => {
+          progress?.({
+            // all scans have step 1 - the backing progress tracker allows increments instead of
+            // steps - but for now we are happy with a tiny UI that says what is happening
+            message: `Scanning ...`,
+            step: 1,
+            maxStep: 2,
+          });
+          const scanner = new PerformanceOverviewScanner();
+          await readJsonlFile<SummaryEvent>(log, async (obj) => {
+            scanner.onEvent(obj);
+          });
+          return scanner;
+        },
 
         {
           title: `Scanning evaluator log ${logDescription} (${(bytes / 1024 / 1024).toFixed(1)} MB)`,
