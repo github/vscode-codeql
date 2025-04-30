@@ -18,7 +18,7 @@ import type {
 } from "../../log-insights/performance-comparison";
 import { formatDecimal } from "../../common/number";
 import { styled } from "styled-components";
-import { Codicon, ViewTitle, WarningBox } from "../common";
+import { Codicon, ViewTitle } from "../common";
 import { abbreviateRANames, abbreviateRASteps } from "./RAPrettyPrinter";
 import { Renaming, RenamingInput } from "./RenamingInput";
 
@@ -35,6 +35,8 @@ function isPresent<T>(x: Optional<T>): x is T {
 }
 
 interface PredicateInfo {
+  name: string;
+  raHash: string;
   tuples: number;
   evaluationCount: number;
   iterationCount: number;
@@ -43,23 +45,37 @@ interface PredicateInfo {
 }
 
 class ComparisonDataset {
+  /**
+   * Predicates indexed by a key consisting of the name and its pipeline hash.
+   * Unlike the RA hash, the pipeline hash only depends on the predicate's own pipeline.
+   */
+  public keyToIndex = new Map<string, number>();
+  public raToIndex = new Map<string, number>();
   public nameToIndex = new Map<string, number>();
   public cacheHitIndices: Set<number>;
   public sentinelEmptyIndices: Set<number>;
 
-  constructor(public data: PerformanceComparisonDataFromLog) {
-    const { names } = data;
-    const { nameToIndex } = this;
+  constructor(private data: PerformanceComparisonDataFromLog) {
+    const { names, raHashes, pipelineSummaryList } = data;
+    const { keyToIndex, raToIndex, nameToIndex } = this;
     for (let i = 0; i < names.length; i++) {
-      nameToIndex.set(names[i], i);
+      const name = names[i];
+      const pipelineHash = getPipelineSummaryHash(pipelineSummaryList[i]);
+      keyToIndex.set(`${name}@${pipelineHash}`, i);
+      nameToIndex.set(name, i);
+      raToIndex.set(raHashes[i], i);
     }
     this.cacheHitIndices = new Set(data.cacheHitIndices);
     this.sentinelEmptyIndices = new Set(data.sentinelEmptyIndices);
   }
 
-  getTupleCountInfo(name: string): Optional<PredicateInfo> {
-    const { data, nameToIndex, cacheHitIndices, sentinelEmptyIndices } = this;
-    const index = nameToIndex.get(name);
+  keys() {
+    return Array.from(this.keyToIndex.keys());
+  }
+
+  getTupleCountInfo(key: string): Optional<PredicateInfo> {
+    const { data, keyToIndex, cacheHitIndices, sentinelEmptyIndices } = this;
+    const index = keyToIndex.get(key);
     if (index == null) {
       return AbsentReason.NotSeen;
     }
@@ -72,12 +88,83 @@ class ComparisonDataset {
       }
     }
     return {
+      name: data.names[index],
+      raHash: data.raHashes[index],
       evaluationCount: data.evaluationCounts[index],
       iterationCount: data.iterationCounts[index],
       timeCost: data.timeCosts[index],
       tuples: tupleCost,
       pipelines: data.pipelineSummaryList[index],
     };
+  }
+
+  /**
+   * Returns the RA hashes of all predicates that were evaluated in this data set, but not seen in `other`,
+   * because in `other` the dependency upon these predicates was cut off by a cache hit.
+   *
+   * For example, suppose predicate `A` depends on `B`, which depends on `C`, and the
+   * predicates were evaluated in the first log but not the second:
+   * ```
+   *                  first eval. log        second eval. log
+   * predicate A      seen evaluation        seen cache hit
+   *    |
+   *    V
+   * predicate B      seen evaluation        not seen
+   *    |
+   *    V
+   * predicate C      seen evaluation        not seen
+   * ```
+   *
+   * To ensure a meaningful comparison, we want to omit `predicate A` from the comparison view because of the cache hit.
+   *
+   * But predicates B and C did not have a recorded cache hit in the second log, because they were never scheduled for evaluation.
+   * Given the dependency graph, the most likely explanation is that they would have been evaluated if `A` had not been a cache hit.
+   * We therefore say that B and C are "shadowed" by the cache hit on A.
+   *
+   * The dependency graph is only visible in the first evaluation log, because `B` and `C` do not exist in the second log.
+   * So to compute this, we use the dependency graph from one log together with the set of cache hits in the other log.
+   */
+  getPredicatesShadowedByCacheHit(other: ComparisonDataset) {
+    const {
+      data: { dependencyLists, raHashes, names },
+      raToIndex,
+    } = this;
+    const cacheHits = new Set<string>();
+
+    function visit(index: number, raHash: string) {
+      if (cacheHits.has(raHash)) {
+        return;
+      }
+      cacheHits.add(raHash);
+      const dependencies = dependencyLists[index];
+      for (const dep of dependencies) {
+        const name = names[dep];
+        if (!other.nameToIndex.has(name)) {
+          visit(dep, raHashes[dep]);
+        }
+      }
+    }
+
+    for (const otherCacheHit of other.cacheHitIndices) {
+      {
+        // Look up by RA hash
+        const raHash = other.data.raHashes[otherCacheHit];
+        const ownIndex = raToIndex.get(raHash);
+        if (ownIndex != null) {
+          visit(ownIndex, raHash);
+        }
+      }
+      {
+        // Look up by name
+        const name = other.data.names[otherCacheHit];
+        const ownIndex = this.nameToIndex.get(name);
+        if (ownIndex != null) {
+          visit(ownIndex, raHashes[ownIndex]);
+        }
+      }
+    }
+
+    return cacheHits;
   }
 }
 
@@ -336,6 +423,7 @@ function HighLevelStats(props: HighLevelStatsProps) {
 }
 
 interface Row {
+  key: string;
   name: string;
   before: Optional<PredicateInfo>;
   after: Optional<PredicateInfo>;
@@ -472,7 +560,7 @@ function ComparePerformanceWithData(props: {
 
   const comparison = data?.comparison;
 
-  const [hideCacheHits, setHideCacheHits] = useState(false);
+  const [hideCacheHits, setHideCacheHits] = useState(true);
 
   const [sortOrder, setSortOrder] = useState<"delta" | "absDelta">("absDelta");
 
@@ -480,19 +568,27 @@ function ComparePerformanceWithData(props: {
 
   const [isPerEvaluation, setPerEvaluation] = useState(false);
 
-  const nameSet = useMemo(
-    () => union(from.data.names, to.data.names),
-    [from, to],
-  );
+  const keySet = useMemo(() => union(from.keys(), to.keys()), [from, to]);
 
   const hasCacheHitMismatch = useRef(false);
 
+  const shadowedCacheHitsFrom = useMemo(
+    () =>
+      hideCacheHits ? from.getPredicatesShadowedByCacheHit(to) : new Set(),
+    [from, to, hideCacheHits],
+  );
+  const shadowedCacheHitsTo = useMemo(
+    () =>
+      hideCacheHits ? to.getPredicatesShadowedByCacheHit(from) : new Set(),
+    [from, to, hideCacheHits],
+  );
+
   const rows: Row[] = useMemo(() => {
     hasCacheHitMismatch.current = false;
-    return Array.from(nameSet)
-      .map((name) => {
-        const before = from.getTupleCountInfo(name);
-        const after = to.getTupleCountInfo(name);
+    return Array.from(keySet)
+      .map((key) => {
+        const before = from.getTupleCountInfo(key);
+        const after = to.getTupleCountInfo(key);
         const beforeValue = metricGetOptional(metric, before, isPerEvaluation);
         const afterValue = metricGetOptional(metric, after, isPerEvaluation);
         if (beforeValue === afterValue) {
@@ -507,14 +603,39 @@ function ComparePerformanceWithData(props: {
             return undefined!;
           }
         }
+        if (
+          (isPresent(before) &&
+            !isPresent(after) &&
+            shadowedCacheHitsFrom.has(before.raHash)) ||
+          (isPresent(after) &&
+            !isPresent(before) &&
+            shadowedCacheHitsTo.has(after.raHash))
+        ) {
+          return undefined!;
+        }
         const diff =
           (isPresent(afterValue) ? afterValue : 0) -
           (isPresent(beforeValue) ? beforeValue : 0);
-        return { name, before, after, diff } satisfies Row;
+        const name = isPresent(before)
+          ? before.name
+          : isPresent(after)
+            ? after.name
+            : key;
+        return { key, name, before, after, diff } satisfies Row;
       })
       .filter((x) => !!x)
       .sort(getSortOrder(sortOrder));
-  }, [nameSet, from, to, metric, hideCacheHits, sortOrder, isPerEvaluation]);
+  }, [
+    keySet,
+    from,
+    to,
+    metric,
+    hideCacheHits,
+    sortOrder,
+    isPerEvaluation,
+    shadowedCacheHitsFrom,
+    shadowedCacheHitsTo,
+  ]);
 
   const { totalBefore, totalAfter, totalDiff } = useMemo(() => {
     let totalBefore = 0;
@@ -575,23 +696,14 @@ function ComparePerformanceWithData(props: {
     <>
       <ViewTitle>Performance comparison</ViewTitle>
       {comparison && hasCacheHitMismatch.current && (
-        <WarningBox>
-          <strong>Inconsistent cache hits</strong>
-          <br />
-          Some predicates had a cache hit on one side but not the other. For
-          more accurate results, try running the{" "}
-          <strong>CodeQL: Clear Cache</strong> command before each query.
-          <br />
-          <br />
-          <label>
-            <input
-              type="checkbox"
-              checked={hideCacheHits}
-              onChange={() => setHideCacheHits(!hideCacheHits)}
-            />
-            Hide predicates with cache hits
-          </label>
-        </WarningBox>
+        <label>
+          <input
+            type="checkbox"
+            checked={hideCacheHits}
+            onChange={() => setHideCacheHits(!hideCacheHits)}
+          />
+          Hide differences due to cache hits
+        </label>
       )}
       <RenamingInput renamings={renamings} setRenamings={setRenamings} />
       Compare{" "}
@@ -859,4 +971,15 @@ function collatePipelines(
 
 function samePipeline(a: string[], b: string[]) {
   return a.length === b.length && a.every((x, i) => x === b[i]);
+}
+
+function getPipelineSummaryHash(pipelines: Record<string, PipelineSummary>) {
+  // Note: we can't import "crypto" here because it is not available in the browser,
+  // so we just concatenate the hashes of the individual pipelines.
+  const keys = Object.keys(pipelines).sort();
+  let result = "";
+  for (const key of keys) {
+    result += `${pipelines[key].hash};`;
+  }
+  return result;
 }
