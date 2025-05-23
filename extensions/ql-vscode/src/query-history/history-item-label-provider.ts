@@ -115,7 +115,7 @@ export class HistoryItemLabelProvider {
       startTime: item.startTime,
       queryName: item.getQueryName(),
       databaseName: item.databaseName,
-      resultCount: `(${resultCount} results)`,
+      resultCount: resultCount === -1 ? "" : `(${resultCount} results)`,
       status: message,
       queryFileBasename: item.getQueryFileName(),
       queryLanguage: this.getLanguageLabel(item),

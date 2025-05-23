@@ -28,12 +28,10 @@ describe("runGenerateQueries", () => {
     const outputDir = new QueryOutputDir(join(queryStorageDir, "1"));
 
     const onResults = jest.fn();
-
+    const queryPath = "/a/b/c/GenerateModel.ql";
     const options = {
       cliServer: mockedObject<CodeQLCliServer>({
-        resolveQueriesInSuite: jest
-          .fn()
-          .mockResolvedValue(["/a/b/c/GenerateModel.ql"]),
+        resolveQueriesInSuite: jest.fn().mockResolvedValue([queryPath]),
         bqrsDecodeAll: jest.fn().mockResolvedValue({
           sourceModel: {
             columns: [
@@ -101,7 +99,9 @@ describe("runGenerateQueries", () => {
       queryRunner: mockedObject<QueryRunner>({
         createQueryRun: jest.fn().mockReturnValue({
           evaluate: jest.fn().mockResolvedValue({
-            resultType: QueryResultType.SUCCESS,
+            results: new Map([
+              [queryPath, { resultType: QueryResultType.SUCCESS }],
+            ]),
             outputDir,
           }),
           outputDir,
@@ -222,7 +222,12 @@ describe("runGenerateQueries", () => {
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
       "/a/b/c/src.zip",
       {
-        queryPath: "/a/b/c/GenerateModel.ql",
+        queryInputsOutputs: [
+          {
+            outputBaseName: "results",
+            queryPath: "/a/b/c/GenerateModel.ql",
+          },
+        ],
         quickEvalPosition: undefined,
         quickEvalCountOnly: false,
       },
@@ -231,7 +236,7 @@ describe("runGenerateQueries", () => {
       undefined,
       {},
       "/tmp/queries",
-      undefined,
+      "GenerateModel.ql",
       undefined,
     );
   });

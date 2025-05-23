@@ -138,6 +138,7 @@ export type LocalQueryCommands = {
   "codeQLQueries.createQuery": () => Promise<void>;
   "codeQL.runLocalQueryFromFileTab": (uri: Uri) => Promise<void>;
   "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;
+  "codeQL.runQuerySuite": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalCount": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;

@@ -65,6 +65,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
    */
   constructor(
     querySaveDir: string,
+    public readonly outputBaseName: string,
     public readonly dbItemPath: string,
     public readonly databaseHasMetadataFile: boolean,
     public readonly quickEvalPosition?: Position,
@@ -73,23 +74,30 @@ export class QueryEvaluationInfo extends QueryOutputDir {
     super(querySaveDir);
   }
 
-  get resultsPaths() {
-    return {
-      resultsPath: this.bqrsPath,
-      interpretedResultsPath: join(
-        this.querySaveDir,
-        this.metadata?.kind === "graph"
-          ? "graphResults"
-          : "interpretedResults.sarif",
-      ),
-    };
+  get resultsPath() {
+    return this.getBqrsPath(this.outputBaseName);
   }
+
+  get interpretedResultsPath() {
+    return this.getInterpretedResultsPath(
+      this.metadata?.kind,
+      this.outputBaseName,
+    );
+  }
+
+  get csvPath() {
+    return this.getCsvPath(this.outputBaseName);
+  }
+
+  get dilPath() {
+    return this.getDilPath(this.outputBaseName);
+  }
+
   getSortedResultSetPath(resultSetName: string) {
     const hasher = createHash("sha256");
     hasher.update(resultSetName);
-    return join(
-      this.querySaveDir,
-      `sortedResults-${hasher.digest("hex")}.bqrs`,
+    return this.getBqrsPath(
+      `${this.outputBaseName}-sorted-${hasher.digest("hex")}`,
     );
   }
 
@@ -127,7 +135,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
    * Holds if this query actually has produced interpreted results.
    */
   async hasInterpretedResults(): Promise<boolean> {
-    return pathExists(this.resultsPaths.interpretedResultsPath);
+    return pathExists(this.interpretedResultsPath);
   }
 
   /**
@@ -205,7 +213,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
     let nextOffset: number | undefined = 0;
     do {
       const chunk: DecodedBqrsChunk = await cliServer.bqrsDecode(
-        this.resultsPaths.resultsPath,
+        this.resultsPath,
         resultSet,
         {
           pageSize: 100,
@@ -243,9 +251,9 @@ export class QueryEvaluationInfo extends QueryOutputDir {
    * If the query has no result sets, then return undefined.
    */
   async chooseResultSet(cliServer: CodeQLCliServer) {
-    const resultSets = (
-      await cliServer.bqrsInfo(this.resultsPaths.resultsPath)
-    )["result-sets"];
+    const resultSets = (await cliServer.bqrsInfo(this.resultsPath))[
+      "result-sets"
+    ];
     if (!resultSets.length) {
       return undefined;
     }
@@ -284,7 +292,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
     }
     await cliServer.generateResultsCsv(
       ensureMetadataIsComplete(this.metadata),
-      this.resultsPaths.resultsPath,
+      this.resultsPath,
       this.csvPath,
       sourceInfo,
     );
@@ -346,6 +354,23 @@ export function validateQueryPath(
       );
     }
   }
+}
+
+/**
+ * Validates that the specified URI represents a QL query suite (QLS), and returns the file system
+ * path to that suite.
+ */
+export function validateQuerySuiteUri(suiteUri: Uri): string {
+  if (suiteUri.scheme !== "file") {
+    throw new Error("Can only run queries that are on disk.");
+  }
+  const suitePath = suiteUri.fsPath;
+  if (!suitePath.endsWith(".qls")) {
+    throw new Error(
+      'The selected resource is not a CodeQL query suite; It should have the extension ".qls".',
+    );
+  }
+  return suitePath;
 }
 
 export interface QuickEvalContext {

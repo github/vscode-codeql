@@ -70,22 +70,20 @@ export class CompareView extends AbstractWebview<
     selectedResultSetName?: string,
   ) {
     const [fromSchemas, toSchemas] = await Promise.all([
-      this.cliServer.bqrsInfo(
-        from.completedQuery.query.resultsPaths.resultsPath,
-      ),
-      this.cliServer.bqrsInfo(to.completedQuery.query.resultsPaths.resultsPath),
+      this.cliServer.bqrsInfo(from.completedQuery.query.resultsPath),
+      this.cliServer.bqrsInfo(to.completedQuery.query.resultsPath),
     ]);
 
     const [fromSchemaNames, toSchemaNames] = await Promise.all([
       getResultSetNames(
         fromSchemas,
         from.completedQuery.query.metadata,
-        from.completedQuery.query.resultsPaths.interpretedResultsPath,
+        from.completedQuery.query.interpretedResultsPath,
       ),
       getResultSetNames(
         toSchemas,
         to.completedQuery.query.metadata,
-        to.completedQuery.query.resultsPaths.interpretedResultsPath,
+        to.completedQuery.query.interpretedResultsPath,
       ),
     ]);
 
@@ -101,15 +99,14 @@ export class CompareView extends AbstractWebview<
         schemaNames: fromSchemaNames,
         metadata: from.completedQuery.query.metadata,
         interpretedResultsPath:
-          from.completedQuery.query.resultsPaths.interpretedResultsPath,
+          from.completedQuery.query.interpretedResultsPath,
       },
       to,
       toInfo: {
         schemas: toSchemas,
         schemaNames: toSchemaNames,
         metadata: to.completedQuery.query.metadata,
-        interpretedResultsPath:
-          to.completedQuery.query.resultsPaths.interpretedResultsPath,
+        interpretedResultsPath: to.completedQuery.query.interpretedResultsPath,
       },
       commonResultSetNames,
     };
@@ -392,12 +389,12 @@ export class CompareView extends AbstractWebview<
       this.getResultSet(
         fromInfo.schemas,
         fromResultSetName,
-        from.completedQuery.query.resultsPaths.resultsPath,
+        from.completedQuery.query.resultsPath,
       ),
       this.getResultSet(
         toInfo.schemas,
         toResultSetName,
-        to.completedQuery.query.resultsPaths.resultsPath,
+        to.completedQuery.query.resultsPath,
       ),
     ]);
 

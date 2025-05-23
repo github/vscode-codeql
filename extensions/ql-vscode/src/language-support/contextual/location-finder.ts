@@ -21,7 +21,6 @@ import {
 } from "./query-resolver";
 import type { CancellationToken, LocationLink } from "vscode";
 import { Uri } from "vscode";
-import type { QueryOutputDir } from "../../local-queries/query-output-dir";
 import type { QueryRunner } from "../../query-server";
 import { QueryResultType } from "../../query-server/messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
@@ -84,9 +83,15 @@ export async function getLocationsForUriString(
       token,
       templates,
     );
-    if (results.resultType === QueryResultType.SUCCESS) {
+    const queryResult = results.results.get(query);
+    if (queryResult?.resultType === QueryResultType.SUCCESS) {
       links.push(
-        ...(await getLinksFromResults(results.outputDir, cli, db, filter)),
+        ...(await getLinksFromResults(
+          results.outputDir.getBqrsPath(queryResult.outputBaseName),
+          cli,
+          db,
+          filter,
+        )),
       );
     }
   }
@@ -94,13 +99,12 @@ export async function getLocationsForUriString(
 }
 
 async function getLinksFromResults(
-  outputDir: QueryOutputDir,
+  bqrsPath: string,
   cli: CodeQLCliServer,
   db: DatabaseItem,
   filter: (srcFile: string, destFile: string) => boolean,
 ): Promise<FullLocationLink[]> {
   const localLinks: FullLocationLink[] = [];
-  const bqrsPath = outputDir.bqrsPath;
   const info = await cli.bqrsInfo(bqrsPath);
   const selectInfo = info["result-sets"].find(
     (schema) => schema.name === SELECT_QUERY_NAME,

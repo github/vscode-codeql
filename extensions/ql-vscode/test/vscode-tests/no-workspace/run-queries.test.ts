@@ -28,12 +28,10 @@ describe("run-queries", () => {
     const saveDir = "query-save-dir";
     const queryEvalInfo = createMockQueryEvaluationInfo(true, saveDir);
 
-    expect(queryEvalInfo.dilPath).toBe(join(saveDir, "results.dil"));
-    expect(queryEvalInfo.resultsPaths.resultsPath).toBe(
-      join(saveDir, "results.bqrs"),
-    );
-    expect(queryEvalInfo.resultsPaths.interpretedResultsPath).toBe(
-      join(saveDir, "interpretedResults.sarif"),
+    expect(queryEvalInfo.dilPath).toBe(join(saveDir, "foo.dil"));
+    expect(queryEvalInfo.resultsPath).toBe(join(saveDir, "foo.bqrs"));
+    expect(queryEvalInfo.interpretedResultsPath).toBe(
+      join(saveDir, "foo-interpreted.sarif"),
     );
     expect(queryEvalInfo.dbItemPath).toBe(Uri.file("/abc").fsPath);
   });
@@ -215,6 +213,7 @@ describe("run-queries", () => {
   ) {
     return new QueryEvaluationInfo(
       saveDir,
+      "foo",
       Uri.parse("file:///abc").fsPath,
       databaseHasMetadataFile,
       undefined,

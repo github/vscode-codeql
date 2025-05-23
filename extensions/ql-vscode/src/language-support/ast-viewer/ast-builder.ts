@@ -7,7 +7,6 @@ import type {
 import type { DatabaseItem } from "../../databases/local-databases";
 import type { ChildAstItem, AstItem } from "./ast-viewer";
 import type { Uri } from "vscode";
-import type { QueryOutputDir } from "../../local-queries/query-output-dir";
 import { fileRangeFromURI } from "../contextual/file-range-from-uri";
 import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
 
@@ -17,15 +16,12 @@ import { mapUrlValue } from "../../common/bqrs-raw-results-mapper";
  */
 export class AstBuilder {
   private roots: AstItem[] | undefined;
-  private bqrsPath: string;
   constructor(
-    outputDir: QueryOutputDir,
+    private readonly bqrsPath: string,
     private cli: CodeQLCliServer,
     public db: DatabaseItem,
     public fileName: Uri,
-  ) {
-    this.bqrsPath = outputDir.bqrsPath;
-  }
+  ) {}
 
   async getRoots(): Promise<AstItem[]> {
     if (!this.roots) {

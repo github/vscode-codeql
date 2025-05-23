@@ -4,7 +4,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../common/logging";
-import type { CoreQueryResults } from "../query-server";
+import type { CoreQueryResult, CoreQueryResults } from "../query-server";
 import type { QueryHistoryManager } from "../query-history/query-history-manager";
 import type { DatabaseItem } from "../databases/local-databases";
 import type {
@@ -29,7 +29,7 @@ import type { Disposable } from "../common/disposable-object";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { progressUpdate } from "../common/vscode/progress";
 
-function formatResultMessage(result: CoreQueryResults): string {
+function formatResultMessage(result: CoreQueryResult): string {
   switch (result.resultType) {
     case QueryResultType.CANCELLATION:
       return `cancelled after ${Math.round(
@@ -86,7 +86,9 @@ export class LocalQueryRun {
     progress: ProgressCallback,
   ): Promise<void> {
     const evalLogPaths = await this.summarizeEvalLog(
-      results.resultType,
+      Array.from(results.results.values()).every(
+        (result) => result.resultType === QueryResultType.SUCCESS,
+      ),
       this.outputDir,
       this.logger,
       progress,
@@ -95,9 +97,12 @@ export class LocalQueryRun {
       this.queryInfo.setEvaluatorLogPaths(evalLogPaths);
     }
     progress(progressUpdate(1, 4, "Getting completed query info"));
-    const queryWithResults = await this.getCompletedQueryInfo(results);
+    const queriesWithResults = await this.getCompletedQueryInfo(results);
     progress(progressUpdate(2, 4, "Updating query history"));
-    this.queryHistoryManager.completeQuery(this.queryInfo, queryWithResults);
+    this.queryHistoryManager.completeQueries(
+      this.queryInfo,
+      queriesWithResults,
+    );
     progress(progressUpdate(3, 4, "Showing results"));
     await this.localQueries.showResultsForCompletedQuery(
       this.queryInfo as CompletedLocalQueryInfo,
@@ -116,7 +121,7 @@ export class LocalQueryRun {
    */
   public async fail(err: Error): Promise<void> {
     const evalLogPaths = await this.summarizeEvalLog(
-      QueryResultType.OTHER_ERROR,
+      false,
       this.outputDir,
       this.logger,
       (_) => {},
@@ -136,7 +141,7 @@ export class LocalQueryRun {
    * Generate summaries of the structured evaluator log.
    */
   private async summarizeEvalLog(
-    resultType: QueryResultType,
+    runSuccessful: boolean,
     outputDir: QueryOutputDir,
     logger: BaseLogger,
     progress: ProgressCallback,
@@ -152,7 +157,7 @@ export class LocalQueryRun {
       }
     } else {
       // Raw evaluator log was not found. Notify the user, unless we know why it wasn't found.
-      if (resultType === QueryResultType.SUCCESS) {
+      if (runSuccessful) {
         void showAndLogWarningMessage(
           extLogger,
           `Failed to write structured evaluator log to ${outputDir.evalLogPath}.`,
@@ -168,41 +173,43 @@ export class LocalQueryRun {
   }
 
   /**
-   * Gets a `QueryWithResults` containing information about the evaluation of the query and its
+   * Gets a `QueryWithResults` containing information about the evaluation of the queries and their
    * result, in the form expected by the query history UI.
    */
   private async getCompletedQueryInfo(
     results: CoreQueryResults,
-  ): Promise<QueryWithResults> {
-    // Read the query metadata if possible, to use in the UI.
-    const metadata = await tryGetQueryMetadata(
-      this.cliServer,
-      this.queryInfo.initialInfo.queryPath,
-    );
-    const query = new QueryEvaluationInfo(
-      this.outputDir.querySaveDir,
-      this.dbItem.databaseUri.fsPath,
-      await this.dbItem.hasMetadataFile(),
-      this.queryInfo.initialInfo.quickEvalPosition,
-      metadata,
-    );
-
-    if (results.resultType !== QueryResultType.SUCCESS) {
-      const message = results.message
-        ? redactableError`Failed to run query: ${results.message}`
-        : redactableError`Failed to run query`;
-      void showAndLogExceptionWithTelemetry(
-        extLogger,
-        telemetryListener,
-        message,
+  ): Promise<QueryWithResults[]> {
+    const infos: QueryWithResults[] = [];
+    for (const [queryPath, result] of results.results) {
+      // Read the query metadata if possible, to use in the UI.
+      const metadata = await tryGetQueryMetadata(this.cliServer, queryPath);
+      const query = new QueryEvaluationInfo(
+        this.outputDir.querySaveDir,
+        result.outputBaseName,
+        this.dbItem.databaseUri.fsPath,
+        await this.dbItem.hasMetadataFile(),
+        undefined,
+        metadata,
       );
+
+      if (result.resultType !== QueryResultType.SUCCESS) {
+        const message = result.message
+          ? redactableError`Failed to run query: ${result.message}`
+          : redactableError`Failed to run query`;
+        void showAndLogExceptionWithTelemetry(
+          extLogger,
+          telemetryListener,
+          message,
+        );
+      }
+      const message = formatResultMessage(result);
+      const successful = result.resultType === QueryResultType.SUCCESS;
+      infos.push({
+        query,
+        message,
+        successful,
+      });
     }
-    const message = formatResultMessage(results);
-    const successful = results.resultType === QueryResultType.SUCCESS;
-    return {
-      query,
-      message,
-      successful,
-    };
+    return infos;
   }
 }

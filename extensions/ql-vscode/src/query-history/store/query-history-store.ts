@@ -61,7 +61,7 @@ export async function readQueryHistoryFromFile(
           // to see if they exist on disk.
           return true;
         }
-        const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
+        const resultsPath = q.completedQuery?.query.resultsPath;
         return !!resultsPath && (await pathExists(resultsPath));
       },
     );

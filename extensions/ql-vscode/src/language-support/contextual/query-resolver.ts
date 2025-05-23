@@ -14,6 +14,7 @@ import type { CancellationToken } from "vscode";
 import type { ProgressCallback } from "../../common/vscode/progress";
 import type { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { createLockFileForStandardQuery } from "../../local-queries/standard-queries";
+import { basename } from "path";
 
 /**
  * This wil try to determine the qlpacks for a given database. If it can't find a matching
@@ -80,13 +81,16 @@ export async function runContextualQuery(
   const { cleanup } = await createLockFileForStandardQuery(cli, query);
   const queryRun = qs.createQueryRun(
     db.databaseUri.fsPath,
-    { queryPath: query, quickEvalPosition: undefined },
+    {
+      queryInputsOutputs: [{ queryPath: query, outputBaseName: "results" }],
+      quickEvalPosition: undefined,
+    },
     false,
     getOnDiskWorkspaceFolders(),
     undefined,
     {},
     queryStorageDir,
-    undefined,
+    basename(query),
     templates,
   );
   void extLogger.log(
