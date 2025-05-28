@@ -64,7 +64,7 @@ export class CompletedQueryInfo implements QueryWithResults {
      * sarif file.
      */
     public interpretedResultsSortState: InterpretedResultsSortState | undefined,
-    public resultCount: number = 0,
+    public resultCount: number = -1,
 
     /**
      * Map from result set name to SortedResultSetInfo.
@@ -78,11 +78,11 @@ export class CompletedQueryInfo implements QueryWithResults {
 
   getResultsPath(selectedTable: string, useSorted = true): string {
     if (!useSorted) {
-      return this.query.resultsPaths.resultsPath;
+      return this.query.resultsPath;
     }
     return (
       this.sortedResultsInfo[selectedTable]?.resultsPath ||
-      this.query.resultsPaths.resultsPath
+      this.query.resultsPath
     );
   }
 
@@ -102,7 +102,7 @@ export class CompletedQueryInfo implements QueryWithResults {
     };
 
     await server.sortBqrs(
-      this.query.resultsPaths.resultsPath,
+      this.query.resultsPath,
       sortedResultSetInfo.resultsPath,
       resultSetName,
       [sortState.columnIndex],

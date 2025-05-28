@@ -104,6 +104,7 @@ function mapQueryEvaluationInfoToDomainModel(
 ): QueryEvaluationInfo {
   return new QueryEvaluationInfo(
     evaluationInfo.querySaveDir,
+    evaluationInfo.outputBaseName ?? "results",
     evaluationInfo.dbItemPath,
     evaluationInfo.databaseHasMetadataFile,
     evaluationInfo.quickEvalPosition,

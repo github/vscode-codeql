@@ -10,10 +10,10 @@ import {
 import { describeWithCodeQL } from "../../cli";
 import { withDebugController } from "./debug-controller";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import type { QueryOutputDir } from "../../../../src/local-queries/query-output-dir";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import type { AllCommands } from "../../../../src/common/commands";
 import { getDataFolderFilePath } from "../utils";
+import type { CoreCompletedQuery } from "../../../../src/query-server";
 
 async function selectForQuickEval(
   path: string,
@@ -30,10 +30,15 @@ async function selectForQuickEval(
 }
 
 async function getResultCount(
-  outputDir: QueryOutputDir,
+  completedQuery: CoreCompletedQuery,
   cli: CodeQLCliServer,
 ): Promise<number> {
-  const info = await cli.bqrsInfo(outputDir.bqrsPath, 100);
+  const results = Array.from(completedQuery.results.values());
+  expect(results.length).toBe(1);
+  const info = await cli.bqrsInfo(
+    completedQuery.outputDir.getBqrsPath(results[0].outputBaseName),
+    100,
+  );
   const resultSet = info["result-sets"][0];
   return resultSet.rows;
 }
@@ -104,8 +109,9 @@ describeWithCodeQL()("Debugger", () => {
       expect(result.started.quickEvalContext!.quickEvalText).toBe(
         "InterestingNumber",
       );
-      expect(result.results.queryTarget.quickEvalPosition).toBeDefined();
-      expect(await getResultCount(result.results.outputDir, cli)).toBe(8);
+      expect(result.results.queryTargets.length).toBe(1);
+      expect(result.results.queryTargets[0].quickEvalPosition).toBeDefined();
+      expect(await getResultCount(result.results, cli)).toBe(8);
       await controller.expectStopped();
     });
   });
@@ -122,8 +128,9 @@ describeWithCodeQL()("Debugger", () => {
       expect(result.started.quickEvalContext!.quickEvalText).toBe(
         "InterestingNumber",
       );
-      expect(result.results.queryTarget.quickEvalPosition).toBeDefined();
-      expect(await getResultCount(result.results.outputDir, cli)).toBe(0);
+      expect(result.results.queryTargets.length).toBe(1);
+      expect(result.results.queryTargets[0].quickEvalPosition).toBeDefined();
+      expect(await getResultCount(result.results, cli)).toBe(0);
       await controller.expectStopped();
     });
   });
@@ -141,8 +148,9 @@ describeWithCodeQL()("Debugger", () => {
       expect(result.started.quickEvalContext!.quickEvalText).toBe(
         "InterestingNumber",
       );
-      expect(result.results.queryTarget.quickEvalPosition).toBeDefined();
-      expect(await getResultCount(result.results.outputDir, cli)).toBe(8);
+      expect(result.results.queryTargets.length).toBe(1);
+      expect(result.results.queryTargets[0].quickEvalPosition).toBeDefined();
+      expect(await getResultCount(result.results, cli)).toBe(8);
       await controller.expectStopped();
     });
   });
@@ -165,8 +173,9 @@ describeWithCodeQL()("Debugger", () => {
       expect(result.started.quickEvalContext!.quickEvalText).toBe(
         "getBigIntValue",
       );
-      expect(result.results.queryTarget.quickEvalPosition).toBeDefined();
-      expect(await getResultCount(result.results.outputDir, cli)).toBe(8);
+      expect(result.results.queryTargets.length).toBe(1);
+      expect(result.results.queryTargets[0].quickEvalPosition).toBeDefined();
+      expect(await getResultCount(result.results, cli)).toBe(8);
       await controller.expectStopped();
     });
   });
@@ -218,7 +227,7 @@ describeWithCodeQL()("Debugger", () => {
       await controller.expectSessionClosed();
 
       // Expect the number of results to be the same as if we had run the simple query, not the quick eval query.
-      expect(await getResultCount(result.results.outputDir, cli)).toBe(2);
+      expect(await getResultCount(result.results, cli)).toBe(2);
     });
   });
 });

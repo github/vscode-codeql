@@ -572,6 +572,10 @@
         "title": "CodeQL: Run Queries in Selected Files"
       },
       {
+        "command": "codeQL.runQuerySuite",
+        "title": "CodeQL: Run Selected Query Suite"
+      },
+      {
         "command": "codeQL.quickEval",
         "title": "CodeQL: Quick Evaluation"
       },
@@ -1362,6 +1366,11 @@
           "when": "resourceScheme != codeql-zip-archive"
         },
         {
+          "command": "codeQL.runQuerySuite",
+          "group": "9_qlCommands",
+          "when": "resourceScheme != codeql-zip-archive && resourceExtname == .qls && !explorerResourceIsFolder && !listMultiSelection && config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runVariantAnalysisContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceExtname == .ql && config.codeQL.canary && config.codeQL.variantAnalysis.multiQuery"
@@ -1456,6 +1465,10 @@
         },
         {
           "command": "codeQL.runQueries",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runQuerySuite",
           "when": "false"
         },
         {

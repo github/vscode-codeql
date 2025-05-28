@@ -118,6 +118,6 @@ function mapQueryEvaluationInfoToDto(
     databaseHasMetadataFile: queryEvaluationInfo.databaseHasMetadataFile,
     quickEvalPosition: queryEvaluationInfo.quickEvalPosition,
     metadata: queryEvaluationInfo.metadata,
-    resultsPaths: queryEvaluationInfo.resultsPaths,
+    outputBaseName: queryEvaluationInfo.outputBaseName,
   };
 }

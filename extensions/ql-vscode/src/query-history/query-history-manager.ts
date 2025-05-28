@@ -23,7 +23,8 @@ import { URLSearchParams } from "url";
 import { DisposableObject } from "../common/disposable-object";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../common/time";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
-import type { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
+import type { CompletedLocalQueryInfo } from "../query-results";
+import { LocalQueryInfo } from "../query-results";
 import type { QueryHistoryInfo } from "./query-history-info";
 import {
   getActionsWorkflowRunUrl,
@@ -348,8 +349,37 @@ export class QueryHistoryManager extends DisposableObject {
     };
   }
 
-  public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
-    info.completeThisQuery(results);
+  public completeQueries(
+    info: LocalQueryInfo,
+    results: QueryWithResults[],
+  ): void {
+    let first = true;
+    // Sorting results by the output/results basename should produce a deterministic order.
+    results.sort((a, b) => {
+      const aPath = a.query.outputBaseName;
+      const bPath = b.query.outputBaseName;
+      return aPath.localeCompare(bPath);
+    });
+    for (const result of results) {
+      if (first) {
+        // This is the first query, so we can just update the existing info.
+        info.completeThisQuery(result);
+        first = false;
+      } else {
+        // For other queries in the same run, we'll add new entries to the history pane. In the long
+        // term, it would be better if we could have a single entry containing sub-entries for each
+        // query.
+        const clonedInfo = new LocalQueryInfo(
+          info.initialInfo,
+          undefined,
+          info.failureReason,
+          undefined,
+          info.evaluatorLogPaths,
+        );
+        clonedInfo.completeThisQuery(result);
+        this.addQuery(clonedInfo);
+      }
+    }
     this._onDidCompleteQuery.fire(info);
   }
 
@@ -551,6 +581,23 @@ export class QueryHistoryManager extends DisposableObject {
           await this.removeVariantAnalysis(item);
         } else {
           assertNever(item);
+        }
+      }),
+    );
+
+    await Promise.all(
+      this.treeDataProvider.allHistory.map(async (item) => {
+        // Remove any local queries whose directories no longer exist. This can happen when running
+        // a query suite, which produces multiple queries in the history pane that all share the
+        // same underlying directory, which we may have just deleted above. (Ideally, there would be
+        // a first-class concept of a local multi-query run in this pane that would group them all
+        // together, but doing it this way at least avoids cluttering the history pane with entries
+        // that can no longer be viewed).
+        if (item.t === "local") {
+          const dir = item.completedQuery?.query.querySaveDir;
+          if (dir && !(await pathExists(dir))) {
+            this.treeDataProvider.remove(item);
+          }
         }
       }),
     );
@@ -942,7 +989,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (hasInterpretedResults) {
       await tryOpenExternalFile(
         this.app.commands,
-        query.resultsPaths.interpretedResultsPath,
+        query.interpretedResultsPath,
       );
     } else {
       const label = this.labelProvider.getLabel(item);

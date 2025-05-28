@@ -19,7 +19,11 @@ import { basename } from "path";
 import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { displayQuickQuery } from "./quick-query";
-import type { CoreCompletedQuery, QueryRunner } from "../query-server";
+import type {
+  CoreCompletedQuery,
+  CoreQueryTarget,
+  QueryRunner,
+} from "../query-server";
 import type { QueryHistoryManager } from "../query-history/query-history-manager";
 import type {
   DatabaseQuickPickItem,
@@ -37,6 +41,7 @@ import {
   createTimestampFile,
   getQuickEvalContext,
   saveBeforeStart,
+  validateQuerySuiteUri,
   validateQueryUri,
 } from "../run-queries-shared";
 import type { CompletedLocalQueryInfo } from "../query-results";
@@ -107,6 +112,7 @@ export class LocalQueries extends DisposableObject {
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),
       ),
+      "codeQL.runQuerySuite": this.runQuerySuite.bind(this),
       "codeQL.quickEval": this.quickEval.bind(this),
       "codeQL.quickEvalCount": this.quickEvalCount.bind(this),
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
@@ -234,6 +240,94 @@ export class LocalQueries extends DisposableObject {
       },
       {
         title: "Running queries",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async runQuerySuite(fileUri: Uri): Promise<void> {
+    await withProgress(
+      async (progress, token) => {
+        const suitePath = validateQuerySuiteUri(fileUri);
+        const databaseItem = await this.databaseUI.getDatabaseItem(progress);
+        if (databaseItem === undefined) {
+          throw new Error("Can't run query suite without a selected database");
+        }
+        const selectedQuery: SelectedQuery = {
+          queryPath: suitePath,
+        };
+        const additionalPacks = getOnDiskWorkspaceFolders();
+        const extensionPacks =
+          await this.getDefaultExtensionPacks(additionalPacks);
+        const queries = await this.cliServer.resolveQueriesInSuite(
+          suitePath,
+          additionalPacks,
+        );
+        if (
+          !(await showBinaryChoiceDialog(
+            `You are about to run ${basename(suitePath)}, which contains ${queries.length} queries. Do you want to continue?`,
+          ))
+        ) {
+          return;
+        }
+        const queryTargets: CoreQueryTarget[] = [];
+        queries.forEach((query, index) => {
+          queryTargets.push({
+            queryPath: query,
+            outputBaseName: `${index.toString().padStart(3, "0")}-${basename(query)}`,
+            quickEvalPosition: undefined,
+            quickEvalCountOnly: false,
+          });
+        });
+        const coreQueryRun = this.queryRunner.createQueryRun(
+          databaseItem.databaseUri.fsPath,
+          queryTargets,
+          true,
+          additionalPacks,
+          extensionPacks,
+          {},
+          this.queryStorageDir,
+          basename(suitePath),
+          undefined,
+        );
+        // handle cancellation from the history view.
+        const source = new CancellationTokenSource();
+        try {
+          token.onCancellationRequested(() => source.cancel());
+
+          const localQueryRun = await this.createLocalQueryRun(
+            selectedQuery,
+            databaseItem,
+            coreQueryRun.outputDir,
+            source,
+          );
+
+          try {
+            const results = await coreQueryRun.evaluate(
+              progress,
+              source.token,
+              localQueryRun.logger,
+            );
+
+            await localQueryRun.complete(results, progress);
+
+            return results;
+          } catch (e) {
+            const err = asError(e);
+            await localQueryRun.fail(err);
+
+            if (token.isCancellationRequested) {
+              throw new UserCancellationException(err.message, true);
+            } else {
+              throw e;
+            }
+          }
+        } finally {
+          source.dispose();
+        }
+      },
+      {
+        title: "Running query suite",
         cancellable: true,
       },
     );
@@ -452,17 +546,20 @@ export class LocalQueries extends DisposableObject {
 
     const coreQueryRun = this.queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,
-      {
-        queryPath: selectedQuery.queryPath,
-        quickEvalPosition: selectedQuery.quickEval?.quickEvalPosition,
-        quickEvalCountOnly: selectedQuery.quickEval?.quickEvalCount,
-      },
+      [
+        {
+          queryPath: selectedQuery.queryPath,
+          outputBaseName: "results",
+          quickEvalPosition: selectedQuery.quickEval?.quickEvalPosition,
+          quickEvalCountOnly: selectedQuery.quickEval?.quickEvalCount,
+        },
+      ],
       true,
       additionalPacks,
       extensionPacks,
       {},
       this.queryStorageDir,
-      undefined,
+      basename(selectedQuery.queryPath),
       templates,
     );
 

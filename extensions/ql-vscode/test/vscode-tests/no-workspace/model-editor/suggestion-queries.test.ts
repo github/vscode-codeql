@@ -146,9 +146,8 @@ describe("runSuggestionsQuery", () => {
       .mockResolvedValueOnce(mockInputSuggestions)
       .mockResolvedValueOnce(mockOutputSuggestions);
 
-    const resolveQueriesInSuite = jest
-      .fn()
-      .mockResolvedValue(["/a/b/c/FrameworkModeAccessPathSuggestions.ql"]);
+    const queryPath = "/a/b/c/FrameworkModeAccessPathSuggestions.ql";
+    const resolveQueriesInSuite = jest.fn().mockResolvedValue([queryPath]);
 
     const options = {
       parseResults,
@@ -173,7 +172,9 @@ describe("runSuggestionsQuery", () => {
       queryRunner: mockedObject<QueryRunner>({
         createQueryRun: jest.fn().mockReturnValue({
           evaluate: jest.fn().mockResolvedValue({
-            resultType: QueryResultType.SUCCESS,
+            results: new Map([
+              [queryPath, { resultType: QueryResultType.SUCCESS }],
+            ]),
             outputDir,
           }),
           outputDir,
@@ -206,17 +207,20 @@ describe("runSuggestionsQuery", () => {
     expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
       "/a/b/c/src.zip",
-      {
-        queryPath: expect.stringMatching(/\S*AccessPathSuggestions\.ql/),
-        quickEvalPosition: undefined,
-        quickEvalCountOnly: false,
-      },
+      [
+        {
+          queryPath: expect.stringMatching(/\S*AccessPathSuggestions\.ql/),
+          outputBaseName: "results",
+          quickEvalPosition: undefined,
+          quickEvalCountOnly: false,
+        },
+      ],
       false,
       [],
       ["my/extensions"],
       {},
       "/tmp/queries",
-      undefined,
+      "FrameworkModeAccessPathSuggestions.ql",
       undefined,
     );
     expect(options.cliServer.resolveQueriesInSuite).toHaveBeenCalledTimes(1);

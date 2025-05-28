@@ -209,8 +209,14 @@ export class TemplatePrintAstProvider {
       ? await this.cache.get(fileUri.toString(), progress, token)
       : await this.getAst(fileUri.toString(), progress, token);
 
+    const queryResults = Array.from(completedQuery.results.values());
+    if (queryResults.length !== 1) {
+      throw new Error(
+        `Expected exactly one query result, but found ${queryResults.length}.`,
+      );
+    }
     return new AstBuilder(
-      completedQuery.outputDir,
+      completedQuery.outputDir.getBqrsPath(queryResults[0].outputBaseName),
       this.cli,
       this.dbm.findDatabaseItem(Uri.file(completedQuery.dbPath))!,
       fileUri,

@@ -127,7 +127,7 @@ describe("query-results", () => {
       const expectedResultsPath = join(queryPath, "results.bqrs");
       const expectedSortedResultsPath = join(
         queryPath,
-        "sortedResults-cc8589f226adc134f87f2438e10075e0667571c72342068e2281e0b3b65e1092.bqrs",
+        "results-sorted-cc8589f226adc134f87f2438e10075e0667571c72342068e2281e0b3b65e1092.bqrs",
       );
       expect(spy).toHaveBeenCalledWith(
         expectedResultsPath,
@@ -419,12 +419,12 @@ describe("query-results", () => {
     dbPath = "/a/b/c",
   ): QueryWithResults {
     // pretend that the results path exists
-    const resultsPath = join(queryPath, "results.bqrs");
     mkdirpSync(queryPath);
-    writeFileSync(resultsPath, "", "utf8");
+    writeFileSync(join(queryPath, "results.bqrs"), "", "utf8");
 
     const queryEvalInfo = new QueryEvaluationInfo(
       queryPath,
+      "results",
       Uri.file(dbPath).fsPath,
       true,
       undefined,

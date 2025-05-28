@@ -36,11 +36,9 @@ export async function compareInterpretedResults(
 
   const [fromResultSet, toResultSet, sourceLocationPrefix] = await Promise.all([
     getInterpretedResults(
-      fromQuery.completedQuery.query.resultsPaths.interpretedResultsPath,
+      fromQuery.completedQuery.query.interpretedResultsPath,
     ),
-    getInterpretedResults(
-      toQuery.completedQuery.query.resultsPaths.interpretedResultsPath,
-    ),
+    getInterpretedResults(toQuery.completedQuery.query.interpretedResultsPath),
     database.getSourceLocationPrefix(cliServer),
   ]);
 

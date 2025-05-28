@@ -30,15 +30,13 @@ describe("runModelEditorQueries", () => {
     > = jest.spyOn(log, "showAndLogExceptionWithTelemetry");
 
     const outputDir = new QueryOutputDir(join((await file()).path, "1"));
-
+    const queryPath = "/a/b/c/ApplicationModeEndpoints.ql";
     const options = {
       cliServer: mockedObject<CodeQLCliServer>({
         resolveQlpacks: jest.fn().mockResolvedValue({
           "my/extensions": "/a/b/c/",
         }),
-        resolveQueriesInSuite: jest
-          .fn()
-          .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
+        resolveQueriesInSuite: jest.fn().mockResolvedValue([queryPath]),
         packPacklist: jest
           .fn()
           .mockResolvedValue([
@@ -50,7 +48,9 @@ describe("runModelEditorQueries", () => {
       queryRunner: mockedObject<QueryRunner>({
         createQueryRun: jest.fn().mockReturnValue({
           evaluate: jest.fn().mockResolvedValue({
-            resultType: QueryResultType.CANCELLATION,
+            results: new Map([
+              [queryPath, { resultType: QueryResultType.CANCELLATION }],
+            ]),
           }),
           outputDir,
         }),
@@ -88,15 +88,13 @@ describe("runModelEditorQueries", () => {
 
   it("should run query for random language", async () => {
     const outputDir = new QueryOutputDir(join((await file()).path, "1"));
-
+    const queryPath = "/a/b/c/ApplicationModeEndpoints.ql";
     const options = {
       cliServer: mockedObject<CodeQLCliServer>({
         resolveQlpacks: jest.fn().mockResolvedValue({
           "my/extensions": "/a/b/c/",
         }),
-        resolveQueriesInSuite: jest
-          .fn()
-          .mockResolvedValue(["/a/b/c/ApplicationModeEndpoints.ql"]),
+        resolveQueriesInSuite: jest.fn().mockResolvedValue([queryPath]),
         packPacklist: jest
           .fn()
           .mockResolvedValue([
@@ -122,6 +120,9 @@ describe("runModelEditorQueries", () => {
         createQueryRun: jest.fn().mockReturnValue({
           evaluate: jest.fn().mockResolvedValue({
             resultType: QueryResultType.SUCCESS,
+            results: new Map([
+              [queryPath, { resultType: QueryResultType.SUCCESS }],
+            ]),
             outputDir,
           }),
           outputDir,
@@ -156,17 +157,20 @@ describe("runModelEditorQueries", () => {
     expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
       "/a/b/c/src.zip",
-      {
-        queryPath: expect.stringMatching(/\S*ModeEndpoints\.ql/),
-        quickEvalPosition: undefined,
-        quickEvalCountOnly: false,
-      },
+      [
+        {
+          outputBaseName: "results",
+          queryPath: expect.stringMatching(/\S*ModeEndpoints\.ql/),
+          quickEvalPosition: undefined,
+          quickEvalCountOnly: false,
+        },
+      ],
       false,
       [],
       ["my/extensions"],
       {},
       "/tmp/queries",
-      undefined,
+      "ApplicationModeEndpoints.ql",
       undefined,
     );
   });
