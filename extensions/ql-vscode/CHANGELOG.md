@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.17.3 - 3 June 2025
 
 - Fix reporting of bad join orders in recursive predicates. [#4019](https://github.com/github/vscode-codeql/pull/4019)
 
