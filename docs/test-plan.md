@@ -45,7 +45,7 @@ choose to go through some of the Optional Test Cases.
 #### Test case 2: Running a problem query and viewing results
 
 1. Open the [javascript ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
-2. Select the `babel/babel` database (or download it if you don't have one already)
+2. Select the `angular-cn/ng-nice` database (or download it if you don't have one already)
 3. Run a local query.
 4. Once the query completes:
    - Check that the result messages are rendered
