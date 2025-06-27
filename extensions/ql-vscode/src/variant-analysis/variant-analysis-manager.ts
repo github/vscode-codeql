@@ -967,7 +967,11 @@ export class VariantAnalysisManager
     );
   }
 
-  public async viewAutofixes() {
+  public async viewAutofixes(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
     // TODO
   }
 
