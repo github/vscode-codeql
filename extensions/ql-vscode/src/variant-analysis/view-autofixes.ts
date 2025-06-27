@@ -14,6 +14,7 @@ import type { ProgressCallback } from "../common/vscode/progress";
 import { join, dirname, parse } from "path";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { window as Window } from "vscode";
+import { pluralize } from "../common/word";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -62,6 +63,27 @@ export async function viewAutofixesForVariantAnalysisResults(
         sourceRootsStoragePath,
         autofixOutputStoragePath,
       } = await getStoragePaths(variantAnalysisId, storagePath);
+
+      // Process the selected repositories:
+      //  Get sarif
+      //  Download source root
+      //  Run autofix and output results
+      progress(
+        progressUpdate(
+          3,
+          4,
+          `Processing ${pluralize(selectedRepoNames.length, "repository", "repositories")}`,
+        ),
+      );
+      const outputTextFiles = await processSelectedRepositories(
+        selectedRepoNames,
+        variantAnalysisIdStoragePath,
+        sourceRootsStoragePath,
+        autofixOutputStoragePath,
+        localAutofixPath,
+        credentials,
+        logger,
+      );
 
       // TODO
     },
@@ -236,4 +258,21 @@ async function getStoragePaths(
     sourceRootsStoragePath,
     autofixOutputStoragePath,
   };
+}
+
+/**
+ * Processes the selected repositories for autofix generation.
+ */
+async function processSelectedRepositories(
+  selectedRepoNames: string[],
+  variantAnalysisIdStoragePath: string,
+  sourceRootsStoragePath: string,
+  autofixOutputStoragePath: string,
+  localAutofixPath: string,
+  credentials: Credentials,
+  logger: NotificationLogger,
+): Promise<string[]> {
+  const outputTextFiles: string[] = [];
+  // TODO
+  return outputTextFiles;
 }
