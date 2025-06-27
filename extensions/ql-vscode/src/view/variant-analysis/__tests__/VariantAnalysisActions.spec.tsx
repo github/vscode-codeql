@@ -6,11 +6,13 @@ import { VariantAnalysisActions } from "../VariantAnalysisActions";
 
 describe(VariantAnalysisActions.name, () => {
   const onStopQueryClick = jest.fn();
+  const onViewAutofixesClick = jest.fn();
   const onCopyRepositoryListClick = jest.fn();
   const onExportResultsClick = jest.fn();
 
   afterEach(() => {
     onStopQueryClick.mockReset();
+    onViewAutofixesClick.mockReset();
     onCopyRepositoryListClick.mockReset();
     onExportResultsClick.mockReset();
   });
@@ -22,6 +24,7 @@ describe(VariantAnalysisActions.name, () => {
     reactRender(
       <VariantAnalysisActions
         onStopQueryClick={onStopQueryClick}
+        onViewAutofixesClick={onViewAutofixesClick}
         onCopyRepositoryListClick={onCopyRepositoryListClick}
         onExportResultsClick={onExportResultsClick}
         {...props}

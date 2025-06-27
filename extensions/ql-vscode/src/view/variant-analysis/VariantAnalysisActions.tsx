@@ -9,8 +9,10 @@ export type VariantAnalysisActionsProps = {
   stopQueryDisabled?: boolean;
 
   showResultActions?: boolean;
+  onViewAutofixesClick: () => void;
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
+  viewAutofixesDisabled?: boolean;
   copyRepositoryListDisabled?: boolean;
   exportResultsDisabled?: boolean;
 
@@ -55,8 +57,10 @@ export const VariantAnalysisActions = ({
   onStopQueryClick,
   stopQueryDisabled,
   showResultActions,
+  onViewAutofixesClick,
   onCopyRepositoryListClick,
   onExportResultsClick,
+  viewAutofixesDisabled,
   copyRepositoryListDisabled,
   exportResultsDisabled,
   hasSelectedRepositories,
@@ -66,6 +70,19 @@ export const VariantAnalysisActions = ({
     <Container>
       {showResultActions && (
         <>
+          <Button
+            secondary
+            onClick={onViewAutofixesClick}
+            disabled={viewAutofixesDisabled}
+          >
+            {chooseText({
+              hasSelectedRepositories,
+              hasFilteredRepositories,
+              normalText: "View Autofixes",
+              selectedText: "View Autofixes for selected results",
+              filteredText: "View Autofixes for filtered results",
+            })}
+          </Button>
           <Button
             secondary
             onClick={onCopyRepositoryListClick}

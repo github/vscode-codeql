@@ -135,6 +135,12 @@ export class VariantAnalysisView
       case "openQueryText":
         await this.manager.openQueryText(this.variantAnalysisId);
         break;
+      case "viewAutofixes":
+        await this.manager.viewAutofixes(
+          this.variantAnalysisId,
+          msg.filterSort,
+        );
+        break;
       case "copyRepositoryList":
         await this.manager.copyRepoListToClipboard(
           this.variantAnalysisId,

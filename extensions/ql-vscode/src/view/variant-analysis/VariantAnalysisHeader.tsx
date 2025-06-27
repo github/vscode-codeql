@@ -34,6 +34,7 @@ type VariantAnalysisHeaderProps = {
 
   onStopQueryClick: () => void;
 
+  onViewAutofixesClick: () => void;
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
 
@@ -82,6 +83,7 @@ export const VariantAnalysisHeader = ({
   onOpenQueryFileClick,
   onViewQueryTextClick,
   onStopQueryClick,
+  onViewAutofixesClick,
   onCopyRepositoryListClick,
   onExportResultsClick,
   onViewLogsClick,
@@ -150,11 +152,13 @@ export const VariantAnalysisHeader = ({
           variantAnalysisStatus={variantAnalysis.status}
           showResultActions={(resultCount ?? 0) > 0}
           onStopQueryClick={onStopQueryClick}
+          onViewAutofixesClick={onViewAutofixesClick}
           onCopyRepositoryListClick={onCopyRepositoryListClick}
           onExportResultsClick={onExportResultsClick}
           stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
           exportResultsDisabled={!hasDownloadedRepos}
           copyRepositoryListDisabled={!hasReposWithResults}
+          viewAutofixesDisabled={!hasReposWithResults}
           hasFilteredRepositories={
             variantAnalysis.scannedRepos?.length !==
             filteredRepositories?.length

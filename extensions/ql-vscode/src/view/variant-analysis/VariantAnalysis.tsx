@@ -105,6 +105,17 @@ export function VariantAnalysis({
     }
   }, []);
 
+  const viewAutofixes = useCallback(() => {
+    vscode.postMessage({
+      t: "viewAutofixes",
+      filterSort: {
+        ...filterSortState,
+        repositoryIds: selectedRepositoryIds,
+      },
+    });
+    sendTelemetry("variant-analysis-view-autofixes");
+  }, [filterSortState, selectedRepositoryIds]);
+
   const copyRepositoryList = useCallback(() => {
     vscode.postMessage({
       t: "copyRepositoryList",
@@ -148,6 +159,7 @@ export function VariantAnalysis({
         onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={openQueryText}
         onStopQueryClick={stopQuery}
+        onViewAutofixesClick={viewAutofixes}
         onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={exportResults}
         onViewLogsClick={onViewLogsClick}

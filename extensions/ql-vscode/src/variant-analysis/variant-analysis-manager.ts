@@ -967,6 +967,10 @@ export class VariantAnalysisManager
     );
   }
 
+  public async viewAutofixes() {
+    // TODO
+  }
+
   public async copyRepoListToClipboard(
     variantAnalysisId: number,
     filterSort: RepositoriesFilterSortStateWithIds = defaultFilterSortState,
