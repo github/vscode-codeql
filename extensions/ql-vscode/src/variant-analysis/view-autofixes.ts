@@ -3,7 +3,10 @@ import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
 } from "./shared/variant-analysis-filter-sort";
-import type { VariantAnalysis } from "./shared/variant-analysis";
+import type {
+  VariantAnalysis,
+  VariantAnalysisRepositoryTask,
+} from "./shared/variant-analysis";
 import type { Credentials } from "../common/authentication";
 import type { NotificationLogger } from "../common/logging";
 import type { App } from "../common/app";
@@ -16,6 +19,7 @@ import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { window as Window } from "vscode";
 import { pluralize } from "../common/word";
 import { glob } from "glob";
+import { readRepoTask } from "./repo-tasks-store";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -282,6 +286,17 @@ async function processSelectedRepositories(
           progressForRepo(progressUpdate(1, 3, `Getting sarif`));
           const repoStoragePath = join(variantAnalysisIdStoragePath, nwo);
           const sarifFile = await getSarifFile(repoStoragePath, nwo);
+
+          // Read the contents of the variant analysis' `repo_task.json` file,
+          // and confirm that the `databaseCommitSha` and `resultCount` exist.
+          const repoTask: VariantAnalysisRepositoryTask =
+            await readRepoTask(repoStoragePath);
+          if (!repoTask.databaseCommitSha) {
+            throw new Error(`Missing database commit SHA for ${nwo}`);
+          }
+          if (!repoTask.resultCount) {
+            throw new Error(`Missing variant analysis result count for ${nwo}`);
+          }
         },
         {
           title: `Processing ${nwo}`,
