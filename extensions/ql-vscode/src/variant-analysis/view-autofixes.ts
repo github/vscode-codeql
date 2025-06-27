@@ -8,7 +8,7 @@ import type { Credentials } from "../common/authentication";
 import type { NotificationLogger } from "../common/logging";
 import type { App } from "../common/app";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
-import { pathExists } from "fs-extra";
+import { pathExists, ensureDir } from "fs-extra";
 import { withProgress, progressUpdate } from "../common/vscode/progress";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { join, dirname, parse } from "path";
@@ -55,6 +55,13 @@ export async function viewAutofixesForVariantAnalysisResults(
         variantAnalysis,
         filterSort,
       );
+
+      // Get storage paths for the autofix results.
+      const {
+        variantAnalysisIdStoragePath,
+        sourceRootsStoragePath,
+        autofixOutputStoragePath,
+      } = await getStoragePaths(variantAnalysisId, storagePath);
 
       // TODO
     },
@@ -180,4 +187,53 @@ function getSelectedRepositoryNames(
   }
 
   return fullNames;
+}
+
+/**
+ * Gets the storage paths needed for the autofix results.
+ */
+async function getStoragePaths(
+  variantAnalysisId: number,
+  storagePath: string,
+): Promise<{
+  variantAnalysisIdStoragePath: string;
+  sourceRootsStoragePath: string;
+  autofixOutputStoragePath: string;
+}> {
+  // Confirm storage path for the variant analysis ID exists.
+  const variantAnalysisIdStoragePath = join(
+    storagePath,
+    variantAnalysisId.toString(),
+  );
+  if (!(await pathExists(variantAnalysisIdStoragePath))) {
+    throw new Error(
+      `Variant analysis storage path does not exist: ${variantAnalysisIdStoragePath}`,
+    );
+  }
+
+  // Storage path for all autofix info.
+  const autofixStoragePath = join(variantAnalysisIdStoragePath, "autofix");
+
+  // Storage path for the source roots used with autofix.
+  const sourceRootsStoragePath = join(autofixStoragePath, "source-roots");
+  await ensureDir(sourceRootsStoragePath);
+
+  // Storage path for the autofix output.
+  let autofixOutputStoragePath = join(autofixStoragePath, "output");
+  // If the path already exists, assume that it's a previous run
+  // and append "-n" to the end of the path where n is the next available number.
+  if (await pathExists(autofixOutputStoragePath)) {
+    let i = 1;
+    while (await pathExists(autofixOutputStoragePath + i.toString())) {
+      i++;
+    }
+    autofixOutputStoragePath = autofixOutputStoragePath += i.toString();
+  }
+  await ensureDir(autofixOutputStoragePath);
+
+  return {
+    variantAnalysisIdStoragePath,
+    sourceRootsStoragePath,
+    autofixOutputStoragePath,
+  };
 }
