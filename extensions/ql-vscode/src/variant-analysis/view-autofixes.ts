@@ -15,6 +15,7 @@ import { join, dirname, parse } from "path";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { window as Window } from "vscode";
 import { pluralize } from "../common/word";
+import { glob } from "glob";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -273,6 +274,41 @@ async function processSelectedRepositories(
   logger: NotificationLogger,
 ): Promise<string[]> {
   const outputTextFiles: string[] = [];
-  // TODO
+  await Promise.all(
+    selectedRepoNames.map(async (nwo) =>
+      withProgress(
+        async (progressForRepo: ProgressCallback) => {
+          // Get the sarif file.
+          progressForRepo(progressUpdate(1, 3, `Getting sarif`));
+          const repoStoragePath = join(variantAnalysisIdStoragePath, nwo);
+          const sarifFile = await getSarifFile(repoStoragePath, nwo);
+        },
+        {
+          title: `Processing ${nwo}`,
+          cancellable: false,
+        },
+      ),
+    ),
+  );
+
   return outputTextFiles;
+}
+
+/**
+ * Gets the path to a SARIF file in a given `repoStoragePath`.
+ */
+async function getSarifFile(
+  repoStoragePath: string,
+  nwo: string,
+): Promise<string> {
+  // Get results directory path.
+  const repoResultsStoragePath = join(repoStoragePath, "results");
+  // Find sarif file.
+  const sarifFiles = await glob(`${repoResultsStoragePath}/**/*.sarif`);
+  if (sarifFiles.length !== 1) {
+    throw new Error(
+      `Expected to find exactly one \`*.sarif\` file for ${nwo}, but found ${sarifFiles.length}.`,
+    );
+  }
+  return sarifFiles[0];
 }
