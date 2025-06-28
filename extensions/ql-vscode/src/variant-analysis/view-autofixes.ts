@@ -483,5 +483,35 @@ async function runAutofixForRepository(
   logger: NotificationLogger,
   outputTextFiles: string[],
 ): Promise<void> {
-  // TODO
+  // Get storage paths for the autofix results for this repository.
+  const {
+    repoAutofixOutputStoragePath,
+    outputTextFilePath,
+    transcriptFilePath,
+    fixDescriptionFilePath,
+  } = await getRepoStoragePaths(autofixOutputStoragePath, nwo);
+}
+
+/**
+ * Gets the storage paths for the autofix results for a given repository.
+ */
+async function getRepoStoragePaths(
+  autofixOutputStoragePath: string,
+  nwo: string,
+) {
+  // Create output directories for repo's autofix results.
+  const repoAutofixOutputStoragePath = join(
+    autofixOutputStoragePath,
+    nwo.replaceAll("/", "-"),
+  );
+  await ensureDir(repoAutofixOutputStoragePath);
+  return {
+    repoAutofixOutputStoragePath,
+    outputTextFilePath: join(repoAutofixOutputStoragePath, "output.txt"),
+    transcriptFilePath: join(repoAutofixOutputStoragePath, "transcript.md"),
+    fixDescriptionFilePath: join(
+      repoAutofixOutputStoragePath,
+      "fix-description.md",
+    ),
+  };
 }
