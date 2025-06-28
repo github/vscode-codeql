@@ -662,3 +662,14 @@ function execAutofix(
     }
   });
 }
+
+/**
+ * Creates a new file path by appending the given suffix.
+ * @param filePath The original file path.
+ * @param suffix The suffix to append to the file name (before the extension).
+ * @returns The new file path with the suffix appended.
+ */
+function appendSuffixToFilePath(filePath: string, suffix: string): string {
+  const { dir, name, ext } = parse(filePath);
+  return join(dir, `${name}-${suffix}${ext}`);
+}
