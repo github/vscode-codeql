@@ -312,6 +312,19 @@ async function processSelectedRepositories(
             credentials,
             logger,
           );
+
+          // Run autofix.
+          progressForRepo(progressUpdate(2, 3, `Running autofix`));
+          await runAutofixForRepository(
+            nwo,
+            sarifFile,
+            srcRootPath,
+            localAutofixPath,
+            autofixOutputStoragePath,
+            repoTask.resultCount,
+            logger,
+            outputTextFiles,
+          );
         },
         {
           title: `Processing ${nwo}`,
@@ -455,4 +468,20 @@ async function downloadPublicCommitSource(
     const errorMessage = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to download ${nwo} at ${sha}: ${errorMessage}`);
   }
+}
+
+/**
+ * Runs autofix for a given repository (nwo).
+ */
+async function runAutofixForRepository(
+  nwo: string,
+  sarifFile: string,
+  srcRootPath: string,
+  localAutofixPath: string,
+  autofixOutputStoragePath: string,
+  resultCount: number,
+  logger: NotificationLogger,
+  outputTextFiles: string[],
+): Promise<void> {
+  // TODO
 }
