@@ -545,6 +545,59 @@ async function getRepoStoragePaths(
 }
 
 /**
+ * Runs autofix on the results in the given SARIF file.
+ */
+async function runAutofixOnResults(
+  logger: NotificationLogger,
+  cocofixBin: string,
+  sarifFile: string,
+  srcRootPath: string,
+  outputTextFilePath: string,
+  fixDescriptionFilePath: string,
+  transcriptFilePath: string,
+  workDir: string,
+  alertNumber?: number, // Optional parameter for specific alert
+): Promise<void> {
+  // Set up args for autofix command.
+  const fixedAutofixArgs = [
+    "--sarif",
+    sarifFile,
+    "--source-root",
+    srcRootPath,
+    "--model",
+    "capi-dev-4o", // may fail with older versions of cocofix
+    "--dev",
+    "--no-cache",
+    "--format",
+    "text",
+    "--diff-style",
+    "diff", // could do "text" instead if want line of "=" between fixes
+  ];
+  const varAutofixArgs = createVarAutofixArgs(
+    outputTextFilePath,
+    fixDescriptionFilePath,
+    transcriptFilePath,
+    alertNumber,
+  );
+
+  const autofixArgs = [...fixedAutofixArgs, ...varAutofixArgs];
+
+  await execAutofix(
+    logger,
+    cocofixBin,
+    autofixArgs,
+    {
+      cwd: workDir,
+      env: {
+        CAPI_DEV_KEY: process.env.CAPI_DEV_KEY,
+        PATH: process.env.PATH,
+      },
+    },
+    true,
+  );
+}
+
+/**
  * Creates autofix arguments that vary depending on the run.
  */
 function createVarAutofixArgs(
