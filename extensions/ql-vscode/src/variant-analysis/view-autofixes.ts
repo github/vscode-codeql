@@ -512,7 +512,17 @@ async function runAutofixForRepository(
       // TODO: run autofix for the i-th alert.
     }
   } else {
-    // TODO: run autofix once for all alerts.
+    // Run autofix once for all alerts.
+    await runAutofixOnResults(
+      logger,
+      cocofixBin,
+      sarifFile,
+      srcRootPath,
+      outputTextFilePath,
+      fixDescriptionFilePath,
+      transcriptFilePath,
+      repoAutofixOutputStoragePath,
+    );
   }
 
   // Save output text files from each repo to later merge
