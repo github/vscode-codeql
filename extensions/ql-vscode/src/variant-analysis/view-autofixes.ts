@@ -11,7 +11,7 @@ import type { Credentials } from "../common/authentication";
 import type { NotificationLogger } from "../common/logging";
 import type { App } from "../common/app";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
-import { pathExists, ensureDir } from "fs-extra";
+import { pathExists, ensureDir, readdir, move, remove } from "fs-extra";
 import { withProgress, progressUpdate } from "../common/vscode/progress";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { join, dirname, parse } from "path";
@@ -20,6 +20,9 @@ import { window as Window } from "vscode";
 import { pluralize } from "../common/word";
 import { glob } from "glob";
 import { readRepoTask } from "./repo-tasks-store";
+import { unlink, mkdtemp } from "fs/promises";
+import { tmpdir } from "os";
+import { spawn } from "child_process";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -297,6 +300,18 @@ async function processSelectedRepositories(
           if (!repoTask.resultCount) {
             throw new Error(`Missing variant analysis result count for ${nwo}`);
           }
+
+          // Download the source root.
+          // Using `0` as the progress step to force a dynamic vs static progress bar.
+          // Consider using `reportStreamProgress` as a future enhancement.
+          progressForRepo(progressUpdate(0, 3, `Downloading source root`));
+          const srcRootPath = await downloadPublicCommitSource(
+            nwo,
+            repoTask.databaseCommitSha,
+            sourceRootsStoragePath,
+            credentials,
+            logger,
+          );
         },
         {
           title: `Processing ${nwo}`,
@@ -326,4 +341,118 @@ async function getSarifFile(
     );
   }
   return sarifFiles[0];
+}
+
+/**
+ * Downloads the source code of a public commit from a GitHub repository.
+ */
+async function downloadPublicCommitSource(
+  nwo: string,
+  sha: string,
+  outputPath: string,
+  credentials: Credentials,
+  logger: NotificationLogger,
+): Promise<string> {
+  const [owner, repo] = nwo.split("/");
+  if (!owner || !repo) {
+    throw new Error(`Invalid repository name: ${nwo}`);
+  }
+
+  // Create output directory if it doesn't exist
+  await ensureDir(outputPath);
+
+  // Define the final checkout directory
+  const checkoutDir = join(
+    outputPath,
+    `${owner}-${repo}-${sha.substring(0, 7)}`,
+  );
+
+  // Check if directory already exists to avoid re-downloading
+  if (await pathExists(checkoutDir)) {
+    void logger.log(
+      `Source for ${nwo} at ${sha} already exists at ${checkoutDir}.`,
+    );
+    return checkoutDir;
+  }
+
+  void logger.log(`Fetching source of repository ${nwo} at ${sha}...`);
+
+  try {
+    // Create a temporary directory for downloading
+    const downloadDir = await mkdtemp(join(tmpdir(), "download-source-"));
+    const tarballPath = join(downloadDir, "source.tar.gz");
+
+    const octokit = await credentials.getOctokit();
+
+    // Get the tarball URL
+    const { url } = await octokit.rest.repos.downloadTarballArchive({
+      owner,
+      repo,
+      ref: sha,
+    });
+
+    // Download the tarball using spawn
+    await new Promise<void>((resolve, reject) => {
+      const curlArgs = [
+        "-H",
+        "Accept: application/octet-stream",
+        "--user-agent",
+        "GitHub-CodeQL-Extension",
+        "-L", // Follow redirects
+        "-o",
+        tarballPath,
+        url,
+      ];
+
+      const process = spawn("curl", curlArgs, { cwd: downloadDir });
+
+      process.on("error", reject);
+      process.on("exit", (code) =>
+        code === 0
+          ? resolve()
+          : reject(new Error(`curl exited with code ${code}`)),
+      );
+    });
+
+    void logger.log(`Download complete, extracting source...`);
+
+    // Extract the tarball
+    await new Promise<void>((resolve, reject) => {
+      const process = spawn("tar", ["-xzf", tarballPath], { cwd: downloadDir });
+
+      process.on("error", reject);
+      process.on("exit", (code) =>
+        code === 0
+          ? resolve()
+          : reject(new Error(`tar extraction failed with code ${code}`)),
+      );
+    });
+
+    // Remove the tarball to save space
+    await unlink(tarballPath);
+
+    // Find the extracted directory (GitHub tarballs extract to a single directory)
+    const extractedFiles = await readdir(downloadDir);
+    const sourceDir = extractedFiles.filter((f) => f !== "source.tar.gz")[0];
+
+    if (!sourceDir) {
+      throw new Error("Failed to find extracted source directory");
+    }
+
+    const extractedSourcePath = join(downloadDir, sourceDir);
+
+    // Ensure the destination directory's parent exists
+    await ensureDir(dirname(checkoutDir));
+
+    // Move the extracted source to the final location
+    await move(extractedSourcePath, checkoutDir);
+
+    // Clean up the temporary directory
+    await remove(downloadDir);
+
+    return checkoutDir;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to download ${nwo} at ${sha}: ${errorMessage}`);
+  }
 }
