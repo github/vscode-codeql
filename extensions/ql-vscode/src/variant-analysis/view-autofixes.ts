@@ -542,3 +542,29 @@ async function getRepoStoragePaths(
     ),
   };
 }
+
+/**
+ * Creates autofix arguments that vary depending on the run.
+ */
+function createVarAutofixArgs(
+  outputTextFilePath: string,
+  fixDescriptionFilePath: string,
+  transcriptFilePath: string,
+  alertNumber?: number, // Optional parameter for specific alert
+): string[] {
+  const args = [
+    "--output",
+    outputTextFilePath,
+    "--fix-description",
+    fixDescriptionFilePath,
+    "--transcript",
+    transcriptFilePath,
+  ];
+
+  // Add alert number argument if provided
+  if (alertNumber !== undefined) {
+    args.push("--only-alert-number", alertNumber.toString());
+  }
+
+  return args;
+}
