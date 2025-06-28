@@ -29,6 +29,8 @@ import { spawn } from "child_process";
 // a handle of autofixes for each query, this should be sufficient.
 // Consider increasing this in the future if needed.
 const MAX_NUM_REPOS: number = 3;
+// Similarly, limit to three fixes per repo.
+const MAX_NUM_FIXES: number = 3;
 
 /**
  * Generates autofixes for the results of a variant analysis.
@@ -490,6 +492,31 @@ async function runAutofixForRepository(
     transcriptFilePath,
     fixDescriptionFilePath,
   } = await getRepoStoragePaths(autofixOutputStoragePath, nwo);
+
+  // Get autofix binary.
+  // Switch to Go binary in the future and have user pass full path
+  // in an environment variable instead of hardcoding part here.
+  const cocofixBin = join(process.cwd(), localAutofixPath, "bin", "cocofix.js");
+
+  // Limit number of fixes generated.
+  const limitFixesBoolean: boolean = resultCount > MAX_NUM_FIXES;
+  if (limitFixesBoolean) {
+    void Window.showInformationMessage(
+      `Only generating autofixes for the first ${MAX_NUM_FIXES} alerts for ${nwo}.`,
+    );
+
+    // Run autofix in a loop for the first MAX_NUM_FIXES alerts.
+    // Not an ideal solution, but avoids modifying the input SARIF file.
+    for (let i = 0; i < MAX_NUM_FIXES; i++) {
+      // TODO: run autofix for the i-th alert.
+    }
+  } else {
+    // TODO: run autofix once for all alerts.
+  }
+
+  // Save output text files from each repo to later merge
+  // into a single markdown file containing all results.
+  outputTextFiles.push(outputTextFilePath);
 }
 
 /**
