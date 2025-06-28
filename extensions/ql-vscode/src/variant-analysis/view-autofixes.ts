@@ -23,6 +23,7 @@ import { readRepoTask } from "./repo-tasks-store";
 import { unlink, mkdtemp } from "fs/promises";
 import { tmpdir } from "os";
 import { spawn } from "child_process";
+import type { execFileSync } from "child_process";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -567,4 +568,34 @@ function createVarAutofixArgs(
   }
 
   return args;
+}
+
+/**
+ * Executes the autofix command.
+ */
+function execAutofix(
+  logger: NotificationLogger,
+  bin: string,
+  args: string[],
+  options: Parameters<typeof execFileSync>[2],
+  showCommand?: boolean,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      const cwd = options?.cwd || process.cwd();
+      if (showCommand) {
+        void logger.log(`Spawning '${bin} ${args.join(" ")}' in ${cwd}`);
+      }
+      if (args.some((a) => a === undefined || a === "")) {
+        throw new Error(
+          `Invalid empty or undefined arguments: ${args.join(" ")}`,
+        );
+      }
+      const p = spawn(bin, args, { stdio: [0, 1, 2], ...options });
+      p.on("error", reject);
+      p.on("exit", (code) => (code === 0 ? resolve() : reject(code)));
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
