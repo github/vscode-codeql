@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { VscodeButton } from "@vscode-elements/react-elements";
+import { isCanary } from "../../config";
 
 export type VariantAnalysisActionsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -70,19 +71,21 @@ export const VariantAnalysisActions = ({
     <Container>
       {showResultActions && (
         <>
-          <Button
-            secondary
-            onClick={onViewAutofixesClick}
-            disabled={viewAutofixesDisabled}
-          >
-            {chooseText({
-              hasSelectedRepositories,
-              hasFilteredRepositories,
-              normalText: "View Autofixes",
-              selectedText: "View Autofixes for selected results",
-              filteredText: "View Autofixes for filtered results",
-            })}
-          </Button>
+          {isCanary() && (
+            <Button
+              secondary
+              onClick={onViewAutofixesClick}
+              disabled={viewAutofixesDisabled}
+            >
+              {chooseText({
+                hasSelectedRepositories,
+                hasFilteredRepositories,
+                normalText: "View Autofixes",
+                selectedText: "View Autofixes for selected results",
+                filteredText: "View Autofixes for filtered results",
+              })}
+            </Button>
+          )}
           <Button
             secondary
             onClick={onCopyRepositoryListClick}
