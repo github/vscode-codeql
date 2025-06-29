@@ -20,7 +20,7 @@ import { window as Window } from "vscode";
 import { pluralize } from "../common/word";
 import { glob } from "glob";
 import { readRepoTask } from "./repo-tasks-store";
-import { unlink, mkdtemp } from "fs/promises";
+import { unlink, mkdtemp, readFile, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { spawn } from "child_process";
 import type { execFileSync } from "child_process";
@@ -508,9 +508,45 @@ async function runAutofixForRepository(
 
     // Run autofix in a loop for the first MAX_NUM_FIXES alerts.
     // Not an ideal solution, but avoids modifying the input SARIF file.
+    const tempOutputTextFiles: string[] = [];
+    const fixDescriptionFiles: string[] = [];
+    const transcriptFiles: string[] = [];
     for (let i = 0; i < MAX_NUM_FIXES; i++) {
-      // TODO: run autofix for the i-th alert.
+      const tempOutputTextFilePath = appendSuffixToFilePath(
+        outputTextFilePath,
+        i.toString(),
+      );
+      const tempFixDescriptionFilePath = appendSuffixToFilePath(
+        fixDescriptionFilePath,
+        i.toString(),
+      );
+      const tempTranscriptFilePath = appendSuffixToFilePath(
+        transcriptFilePath,
+        i.toString(),
+      );
+
+      tempOutputTextFiles.push(tempOutputTextFilePath);
+      fixDescriptionFiles.push(tempFixDescriptionFilePath);
+      transcriptFiles.push(tempTranscriptFilePath);
+
+      await runAutofixOnResults(
+        logger,
+        cocofixBin,
+        sarifFile,
+        srcRootPath,
+        tempOutputTextFilePath,
+        tempFixDescriptionFilePath,
+        tempTranscriptFilePath,
+        repoAutofixOutputStoragePath,
+        i,
+      );
     }
+
+    // Merge the output files together.
+    // Caveat that autofix will call each alert "alert 0", which will look a bit odd in the merged output file.
+    await mergeFiles(tempOutputTextFiles, outputTextFilePath);
+    await mergeFiles(fixDescriptionFiles, fixDescriptionFilePath);
+    await mergeFiles(transcriptFiles, transcriptFilePath);
   } else {
     // Run autofix once for all alerts.
     await runAutofixOnResults(
@@ -672,4 +708,45 @@ function execAutofix(
 function appendSuffixToFilePath(filePath: string, suffix: string): string {
   const { dir, name, ext } = parse(filePath);
   return join(dir, `${name}-${suffix}${ext}`);
+}
+
+/**
+ * Merges the given `inputFiles` into a single `outputFile`.
+ * @param inputFiles - The list of input files to merge.
+ * @param outputFile - The output file path.
+ * @param deleteOriginalFiles - Whether to delete the original input files after merging.
+ */
+async function mergeFiles(
+  inputFiles: string[],
+  outputFile: string,
+  deleteOriginalFiles: boolean = true,
+): Promise<void> {
+  try {
+    // Check if any input files do not exist and return if so.
+    const pathChecks = await Promise.all(
+      inputFiles.map(async (path) => ({
+        exists: await pathExists(path),
+      })),
+    );
+    const anyPathMissing = pathChecks.some((check) => !check.exists);
+    if (inputFiles.length === 0 || anyPathMissing) {
+      return;
+    }
+
+    // Merge the files
+    const contents = await Promise.all(
+      inputFiles.map((file) => readFile(file, "utf8")),
+    );
+
+    // Write merged content
+    await writeFile(outputFile, contents.join("\n"));
+
+    // Delete original files
+    if (deleteOriginalFiles) {
+      await Promise.all(inputFiles.map((file) => unlink(file)));
+    }
+  } catch (error) {
+    console.error("Error merging files:", error);
+    throw error;
+  }
 }
