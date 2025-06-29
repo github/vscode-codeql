@@ -27,6 +27,10 @@ describe(VariantAnalysisActions.name, () => {
         onViewAutofixesClick={onViewAutofixesClick}
         onCopyRepositoryListClick={onCopyRepositoryListClick}
         onExportResultsClick={onExportResultsClick}
+        userSettings={{
+          shouldShowProvenance: false,
+          shouldShowViewAutofixesBtn: false,
+        }}
         {...props}
       />,
     );

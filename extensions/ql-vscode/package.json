@@ -1303,7 +1303,7 @@
         {
           "command": "codeQLQueryHistory.viewAutofixes",
           "group": "1_queryHistory@2",
-          "when": "viewItem == remoteResultsItem"
+          "when": "viewItem == remoteResultsItem && config.codeQL.canary"
         },
         {
           "command": "codeQLQueries.runLocalQueryFromQueriesPanel",

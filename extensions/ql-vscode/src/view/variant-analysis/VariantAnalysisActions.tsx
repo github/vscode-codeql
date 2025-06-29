@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { VscodeButton } from "@vscode-elements/react-elements";
+import type { UserSettings } from "../../common/interface-types";
 
 export type VariantAnalysisActionsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -18,6 +19,8 @@ export type VariantAnalysisActionsProps = {
 
   hasSelectedRepositories?: boolean;
   hasFilteredRepositories?: boolean;
+
+  userSettings: UserSettings;
 };
 
 const Container = styled.div`
@@ -65,24 +68,27 @@ export const VariantAnalysisActions = ({
   exportResultsDisabled,
   hasSelectedRepositories,
   hasFilteredRepositories,
+  userSettings,
 }: VariantAnalysisActionsProps) => {
   return (
     <Container>
       {showResultActions && (
         <>
-          <Button
-            secondary
-            onClick={onViewAutofixesClick}
-            disabled={viewAutofixesDisabled}
-          >
-            {chooseText({
-              hasSelectedRepositories,
-              hasFilteredRepositories,
-              normalText: "View Autofixes",
-              selectedText: "View Autofixes for selected results",
-              filteredText: "View Autofixes for filtered results",
-            })}
-          </Button>
+          {userSettings.shouldShowViewAutofixesBtn && (
+            <Button
+              secondary
+              onClick={onViewAutofixesClick}
+              disabled={viewAutofixesDisabled}
+            >
+              {chooseText({
+                hasSelectedRepositories,
+                hasFilteredRepositories,
+                normalText: "View Autofixes",
+                selectedText: "View Autofixes for selected results",
+                filteredText: "View Autofixes for filtered results",
+              })}
+            </Button>
+          )}
           <Button
             secondary
             onClick={onCopyRepositoryListClick}

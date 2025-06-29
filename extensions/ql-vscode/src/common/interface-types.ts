@@ -151,10 +151,13 @@ interface SetStateMsg {
 export interface UserSettings {
   /** Whether to display links to the dataflow models that generated particular nodes in a flow path. */
   shouldShowProvenance: boolean;
+  /** Whether to display the "View Autofixes" button. */
+  shouldShowViewAutofixesBtn: boolean;
 }
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   shouldShowProvenance: false,
+  shouldShowViewAutofixesBtn: false,
 };
 
 /** Message indicating that the user's configuration settings have changed. */
@@ -559,7 +562,8 @@ export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetFilterSortStateMessage
   | SetRepoResultsMessage
-  | SetRepoStatesMessage;
+  | SetRepoStatesMessage
+  | SetUserSettingsMsg;
 
 export type FromVariantAnalysisMessage =
   | CommonFromViewMessages

@@ -9,11 +9,15 @@ import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-ana
 import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
 import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
-import type { ToVariantAnalysisMessage } from "../../common/interface-types";
+import type {
+  ToVariantAnalysisMessage,
+  UserSettings,
+} from "../../common/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
+import { DEFAULT_USER_SETTINGS } from "../../common/interface-types";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -77,6 +81,9 @@ export function VariantAnalysis({
   useTelemetryOnChange(filterSortState, "variant-analysis-filter-sort-state", {
     debounceTimeoutMillis: 1000,
   });
+  const [userSettings, setUserSettings] = useState<UserSettings>(
+    DEFAULT_USER_SETTINGS,
+  );
 
   useMessageFromExtension<ToVariantAnalysisMessage>((msg) => {
     if (msg.t === "setVariantAnalysis") {
@@ -102,6 +109,8 @@ export function VariantAnalysis({
           ...msg.repoStates,
         ];
       });
+    } else if (msg.t === "setUserSettings") {
+      setUserSettings(msg.userSettings);
     }
   }, []);
 
@@ -163,6 +172,7 @@ export function VariantAnalysis({
         onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={exportResults}
         onViewLogsClick={onViewLogsClick}
+        userSettings={userSettings}
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}

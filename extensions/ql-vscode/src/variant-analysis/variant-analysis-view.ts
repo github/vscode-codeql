@@ -1,4 +1,5 @@
-import { ViewColumn } from "vscode";
+import type { ConfigurationChangeEvent } from "vscode";
+import { ViewColumn, workspace } from "vscode";
 import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
 import { AbstractWebview } from "../common/vscode/abstract-webview";
 import {
@@ -27,6 +28,7 @@ import type { App } from "../common/app";
 import {
   getVariantAnalysisDefaultResultsFilter,
   getVariantAnalysisDefaultResultsSort,
+  isCanary,
 } from "../config";
 
 export class VariantAnalysisView
@@ -46,6 +48,39 @@ export class VariantAnalysisView
     manager.registerView(this);
 
     this.dataFlowPathsView = new DataFlowPathsView(app);
+
+    // Set up configuration change listener
+    this.push(
+      workspace.onDidChangeConfiguration(
+        this.onConfigurationChanged.bind(this),
+      ),
+    );
+  }
+
+  /**
+   * Handler for configuration changes
+   */
+  private onConfigurationChanged(e: ConfigurationChangeEvent): void {
+    // Check if the canary setting has changed
+    if (e.affectsConfiguration("codeQL.canary")) {
+      void this.updateUserSettings();
+    }
+  }
+
+  private async updateUserSettings(): Promise<void> {
+    if (!this.isShowingPanel) {
+      return;
+    }
+
+    await this.postMessage({
+      t: "setUserSettings",
+      userSettings: {
+        // Provenance is not supported in variant analysis view
+        shouldShowProvenance: false,
+        // Only show "View Autofixes" button in canary mode.
+        shouldShowViewAutofixesBtn: isCanary(),
+      },
+    });
   }
 
   public async openView() {
@@ -53,6 +88,8 @@ export class VariantAnalysisView
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
+
+    await this.updateUserSettings();
   }
 
   public async updateView(variantAnalysis: VariantAnalysis): Promise<void> {
