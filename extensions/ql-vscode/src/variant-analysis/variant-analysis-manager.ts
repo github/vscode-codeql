@@ -73,6 +73,7 @@ import type {
   VariantAnalysisCommands,
 } from "../common/commands";
 import { exportVariantAnalysisResults } from "./export-results";
+import { viewAutofixesForVariantAnalysisResults } from "./view-autofixes";
 import {
   readRepoStates,
   REPO_STATES_FILENAME,
@@ -964,6 +965,22 @@ export class VariantAnalysisManager
     await this.app.commands.execute(
       "vscode.open",
       Uri.parse(actionsWorkflowRunUrl),
+    );
+  }
+
+  public async viewAutofixes(
+    variantAnalysisId: number,
+    filterSort: RepositoriesFilterSortStateWithIds = defaultFilterSortState,
+  ) {
+    await viewAutofixesForVariantAnalysisResults(
+      variantAnalysisId,
+      filterSort,
+      this.variantAnalyses,
+      this.app.credentials,
+      this.app.logger,
+      this.storagePath,
+      this.app,
+      this.cliServer,
     );
   }
 

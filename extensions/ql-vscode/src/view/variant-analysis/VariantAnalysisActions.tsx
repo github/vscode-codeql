@@ -1,6 +1,7 @@
 import { styled } from "styled-components";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { VscodeButton } from "@vscode-elements/react-elements";
+import { isCanary } from "../../config";
 
 export type VariantAnalysisActionsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -9,8 +10,10 @@ export type VariantAnalysisActionsProps = {
   stopQueryDisabled?: boolean;
 
   showResultActions?: boolean;
+  onViewAutofixesClick: () => void;
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
+  viewAutofixesDisabled?: boolean;
   copyRepositoryListDisabled?: boolean;
   exportResultsDisabled?: boolean;
 
@@ -55,8 +58,10 @@ export const VariantAnalysisActions = ({
   onStopQueryClick,
   stopQueryDisabled,
   showResultActions,
+  onViewAutofixesClick,
   onCopyRepositoryListClick,
   onExportResultsClick,
+  viewAutofixesDisabled,
   copyRepositoryListDisabled,
   exportResultsDisabled,
   hasSelectedRepositories,
@@ -66,6 +71,21 @@ export const VariantAnalysisActions = ({
     <Container>
       {showResultActions && (
         <>
+          {isCanary() && (
+            <Button
+              secondary
+              onClick={onViewAutofixesClick}
+              disabled={viewAutofixesDisabled}
+            >
+              {chooseText({
+                hasSelectedRepositories,
+                hasFilteredRepositories,
+                normalText: "View Autofixes",
+                selectedText: "View Autofixes for selected results",
+                filteredText: "View Autofixes for filtered results",
+              })}
+            </Button>
+          )}
           <Button
             secondary
             onClick={onCopyRepositoryListClick}

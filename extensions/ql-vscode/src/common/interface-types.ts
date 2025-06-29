@@ -527,6 +527,11 @@ interface OpenQueryTextMessage {
   t: "openQueryText";
 }
 
+interface ViewAutofixesMessage {
+  t: "viewAutofixes";
+  filterSort?: RepositoriesFilterSortStateWithIds;
+}
+
 interface CopyRepositoryListMessage {
   t: "copyRepositoryList";
   filterSort?: RepositoriesFilterSortStateWithIds;
@@ -561,6 +566,7 @@ export type FromVariantAnalysisMessage =
   | RequestRepositoryResultsMessage
   | OpenQueryFileMessage
   | OpenQueryTextMessage
+  | ViewAutofixesMessage
   | CopyRepositoryListMessage
   | ExportResultsMessage
   | OpenLogsMessage
