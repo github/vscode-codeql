@@ -24,6 +24,7 @@ import { unlink, mkdtemp, readFile, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { spawn } from "child_process";
 import type { execFileSync } from "child_process";
+import { tryOpenExternalFile } from "../common/vscode/external-files";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -96,7 +97,16 @@ export async function viewAutofixesForVariantAnalysisResults(
         logger,
       );
 
-      // TODO
+      // Output results from all repos to a combined markdown file.
+      progress(progressUpdate(4, 4, `Finalizing autofix results`));
+      const combinedOutputMarkdownFile = join(
+        autofixOutputStoragePath,
+        "autofix-output.md",
+      );
+      await mergeFiles(outputTextFiles, combinedOutputMarkdownFile, false);
+
+      // Open the combined markdown file.
+      await tryOpenExternalFile(app.commands, combinedOutputMarkdownFile);
     },
     {
       title: "Generating Autofixes",
