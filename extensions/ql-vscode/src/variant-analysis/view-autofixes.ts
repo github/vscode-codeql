@@ -561,6 +561,9 @@ async function runAutofixForRepository(
     );
   }
 
+  // Format the output text file with markdown.
+  await formatWithMarkdown(outputTextFilePath, `${nwo}`);
+
   // Save output text files from each repo to later merge
   // into a single markdown file containing all results.
   outputTextFiles.push(outputTextFilePath);
@@ -747,6 +750,42 @@ async function mergeFiles(
     }
   } catch (error) {
     console.error("Error merging files:", error);
+    throw error;
+  }
+}
+
+/**
+ * Formats the given input file with the specified header.
+ * @param inputFile The path to the input file to format.
+ * @param header The header to include in the formatted output.
+ */
+async function formatWithMarkdown(
+  inputFile: string,
+  header: string,
+): Promise<void> {
+  try {
+    // Check if the input file exists
+    const exists = await pathExists(inputFile);
+    if (!exists) {
+      return;
+    }
+
+    // Read the input file content
+    const content = await readFile(inputFile, "utf8");
+
+    const frontFormatting: string =
+      "<details><summary>Fix suggestion details</summary>\n\n```diff\n";
+
+    const backFormatting: string =
+      "```\n\n</details>\n\n ### Notes\n - notes placeholder\n\n";
+
+    // Format the content with Markdown
+    const formattedContent = `## ${header}\n\n${frontFormatting}${content}${backFormatting}`;
+
+    // Write the formatted content back to the file
+    await writeFile(inputFile, formattedContent);
+  } catch (error) {
+    console.error("Error formatting file:", error);
     throw error;
   }
 }
