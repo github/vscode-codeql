@@ -1,7 +1,9 @@
-import { platform } from "os";
+import { arch, platform } from "os";
 import { basename, dirname, join, normalize, resolve } from "path";
 import { lstat, readdir } from "fs/promises";
 import type { BaseLogger } from "./logging";
+import type { KoffiFunction } from "koffi";
+import { getErrorMessage } from "./helpers-pure";
 
 /**
  * Expands a path that potentially contains 8.3 short names (e.g. "C:\PROGRA~1" instead of "C:\Program Files").
@@ -32,7 +34,23 @@ export async function expandShortPaths(
     return absoluteShortPath;
   }
 
-  return await expandShortPathRecursive(absoluteShortPath, logger);
+  const longPath = await expandShortPathRecursive(absoluteShortPath, logger);
+  if (longPath.indexOf("~") < 0) {
+    return longPath;
+  }
+
+  void logger.log(
+    "Short path was not resolved to long path, using native method",
+  );
+
+  try {
+    return await expandShortPathNative(absoluteShortPath, logger);
+  } catch (e: unknown) {
+    void logger.log(
+      `Failed to expand short path using native method: ${getErrorMessage(e)}`,
+    );
+    return longPath;
+  }
 }
 
 /**
@@ -114,4 +132,47 @@ async function expandShortPathRecursive(
   // This component looks like it has a short name, so try to expand it.
   const longBase = await expandShortPathComponent(dir, shortBase, logger);
   return join(dir, longBase);
+}
+
+let GetLongPathNameW: KoffiFunction | undefined;
+
+async function expandShortPathNative(shortPath: string, logger: BaseLogger) {
+  if (platform() !== "win32") {
+    throw new Error("expandShortPathNative is only supported on Windows");
+  }
+
+  if (arch() !== "x64") {
+    throw new Error(
+      "expandShortPathNative is only supported on x64 architecture",
+    );
+  }
+
+  if (GetLongPathNameW === undefined) {
+    // We are using koffi/indirect here to avoid including the native addon for all
+    // platforms in the bundle since this is only used on Windows. Instead, the
+    // native addon is included in the Gulpfile.
+    const koffi = await import("koffi/indirect");
+
+    const lib = koffi.load("kernel32.dll");
+    GetLongPathNameW = lib.func("__stdcall", "GetLongPathNameW", "uint32", [
+      "str16",
+      "str16",
+      "uint32",
+    ]);
+  }
+
+  const MAX_PATH = 32767;
+  const buffer = Buffer.alloc(MAX_PATH * 2, 0);
+
+  const result = GetLongPathNameW(shortPath, buffer, MAX_PATH);
+
+  if (result === 0) {
+    throw new Error("Failed to get long path name");
+  }
+
+  const longPath = buffer.toString("utf16le", 0, (result - 1) * 2);
+
+  void logger.log(`Expanded short path ${shortPath} to ${longPath}`);
+
+  return longPath;
 }
