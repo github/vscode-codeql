@@ -1,0 +1,21 @@
+[package]
+name = "vscode-codeql-native"
+version = "0.1.0"
+license = "MIT"
+edition = "2024"
+exclude = ["index.node"]
+
+[lib]
+crate-type = ["cdylib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+neon = "1.1"
+
+[target.'cfg(windows)'.dependencies]
+winsafe = { version = "0.0.24", features = ["kernel"] }
+
+[profile.release]
+strip = "debuginfo"
+lto = true

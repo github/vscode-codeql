@@ -1,0 +1,33 @@
+{
+  "name": "@github/vscode-codeql-native",
+  "version": "0.1.0",
+  "description": "",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "tsc && cargo test",
+    "cargo-build": "tsc && cargo build --message-format=json-render-diagnostics > cargo.log",
+    "postcargo-build": "neon dist < cargo.log",
+    "debug": "npm run cargo-build --",
+    "build": "npm run cargo-build -- --release"
+  },
+  "author": "GitHub",
+  "license": "MIT",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib",
+    "platforms"
+  ],
+  "neon": {
+    "org": "github",
+    "type": "library",
+    "platforms": [
+      "windows"
+    ]
+  },
+  "devDependencies": {
+    "@neon-rs/cli": "^0.1.82",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^20.11.16",
+    "typescript": "^5.3.3"
+  }
+}
