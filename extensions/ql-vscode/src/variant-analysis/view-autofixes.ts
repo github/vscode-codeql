@@ -50,7 +50,7 @@ export async function viewAutofixesForVariantAnalysisResults(
   await withProgress(
     async (progress: ProgressCallback) => {
       // Get the path to the local autofix installation.
-      const localAutofixPath = findLocalAutofix();
+      const localAutofixPath = await findLocalAutofix();
 
       // Get the variant analysis with the given id.
       const variantAnalysis = variantAnalyses.get(variantAnalysisId);
@@ -119,12 +119,12 @@ export async function viewAutofixesForVariantAnalysisResults(
  * @returns An object containing the local autofix path.
  * @throws Error if the AUTOFIX_PATH environment variable is not set or the path does not exist.
  */
-function findLocalAutofix(): string {
+async function findLocalAutofix(): Promise<string> {
   const localAutofixPath = process.env.AUTOFIX_PATH;
   if (!localAutofixPath) {
     throw new Error("Path to local autofix installation not found.");
   }
-  if (!pathExists(localAutofixPath)) {
+  if (!(await pathExists(localAutofixPath))) {
     throw new Error(`Local autofix path ${localAutofixPath} does not exist.`);
   }
   return localAutofixPath;
