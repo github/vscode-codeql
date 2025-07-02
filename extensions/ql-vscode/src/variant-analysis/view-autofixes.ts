@@ -144,9 +144,10 @@ async function overrideQueryHelp(
   if (!(await pathExists(queryFilePath))) {
     throw new Error(`Query file used by variant analysis not found.`);
   }
+  const parsedQueryFilePath = parse(queryFilePath);
   const queryFilePathNoExt = join(
-    dirname(queryFilePath),
-    parse(queryFilePath).name,
+    parsedQueryFilePath.dir,
+    parsedQueryFilePath.name,
   );
 
   // Get the path to the query help, which may be either a `.qhelp` or a `.md` file.
