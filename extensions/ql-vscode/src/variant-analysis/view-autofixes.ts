@@ -617,7 +617,7 @@ async function runAutofixOnResults(
   alertNumber?: number, // Optional parameter for specific alert
 ): Promise<void> {
   // Set up args for autofix command.
-  const fixedAutofixArgs = [
+  const autofixArgs = [
     "--sarif",
     sarifFile,
     "--source-root",
@@ -630,15 +630,18 @@ async function runAutofixOnResults(
     "text",
     "--diff-style",
     "diff", // could do "text" instead if want line of "=" between fixes
-  ];
-  const varAutofixArgs = createVarAutofixArgs(
+    "--output",
     outputTextFilePath,
+    "--fix-description",
     fixDescriptionFilePath,
+    "--transcript",
     transcriptFilePath,
-    alertNumber,
-  );
+  ];
 
-  const autofixArgs = [...fixedAutofixArgs, ...varAutofixArgs];
+  // Add alert number argument if provided
+  if (alertNumber !== undefined) {
+    autofixArgs.push("--only-alert-number", alertNumber.toString());
+  }
 
   await execAutofix(
     logger,
@@ -653,32 +656,6 @@ async function runAutofixOnResults(
     },
     true,
   );
-}
-
-/**
- * Creates autofix arguments that vary depending on the run.
- */
-function createVarAutofixArgs(
-  outputTextFilePath: string,
-  fixDescriptionFilePath: string,
-  transcriptFilePath: string,
-  alertNumber?: number, // Optional parameter for specific alert
-): string[] {
-  const args = [
-    "--output",
-    outputTextFilePath,
-    "--fix-description",
-    fixDescriptionFilePath,
-    "--transcript",
-    transcriptFilePath,
-  ];
-
-  // Add alert number argument if provided
-  if (alertNumber !== undefined) {
-    args.push("--only-alert-number", alertNumber.toString());
-  }
-
-  return args;
 }
 
 /**
