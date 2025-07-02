@@ -50,7 +50,6 @@ export async function viewAutofixesForVariantAnalysisResults(
   await withProgress(
     async (progress: ProgressCallback) => {
       // Get the path to the local autofix installation.
-      progress(progressUpdate(1, 4, `Checking for local autofix installation`));
       const localAutofixPath = findLocalAutofix();
 
       // Get the variant analysis with the given id.
@@ -60,7 +59,6 @@ export async function viewAutofixesForVariantAnalysisResults(
       }
 
       // Generate the query help and output it to the override directory.
-      progress(progressUpdate(2, 4, `Generating query help override`));
       await overrideQueryHelp(variantAnalysis, cliServer, localAutofixPath);
 
       // Get the full names (nwos) of the selected repositories.
@@ -82,8 +80,8 @@ export async function viewAutofixesForVariantAnalysisResults(
       //  Run autofix and output results
       progress(
         progressUpdate(
-          3,
-          4,
+          1,
+          2,
           `Processing ${pluralize(selectedRepoNames.length, "repository", "repositories")}`,
         ),
       );
@@ -98,7 +96,7 @@ export async function viewAutofixesForVariantAnalysisResults(
       );
 
       // Output results from all repos to a combined markdown file.
-      progress(progressUpdate(4, 4, `Finalizing autofix results`));
+      progress(progressUpdate(2, 2, `Finalizing autofix results`));
       const combinedOutputMarkdownFile = join(
         autofixOutputStoragePath,
         "autofix-output.md",
