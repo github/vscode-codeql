@@ -433,6 +433,5 @@ WithCodeFlows.args = {
   ),
   userSettings: {
     shouldShowProvenance: true,
-    shouldShowViewAutofixesBtn: false, // Not supported in AlertTable
   },
 };

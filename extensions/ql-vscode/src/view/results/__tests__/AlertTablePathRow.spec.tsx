@@ -24,7 +24,6 @@ describe(AlertTablePathRow.name, () => {
         sourceLocationPrefix="src"
         userSettings={{
           shouldShowProvenance: false,
-          shouldShowViewAutofixesBtn: false,
         }}
         updateSelectionCallback={jest.fn()}
         toggleExpanded={jest.fn()}

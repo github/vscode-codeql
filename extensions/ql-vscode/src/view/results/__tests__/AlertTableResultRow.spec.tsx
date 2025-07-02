@@ -19,7 +19,6 @@ describe(AlertTableResultRow.name, () => {
         sourceLocationPrefix="src"
         userSettings={{
           shouldShowProvenance: false,
-          shouldShowViewAutofixesBtn: false,
         }}
         updateSelectionCallback={jest.fn()}
         toggleExpanded={jest.fn()}

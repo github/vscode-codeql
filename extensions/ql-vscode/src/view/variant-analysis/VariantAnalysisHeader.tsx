@@ -22,7 +22,7 @@ import {
   filterAndSortRepositoriesWithResults,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { ViewTitle } from "../common";
-import type { UserSettings } from "../../common/interface-types";
+import type { VariantAnalysisUserSettings } from "../../common/interface-types";
 
 type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
@@ -41,7 +41,7 @@ type VariantAnalysisHeaderProps = {
 
   onViewLogsClick?: () => void;
 
-  userSettings: UserSettings;
+  variantAnalysisUserSettings: VariantAnalysisUserSettings;
 };
 
 const Container = styled.div`
@@ -90,7 +90,7 @@ export const VariantAnalysisHeader = ({
   onCopyRepositoryListClick,
   onExportResultsClick,
   onViewLogsClick,
-  userSettings,
+  variantAnalysisUserSettings,
 }: VariantAnalysisHeaderProps) => {
   const totalScannedRepositoryCount = useMemo(() => {
     return variantAnalysis.scannedRepos?.length ?? 0;
@@ -170,7 +170,9 @@ export const VariantAnalysisHeader = ({
           hasSelectedRepositories={
             selectedRepositoryIds && selectedRepositoryIds.length > 0
           }
-          userSettings={userSettings}
+          showViewAutofixesButton={
+            variantAnalysisUserSettings.shouldShowViewAutofixesButton
+          }
         />
       </Row>
       <VariantAnalysisStats

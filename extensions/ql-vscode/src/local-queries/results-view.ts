@@ -550,8 +550,6 @@ export class ResultsView extends AbstractWebview<
       userSettings: {
         // Only show provenance info in canary mode for now.
         shouldShowProvenance: isCanary(),
-        // "View Autofixes" button is not supported in results view
-        shouldShowViewAutofixesBtn: false,
       },
     });
 

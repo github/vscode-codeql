@@ -151,19 +151,35 @@ interface SetStateMsg {
 export interface UserSettings {
   /** Whether to display links to the dataflow models that generated particular nodes in a flow path. */
   shouldShowProvenance: boolean;
-  /** Whether to display the "View Autofixes" button. */
-  shouldShowViewAutofixesBtn: boolean;
 }
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   shouldShowProvenance: false,
-  shouldShowViewAutofixesBtn: false,
 };
 
 /** Message indicating that the user's configuration settings have changed. */
 interface SetUserSettingsMsg {
   t: "setUserSettings";
   userSettings: UserSettings;
+}
+
+export interface VariantAnalysisUserSettings {
+  /** Whether to display the "View Autofixes" button. */
+  shouldShowViewAutofixesButton: boolean;
+}
+
+export const DEFAULT_VARIANT_ANALYSIS_USER_SETTINGS: VariantAnalysisUserSettings =
+  {
+    shouldShowViewAutofixesButton: false,
+  };
+
+/**
+ * Message indicating that the user's variant analysis configuration
+ * settings have changed.
+ */
+interface SetVariantAnalysisUserSettingsMsg {
+  t: "setVariantAnalysisUserSettings";
+  variantAnalysisUserSettings: VariantAnalysisUserSettings;
 }
 
 /**
@@ -563,7 +579,7 @@ export type ToVariantAnalysisMessage =
   | SetFilterSortStateMessage
   | SetRepoResultsMessage
   | SetRepoStatesMessage
-  | SetUserSettingsMsg;
+  | SetVariantAnalysisUserSettingsMsg;
 
 export type FromVariantAnalysisMessage =
   | CommonFromViewMessages

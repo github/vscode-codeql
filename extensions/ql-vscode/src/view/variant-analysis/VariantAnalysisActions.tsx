@@ -1,7 +1,6 @@
 import { styled } from "styled-components";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { VscodeButton } from "@vscode-elements/react-elements";
-import type { UserSettings } from "../../common/interface-types";
 
 export type VariantAnalysisActionsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -20,7 +19,7 @@ export type VariantAnalysisActionsProps = {
   hasSelectedRepositories?: boolean;
   hasFilteredRepositories?: boolean;
 
-  userSettings: UserSettings;
+  showViewAutofixesButton: boolean;
 };
 
 const Container = styled.div`
@@ -68,13 +67,13 @@ export const VariantAnalysisActions = ({
   exportResultsDisabled,
   hasSelectedRepositories,
   hasFilteredRepositories,
-  userSettings,
+  showViewAutofixesButton,
 }: VariantAnalysisActionsProps) => {
   return (
     <Container>
       {showResultActions && (
         <>
-          {userSettings.shouldShowViewAutofixesBtn && (
+          {showViewAutofixesButton && (
             <Button
               secondary
               onClick={onViewAutofixesClick}

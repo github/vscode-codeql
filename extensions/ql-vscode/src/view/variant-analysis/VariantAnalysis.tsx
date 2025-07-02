@@ -11,13 +11,13 @@ import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
 import type {
   ToVariantAnalysisMessage,
-  UserSettings,
+  VariantAnalysisUserSettings,
 } from "../../common/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
-import { DEFAULT_USER_SETTINGS } from "../../common/interface-types";
+import { DEFAULT_VARIANT_ANALYSIS_USER_SETTINGS } from "../../common/interface-types";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -81,9 +81,10 @@ export function VariantAnalysis({
   useTelemetryOnChange(filterSortState, "variant-analysis-filter-sort-state", {
     debounceTimeoutMillis: 1000,
   });
-  const [userSettings, setUserSettings] = useState<UserSettings>(
-    DEFAULT_USER_SETTINGS,
-  );
+  const [variantAnalysisUserSettings, setVariantAnalysisUserSettings] =
+    useState<VariantAnalysisUserSettings>(
+      DEFAULT_VARIANT_ANALYSIS_USER_SETTINGS,
+    );
 
   useMessageFromExtension<ToVariantAnalysisMessage>((msg) => {
     if (msg.t === "setVariantAnalysis") {
@@ -109,8 +110,8 @@ export function VariantAnalysis({
           ...msg.repoStates,
         ];
       });
-    } else if (msg.t === "setUserSettings") {
-      setUserSettings(msg.userSettings);
+    } else if (msg.t === "setVariantAnalysisUserSettings") {
+      setVariantAnalysisUserSettings(msg.variantAnalysisUserSettings);
     }
   }, []);
 
@@ -172,7 +173,7 @@ export function VariantAnalysis({
         onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={exportResults}
         onViewLogsClick={onViewLogsClick}
-        userSettings={userSettings}
+        variantAnalysisUserSettings={variantAnalysisUserSettings}
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}

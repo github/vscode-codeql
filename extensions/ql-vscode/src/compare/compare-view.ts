@@ -119,8 +119,6 @@ export class CompareView extends AbstractWebview<
       t: "setUserSettings",
       userSettings: {
         shouldShowProvenance: isCanary(),
-        // "View Autofixes" button is not supported in compare view
-        shouldShowViewAutofixesBtn: false,
       },
     });
 

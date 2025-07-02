@@ -49,29 +49,18 @@ export class VariantAnalysisView
     this.dataFlowPathsView = new DataFlowPathsView(app);
   }
 
-  private async updateUserSettings(): Promise<void> {
-    if (!this.isShowingPanel) {
-      return;
-    }
-
-    await this.postMessage({
-      t: "setUserSettings",
-      userSettings: {
-        // Provenance is not supported in variant analysis view
-        shouldShowProvenance: false,
-        // Only show "View Autofixes" button in canary mode.
-        shouldShowViewAutofixesBtn: isCanary(),
-      },
-    });
-  }
-
   public async openView() {
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
 
-    await this.updateUserSettings();
+    await this.postMessage({
+      t: "setVariantAnalysisUserSettings",
+      variantAnalysisUserSettings: {
+        shouldShowViewAutofixesButton: isCanary(),
+      },
+    });
   }
 
   public async updateView(variantAnalysis: VariantAnalysis): Promise<void> {
