@@ -1,5 +1,4 @@
-import type { ConfigurationChangeEvent } from "vscode";
-import { ViewColumn, workspace } from "vscode";
+import { ViewColumn } from "vscode";
 import type { WebviewPanelConfig } from "../common/vscode/abstract-webview";
 import { AbstractWebview } from "../common/vscode/abstract-webview";
 import {
@@ -48,23 +47,6 @@ export class VariantAnalysisView
     manager.registerView(this);
 
     this.dataFlowPathsView = new DataFlowPathsView(app);
-
-    // Set up configuration change listener
-    this.push(
-      workspace.onDidChangeConfiguration(
-        this.onConfigurationChanged.bind(this),
-      ),
-    );
-  }
-
-  /**
-   * Handler for configuration changes
-   */
-  private onConfigurationChanged(e: ConfigurationChangeEvent): void {
-    // Check if the canary setting has changed
-    if (e.affectsConfiguration("codeQL.canary")) {
-      void this.updateUserSettings();
-    }
   }
 
   private async updateUserSettings(): Promise<void> {
