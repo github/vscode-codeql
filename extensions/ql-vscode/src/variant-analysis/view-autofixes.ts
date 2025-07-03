@@ -122,7 +122,9 @@ export async function viewAutofixesForVariantAnalysisResults(
 async function findLocalAutofix(): Promise<string> {
   const localAutofixPath = process.env.AUTOFIX_PATH;
   if (!localAutofixPath) {
-    throw new Error("Path to local autofix installation not found. Internal GitHub access required.");
+    throw new Error(
+      "Path to local autofix installation not found. Internal GitHub access required.",
+    );
   }
   if (!(await pathExists(localAutofixPath))) {
     throw new Error(`Local autofix path ${localAutofixPath} does not exist.`);
