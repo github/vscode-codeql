@@ -27,6 +27,7 @@ import { tryOpenExternalFile } from "../common/vscode/external-files";
 import type { VariantAnalysisManager } from "./variant-analysis-manager";
 import type { VariantAnalysisResultsManager } from "./variant-analysis-results-manager";
 import { getAutofixPath, getAutofixModel } from "../config";
+import { getErrorMessage } from "../common/helpers-pure";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -497,8 +498,9 @@ async function downloadPublicCommitSource(
 
     return checkoutDir;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to download ${nwo} at ${sha}: ${errorMessage}`);
+    throw new Error(
+      `Failed to download ${nwo} at ${sha}:. Reason: ${getErrorMessage(error)}`,
+    );
   }
 }
 
@@ -755,8 +757,7 @@ async function mergeFiles(
       await Promise.all(inputFiles.map((file) => unlink(file)));
     }
   } catch (error) {
-    console.error("Error merging files:", error);
-    throw error;
+    throw new Error(`Error merging files. Reason: ${getErrorMessage(error)}`);
   }
 }
 
@@ -791,7 +792,6 @@ async function formatWithMarkdown(
     // Write the formatted content back to the file
     await writeFile(inputFile, formattedContent);
   } catch (error) {
-    console.error("Error formatting file:", error);
-    throw error;
+    throw new Error(`Error formatting file. Reason: ${getErrorMessage(error)}`);
   }
 }
