@@ -699,11 +699,6 @@ function execAutofix(
       if (showCommand) {
         void logger.log(`Spawning '${bin} ${args.join(" ")}' in ${cwd}`);
       }
-      if (args.some((a) => a === undefined || a === "")) {
-        throw new Error(
-          `Invalid empty or undefined arguments: ${args.join(" ")}`,
-        );
-      }
       const p = spawn(bin, args, { stdio: [0, 1, 2], ...options });
       p.on("error", reject);
       p.on("exit", (code) => (code === 0 ? resolve() : reject(code)));
