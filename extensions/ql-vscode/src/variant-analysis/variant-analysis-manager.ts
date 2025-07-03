@@ -973,12 +973,12 @@ export class VariantAnalysisManager
     filterSort: RepositoriesFilterSortStateWithIds = defaultFilterSortState,
   ) {
     await viewAutofixesForVariantAnalysisResults(
+      this,
+      this.variantAnalysisResultsManager,
       variantAnalysisId,
       filterSort,
-      this.variantAnalyses,
       this.app.credentials,
       this.app.logger,
-      this.storagePath,
       this.app,
       this.cliServer,
     );

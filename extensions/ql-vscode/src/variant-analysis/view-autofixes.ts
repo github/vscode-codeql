@@ -18,13 +18,14 @@ import { join, dirname, parse } from "path";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { window as Window } from "vscode";
 import { pluralize } from "../common/word";
-import { glob } from "glob";
 import { readRepoTask } from "./repo-tasks-store";
 import { unlink, mkdtemp, readFile, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { spawn } from "child_process";
 import type { execFileSync } from "child_process";
 import { tryOpenExternalFile } from "../common/vscode/external-files";
+import type { VariantAnalysisManager } from "./variant-analysis-manager";
+import type { VariantAnalysisResultsManager } from "./variant-analysis-results-manager";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -38,12 +39,12 @@ const MAX_NUM_FIXES: number = 3;
  * Generates autofixes for the results of a variant analysis.
  */
 export async function viewAutofixesForVariantAnalysisResults(
+  variantAnalysisManager: VariantAnalysisManager,
+  variantAnalysisResultsManager: VariantAnalysisResultsManager,
   variantAnalysisId: number,
   filterSort: RepositoriesFilterSortStateWithIds = defaultFilterSortState,
-  variantAnalyses: Map<number, VariantAnalysis>,
   credentials: Credentials,
   logger: NotificationLogger,
-  storagePath: string,
   app: App,
   cliServer: CodeQLCliServer,
 ): Promise<void> {
@@ -53,7 +54,8 @@ export async function viewAutofixesForVariantAnalysisResults(
       const localAutofixPath = await findLocalAutofix();
 
       // Get the variant analysis with the given id.
-      const variantAnalysis = variantAnalyses.get(variantAnalysisId);
+      const variantAnalysis =
+        variantAnalysisManager.tryGetVariantAnalysis(variantAnalysisId);
       if (!variantAnalysis) {
         throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
       }
@@ -72,7 +74,7 @@ export async function viewAutofixesForVariantAnalysisResults(
         variantAnalysisIdStoragePath,
         sourceRootsStoragePath,
         autofixOutputStoragePath,
-      } = await getStoragePaths(variantAnalysisId, storagePath);
+      } = await getStoragePaths(variantAnalysisManager, variantAnalysisId);
 
       // Process the selected repositories:
       //  Get sarif
@@ -86,6 +88,7 @@ export async function viewAutofixesForVariantAnalysisResults(
         ),
       );
       const outputTextFiles = await processSelectedRepositories(
+        variantAnalysisResultsManager,
         selectedRepoNames,
         variantAnalysisIdStoragePath,
         sourceRootsStoragePath,
@@ -237,21 +240,19 @@ function getSelectedRepositoryNames(
  * Gets the storage paths needed for the autofix results.
  */
 async function getStoragePaths(
+  variantAnalysisManager: VariantAnalysisManager,
   variantAnalysisId: number,
-  storagePath: string,
 ): Promise<{
   variantAnalysisIdStoragePath: string;
   sourceRootsStoragePath: string;
   autofixOutputStoragePath: string;
 }> {
   // Confirm storage path for the variant analysis ID exists.
-  const variantAnalysisIdStoragePath = join(
-    storagePath,
-    variantAnalysisId.toString(),
-  );
+  const variantAnalysisIdStoragePath =
+    variantAnalysisManager.getVariantAnalysisStorageLocation(variantAnalysisId);
   if (!(await pathExists(variantAnalysisIdStoragePath))) {
     throw new Error(
-      `Variant analysis storage path does not exist: ${variantAnalysisIdStoragePath}`,
+      `Variant analysis storage location does not exist: ${variantAnalysisIdStoragePath}`,
     );
   }
 
@@ -286,6 +287,7 @@ async function getStoragePaths(
  * Processes the selected repositories for autofix generation.
  */
 async function processSelectedRepositories(
+  variantAnalysisResultsManager: VariantAnalysisResultsManager,
   selectedRepoNames: string[],
   variantAnalysisIdStoragePath: string,
   sourceRootsStoragePath: string,
@@ -301,13 +303,20 @@ async function processSelectedRepositories(
         async (progressForRepo: ProgressCallback) => {
           // Get the sarif file.
           progressForRepo(progressUpdate(1, 3, `Getting sarif`));
-          const repoStoragePath = join(variantAnalysisIdStoragePath, nwo);
-          const sarifFile = await getSarifFile(repoStoragePath, nwo);
+          const sarifFile = await getRepoSarifFile(
+            variantAnalysisResultsManager,
+            variantAnalysisIdStoragePath,
+            nwo,
+          );
 
           // Read the contents of the variant analysis' `repo_task.json` file,
           // and confirm that the `databaseCommitSha` and `resultCount` exist.
-          const repoTask: VariantAnalysisRepositoryTask =
-            await readRepoTask(repoStoragePath);
+          const repoTask: VariantAnalysisRepositoryTask = await readRepoTask(
+            variantAnalysisResultsManager.getRepoStorageDirectory(
+              variantAnalysisIdStoragePath,
+              nwo,
+            ),
+          );
           if (!repoTask.databaseCommitSha) {
             throw new Error(`Missing database commit SHA for ${nwo}`);
           }
@@ -352,22 +361,30 @@ async function processSelectedRepositories(
 }
 
 /**
- * Gets the path to a SARIF file in a given `repoStoragePath`.
+ * Gets the path to a SARIF file for a given `nwo`.
  */
-async function getSarifFile(
-  repoStoragePath: string,
+async function getRepoSarifFile(
+  variantAnalysisResultsManager: VariantAnalysisResultsManager,
+  variantAnalysisIdStoragePath: string,
   nwo: string,
 ): Promise<string> {
-  // Get results directory path.
-  const repoResultsStoragePath = join(repoStoragePath, "results");
-  // Find sarif file.
-  const sarifFiles = await glob(`${repoResultsStoragePath}/**/*.sarif`);
-  if (sarifFiles.length !== 1) {
-    throw new Error(
-      `Expected to find exactly one \`*.sarif\` file for ${nwo}, but found ${sarifFiles.length}.`,
-    );
+  if (
+    !(await variantAnalysisResultsManager.isVariantAnalysisRepoDownloaded(
+      variantAnalysisIdStoragePath,
+      nwo,
+    ))
+  ) {
+    throw new Error(`Variant analysis results not downloaded for ${nwo}`);
   }
-  return sarifFiles[0];
+  const sarifFile =
+    variantAnalysisResultsManager.getRepoResultsSarifStoragePath(
+      variantAnalysisIdStoragePath,
+      nwo,
+    );
+  if (!(await pathExists(sarifFile))) {
+    throw new Error(`SARIF file not found for ${nwo}`);
+  }
+  return sarifFile;
 }
 
 /**
