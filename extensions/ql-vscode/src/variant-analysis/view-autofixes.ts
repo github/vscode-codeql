@@ -26,6 +26,7 @@ import type { execFileSync } from "child_process";
 import { tryOpenExternalFile } from "../common/vscode/external-files";
 import type { VariantAnalysisManager } from "./variant-analysis-manager";
 import type { VariantAnalysisResultsManager } from "./variant-analysis-results-manager";
+import { getAutofixPath, getAutofixModel } from "../config";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -123,7 +124,7 @@ export async function viewAutofixesForVariantAnalysisResults(
  * @throws Error if the AUTOFIX_PATH environment variable is not set or the path does not exist.
  */
 async function findLocalAutofix(): Promise<string> {
-  const localAutofixPath = process.env.AUTOFIX_PATH;
+  const localAutofixPath = getAutofixPath();
   if (!localAutofixPath) {
     throw new Error(
       "Path to local autofix installation not found. Internal GitHub access required.",
@@ -635,6 +636,11 @@ async function runAutofixOnResults(
   workDir: string,
   alertNumber?: number, // Optional parameter for specific alert
 ): Promise<void> {
+  // Get autofix model from user settings.
+  const autofixModel = getAutofixModel();
+  if (!autofixModel) {
+    throw new Error("Autofix model not found.");
+  }
   // Set up args for autofix command.
   const autofixArgs = [
     "--sarif",
@@ -642,7 +648,7 @@ async function runAutofixOnResults(
     "--source-root",
     srcRootPath,
     "--model",
-    "capi-dev-4o", // may fail with older versions of cocofix
+    autofixModel,
     "--dev",
     "--no-cache",
     "--format",
