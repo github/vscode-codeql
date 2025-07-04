@@ -163,6 +163,25 @@ interface SetUserSettingsMsg {
   userSettings: UserSettings;
 }
 
+export interface VariantAnalysisUserSettings {
+  /** Whether to display the "View Autofixes" button. */
+  shouldShowViewAutofixesButton: boolean;
+}
+
+export const DEFAULT_VARIANT_ANALYSIS_USER_SETTINGS: VariantAnalysisUserSettings =
+  {
+    shouldShowViewAutofixesButton: false,
+  };
+
+/**
+ * Message indicating that the user's variant analysis configuration
+ * settings have changed.
+ */
+interface SetVariantAnalysisUserSettingsMsg {
+  t: "setVariantAnalysisUserSettings";
+  variantAnalysisUserSettings: VariantAnalysisUserSettings;
+}
+
 /**
  * Message indicating that the results view should display interpreted
  * results.
@@ -527,6 +546,11 @@ interface OpenQueryTextMessage {
   t: "openQueryText";
 }
 
+interface ViewAutofixesMessage {
+  t: "viewAutofixes";
+  filterSort?: RepositoriesFilterSortStateWithIds;
+}
+
 interface CopyRepositoryListMessage {
   t: "copyRepositoryList";
   filterSort?: RepositoriesFilterSortStateWithIds;
@@ -554,13 +578,15 @@ export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetFilterSortStateMessage
   | SetRepoResultsMessage
-  | SetRepoStatesMessage;
+  | SetRepoStatesMessage
+  | SetVariantAnalysisUserSettingsMsg;
 
 export type FromVariantAnalysisMessage =
   | CommonFromViewMessages
   | RequestRepositoryResultsMessage
   | OpenQueryFileMessage
   | OpenQueryTextMessage
+  | ViewAutofixesMessage
   | CopyRepositoryListMessage
   | ExportResultsMessage
   | OpenLogsMessage

@@ -34,4 +34,8 @@ export interface VariantAnalysisViewManager<
     variantAnalysisId: number,
     filterSort?: RepositoriesFilterSortStateWithIds,
   ): Promise<void>;
+  viewAutofixes(
+    variantAnalysisId: number,
+    filterSort?: RepositoriesFilterSortStateWithIds,
+  ): Promise<void>;
 }

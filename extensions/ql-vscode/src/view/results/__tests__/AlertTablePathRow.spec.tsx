@@ -22,7 +22,9 @@ describe(AlertTablePathRow.name, () => {
         currentPathExpanded={true}
         databaseUri={"dbUri"}
         sourceLocationPrefix="src"
-        userSettings={{ shouldShowProvenance: false }}
+        userSettings={{
+          shouldShowProvenance: false,
+        }}
         updateSelectionCallback={jest.fn()}
         toggleExpanded={jest.fn()}
         {...props}
