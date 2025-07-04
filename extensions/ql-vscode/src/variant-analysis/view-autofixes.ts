@@ -125,10 +125,10 @@ export async function viewAutofixesForVariantAnalysisResults(
 }
 
 /**
- * Finds the local autofix installation path from the AUTOFIX_PATH environment variable.
+ * Finds the local autofix installation path from the `codeQL.autofix.path` setting.
  * Throws an error if the path is not set or does not exist.
  * @returns An object containing the local autofix path.
- * @throws Error if the AUTOFIX_PATH environment variable is not set or the path does not exist.
+ * @throws Error if the `codeQL.autofix.path` setting is not set or the path does not exist.
  */
 async function findLocalAutofix(): Promise<string> {
   const localAutofixPath = getAutofixPath();
