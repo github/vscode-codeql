@@ -11,7 +11,17 @@ import type { Credentials } from "../common/authentication";
 import type { NotificationLogger } from "../common/logging";
 import type { App } from "../common/app";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
-import { pathExists, ensureDir, readdir, move, remove } from "fs-extra";
+import {
+  pathExists,
+  ensureDir,
+  readdir,
+  move,
+  remove,
+  unlink,
+  mkdtemp,
+  readFile,
+  writeFile,
+} from "fs-extra";
 import { withProgress, progressUpdate } from "../common/vscode/progress";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { join, dirname, parse } from "path";
@@ -19,7 +29,6 @@ import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { window as Window } from "vscode";
 import { pluralize } from "../common/word";
 import { readRepoTask } from "./repo-tasks-store";
-import { unlink, mkdtemp, readFile, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { spawn } from "child_process";
 import type { execFileSync } from "child_process";
