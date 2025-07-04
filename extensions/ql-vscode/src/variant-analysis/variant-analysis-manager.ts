@@ -978,7 +978,6 @@ export class VariantAnalysisManager
       variantAnalysisId,
       filterSort,
       this.app.credentials,
-      this.app.logger,
       this.app,
       this.cliServer,
     );

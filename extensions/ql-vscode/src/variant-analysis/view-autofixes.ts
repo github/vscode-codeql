@@ -8,7 +8,7 @@ import type {
   VariantAnalysisRepositoryTask,
 } from "./shared/variant-analysis";
 import type { Credentials } from "../common/authentication";
-import type { NotificationLogger } from "../common/logging";
+import { extLogger } from "../common/logging/vscode";
 import type { App } from "../common/app";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import {
@@ -26,7 +26,6 @@ import { withProgress, progressUpdate } from "../common/vscode/progress";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { join, dirname, parse } from "path";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
-import { window as Window } from "vscode";
 import { pluralize } from "../common/word";
 import { readRepoTask } from "./repo-tasks-store";
 import { tmpdir } from "os";
@@ -55,7 +54,6 @@ export async function viewAutofixesForVariantAnalysisResults(
   variantAnalysisId: number,
   filterSort: RepositoriesFilterSortStateWithIds = defaultFilterSortState,
   credentials: Credentials,
-  logger: NotificationLogger,
   app: App,
   cliServer: CodeQLCliServer,
 ): Promise<void> {
@@ -106,7 +104,6 @@ export async function viewAutofixesForVariantAnalysisResults(
         autofixOutputStoragePath,
         localAutofixPath,
         credentials,
-        logger,
       );
 
       // Output results from all repos to a combined markdown file.
@@ -235,11 +232,10 @@ function getSelectedRepositoryNames(
     throw new Error("No repositories with results found.");
   }
 
-  // Limit to MAX_NUM_REPOS by slicing the array,
-  // and inform the user about the limit.
+  // Limit to MAX_NUM_REPOS by slicing the array.
   if (fullNames.length > MAX_NUM_REPOS) {
     fullNames = fullNames.slice(0, MAX_NUM_REPOS);
-    void Window.showInformationMessage(
+    void extLogger.log(
       `Only the first ${MAX_NUM_REPOS} repos (${fullNames.join(", ")}) will be included in the Autofix results.`,
     );
   }
@@ -305,7 +301,6 @@ async function processSelectedRepositories(
   autofixOutputStoragePath: string,
   localAutofixPath: string,
   credentials: Credentials,
-  logger: NotificationLogger,
 ): Promise<string[]> {
   const outputTextFiles: string[] = [];
   await Promise.all(
@@ -344,7 +339,6 @@ async function processSelectedRepositories(
             repoTask.databaseCommitSha,
             sourceRootsStoragePath,
             credentials,
-            logger,
           );
 
           // Run autofix.
@@ -356,7 +350,6 @@ async function processSelectedRepositories(
             localAutofixPath,
             autofixOutputStoragePath,
             repoTask.resultCount,
-            logger,
             outputTextFiles,
           );
         },
@@ -406,7 +399,6 @@ async function downloadPublicCommitSource(
   sha: string,
   outputPath: string,
   credentials: Credentials,
-  logger: NotificationLogger,
 ): Promise<string> {
   const [owner, repo] = nwo.split("/");
   if (!owner || !repo) {
@@ -424,13 +416,13 @@ async function downloadPublicCommitSource(
 
   // Check if directory already exists to avoid re-downloading
   if (await pathExists(checkoutDir)) {
-    void logger.log(
+    void extLogger.log(
       `Source for ${nwo} at ${sha} already exists at ${checkoutDir}.`,
     );
     return checkoutDir;
   }
 
-  void logger.log(`Fetching source of repository ${nwo} at ${sha}...`);
+  void extLogger.log(`Fetching source of repository ${nwo} at ${sha}...`);
 
   try {
     // Create a temporary directory for downloading
@@ -469,7 +461,7 @@ async function downloadPublicCommitSource(
       );
     });
 
-    void logger.log(`Download complete, extracting source...`);
+    void extLogger.log(`Download complete, extracting source...`);
 
     // Extract the tarball
     await new Promise<void>((resolve, reject) => {
@@ -523,7 +515,6 @@ async function runAutofixForRepository(
   localAutofixPath: string,
   autofixOutputStoragePath: string,
   resultCount: number,
-  logger: NotificationLogger,
   outputTextFiles: string[],
 ): Promise<void> {
   // Get storage paths for the autofix results for this repository.
@@ -542,7 +533,7 @@ async function runAutofixForRepository(
   // Limit number of fixes generated.
   const limitFixesBoolean: boolean = resultCount > MAX_NUM_FIXES;
   if (limitFixesBoolean) {
-    void Window.showInformationMessage(
+    void extLogger.log(
       `Only generating autofixes for the first ${MAX_NUM_FIXES} alerts for ${nwo}.`,
     );
 
@@ -570,7 +561,6 @@ async function runAutofixForRepository(
       transcriptFiles.push(tempTranscriptFilePath);
 
       await runAutofixOnResults(
-        logger,
         cocofixBin,
         sarifFile,
         srcRootPath,
@@ -590,7 +580,6 @@ async function runAutofixForRepository(
   } else {
     // Run autofix once for all alerts.
     await runAutofixOnResults(
-      logger,
       cocofixBin,
       sarifFile,
       srcRootPath,
@@ -637,7 +626,6 @@ async function getRepoStoragePaths(
  * Runs autofix on the results in the given SARIF file.
  */
 async function runAutofixOnResults(
-  logger: NotificationLogger,
   cocofixBin: string,
   sarifFile: string,
   srcRootPath: string,
@@ -680,7 +668,6 @@ async function runAutofixOnResults(
   }
 
   await execAutofix(
-    logger,
     cocofixBin,
     autofixArgs,
     {
@@ -698,7 +685,6 @@ async function runAutofixOnResults(
  * Executes the autofix command.
  */
 function execAutofix(
-  logger: NotificationLogger,
   bin: string,
   args: string[],
   options: Parameters<typeof execFileSync>[2],
@@ -708,7 +694,7 @@ function execAutofix(
     try {
       const cwd = options?.cwd || process.cwd();
       if (showCommand) {
-        void logger.log(`Spawning '${bin} ${args.join(" ")}' in ${cwd}`);
+        void extLogger.log(`Spawning '${bin} ${args.join(" ")}' in ${cwd}`);
       }
       const p = spawn(bin, args, { stdio: [0, 1, 2], ...options });
       p.on("error", reject);
