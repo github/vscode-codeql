@@ -2,9 +2,8 @@ import type { CancellationToken } from "vscode";
 import { Uri, window } from "vscode";
 import { join, sep, basename, relative } from "path";
 import { dump, load } from "js-yaml";
-import { copy, writeFile, readFile, mkdirp } from "fs-extra";
-import type { DirectoryResult } from "tmp-promise";
-import { dir, tmpName } from "tmp-promise";
+import { copy, writeFile, readFile, mkdirp, remove } from "fs-extra";
+import { nanoid } from "nanoid";
 import { tmpDir } from "../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import type { Credentials } from "../common/authentication";
@@ -236,39 +235,28 @@ async function copyExistingQueryPack(
 }
 
 interface RemoteQueryTempDir {
-  remoteQueryDir: DirectoryResult;
+  remoteQueryDir: string;
   queryPackDir: string;
   compiledPackDir: string;
   bundleFile: string;
 }
 
 async function createRemoteQueriesTempDirectory(): Promise<RemoteQueryTempDir> {
-  const shortRemoteQueryDir = await dir({
-    dir: tmpDir.name,
-    unsafeCleanup: true,
-  });
   // Expand 8.3 filenames here to work around a CLI bug where `codeql pack bundle` produces an empty
   // archive if the pack path contains any 8.3 components.
-  const remoteQueryDir = {
-    ...shortRemoteQueryDir,
-    path: await expandShortPaths(shortRemoteQueryDir.path, extLogger),
-  };
-  const queryPackDir = join(remoteQueryDir.path, "query-pack");
-  await mkdirp(queryPackDir);
-  const compiledPackDir = join(remoteQueryDir.path, "compiled-pack");
-  const bundleFile = await expandShortPaths(
-    await getPackedBundlePath(tmpDir.name),
-    extLogger,
-  );
-  return { remoteQueryDir, queryPackDir, compiledPackDir, bundleFile };
-}
+  const tmpDirPath = await expandShortPaths(tmpDir.name, extLogger);
 
-async function getPackedBundlePath(remoteQueryDir: string): Promise<string> {
-  return tmpName({
-    dir: remoteQueryDir,
-    postfix: "generated.tgz",
-    prefix: "qlpack",
-  });
+  const remoteQueryDir = join(tmpDirPath, `remote-query-${nanoid()}`);
+  await mkdirp(remoteQueryDir);
+
+  const queryPackDir = join(remoteQueryDir, "query-pack");
+  await mkdirp(queryPackDir);
+
+  const compiledPackDir = join(remoteQueryDir, "compiled-pack");
+
+  const bundleFile = join(remoteQueryDir, `qlpack-${nanoid()}-generated.tgz`);
+
+  return { remoteQueryDir, queryPackDir, compiledPackDir, bundleFile };
 }
 
 interface PreparedRemoteQuery {
@@ -337,7 +325,7 @@ export async function prepareRemoteQueryRun(
       token,
     );
   } finally {
-    await tempDir.remoteQueryDir.cleanup();
+    await remove(tempDir.remoteQueryDir);
   }
 
   if (token.isCancellationRequested) {

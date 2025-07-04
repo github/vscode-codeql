@@ -1,5 +1,5 @@
 import { gray, red } from "ansi-colors";
-import { dest, src, watch } from "gulp";
+import { dest, parallel, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
 import type { reporter } from "gulp-typescript";
 import { createProject } from "gulp-typescript";
@@ -71,7 +71,7 @@ export function watchCheckTypeScript() {
   watch(["src/**/*.ts", "!src/view/**/*.ts"], checkTypeScript);
 }
 
-export function copyWasmFiles() {
+function copyWasmFiles() {
   // We need to copy this file for the source-map package to work. Without this fie, the source-map
   // package is not able to load the WASM file because we are not including the full node_modules
   // directory. In version 0.7.4, it is not possible to call SourceMapConsumer.initialize in Node environments
@@ -83,3 +83,18 @@ export function copyWasmFiles() {
     encoding: false,
   }).pipe(dest("out"));
 }
+
+function copyNativeAddonFiles() {
+  // We need to copy these files manually because we only want to include Windows x64 to limit
+  // the size of the extension. Windows x64 is the most common platform that requires short path
+  // expansion, so we only include this platform.
+  // See src/common/short-paths.ts
+  return pipeline(
+    src("node_modules/koffi/build/koffi/win32_x64/*.node", {
+      encoding: false,
+    }),
+    dest("out/koffi/win32_x64"),
+  );
+}
+
+export const copyModules = parallel(copyWasmFiles, copyNativeAddonFiles);

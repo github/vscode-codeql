@@ -4,6 +4,7 @@ import {
   mkdirs,
   readdir,
   unlinkSync,
+  rename,
   remove,
   writeFile,
 } from "fs-extra";
@@ -45,6 +46,10 @@ async function copyPackage(
       copyDirectory(resolve(sourcePath, file), resolve(destPath, file)),
     ),
   );
+
+  // The koffi directory needs to be located at the root of the package to ensure
+  // that the koffi package can find its native modules.
+  await rename(resolve(destPath, "out", "koffi"), resolve(destPath, "koffi"));
 }
 
 export async function deployPackage(): Promise<DeployedPackage> {
