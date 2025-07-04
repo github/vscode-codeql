@@ -796,7 +796,8 @@ async function formatWithMarkdown(
       "```\n\n</details>\n\n ### Notes\n - notes placeholder\n\n";
 
     // Format the content with Markdown
-    const formattedContent = `## ${header}\n\n${frontFormatting}${content}${backFormatting}`;
+    // Replace ``` in the content with \``` to avoid breaking the Markdown code block
+    const formattedContent = `## ${header}\n\n${frontFormatting}${content.replaceAll("```", "\\```")}${backFormatting}`;
 
     // Write the formatted content back to the file
     await writeFile(inputFile, formattedContent);
