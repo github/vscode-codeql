@@ -14,28 +14,33 @@ import type { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   pathExists,
   ensureDir,
-  readdir,
-  move,
   remove,
   unlink,
-  mkdtemp,
   readFile,
   writeFile,
+  createWriteStream,
 } from "fs-extra";
-import { withProgress, progressUpdate } from "../common/vscode/progress";
+import {
+  withProgress,
+  progressUpdate,
+  reportStreamProgress,
+} from "../common/vscode/progress";
 import type { ProgressCallback } from "../common/vscode/progress";
-import { join, dirname, parse } from "path";
+import { join, parse } from "path";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { pluralize } from "../common/word";
 import { readRepoTask } from "./repo-tasks-store";
-import { tmpdir } from "os";
+import { tmpDir } from "../tmp-dir";
 import { spawn } from "child_process";
 import type { execFileSync } from "child_process";
 import { tryOpenExternalFile } from "../common/vscode/external-files";
 import type { VariantAnalysisManager } from "./variant-analysis-manager";
 import type { VariantAnalysisResultsManager } from "./variant-analysis-results-manager";
-import { getAutofixPath, getAutofixModel } from "../config";
+import { getAutofixPath, getAutofixModel, downloadTimeout } from "../config";
 import { getErrorMessage } from "../common/helpers-pure";
+import { createTimeoutSignal } from "../common/fetch-stream";
+import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
+import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -308,7 +313,7 @@ async function processSelectedRepositories(
       withProgress(
         async (progressForRepo: ProgressCallback) => {
           // Get the sarif file.
-          progressForRepo(progressUpdate(1, 3, `Getting sarif`));
+          progressForRepo(progressUpdate(1, 3, `Getting sarif...`));
           const sarifFile = await getRepoSarifFile(
             variantAnalysisResultsManager,
             variantAnalysisIdStoragePath,
@@ -332,17 +337,17 @@ async function processSelectedRepositories(
 
           // Download the source root.
           // Using `0` as the progress step to force a dynamic vs static progress bar.
-          // Consider using `reportStreamProgress` as a future enhancement.
-          progressForRepo(progressUpdate(0, 3, `Downloading source root`));
+          progressForRepo(progressUpdate(0, 3, `Fetching source root...`));
           const srcRootPath = await downloadPublicCommitSource(
             nwo,
             repoTask.databaseCommitSha,
             sourceRootsStoragePath,
             credentials,
+            progressForRepo,
           );
 
           // Run autofix.
-          progressForRepo(progressUpdate(2, 3, `Running autofix`));
+          progressForRepo(progressUpdate(2, 3, `Running autofix...`));
           await runAutofixForRepository(
             nwo,
             sarifFile,
@@ -354,7 +359,7 @@ async function processSelectedRepositories(
           );
         },
         {
-          title: `Processing ${nwo}`,
+          title: `${nwo}`,
           cancellable: false,
         },
       ),
@@ -399,6 +404,7 @@ async function downloadPublicCommitSource(
   sha: string,
   outputPath: string,
   credentials: Credentials,
+  progressCallback: ProgressCallback,
 ): Promise<string> {
   const [owner, repo] = nwo.split("/");
   if (!owner || !repo) {
@@ -425,77 +431,128 @@ async function downloadPublicCommitSource(
   void extLogger.log(`Fetching source of repository ${nwo} at ${sha}...`);
 
   try {
-    // Create a temporary directory for downloading
-    const downloadDir = await mkdtemp(join(tmpdir(), "download-source-"));
-    const tarballPath = join(downloadDir, "source.tar.gz");
-
     const octokit = await credentials.getOctokit();
 
-    // Get the tarball URL
-    const { url } = await octokit.rest.repos.downloadTarballArchive({
+    // Get the zipball URL
+    const { url } = await octokit.rest.repos.downloadZipballArchive({
       owner,
       repo,
       ref: sha,
     });
 
-    // Download the tarball using spawn
-    await new Promise<void>((resolve, reject) => {
-      const curlArgs = [
-        "-H",
-        "Accept: application/octet-stream",
-        "--user-agent",
-        "GitHub-CodeQL-Extension",
-        "-L", // Follow redirects
-        "-o",
-        tarballPath,
-        url,
-      ];
+    // Create a temporary directory for downloading
+    const archivePath = join(
+      tmpDir.name,
+      `source-${owner}-${repo}-${Date.now()}.zip`,
+    );
 
-      const process = spawn("curl", curlArgs, { cwd: downloadDir });
+    // Set timeout
+    const {
+      signal,
+      onData,
+      dispose: disposeTimeout,
+    } = createTimeoutSignal(downloadTimeout());
 
-      process.on("error", reject);
-      process.on("exit", (code) =>
-        code === 0
-          ? resolve()
-          : reject(new Error(`curl exited with code ${code}`)),
+    // Fetch the url
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: {
+          Accept: "application/zip",
+        },
+        signal,
+      });
+    } catch (e) {
+      disposeTimeout();
+
+      if (e instanceof DOMException && e.name === "AbortError") {
+        const thrownError = new Error("The request timed out.");
+        thrownError.stack = e.stack;
+        throw thrownError;
+      }
+      throw new Error(
+        `Error fetching source root. Reason: ${getErrorMessage(e)}`,
       );
-    });
+    }
+
+    // Download the source root from the response body
+    const body = response.body;
+    if (!body) {
+      throw new Error("No response body found");
+    }
+
+    const archiveFileStream = createWriteStream(archivePath);
+
+    const contentLength = response.headers.get("content-length");
+    const totalNumBytes = contentLength
+      ? parseInt(contentLength, 10)
+      : undefined;
+
+    const reportProgress = reportStreamProgress(
+      "Downloading source root...",
+      totalNumBytes,
+      progressCallback,
+    );
+
+    try {
+      const reader = body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+
+        onData();
+        reportProgress(value?.length ?? 0);
+
+        await new Promise((resolve, reject) => {
+          archiveFileStream.write(value, (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve(undefined);
+          });
+        });
+      }
+
+      await new Promise((resolve, reject) => {
+        archiveFileStream.close((err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(undefined);
+        });
+      });
+    } catch (e) {
+      // Close and remove the file if an error occurs
+      archiveFileStream.close(() => {
+        void remove(archivePath);
+      });
+
+      if (e instanceof DOMException && e.name === "AbortError") {
+        const thrownError = new Error("The download timed out.");
+        thrownError.stack = e.stack;
+        throw thrownError;
+      }
+
+      throw new Error(
+        `Error downloading source root. Reason: ${getErrorMessage(e)}`,
+      );
+    } finally {
+      disposeTimeout();
+    }
 
     void extLogger.log(`Download complete, extracting source...`);
 
-    // Extract the tarball
-    await new Promise<void>((resolve, reject) => {
-      const process = spawn("tar", ["-xzf", tarballPath], { cwd: downloadDir });
-
-      process.on("error", reject);
-      process.on("exit", (code) =>
-        code === 0
-          ? resolve()
-          : reject(new Error(`tar extraction failed with code ${code}`)),
-      );
-    });
-
-    // Remove the tarball to save space
-    await unlink(tarballPath);
-
-    // Find the extracted directory (GitHub tarballs extract to a single directory)
-    const extractedFiles = await readdir(downloadDir);
-    const sourceDir = extractedFiles.filter((f) => f !== "source.tar.gz")[0];
-
-    if (!sourceDir) {
-      throw new Error("Failed to find extracted source directory");
-    }
-
-    const extractedSourcePath = join(downloadDir, sourceDir);
-
-    // Ensure the destination directory's parent exists
-    await ensureDir(dirname(checkoutDir));
-
-    // Move the extracted source to the final location
-    await move(extractedSourcePath, checkoutDir);
-
-    // Clean up the temporary directory
-    await remove(downloadDir);
+    // Extract the downloaded zip file
+    await unzipToDirectoryConcurrently(
+      archivePath,
+      outputPath,
+      progressCallback
+        ? reportUnzipProgress(`Unzipping source root...`, progressCallback)
+        : undefined,
+    );
+    await remove(archivePath);
 
     return checkoutDir;
   } catch (error) {
