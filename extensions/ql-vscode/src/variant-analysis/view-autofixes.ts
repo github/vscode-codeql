@@ -753,9 +753,45 @@ function execAutofix(
       if (showCommand) {
         void extLogger.log(`Spawning '${bin} ${args.join(" ")}' in ${cwd}`);
       }
-      const p = spawn(bin, args, { stdio: [0, 1, 2], ...options });
+
+      let stdoutBuffer = "";
+      let stderrBuffer = "";
+
+      const p = spawn(bin, args, {
+        stdio: ["ignore", "pipe", "pipe"],
+        ...options,
+      });
+
+      // Listen for stdout
+      p.stdout?.on("data", (data) => {
+        stdoutBuffer += data.toString();
+      });
+
+      // Listen for stderr
+      p.stderr?.on("data", (data) => {
+        stderrBuffer += data.toString();
+      });
+
+      // Listen for errors
       p.on("error", reject);
-      p.on("exit", (code) => (code === 0 ? resolve() : reject(code)));
+
+      // Listen for process exit
+      p.on("exit", (code) => {
+        // Log collected output
+        if (stdoutBuffer.trim()) {
+          void extLogger.log(`Autofix stdout:\n${stdoutBuffer.trim()}`);
+        }
+
+        if (stderrBuffer.trim()) {
+          void extLogger.log(`Autofix stderr:\n${stderrBuffer.trim()}`);
+        }
+
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Autofix process exited with code ${code}.`));
+        }
+      });
     } catch (e) {
       reject(e);
     }
