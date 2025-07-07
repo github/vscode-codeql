@@ -469,8 +469,11 @@ async function downloadPublicCommitSource(
     );
 
     // Set timeout
-    const { signal, dispose: disposeTimeout } =
-      createTimeoutSignal(downloadTimeout());
+    const {
+      signal,
+      onData,
+      dispose: disposeTimeout,
+    } = createTimeoutSignal(downloadTimeout());
 
     // Fetch the url
     let response: Response;
@@ -516,6 +519,7 @@ async function downloadPublicCommitSource(
     try {
       const readable = Readable.fromWeb(body);
       readable.on("data", (chunk) => {
+        onData();
         reportProgress(chunk?.length ?? 0);
       });
       await new Promise((resolve, reject) => {
