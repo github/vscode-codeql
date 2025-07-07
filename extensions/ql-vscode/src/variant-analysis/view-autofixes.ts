@@ -560,9 +560,7 @@ async function downloadPublicCommitSource(
     await unzipToDirectoryConcurrently(
       archivePath,
       checkoutDir,
-      progressCallback
-        ? reportUnzipProgress(`Unzipping source root...`, progressCallback)
-        : undefined,
+      reportUnzipProgress(`Unzipping source root...`, progressCallback),
     );
     await remove(archivePath);
 
