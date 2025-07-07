@@ -245,7 +245,7 @@ function getSelectedRepositoryNames(
   // Limit to MAX_NUM_REPOS by slicing the array.
   if (fullNames.length > MAX_NUM_REPOS) {
     fullNames = fullNames.slice(0, MAX_NUM_REPOS);
-    void extLogger.log(
+    void extLogger.showWarningMessage(
       `Only the first ${MAX_NUM_REPOS} repos (${fullNames.join(", ")}) will be included in the Autofix results.`,
     );
   }
