@@ -35,7 +35,13 @@ import type { execFileSync } from "child_process";
 import { tryOpenExternalFile } from "../common/vscode/external-files";
 import type { VariantAnalysisManager } from "./variant-analysis-manager";
 import type { VariantAnalysisResultsManager } from "./variant-analysis-results-manager";
-import { getAutofixPath, getAutofixModel, downloadTimeout } from "../config";
+import {
+  getAutofixPath,
+  getAutofixModel,
+  downloadTimeout,
+  AUTOFIX_PATH,
+  AUTOFIX_MODEL,
+} from "../config";
 import { getErrorMessage } from "../common/helpers-pure";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
@@ -140,7 +146,7 @@ async function findLocalAutofix(): Promise<string> {
   const localAutofixPath = getAutofixPath();
   if (!localAutofixPath) {
     throw new Error(
-      "Path to local autofix installation not found. Internal GitHub access required.",
+      `Path to local autofix installation not found. Make sure ${AUTOFIX_PATH.qualifiedName} is set correctly. Internal GitHub access required.`,
     );
   }
   if (!(await pathExists(localAutofixPath))) {
@@ -709,7 +715,9 @@ async function runAutofixOnResults(
   // Get autofix model from user settings.
   const autofixModel = getAutofixModel();
   if (!autofixModel) {
-    throw new Error("Autofix model not found.");
+    throw new Error(
+      `Autofix model not found. Make sure ${AUTOFIX_MODEL.qualifiedName} is set correctly.`,
+    );
   }
   // Set up args for autofix command.
   const autofixArgs = [

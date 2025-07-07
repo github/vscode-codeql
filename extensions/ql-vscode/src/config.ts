@@ -957,13 +957,13 @@ export class GitHubDatabaseConfigListener
 
 const AUTOFIX_SETTING = new Setting("autofix", ROOT_SETTING);
 
-const AUTOFIX_PATH = new Setting("path", AUTOFIX_SETTING);
+export const AUTOFIX_PATH = new Setting("path", AUTOFIX_SETTING);
 
 export function getAutofixPath(): string | undefined {
   return AUTOFIX_PATH.getValue<string>() || undefined;
 }
 
-const AUTOFIX_MODEL = new Setting("model", AUTOFIX_SETTING);
+export const AUTOFIX_MODEL = new Setting("model", AUTOFIX_SETTING);
 
 export function getAutofixModel(): string | undefined {
   return AUTOFIX_MODEL.getValue<string>() || undefined;
