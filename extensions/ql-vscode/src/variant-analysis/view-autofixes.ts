@@ -27,7 +27,6 @@ import {
 } from "../common/vscode/progress";
 import type { ProgressCallback } from "../common/vscode/progress";
 import { join, parse } from "path";
-import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { pluralize } from "../common/word";
 import { readRepoTask } from "./repo-tasks-store";
 import { tmpDir } from "../tmp-dir";
@@ -188,9 +187,13 @@ async function overrideQueryHelp(
   }
 
   // Get the query metadata.
-  const metadata = await tryGetQueryMetadata(cliServer, queryFilePath);
-  if (!metadata) {
-    throw new Error(`Could not get query metadata for ${queryFilePath}.`);
+  let metadata;
+  try {
+    metadata = await cliServer.resolveMetadata(queryFilePath);
+  } catch (e) {
+    throw new Error(
+      `Could not resolve query metadata for ${queryFilePath}. Reason: ${getErrorMessage(e)}`,
+    );
   }
   // Get the query ID (used for the overridden query help's filename).
   const queryId = metadata.id;
