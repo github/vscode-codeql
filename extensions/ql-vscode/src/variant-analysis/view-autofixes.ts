@@ -41,6 +41,7 @@ import { getErrorMessage } from "../common/helpers-pure";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
+import { getDirectoryNamesInsidePath } from "../common/files";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -422,10 +423,21 @@ async function downloadPublicCommitSource(
 
   // Check if directory already exists to avoid re-downloading
   if (await pathExists(checkoutDir)) {
-    void extLogger.log(
-      `Source for ${nwo} at ${sha} already exists at ${checkoutDir}.`,
-    );
-    return checkoutDir;
+    const dirNames = await getDirectoryNamesInsidePath(checkoutDir);
+    if (dirNames.length === 1) {
+      // The path to the source code should be a single directory inside `checkoutDir`.
+      const sourceRootDir = join(checkoutDir, dirNames[0]);
+      void extLogger.log(
+        `Source for ${nwo} at ${sha} already exists at ${sourceRootDir}.`,
+      );
+      return sourceRootDir;
+    } else {
+      // Remove `checkoutDir` to allow a re-download if the directory structure is unexpected.
+      void extLogger.log(
+        `Unexpected directory structure. Removing ${checkoutDir}`,
+      );
+      await remove(checkoutDir);
+    }
   }
 
   void extLogger.log(`Fetching source of repository ${nwo} at ${sha}...`);
@@ -547,14 +559,23 @@ async function downloadPublicCommitSource(
     // Extract the downloaded zip file
     await unzipToDirectoryConcurrently(
       archivePath,
-      outputPath,
+      checkoutDir,
       progressCallback
         ? reportUnzipProgress(`Unzipping source root...`, progressCallback)
         : undefined,
     );
     await remove(archivePath);
 
-    return checkoutDir;
+    // Since `unzipToDirectoryConcurrently` extracts to a directory within
+    // `checkoutDir`, we need to return the path to that extracted directory.
+    const dirNames = await getDirectoryNamesInsidePath(checkoutDir);
+    if (dirNames.length === 1) {
+      return join(checkoutDir, dirNames[0]);
+    } else {
+      throw new Error(
+        `Expected exactly one unzipped source directory for ${nwo}, but found ${dirNames.length}.`,
+      );
+    }
   } catch (error) {
     throw new Error(
       `Failed to download ${nwo} at ${sha}:. Reason: ${getErrorMessage(error)}`,
