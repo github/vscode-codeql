@@ -577,6 +577,7 @@ async function downloadPublicCommitSource(
       );
     }
   } catch (error) {
+    await remove(checkoutDir);
     throw new Error(
       `Failed to download ${nwo} at ${sha}:. Reason: ${getErrorMessage(error)}`,
     );
