@@ -42,6 +42,7 @@ import { createTimeoutSignal } from "../common/fetch-stream";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
 import { getDirectoryNamesInsidePath } from "../common/files";
+import { Readable } from "stream";
 
 // Limit to three repos when generating autofixes so not sending
 // too many requests to autofix. Since we only need to validate
@@ -459,11 +460,8 @@ async function downloadPublicCommitSource(
     );
 
     // Set timeout
-    const {
-      signal,
-      onData,
-      dispose: disposeTimeout,
-    } = createTimeoutSignal(downloadTimeout());
+    const { signal, dispose: disposeTimeout } =
+      createTimeoutSignal(downloadTimeout());
 
     // Fetch the url
     let response: Response;
@@ -507,25 +505,18 @@ async function downloadPublicCommitSource(
     );
 
     try {
-      const reader = body.getReader();
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        onData();
-        reportProgress(value?.length ?? 0);
-
-        await new Promise((resolve, reject) => {
-          archiveFileStream.write(value, (err) => {
-            if (err) {
-              reject(err);
-            }
-            resolve(undefined);
-          });
-        });
-      }
+      const readable = Readable.fromWeb(body);
+      readable.on("data", (chunk) => {
+        reportProgress(chunk?.length ?? 0);
+      });
+      await new Promise((resolve, reject) => {
+        readable
+          .pipe(archiveFileStream)
+          .on("error", (err) => {
+            reject(err);
+          })
+          .on("finish", () => resolve(undefined));
+      });
 
       await new Promise((resolve, reject) => {
         archiveFileStream.close((err) => {
