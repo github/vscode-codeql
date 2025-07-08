@@ -22,6 +22,7 @@ import {
   filterAndSortRepositoriesWithResults,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { ViewTitle } from "../common";
+import type { VariantAnalysisUserSettings } from "../../common/interface-types";
 
 type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
@@ -34,10 +35,13 @@ type VariantAnalysisHeaderProps = {
 
   onStopQueryClick: () => void;
 
+  onViewAutofixesClick: () => void;
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
 
   onViewLogsClick?: () => void;
+
+  variantAnalysisUserSettings: VariantAnalysisUserSettings;
 };
 
 const Container = styled.div`
@@ -82,9 +86,11 @@ export const VariantAnalysisHeader = ({
   onOpenQueryFileClick,
   onViewQueryTextClick,
   onStopQueryClick,
+  onViewAutofixesClick,
   onCopyRepositoryListClick,
   onExportResultsClick,
   onViewLogsClick,
+  variantAnalysisUserSettings,
 }: VariantAnalysisHeaderProps) => {
   const totalScannedRepositoryCount = useMemo(() => {
     return variantAnalysis.scannedRepos?.length ?? 0;
@@ -150,17 +156,22 @@ export const VariantAnalysisHeader = ({
           variantAnalysisStatus={variantAnalysis.status}
           showResultActions={(resultCount ?? 0) > 0}
           onStopQueryClick={onStopQueryClick}
+          onViewAutofixesClick={onViewAutofixesClick}
           onCopyRepositoryListClick={onCopyRepositoryListClick}
           onExportResultsClick={onExportResultsClick}
           stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
           exportResultsDisabled={!hasDownloadedRepos}
           copyRepositoryListDisabled={!hasReposWithResults}
+          viewAutofixesDisabled={!hasReposWithResults}
           hasFilteredRepositories={
             variantAnalysis.scannedRepos?.length !==
             filteredRepositories?.length
           }
           hasSelectedRepositories={
             selectedRepositoryIds && selectedRepositoryIds.length > 0
+          }
+          showViewAutofixesButton={
+            variantAnalysisUserSettings.shouldShowViewAutofixesButton
           }
         />
       </Row>

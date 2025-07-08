@@ -338,6 +338,11 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleOpenOnGithub.bind(this),
         "query",
       ),
+      "codeQLQueryHistory.viewAutofixes": createSingleSelectionCommand(
+        this.app.logger,
+        this.handleViewAutofixes.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.copyRepoList": createSingleSelectionCommand(
         this.app.logger,
         this.handleCopyRepoList.bind(this),
@@ -1050,6 +1055,14 @@ export class QueryHistoryManager extends DisposableObject {
       "vscode.open",
       Uri.parse(actionsWorkflowRunUrl),
     );
+  }
+
+  async handleViewAutofixes(item: QueryHistoryInfo) {
+    if (item.t !== "variant-analysis") {
+      return;
+    }
+
+    await this.variantAnalysisManager.viewAutofixes(item.variantAnalysis.id);
   }
 
   async handleCopyRepoList(item: QueryHistoryInfo) {

@@ -44,6 +44,7 @@ export type LoadResultsOptions = {
 
 export class VariantAnalysisResultsManager extends DisposableObject {
   private static readonly RESULTS_DIRECTORY = "results";
+  private static readonly RESULTS_SARIF_FILENAME = "results.sarif";
 
   private readonly cachedResults: Map<
     CacheKey,
@@ -212,7 +213,10 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       storageDirectory,
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
-    const sarifPath = join(resultsDirectory, "results.sarif");
+    const sarifPath = join(
+      resultsDirectory,
+      VariantAnalysisResultsManager.RESULTS_SARIF_FILENAME,
+    );
     const bqrsPath = join(resultsDirectory, "results.bqrs");
 
     let interpretedResults: AnalysisAlert[] | undefined;
@@ -292,6 +296,17 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     fullName: string,
   ): string {
     return join(variantAnalysisStoragePath, fullName);
+  }
+
+  public getRepoResultsSarifStoragePath(
+    variantAnalysisStoragePath: string,
+    fullName: string,
+  ): string {
+    return join(
+      this.getRepoStorageDirectory(variantAnalysisStoragePath, fullName),
+      VariantAnalysisResultsManager.RESULTS_DIRECTORY,
+      VariantAnalysisResultsManager.RESULTS_SARIF_FILENAME,
+    );
   }
 
   private createGitHubFileLinkPrefix(fullName: string, sha: string): string {

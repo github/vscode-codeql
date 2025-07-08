@@ -9,11 +9,15 @@ import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-ana
 import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
 import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
-import type { ToVariantAnalysisMessage } from "../../common/interface-types";
+import type {
+  ToVariantAnalysisMessage,
+  VariantAnalysisUserSettings,
+} from "../../common/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
+import { DEFAULT_VARIANT_ANALYSIS_USER_SETTINGS } from "../../common/interface-types";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -77,6 +81,10 @@ export function VariantAnalysis({
   useTelemetryOnChange(filterSortState, "variant-analysis-filter-sort-state", {
     debounceTimeoutMillis: 1000,
   });
+  const [variantAnalysisUserSettings, setVariantAnalysisUserSettings] =
+    useState<VariantAnalysisUserSettings>(
+      DEFAULT_VARIANT_ANALYSIS_USER_SETTINGS,
+    );
 
   useMessageFromExtension<ToVariantAnalysisMessage>((msg) => {
     if (msg.t === "setVariantAnalysis") {
@@ -102,8 +110,21 @@ export function VariantAnalysis({
           ...msg.repoStates,
         ];
       });
+    } else if (msg.t === "setVariantAnalysisUserSettings") {
+      setVariantAnalysisUserSettings(msg.variantAnalysisUserSettings);
     }
   }, []);
+
+  const viewAutofixes = useCallback(() => {
+    vscode.postMessage({
+      t: "viewAutofixes",
+      filterSort: {
+        ...filterSortState,
+        repositoryIds: selectedRepositoryIds,
+      },
+    });
+    sendTelemetry("variant-analysis-view-autofixes");
+  }, [filterSortState, selectedRepositoryIds]);
 
   const copyRepositoryList = useCallback(() => {
     vscode.postMessage({
@@ -148,9 +169,11 @@ export function VariantAnalysis({
         onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={openQueryText}
         onStopQueryClick={stopQuery}
+        onViewAutofixesClick={viewAutofixes}
         onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={exportResults}
         onViewLogsClick={onViewLogsClick}
+        variantAnalysisUserSettings={variantAnalysisUserSettings}
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}

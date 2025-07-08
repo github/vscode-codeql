@@ -27,6 +27,7 @@ import type { App } from "../common/app";
 import {
   getVariantAnalysisDefaultResultsFilter,
   getVariantAnalysisDefaultResultsSort,
+  isCanary,
 } from "../config";
 
 export class VariantAnalysisView
@@ -53,6 +54,13 @@ export class VariantAnalysisView
     panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
+
+    await this.postMessage({
+      t: "setVariantAnalysisUserSettings",
+      variantAnalysisUserSettings: {
+        shouldShowViewAutofixesButton: isCanary(),
+      },
+    });
   }
 
   public async updateView(variantAnalysis: VariantAnalysis): Promise<void> {
@@ -134,6 +142,12 @@ export class VariantAnalysisView
         break;
       case "openQueryText":
         await this.manager.openQueryText(this.variantAnalysisId);
+        break;
+      case "viewAutofixes":
+        await this.manager.viewAutofixes(
+          this.variantAnalysisId,
+          msg.filterSort,
+        );
         break;
       case "copyRepositoryList":
         await this.manager.copyRepoListToClipboard(

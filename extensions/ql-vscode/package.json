@@ -959,6 +959,10 @@
         "title": "Copy Repository List"
       },
       {
+        "command": "codeQLQueryHistory.viewAutofixes",
+        "title": "View Autofixes"
+      },
+      {
         "command": "codeQLQueryResults.down",
         "title": "CodeQL: Navigate Down in Local Result Viewer"
       },
@@ -1295,6 +1299,11 @@
           "command": "codeQLQueryHistory.copyRepoList",
           "group": "1_queryHistory@1",
           "when": "viewItem == remoteResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.viewAutofixes",
+          "group": "1_queryHistory@2",
+          "when": "viewItem == remoteResultsItem && config.codeQL.canary"
         },
         {
           "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
@@ -1704,6 +1713,10 @@
         },
         {
           "command": "codeQLQueryHistory.copyRepoList",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.viewAutofixes",
           "when": "false"
         },
         {
