@@ -1,6 +1,8 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.17.4 - 10 July 2025
+
+- Fix variant analysis pack creation on some Windows systems [#4068](https://github.com/github/vscode-codeql/pull/4068)
 
 ## 1.17.3 - 3 June 2025
 
