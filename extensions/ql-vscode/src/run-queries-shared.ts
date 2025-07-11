@@ -27,7 +27,6 @@ import type {
 import type { BaseLogger } from "./common/logging";
 import { showAndLogWarningMessage } from "./common/logging";
 import { extLogger } from "./common/logging/vscode";
-import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./common/helpers-pure";
 import { createHash } from "crypto";
 import { QueryOutputDir } from "./local-queries/query-output-dir";
@@ -570,15 +569,6 @@ export async function generateEvalLogSummaries(
 
     if (humanReadableSummary !== undefined) {
       summarySymbols = outputDir.evalLogSummarySymbolsPath;
-      if (
-        !(await cliServer.cliConstraints.supportsGenerateSummarySymbolMap())
-      ) {
-        // We're using an old CLI that cannot generate the summary symbols file while generating the
-        // human-readable log summary. As a fallback, create it by parsing the human-readable
-        // summary.
-        progress(progressUpdate(3, 3, "Generating summary symbols file"));
-        await generateSummarySymbolsFile(humanReadableSummary, summarySymbols);
-      }
     }
   }
 
