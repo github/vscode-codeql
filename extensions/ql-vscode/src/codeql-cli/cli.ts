@@ -1910,10 +1910,6 @@ export class CliVersionConstraint {
     /**/
   }
 
-  async supportsMrvaPackCreate(): Promise<boolean> {
-    return (await this.cli.getFeatures()).mrvaPackCreate === true;
-  }
-
   async supportsGenerateSummarySymbolMap(): Promise<boolean> {
     return (await this.cli.getFeatures()).generateSummarySymbolMap === true;
   }

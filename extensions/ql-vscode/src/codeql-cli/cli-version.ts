@@ -11,7 +11,6 @@ interface VersionResult {
 
 export interface CliFeatures {
   featuresInVersionResult?: boolean;
-  mrvaPackCreate?: boolean;
   generateSummarySymbolMap?: boolean;
   queryServerRunQueries?: boolean;
 }
