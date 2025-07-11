@@ -10,7 +10,6 @@ interface VersionResult {
 }
 
 export interface CliFeatures {
-  featuresInVersionResult?: boolean;
   queryServerRunQueries?: boolean;
 }
 

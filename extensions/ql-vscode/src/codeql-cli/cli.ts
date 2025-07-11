@@ -269,7 +269,7 @@ export class CodeQLCliServer implements Disposable {
   /** Path to current codeQL executable, or undefined if not running yet. */
   codeQlPath: string | undefined;
 
-  cliConstraints = new CliVersionConstraint();
+  cliConstraints = new CliVersionConstraint(this);
 
   /**
    * When set to true, ignore some modal popups and assume user has clicked "yes".
@@ -1902,4 +1902,12 @@ export class CliVersionConstraint {
   // The oldest version of the CLI that we support. This is used to determine
   // whether to show a warning about the CLI being too old on startup.
   public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.18.4");
+
+  constructor(private readonly cli: CodeQLCliServer) {
+    /**/
+  }
+
+  async supportsQueryServerRunQueries(): Promise<boolean> {
+    return (await this.cli.getFeatures()).queryServerRunQueries === true;
+  }
 }
