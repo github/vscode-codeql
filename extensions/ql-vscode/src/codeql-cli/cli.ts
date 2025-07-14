@@ -1191,15 +1191,12 @@ export class CodeQLCliServer implements Disposable {
     outputPath: string,
     endSummaryPath: string,
   ): Promise<string> {
-    const supportsGenerateSummarySymbolMap =
-      await this.cliConstraints.supportsGenerateSummarySymbolMap();
     const subcommandArgs = [
       "--format=text",
       `--end-summary=${endSummaryPath}`,
       "--sourcemap",
-      ...(supportsGenerateSummarySymbolMap
-        ? ["--summary-symbol-map", "--minify-output"]
-        : []),
+      "--summary-symbol-map",
+      "--minify-output",
       inputPath,
       outputPath,
     ];
@@ -1910,11 +1907,7 @@ export class CliVersionConstraint {
     /**/
   }
 
-  async supportsMrvaPackCreate(): Promise<boolean> {
-    return (await this.cli.getFeatures()).mrvaPackCreate === true;
-  }
-
-  async supportsGenerateSummarySymbolMap(): Promise<boolean> {
-    return (await this.cli.getFeatures()).generateSummarySymbolMap === true;
+  async supportsQueryServerRunQueries(): Promise<boolean> {
+    return (await this.cli.getFeatures()).queryServerRunQueries === true;
   }
 }
