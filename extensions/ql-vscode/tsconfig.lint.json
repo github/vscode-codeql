@@ -1,4 +1,11 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*.ts", "**/.eslintrc.js", "jest.config.js"]
+  "include": [
+    "src/**/*.ts",
+    "**/.eslintrc.js",
+    "jest.config.js",
+    "vitest.config.ts",
+    "vitest.setup.ts"
+  ],
+  "exclude": ["node_modules"]
 }

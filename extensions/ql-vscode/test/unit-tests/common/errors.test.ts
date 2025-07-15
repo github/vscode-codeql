@@ -23,7 +23,7 @@ describe("errorMessage", () => {
     expect(
       redactableError`Failed to create database ${"foo"}`.fullMessageWithStack,
     ).toMatch(
-      /^Failed to create database foo\nError: Failed to create database foo\n +at redactableError \(/,
+      /^Failed to create database foo\nError: Failed to create database foo\n +at (.*)redactableError \(/,
     );
   });
 

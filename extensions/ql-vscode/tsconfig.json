@@ -24,5 +24,5 @@
     "noEmit": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "*.config.ts", "test", "**/view"]
+  "exclude": ["node_modules", "*.config.ts", "*.setup.ts", "test", "**/view"]
 }

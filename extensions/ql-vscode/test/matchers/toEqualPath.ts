@@ -1,4 +1,3 @@
-import { expect } from "@jest/globals";
 import type { MatcherFunction } from "expect";
 import { pathsEqual } from "../../src/common/files";
 

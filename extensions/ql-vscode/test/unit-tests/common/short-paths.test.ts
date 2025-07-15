@@ -27,12 +27,9 @@ describe("expandShortPaths", () => {
     });
   });
 
-  describe("on Windows", () => {
-    if (platform() !== "win32") {
-      console.log(`Skipping test on non-Windows`);
-      return;
-    }
+  const describeIfWindows = platform() === "win32" ? describe : describe.skip;
 
+  describeIfWindows("on Windows", () => {
     it("should return the same path if no short components", async () => {
       const path = "C:\\Program Files\\Some Folder";
       const result = await expandShortPaths(path, logger);
