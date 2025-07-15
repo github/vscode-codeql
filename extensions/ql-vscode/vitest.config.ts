@@ -30,6 +30,33 @@ export default defineConfig({
           },
         },
       },
+      {
+        test: {
+          name: "vscode-no-workspace-tests",
+          root: "./test/vscode-tests/no-workspace",
+          globals: true,
+          setupFiles,
+          pool: resolve(__dirname, "./test/vscode-test-runner/pool.ts"),
+          environmentOptions: {
+            vscodeTest: {
+              launchArgs: [
+                "--disable-gpu",
+                `--extensions-dir=${resolve(
+                  __dirname,
+                  ".vscode-test",
+                  "extensions",
+                )}`,
+                "--disable-extensions",
+              ],
+            },
+          },
+        },
+        build: {
+          rollupOptions: {
+            external: ["vscode"], // Mark 'vscode' as external
+          },
+        },
+      },
     ],
   },
 });
