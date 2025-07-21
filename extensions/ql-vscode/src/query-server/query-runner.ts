@@ -6,10 +6,12 @@ import { UserCancellationException } from "../common/vscode/progress";
 import type { DatabaseItem } from "../databases/local-databases/database-item";
 import { QueryOutputDir } from "../local-queries/query-output-dir";
 import type {
+  ClearCacheMode,
   ClearCacheParams,
   Position,
   QueryResultType,
   TrimCacheParams,
+  TrimCacheWithModeParams,
 } from "./messages";
 import {
   clearCache,
@@ -17,6 +19,7 @@ import {
   deregisterDatabases,
   registerDatabases,
   trimCache,
+  trimCacheWithMode,
   upgradeDatabase,
 } from "./messages";
 import type { BaseLogger, Logger } from "../common/logging";
@@ -140,6 +143,22 @@ export class QueryRunner {
       db,
     };
     await this.qs.sendRequest(trimCache, params);
+  }
+
+  async trimCacheWithModeInDatabase(
+    dbItem: DatabaseItem,
+    mode: ClearCacheMode,
+  ): Promise<void> {
+    if (dbItem.contents === undefined) {
+      throw new Error("Can't clean the cache in an invalid database.");
+    }
+
+    const db = dbItem.databaseUri.fsPath;
+    const params: TrimCacheWithModeParams = {
+      db,
+      mode,
+    };
+    await this.qs.sendRequest(trimCacheWithMode, params);
   }
 
   public async compileAndRunQueryAgainstDatabaseCore(

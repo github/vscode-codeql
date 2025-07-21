@@ -43,6 +43,22 @@ export interface TrimCacheParams {
 }
 
 /**
+ * Parameters for trimming the cache of a dataset with a specific mode.
+ */
+export interface TrimCacheWithModeParams {
+  /**
+   * The dataset that we want to trim the cache of.
+   */
+  db: string;
+  /**
+   * The cache cleanup mode to use.
+   */
+  mode: ClearCacheMode;
+}
+
+export type ClearCacheMode = "clear" | "trim" | "fit" | "overlay";
+
+/**
  * The result of trimming or clearing the cache.
  */
 interface ClearCacheResult {
@@ -193,6 +209,14 @@ export const trimCache = new RequestType<
   ClearCacheResult,
   void
 >("evaluation/trimCache");
+/**
+ * Trim the cache of a dataset with a specific mode.
+ */
+export const trimCacheWithMode = new RequestType<
+  WithProgressId<TrimCacheWithModeParams>,
+  ClearCacheResult,
+  void
+>("evaluation/trimCacheWithMode");
 
 /**
  * Clear the pack cache
