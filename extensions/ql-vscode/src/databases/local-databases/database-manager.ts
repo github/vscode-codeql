@@ -411,7 +411,7 @@ export class DatabaseManager extends DisposableObject {
         qlpackStoragePath,
       );
       await qlPackGenerator.generate();
-    } catch (e: unknown) {
+    } catch (e) {
       void this.logger.log(
         `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
       );

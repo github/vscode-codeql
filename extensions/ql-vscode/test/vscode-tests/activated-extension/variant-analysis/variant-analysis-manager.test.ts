@@ -50,6 +50,7 @@ import { createMockVariantAnalysisConfig } from "../../../factories/config";
 import { setupServer } from "msw/node";
 import type { RequestHandler } from "msw";
 import { http } from "msw";
+import { getErrorMessage } from "../../../../src/common/helpers-pure";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -622,8 +623,8 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.cancelVariantAnalysis(
           variantAnalysis.id + 100,
         );
-      } catch (error: any) {
-        expect(error.message).toBe(
+      } catch (error) {
+        expect(getErrorMessage(error)).toBe(
           `No variant analysis with id: ${variantAnalysis.id + 100}`,
         );
       }
@@ -637,8 +638,8 @@ describe("Variant Analysis Manager", () => {
 
       try {
         await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
-      } catch (error: any) {
-        expect(error.message).toBe(
+      } catch (error) {
+        expect(getErrorMessage(error)).toBe(
           `No workflow run id for variant analysis with id: ${variantAnalysis.id}`,
         );
       }

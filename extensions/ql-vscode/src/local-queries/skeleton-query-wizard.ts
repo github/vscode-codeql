@@ -132,7 +132,7 @@ export class SkeletonQueryWizard {
     // open the query file
     try {
       await this.openExampleFile();
-    } catch (e: unknown) {
+    } catch (e) {
       void this.app.logger.log(
         `Could not open example query file: ${getErrorMessage(e)}`,
       );
@@ -279,7 +279,7 @@ export class SkeletonQueryWizard {
       const qlPackGenerator = this.createQlPackGenerator();
 
       await qlPackGenerator.generate();
-    } catch (e: unknown) {
+    } catch (e) {
       void this.app.logger.log(
         `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
       );
@@ -299,7 +299,7 @@ export class SkeletonQueryWizard {
 
       this.fileName = await this.determineNextFileName();
       await qlPackGenerator.createExampleQlFile(this.fileName);
-    } catch (e: unknown) {
+    } catch (e) {
       void this.app.logger.log(
         `Could not create query example file: ${getErrorMessage(e)}`,
       );
@@ -342,7 +342,7 @@ export class SkeletonQueryWizard {
       void withProgress(async (progress) => {
         try {
           await this.downloadDatabase(progress);
-        } catch (e: unknown) {
+        } catch (e) {
           if (e instanceof UserCancellationException) {
             return;
           }

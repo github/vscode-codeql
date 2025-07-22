@@ -37,7 +37,7 @@ describe("errorMessage", () => {
       myRealFunction();
 
       fail("Expected an error to be thrown");
-    } catch (e: unknown) {
+    } catch (e) {
       if (!(e instanceof Error)) {
         throw new Error("Expected an Error to be thrown");
       }

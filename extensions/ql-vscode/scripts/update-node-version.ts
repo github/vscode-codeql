@@ -93,7 +93,7 @@ async function updateNodeVersion() {
 
       // If it exists, we can break out of this loop
       break;
-    } catch (e: unknown) {
+    } catch (e) {
       if (!isExecError(e)) {
         throw e;
       }

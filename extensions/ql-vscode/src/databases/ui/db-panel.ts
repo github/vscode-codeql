@@ -432,7 +432,7 @@ export class DbPanel extends DisposableObject {
     try {
       // This will also validate that the controller repository is valid
       await getControllerRepo(this.app.credentials);
-    } catch (e: unknown) {
+    } catch (e) {
       if (e instanceof UserCancellationException) {
         return;
       }

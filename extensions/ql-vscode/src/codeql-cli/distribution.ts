@@ -336,7 +336,7 @@ class ExtensionSpecificDistributionManager {
     const distributionStatePath = this.getDistributionStatePath();
     try {
       this.distributionState = await readJson(distributionStatePath);
-    } catch (e: unknown) {
+    } catch (e) {
       if (isIOError(e) && e.code === "ENOENT") {
         // If the file doesn't exist, that just means we need to create it
 

@@ -113,7 +113,7 @@ export class SummaryLanguageSupport extends DisposableObject {
         const sourceMapText = await readFile(mapPath, "utf-8");
         const rawMap: RawSourceMap = JSON.parse(sourceMapText);
         this.sourceMap = await new SourceMapConsumer(rawMap);
-      } catch (e: unknown) {
+      } catch (e) {
         // Error reading sourcemap. Pretend there was no sourcemap.
         void extLogger.log(
           `Error reading sourcemap file '${mapPath}': ${getErrorMessage(e)}`,

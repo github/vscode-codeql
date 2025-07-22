@@ -45,7 +45,7 @@ export async function expandShortPaths(
 
   try {
     return await expandShortPathNative(absoluteShortPath, logger);
-  } catch (e: unknown) {
+  } catch (e) {
     void logger.log(
       `Failed to expand short path using native method: ${getErrorMessage(e)}`,
     );
