@@ -181,7 +181,7 @@ export default tseslint.config(
     },
   },
   {
-    files: [".storybook/**/*"],
+    files: [".storybook/**/*", "src/stories/**/*"],
     languageOptions: {
       parserOptions: {
         project: resolve(__dirname, ".storybook/tsconfig.json"),

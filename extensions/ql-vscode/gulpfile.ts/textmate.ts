@@ -23,7 +23,6 @@ function replaceReferencesWithStrings(
   replacements: Map<string, string>,
 ): string {
   let result = value;
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const original = result;
     for (const key of Array.from(replacements.keys())) {
