@@ -51,7 +51,7 @@ import type { QueryRunner } from "../query-server";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import type { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
-import { HistoryTreeDataProvider } from "./history-tree-data-provider";
+import { HistoryTreeDataProvider, SortOrder } from "./history-tree-data-provider";
 import type { QueryHistoryDirs } from "./query-history-dirs";
 import type { QueryHistoryCommands } from "../common/commands";
 import type { App } from "../common/app";
@@ -97,15 +97,6 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
 ////////////////////////////////////////////////////////////////////////////////////
 
 `;
-
-enum SortOrder {
-  NameAsc = "NameAsc",
-  NameDesc = "NameDesc",
-  DateAsc = "DateAsc",
-  DateDesc = "DateDesc",
-  CountAsc = "CountAsc",
-  CountDesc = "CountDesc",
-}
 
 /**
  * Number of milliseconds two clicks have to arrive apart to be
