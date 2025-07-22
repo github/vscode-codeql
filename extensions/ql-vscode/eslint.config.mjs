@@ -157,7 +157,7 @@ export default tseslint.config(
     },
   },
   {
-    files: [".storybook/**/*.tsx"],
+    files: [".storybook/**/*"],
     languageOptions: {
       parserOptions: {
         project: resolve(__dirname, ".storybook/tsconfig.json"),
