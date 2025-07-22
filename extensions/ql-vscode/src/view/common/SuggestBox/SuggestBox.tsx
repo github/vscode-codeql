@@ -201,7 +201,7 @@ export const SuggestBox = <
 
   return (
     // Disabled because the div is used to stop click propagation, it's not a button
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+
     <div onClick={stopClickPropagation}>
       {renderInputComponent(
         getReferenceProps({

@@ -56,7 +56,8 @@ import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
-import { QueryLanguage, tryGetQueryLanguage } from "../common/query-language";
+import type { QueryLanguage } from "../common/query-language";
+import { tryGetQueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 import type { ExtensionApp } from "../common/vscode/extension-app";
 import type { DatabaseFetcher } from "../databases/database-fetcher";
@@ -184,7 +185,7 @@ export class LocalQueries extends DisposableObject {
   private async runQueries(fileURIs: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
-        const maxQueryCount = MAX_QUERIES.getValue() as number;
+        const maxQueryCount = MAX_QUERIES.getValue();
         const [files, dirFound] = await gatherQlFiles(
           fileURIs.map((uri) => uri.fsPath),
         );

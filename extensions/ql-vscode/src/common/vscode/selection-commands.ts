@@ -18,7 +18,7 @@ type SelectionCommand<T extends NotArray> = CreateSupertypeOf<
   TreeViewContextMultiSelectionCommandFunction<T> &
     TreeViewContextSingleSelectionCommandFunction<T> &
     ExplorerSelectionCommandFunction<T>,
-  (singleItem: T, multiSelect?: T[] | undefined) => Promise<void>
+  (singleItem: T, multiSelect?: T[]) => Promise<void>
 >;
 
 export function createSingleSelectionCommand<T extends NotArray>(

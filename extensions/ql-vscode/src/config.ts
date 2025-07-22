@@ -406,7 +406,7 @@ export class QueryServerConfigListener
   ): Promise<QueryServerConfigListener> {
     const codeQlPath =
       await distributionManager.getCodeQlPathWithoutVersionCheck();
-    const config = new QueryServerConfigListener(codeQlPath!);
+    const config = new QueryServerConfigListener(codeQlPath);
     if (distributionManager.onDidChangeDistribution) {
       config.push(
         distributionManager.onDidChangeDistribution(async () => {

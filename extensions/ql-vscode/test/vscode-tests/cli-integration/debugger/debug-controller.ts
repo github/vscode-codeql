@@ -84,7 +84,7 @@ class Tracker implements DebugAdapterTracker {
           started: this.started!,
           results: {
             id: this.started!.id,
-            results: new Map([[this.queryPath!, this.completed!]]),
+            results: new Map([[this.queryPath!, this.completed]]),
             outputDir: new QueryOutputDir(this.started!.outputDir),
             queryTargets: [
               {

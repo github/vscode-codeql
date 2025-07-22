@@ -159,7 +159,7 @@ describe("AstBuilder", () => {
       edges: 1,
       graphProperties: 2,
     };
-    const index = mapper[resultSet] as number;
+    const index = mapper[resultSet];
     if (index >= 0 && index <= 2) {
       return JSON.parse(
         readFileSync(

@@ -89,7 +89,7 @@ describe("SARIF processing", () => {
         const rule = tryGetRule(sarifRun, result);
 
         expect(rule).toBeTruthy();
-        expect(rule!.id).toBe(result!.rule!.id);
+        expect(rule!.id).toBe(result.rule!.id);
       });
     });
 
@@ -455,7 +455,7 @@ describe("SARIF processing", () => {
 
     it("should return errors for results that have no message", () => {
       const sarif = buildValidSarifLog();
-      sarif.runs![0]!.results![0]!.message.text = undefined;
+      sarif.runs[0].results![0].message.text = undefined;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
@@ -466,7 +466,7 @@ describe("SARIF processing", () => {
 
     it("should not return errors for result locations with no snippet", () => {
       const sarif = buildValidSarifLog();
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion!.snippet =
+      sarif.runs[0].results![0].locations![0].physicalLocation!.contextRegion!.snippet =
         undefined;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
@@ -486,7 +486,7 @@ describe("SARIF processing", () => {
 
     it("should use highlightedRegion for result locations with no contextRegion", () => {
       const sarif = buildValidSarifLog();
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion =
+      sarif.runs[0].results![0].locations![0].physicalLocation!.contextRegion =
         undefined;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
@@ -506,7 +506,7 @@ describe("SARIF processing", () => {
 
     it("should not return errors for result locations with no region", () => {
       const sarif = buildValidSarifLog();
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.region =
+      sarif.runs[0].results![0].locations![0].physicalLocation!.region =
         undefined;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
@@ -518,7 +518,7 @@ describe("SARIF processing", () => {
 
     it("should return errors for result locations with no physical location", () => {
       const sarif = buildValidSarifLog();
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.artifactLocation =
+      sarif.runs[0].results![0].locations![0].physicalLocation!.artifactLocation =
         undefined;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
@@ -642,8 +642,8 @@ describe("SARIF processing", () => {
       const sarif = buildValidSarifLog();
       const messageText =
         "This shell command depends on an uncontrolled [absolute path](1).";
-      sarif.runs![0]!.results![0]!.message!.text = messageText;
-      sarif.runs![0]!.results![0].relatedLocations = [
+      sarif.runs[0].results![0].message.text = messageText;
+      sarif.runs[0].results![0].relatedLocations = [
         {
           id: 1,
           physicalLocation: {
@@ -694,7 +694,7 @@ describe("SARIF processing", () => {
       const sarif = buildValidSarifLog();
       // Build string of 10 kilobytes
       const snippet = new Array(10 * 1024).fill("a").join("");
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion!.snippet =
+      sarif.runs[0].results![0].locations![0].physicalLocation!.contextRegion!.snippet =
         {
           text: snippet,
         };
@@ -712,11 +712,11 @@ describe("SARIF processing", () => {
       const sarif = buildValidSarifLog();
       // Build string of 10 kilobytes
       const snippet = new Array(10 * 1024).fill("a").join("");
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion!.snippet =
+      sarif.runs[0].results![0].locations![0].physicalLocation!.contextRegion!.snippet =
         {
           text: snippet,
         };
-      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.region!.endColumn = 1000;
+      sarif.runs[0].results![0].locations![0].physicalLocation!.region!.endColumn = 1000;
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
@@ -729,8 +729,8 @@ describe("SARIF processing", () => {
 
     it("should be able to handle when a location has no uri", () => {
       const sarif = buildValidSarifLog();
-      sarif.runs![0].results![0].message.text = "message [String](1)";
-      sarif.runs![0].results![0].relatedLocations = [
+      sarif.runs[0].results![0].message.text = "message [String](1)";
+      sarif.runs[0].results![0].relatedLocations = [
         {
           id: 1,
           physicalLocation: {

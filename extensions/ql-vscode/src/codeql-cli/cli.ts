@@ -1834,7 +1834,7 @@ export function spawnServer(
   }
 
   let lastStdout: string | Buffer | undefined = undefined;
-  child.stdout!.on("data", (data) => {
+  child.stdout.on("data", (data) => {
     lastStdout = data;
   });
   // Set up event listeners.
@@ -1853,9 +1853,9 @@ export function spawnServer(
       void logger.log(`Last stdout was "${lastStdout.toString()}"`);
     }
   });
-  child.stderr!.on("data", stderrListener);
+  child.stderr.on("data", stderrListener);
   if (stdoutListener !== undefined) {
-    child.stdout!.on("data", stdoutListener);
+    child.stdout.on("data", stdoutListener);
   }
 
   if (progressReporter !== undefined) {
