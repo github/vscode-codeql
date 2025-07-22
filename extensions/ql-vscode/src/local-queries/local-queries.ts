@@ -56,7 +56,7 @@ import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
-import { tryGetQueryLanguage } from "../common/query-language";
+import { QueryLanguage, tryGetQueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 import type { ExtensionApp } from "../common/vscode/extension-app";
 import type { DatabaseFetcher } from "../databases/database-fetcher";
@@ -621,7 +621,7 @@ export class LocalQueries extends DisposableObject {
     const queryLanguage = await findLanguage(this.cliServer, uri);
     if (queryLanguage) {
       filteredDBs = this.databaseManager.databaseItems.filter(
-        (db) => db.language === queryLanguage,
+        (db) => (db.language as QueryLanguage) === queryLanguage,
       );
       if (filteredDBs.length === 0) {
         void showAndLogErrorMessage(

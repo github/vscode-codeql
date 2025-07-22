@@ -12,7 +12,7 @@ export enum QueryLanguage {
 }
 
 export function getLanguageDisplayName(language: string): string {
-  switch (language) {
+  switch (language as QueryLanguage) {
     case QueryLanguage.Actions:
       return "Actions";
     case QueryLanguage.CSharp:
