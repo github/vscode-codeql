@@ -66,6 +66,21 @@ export default tseslint.config(
       "import/no-cycle": "error",
       // Never allow extensions in import paths, except for JSON files where they are required.
       "import/extensions": ["error", "never", { json: "always" }],
+
+      // Rules disabled during eslint 9 migration
+      "github/filenames-match-regex": "off",
+      "@typescript-eslint/restrict-template-expressions": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/restrict-plus-operands": "off",
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/no-misused-promises": "off",
+      "@typescript-eslint/no-base-to-string": "off",
+      "@typescript-eslint/no-array-delete": "off",
     },
     settings: {
       "import/parsers": {
@@ -157,6 +172,12 @@ export default tseslint.config(
     },
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+
+      // Rules disabled during eslint 9 migration
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/unbound-method": "off",
     },
   },
   {
@@ -170,6 +191,11 @@ export default tseslint.config(
       // Storybook doesn't use the automatic JSX runtime in the addon yet, so we need to allow
       // `React` to be imported.
       "import/no-namespace": ["error", { ignore: ["react"] }],
+
+      // Rules disabled during eslint 9 migration
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "storybook/no-renderer-packages": "off",
+      "storybook/story-exports": "off",
     },
   },
   eslintPrettierRecommended,
