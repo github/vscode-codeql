@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add new command "CodeQL: Trim Overlay Base Cache" that returns a database to the state prior to overlay evaluation, leaving only base predicates and types that may later be referenced during overlay evaluation. [#4082](https://github.com/github/vscode-codeql/pull/4082)
+
 ## 1.17.4 - 10 July 2025
 
 - Fix variant analysis pack creation on some Windows systems [#4068](https://github.com/github/vscode-codeql/pull/4068)
