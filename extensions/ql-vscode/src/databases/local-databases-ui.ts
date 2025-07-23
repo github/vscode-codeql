@@ -505,7 +505,7 @@ export class DatabaseUI extends DisposableObject {
   ): Promise<void> {
     try {
       await this.chooseAndSetDatabase(false, progress);
-    } catch (e: unknown) {
+    } catch (e) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
         this.app.telemetry,

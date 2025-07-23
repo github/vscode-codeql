@@ -115,7 +115,7 @@ export async function pickExtensionPack(
         existingExtensionPackPaths[0],
         databaseItem.language,
       );
-    } catch (e: unknown) {
+    } catch (e) {
       void showAndLogErrorMessage(
         logger,
         `Could not read extension pack ${formatPackName(packName)}`,

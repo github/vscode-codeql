@@ -131,7 +131,7 @@ async function extractSourceMap() {
               resolve(sourceMapsDirectory, `${basename(file)}.map`),
             );
             rawSourceMaps.set(file, rawSourceMap);
-          } catch (e: unknown) {
+          } catch (e) {
             // If the file is not found, we will not decode it and not try reading this source map again
             if (e instanceof Error && "code" in e && e.code === "ENOENT") {
               rawSourceMaps.set(file, null);

@@ -425,7 +425,7 @@ export class VariantAnalysisManager
         this.app.credentials,
         variantAnalysisSubmission,
       );
-    } catch (e: unknown) {
+    } catch (e) {
       // If the error is handled by the handleRequestError function, we don't need to throw
       if (
         e instanceof RequestError &&

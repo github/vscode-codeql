@@ -455,7 +455,7 @@ export class ModelEditorView extends AbstractWebview<
         this.app.logger,
       );
       this.modelingStore.setModeledMethods(this.databaseItem, modeledMethods);
-    } catch (e: unknown) {
+    } catch (e) {
       void showAndLogErrorMessage(
         this.app.logger,
         `Unable to read data extension YAML: ${getErrorMessage(e)}`,
@@ -561,7 +561,7 @@ export class ModelEditorView extends AbstractWebview<
             t: "setAccessPathSuggestions",
             accessPathSuggestions: options,
           });
-        } catch (e: unknown) {
+        } catch (e) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
             this.app.telemetry,
@@ -645,7 +645,7 @@ export class ModelEditorView extends AbstractWebview<
             progress,
             token: this.cancellationTokenSource.token,
           });
-        } catch (e: unknown) {
+        } catch (e) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
             this.app.telemetry,
@@ -733,7 +733,7 @@ export class ModelEditorView extends AbstractWebview<
             progress,
             token: this.cancellationTokenSource.token,
           });
-        } catch (e: unknown) {
+        } catch (e) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
             this.app.telemetry,
