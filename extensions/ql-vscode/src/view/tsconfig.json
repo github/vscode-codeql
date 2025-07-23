@@ -14,12 +14,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "plugins": [
-      {
-        "name": "typescript-plugin-css-modules"
-      }
-    ]
+    "skipLibCheck": true
   },
   "exclude": ["node_modules"]
 }
