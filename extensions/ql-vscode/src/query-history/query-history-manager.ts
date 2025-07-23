@@ -51,7 +51,10 @@ import type { QueryRunner } from "../query-server";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import type { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
-import { HistoryTreeDataProvider, SortOrder } from "./history-tree-data-provider";
+import {
+  HistoryTreeDataProvider,
+  SortOrder,
+} from "./history-tree-data-provider";
 import type { QueryHistoryDirs } from "./query-history-dirs";
 import type { QueryHistoryCommands } from "../common/commands";
 import type { App } from "../common/app";
