@@ -463,6 +463,25 @@ export async function activate(
       );
       unsupportedWarningShown = true;
     });
+
+    // Expose the CodeQL CLI features to the extension context under `codeQL.cliFeatures.*`.
+    let cliFeatures: { [feature: string]: boolean | undefined } = {};
+    codeQlExtension.cliServer.addVersionChangedListener(async (ver) => {
+      for (const feat of Object.keys(cliFeatures)) {
+        cliFeatures[feat] = false;
+      }
+      cliFeatures = {
+        ...cliFeatures,
+        ...(ver?.features ?? {}),
+      };
+      for (const feat of Object.keys(cliFeatures)) {
+        await app.commands.execute(
+          "setContext",
+          `codeQL.cliFeatures.${feat}`,
+          cliFeatures[feat] ?? false,
+        );
+      }
+    });
   }
 
   return codeQlExtension;
