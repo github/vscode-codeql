@@ -3,9 +3,12 @@ import { dirSync } from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import type { RunQueryParams } from "../../../../src/query-server/messages";
 import {
+  clearCache,
   QueryResultType,
   registerDatabases,
   runQuery,
+  trimCache,
+  trimCacheWithMode,
 } from "../../../../src/query-server/messages";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type { BqrsCellValue } from "../../../../src/common/bqrs-cli-types";
@@ -197,6 +200,59 @@ describeWithCodeQL()("using the query server", () => {
           queryTestCase.expectedResultSets[name],
         );
       }
+    });
+
+    it("should invoke codeQL.trimOverlayBaseCache command when queryServerTrimCacheWithMode is enabled", async () => {
+      const features = (await cliServer.getFeatures()) as {
+        [feature: string]: boolean | undefined;
+      };
+
+      // Register the database first (if not already done)
+      await qs.sendRequest(registerDatabases, { databases: [db] });
+
+      try {
+        // Send the trimCacheWithMode request
+        const params = {
+          db,
+          mode: "overlay",
+        };
+        const result = await qs.sendRequest(
+          trimCacheWithMode,
+          params,
+          token,
+          () => {},
+        );
+
+        // The result should contain a deletionMessage string
+        expect(result).toHaveProperty("deletionMessage");
+        expect(typeof result.deletionMessage).toBe("string");
+        expect(features.queryServerTrimCacheWithMode).toBeTruthy();
+      } catch (e) {
+        expect(features.queryServerTrimCacheWithMode).toBeFalsy();
+        expect((e as Error).message).toContain(
+          "Unsupported request method: evaluation/trimCacheWithMode",
+        );
+      }
+    });
+
+    it("should invoke trimCache command and receive a deletionMessage", async () => {
+      // Register the database first (if not already done)
+      await qs.sendRequest(registerDatabases, { databases: [db] });
+
+      const params = { db };
+      const result = await qs.sendRequest(trimCache, params, token, () => {});
+      expect(result).toHaveProperty("deletionMessage");
+      expect(typeof result.deletionMessage).toBe("string");
+    });
+
+    it("should invoke clearCache command and receive a deletionMessage", async () => {
+      // Register the database first (if not already done)
+      await qs.sendRequest(registerDatabases, { databases: [db] });
+
+      const params = { db, dryRun: false };
+      const result = await qs.sendRequest(clearCache, params, token, () => {});
+      expect(result).toHaveProperty("deletionMessage");
+      expect(typeof result.deletionMessage).toBe("string");
     });
   }
 });

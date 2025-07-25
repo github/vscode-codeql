@@ -221,6 +221,7 @@ export type LocalDatabasesCommands = {
   "codeQL.upgradeCurrentDatabase": () => Promise<void>;
   "codeQL.clearCache": () => Promise<void>;
   "codeQL.trimCache": () => Promise<void>;
+  "codeQL.trimOverlayBaseCache": () => Promise<void>;
 
   // Explorer context menu
   "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;

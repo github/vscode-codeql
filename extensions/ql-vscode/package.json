@@ -791,6 +791,10 @@
         "title": "CodeQL: Trim Cache"
       },
       {
+        "command": "codeQL.trimOverlayBaseCache",
+        "title": "CodeQL: Trim Overlay Base Cache"
+      },
+      {
         "command": "codeQL.installPackDependencies",
         "title": "CodeQL: Install Pack Dependencies"
       },
@@ -1817,6 +1821,10 @@
         },
         {
           "command": "codeQL.trimCache"
+        },
+        {
+          "command": "codeQL.trimOverlayBaseCache",
+          "when": "codeQL.cliFeatures.queryServerTrimCacheWithMode"
         }
       ],
       "editor/context": [
