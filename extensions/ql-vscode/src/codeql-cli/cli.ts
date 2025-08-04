@@ -19,6 +19,7 @@ import type { CliConfig } from "../config";
 import type { DistributionProvider } from "./distribution";
 import { FindDistributionResultKind } from "./distribution";
 import {
+  asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
@@ -851,7 +852,7 @@ export class CodeQLCliServer implements Disposable {
             silent,
           ).then(resolve, reject);
         } catch (err) {
-          reject(err);
+          reject(asError(err));
         }
       };
       // If the server is not running a command, then run the given command immediately,

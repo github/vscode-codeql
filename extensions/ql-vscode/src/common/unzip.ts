@@ -5,6 +5,7 @@ import { Transform } from "stream";
 import { dirname, join } from "path";
 import type { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
+import { asError } from "./helpers-pure";
 
 // We can't use promisify because it picks up the wrong overload.
 export function openZip(
@@ -47,7 +48,7 @@ export function readZipEntries(zipFile: ZipFile): Promise<ZipEntry[]> {
     });
 
     zipFile.on("error", (err) => {
-      reject(err);
+      reject(asError(err));
     });
   });
 }
