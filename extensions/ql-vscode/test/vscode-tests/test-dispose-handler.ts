@@ -1,11 +1,11 @@
 import type { Disposable } from "vscode";
 import { DisposableObject } from "../../src/common/disposable-object";
 
-export function testDisposeHandler(disposable: any & Disposable) {
+export function testDisposeHandler(disposable: Disposable) {
   if (
-    disposable.onDidExpandElement &&
-    disposable.onDidCollapseElement &&
-    disposable.reveal
+    (disposable as any).onDidExpandElement &&
+    (disposable as any).onDidCollapseElement &&
+    (disposable as any).reveal
   ) {
     // This looks like a treeViewer. Don't dispose
     return;
