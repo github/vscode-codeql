@@ -185,7 +185,7 @@ export class LocalQueries extends DisposableObject {
   private async runQueries(fileURIs: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
-        const maxQueryCount = MAX_QUERIES.getValue();
+        const maxQueryCount = MAX_QUERIES.getValue<number>();
         const [files, dirFound] = await gatherQlFiles(
           fileURIs.map((uri) => uri.fsPath),
         );
