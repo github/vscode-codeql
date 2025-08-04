@@ -73,6 +73,7 @@ async function readRequestFiles(
     ) {
       request.response.body = await readFile(
         join(scenarioDirPath, request.response.body.substring(5)),
+        "utf8",
       );
     }
 
