@@ -200,7 +200,6 @@ export const SuggestBox = <
   }, [disabled]);
 
   return (
-    // Disabled because the div is used to stop click propagation, it's not a button
 
     <div onClick={stopClickPropagation}>
       {renderInputComponent(
