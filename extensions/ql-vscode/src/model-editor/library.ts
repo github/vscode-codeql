@@ -32,7 +32,7 @@ export function parseLibraryFilename(filename: string): Library {
   semverRegex.lastIndex = 0;
 
   // Find the last occurence of the regex within the library name
-  // eslint-disable-next-line no-constant-condition
+
   while (true) {
     const currentMatch = semverRegex.exec(libraryName);
     if (currentMatch === null) {

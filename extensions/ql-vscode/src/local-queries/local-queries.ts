@@ -56,6 +56,7 @@ import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { QueryLanguage } from "../common/query-language";
 import { tryGetQueryLanguage } from "../common/query-language";
 import type { LanguageContextStore } from "../language-context-store";
 import type { ExtensionApp } from "../common/vscode/extension-app";
@@ -184,7 +185,7 @@ export class LocalQueries extends DisposableObject {
   private async runQueries(fileURIs: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
-        const maxQueryCount = MAX_QUERIES.getValue() as number;
+        const maxQueryCount = MAX_QUERIES.getValue<number>();
         const [files, dirFound] = await gatherQlFiles(
           fileURIs.map((uri) => uri.fsPath),
         );
@@ -621,7 +622,7 @@ export class LocalQueries extends DisposableObject {
     const queryLanguage = await findLanguage(this.cliServer, uri);
     if (queryLanguage) {
       filteredDBs = this.databaseManager.databaseItems.filter(
-        (db) => db.language === queryLanguage,
+        (db) => (db.language as QueryLanguage) === queryLanguage,
       );
       if (filteredDBs.length === 0) {
         void showAndLogErrorMessage(

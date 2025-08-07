@@ -612,7 +612,7 @@ export class DatabaseFetcher {
   private async checkForFailingResponse(
     response: Response,
     errorMessage: string,
-  ): Promise<Response | never> {
+  ): Promise<Response> {
     if (response.ok) {
       return response;
     }

@@ -16,24 +16,22 @@ export const useOpenKey = <RT extends ReferenceType = ReferenceType>(
 ): ElementProps => {
   const { open, onOpenChange } = context;
 
-  const openOnOpenKey = useEffectEvent(
-    (event: KeyboardEvent<Element> | KeyboardEvent) => {
-      if (open) {
-        return;
-      }
+  const openOnOpenKey = useEffectEvent((event: KeyboardEvent<Element>) => {
+    if (open) {
+      return;
+    }
 
-      if (
-        event.key === " " &&
-        event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        !event.shiftKey
-      ) {
-        event.preventDefault();
-        onOpenChange(true, isReactEvent(event) ? event.nativeEvent : event);
-      }
-    },
-  );
+    if (
+      event.key === " " &&
+      event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey &&
+      !event.shiftKey
+    ) {
+      event.preventDefault();
+      onOpenChange(true, isReactEvent(event) ? event.nativeEvent : event);
+    }
+  });
 
   return useMemo((): ElementProps => {
     return {

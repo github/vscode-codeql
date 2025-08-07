@@ -202,7 +202,7 @@ class JoinOrderScanner {
           const metric = computeJoinOrderBadness(
             maxTupleCount,
             maxDependentPredicateSize,
-            resultSize!,
+            resultSize,
           );
           if (metric >= this.warningThreshold) {
             const message = `'${event.predicateName}@${event.raHash.substring(

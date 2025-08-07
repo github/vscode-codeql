@@ -76,15 +76,11 @@ function mapVariantAnalysis(
   let skippedRepos: VariantAnalysisSkippedRepositories = {};
 
   if (response.scanned_repositories) {
-    scannedRepos = mapScannedRepositories(
-      response.scanned_repositories as ApiVariantAnalysisScannedRepository[],
-    );
+    scannedRepos = mapScannedRepositories(response.scanned_repositories);
   }
 
   if (response.skipped_repositories) {
-    skippedRepos = mapSkippedRepositories(
-      response.skipped_repositories as ApiVariantAnalysisSkippedRepositories,
-    );
+    skippedRepos = mapSkippedRepositories(response.skipped_repositories);
   }
 
   // Maintain the canceling status if we are still canceling.

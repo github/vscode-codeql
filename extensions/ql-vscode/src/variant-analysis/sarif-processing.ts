@@ -67,7 +67,7 @@ function extractResultAlerts(
   const rule = tryGetRule(run, result);
   const severity = tryGetSeverity(run, result, rule) || defaultSeverity;
   const codeFlows = getCodeFlows(result, fileLinkPrefix);
-  const shortDescription = getShortDescription(rule, message!);
+  const shortDescription = getShortDescription(rule, message);
 
   for (const location of result.locations ?? []) {
     const physicalLocation = location.physicalLocation!;
@@ -266,7 +266,7 @@ function getCodeFlows(result: Result, fileLinkPrefix: string): CodeFlow[] {
       for (const threadFlow of codeFlow.threadFlows) {
         for (const threadFlowLocation of threadFlow.locations) {
           const physicalLocation =
-            threadFlowLocation!.location!.physicalLocation!;
+            threadFlowLocation.location!.physicalLocation!;
           const filePath = tryGetFilePath(physicalLocation);
           const codeSnippet = getCodeSnippet(
             physicalLocation.contextRegion,
@@ -299,7 +299,7 @@ function getCodeFlows(result: Result, fileLinkPrefix: string): CodeFlow[] {
 function getMessage(result: Result, fileLinkPrefix: string): AnalysisMessage {
   const tokens: AnalysisMessageToken[] = [];
 
-  const messageText = result.message!.text!;
+  const messageText = result.message.text!;
   const messageParts = parseSarifPlainTextMessage(messageText);
 
   for (const messagePart of messageParts) {

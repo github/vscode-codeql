@@ -119,7 +119,6 @@ async function downloadWithProgress(url: string, filePath: string) {
   let numBytesDownloaded = 0;
   let lastMessage = 0;
 
-  // eslint-disable-next-line no-constant-condition -- This is a loop that reads from a stream
   while (true) {
     const { done, value } = await body.read();
     if (done) {

@@ -133,7 +133,7 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
 
     const locLinks: Location[] = [];
     for (const link of fileLinks) {
-      if (link.targetRange!.contains(position)) {
+      if (link.targetRange.contains(position)) {
         locLinks.push({
           range: link.originSelectionRange!,
           uri: link.originUri,

@@ -79,7 +79,7 @@ async function spawnLanguageServer(
           languageServerLogger.log(data.toString(), { trailingNewline: false }),
         progressReporter,
       );
-      return { writer: child.stdin!, reader: child.stdout! };
+      return { writer: child.stdin, reader: child.stdout };
     },
   );
 }

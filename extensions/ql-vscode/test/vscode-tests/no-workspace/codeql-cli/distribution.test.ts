@@ -429,7 +429,7 @@ describe("Distribution updates", () => {
           async () => {
             const file = await readFile(codeqlReleaseZipPath);
 
-            return HttpResponse.arrayBuffer(file, {
+            return HttpResponse.arrayBuffer(file.buffer, {
               headers: {
                 "Content-Type": "application/octet-stream",
               },

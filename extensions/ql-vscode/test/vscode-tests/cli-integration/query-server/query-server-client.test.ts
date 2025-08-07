@@ -192,11 +192,11 @@ describeWithCodeQL()("using the query server", () => {
     it(`should have correct results for query ${queryName}`, async () => {
       await parsedResults.done();
       expect(actualResultSets).not.toEqual({});
-      expect(Object.keys(actualResultSets!).sort()).toEqual(
+      expect(Object.keys(actualResultSets).sort()).toEqual(
         Object.keys(queryTestCase.expectedResultSets).sort(),
       );
       for (const name in queryTestCase.expectedResultSets) {
-        expect(actualResultSets![name]).toEqual(
+        expect(actualResultSets[name]).toEqual(
           queryTestCase.expectedResultSets[name],
         );
       }

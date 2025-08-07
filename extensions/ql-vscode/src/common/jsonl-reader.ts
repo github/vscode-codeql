@@ -1,6 +1,7 @@
 import { stat } from "fs/promises";
 import { createReadStream } from "fs-extra";
 import type { BaseLogger } from "./logging";
+import { asError } from "./helpers-pure";
 
 const doubleLineBreakRegexp = /\n\r?\n/;
 
@@ -41,7 +42,7 @@ export async function readJsonlFile<T>(
           stream.resume();
         } catch (e) {
           stream.destroy();
-          reject(e);
+          reject(asError(e));
         }
       }
     });
@@ -53,7 +54,7 @@ export async function readJsonlFile<T>(
         void logger?.log(`Finished parsing ${path}`);
         resolve();
       } catch (e) {
-        reject(e);
+        reject(asError(e));
       }
     });
     stream.on("error", reject);

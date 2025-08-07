@@ -402,11 +402,7 @@ describe("MethodsUsageDataProvider", () => {
             modifiedMethodSignatures,
           );
           expect(
-            dataProvider
-              .getChildren()
-              .map(
-                (item) => (item as MethodsUsageTreeViewItem).method.signature,
-              ),
+            dataProvider.getChildren().map((item) => item.method.signature),
           ).toEqual(["b.a.C.a()", "b.a.C.b()", "b.a.C.d()", "a.b.C.d()"]);
         });
       });

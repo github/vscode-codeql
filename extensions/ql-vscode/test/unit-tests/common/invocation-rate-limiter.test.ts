@@ -39,7 +39,7 @@ describe("Invocation rate limiter", () => {
      * value (`undefined`) with the given key.
      * @return The stored value or the defaultValue.
      */
-    get<T>(key: string, defaultValue?: T): T {
+    get<T>(key: string, defaultValue?: T): T | undefined {
       return this.map.has(key) ? this.map.get(key) : defaultValue;
     }
 

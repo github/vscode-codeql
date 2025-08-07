@@ -605,7 +605,7 @@ export class ModelEditorView extends AbstractWebview<
             return;
           }
 
-          if (addedDatabase.language !== this.language) {
+          if ((addedDatabase.language as QueryLanguage) !== this.language) {
             void showAndLogErrorMessage(
               this.app.logger,
               `The selected database is for ${addedDatabase.language}, but the current database is for ${this.language}.`,

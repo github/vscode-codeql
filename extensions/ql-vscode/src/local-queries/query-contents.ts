@@ -15,7 +15,7 @@ import { dbSchemeToLanguage } from "../common/query-language";
  */
 export function getInitialQueryContents(language: string, dbscheme: string) {
   if (!language) {
-    const dbschemeBase = basename(dbscheme) as keyof typeof dbSchemeToLanguage;
+    const dbschemeBase = basename(dbscheme);
     language = dbSchemeToLanguage[dbschemeBase];
   }
 

@@ -10,7 +10,7 @@ async function showQlDocument(name: string): Promise<TextDocument> {
   const folderPath = workspace.workspaceFolders![0].uri.fsPath;
   const documentPath = resolve(folderPath, name);
   const document = await workspace.openTextDocument(documentPath);
-  await window.showTextDocument(document!);
+  await window.showTextDocument(document);
   return document;
 }
 

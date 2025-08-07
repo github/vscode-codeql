@@ -346,9 +346,9 @@ class ExtensionSpecificDistributionManager {
               "distributionFolderIndex",
               0,
             ) ?? 0,
-          release: (this.extensionContext.globalState.get(
-            "distributionRelease",
-          ) ?? null) as Release | null,
+          release:
+            this.extensionContext.globalState.get("distributionRelease") ??
+            null,
         };
 
         // This may result in a race condition, but when this happens both processes should write the same file.

@@ -42,7 +42,7 @@ import {
   AUTOFIX_PATH,
   AUTOFIX_MODEL,
 } from "../config";
-import { getErrorMessage } from "../common/helpers-pure";
+import { asError, getErrorMessage } from "../common/helpers-pure";
 import { createTimeoutSignal } from "../common/fetch-stream";
 import { unzipToDirectoryConcurrently } from "../common/unzip-concurrently";
 import { reportUnzipProgress } from "../common/vscode/unzip-progress";
@@ -819,7 +819,7 @@ function execAutofix(
         }
       });
     } catch (e) {
-      reject(e);
+      reject(asError(e));
     }
   });
 }

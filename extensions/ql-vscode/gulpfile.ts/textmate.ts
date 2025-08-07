@@ -23,7 +23,6 @@ function replaceReferencesWithStrings(
   replacements: Map<string, string>,
 ): string {
   let result = value;
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const original = result;
     for (const key of Array.from(replacements.keys())) {
@@ -67,8 +66,7 @@ function getNodeMatchText(rule: Pattern): string {
   } else if (rule.patterns !== undefined) {
     const patterns: string[] = [];
     // For a list of patterns, use the disjunction of those patterns.
-    for (const patternIndex in rule.patterns) {
-      const pattern = rule.patterns[patternIndex];
+    for (const pattern of rule.patterns) {
       if (pattern.include !== null) {
         patterns.push(`(?${pattern.include})`);
       }
@@ -181,11 +179,11 @@ function expandPatternMatchProperties<T>(
     const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
     rule[key] = patterns.map((p) => `((?${p}))`).join("|") as T;
     const captures: Pattern["captures"] = {};
-    for (const patternIndex in patterns) {
-      captures[(Number(patternIndex) + 1).toString()] = {
+    for (const [captureIndex, capture] of patterns.entries()) {
+      captures[(Number(captureIndex) + 1).toString()] = {
         patterns: [
           {
-            include: patterns[patternIndex],
+            include: capture,
           },
         ],
       };

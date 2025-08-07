@@ -34,7 +34,7 @@ export interface VariantAnalysis {
 export function parseVariantAnalysisQueryLanguage(
   language: string,
 ): QueryLanguage | undefined {
-  return Object.values(QueryLanguage).find((x) => x === language);
+  return Object.values(QueryLanguage).find((x) => x.toString() === language);
 }
 
 export enum VariantAnalysisStatus {
