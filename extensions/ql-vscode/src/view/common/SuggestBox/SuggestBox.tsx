@@ -200,7 +200,6 @@ export const SuggestBox = <
   }, [disabled]);
 
   return (
-
     <div onClick={stopClickPropagation}>
       {renderInputComponent(
         getReferenceProps({
