@@ -304,7 +304,7 @@ export class QueryServerClient extends DisposableObject {
     }
   }
 
-  public dispose(disposeHandler?: DisposeHandler | undefined): void {
+  public dispose(disposeHandler?: DisposeHandler): void {
     this.progressCallbacks = {};
     this.stopQueryServer();
     super.dispose(disposeHandler);

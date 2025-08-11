@@ -71,9 +71,10 @@ async function readRequestFiles(
       typeof request.response.body === "string" &&
       request.response.body.startsWith("file:")
     ) {
-      request.response.body = await readFile(
+      const buffer = await readFile(
         join(scenarioDirPath, request.response.body.substring(5)),
       );
+      request.response.body = buffer.buffer;
     }
 
     requests.push(request);

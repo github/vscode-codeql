@@ -17,7 +17,7 @@ class MockMemento<T> implements Memento {
 
   public get<T>(key: string): T | undefined;
   public get<T>(key: string, defaultValue: T): T;
-  public get(key: any, defaultValue?: any): T | T | undefined {
+  public get(key: any, defaultValue?: any): T | undefined {
     return this.map.get(key) || defaultValue;
   }
 
