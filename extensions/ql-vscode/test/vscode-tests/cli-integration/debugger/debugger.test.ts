@@ -157,12 +157,6 @@ describeWithCodeQL()("Debugger", () => {
 
   it("should run a quick evaluation with a bigint-valued result column", async () => {
     await withDebugController(appCommands, async (controller) => {
-      const semver = await cli.getVersion();
-      if (semver.compare("2.18.4") < 0) {
-        // Skip this test if the CLI version is too old to support BigInt
-        return;
-      }
-
       await selectForQuickEval(quickEvalBigIntQueryPath, 4, 23, 4, 37);
 
       // Don't specify a query path, so we'll default to the active document ("QuickEvalBigIntQuery.ql")
