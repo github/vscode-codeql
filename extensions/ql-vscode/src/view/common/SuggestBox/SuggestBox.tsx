@@ -22,11 +22,15 @@ import type { Diagnostic } from "./diagnostics";
 import { useOpenKey } from "./useOpenKey";
 import { VscodeTextfield } from "@vscode-elements/react-elements";
 
-const Input = styled(VscodeTextfield)<{ $error: boolean }>`
+interface InputProps {
+  $error: boolean;
+}
+
+const Input = styled(VscodeTextfield)<InputProps>`
   width: 100%;
   font-family: var(--vscode-editor-font-family);
 
-  ${(props) =>
+  ${(props: InputProps) =>
     props.$error &&
     css`
       --dropdown-border: var(--vscode-inputValidation-errorBorder);

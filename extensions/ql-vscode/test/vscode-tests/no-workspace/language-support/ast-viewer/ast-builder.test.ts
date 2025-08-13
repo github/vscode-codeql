@@ -5,6 +5,7 @@ import { Uri } from "vscode";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 import path from "path";
 import { AstBuilder } from "../../../../../src/language-support";
+import type { DecodedBqrsChunk } from "../../../../../src/common/bqrs-cli-types";
 
 /**
  *
@@ -29,7 +30,7 @@ int disable_interrupts(void)
 
 describe("AstBuilder", () => {
   let mockCli: CodeQLCliServer;
-  let overrides: Record<string, Record<string, unknown> | undefined>;
+  let overrides: Record<string, DecodedBqrsChunk | undefined>;
 
   beforeEach(() => {
     mockCli = mockedObject<CodeQLCliServer>({
@@ -132,6 +133,7 @@ describe("AstBuilder", () => {
   it("should fail when graphProperties are not correct", async () => {
     overrides.graphProperties = {
       tuples: [["semmle.graphKind", "hucairz"]],
+      columns: [],
     };
 
     const astBuilder = createAstBuilder();
@@ -149,7 +151,9 @@ describe("AstBuilder", () => {
     );
   }
 
-  function mockDecode(resultSet: "nodes" | "edges" | "graphProperties") {
+  async function mockDecode(
+    resultSet: "nodes" | "edges" | "graphProperties",
+  ): Promise<DecodedBqrsChunk> {
     if (overrides[resultSet]) {
       return overrides[resultSet];
     }
@@ -166,7 +170,7 @@ describe("AstBuilder", () => {
           `${__dirname}/../../data/language-support/ast-viewer/ast-builder.json`,
           "utf8",
         ),
-      )[index];
+      )[index] as DecodedBqrsChunk;
     } else {
       throw new Error(`Invalid resultSet: ${resultSet}`);
     }

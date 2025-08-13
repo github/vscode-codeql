@@ -38,7 +38,7 @@ import type { Release } from "../../../../src/codeql-cli/distribution/release";
 import { zip } from "zip-a-folder";
 
 jest.mock("os", () => {
-  const original = jest.requireActual("os");
+  const original: typeof os = jest.requireActual("os");
   return {
     ...original,
     platform: jest.fn(),

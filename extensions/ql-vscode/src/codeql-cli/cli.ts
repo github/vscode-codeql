@@ -979,7 +979,7 @@ export class CodeQLCliServer implements Disposable {
         subcommandArgs,
         "Resolving query by language",
       ),
-    );
+    ) as QueryInfoByLanguage;
   }
 
   /**

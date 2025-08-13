@@ -283,7 +283,7 @@ async function jsonResponseBody<T>(response: Response): Promise<T> {
   const body = await responseBody(response);
   const text = new TextDecoder("utf-8").decode(body);
 
-  return JSON.parse(text);
+  return JSON.parse(text) as T;
 }
 
 function shouldWriteBodyToFile(

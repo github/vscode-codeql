@@ -18,6 +18,7 @@ export function useEffectEvent<T extends (...args: any[]) => any>(callback: T) {
   });
 
   return useCallback<(...args: Parameters<T>) => ReturnType<T>>(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     (...args) => ref.current(...args),
     [],
   ) as T;

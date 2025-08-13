@@ -25,9 +25,11 @@ export function mockedObject<T extends object>(
   return new Proxy<T>({} as unknown as T, {
     get: (_target, prop) => {
       if (prop in props) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return (props as any)[prop];
       }
       if (dynamicProperties && prop in dynamicProperties) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return (dynamicProperties as any)[prop]();
       }
 

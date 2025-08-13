@@ -251,7 +251,7 @@ function registerErrorStubs(
   stubGenerator: (command: string) => () => Promise<void>,
 ): void {
   // Remove existing stubs
-  errorStubs.forEach((stub) => stub.dispose());
+  errorStubs.forEach((stub) => void stub.dispose());
 
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
@@ -757,7 +757,7 @@ async function activateWithInstalledDistribution(
   beganMainExtensionActivation = true;
   // Remove any error stubs command handlers left over from first part
   // of activation.
-  errorStubs.forEach((stub) => stub.dispose());
+  errorStubs.forEach((stub) => void stub.dispose());
 
   void extLogger.log("Initializing configuration listener...");
   const qlConfigurationListener =
@@ -1167,7 +1167,7 @@ async function activateWithInstalledDistribution(
     databaseUI,
     variantAnalysisManager,
     dispose: () => {
-      ctx.subscriptions.forEach((d) => d.dispose());
+      ctx.subscriptions.forEach((d) => void d.dispose());
     },
   };
 }
