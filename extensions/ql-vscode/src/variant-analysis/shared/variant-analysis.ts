@@ -287,11 +287,10 @@ export function getSkippedRepoCount(
     return 0;
   }
 
-  return (
-    (skippedRepos.accessMismatchRepos?.repositoryCount ?? 0) +
-    (skippedRepos.notFoundRepos?.repositoryCount ?? 0) +
-    (skippedRepos.noCodeqlDbRepos?.repositoryCount ?? 0) +
-    (skippedRepos.overLimitRepos?.repositoryCount ?? 0)
+  return Object.values(skippedRepos).reduce<number>(
+    (acc, group: VariantAnalysisSkippedRepositoryGroup) =>
+      acc + group.repositoryCount,
+    0,
   );
 }
 
