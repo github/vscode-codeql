@@ -173,8 +173,9 @@ function toErrorMessage(data: any) {
     if (Array.isArray(data.errors)) {
       return `${data.message}: ${data.errors.map(JSON.stringify).join(", ")}`;
     }
-
-    return data.message;
+    if (typeof data.message === "string") {
+      return data.message as string;
+    }
   }
 
   // istanbul ignore next - just in case

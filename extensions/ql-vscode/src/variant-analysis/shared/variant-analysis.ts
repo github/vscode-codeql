@@ -287,8 +287,9 @@ export function getSkippedRepoCount(
     return 0;
   }
 
-  return Object.values(skippedRepos).reduce(
-    (acc, group) => acc + group.repositoryCount,
+  return Object.values(skippedRepos).reduce<number>(
+    (acc, group: VariantAnalysisSkippedRepositoryGroup) =>
+      acc + group.repositoryCount,
     0,
   );
 }

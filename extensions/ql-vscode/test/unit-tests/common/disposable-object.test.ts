@@ -77,10 +77,10 @@ describe("DisposableObject and DisposeHandler", () => {
     expect(disposable1.dispose).toHaveBeenCalled();
   });
 
-  it("ahould use a dispose handler", () => {
+  it("should use a dispose handler", () => {
     const handler = (d: any) =>
       d === disposable1 || d === disposable3 || d === nestedDisposableObject
-        ? d.dispose(handler)
+        ? void d.dispose(handler)
         : void 0;
 
     disposableObject.push(disposable1);

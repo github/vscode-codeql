@@ -1,4 +1,5 @@
 import { CancellationTokenSource, Uri } from "vscode";
+import type * as fsExtra from "fs-extra";
 import type { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import type {
   DatabaseItem,
@@ -15,7 +16,7 @@ import {
 } from "./test-runner-helpers";
 
 jest.mock("fs-extra", () => {
-  const original = jest.requireActual("fs-extra");
+  const original: typeof fsExtra = jest.requireActual("fs-extra");
   return {
     ...original,
     access: jest.fn(),
