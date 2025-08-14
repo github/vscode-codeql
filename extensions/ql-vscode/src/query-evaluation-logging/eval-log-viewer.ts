@@ -45,7 +45,10 @@ class EvalLogDataProvider
       ? TreeItemCollapsibleState.Collapsed
       : TreeItemCollapsibleState.None;
     const treeItem = new TreeItem(element.label || "", state);
-    treeItem.tooltip = `${treeItem.label} || ''}`;
+    treeItem.tooltip =
+      typeof treeItem.label === "string"
+        ? treeItem.label
+        : (treeItem.label?.label ?? "");
     return treeItem;
   }
 

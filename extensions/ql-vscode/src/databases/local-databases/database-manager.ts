@@ -68,9 +68,7 @@ function eventFired<T>(
 ): Promise<T | undefined> {
   return new Promise((res, _rej) => {
     const timeout = setTimeout(() => {
-      void extLogger.log(
-        `Waiting for event ${event} timed out after ${timeoutMs}ms`,
-      );
+      void extLogger.log(`Waiting for event timed out after ${timeoutMs}ms`);
       res(undefined);
       dispose();
     }, timeoutMs);
@@ -256,7 +254,7 @@ export class DatabaseManager extends DisposableObject {
   private async reimportTestDatabase(databaseUri: vscode.Uri): Promise<void> {
     const dbItem = this.findDatabaseItem(databaseUri);
     if (dbItem === undefined || dbItem.origin?.type !== "testproj") {
-      throw new Error(`Database ${databaseUri} is not a testproj.`);
+      throw new Error(`Database ${databaseUri.toString()} is not a testproj.`);
     }
 
     await this.removeDatabaseItem(dbItem);
@@ -561,7 +559,7 @@ export class DatabaseManager extends DisposableObject {
             // When loading from persisted state, leave invalid databases in the list. They will be
             // marked as invalid, and cannot be set as the current database.
             void this.logger.log(
-              `Error loading database ${database.uri}: ${e}.`,
+              `Error loading database ${database.uri}: ${getErrorMessage(e)}.`,
             );
           }
         }

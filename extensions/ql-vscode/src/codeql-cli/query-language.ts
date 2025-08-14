@@ -89,7 +89,7 @@ export async function askForLanguage(
   if (!isQueryLanguage(language)) {
     void showAndLogErrorMessage(
       extLogger,
-      `Language '${language}' is not supported. Only languages ${Object.values(
+      `Language '${language as QueryLanguage}' is not supported. Only languages ${Object.values(
         QueryLanguage,
       ).join(", ")} are supported.`,
     );

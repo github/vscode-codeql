@@ -332,7 +332,7 @@ export class VariantAnalysisManager
   ): Promise<number | undefined> {
     if (!isVariantAnalysisEnabledForGitHubHost()) {
       throw new Error(
-        `Multi-repository variant analysis is not enabled for ${getEnterpriseUri()}`,
+        `Multi-repository variant analysis is not enabled for ${getEnterpriseUri()?.toString()}`,
       );
     }
 

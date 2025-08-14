@@ -385,7 +385,7 @@ class ExtensionSpecificDistributionManager {
       } catch (e) {
         void extLogger.log(
           "WARNING: Tried to remove corrupted CodeQL CLI at " +
-            `${this.getDistributionStoragePath()} but encountered an error: ${e}.`,
+            `${this.getDistributionStoragePath()} but encountered an error: ${getErrorMessage(e)}.`,
         );
       }
     }
@@ -457,7 +457,7 @@ class ExtensionSpecificDistributionManager {
     } catch (e) {
       void extLogger.log(
         `Tried to clean up old version of CLI at ${this.getDistributionStoragePath()} ` +
-          `but encountered an error: ${e}.`,
+          `but encountered an error: ${getErrorMessage(e)}.`,
       );
     }
 

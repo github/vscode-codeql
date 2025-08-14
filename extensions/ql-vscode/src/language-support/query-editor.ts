@@ -99,7 +99,7 @@ async function previewQueryHelp(
         telemetryListener,
         errorMessage,
         {
-          fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
+          fullMessage: `${errorMessage.fullMessage}\n${getErrorMessage(e)}`,
         },
       );
     }

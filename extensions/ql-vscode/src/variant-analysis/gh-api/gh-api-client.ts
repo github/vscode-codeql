@@ -104,9 +104,9 @@ export async function createGist(
   });
   if (response.status >= 300) {
     throw new Error(
-      `Error exporting variant analysis results: ${response.status} ${
-        response?.data || ""
-      }`,
+      `Error exporting variant analysis results: ${response.status} ${JSON.stringify(
+        response?.data,
+      )}`,
     );
   }
   return response.data.html_url;
