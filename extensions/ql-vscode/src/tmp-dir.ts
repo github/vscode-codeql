@@ -1,5 +1,6 @@
 import { dirSync } from "tmp-promise";
 import { extLogger } from "./common/logging/vscode";
+import { getErrorMessage } from "./common/helpers-pure";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -14,7 +15,7 @@ export const tmpDirDisposal = {
       tmpDir.removeCallback();
     } catch (e) {
       void extLogger.log(
-        `Failed to remove temporary directory ${tmpDir.name}: ${e}`,
+        `Failed to remove temporary directory ${tmpDir.name}: ${getErrorMessage(e)}`,
       );
     }
   },

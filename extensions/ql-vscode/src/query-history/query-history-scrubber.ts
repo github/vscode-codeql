@@ -113,7 +113,9 @@ async function scrubQueries(
         throw new Error(EOL + errors.join(EOL));
       }
     } catch (e) {
-      void extLogger.log(`Error while scrubbing queries: ${e}`);
+      void extLogger.log(
+        `Error while scrubbing queries: ${getErrorMessage(e)}`,
+      );
     } finally {
       void extLogger.log(`Scrubbed ${scrubCount} old queries.`);
     }

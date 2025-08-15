@@ -314,7 +314,7 @@ export class CodeQLCliServer implements Disposable {
       } catch (e) {
         // We are probably fine here, the process has already closed stdin.
         void this.logger.log(
-          `Shutdown request failed: process stdin may have already closed. The error was ${e}`,
+          `Shutdown request failed: process stdin may have already closed. The error was ${getErrorMessage(e)}`,
         );
         void this.logger.log("Stopping the process anyway.");
       }
@@ -748,7 +748,7 @@ export class CodeQLCliServer implements Disposable {
           } else {
             reject(
               new Error(
-                `${command} ${commandArgs.join(" ")} failed with code ${code}`,
+                `${command.join(" ")} ${commandArgs.join(" ")} failed with code ${code}`,
               ),
             );
           }

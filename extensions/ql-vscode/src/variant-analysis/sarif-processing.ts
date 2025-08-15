@@ -24,6 +24,7 @@ import type {
   ResultSeverity,
   ThreadFlow,
 } from "./shared/analysis-result";
+import { getErrorMessage } from "../common/helpers-pure";
 
 // A line of more than 8k characters is probably generated.
 const CODE_SNIPPET_LARGE_LINE_SIZE_LIMIT = 8192;
@@ -47,7 +48,9 @@ export function extractAnalysisAlerts(
       try {
         alerts.push(...extractResultAlerts(run, result, fileLinkPrefix));
       } catch (e) {
-        errors.push(`Error when processing SARIF result: ${e}`);
+        errors.push(
+          `Error when processing SARIF result: ${getErrorMessage(e)}`,
+        );
         continue;
       }
     }

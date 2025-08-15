@@ -218,7 +218,7 @@ function getCommands(
     "codeQL.copyVersion": async () => {
       const text = `CodeQL extension version: ${
         extension?.packageJSON.version
-      } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
+      } \nCodeQL CLI version: ${(await getCliVersion()).toString()} \nPlatform: ${platform()} ${arch()}`;
       await env.clipboard.writeText(text);
       void showAndLogInformationMessage(extLogger, text);
     },
@@ -457,8 +457,8 @@ export async function activate(
 
       void showAndLogWarningMessage(
         extLogger,
-        `You are using an unsupported version of the CodeQL CLI (${ver.version}). ` +
-          `The minimum supported version is ${CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION}. ` +
+        `You are using an unsupported version of the CodeQL CLI (${ver.version.toString()}). ` +
+          `The minimum supported version is ${CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.toString()}. ` +
           `Please upgrade to a newer version of the CodeQL CLI.`,
       );
       unsupportedWarningShown = true;
@@ -615,10 +615,13 @@ async function installOrUpdateDistribution(
     } else if (e instanceof GithubApiError) {
       void alertFunction(
         extLogger,
-        `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
+        `Encountered GitHub API error while trying to ${taskDescription}. ${getErrorMessage(e)}`,
       );
     }
-    void alertFunction(extLogger, `Unable to ${taskDescription}. ${e}`);
+    void alertFunction(
+      extLogger,
+      `Unable to ${taskDescription}. ${getErrorMessage(e)}`,
+    );
   } finally {
     isInstallingOrUpdatingDistribution = false;
   }
@@ -640,11 +643,11 @@ async function getDistributionDisplayingDistributionWarnings(
           case DistributionKind.ExtensionManaged:
             return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
           case DistributionKind.CustomPathConfig:
-            return `Please update the "CodeQL CLI Executable Path" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
+            return `Please update the "CodeQL CLI Executable Path" setting to point to a CLI in the version range ${codeQlVersionRange.toString()}.`;
           case DistributionKind.PathEnvironmentVariable:
             return (
-              `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
-              `set the "CodeQL CLI Executable Path" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
+              `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange.toString()}, or ` +
+              `set the "CodeQL CLI Executable Path" setting to the path of a CLI version compatible with ${codeQlVersionRange.toString()}.`
             );
         }
       })();
