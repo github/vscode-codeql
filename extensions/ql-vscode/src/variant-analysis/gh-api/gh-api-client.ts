@@ -1,4 +1,3 @@
-import type { OctokitResponse } from "@octokit/types/dist-types";
 import type { Credentials } from "../../common/authentication";
 import type { VariantAnalysisSubmission } from "../shared/variant-analysis";
 import type {
@@ -26,7 +25,7 @@ export async function submitVariantAnalysis(
     repository_owners: databases.repositoryOwners,
   };
 
-  const response: OctokitResponse<VariantAnalysis> = await octokit.request(
+  const response = await octokit.request(
     "POST /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses",
     {
       controllerRepoId,
@@ -34,7 +33,7 @@ export async function submitVariantAnalysis(
     },
   );
 
-  return response.data;
+  return response.data as VariantAnalysis;
 }
 
 export async function getVariantAnalysis(
@@ -44,7 +43,7 @@ export async function getVariantAnalysis(
 ): Promise<VariantAnalysis> {
   const octokit = await credentials.getOctokit();
 
-  const response: OctokitResponse<VariantAnalysis> = await octokit.request(
+  const response = await octokit.request(
     "GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId",
     {
       controllerRepoId,
@@ -52,7 +51,7 @@ export async function getVariantAnalysis(
     },
   );
 
-  return response.data;
+  return response.data as VariantAnalysis;
 }
 
 export async function getVariantAnalysisRepo(
@@ -63,17 +62,16 @@ export async function getVariantAnalysisRepo(
 ): Promise<VariantAnalysisRepoTask> {
   const octokit = await credentials.getOctokit();
 
-  const response: OctokitResponse<VariantAnalysisRepoTask> =
-    await octokit.request(
-      "GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId",
-      {
-        controllerRepoId,
-        variantAnalysisId,
-        repoId,
-      },
-    );
+  const response = await octokit.request(
+    "GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId",
+    {
+      controllerRepoId,
+      variantAnalysisId,
+      repoId,
+    },
+  );
 
-  return response.data;
+  return response.data as VariantAnalysisRepoTask;
 }
 
 export async function getRepositoryFromNwo(
