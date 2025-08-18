@@ -1,6 +1,7 @@
 import type { CodeQLCliServer } from "./cli";
 import type { QueryMetadata } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
+import { getErrorMessage } from "../common/helpers-pure";
 
 /**
  * Gets metadata for a query, if it exists.
@@ -16,7 +17,9 @@ export async function tryGetQueryMetadata(
     return await cliServer.resolveMetadata(queryPath);
   } catch (e) {
     // Ignore errors and provide no metadata.
-    void extLogger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
+    void extLogger.log(
+      `Couldn't resolve metadata for ${queryPath}: ${getErrorMessage(e)}`,
+    );
     return;
   }
 }

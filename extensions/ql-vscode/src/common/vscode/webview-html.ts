@@ -89,7 +89,7 @@ export function getHtmlForWebview(
   <body>
     <div id=root data-view="${view}">
     </div>
-      <script nonce="${nonce}" src="${scriptWebviewUri}">
+      <script nonce="${nonce}" src="${scriptWebviewUri.toString()}">
     </script>
   </body>
 </html>`;
@@ -101,9 +101,9 @@ function getNonce(): string {
 }
 
 function createStylesLinkWithNonce(nonce: string, uri: Uri): string {
-  return `<link nonce="${nonce}" rel="stylesheet" href="${uri}">`;
+  return `<link nonce="${nonce}" rel="stylesheet" href="${uri.toString()}">`;
 }
 
 function createStylesLinkWithoutNonce(uri: Uri): string {
-  return `<link rel="stylesheet" href="${uri}">`;
+  return `<link rel="stylesheet" href="${uri.toString()}">`;
 }

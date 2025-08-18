@@ -225,7 +225,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
             .map((v, i) => {
               if (chunk.columns[i].kind === "String") {
                 return `"${
-                  typeof v === "string" ? v.replaceAll('"', '""') : v
+                  typeof v === "string" ? v.replaceAll('"', '""') : v.toString()
                 }"`;
               } else if (chunk.columns[i].kind === "Entity") {
                 return (v as BqrsEntityValue).label;

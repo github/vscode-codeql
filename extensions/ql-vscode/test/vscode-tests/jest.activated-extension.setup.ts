@@ -8,6 +8,7 @@ import {
   setStoragePath,
   storagePath,
 } from "./global.helper";
+import { getErrorMessage } from "../../src/common/helpers-pure";
 
 if (process.env.CI) {
   jest.retryTimes(3, {
@@ -50,6 +51,8 @@ export async function afterAllAction() {
   } catch (e) {
     // we are exiting anyway so don't worry about it.
     // most likely the directory this is a test on Windows and some files are locked.
-    console.warn(`Failed to remove storage directory '${storagePath}': ${e}`);
+    console.warn(
+      `Failed to remove storage directory '${storagePath}': ${getErrorMessage(e)}`,
+    );
   }
 }

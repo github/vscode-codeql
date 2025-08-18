@@ -135,7 +135,7 @@ const sourceArchiveUriAuthorityPattern = /^(\d+)-(\d+)$/;
 class InvalidSourceArchiveUriError extends Error {
   constructor(uri: Uri) {
     super(
-      `Can't decode uri ${uri}: authority should be of the form startIndex-endIndex (where both indices are integers).`,
+      `Can't decode uri ${uri.toString()}: authority should be of the form startIndex-endIndex (where both indices are integers).`,
     );
   }
 }

@@ -125,7 +125,7 @@ export class TestRunner extends DisposableObject {
           // So we need to display the error message ourselves and then rethrow.
           void showAndLogWarningMessage(
             extLogger,
-            `Cannot reopen database ${uri}: ${e}`,
+            `Cannot reopen database ${uri.toString()}: ${getErrorMessage(e)}`,
           );
           throw e;
         }

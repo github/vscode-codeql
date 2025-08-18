@@ -777,7 +777,9 @@ function execAutofix(
     try {
       const cwd = options?.cwd || process.cwd();
       if (showCommand) {
-        void extLogger.log(`Spawning '${bin} ${args.join(" ")}' in ${cwd}`);
+        void extLogger.log(
+          `Spawning '${bin} ${args.join(" ")}' in ${cwd.toString()}`,
+        );
       }
 
       let stdoutBuffer = "";
