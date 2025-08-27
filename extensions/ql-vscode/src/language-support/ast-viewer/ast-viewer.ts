@@ -84,7 +84,7 @@ class AstViewerDataProvider
     treeItem.command = {
       command: "codeQLAstViewer.gotoCode",
       title: "Go To Code",
-      tooltip: `Go To ${item.location?.toString() ?? "Code"}`,
+      tooltip: "Go To Code",
       arguments: [item],
     };
     return treeItem;
