@@ -55,7 +55,7 @@ export class CodeQlStatusBarHandler extends DisposableObject {
     this.item.text = `CodeQL${canary}`;
 
     const version = await this.cli.getVersion();
-    this.item.text = `CodeQL CLI v${version}${canary}`;
+    this.item.text = `CodeQL CLI v${version.toString()}${canary}`;
     this.item.show();
   }
 }

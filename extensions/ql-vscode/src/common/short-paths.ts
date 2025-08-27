@@ -92,12 +92,12 @@ async function expandShortPathComponent(
         }
       } catch (e) {
         // Can't read stats for the child, so skip it.
-        void logger.log(`Error reading stats for child: ${e}`);
+        void logger.log(`Error reading stats for child: ${getErrorMessage(e)}`);
       }
     }
   } catch (e) {
     // Can't read the directory, so we won't be able to find this in the directory listing.
-    void logger.log(`Error reading directory: ${e}`);
+    void logger.log(`Error reading directory: ${getErrorMessage(e)}`);
     return shortBase;
   }
 

@@ -80,11 +80,11 @@ class AstViewerDataProvider
     const treeItem = new TreeItem(item.label || "", state);
     treeItem.description = line ? `Line ${line}` : "";
     treeItem.id = String(item.id);
-    treeItem.tooltip = `${treeItem.description} ${treeItem.label}`;
+    treeItem.tooltip = `${treeItem.description} ${typeof treeItem.label === "string" ? treeItem.label : (treeItem.label?.label ?? "")}`;
     treeItem.command = {
       command: "codeQLAstViewer.gotoCode",
       title: "Go To Code",
-      tooltip: `Go To ${item.location}`,
+      tooltip: "Go To Code",
       arguments: [item],
     };
     return treeItem;

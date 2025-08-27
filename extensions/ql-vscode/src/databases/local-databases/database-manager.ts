@@ -64,12 +64,13 @@ const DB_LIST = "databaseList";
  */
 function eventFired<T>(
   event: vscode.Event<T>,
+  eventName: string,
   timeoutMs = 1000,
 ): Promise<T | undefined> {
   return new Promise((res, _rej) => {
     const timeout = setTimeout(() => {
       void extLogger.log(
-        `Waiting for event ${event} timed out after ${timeoutMs}ms`,
+        `Waiting for event '${eventName}' timed out after ${timeoutMs}ms`,
       );
       res(undefined);
       dispose();
@@ -256,7 +257,7 @@ export class DatabaseManager extends DisposableObject {
   private async reimportTestDatabase(databaseUri: vscode.Uri): Promise<void> {
     const dbItem = this.findDatabaseItem(databaseUri);
     if (dbItem === undefined || dbItem.origin?.type !== "testproj") {
-      throw new Error(`Database ${databaseUri} is not a testproj.`);
+      throw new Error(`Database ${databaseUri.toString()} is not a testproj.`);
     }
 
     await this.removeDatabaseItem(dbItem);
@@ -474,7 +475,10 @@ export class DatabaseManager extends DisposableObject {
       });
       // vscode api documentation says we must to wait for this event
       // between multiple `updateWorkspaceFolders` calls.
-      await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
+      await eventFired(
+        vscode.workspace.onDidChangeWorkspaceFolders,
+        "vscode.workspace.onDidChangeWorkspaceFolders",
+      );
     }
   }
 
@@ -561,7 +565,7 @@ export class DatabaseManager extends DisposableObject {
             // When loading from persisted state, leave invalid databases in the list. They will be
             // marked as invalid, and cannot be set as the current database.
             void this.logger.log(
-              `Error loading database ${database.uri}: ${e}.`,
+              `Error loading database ${database.uri}: ${getErrorMessage(e)}.`,
             );
           }
         }

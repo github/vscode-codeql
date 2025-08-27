@@ -380,7 +380,7 @@ export class DatabaseUI extends DisposableObject {
             // This specifically refers to the database folder in
             // https://github.com/github/codespaces-codeql
             const uri = Uri.parse(
-              `${workspace.workspaceFolders[0].uri}/.tours/codeql-tutorial-database`,
+              `${workspace.workspaceFolders[0].uri.toString()}/.tours/codeql-tutorial-database`,
             );
 
             const databaseItem = this.databaseManager.findDatabaseItem(uri);
@@ -1062,14 +1062,14 @@ export class DatabaseUI extends DisposableObject {
 
       if (!validFileTypes.includes(entry[1])) {
         void this.app.logger.log(
-          `Skipping import for '${entry}', invalid file type: ${entry[1]}`,
+          `Skipping import for '${entry[0]}', invalid file type: ${entry[1]}`,
         );
         continue;
       }
 
       try {
         const databaseUri = Uri.joinPath(uri, entry[0]);
-        void this.app.logger.log(`Importing from ${databaseUri}`);
+        void this.app.logger.log(`Importing from ${databaseUri.toString()}`);
 
         const database = await this.importDatabase(
           databaseUri,
