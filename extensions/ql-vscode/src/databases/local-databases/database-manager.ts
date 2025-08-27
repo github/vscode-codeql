@@ -64,11 +64,14 @@ const DB_LIST = "databaseList";
  */
 function eventFired<T>(
   event: vscode.Event<T>,
+  eventName: string,
   timeoutMs = 1000,
 ): Promise<T | undefined> {
   return new Promise((res, _rej) => {
     const timeout = setTimeout(() => {
-      void extLogger.log(`Waiting for event timed out after ${timeoutMs}ms`);
+      void extLogger.log(
+        `Waiting for event '${eventName}' timed out after ${timeoutMs}ms`,
+      );
       res(undefined);
       dispose();
     }, timeoutMs);
@@ -472,7 +475,10 @@ export class DatabaseManager extends DisposableObject {
       });
       // vscode api documentation says we must to wait for this event
       // between multiple `updateWorkspaceFolders` calls.
-      await eventFired(vscode.workspace.onDidChangeWorkspaceFolders);
+      await eventFired(
+        vscode.workspace.onDidChangeWorkspaceFolders,
+        "vscode.workspace.onDidChangeWorkspaceFolders",
+      );
     }
   }
 
