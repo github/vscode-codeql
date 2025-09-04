@@ -2117,7 +2117,7 @@
     "husky": "^9.1.7",
     "jest": "^30.0.0-alpha.7",
     "jest-runner-vscode": "^3.0.1",
-    "jsdom": "^26.0.0",
+    "jsdom": "^26.1.0",
     "lint-staged": "^15.3.0",
     "markdownlint-cli2": "^0.17.0",
     "markdownlint-cli2-formatter-pretty": "^0.0.7",
