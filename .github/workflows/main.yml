@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -68,7 +68,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -124,7 +124,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -176,7 +176,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -210,7 +210,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -278,7 +278,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
