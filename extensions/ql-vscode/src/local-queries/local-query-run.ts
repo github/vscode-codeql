@@ -188,7 +188,7 @@ export class LocalQueryRun {
         result.outputBaseName,
         this.dbItem.databaseUri.fsPath,
         await this.dbItem.hasMetadataFile(),
-        undefined,
+        this.queryInfo.initialInfo.quickEvalPosition,
         metadata,
       );
 
