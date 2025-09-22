@@ -32,7 +32,7 @@ jobs:
         with:
             languages: ${{ matrix.language }}
             config-file: ./.github/codeql/codeql-config.yml
-            tools: latest
+            tools: nightly
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@main
