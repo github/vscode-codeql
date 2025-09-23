@@ -19,7 +19,7 @@ export interface Props {
   resultIndex: number;
   currentPathExpanded: boolean;
   selectedItem: undefined | ResultKey;
-  selectedItemRef: React.RefObject<HTMLTableRowElement>;
+  selectedItemRef: React.RefObject<HTMLTableRowElement | undefined>;
   databaseUri: string;
   sourceLocationPrefix: string;
   run?: Run;
@@ -55,7 +55,11 @@ export function AlertTablePathRow(props: Props) {
   return (
     <>
       <tr
-        ref={isPathSpecificallySelected ? selectedItemRef : undefined}
+        ref={
+          isPathSpecificallySelected && selectedItemRef.current !== undefined
+            ? (selectedItemRef as React.RefObject<HTMLTableRowElement>)
+            : undefined
+        }
         {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)}
       >
         <td className="vscode-codeql__icon-cell">

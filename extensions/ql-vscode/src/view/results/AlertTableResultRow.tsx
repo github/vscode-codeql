@@ -20,7 +20,7 @@ export interface Props {
   resultIndex: number;
   expanded: Set<string>;
   selectedItem: undefined | ResultKey;
-  selectedItemRef: React.RefObject<HTMLTableRowElement>;
+  selectedItemRef: React.RefObject<HTMLTableRowElement | undefined>;
   databaseUri: string;
   sourceLocationPrefix: string;
   run?: Run;
@@ -93,7 +93,11 @@ export function AlertTableResultRow(props: Props) {
   return (
     <>
       <tr
-        ref={resultRowIsSelected ? selectedItemRef : undefined}
+        ref={
+          resultRowIsSelected && selectedItemRef.current !== undefined
+            ? (selectedItemRef as React.RefObject<HTMLTableRowElement>)
+            : undefined
+        }
         {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
       >
         {result.codeFlows === undefined ? (
