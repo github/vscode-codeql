@@ -77,8 +77,16 @@ runs:
         fi
         echo "=== rate limit ==="
         gh api https://api.github.com/rate_limit
+        echo
         echo "=== user ==="
-        gh api user
+        gh api user || true
+        echo
+        echo "=== user mbg ==="
+        gh api  https://api.github.com/users/mbg || true
+        echo
+        echo "=== user igfoo ==="
+        gh api  https://api.github.com/users/igfoo || true
+        echo
         echo "=== Creating new PR ==="
         gh pr create --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --title "$TITLE" --body "$BODY" --assignee ${{ github.actor }} --draft
         if [[ $? -ne 0 ]]; then
