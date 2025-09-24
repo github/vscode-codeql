@@ -88,7 +88,7 @@ runs:
         gh api  https://api.github.com/users/igfoo || true
         echo
         echo "=== Creating new PR ==="
-        gh pr create --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --title "$TITLE" --body "$BODY" --assignee ${{ github.actor }} --draft
+        GH_DEBUG=api gh pr create --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --title "$TITLE" --body "$BODY" --assignee ${{ github.actor }} --draft
         if [[ $? -ne 0 ]]; then
           echo "Failed to create new PR."
           exit 1
