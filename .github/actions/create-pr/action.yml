@@ -75,6 +75,11 @@ runs:
           echo "Found existing open PR: $PR_NUMBERS"
           exit 0
         fi
+        echo "=== rate limit ==="
+        gh api https://api.github.com/rate_limit
+        echo "=== user ==="
+        gh api user
+        echo "=== Creating new PR ==="
         gh pr create --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --title "$TITLE" --body "$BODY" --assignee ${{ github.actor }} --draft
         if [[ $? -ne 0 ]]; then
           echo "Failed to create new PR."
