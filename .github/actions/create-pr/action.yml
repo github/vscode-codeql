@@ -73,7 +73,7 @@ runs:
         PR_NUMBERS=$(echo $PR_JSON | jq '. | length')
         if [[ $PR_NUMBERS -ne 0 ]]; then 
           echo "Found existing open PR: $PR_NUMBERS"
-          exit 0
+          # exit 0
         fi
         echo "=== rate limit ==="
         gh api https://api.github.com/rate_limit
