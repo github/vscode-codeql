@@ -2045,7 +2045,7 @@
     "@babel/preset-typescript": "^7.26.0",
     "@eslint/js": "^9.28.0",
     "@faker-js/faker": "^9.0.3",
-    "@github/markdownlint-github": "^0.6.3",
+    "@github/markdownlint-github": "^0.8.0",
     "@jest/environment": "^30.0.0-alpha.7",
     "@jest/environment-jsdom-abstract": "^30.0.0-alpha.7",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
