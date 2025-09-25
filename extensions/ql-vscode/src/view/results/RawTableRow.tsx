@@ -8,7 +8,7 @@ interface Props {
   databaseUri: string;
   className?: string;
   selectedColumn?: number;
-  selectedItemRef?: React.Ref<HTMLTableCellElement>;
+  selectedItemRef?: React.RefObject<HTMLTableCellElement | undefined>;
   onSelected?: (row: number, column: number) => void;
 }
 
@@ -24,7 +24,11 @@ export default function RawTableRow(props: Props) {
         const isSelected = props.selectedColumn === columnIndex;
         return (
           <td
-            ref={isSelected ? props.selectedItemRef : undefined}
+            ref={
+              isSelected && props.selectedItemRef?.current !== undefined
+                ? (props.selectedItemRef as React.RefObject<HTMLTableCellElement>)
+                : undefined
+            }
             key={columnIndex}
             {...(isSelected ? { className: selectedRowClassName } : {})}
           >
