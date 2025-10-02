@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Remove support for CodeQL CLI versions older than 2.20.7. [#4159](https://github.com/github/vscode-codeql/pull/4159)
+
 ## 1.17.5 - 02 October 2025
 
 - Add new command "CodeQL: Trim Overlay Base Cache" that returns a database to the state prior to overlay evaluation, leaving only base predicates and types that may later be referenced during overlay evaluation. [#4082](https://github.com/github/vscode-codeql/pull/4082)
