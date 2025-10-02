@@ -5,7 +5,9 @@ import { createMockResults } from "../../../../test/factories/results/mockresult
 
 describe(AlertTablePathRow.name, () => {
   const render = (props?: Props) => {
-    const mockRef = { current: null } as React.RefObject<HTMLTableRowElement>;
+    const mockRef = { current: undefined } as React.RefObject<
+      HTMLTableRowElement | undefined
+    >;
     const results = createMockResults();
     const threadFlow = results[0]?.codeFlows?.[0]?.threadFlows?.[0];
 

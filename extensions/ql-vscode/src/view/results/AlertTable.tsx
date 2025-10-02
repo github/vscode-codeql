@@ -44,7 +44,7 @@ export function AlertTable({
     undefined,
   );
 
-  const selectedItemRef = useRef<HTMLTableRowElement>(null);
+  const selectedItemRef = useRef<HTMLTableRowElement>(undefined);
   useScrollIntoView(selectedItem, selectedItemRef);
 
   /**
