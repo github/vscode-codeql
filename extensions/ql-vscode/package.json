@@ -2043,7 +2043,7 @@
     "@babel/preset-env": "^7.24.4",
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.26.0",
-    "@eslint/js": "^9.28.0",
+    "@eslint/js": "^9.37.0",
     "@faker-js/faker": "^9.0.3",
     "@github/markdownlint-github": "^0.8.0",
     "@jest/environment": "^30.0.0-alpha.7",
