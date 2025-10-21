@@ -420,8 +420,8 @@ export type ToComparePerformanceViewMessage = SetPerformanceComparisonQueries;
 
 export interface SetPerformanceComparisonQueries {
   readonly t: "setPerformanceComparison";
-  readonly from: PerformanceComparisonDataFromLog;
-  readonly to: PerformanceComparisonDataFromLog;
+  readonly from: { name: string; data: PerformanceComparisonDataFromLog };
+  readonly to: { name: string; data: PerformanceComparisonDataFromLog };
   readonly comparison: boolean;
 }
 
