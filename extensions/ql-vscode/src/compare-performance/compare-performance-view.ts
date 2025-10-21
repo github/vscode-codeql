@@ -51,12 +51,12 @@ export class ComparePerformanceView extends AbstractWebview<
     to: CompletedLocalQueryInfo,
   ) {
     const fromJsonLog =
-      from === undefined ? "" : from?.evaluatorLogPaths?.jsonSummary;
-    const toJsonLog = to?.evaluatorLogPaths?.jsonSummary;
+      from === undefined ? "" : from.evaluatorLogPaths?.jsonSummary;
+    const toJsonLog = to.evaluatorLogPaths?.jsonSummary;
 
     if (fromJsonLog === undefined || toJsonLog === undefined) {
       return extLogger.showWarningMessage(
-        `Cannot compare performance as the structured logs are missing. Did they queries complete normally?`,
+        `Cannot compare performance as the structured logs are missing. Did the queries complete normally?`,
       );
     }
     await extLogger.log(
@@ -106,7 +106,7 @@ export class ComparePerformanceView extends AbstractWebview<
 
     const fromName =
       from === undefined ? "" : this.labelProvider.getLabel(from);
-    const toName = to === undefined ? "" : this.labelProvider.getLabel(to);
+    const toName = this.labelProvider.getLabel(to);
 
     await this.postMessage({
       t: "setPerformanceComparison",
