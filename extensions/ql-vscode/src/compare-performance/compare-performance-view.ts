@@ -19,7 +19,7 @@ import { PerformanceOverviewScanner } from "../log-insights/performance-comparis
 import type { ResultsView } from "../local-queries";
 import { readJsonlFile } from "../common/jsonl-reader";
 import type { SummaryEvent } from "../log-insights/log-summary";
-import { CompletedLocalQueryInfo } from "../query-results";
+import type { CompletedLocalQueryInfo } from "../query-results";
 
 export class ComparePerformanceView extends AbstractWebview<
   ToComparePerformanceViewMessage,
@@ -40,9 +40,9 @@ export class ComparePerformanceView extends AbstractWebview<
   ) {
     if (to === undefined) {
       // For single-run comparisons, the performance viewer considers the 'from' side to be missing.
-      this.showResultsAux(undefined, from);
+      return this.showResultsAux(undefined, from);
     } else {
-      this.showResultsAux(from, to);
+      return this.showResultsAux(from, to);
     }
   }
 
@@ -50,9 +50,9 @@ export class ComparePerformanceView extends AbstractWebview<
     from: CompletedLocalQueryInfo | undefined,
     to: CompletedLocalQueryInfo,
   ) {
-    let fromJsonLog =
+    const fromJsonLog =
       from === undefined ? "" : from?.evaluatorLogPaths?.jsonSummary;
-    let toJsonLog = to?.evaluatorLogPaths?.jsonSummary;
+    const toJsonLog = to?.evaluatorLogPaths?.jsonSummary;
 
     if (fromJsonLog === undefined || toJsonLog === undefined) {
       return extLogger.showWarningMessage(
