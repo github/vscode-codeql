@@ -19,6 +19,7 @@ import { PerformanceOverviewScanner } from "../log-insights/performance-comparis
 import type { ResultsView } from "../local-queries";
 import { readJsonlFile } from "../common/jsonl-reader";
 import type { SummaryEvent } from "../log-insights/log-summary";
+import type { CompletedLocalQueryInfo } from "../query-results";
 
 export class ComparePerformanceView extends AbstractWebview<
   ToComparePerformanceViewMessage,
@@ -33,7 +34,35 @@ export class ComparePerformanceView extends AbstractWebview<
     super(app);
   }
 
-  async showResults(fromJsonLog: string, toJsonLog: string) {
+  async showResults(
+    from: CompletedLocalQueryInfo,
+    to: CompletedLocalQueryInfo | undefined,
+  ) {
+    if (to === undefined) {
+      // For single-run comparisons, the performance viewer considers the 'from' side to be missing.
+      return this.showResultsAux(undefined, from);
+    } else {
+      return this.showResultsAux(from, to);
+    }
+  }
+
+  private async showResultsAux(
+    from: CompletedLocalQueryInfo | undefined,
+    to: CompletedLocalQueryInfo,
+  ) {
+    const fromJsonLog =
+      from === undefined ? "" : from.evaluatorLogPaths?.jsonSummary;
+    const toJsonLog = to.evaluatorLogPaths?.jsonSummary;
+
+    if (fromJsonLog === undefined || toJsonLog === undefined) {
+      return extLogger.showWarningMessage(
+        `Cannot compare performance as the structured logs are missing. Did the queries complete normally?`,
+      );
+    }
+    await extLogger.log(
+      `Comparing performance of ${from?.getQueryName() ?? "baseline"} and ${to?.getQueryName()}`,
+    );
+
     const panel = await this.getPanel();
     panel.reveal(undefined, false);
 
@@ -75,10 +104,14 @@ export class ComparePerformanceView extends AbstractWebview<
       scanLogWithProgress(toJsonLog, fromJsonLog === "" ? "1/1" : "2/2"),
     ]);
 
+    const fromName =
+      from === undefined ? "" : this.labelProvider.getLabel(from);
+    const toName = this.labelProvider.getLabel(to);
+
     await this.postMessage({
       t: "setPerformanceComparison",
-      from: fromPerf.getData(),
-      to: toPerf.getData(),
+      from: { name: fromName, data: fromPerf.getData() },
+      to: { name: toName, data: toPerf.getData() },
       comparison: fromJsonLog !== "",
     });
   }

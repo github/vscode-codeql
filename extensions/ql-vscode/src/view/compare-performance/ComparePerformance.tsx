@@ -552,8 +552,8 @@ function ComparePerformanceWithData(props: {
 
   const { from, to } = useMemo(
     () => ({
-      from: new ComparisonDataset(data.from),
-      to: new ComparisonDataset(data.to),
+      from: new ComparisonDataset(data.from.data),
+      to: new ComparisonDataset(data.to.data),
     }),
     [data],
   );
@@ -695,6 +695,13 @@ function ComparePerformanceWithData(props: {
   return (
     <>
       <ViewTitle>Performance comparison</ViewTitle>
+      <div>
+        {comparison ? "Comparing query runs" : "Showing query run"}:
+        <ul>
+          {comparison && <li>{data.from.name}</li>}
+          <li>{data.to.name}</li>
+        </ul>
+      </div>
       {comparison && hasCacheHitMismatch.current && (
         <label>
           <input

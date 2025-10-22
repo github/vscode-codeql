@@ -1226,23 +1226,7 @@ async function showPerformanceComparison(
   from: CompletedLocalQueryInfo,
   to: CompletedLocalQueryInfo | undefined,
 ): Promise<void> {
-  let fromLog = from.evaluatorLogPaths?.jsonSummary;
-  let toLog = to?.evaluatorLogPaths?.jsonSummary;
-
-  if (to === undefined) {
-    toLog = fromLog;
-    fromLog = "";
-  }
-  if (fromLog === undefined || toLog === undefined) {
-    return extLogger.showWarningMessage(
-      `Cannot compare performance as the structured logs are missing. Did they queries complete normally?`,
-    );
-  }
-  await extLogger.log(
-    `Comparing performance of ${from.getQueryName()} and ${to?.getQueryName() ?? "baseline"}`,
-  );
-
-  await view.showResults(fromLog, toLog);
+  await view.showResults(from, to);
 }
 
 function addUnhandledRejectionListener() {
