@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.17.6 - 24 October 2025
 
 - Remove support for CodeQL CLI versions older than 2.20.7. [#4159](https://github.com/github/vscode-codeql/pull/4159)
 
