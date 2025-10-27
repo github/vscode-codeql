@@ -87,7 +87,7 @@ choose to go through some of the Optional Test Cases.
    }
    ```
 
-   More concretely, in the Variant Analysis Repositories pane of the CodeQL extension, click the "Open database configuration" (`{}` ) button, and insert the JSON snippet above into the `.databases.variantAnalysis.repositoryLists[]` array. Alternatively, use the folder icon to create a new list, and add the abovementioned repos into the list using the "Add new database" (`+`) button.
+   More concretely, in the Variant Analysis Repositories pane of the CodeQL extension, click the "Open database configuration" (`{}`) button, and insert the JSON snippet above into the `.databases.variantAnalysis.repositoryLists[]` array. Alternatively, use the folder icon to create a new list, and add the abovementioned repos into the list using the "Add new database" (`+`) button.
 
 3. Check that a notification message pops up and the results view is opened.
 4. Check the query history. It should:
