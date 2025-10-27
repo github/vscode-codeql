@@ -52,6 +52,7 @@
    or look at the source if there's any doubt the right code is being shipped.
 1. Install the `.vsix` file into your vscode IDE and ensure the extension can load properly. Run a single command (like run query, or add database).
 1. Approve the deployments of the [Release](https://github.com/github/vscode-codeql/actions?query=workflow%3ARelease) workflow run. This will automatically publish to Open VSX and VS Code Marketplace.
+    - Note that in order to approve publishing to the extension marketplaces, you need to be part of *codeql-vscode-reviewers*.
     - If there is an authentication failure when publishing, be sure to check that the authentication keys haven't expired. See below.
 1. Go to the draft GitHub release in [the releases page](https://github.com/github/vscode-codeql/releases), click 'Edit', add some summary description, and publish it.
 1. Confirm the new release is marked as the latest release.

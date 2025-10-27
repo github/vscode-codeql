@@ -87,6 +87,8 @@ choose to go through some of the Optional Test Cases.
    }
    ```
 
+   More concretely, in the Variant Analysis Repositories pane of the CodeQL extension, click the "Open database configuration" (`{}` ) button, and insert the JSON snippet above into the `.databases.variantAnalysis.repositoryLists[]` array. Alternatively, use the folder icon to create a new list, and add the abovementioned repos into the list using the "Add new database" (`+`) button.
+
 3. Check that a notification message pops up and the results view is opened.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
@@ -148,8 +150,9 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 #### Test Case 6: Using model packs in MRVA
 
 1. Create a model pack with mock data
-   1. Create a new directory `test-model-pack`
-   2. Create a `qlpack.yml` file in that directory with the following contents:
+   1. Make sure you have `"codeQL.runningQueries.useExtensionPacks": "all"` enabled in the VSCode settings.
+   1. Create a new directory `test-model-pack` anywhere in the workspace.
+   1. Create a `qlpack.yml` file in that directory with the following contents:
 
       ```yaml
       name: github/test-model-pack
@@ -161,7 +164,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
         - extension.yml
       ```
 
-   3. Create an `extension.yml` in the same directory with the following contents:
+   1. Create an `extension.yml` in the same directory with the following contents:
 
       ```yaml
       extensions:
@@ -172,7 +175,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
          - ["vscode-codeql","Member[initialize].Argument[0]","code-injection"]
       ```
 
-2. In a Python query pack, create the following query (e.g. `sinks.ql`):
+1. In a Python query pack, create the following query (e.g. `sinks.ql`):
 
    ```ql
    import python
@@ -183,8 +186,8 @@ Run one of the above MRVAs, but cancel it from within VS Code:
    select path, kind
    ```
 
-3. Run a MRVA against a Python repository (e.g. `psf/requests`) with this query.
-4. Check that the results view contains 1 result with the values corresponding to the `extension.yml` file:
+1. Run a MRVA against a Python repository (e.g. `psf/requests`) with this query.
+1. Check that the results view contains 1 result with the values corresponding to the `extension.yml` file:
    ![Model packs results table for `psf/requests`](images/model-pack-results-table.png)
 
 ### CodeQL Model Editor
