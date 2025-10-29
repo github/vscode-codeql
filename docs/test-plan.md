@@ -239,6 +239,7 @@ Open a clone of the [`github/codeql`](https://github.com/github/codeql) reposito
 3. Select the "C#" and "JavaScript" databases.
    - Check that there are separate notifications for both downloads.
    - Check that both databases are added when the downloads are complete.
+     - Note: if only one of the databases appears in the list, this is a known regression for which a fix has not been prioritized at the time of writing.
 
 ### General
 
