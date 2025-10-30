@@ -22,6 +22,7 @@ const transformPackages = [
   "p-timeout",
   "robust-predicates",
   "universal-user-agent",
+  "until-async",
 ];
 const transformWildcards = ["d3-(.*)", "lit-(.*)"];
 const transformPatterns = [
