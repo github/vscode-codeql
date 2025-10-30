@@ -122,6 +122,13 @@ export default tseslint.config(
         version: "detect",
       },
     },
+    rules: {
+      // Disable new strict rules from eslint-plugin-react-hooks 7.0.1
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/error-boundaries": "off",
+    },
   },
   {
     files: ["src/view/**/*"],
@@ -140,6 +147,24 @@ export default tseslint.config(
       react: {
         version: "detect",
       },
+    },
+    rules: {
+      // Disable new strict rules from eslint-plugin-react-hooks 7.0.1
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/error-boundaries": "off",
+    },
+  },
+  {
+    // Special case for files using custom useEffectEvent implementation
+    files: [
+      "src/view/common/SuggestBox/useOpenKey.ts",
+      "src/view/common/SuggestBox/__tests__/useEffectEvent.test.ts",
+    ],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+      "react-hooks/exhaustive-deps": "off",
     },
   },
   {
