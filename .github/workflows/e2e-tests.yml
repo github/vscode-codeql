@@ -39,7 +39,7 @@ jobs:
       - name: Run Playwright tests
         working-directory: extensions/ql-vscode/test/e2e
         run: npx playwright test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: playwright-report
