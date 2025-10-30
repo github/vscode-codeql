@@ -123,11 +123,8 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Disable new strict rules from eslint-plugin-react-hooks 7.0.1
+      // Disable new strict rules from eslint-plugin-react-hooks 7.0.1 that fail with current codebase
       "react-hooks/set-state-in-effect": "off",
-      "react-hooks/refs": "off",
-      "react-hooks/purity": "off",
-      "react-hooks/error-boundaries": "off",
     },
   },
   {
@@ -149,7 +146,7 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Disable new strict rules from eslint-plugin-react-hooks 7.0.1
+      // Disable new strict rules from eslint-plugin-react-hooks 7.0.1 that fail with current codebase
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/refs": "off",
       "react-hooks/purity": "off",
