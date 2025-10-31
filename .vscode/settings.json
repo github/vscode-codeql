@@ -40,7 +40,8 @@
   "jest.autoRun": "off",
   "jest.nodeEnv": {
     "LANG": "en-US",
-    "TZ": "UTC"
+    "TZ": "UTC",
+    "NODE_OPTIONS": "--no-experimental-strip-types"
   },
 
   // These custom rules are read in extensions/ql-vscode/.markdownlint-cli2.cjs
@@ -79,6 +80,7 @@
     "env": {
       "LANG": "en-US",
       "TZ": "UTC",
+      "NODE_OPTIONS": "--no-experimental-strip-types",
 
       // Uncomment to set a custom path to a CodeQL checkout.
       // "TEST_CODEQL_PATH": "/absolute/path/to/checkout/of/codeql",
@@ -88,7 +90,7 @@
       // "CLI_PATH": "/absolute/path/to/custom/codeql",
 
       // Uncomment to debug integration tests
-      "VSCODE_WAIT_FOR_DEBUGGER": "true",
+      "VSCODE_WAIT_FOR_DEBUGGER": "true"
     }
   },
   "terminal.integrated.env.linux": {
@@ -105,10 +107,10 @@
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": true
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-  },
+    "editor.formatOnSave": true
+  }
 }
