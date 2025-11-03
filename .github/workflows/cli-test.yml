@@ -142,7 +142,7 @@ jobs:
             echo "Did not find an open tracking issue. Creating one."
 
             ISSUE_BODY="issue-body.md"
-            printf "CLI tests have failed on the default branch.\n\n@github/code-scanning-secexp-reviewers" > "$ISSUE_BODY"
+            printf "CLI tests have failed on the default branch.\n\n@github/codeql-vscode-reviewers" > "$ISSUE_BODY"
 
             ISSUE="$(gh issue create --repo "$GITHUB_REPOSITORY" --label "cli-test-failure" --title "CLI test failure" --body-file "$ISSUE_BODY")"
             # `gh issue create` returns the full issue URL, not just the number.
