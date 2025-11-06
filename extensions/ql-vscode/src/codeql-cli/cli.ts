@@ -202,9 +202,7 @@ interface BqrsDecodeOptions {
   entities?: string[];
 }
 
-type OnLineCallback = (
-  line: string,
-) => Promise<string | undefined> | string | undefined;
+type OnLineCallback = (line: string) => Promise<string | undefined>;
 
 type VersionChangedListener = (
   newVersionAndFeatures: VersionAndFeatures | undefined,
@@ -368,12 +366,11 @@ export class CodeQLCliServer implements Disposable {
    */
   private async launchProcess(): Promise<ChildProcessWithoutNullStreams> {
     const codeQlPath = await this.getCodeQlPath();
-    const args = [];
-    if (shouldDebugCliServer()) {
-      args.push(
-        "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9012,server=n,suspend=y,quiet=y",
-      );
-    }
+    const args = shouldDebugCliServer()
+      ? [
+          "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9012,server=n,suspend=y,quiet=y",
+        ]
+      : [];
 
     return spawnServer(
       codeQlPath,
@@ -399,15 +396,11 @@ export class CodeQLCliServer implements Disposable {
     }
     this.commandInProcess = true;
     try {
-      //Launch the process if it doesn't exist
-      if (!this.process) {
-        this.process = await this.launchProcess();
-      }
-      // Grab the process so that typescript know that it is always defined.
-      const process = this.process;
+      // Launch the process if it doesn't exist
+      this.process ??= await this.launchProcess();
 
       // Compute the full args array
-      const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
+      const args = command.concat(LOGGING_FLAGS, commandArgs);
       const argsString = args.join(" ");
       // If we are running silently, we don't want to print anything to the console.
       if (!silent) {
@@ -416,7 +409,7 @@ export class CodeQLCliServer implements Disposable {
         );
       }
       try {
-        return await this.handleProcessOutput(process, {
+        return await this.handleProcessOutput(this.process, {
           handleNullTerminator: true,
           onListenStart: (process) => {
             // Write the command followed by a null terminator.
@@ -451,7 +444,7 @@ export class CodeQLCliServer implements Disposable {
   ): Promise<string> {
     const codeqlPath = await this.getCodeQlPath();
 
-    const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
+    const args = command.concat(LOGGING_FLAGS, commandArgs);
     const argsString = args.join(" ");
 
     // If we are running silently, we don't want to print anything to the console.
@@ -569,16 +562,15 @@ export class CodeQLCliServer implements Disposable {
 
           stdoutBuffers.push(newData);
 
-          if (handleNullTerminator) {
+          if (
+            handleNullTerminator &&
             // If the buffer ends in '0' then exit.
             // We don't have to check the middle as no output will be written after the null until
             // the next command starts
-            if (
-              newData.length > 0 &&
-              newData.readUInt8(newData.length - 1) === 0
-            ) {
-              resolve();
-            }
+            newData.length > 0 &&
+            newData.readUInt8(newData.length - 1) === 0
+          ) {
+            resolve();
           }
         };
         stderrListener = (newData: Buffer) => {
@@ -693,9 +685,7 @@ export class CodeQLCliServer implements Disposable {
    */
   private runNext(): void {
     const callback = this.commandQueue.shift();
-    if (callback) {
-      callback();
-    }
+    callback?.();
   }
 
   /**
@@ -813,7 +803,7 @@ export class CodeQLCliServer implements Disposable {
    *              is false or not specified, this option is ignored.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
-  runCodeQlCliCommand(
+  private runCodeQlCliCommand(
     command: string[],
     commandArgs: string[],
     description: string,
@@ -825,9 +815,7 @@ export class CodeQLCliServer implements Disposable {
       token,
     }: RunOptions = {},
   ): Promise<string> {
-    if (progressReporter) {
-      progressReporter.report({ message: description });
-    }
+    progressReporter?.report({ message: description });
 
     if (runInNewProcess) {
       return this.runCodeQlCliInNewProcess(
@@ -874,18 +862,17 @@ export class CodeQLCliServer implements Disposable {
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
-  async runJsonCodeQlCliCommand<OutputType>(
+  private async runJsonCodeQlCliCommand<OutputType>(
     command: string[],
     commandArgs: string[],
     description: string,
     { addFormat = true, ...runOptions }: JsonRunOptions = {},
   ): Promise<OutputType> {
-    let args: string[] = [];
-    if (addFormat) {
+    const args = [
       // Add format argument first, in case commandArgs contains positional parameters.
-      args = args.concat(["--format", "json"]);
-    }
-    args = args.concat(commandArgs);
+      ...(addFormat ? ["--format", "json"] : []),
+      ...commandArgs,
+    ];
     const result = await this.runCodeQlCliCommand(
       command,
       args,
@@ -922,7 +909,7 @@ export class CodeQLCliServer implements Disposable {
    * @param runOptions Options for running the command.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
-  async runJsonCodeQlCliCommandWithAuthentication<OutputType>(
+  private async runJsonCodeQlCliCommandWithAuthentication<OutputType>(
     command: string[],
     commandArgs: string[],
     description: string,
@@ -1226,8 +1213,8 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
-   * Gets the results from a bqrs.
-   * @param bqrsPath The path to the bqrs.
+   * Gets the results from a bqrs file.
+   * @param bqrsPath The path to the bqrs file.
    * @param resultSet The result set to get.
    * @param options Optional BqrsDecodeOptions arguments
    */
@@ -1240,11 +1227,11 @@ export class CodeQLCliServer implements Disposable {
       `--entities=${entities.join(",")}`,
       "--result-set",
       resultSet,
-    ]
-      .concat(pageSize ? ["--rows", pageSize.toString()] : [])
-      .concat(offset ? ["--start-at", offset.toString()] : [])
-      .concat([bqrsPath]);
-    return await this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(
+      ...(pageSize ? ["--rows", pageSize.toString()] : []),
+      ...(offset ? ["--start-at", offset.toString()] : []),
+      bqrsPath,
+    ];
+    return this.runJsonCodeQlCliCommand<DecodedBqrsChunk>(
       ["bqrs", "decode"],
       subcommandArgs,
       "Reading bqrs data",
@@ -1252,11 +1239,11 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
-   * Gets all results from a bqrs.
-   * @param bqrsPath The path to the bqrs.
+   * Gets all results from a bqrs file.
+   * @param bqrsPath The path to the bqrs file.
    */
   async bqrsDecodeAll(bqrsPath: string): Promise<DecodedBqrs> {
-    return await this.runJsonCodeQlCliCommand<DecodedBqrs>(
+    return this.runJsonCodeQlCliCommand<DecodedBqrs>(
       ["bqrs", "decode"],
       [bqrsPath],
       "Reading all bqrs data",
@@ -1797,7 +1784,7 @@ export class CodeQLCliServer implements Disposable {
  * Spawns a child server process using the CodeQL CLI
  * and attaches listeners to it.
  *
- * @param config The configuration containing the path to the CLI.
+ * @param codeqlPath The configuration containing the path to the CLI.
  * @param name Name of the server being started, to be shown in log and error messages.
  * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
  * @param commandArgs The arguments to pass to the `codeql` command.
@@ -1823,9 +1810,9 @@ export function spawnServer(
   // Start the server process.
   const base = codeqlPath;
   const argsString = args.join(" ");
-  if (progressReporter !== undefined) {
-    progressReporter.report({ message: `Starting ${name}` });
-  }
+
+  progressReporter?.report({ message: `Starting ${name}` });
+
   void logger.log(`Starting ${name} using CodeQL CLI: ${base} ${argsString}`);
   const child = spawnChildProcess(base, args);
   if (!child || !child.pid) {
@@ -1859,9 +1846,8 @@ export function spawnServer(
     child.stdout.on("data", stdoutListener);
   }
 
-  if (progressReporter !== undefined) {
-    progressReporter.report({ message: `Started ${name}` });
-  }
+  progressReporter?.report({ message: `Started ${name}` });
+
   void logger.log(`${name} started on PID: ${child.pid}`);
   return child;
 }

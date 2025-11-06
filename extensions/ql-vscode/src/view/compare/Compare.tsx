@@ -46,7 +46,7 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
     null,
   );
 
-  const message = comparison?.message || "Empty comparison";
+  const message = comparison?.message ?? "Empty comparison";
   const hasRows =
     comparison?.result &&
     (comparison.result.to.length || comparison.result.from.length);
@@ -170,7 +170,7 @@ export function Compare(_: Record<string, never>): React.JSX.Element {
             queryInfo={queryInfo}
             comparison={comparison}
             userSettings={userSettings}
-          ></CompareTable>
+          />
         ) : (
           <Message>{message}</Message>
         )}

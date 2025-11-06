@@ -31,19 +31,16 @@ const Table = styled.table`
   }
 `;
 
+async function openQuery(kind: "from" | "to") {
+  vscode.postMessage({ t: "openQuery", kind });
+}
+
 export default function CompareTable({
   queryInfo,
   comparison,
   userSettings,
 }: Props) {
   const result = comparison.result!;
-
-  async function openQuery(kind: "from" | "to") {
-    vscode.postMessage({
-      t: "openQuery",
-      kind,
-    });
-  }
 
   return (
     <Table>
