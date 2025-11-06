@@ -23,18 +23,6 @@ export default function resultsDiff(
   fromResults: RawResultSet,
   toResults: RawResultSet,
 ): RawQueryCompareResult {
-  if (fromResults.columns.length !== toResults.columns.length) {
-    throw new Error("CodeQL Compare: Columns do not match.");
-  }
-
-  if (!fromResults.rows.length) {
-    throw new Error("CodeQL Compare: Source query has no results.");
-  }
-
-  if (!toResults.rows.length) {
-    throw new Error("CodeQL Compare: Target query has no results.");
-  }
-
   const results: RawQueryCompareResult = {
     kind: "raw",
     columns: fromResults.columns,

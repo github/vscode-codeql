@@ -45,6 +45,14 @@ interface ComparePair {
   commonResultSetNames: readonly string[];
 }
 
+function findSchema(info: BqrsInfo, name: string) {
+  const schema = info["result-sets"].find((schema) => schema.name === name);
+  if (schema === undefined) {
+    throw new Error(`Schema ${name} not found.`);
+  }
+  return schema;
+}
+
 export class CompareView extends AbstractWebview<
   ToCompareViewMessage,
   FromCompareViewMessage
@@ -370,12 +378,7 @@ export class CompareView extends AbstractWebview<
     resultSetName: string,
     resultsPath: string,
   ): Promise<RawResultSet> {
-    const schema = bqrsInfo["result-sets"].find(
-      (schema) => schema.name === resultSetName,
-    );
-    if (!schema) {
-      throw new Error(`Schema ${resultSetName} not found.`);
-    }
+    const schema = findSchema(bqrsInfo, resultSetName);
     const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
     return bqrsToResultSet(schema, chunk);
   }
@@ -385,20 +388,66 @@ export class CompareView extends AbstractWebview<
     fromResultSetName: string,
     toResultSetName: string,
   ): Promise<RawQueryCompareResult> {
-    const [fromResultSet, toResultSet] = await Promise.all([
-      this.getResultSet(
-        fromInfo.schemas,
-        fromResultSetName,
-        from.completedQuery.query.resultsPath,
-      ),
-      this.getResultSet(
-        toInfo.schemas,
-        toResultSetName,
-        to.completedQuery.query.resultsPath,
-      ),
-    ]);
+    const fromPath = from.completedQuery.query.resultsPath;
+    const toPath = to.completedQuery.query.resultsPath;
 
-    return resultsDiff(fromResultSet, toResultSet);
+    const fromSchema = findSchema(fromInfo.schemas, fromResultSetName);
+    const toSchema = findSchema(toInfo.schemas, toResultSetName);
+
+    if (fromSchema.columns.length !== toSchema.columns.length) {
+      throw new Error("CodeQL Compare: Columns do not match.");
+    }
+    if (fromSchema.rows === 0) {
+      throw new Error("CodeQL Compare: Source query has no results.");
+    }
+    if (toSchema.rows === 0) {
+      throw new Error("CodeQL Compare: Target query has no results.");
+    }
+
+    // If the result set names are the same, we use `bqrs diff`. This is more
+    // efficient, but we can't use it in general as it does not support
+    // comparing different result sets.
+    if (fromResultSetName === toResultSetName) {
+      const { uniquePath1, uniquePath2, cleanup } =
+        await this.cliServer.bqrsDiff(fromPath, toPath);
+      try {
+        const info1 = await this.cliServer.bqrsInfo(uniquePath1);
+        const info2 = await this.cliServer.bqrsInfo(uniquePath2);
+
+        // We avoid decoding the results sets if there is no overlap
+        if (
+          fromSchema.rows === findSchema(info1, fromResultSetName).rows &&
+          toSchema.rows === findSchema(info2, toResultSetName).rows
+        ) {
+          throw new Error(
+            "CodeQL Compare: No overlap between the selected queries.",
+          );
+        }
+
+        const fromUniqueResults = bqrsToResultSet(
+          fromSchema,
+          await this.cliServer.bqrsDecode(uniquePath1, fromResultSetName),
+        );
+        const toUniqueResults = bqrsToResultSet(
+          toSchema,
+          await this.cliServer.bqrsDecode(uniquePath2, toResultSetName),
+        );
+        return {
+          kind: "raw",
+          columns: fromUniqueResults.columns,
+          from: fromUniqueResults.rows,
+          to: toUniqueResults.rows,
+        };
+      } finally {
+        await cleanup();
+      }
+    } else {
+      const [fromResultSet, toResultSet] = await Promise.all([
+        this.getResultSet(fromInfo.schemas, fromResultSetName, fromPath),
+        this.getResultSet(toInfo.schemas, toResultSetName, toPath),
+      ]);
+      return resultsDiff(fromResultSet, toResultSet);
+    }
   }
 
   private async compareInterpretedResults({

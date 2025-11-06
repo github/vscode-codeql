@@ -9,6 +9,7 @@ import { SemVer } from "semver";
 import type { Readable } from "stream";
 import tk from "tree-kill";
 import type { CancellationToken, Disposable, Uri } from "vscode";
+import { dir } from "tmp-promise";
 
 import type {
   BqrsInfo,
@@ -1248,6 +1249,34 @@ export class CodeQLCliServer implements Disposable {
       [bqrsPath],
       "Reading all bqrs data",
     );
+  }
+
+  /** Gets the difference between two bqrs files. */
+  async bqrsDiff(
+    bqrsPath1: string,
+    bqrsPath2: string,
+  ): Promise<{
+    uniquePath1: string;
+    uniquePath2: string;
+    cleanup: () => Promise<void>;
+  }> {
+    const { path, cleanup } = await dir({ unsafeCleanup: true });
+    const uniquePath1 = join(path, "left.bqrs");
+    const uniquePath2 = join(path, "right.bqrs");
+    await this.runCodeQlCliCommand(
+      ["bqrs", "diff"],
+      [
+        "--left",
+        uniquePath1,
+        "--right",
+        uniquePath2,
+        "--retain-result-sets=''",
+        bqrsPath1,
+        bqrsPath2,
+      ],
+      "Diffing bqrs files",
+    );
+    return { uniquePath1, uniquePath2, cleanup };
   }
 
   async runInterpretCommand(
