@@ -2,7 +2,6 @@ import { ViewColumn } from "vscode";
 
 import type {
   FromCompareViewMessage,
-  InterpretedQueryCompareResult,
   QueryCompareResult,
   RawQueryCompareResult,
   ToCompareViewMessage,
@@ -14,7 +13,7 @@ import { extLogger } from "../common/logging/vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
-import type { BqrsInfo } from "../common/bqrs-cli-types";
+import type { BqrsInfo, BqrsResultSetSchema } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import type { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -36,7 +35,7 @@ import { compareInterpretedResults } from "./interpreted-results";
 import { isCanary } from "../config";
 import { nanoid } from "nanoid";
 
-interface ComparePair {
+export interface ComparePair {
   from: CompletedLocalQueryInfo;
   fromInfo: CompareQueryInfo;
   to: CompletedLocalQueryInfo;
@@ -45,7 +44,7 @@ interface ComparePair {
   commonResultSetNames: readonly string[];
 }
 
-function findSchema(info: BqrsInfo, name: string) {
+export function findSchema(info: BqrsInfo, name: string) {
   const schema = info["result-sets"].find((schema) => schema.name === name);
   if (schema === undefined) {
     throw new Error(`Schema ${name} not found.`);
@@ -182,8 +181,7 @@ export class CompareView extends AbstractWebview<
           result = await compareInterpretedResults(
             this.databaseManager,
             this.cliServer,
-            this.comparePair.from,
-            this.comparePair.to,
+            this.comparePair,
           );
         } else {
           result = await this.compareResults(
@@ -373,18 +371,12 @@ export class CompareView extends AbstractWebview<
     const fromPath = from.completedQuery.query.resultsPath;
     const toPath = to.completedQuery.query.resultsPath;
 
-    const fromSchema = findSchema(fromInfo.schemas, fromResultSetName);
-    const toSchema = findSchema(toInfo.schemas, toResultSetName);
-
-    if (fromSchema.columns.length !== toSchema.columns.length) {
-      throw new Error("CodeQL Compare: Columns do not match.");
-    }
-    if (fromSchema.rows === 0) {
-      throw new Error("CodeQL Compare: Source query has no results.");
-    }
-    if (toSchema.rows === 0) {
-      throw new Error("CodeQL Compare: Target query has no results.");
-    }
+    const { fromSchema, toSchema } = getComparableSchemas(
+      fromInfo,
+      toInfo,
+      fromResultSetName,
+      toResultSetName,
+    );
 
     // If the result set names are the same, we use `bqrs diff`. This is more
     // efficient, but we can't use it in general as it does not support
@@ -393,13 +385,13 @@ export class CompareView extends AbstractWebview<
       const { uniquePath1, uniquePath2, cleanup } =
         await this.cliServer.bqrsDiff(fromPath, toPath);
       try {
-        const info1 = await this.cliServer.bqrsInfo(uniquePath1);
-        const info2 = await this.cliServer.bqrsInfo(uniquePath2);
+        const uniqueInfo1 = await this.cliServer.bqrsInfo(uniquePath1);
+        const uniqueInfo2 = await this.cliServer.bqrsInfo(uniquePath2);
 
         // We avoid decoding the results sets if there is no overlap
         if (
-          fromSchema.rows === findSchema(info1, fromResultSetName).rows &&
-          toSchema.rows === findSchema(info2, toResultSetName).rows
+          fromSchema.rows === findSchema(uniqueInfo1, fromResultSetName).rows &&
+          toSchema.rows === findSchema(uniqueInfo2, toResultSetName).rows
         ) {
           throw new Error(
             "CodeQL Compare: No overlap between the selected queries.",
@@ -439,4 +431,29 @@ export class CompareView extends AbstractWebview<
       await this.showQueryResultsCallback(toOpen);
     }
   }
+}
+
+/**
+ * Check that `fromInfo` and `toInfo` have comparable schemas for the given
+ * result set names and get them if so.
+ */
+export function getComparableSchemas(
+  fromInfo: CompareQueryInfo,
+  toInfo: CompareQueryInfo,
+  fromResultSetName: string,
+  toResultSetName: string,
+): { fromSchema: BqrsResultSetSchema; toSchema: BqrsResultSetSchema } {
+  const fromSchema = findSchema(fromInfo.schemas, fromResultSetName);
+  const toSchema = findSchema(toInfo.schemas, toResultSetName);
+
+  if (fromSchema.columns.length !== toSchema.columns.length) {
+    throw new Error("CodeQL Compare: Columns do not match.");
+  }
+  if (fromSchema.rows === 0) {
+    throw new Error("CodeQL Compare: Source query has no results.");
+  }
+  if (toSchema.rows === 0) {
+    throw new Error("CodeQL Compare: Target query has no results.");
+  }
+  return { fromSchema, toSchema };
 }

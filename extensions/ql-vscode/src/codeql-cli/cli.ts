@@ -203,6 +203,10 @@ interface BqrsDecodeOptions {
   entities?: string[];
 }
 
+interface BqrsDiffOptions {
+  retainResultSets?: string[];
+}
+
 type OnLineCallback = (line: string) => Promise<string | undefined>;
 
 type VersionChangedListener = (
@@ -1255,9 +1259,11 @@ export class CodeQLCliServer implements Disposable {
   async bqrsDiff(
     bqrsPath1: string,
     bqrsPath2: string,
+    options?: BqrsDiffOptions,
   ): Promise<{
     uniquePath1: string;
     uniquePath2: string;
+    path: string;
     cleanup: () => Promise<void>;
   }> {
     const { path, cleanup } = await dir({ unsafeCleanup: true });
@@ -1270,13 +1276,14 @@ export class CodeQLCliServer implements Disposable {
         uniquePath1,
         "--right",
         uniquePath2,
-        "--retain-result-sets=''",
+        "--retain-result-sets",
+        options?.retainResultSets?.join(",") ?? "",
         bqrsPath1,
         bqrsPath2,
       ],
       "Diffing bqrs files",
     );
-    return { uniquePath1, uniquePath2, cleanup };
+    return { uniquePath1, uniquePath2, path, cleanup };
   }
 
   private async runInterpretCommand(

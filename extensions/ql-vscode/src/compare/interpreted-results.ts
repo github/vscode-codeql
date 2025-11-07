@@ -1,30 +1,31 @@
 import { Uri } from "vscode";
-import type { Log } from "sarif";
-import { pathExists } from "fs-extra";
-import { sarifParser } from "../common/sarif-parser";
-import type { CompletedLocalQueryInfo } from "../query-results";
+import { join } from "path";
 import type { DatabaseManager } from "../databases/local-databases";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
-import type { InterpretedQueryCompareResult } from "../common/interface-types";
+import {
+  ALERTS_TABLE_NAME,
+  SELECT_TABLE_NAME,
+  type InterpretedQueryCompareResult,
+} from "../common/interface-types";
 
-import { sarifDiff } from "./sarif-diff";
-
-async function getInterpretedResults(
-  interpretedResultsPath: string,
-): Promise<Log | undefined> {
-  if (!(await pathExists(interpretedResultsPath))) {
-    return undefined;
-  }
-
-  return await sarifParser(interpretedResultsPath);
-}
+import { getComparableSchemas, ComparePair } from "./compare-view";
 
 export async function compareInterpretedResults(
   databaseManager: DatabaseManager,
   cliServer: CodeQLCliServer,
-  fromQuery: CompletedLocalQueryInfo,
-  toQuery: CompletedLocalQueryInfo,
+  comparePair: ComparePair,
 ): Promise<InterpretedQueryCompareResult> {
+  const { from: fromQuery, fromInfo, to: toQuery, toInfo } = comparePair;
+
+  // `ALERTS_TABLE_NAME` is inserted by `getResultSetNames` into the schema
+  // names even if it does not occur as a result set. Hence we check for
+  // `SELECT_TABLE_NAME` first, and use that if it exists.
+  const tableName = fromInfo.schemaNames.includes(SELECT_TABLE_NAME)
+    ? SELECT_TABLE_NAME
+    : ALERTS_TABLE_NAME;
+
+  getComparableSchemas(fromInfo, toInfo, tableName, tableName);
+
   const database = databaseManager.findDatabaseItem(
     Uri.parse(toQuery.initialInfo.databaseInfo.databaseUri),
   );
@@ -34,37 +35,46 @@ export async function compareInterpretedResults(
     );
   }
 
-  const [fromResultSet, toResultSet, sourceLocationPrefix] = await Promise.all([
-    getInterpretedResults(
-      fromQuery.completedQuery.query.interpretedResultsPath,
-    ),
-    getInterpretedResults(toQuery.completedQuery.query.interpretedResultsPath),
-    database.getSourceLocationPrefix(cliServer),
-  ]);
+  const { uniquePath1, uniquePath2, path, cleanup } = await cliServer.bqrsDiff(
+    fromQuery.completedQuery.query.resultsPath,
+    toQuery.completedQuery.query.resultsPath,
+    { retainResultSets: ["nodes", "edges", "subpaths"] },
+  );
+  try {
+    const sarifOutput1 = join(path, "from.sarif");
+    const sarifOutput2 = join(path, "to.sarif");
 
-  if (!fromResultSet || !toResultSet) {
-    throw new Error(
-      "Could not find interpreted results for one or both queries.",
+    const sourceLocationPrefix =
+      await database.getSourceLocationPrefix(cliServer);
+    const sourceArchiveUri = database.sourceArchive;
+    const sourceInfo =
+      sourceArchiveUri === undefined
+        ? undefined
+        : {
+            sourceArchive: sourceArchiveUri.fsPath,
+            sourceLocationPrefix,
+          };
+
+    const fromResultSet = await cliServer.interpretBqrsSarif(
+      fromQuery.completedQuery.query.metadata!,
+      uniquePath1,
+      sarifOutput1,
+      sourceInfo,
     );
+    const toResultSet = await cliServer.interpretBqrsSarif(
+      toQuery.completedQuery.query.metadata!,
+      uniquePath2,
+      sarifOutput2,
+      sourceInfo,
+    );
+
+    return {
+      kind: "interpreted",
+      sourceLocationPrefix,
+      from: fromResultSet.runs[0].results!,
+      to: toResultSet.runs[0].results!,
+    };
+  } finally {
+    await cleanup();
   }
-
-  const fromResults = fromResultSet.runs[0].results;
-  const toResults = toResultSet.runs[0].results;
-
-  if (!fromResults) {
-    throw new Error("No results found in the 'from' query.");
-  }
-
-  if (!toResults) {
-    throw new Error("No results found in the 'to' query.");
-  }
-
-  const { from, to } = sarifDiff(fromResults, toResults);
-
-  return {
-    kind: "interpreted",
-    sourceLocationPrefix,
-    from,
-    to,
-  };
 }
