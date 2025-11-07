@@ -1279,7 +1279,7 @@ export class CodeQLCliServer implements Disposable {
     return { uniquePath1, uniquePath2, cleanup };
   }
 
-  async runInterpretCommand(
+  private async runInterpretCommand(
     format: string,
     additonalArgs: string[],
     metadata: QueryMetadata,
@@ -1294,21 +1294,22 @@ export class CodeQLCliServer implements Disposable {
       format,
       // Forward all of the query metadata.
       ...Object.entries(metadata).map(([key, value]) => `-t=${key}=${value}`),
-    ].concat(additonalArgs);
-    if (sourceInfo !== undefined) {
-      args.push(
-        "--source-archive",
-        sourceInfo.sourceArchive,
-        "--source-location-prefix",
-        sourceInfo.sourceLocationPrefix,
-      );
-    }
+      ...additonalArgs,
+      ...(sourceInfo !== undefined
+        ? [
+            "--source-archive",
+            sourceInfo.sourceArchive,
+            "--source-location-prefix",
+            sourceInfo.sourceLocationPrefix,
+          ]
+        : []),
+      "--threads",
+      this.cliConfig.numberThreads.toString(),
+      "--max-paths",
+      this.cliConfig.maxPaths.toString(),
+      resultsPath,
+    ];
 
-    args.push("--threads", this.cliConfig.numberThreads.toString());
-
-    args.push("--max-paths", this.cliConfig.maxPaths.toString());
-
-    args.push(resultsPath);
     await this.runCodeQlCliCommand(
       ["bqrs", "interpret"],
       args,

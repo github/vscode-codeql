@@ -168,8 +168,10 @@ export class CompareView extends AbstractWebview<
       currentResultSetDisplayName,
       fromResultSetName,
       toResultSetName,
-    } = await this.findResultSetsToCompare(
-      this.comparePair,
+    } = await findResultSetNames(
+      this.comparePair.fromInfo,
+      this.comparePair.toInfo,
+      this.comparePair.commonResultSetNames,
       selectedResultSetName,
     );
     if (currentResultSetDisplayName) {
@@ -177,7 +179,12 @@ export class CompareView extends AbstractWebview<
       let message: string | undefined;
       try {
         if (currentResultSetName === ALERTS_TABLE_NAME) {
-          result = await this.compareInterpretedResults(this.comparePair);
+          result = await compareInterpretedResults(
+            this.databaseManager,
+            this.cliServer,
+            this.comparePair.from,
+            this.comparePair.to,
+          );
         } else {
           result = await this.compareResults(
             this.comparePair,
@@ -344,31 +351,6 @@ export class CompareView extends AbstractWebview<
     }
   }
 
-  private async findResultSetsToCompare(
-    { fromInfo, toInfo, commonResultSetNames }: ComparePair,
-    selectedResultSetName: string | undefined,
-  ) {
-    const {
-      currentResultSetName,
-      currentResultSetDisplayName,
-      fromResultSetName,
-      toResultSetName,
-    } = await findResultSetNames(
-      fromInfo,
-      toInfo,
-      commonResultSetNames,
-      selectedResultSetName,
-    );
-
-    return {
-      commonResultSetNames,
-      currentResultSetName,
-      currentResultSetDisplayName,
-      fromResultSetName,
-      toResultSetName,
-    };
-  }
-
   private async changeTable(newResultSetName: string) {
     await this.showResultsInternal(newResultSetName);
   }
@@ -448,18 +430,6 @@ export class CompareView extends AbstractWebview<
       ]);
       return resultsDiff(fromResultSet, toResultSet);
     }
-  }
-
-  private async compareInterpretedResults({
-    from,
-    to,
-  }: ComparePair): Promise<InterpretedQueryCompareResult> {
-    return compareInterpretedResults(
-      this.databaseManager,
-      this.cliServer,
-      from,
-      to,
-    );
   }
 
   private async openQuery(kind: "from" | "to") {
