@@ -144,6 +144,9 @@ export interface RunQueryParams {
   dilPath?: string;
   logPath?: string;
   extensionPacks?: string[];
+  warmCacheOnly?: boolean;
+  noEvaluateAsOverlay?: boolean;
+  cacheAtFrontier?: boolean;
 }
 
 export interface RunQueryResult {
@@ -167,6 +170,9 @@ export interface RunQueriesParams {
   singletonExternalInputs: Record<string, string>;
   logPath?: string;
   extensionPacks?: string[];
+  warmCacheOnly?: boolean;
+  noEvaluateAsOverlay?: boolean;
+  cacheAtFrontier?: boolean;
 }
 
 interface UpgradeParams {

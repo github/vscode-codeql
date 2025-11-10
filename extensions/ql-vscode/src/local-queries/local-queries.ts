@@ -95,7 +95,11 @@ export class LocalQueries extends DisposableObject {
   public getCommands(): LocalQueryCommands {
     return {
       "codeQL.runQuery": this.runQuery.bind(this),
+      "codeQL.runPopulateUnderlayQuery":
+        this.runPopulateUnderlayQuery.bind(this),
       "codeQL.runQueryContextEditor": this.runQuery.bind(this),
+      "codeQL.runPopulateUnderlayQueryContextEditor":
+        this.runPopulateUnderlayQuery.bind(this),
       "codeQL.runQueryOnMultipleDatabases":
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
@@ -113,7 +117,12 @@ export class LocalQueries extends DisposableObject {
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),
       ),
+      "codeQL.runPopulateUnderlayQueries": createMultiSelectionCommand(
+        this.runPopulateUnderlayQueries.bind(this),
+      ),
       "codeQL.runQuerySuite": this.runQuerySuite.bind(this),
+      "codeQL.runPopulateUnderlayQuerySuite":
+        this.runPopulateUnderlayQuerySuite.bind(this),
       "codeQL.quickEval": this.quickEval.bind(this),
       "codeQL.quickEvalCount": this.quickEvalCount.bind(this),
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
@@ -152,6 +161,16 @@ export class LocalQueries extends DisposableObject {
   }
 
   private async runQuery(uri: Uri | undefined): Promise<void> {
+    await this.runQueryInternal(uri, false);
+  }
+  private async runPopulateUnderlayQuery(uri: Uri | undefined): Promise<void> {
+    await this.runQueryInternal(uri, true);
+  }
+
+  private async runQueryInternal(
+    uri: Uri | undefined,
+    onlyPopulateUnderlay: boolean,
+  ): Promise<void> {
     await withProgress(
       async (progress, token) => {
         await this.compileAndRunQuery(
@@ -160,10 +179,13 @@ export class LocalQueries extends DisposableObject {
           progress,
           token,
           undefined,
+          onlyPopulateUnderlay,
         );
       },
       {
-        title: "Running query",
+        title: onlyPopulateUnderlay
+          ? "Populate database underlay for query"
+          : "Running query",
         cancellable: true,
       },
     );
@@ -181,8 +203,18 @@ export class LocalQueries extends DisposableObject {
       },
     );
   }
-
   private async runQueries(fileURIs: Uri[]): Promise<void> {
+    await this.runQueriesInternal(fileURIs, false);
+  }
+
+  private async runPopulateUnderlayQueries(fileURIs: Uri[]): Promise<void> {
+    await this.runQueriesInternal(fileURIs, true);
+  }
+
+  private async runQueriesInternal(
+    fileURIs: Uri[],
+    onlyPopulateUnderlay: boolean,
+  ): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const maxQueryCount = MAX_QUERIES.getValue<number>();
@@ -235,18 +267,32 @@ export class LocalQueries extends DisposableObject {
               wrappedProgress,
               token,
               undefined,
+              onlyPopulateUnderlay,
             ).then(() => queriesRemaining--),
           ),
         );
       },
       {
-        title: "Running queries",
+        title: onlyPopulateUnderlay
+          ? "Populate database underlay for queries"
+          : "Running queries",
         cancellable: true,
       },
     );
   }
 
   private async runQuerySuite(fileUri: Uri): Promise<void> {
+    await this.runQuerySuiteInternal(fileUri, false);
+  }
+
+  private async runPopulateUnderlayQuerySuite(fileUri: Uri): Promise<void> {
+    await this.runQuerySuiteInternal(fileUri, true);
+  }
+
+  private async runQuerySuiteInternal(
+    fileUri: Uri,
+    onlyPopulateUnderlay: boolean,
+  ): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const suitePath = validateQuerySuiteUri(fileUri);
@@ -286,6 +332,9 @@ export class LocalQueries extends DisposableObject {
           true,
           additionalPacks,
           extensionPacks,
+          onlyPopulateUnderlay,
+          onlyPopulateUnderlay,
+          onlyPopulateUnderlay,
           {},
           this.queryStorageDir,
           basename(suitePath),
@@ -310,7 +359,8 @@ export class LocalQueries extends DisposableObject {
               localQueryRun.logger,
             );
 
-            await localQueryRun.complete(results, progress);
+            if (!onlyPopulateUnderlay)
+              await localQueryRun.complete(results, progress);
 
             return results;
           } catch (e) {
@@ -328,7 +378,9 @@ export class LocalQueries extends DisposableObject {
         }
       },
       {
-        title: "Running query suite",
+        title: onlyPopulateUnderlay
+          ? "Populate database underlay for query suite"
+          : "Running query suite",
         cancellable: true,
       },
     );
@@ -343,6 +395,7 @@ export class LocalQueries extends DisposableObject {
           progress,
           token,
           undefined,
+          false,
         );
       },
       {
@@ -361,6 +414,7 @@ export class LocalQueries extends DisposableObject {
           progress,
           token,
           undefined,
+          false,
         );
       },
       {
@@ -379,6 +433,7 @@ export class LocalQueries extends DisposableObject {
           progress,
           token,
           undefined,
+          false,
           range,
         ),
       {
@@ -489,6 +544,7 @@ export class LocalQueries extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
+    onlyPopulateUnderlay: boolean,
     range?: Range,
     templates?: Record<string, string>,
   ): Promise<void> {
@@ -500,6 +556,7 @@ export class LocalQueries extends DisposableObject {
       databaseItem,
       range,
       templates,
+      onlyPopulateUnderlay,
     );
   }
 
@@ -512,6 +569,7 @@ export class LocalQueries extends DisposableObject {
     databaseItem: DatabaseItem | undefined,
     range?: Range,
     templates?: Record<string, string>,
+    onlyPopulateUnderlay: boolean = false,
   ): Promise<CoreCompletedQuery> {
     await saveBeforeStart();
 
@@ -558,6 +616,9 @@ export class LocalQueries extends DisposableObject {
       true,
       additionalPacks,
       extensionPacks,
+      onlyPopulateUnderlay,
+      onlyPopulateUnderlay,
+      onlyPopulateUnderlay,
       {},
       this.queryStorageDir,
       basename(selectedQuery.queryPath),
@@ -583,7 +644,8 @@ export class LocalQueries extends DisposableObject {
           localQueryRun.logger,
         );
 
-        await localQueryRun.complete(results, progress);
+        if (!onlyPopulateUnderlay)
+          await localQueryRun.complete(results, progress);
 
         return results;
       } catch (e) {
@@ -656,6 +718,7 @@ export class LocalQueries extends DisposableObject {
             progress,
             token,
             item.databaseItem,
+            false,
           );
         } catch (e) {
           skippedDatabases.push(item.label);
