@@ -118,6 +118,7 @@ export class DatabaseManager extends DisposableObject {
     private readonly ctx: ExtensionContext,
     private readonly app: App,
     private readonly qs: QueryRunner,
+    private readonly qsForWarmingOverlayBaseCache: QueryRunner,
     private readonly cli: CodeQLCliServer,
     private readonly languageContext: LanguageContextStore,
     public logger: Logger,
@@ -736,6 +737,34 @@ export class DatabaseManager extends DisposableObject {
   public async removeAllDatabases() {
     for (const item of this.databaseItems) {
       await this.removeDatabaseItem(item);
+    }
+  }
+
+  public async withDatabaseInQsForWarmingOverlayBaseCache(
+    whatToDo: () => Promise<void>,
+  ) {
+    try {
+      if (this._currentDatabaseItem) {
+        const dbItem = this._currentDatabaseItem;
+        await this.qs.deregisterDatabase(dbItem);
+        await this.qsForWarmingOverlayBaseCache.registerDatabase(dbItem);
+      }
+      await whatToDo();
+      if (this._currentDatabaseItem) {
+        const dbItem = this._currentDatabaseItem;
+        await this.qsForWarmingOverlayBaseCache.deregisterDatabase(dbItem);
+        await this.qs.registerDatabase(dbItem);
+      }
+    } catch (e) {
+      const message = getErrorMessage(e);
+      if (message === "Connection is disposed.") {
+        // This is expected if the query server is not running.
+        void extLogger.log(
+          `Could not use database for warming overlay-base cache because query server is not running.`,
+        );
+        return;
+      }
+      throw e;
     }
   }
 

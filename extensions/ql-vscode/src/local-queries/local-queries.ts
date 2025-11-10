@@ -74,6 +74,7 @@ export class LocalQueries extends DisposableObject {
   public constructor(
     private readonly app: ExtensionApp,
     private readonly queryRunner: QueryRunner,
+    private readonly queryRunnerForWarmingOverlayBaseCache: QueryRunner,
     private readonly queryHistoryManager: QueryHistoryManager,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseFetcher: DatabaseFetcher,
@@ -95,7 +96,11 @@ export class LocalQueries extends DisposableObject {
   public getCommands(): LocalQueryCommands {
     return {
       "codeQL.runQuery": this.runQuery.bind(this),
+      "codeQL.runWarmOverlayBaseCacheForQuery":
+        this.runWarmOverlayBaseCacheForQuery.bind(this),
       "codeQL.runQueryContextEditor": this.runQuery.bind(this),
+      "codeQL.runWarmOverlayBaseCacheForQueryContextEditor":
+        this.runWarmOverlayBaseCacheForQuery.bind(this),
       "codeQL.runQueryOnMultipleDatabases":
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
@@ -113,7 +118,12 @@ export class LocalQueries extends DisposableObject {
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),
       ),
+      "codeQL.runWarmOverlayBaseCacheForQueries": createMultiSelectionCommand(
+        this.runWarmOverlayBaseCacheForQueries.bind(this),
+      ),
       "codeQL.runQuerySuite": this.runQuerySuite.bind(this),
+      "codeQL.runWarmOverlayBaseCacheForQuerySuite":
+        this.runWarmOverlayBaseCacheForQuerySuite.bind(this),
       "codeQL.quickEval": this.quickEval.bind(this),
       "codeQL.quickEvalCount": this.quickEvalCount.bind(this),
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
@@ -152,6 +162,20 @@ export class LocalQueries extends DisposableObject {
   }
 
   private async runQuery(uri: Uri | undefined): Promise<void> {
+    await this.runQueryInternal(uri, false);
+  }
+  private async runWarmOverlayBaseCacheForQuery(
+    uri: Uri | undefined,
+  ): Promise<void> {
+    await this.databaseManager.withDatabaseInQsForWarmingOverlayBaseCache(() =>
+      this.runQueryInternal(uri, true),
+    );
+  }
+
+  private async runQueryInternal(
+    uri: Uri | undefined,
+    warmOverlayBaseCache: boolean,
+  ): Promise<void> {
     await withProgress(
       async (progress, token) => {
         await this.compileAndRunQuery(
@@ -160,10 +184,13 @@ export class LocalQueries extends DisposableObject {
           progress,
           token,
           undefined,
+          warmOverlayBaseCache,
         );
       },
       {
-        title: "Running query",
+        title: warmOverlayBaseCache
+          ? "Warm overlay-base cache for query"
+          : "Running query",
         cancellable: true,
       },
     );
@@ -183,6 +210,21 @@ export class LocalQueries extends DisposableObject {
   }
 
   private async runQueries(fileURIs: Uri[]): Promise<void> {
+    await this.runQueriesInternal(fileURIs, false);
+  }
+
+  private async runWarmOverlayBaseCacheForQueries(
+    fileURIs: Uri[],
+  ): Promise<void> {
+    await this.databaseManager.withDatabaseInQsForWarmingOverlayBaseCache(() =>
+      this.runQueriesInternal(fileURIs, true),
+    );
+  }
+
+  private async runQueriesInternal(
+    fileURIs: Uri[],
+    warmOverlayBaseCache: boolean,
+  ): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const maxQueryCount = MAX_QUERIES.getValue<number>();
@@ -235,18 +277,36 @@ export class LocalQueries extends DisposableObject {
               wrappedProgress,
               token,
               undefined,
+              warmOverlayBaseCache,
             ).then(() => queriesRemaining--),
           ),
         );
       },
       {
-        title: "Running queries",
+        title: warmOverlayBaseCache
+          ? "Warm overlay-base cache for queries"
+          : "Running queries",
         cancellable: true,
       },
     );
   }
 
   private async runQuerySuite(fileUri: Uri): Promise<void> {
+    await this.runQuerySuiteInternal(fileUri, false);
+  }
+
+  private async runWarmOverlayBaseCacheForQuerySuite(
+    fileUri: Uri,
+  ): Promise<void> {
+    await this.databaseManager.withDatabaseInQsForWarmingOverlayBaseCache(() =>
+      this.runQuerySuiteInternal(fileUri, true),
+    );
+  }
+
+  private async runQuerySuiteInternal(
+    fileUri: Uri,
+    warmOverlayBaseCache: boolean,
+  ): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const suitePath = validateQuerySuiteUri(fileUri);
@@ -280,7 +340,10 @@ export class LocalQueries extends DisposableObject {
             quickEvalCountOnly: false,
           });
         });
-        const coreQueryRun = this.queryRunner.createQueryRun(
+        const queryRunner = warmOverlayBaseCache
+          ? this.queryRunnerForWarmingOverlayBaseCache
+          : this.queryRunner;
+        const coreQueryRun = queryRunner.createQueryRun(
           databaseItem.databaseUri.fsPath,
           queryTargets,
           true,
@@ -301,6 +364,7 @@ export class LocalQueries extends DisposableObject {
             databaseItem,
             coreQueryRun.outputDir,
             source,
+            warmOverlayBaseCache,
           );
 
           try {
@@ -310,7 +374,11 @@ export class LocalQueries extends DisposableObject {
               localQueryRun.logger,
             );
 
-            await localQueryRun.complete(results, progress);
+            await localQueryRun.complete(
+              results,
+              progress,
+              warmOverlayBaseCache,
+            );
 
             return results;
           } catch (e) {
@@ -328,7 +396,9 @@ export class LocalQueries extends DisposableObject {
         }
       },
       {
-        title: "Running query suite",
+        title: warmOverlayBaseCache
+          ? "Warm overlay-base cache for query suite"
+          : "Running query suite",
         cancellable: true,
       },
     );
@@ -379,6 +449,7 @@ export class LocalQueries extends DisposableObject {
           progress,
           token,
           undefined,
+          false,
           range,
         ),
       {
@@ -447,10 +518,15 @@ export class LocalQueries extends DisposableObject {
     dbItem: DatabaseItem,
     outputDir: QueryOutputDir,
     tokenSource: CancellationTokenSource,
+    warmOverlayBaseCache: boolean = false,
   ): Promise<LocalQueryRun> {
     await createTimestampFile(outputDir.querySaveDir);
 
-    if (this.queryRunner.customLogDirectory) {
+    const queryRunner = warmOverlayBaseCache
+      ? this.queryRunnerForWarmingOverlayBaseCache
+      : this.queryRunner;
+
+    if (queryRunner.customLogDirectory) {
       void showAndLogWarningMessage(
         this.app.logger,
         `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${outputDir.logPath}`,
@@ -471,7 +547,7 @@ export class LocalQueries extends DisposableObject {
     const queryInfo = new LocalQueryInfo(initialInfo, tokenSource);
     this.queryHistoryManager.addQuery(queryInfo);
 
-    const logger = new TeeLogger(this.queryRunner.logger, outputDir.logPath);
+    const logger = new TeeLogger(queryRunner.logger, outputDir.logPath);
     return new LocalQueryRun(
       outputDir,
       this,
@@ -489,6 +565,7 @@ export class LocalQueries extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
+    warmOverlayBaseCache: boolean = false,
     range?: Range,
     templates?: Record<string, string>,
   ): Promise<void> {
@@ -500,6 +577,7 @@ export class LocalQueries extends DisposableObject {
       databaseItem,
       range,
       templates,
+      warmOverlayBaseCache,
     );
   }
 
@@ -512,6 +590,7 @@ export class LocalQueries extends DisposableObject {
     databaseItem: DatabaseItem | undefined,
     range?: Range,
     templates?: Record<string, string>,
+    warmOverlayBaseCache: boolean = false,
   ): Promise<CoreCompletedQuery> {
     await saveBeforeStart();
 
@@ -545,7 +624,10 @@ export class LocalQueries extends DisposableObject {
     const additionalPacks = getOnDiskWorkspaceFolders();
     const extensionPacks = await this.getDefaultExtensionPacks(additionalPacks);
 
-    const coreQueryRun = this.queryRunner.createQueryRun(
+    const queryRunner = warmOverlayBaseCache
+      ? this.queryRunnerForWarmingOverlayBaseCache
+      : this.queryRunner;
+    const coreQueryRun = queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,
       [
         {
@@ -574,6 +656,7 @@ export class LocalQueries extends DisposableObject {
         databaseItem,
         coreQueryRun.outputDir,
         source,
+        warmOverlayBaseCache,
       );
 
       try {
@@ -583,7 +666,7 @@ export class LocalQueries extends DisposableObject {
           localQueryRun.logger,
         );
 
-        await localQueryRun.complete(results, progress);
+        await localQueryRun.complete(results, progress, warmOverlayBaseCache);
 
         return results;
       } catch (e) {
