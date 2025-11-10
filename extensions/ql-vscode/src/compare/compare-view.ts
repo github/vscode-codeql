@@ -1,12 +1,17 @@
-import { ViewColumn } from "vscode";
+import { Uri, ViewColumn } from "vscode";
+import { join } from "path";
 
 import type {
   FromCompareViewMessage,
+  InterpretedQueryCompareResult,
   QueryCompareResult,
   RawQueryCompareResult,
   ToCompareViewMessage,
 } from "../common/interface-types";
-import { ALERTS_TABLE_NAME } from "../common/interface-types";
+import {
+  ALERTS_TABLE_NAME,
+  SELECT_TABLE_NAME,
+} from "../common/interface-types";
 import type { Logger } from "../common/logging";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
@@ -31,11 +36,10 @@ import {
   findResultSetNames,
   getResultSetNames,
 } from "./result-set-names";
-import { compareInterpretedResults } from "./interpreted-results";
 import { isCanary } from "../config";
 import { nanoid } from "nanoid";
 
-export interface ComparePair {
+interface ComparePair {
   from: CompletedLocalQueryInfo;
   fromInfo: CompareQueryInfo;
   to: CompletedLocalQueryInfo;
@@ -44,12 +48,37 @@ export interface ComparePair {
   commonResultSetNames: readonly string[];
 }
 
-export function findSchema(info: BqrsInfo, name: string) {
+function findSchema(info: BqrsInfo, name: string) {
   const schema = info["result-sets"].find((schema) => schema.name === name);
   if (schema === undefined) {
     throw new Error(`Schema ${name} not found.`);
   }
   return schema;
+}
+
+/**
+ * Check that `fromInfo` and `toInfo` have comparable schemas for the given
+ * result set names and get them if so.
+ */
+function getComparableSchemas(
+  fromInfo: CompareQueryInfo,
+  toInfo: CompareQueryInfo,
+  fromResultSetName: string,
+  toResultSetName: string,
+): { fromSchema: BqrsResultSetSchema; toSchema: BqrsResultSetSchema } {
+  const fromSchema = findSchema(fromInfo.schemas, fromResultSetName);
+  const toSchema = findSchema(toInfo.schemas, toResultSetName);
+
+  if (fromSchema.columns.length !== toSchema.columns.length) {
+    throw new Error("CodeQL Compare: Columns do not match.");
+  }
+  if (fromSchema.rows === 0) {
+    throw new Error("CodeQL Compare: Source query has no results.");
+  }
+  if (toSchema.rows === 0) {
+    throw new Error("CodeQL Compare: Target query has no results.");
+  }
+  return { fromSchema, toSchema };
 }
 
 export class CompareView extends AbstractWebview<
@@ -178,11 +207,7 @@ export class CompareView extends AbstractWebview<
       let message: string | undefined;
       try {
         if (currentResultSetName === ALERTS_TABLE_NAME) {
-          result = await compareInterpretedResults(
-            this.databaseManager,
-            this.cliServer,
-            this.comparePair,
-          );
+          result = await this.compareInterpretedResults(this.comparePair);
         } else {
           result = await this.compareResults(
             this.comparePair,
@@ -424,6 +449,75 @@ export class CompareView extends AbstractWebview<
     }
   }
 
+  private async compareInterpretedResults(
+    comparePair: ComparePair,
+  ): Promise<InterpretedQueryCompareResult> {
+    const { from: fromQuery, fromInfo, to: toQuery, toInfo } = comparePair;
+
+    // `ALERTS_TABLE_NAME` is inserted by `getResultSetNames` into the schema
+    // names even if it does not occur as a result set. Hence we check for
+    // `SELECT_TABLE_NAME` first, and use that if it exists.
+    const tableName = fromInfo.schemaNames.includes(SELECT_TABLE_NAME)
+      ? SELECT_TABLE_NAME
+      : ALERTS_TABLE_NAME;
+
+    getComparableSchemas(fromInfo, toInfo, tableName, tableName);
+
+    const database = this.databaseManager.findDatabaseItem(
+      Uri.parse(toQuery.initialInfo.databaseInfo.databaseUri),
+    );
+    if (!database) {
+      throw new Error(
+        "Could not find database the queries. Please check that the database still exists.",
+      );
+    }
+
+    const { uniquePath1, uniquePath2, path, cleanup } =
+      await this.cliServer.bqrsDiff(
+        fromQuery.completedQuery.query.resultsPath,
+        toQuery.completedQuery.query.resultsPath,
+        { retainResultSets: ["nodes", "edges", "subpaths"] },
+      );
+    try {
+      const sarifOutput1 = join(path, "from.sarif");
+      const sarifOutput2 = join(path, "to.sarif");
+
+      const sourceLocationPrefix = await database.getSourceLocationPrefix(
+        this.cliServer,
+      );
+      const sourceArchiveUri = database.sourceArchive;
+      const sourceInfo =
+        sourceArchiveUri === undefined
+          ? undefined
+          : {
+              sourceArchive: sourceArchiveUri.fsPath,
+              sourceLocationPrefix,
+            };
+
+      const fromResultSet = await this.cliServer.interpretBqrsSarif(
+        fromQuery.completedQuery.query.metadata!,
+        uniquePath1,
+        sarifOutput1,
+        sourceInfo,
+      );
+      const toResultSet = await this.cliServer.interpretBqrsSarif(
+        toQuery.completedQuery.query.metadata!,
+        uniquePath2,
+        sarifOutput2,
+        sourceInfo,
+      );
+
+      return {
+        kind: "interpreted",
+        sourceLocationPrefix,
+        from: fromResultSet.runs[0].results!,
+        to: toResultSet.runs[0].results!,
+      };
+    } finally {
+      await cleanup();
+    }
+  }
+
   private async openQuery(kind: "from" | "to") {
     const toOpen =
       kind === "from" ? this.comparePair?.from : this.comparePair?.to;
@@ -431,29 +525,4 @@ export class CompareView extends AbstractWebview<
       await this.showQueryResultsCallback(toOpen);
     }
   }
-}
-
-/**
- * Check that `fromInfo` and `toInfo` have comparable schemas for the given
- * result set names and get them if so.
- */
-export function getComparableSchemas(
-  fromInfo: CompareQueryInfo,
-  toInfo: CompareQueryInfo,
-  fromResultSetName: string,
-  toResultSetName: string,
-): { fromSchema: BqrsResultSetSchema; toSchema: BqrsResultSetSchema } {
-  const fromSchema = findSchema(fromInfo.schemas, fromResultSetName);
-  const toSchema = findSchema(toInfo.schemas, toResultSetName);
-
-  if (fromSchema.columns.length !== toSchema.columns.length) {
-    throw new Error("CodeQL Compare: Columns do not match.");
-  }
-  if (fromSchema.rows === 0) {
-    throw new Error("CodeQL Compare: Source query has no results.");
-  }
-  if (toSchema.rows === 0) {
-    throw new Error("CodeQL Compare: Target query has no results.");
-  }
-  return { fromSchema, toSchema };
 }
