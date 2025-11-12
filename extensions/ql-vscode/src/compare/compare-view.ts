@@ -408,7 +408,9 @@ export class CompareView extends AbstractWebview<
     // comparing different result sets.
     if (fromResultSetName === toResultSetName) {
       const { uniquePath1, uniquePath2, cleanup } =
-        await this.cliServer.bqrsDiff(fromPath, toPath);
+        await this.cliServer.bqrsDiff(fromPath, toPath, {
+          retainResultSets: [],
+        });
       try {
         const uniqueInfo1 = await this.cliServer.bqrsInfo(uniquePath1);
         const uniqueInfo2 = await this.cliServer.bqrsInfo(uniquePath2);
@@ -476,7 +478,6 @@ export class CompareView extends AbstractWebview<
       await this.cliServer.bqrsDiff(
         fromQuery.completedQuery.query.resultsPath,
         toQuery.completedQuery.query.resultsPath,
-        { retainResultSets: ["nodes", "edges", "subpaths"] },
       );
     try {
       const sarifOutput1 = join(path, "from.sarif");

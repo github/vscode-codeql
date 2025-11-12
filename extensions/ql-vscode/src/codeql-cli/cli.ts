@@ -1276,8 +1276,9 @@ export class CodeQLCliServer implements Disposable {
         uniquePath1,
         "--right",
         uniquePath2,
-        "--retain-result-sets",
-        options?.retainResultSets?.join(",") ?? "",
+        ...(options?.retainResultSets
+          ? ["--retain-result-sets", options.retainResultSets.join(",")]
+          : []),
         bqrsPath1,
         bqrsPath2,
       ],
