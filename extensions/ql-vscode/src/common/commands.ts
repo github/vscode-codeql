@@ -126,7 +126,9 @@ export type QueryEditorCommands = {
 // Commands used for running local queries
 export type LocalQueryCommands = {
   "codeQL.runQuery": (uri?: Uri) => Promise<void>;
+  "codeQL.runPopulateUnderlayQuery": (uri?: Uri) => Promise<void>;
   "codeQL.runQueryContextEditor": (uri?: Uri) => Promise<void>;
+  "codeQL.runPopulateUnderlayQueryContextEditor": (uri?: Uri) => Promise<void>;
   "codeQL.runQueryOnMultipleDatabases": (uri?: Uri) => Promise<void>;
   "codeQL.runQueryOnMultipleDatabasesContextEditor": (
     uri?: Uri,
@@ -138,7 +140,9 @@ export type LocalQueryCommands = {
   "codeQLQueries.createQuery": () => Promise<void>;
   "codeQL.runLocalQueryFromFileTab": (uri: Uri) => Promise<void>;
   "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;
+  "codeQL.runPopulateUnderlayQueries": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.runQuerySuite": ExplorerSelectionCommandFunction<Uri>;
+  "codeQL.runPopulateUnderlayQuerySuite": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalCount": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
