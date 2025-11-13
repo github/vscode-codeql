@@ -19,7 +19,7 @@ export async function findLanguage(
   cliServer: CodeQLCliServer,
   queryUri: Uri | undefined,
 ): Promise<QueryLanguage | undefined> {
-  const uri = queryUri || window.activeTextEditor?.document.uri;
+  const uri = queryUri ?? window.activeTextEditor?.document.uri;
   if (uri !== undefined) {
     try {
       const queryInfo = await cliServer.resolveQueryByLanguage(

@@ -1,4 +1,5 @@
-import { ViewColumn } from "vscode";
+import { Uri, ViewColumn } from "vscode";
+import { join } from "path";
 
 import type {
   FromCompareViewMessage,
@@ -7,14 +8,17 @@ import type {
   RawQueryCompareResult,
   ToCompareViewMessage,
 } from "../common/interface-types";
-import { ALERTS_TABLE_NAME } from "../common/interface-types";
+import {
+  ALERTS_TABLE_NAME,
+  SELECT_TABLE_NAME,
+} from "../common/interface-types";
 import type { Logger } from "../common/logging";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
-import type { BqrsInfo } from "../common/bqrs-cli-types";
+import type { BqrsInfo, BqrsResultSetSchema } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import type { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -32,7 +36,6 @@ import {
   findResultSetNames,
   getResultSetNames,
 } from "./result-set-names";
-import { compareInterpretedResults } from "./interpreted-results";
 import { isCanary } from "../config";
 import { nanoid } from "nanoid";
 
@@ -43,6 +46,39 @@ interface ComparePair {
   toInfo: CompareQueryInfo;
 
   commonResultSetNames: readonly string[];
+}
+
+function findSchema(info: BqrsInfo, name: string) {
+  const schema = info["result-sets"].find((schema) => schema.name === name);
+  if (schema === undefined) {
+    throw new Error(`Schema ${name} not found.`);
+  }
+  return schema;
+}
+
+/**
+ * Check that `fromInfo` and `toInfo` have comparable schemas for the given
+ * result set names and get them if so.
+ */
+function getComparableSchemas(
+  fromInfo: CompareQueryInfo,
+  toInfo: CompareQueryInfo,
+  fromResultSetName: string,
+  toResultSetName: string,
+): { fromSchema: BqrsResultSetSchema; toSchema: BqrsResultSetSchema } {
+  const fromSchema = findSchema(fromInfo.schemas, fromResultSetName);
+  const toSchema = findSchema(toInfo.schemas, toResultSetName);
+
+  if (fromSchema.columns.length !== toSchema.columns.length) {
+    throw new Error("CodeQL Compare: Columns do not match.");
+  }
+  if (fromSchema.rows === 0) {
+    throw new Error("CodeQL Compare: Source query has no results.");
+  }
+  if (toSchema.rows === 0) {
+    throw new Error("CodeQL Compare: Target query has no results.");
+  }
+  return { fromSchema, toSchema };
 }
 
 export class CompareView extends AbstractWebview<
@@ -160,8 +196,10 @@ export class CompareView extends AbstractWebview<
       currentResultSetDisplayName,
       fromResultSetName,
       toResultSetName,
-    } = await this.findResultSetsToCompare(
-      this.comparePair,
+    } = await findResultSetNames(
+      this.comparePair.fromInfo,
+      this.comparePair.toInfo,
+      this.comparePair.commonResultSetNames,
       selectedResultSetName,
     );
     if (currentResultSetDisplayName) {
@@ -336,31 +374,6 @@ export class CompareView extends AbstractWebview<
     }
   }
 
-  private async findResultSetsToCompare(
-    { fromInfo, toInfo, commonResultSetNames }: ComparePair,
-    selectedResultSetName: string | undefined,
-  ) {
-    const {
-      currentResultSetName,
-      currentResultSetDisplayName,
-      fromResultSetName,
-      toResultSetName,
-    } = await findResultSetNames(
-      fromInfo,
-      toInfo,
-      commonResultSetNames,
-      selectedResultSetName,
-    );
-
-    return {
-      commonResultSetNames,
-      currentResultSetName,
-      currentResultSetDisplayName,
-      fromResultSetName,
-      toResultSetName,
-    };
-  }
-
   private async changeTable(newResultSetName: string) {
     await this.showResultsInternal(newResultSetName);
   }
@@ -370,12 +383,7 @@ export class CompareView extends AbstractWebview<
     resultSetName: string,
     resultsPath: string,
   ): Promise<RawResultSet> {
-    const schema = bqrsInfo["result-sets"].find(
-      (schema) => schema.name === resultSetName,
-    );
-    if (!schema) {
-      throw new Error(`Schema ${resultSetName} not found.`);
-    }
+    const schema = findSchema(bqrsInfo, resultSetName);
     const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
     return bqrsToResultSet(schema, chunk);
   }
@@ -385,32 +393,130 @@ export class CompareView extends AbstractWebview<
     fromResultSetName: string,
     toResultSetName: string,
   ): Promise<RawQueryCompareResult> {
-    const [fromResultSet, toResultSet] = await Promise.all([
-      this.getResultSet(
-        fromInfo.schemas,
-        fromResultSetName,
-        from.completedQuery.query.resultsPath,
-      ),
-      this.getResultSet(
-        toInfo.schemas,
-        toResultSetName,
-        to.completedQuery.query.resultsPath,
-      ),
-    ]);
+    const fromPath = from.completedQuery.query.resultsPath;
+    const toPath = to.completedQuery.query.resultsPath;
 
-    return resultsDiff(fromResultSet, toResultSet);
+    const { fromSchema, toSchema } = getComparableSchemas(
+      fromInfo,
+      toInfo,
+      fromResultSetName,
+      toResultSetName,
+    );
+
+    // If the result set names are the same, we use `bqrs diff`. This is more
+    // efficient, but we can't use it in general as it does not support
+    // comparing different result sets.
+    if (fromResultSetName === toResultSetName) {
+      const { uniquePath1, uniquePath2, cleanup } =
+        await this.cliServer.bqrsDiff(fromPath, toPath, {
+          retainResultSets: [],
+        });
+      try {
+        const uniqueInfo1 = await this.cliServer.bqrsInfo(uniquePath1);
+        const uniqueInfo2 = await this.cliServer.bqrsInfo(uniquePath2);
+
+        // We avoid decoding the results sets if there is no overlap
+        if (
+          fromSchema.rows === findSchema(uniqueInfo1, fromResultSetName).rows &&
+          toSchema.rows === findSchema(uniqueInfo2, toResultSetName).rows
+        ) {
+          throw new Error(
+            "CodeQL Compare: No overlap between the selected queries.",
+          );
+        }
+
+        const fromUniqueResults = bqrsToResultSet(
+          fromSchema,
+          await this.cliServer.bqrsDecode(uniquePath1, fromResultSetName),
+        );
+        const toUniqueResults = bqrsToResultSet(
+          toSchema,
+          await this.cliServer.bqrsDecode(uniquePath2, toResultSetName),
+        );
+        return {
+          kind: "raw",
+          columns: fromUniqueResults.columns,
+          from: fromUniqueResults.rows,
+          to: toUniqueResults.rows,
+        };
+      } finally {
+        await cleanup();
+      }
+    } else {
+      const [fromResultSet, toResultSet] = await Promise.all([
+        this.getResultSet(fromInfo.schemas, fromResultSetName, fromPath),
+        this.getResultSet(toInfo.schemas, toResultSetName, toPath),
+      ]);
+      return resultsDiff(fromResultSet, toResultSet);
+    }
   }
 
-  private async compareInterpretedResults({
-    from,
-    to,
-  }: ComparePair): Promise<InterpretedQueryCompareResult> {
-    return compareInterpretedResults(
-      this.databaseManager,
-      this.cliServer,
-      from,
-      to,
+  private async compareInterpretedResults(
+    comparePair: ComparePair,
+  ): Promise<InterpretedQueryCompareResult> {
+    const { from: fromQuery, fromInfo, to: toQuery, toInfo } = comparePair;
+
+    // `ALERTS_TABLE_NAME` is inserted by `getResultSetNames` into the schema
+    // names even if it does not occur as a result set. Hence we check for
+    // `SELECT_TABLE_NAME` first, and use that if it exists.
+    const tableName = fromInfo.schemaNames.includes(SELECT_TABLE_NAME)
+      ? SELECT_TABLE_NAME
+      : ALERTS_TABLE_NAME;
+
+    getComparableSchemas(fromInfo, toInfo, tableName, tableName);
+
+    const database = this.databaseManager.findDatabaseItem(
+      Uri.parse(toQuery.initialInfo.databaseInfo.databaseUri),
     );
+    if (!database) {
+      throw new Error(
+        "Could not find database the queries. Please check that the database still exists.",
+      );
+    }
+
+    const { uniquePath1, uniquePath2, path, cleanup } =
+      await this.cliServer.bqrsDiff(
+        fromQuery.completedQuery.query.resultsPath,
+        toQuery.completedQuery.query.resultsPath,
+      );
+    try {
+      const sarifOutput1 = join(path, "from.sarif");
+      const sarifOutput2 = join(path, "to.sarif");
+
+      const sourceLocationPrefix = await database.getSourceLocationPrefix(
+        this.cliServer,
+      );
+      const sourceArchiveUri = database.sourceArchive;
+      const sourceInfo =
+        sourceArchiveUri === undefined
+          ? undefined
+          : {
+              sourceArchive: sourceArchiveUri.fsPath,
+              sourceLocationPrefix,
+            };
+
+      const fromResultSet = await this.cliServer.interpretBqrsSarif(
+        fromQuery.completedQuery.query.metadata!,
+        uniquePath1,
+        sarifOutput1,
+        sourceInfo,
+      );
+      const toResultSet = await this.cliServer.interpretBqrsSarif(
+        toQuery.completedQuery.query.metadata!,
+        uniquePath2,
+        sarifOutput2,
+        sourceInfo,
+      );
+
+      return {
+        kind: "interpreted",
+        sourceLocationPrefix,
+        from: fromResultSet.runs[0].results!,
+        to: toResultSet.runs[0].results!,
+      };
+    } finally {
+      await cleanup();
+    }
   }
 
   private async openQuery(kind: "from" | "to") {

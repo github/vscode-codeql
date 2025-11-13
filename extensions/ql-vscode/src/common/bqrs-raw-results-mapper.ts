@@ -27,20 +27,13 @@ export function bqrsToResultSet(
   schema: BqrsResultSetSchema,
   chunk: DecodedBqrsChunk,
 ): RawResultSet {
-  const name = schema.name;
-  const totalRowCount = schema.rows;
-
-  const columns = schema.columns.map(mapColumn);
-
-  const rows = chunk.tuples.map(
-    (tuple): Row => tuple.map((cell): CellValue => mapCellValue(cell)),
-  );
-
   const resultSet: RawResultSet = {
-    name,
-    totalRowCount,
-    columns,
-    rows,
+    name: schema.name,
+    totalRowCount: schema.rows,
+    columns: schema.columns.map(mapColumn),
+    rows: chunk.tuples.map(
+      (tuple): Row => tuple.map((cell): CellValue => mapCellValue(cell)),
+    ),
   };
 
   if (chunk.next) {
