@@ -18,7 +18,7 @@ interface Props {
   pathIndex: number;
   resultIndex: number;
   selectedItem: undefined | ResultKey;
-  selectedItemRef: React.RefObject<HTMLTableRowElement>;
+  selectedItemRef: React.RefObject<HTMLTableRowElement | undefined>;
   databaseUri: string;
   sourceLocationPrefix: string;
   run?: Run;
@@ -61,7 +61,11 @@ export function AlertTablePathNodeRow(props: Props) {
   const zebraIndex = resultIndex + stepIndex;
   return (
     <tr
-      ref={isSelected ? selectedItemRef : undefined}
+      ref={
+        isSelected && selectedItemRef.current !== undefined
+          ? (selectedItemRef as React.RefObject<HTMLTableRowElement>)
+          : undefined
+      }
       className={isSelected ? "vscode-codeql__selected-path-node" : undefined}
     >
       <td className="vscode-codeql__icon-cell">

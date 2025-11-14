@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 export function useScrollIntoView<T>(
   selectedElement: T | undefined,
-  selectedElementRef: RefObject<HTMLElement>,
+  selectedElementRef: RefObject<HTMLElement | undefined>,
 ) {
   useEffect(() => {
     const element = selectedElementRef.current;
