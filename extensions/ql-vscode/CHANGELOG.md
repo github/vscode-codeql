@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Rename command "CodeQL: Trim Overlay Base Cache" to "CodeQL: Trim Cache to Overlay-Base" for consistency with "CodeQL: Warm Overlay-Base Cache for [...]" commands. [#4204](https://github.com/github/vscode-codeql/pull/4204)
+
 ## 1.17.6 - 24 October 2025
 
 - Remove support for CodeQL CLI versions older than 2.20.7. [#4159](https://github.com/github/vscode-codeql/pull/4159)
