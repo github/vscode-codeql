@@ -39,6 +39,7 @@ import { LanguageContextStore } from "../../../../src/language-context-store";
 
 describe("local databases", () => {
   let databaseManager: DatabaseManager;
+  let secondQueryRunner: QueryRunner;
   let extensionContext: ExtensionContext;
 
   let updateSpy: jest.Mock<Promise<void>, []>;
@@ -109,16 +110,6 @@ describe("local databases", () => {
           /**/
         },
       }),
-      mockedObject<QueryRunner>({
-        registerDatabase: registerSpy2,
-        deregisterDatabase: deregisterSpy2,
-        onStart: () => {
-          /**/
-        },
-        onQueryRunStarting: () => {
-          /**/
-        },
-      }),
       mockedObject<CodeQLCliServer>({
         resolveDatabase: resolveDatabaseSpy,
         packAdd: packAddSpy,
@@ -128,6 +119,17 @@ describe("local databases", () => {
         log: logSpy,
       }),
     );
+
+    secondQueryRunner = mockedObject<QueryRunner>({
+      registerDatabase: registerSpy2,
+      deregisterDatabase: deregisterSpy2,
+      onStart: () => {
+        /**/
+      },
+      onQueryRunStarting: () => {
+        /**/
+      },
+    });
 
     // Unfortunately, during a test it is not possible to convert from
     // a single root workspace to multi-root, so must stub out relevant
@@ -350,7 +352,8 @@ describe("local databases", () => {
       // Should have registered this database
       expect(registerSpy).toHaveBeenCalledWith(mockDbItem);
 
-      await databaseManager.withDatabaseInQsForWarmingOverlayBaseCache(
+      await databaseManager.runWithDatabaseInSeparateQueryRunner(
+        secondQueryRunner,
         async () => {
           // Should have moved database registration
           expect(deregisterSpy).toHaveBeenCalledWith(mockDbItem);

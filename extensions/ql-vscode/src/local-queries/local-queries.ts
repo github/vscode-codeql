@@ -74,7 +74,7 @@ export class LocalQueries extends DisposableObject {
   public constructor(
     private readonly app: ExtensionApp,
     private readonly queryRunner: QueryRunner,
-    private readonly queryRunnerForWarmingOverlayBaseCache: QueryRunner,
+    private readonly getQueryRunnerForWarmingOverlayBaseCache: () => Promise<QueryRunner>,
     private readonly queryHistoryManager: QueryHistoryManager,
     private readonly databaseManager: DatabaseManager,
     private readonly databaseFetcher: DatabaseFetcher,
@@ -167,8 +167,10 @@ export class LocalQueries extends DisposableObject {
   private async runWarmOverlayBaseCacheForQuery(
     uri: Uri | undefined,
   ): Promise<void> {
-    await this.databaseManager.withDatabaseInQsForWarmingOverlayBaseCache(() =>
-      this.runQueryInternal(uri, true),
+    const queryRunner = await this.getQueryRunnerForWarmingOverlayBaseCache();
+    await this.databaseManager.runWithDatabaseInSeparateQueryRunner(
+      queryRunner,
+      () => this.runQueryInternal(uri, true),
     );
   }
 
@@ -216,8 +218,10 @@ export class LocalQueries extends DisposableObject {
   private async runWarmOverlayBaseCacheForQueries(
     fileURIs: Uri[],
   ): Promise<void> {
-    await this.databaseManager.withDatabaseInQsForWarmingOverlayBaseCache(() =>
-      this.runQueriesInternal(fileURIs, true),
+    const queryRunner = await this.getQueryRunnerForWarmingOverlayBaseCache();
+    await this.databaseManager.runWithDatabaseInSeparateQueryRunner(
+      queryRunner,
+      () => this.runQueriesInternal(fileURIs, true),
     );
   }
 
@@ -298,8 +302,10 @@ export class LocalQueries extends DisposableObject {
   private async runWarmOverlayBaseCacheForQuerySuite(
     fileUri: Uri,
   ): Promise<void> {
-    await this.databaseManager.withDatabaseInQsForWarmingOverlayBaseCache(() =>
-      this.runQuerySuiteInternal(fileUri, true),
+    const queryRunner = await this.getQueryRunnerForWarmingOverlayBaseCache();
+    await this.databaseManager.runWithDatabaseInSeparateQueryRunner(
+      queryRunner,
+      () => this.runQuerySuiteInternal(fileUri, true),
     );
   }
 
@@ -341,7 +347,7 @@ export class LocalQueries extends DisposableObject {
           });
         });
         const queryRunner = warmOverlayBaseCache
-          ? this.queryRunnerForWarmingOverlayBaseCache
+          ? await this.getQueryRunnerForWarmingOverlayBaseCache()
           : this.queryRunner;
         const coreQueryRun = queryRunner.createQueryRun(
           databaseItem.databaseUri.fsPath,
@@ -523,7 +529,7 @@ export class LocalQueries extends DisposableObject {
     await createTimestampFile(outputDir.querySaveDir);
 
     const queryRunner = warmOverlayBaseCache
-      ? this.queryRunnerForWarmingOverlayBaseCache
+      ? await this.getQueryRunnerForWarmingOverlayBaseCache()
       : this.queryRunner;
 
     if (queryRunner.customLogDirectory) {
@@ -625,7 +631,7 @@ export class LocalQueries extends DisposableObject {
     const extensionPacks = await this.getDefaultExtensionPacks(additionalPacks);
 
     const queryRunner = warmOverlayBaseCache
-      ? this.queryRunnerForWarmingOverlayBaseCache
+      ? await this.getQueryRunnerForWarmingOverlayBaseCache()
       : this.queryRunner;
     const coreQueryRun = queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,

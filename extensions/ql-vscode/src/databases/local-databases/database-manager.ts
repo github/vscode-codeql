@@ -118,7 +118,6 @@ export class DatabaseManager extends DisposableObject {
     private readonly ctx: ExtensionContext,
     private readonly app: App,
     private readonly qs: QueryRunner,
-    private readonly qsForWarmingOverlayBaseCache: QueryRunner,
     private readonly cli: CodeQLCliServer,
     private readonly languageContext: LanguageContextStore,
     public logger: Logger,
@@ -740,19 +739,20 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
-  public async withDatabaseInQsForWarmingOverlayBaseCache(
+  public async runWithDatabaseInSeparateQueryRunner(
+    queryRunner: QueryRunner,
     whatToDo: () => Promise<void>,
   ) {
     try {
       if (this._currentDatabaseItem) {
         const dbItem = this._currentDatabaseItem;
         await this.qs.deregisterDatabase(dbItem);
-        await this.qsForWarmingOverlayBaseCache.registerDatabase(dbItem);
+        await queryRunner.registerDatabase(dbItem);
       }
       await whatToDo();
       if (this._currentDatabaseItem) {
         const dbItem = this._currentDatabaseItem;
-        await this.qsForWarmingOverlayBaseCache.deregisterDatabase(dbItem);
+        await queryRunner.deregisterDatabase(dbItem);
         await this.qs.registerDatabase(dbItem);
       }
     } catch (e) {

@@ -11,8 +11,18 @@ export const extLogger = new OutputChannelLogger("CodeQL Extension Log");
 export const queryServerLogger = new OutputChannelLogger("CodeQL Query Server");
 
 // Logger for messages from the query server for warming overlay-base cache.
-export const queryServerForWarmingOverlayBaseCacheLogger =
-  new OutputChannelLogger("CodeQL Query Server for warming overlay-base cache");
+let queryServerForWarmingOverlayBaseCacheLogger:
+  | OutputChannelLogger
+  | undefined;
+
+// construct queryServerForWarmingOverlayBaseCacheLogger lazily, as most users don't need it
+export function getQueryServerForWarmingOverlayBaseCacheLogger(): OutputChannelLogger {
+  if (!queryServerForWarmingOverlayBaseCacheLogger)
+    queryServerForWarmingOverlayBaseCacheLogger = new OutputChannelLogger(
+      "CodeQL Query Server for warming overlay-base cache",
+    );
+  return queryServerForWarmingOverlayBaseCacheLogger;
+}
 
 // Logger for messages from the language server.
 export const languageServerLogger = new OutputChannelLogger(
