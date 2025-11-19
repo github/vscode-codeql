@@ -2,8 +2,6 @@
 
 ## [UNRELEASED]
 
-- Add new commands "CodeQL: Warm Overlay-Base Cache for Query", "CodeQL: Warm Overlay-Base Cache for Queries in Selected Files", and "CodeQL: Warm Overlay-Base Cache for Query Suite". These commands populate the overlay-base cache of an overlay database to prepare for incremental evaluation. They are primarily intended for overlay-specific performance debugging. [#4195](https://github.com/github/vscode-codeql/pull/4195)
-
 ## 1.17.6 - 24 October 2025
 
 - Remove support for CodeQL CLI versions older than 2.20.7. [#4159](https://github.com/github/vscode-codeql/pull/4159)
