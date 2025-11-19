@@ -1397,7 +1397,7 @@
         {
           "command": "codeQL.runWarmOverlayBaseCacheForQueries",
           "group": "9_qlCommands",
-          "when": "resourceScheme != codeql-zip-archive"
+          "when": "resourceScheme != codeql-zip-archive && config.codeQL.canary"
         },
         {
           "command": "codeQL.runQuerySuite",
