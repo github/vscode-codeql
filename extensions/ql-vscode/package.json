@@ -1436,7 +1436,7 @@
         },
         {
           "command": "codeQL.runWarmOverlayBaseCacheForQuery",
-          "when": "resourceLangId == ql && resourceExtname == .ql"
+          "when": "resourceLangId == ql && resourceExtname == .ql && config.codeQL.canary"
         },
         {
           "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
