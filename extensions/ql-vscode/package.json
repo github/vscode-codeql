@@ -1876,7 +1876,7 @@
         },
         {
           "command": "codeQL.runWarmOverlayBaseCacheForQueryContextEditor",
-          "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode"
+          "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode && config.codeQL.canary"
         },
         {
           "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
