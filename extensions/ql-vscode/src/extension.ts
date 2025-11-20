@@ -86,6 +86,7 @@ import {
   extLogger,
   languageServerLogger,
   queryServerLogger,
+  getQueryServerForWarmingOverlayBaseCacheLogger,
 } from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import type { CompletedLocalQueryInfo } from "./query-results";
@@ -172,6 +173,7 @@ function getCommands(
   app: App,
   cliServer: CodeQLCliServer,
   queryRunner: QueryRunner,
+  queryRunnerForWarmingOverlayBaseCache: QueryRunner | undefined,
   languageClient: LanguageClient,
 ): BaseCommands {
   const getCliVersion = async () => {
@@ -189,6 +191,9 @@ function getCommands(
         cliServer.restartCliServer();
         await Promise.all([
           queryRunner.restartQueryServer(progress),
+          queryRunnerForWarmingOverlayBaseCache
+            ? queryRunnerForWarmingOverlayBaseCache.restartQueryServer(progress)
+            : {},
           async () => {
             if (languageClient.isRunning()) {
               await languageClient.restart();
@@ -201,6 +206,12 @@ function getCommands(
           queryServerLogger,
           "CodeQL Query Server restarted.",
         );
+        if (queryRunnerForWarmingOverlayBaseCache) {
+          void showAndLogErrorMessage(
+            getQueryServerForWarmingOverlayBaseCacheLogger(),
+            "CodeQL Query Server for warming overlay-base cache restarted.",
+          );
+        }
       },
       {
         title: "Restarting Query Server",
@@ -281,6 +292,7 @@ export interface CodeQLExtensionInterface {
   readonly ctx: ExtensionContext;
   readonly cliServer: CodeQLCliServer;
   readonly qs: QueryRunner;
+  readonly qsForWarmingOverlayBaseCache: QueryRunner | undefined;
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
@@ -795,7 +807,27 @@ async function activateWithInstalledDistribution(
     qlConfigurationListener,
     cliServer,
     ctx,
+    false,
   );
+
+  let qsForWarmingOverlayBaseCache: QueryRunner | undefined;
+
+  // construct qsForWarmingOverlayBaseCache lazily, as most users don't need it
+  async function getQsForWarmingOverlayBaseCache(): Promise<QueryRunner> {
+    if (!qsForWarmingOverlayBaseCache) {
+      void extLogger.log(
+        "Initializing base cache warming query server client.",
+      );
+      qsForWarmingOverlayBaseCache = await createQueryServer(
+        app,
+        qlConfigurationListener,
+        cliServer,
+        ctx,
+        true,
+      );
+    }
+    return qsForWarmingOverlayBaseCache;
+  }
 
   for (const glob of CLEAR_PACK_CACHE_ON_EDIT_GLOBS) {
     const fsWatcher = workspace.createFileSystemWatcher(glob);
@@ -998,6 +1030,7 @@ async function activateWithInstalledDistribution(
   const localQueries = new LocalQueries(
     app,
     qs,
+    getQsForWarmingOverlayBaseCache,
     qhm,
     dbm,
     databaseFetcher,
@@ -1062,7 +1095,13 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(app, cliServer, qs, languageClient),
+    ...getCommands(
+      app,
+      cliServer,
+      qs,
+      qsForWarmingOverlayBaseCache,
+      languageClient,
+    ),
     ...getQueryEditorCommands({
       commandManager: app.commands,
       queryRunner: qs,
@@ -1165,6 +1204,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     localQueries,
     qs,
+    qsForWarmingOverlayBaseCache,
     distributionManager,
     databaseManager: dbm,
     databaseUI,
@@ -1278,9 +1318,12 @@ async function createQueryServer(
   qlConfigurationListener: QueryServerConfigListener,
   cliServer: CodeQLCliServer,
   ctx: ExtensionContext,
+  warmOverlayBaseCache: boolean,
 ): Promise<QueryRunner> {
   const qsOpts = {
-    logger: queryServerLogger,
+    logger: warmOverlayBaseCache
+      ? getQueryServerForWarmingOverlayBaseCacheLogger()
+      : queryServerLogger,
     contextStoragePath: getContextStoragePath(ctx),
   };
   const progressCallback = (
@@ -1290,7 +1333,12 @@ async function createQueryServer(
     ) => Thenable<void>,
   ) =>
     Window.withProgress(
-      { title: "CodeQL query server", location: ProgressLocation.Window },
+      {
+        title: warmOverlayBaseCache
+          ? "CodeQL query server for warming overlay-base cache"
+          : "CodeQL query server",
+        location: ProgressLocation.Window,
+      },
       task,
     );
 
@@ -1300,6 +1348,7 @@ async function createQueryServer(
     cliServer,
     qsOpts,
     progressCallback,
+    warmOverlayBaseCache,
   );
   ctx.subscriptions.push(qs);
   await qs.startQueryServer();

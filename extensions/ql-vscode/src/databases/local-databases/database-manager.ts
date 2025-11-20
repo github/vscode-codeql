@@ -739,6 +739,35 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
+  public async runWithDatabaseInSeparateQueryRunner(
+    queryRunner: QueryRunner,
+    whatToDo: () => Promise<void>,
+  ) {
+    try {
+      if (this._currentDatabaseItem) {
+        const dbItem = this._currentDatabaseItem;
+        await this.qs.deregisterDatabase(dbItem);
+        await queryRunner.registerDatabase(dbItem);
+      }
+      await whatToDo();
+      if (this._currentDatabaseItem) {
+        const dbItem = this._currentDatabaseItem;
+        await queryRunner.deregisterDatabase(dbItem);
+        await this.qs.registerDatabase(dbItem);
+      }
+    } catch (e) {
+      const message = getErrorMessage(e);
+      if (message === "Connection is disposed.") {
+        // This is expected if the query server is not running.
+        void extLogger.log(
+          `Could not use database for warming overlay-base cache because query server is not running.`,
+        );
+        return;
+      }
+      throw e;
+    }
+  }
+
   private async deregisterDatabase(dbItem: DatabaseItem) {
     try {
       await this.qs.deregisterDatabase(dbItem);

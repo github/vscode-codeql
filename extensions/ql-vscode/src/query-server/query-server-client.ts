@@ -72,6 +72,7 @@ export class QueryServerClient extends DisposableObject {
     readonly cliServer: CodeQLCliServer,
     readonly opts: ServerOpts,
     withProgressReporting: WithProgressReporting,
+    readonly warmOverlayBaseCache: boolean = false,
   ) {
     super();
     // Since no query is active when we initialize, just point the "active query logger" to the
@@ -214,9 +215,21 @@ export class QueryServerClient extends DisposableObject {
       );
     }
 
+    if (this.warmOverlayBaseCache) {
+      args.push(
+        "--no-evaluate-as-overlay",
+        "--cache-at-frontier",
+        "--warm-cache-only",
+      );
+    }
+
+    const queryServerSuffix = this.warmOverlayBaseCache
+      ? " for warming overlay-base cache"
+      : "";
+
     const child = spawnServer(
       this.config.codeQlPath,
-      "CodeQL query server",
+      `CodeQL query server${queryServerSuffix}`,
       ["execute", "query-server2"],
       args,
       this.logger,
@@ -227,7 +240,9 @@ export class QueryServerClient extends DisposableObject {
       undefined, // no listener for stdout
       progressReporter,
     );
-    progressReporter.report({ message: "Connecting to CodeQL query server" });
+    progressReporter.report({
+      message: `Connecting to CodeQL query server${queryServerSuffix}`,
+    });
     const connection = createMessageConnection(child.stdout, child.stdin);
     connection.onNotification(progress, (res) => {
       const callback = this.progressCallbacks[res.id];
@@ -238,13 +253,15 @@ export class QueryServerClient extends DisposableObject {
     this.serverProcess = new ServerProcess(
       child,
       connection,
-      "Query Server 2",
+      `Query Server 2${queryServerSuffix}`,
       this.logger,
     );
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
-    progressReporter.report({ message: "Connected to CodeQL query server v2" });
+    progressReporter.report({
+      message: `Connected to CodeQL query server${queryServerSuffix} v2`,
+    });
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};
@@ -254,7 +271,9 @@ export class QueryServerClient extends DisposableObject {
     let wasExitOrErrorHandled = false;
     child.on("error", (err: Error) => {
       if (!wasExitOrErrorHandled) {
-        void this.logger.log(`Query server terminated with error: ${err}.`);
+        void this.logger.log(
+          `Query server${queryServerSuffix} terminated with error: ${err}.`,
+        );
         this.restartQueryServerOnFailure();
         wasExitOrErrorHandled = true;
       }
@@ -263,12 +282,12 @@ export class QueryServerClient extends DisposableObject {
       if (!wasExitOrErrorHandled) {
         if (code !== null) {
           void this.logger.log(
-            `Query server terminated with exit code: ${code}.`,
+            `Query server${queryServerSuffix} terminated with exit code: ${code}.`,
           );
         }
         if (signal !== null) {
           void this.logger.log(
-            `Query server terminated due to receipt of signal: ${signal}.`,
+            `Query server${queryServerSuffix} terminated due to receipt of signal: ${signal}.`,
           );
         }
         this.restartQueryServerOnFailure();

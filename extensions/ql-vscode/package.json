@@ -516,6 +516,14 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
+        "command": "codeQL.runWarmOverlayBaseCacheForQuery",
+        "title": "CodeQL: Warm Overlay-Base Cache for Query"
+      },
+      {
+        "command": "codeQL.runWarmOverlayBaseCacheForQueryContextEditor",
+        "title": "CodeQL: Warm Overlay-Base Cache for Query"
+      },
+      {
         "command": "codeQL.debugQuery",
         "title": "CodeQL: Debug Query"
       },
@@ -572,8 +580,16 @@
         "title": "CodeQL: Run Queries in Selected Files"
       },
       {
+        "command": "codeQL.runWarmOverlayBaseCacheForQueries",
+        "title": "CodeQL: Warm Overlay-Base Cache for Queries in Selected Files"
+      },
+      {
         "command": "codeQL.runQuerySuite",
         "title": "CodeQL: Run Selected Query Suite"
+      },
+      {
+        "command": "codeQL.runWarmOverlayBaseCacheForQuerySuite",
+        "title": "CodeQL: Warm Overlay-Base Cache for Query Suite"
       },
       {
         "command": "codeQL.quickEval",
@@ -1379,7 +1395,17 @@
           "when": "resourceScheme != codeql-zip-archive"
         },
         {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueries",
+          "group": "9_qlCommands",
+          "when": "resourceScheme != codeql-zip-archive && config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQuerySuite",
+          "group": "9_qlCommands",
+          "when": "resourceScheme != codeql-zip-archive && resourceExtname == .qls && !explorerResourceIsFolder && !listMultiSelection && config.codeQL.canary"
+        },
+        {
+          "command": "codeQL.runWarmOverlayBaseCacheForQuerySuite",
           "group": "9_qlCommands",
           "when": "resourceScheme != codeql-zip-archive && resourceExtname == .qls && !explorerResourceIsFolder && !listMultiSelection && config.codeQL.canary"
         },
@@ -1409,6 +1435,10 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.runWarmOverlayBaseCacheForQuery",
+          "when": "resourceLangId == ql && resourceExtname == .ql && config.codeQL.canary"
+        },
+        {
           "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
           "when": "false"
         },
@@ -1426,6 +1456,10 @@
         },
         {
           "command": "codeQL.runQueryContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueryContextEditor",
           "when": "false"
         },
         {
@@ -1481,7 +1515,15 @@
           "when": "false"
         },
         {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueries",
+          "when": "false"
+        },
+        {
           "command": "codeQL.runQuerySuite",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runWarmOverlayBaseCacheForQuerySuite",
           "when": "false"
         },
         {
@@ -1831,6 +1873,10 @@
         {
           "command": "codeQL.runQueryContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode"
+        },
+        {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueryContextEditor",
+          "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode && config.codeQL.canary"
         },
         {
           "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",

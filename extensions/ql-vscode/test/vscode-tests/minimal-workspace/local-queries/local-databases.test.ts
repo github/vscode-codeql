@@ -39,11 +39,14 @@ import { LanguageContextStore } from "../../../../src/language-context-store";
 
 describe("local databases", () => {
   let databaseManager: DatabaseManager;
+  let secondQueryRunner: QueryRunner;
   let extensionContext: ExtensionContext;
 
   let updateSpy: jest.Mock<Promise<void>, []>;
   let registerSpy: jest.Mock<Promise<void>, []>;
   let deregisterSpy: jest.Mock<Promise<void>, []>;
+  let registerSpy2: jest.Mock<Promise<void>, []>;
+  let deregisterSpy2: jest.Mock<Promise<void>, []>;
   let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
   let packAddSpy: jest.Mock<any, []>;
   let logSpy: jest.Mock<any, []>;
@@ -63,6 +66,8 @@ describe("local databases", () => {
     updateSpy = jest.fn(() => Promise.resolve(undefined));
     registerSpy = jest.fn(() => Promise.resolve(undefined));
     deregisterSpy = jest.fn(() => Promise.resolve(undefined));
+    registerSpy2 = jest.fn(() => Promise.resolve(undefined));
+    deregisterSpy2 = jest.fn(() => Promise.resolve(undefined));
     resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
     packAddSpy = jest.fn();
     logSpy = jest.fn(() => {
@@ -114,6 +119,17 @@ describe("local databases", () => {
         log: logSpy,
       }),
     );
+
+    secondQueryRunner = mockedObject<QueryRunner>({
+      registerDatabase: registerSpy2,
+      deregisterDatabase: deregisterSpy2,
+      onStart: () => {
+        /**/
+      },
+      onQueryRunStarting: () => {
+        /**/
+      },
+    });
 
     // Unfortunately, during a test it is not possible to convert from
     // a single root workspace to multi-root, so must stub out relevant
@@ -317,6 +333,36 @@ describe("local databases", () => {
 
       await (databaseManager as any).addDatabaseItem(mockDbItem);
       // Should have registered this database
+      expect(registerSpy).toHaveBeenCalledWith(mockDbItem);
+
+      await databaseManager.removeDatabaseItem(mockDbItem);
+
+      // Should have deregistered this database
+      expect(deregisterSpy).toHaveBeenCalledWith(mockDbItem);
+    });
+
+    it("Should move database to secondary query server and back", async () => {
+      // similar test as above, but also check the call to sendRequestSpy to make sure they send the
+      // registration messages.
+      const mockDbItem = createMockDB(dir);
+
+      await (databaseManager as any).addDatabaseItem(mockDbItem);
+
+      await databaseManager.setCurrentDatabaseItem(mockDbItem, true);
+      // Should have registered this database
+      expect(registerSpy).toHaveBeenCalledWith(mockDbItem);
+
+      await databaseManager.runWithDatabaseInSeparateQueryRunner(
+        secondQueryRunner,
+        async () => {
+          // Should have moved database registration
+          expect(deregisterSpy).toHaveBeenCalledWith(mockDbItem);
+          expect(registerSpy2).toHaveBeenCalledWith(mockDbItem);
+        },
+      );
+
+      // Should have moved database registration back
+      expect(deregisterSpy2).toHaveBeenCalledWith(mockDbItem);
       expect(registerSpy).toHaveBeenCalledWith(mockDbItem);
 
       await databaseManager.removeDatabaseItem(mockDbItem);

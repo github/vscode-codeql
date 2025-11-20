@@ -84,6 +84,7 @@ export class LocalQueryRun {
   public async complete(
     results: CoreQueryResults,
     progress: ProgressCallback,
+    warmOverlayBaseCache: boolean = false,
   ): Promise<void> {
     const evalLogPaths = await this.summarizeEvalLog(
       Array.from(results.results.values()).every(
@@ -104,10 +105,11 @@ export class LocalQueryRun {
       queriesWithResults,
     );
     progress(progressUpdate(3, 4, "Showing results"));
-    await this.localQueries.showResultsForCompletedQuery(
-      this.queryInfo as CompletedLocalQueryInfo,
-      WebviewReveal.Forced,
-    );
+    if (!warmOverlayBaseCache)
+      await this.localQueries.showResultsForCompletedQuery(
+        this.queryInfo as CompletedLocalQueryInfo,
+        WebviewReveal.Forced,
+      );
     // Note we must update the query history view after showing results as the
     // display and sorting might depend on the number of results
     progress(progressUpdate(4, 4, "Updating query history"));
