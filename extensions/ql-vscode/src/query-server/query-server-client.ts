@@ -190,10 +190,6 @@ export class QueryServerClient extends DisposableObject {
       ramArgs,
     );
 
-    if (this.config.saveCache) {
-      args.push("--save-cache");
-    }
-
     if (this.config.cacheSize > 0) {
       args.push("--max-disk-cache");
       args.push(this.config.cacheSize.toString());

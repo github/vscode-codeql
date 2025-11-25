@@ -124,7 +124,6 @@ describeWithCodeQL()("using the query server", () => {
         debug: false,
         cacheSize: 0,
         numThreads: 1,
-        saveCache: false,
         timeoutSecs: 0,
       },
       cliServer,
