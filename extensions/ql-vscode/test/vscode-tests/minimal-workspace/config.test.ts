@@ -66,11 +66,6 @@ describe("config listeners", () => {
           values: [0, 1],
         },
         {
-          name: "codeQL.runningQueries.saveCache",
-          property: "saveCache",
-          values: [false, true],
-        },
-        {
           name: "codeQL.runningQueries.cacheSize",
           property: "cacheSize",
           values: [0, 1],

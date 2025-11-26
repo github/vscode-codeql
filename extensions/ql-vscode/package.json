@@ -195,6 +195,7 @@
             "type": "boolean",
             "default": false,
             "scope": "window",
+            "deprecationMessage": "This setting no longer has any effect.",
             "description": "Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time."
           },
           "codeQL.runningQueries.cacheSize": {

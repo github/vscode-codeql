@@ -226,7 +226,6 @@ const NUMBER_OF_THREADS_SETTING = new Setting(
   "numberOfThreads",
   RUNNING_QUERIES_SETTING,
 );
-const SAVE_CACHE_SETTING = new Setting("saveCache", RUNNING_QUERIES_SETTING);
 const CACHE_SIZE_SETTING = new Setting("cacheSize", RUNNING_QUERIES_SETTING);
 const TIMEOUT_SETTING = new Setting("timeout", RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting("memory", RUNNING_QUERIES_SETTING);
@@ -257,7 +256,6 @@ const CUSTOM_LOG_DIRECTORY_SETTING = new Setting(
 /** When these settings change, the running query server should be restarted. */
 const QUERY_SERVER_RESTARTING_SETTINGS = [
   NUMBER_OF_THREADS_SETTING,
-  SAVE_CACHE_SETTING,
   CACHE_SIZE_SETTING,
   MEMORY_SETTING,
   DEBUG_SETTING,
@@ -268,7 +266,6 @@ export interface QueryServerConfig {
   codeQlPath: string;
   debug: boolean;
   numThreads: number;
-  saveCache: boolean;
   cacheSize: number;
   queryMemoryMb?: number;
   timeoutSecs: number;
@@ -430,10 +427,6 @@ export class QueryServerConfigListener
 
   public get numThreads(): number {
     return NUMBER_OF_THREADS_SETTING.getValue<number>();
-  }
-
-  public get saveCache(): boolean {
-    return SAVE_CACHE_SETTING.getValue<boolean>();
   }
 
   public get cacheSize(): number {
