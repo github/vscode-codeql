@@ -164,6 +164,7 @@
       {
         "type": "object",
         "title": "CLI",
+        "id": "codeQL.cli",
         "order": 0,
         "properties": {
           "codeQL.cli.executablePath": {
@@ -182,6 +183,7 @@
       {
         "type": "object",
         "title": "Running queries",
+        "id": "codeQL.runningQueries",
         "order": 1,
         "properties": {
           "codeQL.runningQueries.numberOfThreads": {
@@ -280,6 +282,7 @@
       {
         "type": "object",
         "title": "Results",
+        "id": "codeQL.resultsDisplay",
         "order": 2,
         "properties": {
           "codeQL.resultsDisplay.pageSize": {
@@ -292,6 +295,7 @@
       {
         "type": "object",
         "title": "Query history",
+        "id": "codeQL.queryHistory",
         "order": 3,
         "properties": {
           "codeQL.queryHistory.format": {
@@ -310,6 +314,7 @@
       {
         "type": "object",
         "title": "Running tests",
+        "id": "codeQL.runningTests",
         "order": 4,
         "properties": {
           "codeQL.runningTests.additionalTestArguments": {
@@ -331,6 +336,7 @@
       {
         "type": "object",
         "title": "Variant analysis",
+        "id": "codeQL.variantAnalysis",
         "order": 5,
         "properties": {
           "codeQL.variantAnalysis.controllerRepo": {
@@ -373,6 +379,7 @@
       {
         "type": "object",
         "title": "Adding databases",
+        "id": "codeQL.addingDatabases",
         "order": 6,
         "properties": {
           "codeQL.addingDatabases.downloadTimeout": {
@@ -400,6 +407,7 @@
       {
         "type": "object",
         "title": "Creating queries",
+        "id": "codeQL.createQuery",
         "order": 7,
         "properties": {
           "codeQL.createQuery.qlPackLocation": {
@@ -425,6 +433,7 @@
       {
         "type": "object",
         "title": "GitHub Databases",
+        "id": "codeQL.githubDatabase",
         "order": 8,
         "properties": {
           "codeQL.githubDatabase.download": {
@@ -458,6 +467,7 @@
       {
         "type": "object",
         "title": "Model Editor",
+        "id": "codeQL.model",
         "order": 9,
         "properties": {
           "codeQL.model.packLocation": {
@@ -475,6 +485,7 @@
       {
         "type": "object",
         "title": "Log insights",
+        "id": "codeQL.logInsights",
         "order": 10,
         "properties": {
           "codeQL.logInsights.joinOrderWarningThreshold": {
@@ -489,6 +500,7 @@
       {
         "type": "object",
         "title": "Telemetry",
+        "id": "codeQL.telemetry",
         "order": 11,
         "properties": {
           "codeQL.telemetry.logTelemetry": {
