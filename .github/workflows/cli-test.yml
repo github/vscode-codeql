@@ -39,7 +39,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set the variables
         id: set-variables
         run: echo "cli-versions=$(cat ./extensions/ql-vscode/supported_cli_versions.json | jq -rc)" >> $GITHUB_OUTPUT
@@ -65,7 +65,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
@@ -98,7 +98,7 @@ jobs:
           echo "ref=$REF" >> "$GITHUB_OUTPUT"
 
       - name: Checkout QL
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: github/codeql
           ref: ${{ steps.choose-ref.outputs.ref }}
