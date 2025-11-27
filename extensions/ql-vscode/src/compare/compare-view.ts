@@ -19,6 +19,7 @@ import type { CodeQLCliServer } from "../codeql-cli/cli";
 import type { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
 import type { BqrsInfo, BqrsResultSetSchema } from "../common/bqrs-cli-types";
+// eslint-disable-next-line import/no-deprecated
 import resultsDiff from "./resultsDiff";
 import type { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -403,13 +404,18 @@ export class CompareView extends AbstractWebview<
       toResultSetName,
     );
 
-    // If the result set names are the same, we use `bqrs diff`. This is more
-    // efficient, but we can't use it in general as it does not support
-    // comparing different result sets.
-    if (fromResultSetName === toResultSetName) {
+    // We use `bqrs diff` when the `--result-sets` option is supported, or when
+    // the result set names are the same (in which case we don't need the
+    // option).
+    const supportsBqrsDiffResultSets =
+      await this.cliServer.supportsFeature("bqrsDiffResultSets");
+    if (supportsBqrsDiffResultSets || fromResultSetName === toResultSetName) {
       const { uniquePath1, uniquePath2, cleanup } =
         await this.cliServer.bqrsDiff(fromPath, toPath, {
           retainResultSets: [],
+          resultSets: supportsBqrsDiffResultSets
+            ? [[fromResultSetName, toResultSetName]]
+            : [],
         });
       try {
         const uniqueInfo1 = await this.cliServer.bqrsInfo(uniquePath1);
@@ -443,10 +449,13 @@ export class CompareView extends AbstractWebview<
         await cleanup();
       }
     } else {
+      // Legacy code path: Perform the diff directly in the extension when we
+      // can't use `bqrs diff`.
       const [fromResultSet, toResultSet] = await Promise.all([
         this.getResultSet(fromInfo.schemas, fromResultSetName, fromPath),
         this.getResultSet(toInfo.schemas, toResultSetName, toPath),
       ]);
+      // eslint-disable-next-line import/no-deprecated
       return resultsDiff(fromResultSet, toResultSet);
     }
   }
