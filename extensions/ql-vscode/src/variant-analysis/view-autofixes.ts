@@ -214,7 +214,9 @@ async function overrideQueryHelp(
   // Note: the path to this directory may change in the future.
   const queryHelpOverrideDirectory = join(
     localAutofixPath,
-    "prompt-templates",
+    "pkg",
+    "autofix",
+    "prompt",
     "qhelps",
     `${queryIdWithDash}.md`,
   );
