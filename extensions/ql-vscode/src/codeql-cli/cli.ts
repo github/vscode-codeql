@@ -42,6 +42,12 @@ import { UserCancellationException } from "../common/vscode/progress";
 import type { LanguageClient } from "vscode-languageclient/node";
 
 /**
+ * The oldest version of the CLI that we support. This is used to determine
+ * whether to show a warning about the CLI being too old on startup.
+ */
+export const OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.20.7");
+
+/**
  * The version of the SARIF format that we are using.
  */
 const SARIF_FORMAT = "sarifv2.1.0";
@@ -272,8 +278,6 @@ export class CodeQLCliServer implements Disposable {
 
   /** Path to current codeQL executable, or undefined if not running yet. */
   codeQlPath: string | undefined;
-
-  cliConstraints = new CliVersionConstraint(this);
 
   /**
    * When set to true, ignore some modal popups and assume user has clicked "yes".
@@ -1816,6 +1820,11 @@ export class CodeQLCliServer implements Disposable {
   public async setUseExtensionPacks(useExtensionPacks: boolean) {
     await this.cliConfig.setUseExtensionPacks(useExtensionPacks);
   }
+
+  /** Checks if the CLI supports a specific feature. */
+  public async supportsFeature(feature: keyof CliFeatures): Promise<boolean> {
+    return (await this.getFeatures())[feature] === true;
+  }
 }
 
 /**
@@ -1921,18 +1930,4 @@ export function shouldDebugQueryServer() {
 
 function shouldDebugCliServer() {
   return isEnvTrue("CLI_SERVER_JAVA_DEBUG");
-}
-
-export class CliVersionConstraint {
-  // The oldest version of the CLI that we support. This is used to determine
-  // whether to show a warning about the CLI being too old on startup.
-  public static OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.20.7");
-
-  constructor(private readonly cli: CodeQLCliServer) {
-    /**/
-  }
-
-  async supportsQueryServerRunQueries(): Promise<boolean> {
-    return (await this.cli.getFeatures()).queryServerRunQueries === true;
-  }
 }

@@ -21,7 +21,10 @@ import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
 } from "./common/vscode/archive-filesystem-provider";
-import { CliVersionConstraint, CodeQLCliServer } from "./codeql-cli/cli";
+import {
+  CodeQLCliServer,
+  OLDEST_SUPPORTED_CLI_VERSION,
+} from "./codeql-cli/cli";
 import {
   ADD_DATABASE_SOURCE_TO_WORKSPACE_SETTING,
   addDatabaseSourceToWorkspace,
@@ -451,29 +454,19 @@ export async function activate(
 
     let unsupportedWarningShown = false;
     codeQlExtension.cliServer.addVersionChangedListener((ver) => {
-      if (!ver) {
-        return;
-      }
-
-      if (unsupportedWarningShown) {
-        return;
-      }
-
       if (
-        CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(
-          ver.version,
-        ) <= 0
+        ver &&
+        !unsupportedWarningShown &&
+        OLDEST_SUPPORTED_CLI_VERSION.compare(ver.version) === 1
       ) {
-        return;
+        void showAndLogWarningMessage(
+          extLogger,
+          `You are using an unsupported version of the CodeQL CLI (${ver.version.toString()}). ` +
+            `The minimum supported version is ${OLDEST_SUPPORTED_CLI_VERSION.toString()}. ` +
+            `Please upgrade to a newer version of the CodeQL CLI.`,
+        );
+        unsupportedWarningShown = true;
       }
-
-      void showAndLogWarningMessage(
-        extLogger,
-        `You are using an unsupported version of the CodeQL CLI (${ver.version.toString()}). ` +
-          `The minimum supported version is ${CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.toString()}. ` +
-          `Please upgrade to a newer version of the CodeQL CLI.`,
-      );
-      unsupportedWarningShown = true;
     });
 
     // Expose the CodeQL CLI features to the extension context under `codeQL.cliFeatures.*`.
