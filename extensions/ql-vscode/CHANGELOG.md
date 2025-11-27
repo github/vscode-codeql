@@ -4,6 +4,7 @@
 
 - Rename command "CodeQL: Trim Overlay Base Cache" to "CodeQL: Trim Cache to Overlay-Base" for consistency with "CodeQL: Warm Overlay-Base Cache for [...]" commands. [#4204](https://github.com/github/vscode-codeql/pull/4204)
 - Deprecate the setting (`codeQL.runningQueries.saveCache`) that aggressively saved intermediate results to the disk cache. [#4210](https://github.com/github/vscode-codeql/pull/4210)
+- The CodeQL CLI's `bqrs diff` command is now used in the "Compare Results" view. This makes the view faster, more accurate, and fixes a bug where it would error when comparing a large amount of results. [#4194](https://github.com/github/vscode-codeql/pull/4194) & [#4211](https://github.com/github/vscode-codeql/pull/4211)
 
 ## 1.17.6 - 24 October 2025
 

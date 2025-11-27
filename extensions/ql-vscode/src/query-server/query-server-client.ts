@@ -101,7 +101,7 @@ export class QueryServerClient extends DisposableObject {
    * queries at once.
    */
   async supportsRunQueriesMethod(): Promise<boolean> {
-    return await this.cliServer.cliConstraints.supportsQueryServerRunQueries();
+    return await this.cliServer.supportsFeature("queryServerRunQueries");
   }
 
   /** Stops the query server by disposing of the current server process. */
