@@ -211,6 +211,7 @@ interface BqrsDecodeOptions {
 
 interface BqrsDiffOptions {
   retainResultSets?: string[];
+  resultSets?: Array<[string, string]>;
 }
 
 type OnLineCallback = (line: string) => Promise<string | undefined>;
@@ -1282,6 +1283,12 @@ export class CodeQLCliServer implements Disposable {
         uniquePath2,
         ...(options?.retainResultSets
           ? ["--retain-result-sets", options.retainResultSets.join(",")]
+          : []),
+        ...(options?.resultSets
+          ? options.resultSets.flatMap(([left, right]) => [
+              "--result-sets",
+              `${left},${right}`,
+            ])
           : []),
         bqrsPath1,
         bqrsPath2,

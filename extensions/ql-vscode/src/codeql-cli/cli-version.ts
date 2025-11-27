@@ -11,6 +11,7 @@ interface VersionResult {
 
 export interface CliFeatures {
   queryServerRunQueries?: boolean;
+  bqrsDiffResultSets?: boolean;
 }
 
 export interface VersionAndFeatures {
