@@ -38,9 +38,11 @@ import type { VariantAnalysisResultsManager } from "./variant-analysis-results-m
 import {
   getAutofixPath,
   getAutofixModel,
+  getAutofixCapiDevKey,
   downloadTimeout,
   AUTOFIX_PATH,
   AUTOFIX_MODEL,
+  AUTOFIX_CAPI_DEV_KEY,
 } from "../config";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import { createTimeoutSignal } from "../common/fetch-stream";
@@ -153,6 +155,39 @@ async function findLocalAutofix(): Promise<string> {
     throw new Error(`Local autofix path ${localAutofixPath} does not exist.`);
   }
   return localAutofixPath;
+}
+
+/**
+ * Finds and resolves the Copilot API dev key from the `codeQL.autofix.capiDevKey` setting.
+ * The key can be specified as an environment variable reference (e.g., `env:MY_ENV_VAR`)
+ * or a 1Password secret reference (e.g., `op://vault/item/field`). By default, it uses
+ * the environment variable `CAPI_DEV_KEY`.
+ *
+ * @returns The resolved Copilot API dev key.
+ * @throws Error if the Copilot API dev key is not found or invalid.
+ */
+async function findCapiDevKey(): Promise<string> {
+  let capiDevKey = getAutofixCapiDevKey() || "env:CAPI_DEV_KEY";
+
+  if (!capiDevKey.startsWith("env:") && !capiDevKey.startsWith("op://")) {
+    // Don't allow literal keys in config.json for security reasons
+    throw new Error(
+      `Invalid CAPI dev key format. Use 'env:<ENV_VAR_NAME>' or 'op://<1PASSWORD_SECRET_REFERENCE>'.`,
+    );
+  }
+  if (capiDevKey.startsWith("env:")) {
+    const envVarName = capiDevKey.substring("env:".length);
+    capiDevKey = process.env[envVarName] || "";
+  }
+  if (capiDevKey.startsWith("op://")) {
+    capiDevKey = await opRead(capiDevKey);
+  }
+  if (!capiDevKey) {
+    throw new Error(
+      `Copilot API dev key not found. Make sure ${AUTOFIX_CAPI_DEV_KEY.qualifiedName} is set correctly.`,
+    );
+  }
+  return capiDevKey;
 }
 
 /**
@@ -758,7 +793,7 @@ async function runAutofixOnResults(
     {
       cwd: workDir,
       env: {
-        CAPI_DEV_KEY: process.env.CAPI_DEV_KEY,
+        CAPI_DEV_KEY: await findCapiDevKey(),
         PATH: process.env.PATH,
       },
     },
@@ -825,6 +860,42 @@ function execAutofix(
     } catch (e) {
       reject(asError(e));
     }
+  });
+}
+
+/** Execute the 1Password CLI command `op read <secretReference>`, if the `op` command exists on the PATH. */
+async function opRead(secretReference: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const opProcess = spawn("op", ["read", secretReference], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    let stdoutBuffer = "";
+    let stderrBuffer = "";
+
+    opProcess.stdout?.on("data", (data) => {
+      stdoutBuffer += data.toString();
+    });
+
+    opProcess.stderr?.on("data", (data) => {
+      stderrBuffer += data.toString();
+    });
+
+    opProcess.on("error", (error) => {
+      reject(error);
+    });
+
+    opProcess.on("exit", (code) => {
+      if (code === 0) {
+        resolve(stdoutBuffer.trim());
+      } else {
+        reject(
+          new Error(
+            `1Password CLI exited with code ${code}. Stderr: ${stderrBuffer.trim()}`,
+          ),
+        );
+      }
+    });
   });
 }
 

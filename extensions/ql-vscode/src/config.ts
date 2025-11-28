@@ -961,3 +961,9 @@ export const AUTOFIX_MODEL = new Setting("model", AUTOFIX_SETTING);
 export function getAutofixModel(): string | undefined {
   return AUTOFIX_MODEL.getValue<string>() || undefined;
 }
+
+export const AUTOFIX_CAPI_DEV_KEY = new Setting("capiDevKey", AUTOFIX_SETTING);
+
+export function getAutofixCapiDevKey(): string | undefined {
+  return AUTOFIX_CAPI_DEV_KEY.getValue<string>() || undefined;
+}
