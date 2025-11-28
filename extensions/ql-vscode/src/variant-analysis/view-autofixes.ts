@@ -609,9 +609,9 @@ async function runAutofixForRepository(
   } = await getRepoStoragePaths(autofixOutputStoragePath, nwo);
 
   // Get autofix binary.
-  // Switch to Go binary in the future and have user pass full path
+  // In the future, have user pass full path
   // in an environment variable instead of hardcoding part here.
-  const cocofixBin = join(process.cwd(), localAutofixPath, "bin", "cocofix.js");
+  const autofixBin = join(process.cwd(), localAutofixPath, "bin", "autofix");
 
   // Limit number of fixes generated.
   const limitFixesBoolean: boolean = resultCount > MAX_NUM_FIXES;
@@ -644,7 +644,7 @@ async function runAutofixForRepository(
       transcriptFiles.push(tempTranscriptFilePath);
 
       await runAutofixOnResults(
-        cocofixBin,
+        autofixBin,
         sarifFile,
         srcRootPath,
         tempOutputTextFilePath,
@@ -663,7 +663,7 @@ async function runAutofixForRepository(
   } else {
     // Run autofix once for all alerts.
     await runAutofixOnResults(
-      cocofixBin,
+      autofixBin,
       sarifFile,
       srcRootPath,
       outputTextFilePath,
@@ -709,7 +709,7 @@ async function getRepoStoragePaths(
  * Runs autofix on the results in the given SARIF file.
  */
 async function runAutofixOnResults(
-  cocofixBin: string,
+  autofixBin: string,
   sarifFile: string,
   srcRootPath: string,
   outputTextFilePath: string,
@@ -753,7 +753,7 @@ async function runAutofixOnResults(
   }
 
   await execAutofix(
-    cocofixBin,
+    autofixBin,
     autofixArgs,
     {
       cwd: workDir,
