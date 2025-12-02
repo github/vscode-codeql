@@ -97,19 +97,15 @@ export default tseslint.config(
       parserOptions: {
         ecmaVersion: 2018,
         sourceType: "module",
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ['jest.config.js'],
+        },
         tsconfigRootDir: import.meta.dirname,
-        project: resolve(__dirname, "tsconfig.lint.json"),
       },
     },
   },
   {
     files: ["src/stories/**/*"],
-    languageOptions: {
-      parserOptions: {
-        project: resolve(__dirname, "src/stories/tsconfig.json"),
-      },
-    },
     extends: [
       react.configs.flat.recommended,
       react.configs.flat['jsx-runtime'],
@@ -129,11 +125,6 @@ export default tseslint.config(
   },
   {
     files: ["src/view/**/*"],
-    languageOptions: {
-      parserOptions: {
-        project: resolve(__dirname, "src/view/tsconfig.json"),
-      },
-    },
     extends: [
       react.configs.flat.recommended,
       react.configs.flat['jsx-runtime'],
@@ -167,9 +158,6 @@ export default tseslint.config(
   {
     files: ["test/vscode-tests/**/*"],
     languageOptions: {
-      parserOptions: {
-        project: resolve(__dirname, "test/tsconfig.json"),
-      },
       globals: {
         jest: true,
       },
@@ -183,9 +171,6 @@ export default tseslint.config(
   {
     files: ["test/**/*"],
     languageOptions: {
-      parserOptions: {
-        project: resolve(__dirname, "test/tsconfig.json"),
-      },
       globals: {
         jest: true,
       },
@@ -202,11 +187,6 @@ export default tseslint.config(
   },
   {
     files: [".storybook/**/*", "src/stories/**/*"],
-    languageOptions: {
-      parserOptions: {
-        project: resolve(__dirname, ".storybook/tsconfig.json"),
-      },
-    },
     rules: {
       // Storybook doesn't use the automatic JSX runtime in the addon yet, so we need to allow
       // `React` to be imported.
