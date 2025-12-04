@@ -773,7 +773,7 @@ async function runAutofixOnResults(
     "--format",
     "text",
     "--diff-style",
-    "diff", // could do "text" instead if want line of "=" between fixes
+    "git", // auto|color|plain|git|unified
     "--output",
     outputTextFilePath,
     "--fix-description",
