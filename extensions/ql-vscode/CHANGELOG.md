@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.17.7 - 5 December 2025
 
 - Rename command "CodeQL: Trim Overlay Base Cache" to "CodeQL: Trim Cache to Overlay-Base" for consistency with "CodeQL: Warm Overlay-Base Cache for [...]" commands. [#4204](https://github.com/github/vscode-codeql/pull/4204)
 - Deprecate the setting (`codeQL.runningQueries.saveCache`) that aggressively saved intermediate results to the disk cache. [#4210](https://github.com/github/vscode-codeql/pull/4210)
