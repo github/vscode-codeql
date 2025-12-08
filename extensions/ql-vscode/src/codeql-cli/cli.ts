@@ -1158,23 +1158,22 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Uses a .qhelp file to generate Query Help documentation in a specified format.
    * @param pathToQhelp The path to the .qhelp file
-   * @param format The format in which the query help should be generated {@link https://codeql.github.com/docs/codeql-cli/manual/generate-query-help/#cmdoption-codeql-generate-query-help-format}
-   * @param outputDirectory The output directory for the generated file
+   * @param outputFileOrDirectory The output directory for the generated file
    */
   async generateQueryHelp(
     pathToQhelp: string,
-    outputDirectory?: string,
+    outputFileOrDirectory?: string,
   ): Promise<string> {
     const subcommandArgs = ["--format=markdown"];
-    if (outputDirectory) {
-      subcommandArgs.push("--output", outputDirectory);
+    if (outputFileOrDirectory) {
+      subcommandArgs.push("--output", outputFileOrDirectory);
     }
     subcommandArgs.push(pathToQhelp);
 
     return await this.runCodeQlCliCommand(
       ["generate", "query-help"],
       subcommandArgs,
-      `Generating qhelp in markdown format at ${outputDirectory}`,
+      `Generating qhelp in markdown format at ${outputFileOrDirectory}`,
     );
   }
 

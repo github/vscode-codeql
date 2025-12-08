@@ -245,9 +245,9 @@ async function overrideQueryHelp(
   // Use `replaceAll` since some query IDs have multiple slashes.
   const queryIdWithDash = queryId.replaceAll("/", "-");
 
-  // Get the path to the output directory for overriding the query help.
-  // Note: the path to this directory may change in the future.
-  const queryHelpOverrideDirectory = join(
+  // Get the path to the output file for overriding the query help.
+  // Note: the path to this file may change in the future.
+  const queryHelpOverrideFile = join(
     localAutofixPath,
     "pkg",
     "autofix",
@@ -256,10 +256,26 @@ async function overrideQueryHelp(
     `${queryIdWithDash}.md`,
   );
 
-  await cliServer.generateQueryHelp(
-    queryHelpFilePath,
-    queryHelpOverrideDirectory,
-  );
+  // If the file already exists, slurp it so that we can check if it has changed.
+  let existingContents: string | null = null;
+  if (await pathExists(queryHelpOverrideFile)) {
+    existingContents = await readFile(queryHelpOverrideFile, "utf8");
+  }
+
+  // Generate the query help and output it to the override directory.
+  await cliServer.generateQueryHelp(queryHelpFilePath, queryHelpOverrideFile);
+
+  // If the contents of `queryHelpOverrideFile` have changed, recompile autofix
+  // to include the new query help.
+  if (existingContents !== null) {
+    const newContents = await readFile(queryHelpOverrideFile, "utf8");
+    if (existingContents !== newContents) {
+      void extLogger.log(
+        `Query help for query ID ${queryId} has changed. Recompiling autofix...`,
+      );
+      await recompileAutofix(localAutofixPath);
+    }
+  }
 }
 
 /**
@@ -904,6 +920,22 @@ async function opRead(secretReference: string): Promise<string> {
       throw new Error("1Password CLI (op) not found in PATH");
     }
     throw e;
+  }
+}
+
+/** Recompile the Autofix binary. */
+async function recompileAutofix(localAutofixPath: string): Promise<void> {
+  const { code, stderr } = await execCommand(
+    "make",
+    ["build"],
+    { cwd: localAutofixPath },
+    false,
+  );
+
+  if (code !== 0) {
+    throw new Error(
+      `Failed to recompile autofix after query help change. Exit code: ${code}. Stderr: ${stderr}`,
+    );
   }
 }
 
