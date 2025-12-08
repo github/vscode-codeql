@@ -151,7 +151,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 
 1. Create a model pack with mock data
    1. Make sure you have `"codeQL.runningQueries.useExtensionPacks": "all"` enabled in the VSCode settings.
-   1. Create a new directory `test-model-pack` anywhere in the workspace.
+   1. Create a new directory `test-model-pack` anywhere in the CodeQL Workspace. (If you have a `github/codeql` checkout open in VS Code, you can create the directory under the `shared` directory, which is already included in the `codeql-workspace.yml` file.)
    1. Create a `qlpack.yml` file in that directory with the following contents:
 
       ```yaml
@@ -195,7 +195,9 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 #### Test Case 1: Opening the model editor
 
 1. Download the `sofastack/sofa-jraft` java database from GitHub.
-2. Open the Model Editor with the "CodeQL: Open CodeQL Model Editor" command from the command palette.
+1. Select the database in the CodeQL extension.
+1. Select "Add Database Source to Workspace" from the context menu of the database. This step is needed for the Model Editor to display the "Open source" link.
+1. Open the Model Editor with the "CodeQL: Open CodeQL Model Editor" command from the command palette.
    - Check that the editor loads and shows methods to model.
    - Check that methods are grouped per library (e.g. `rocksdbjni@7.7.3` or `asm@6.0`)
    - Check that the "Open source" link works (if you have the database source).
