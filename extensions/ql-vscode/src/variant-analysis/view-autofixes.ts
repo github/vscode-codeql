@@ -802,14 +802,14 @@ async function runAutofixOnResults(
 }
 
 /**
- * Executes the autofix command.
+ * Spawns an external process and collects its output.
  */
-function execAutofix(
+function execCommand(
   bin: string,
   args: string[],
   options: Parameters<typeof execFileSync>[2],
   showCommand?: boolean,
-): Promise<void> {
+): Promise<{ code: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     try {
       const cwd = options?.cwd || process.cwd();
@@ -842,20 +842,11 @@ function execAutofix(
 
       // Listen for process exit
       p.on("exit", (code) => {
-        // Log collected output
-        if (stdoutBuffer.trim()) {
-          void extLogger.log(`Autofix stdout:\n${stdoutBuffer.trim()}`);
-        }
-
-        if (stderrBuffer.trim()) {
-          void extLogger.log(`Autofix stderr:\n${stderrBuffer.trim()}`);
-        }
-
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`Autofix process exited with code ${code}.`));
-        }
+        resolve({
+          code,
+          stdout: stdoutBuffer.trim(),
+          stderr: stderrBuffer.trim(),
+        });
       });
     } catch (e) {
       reject(asError(e));
@@ -863,40 +854,57 @@ function execAutofix(
   });
 }
 
+/**
+ * Executes the autofix command.
+ */
+async function execAutofix(
+  bin: string,
+  args: string[],
+  options: Parameters<typeof execFileSync>[2],
+  showCommand?: boolean,
+): Promise<void> {
+  const { code, stdout, stderr } = await execCommand(
+    bin,
+    args,
+    options,
+    showCommand,
+  );
+
+  if (code !== 0) throw new Error(`Autofix process exited with code ${code}.`);
+
+  // Log collected output
+  if (stdout) {
+    void extLogger.log(`Autofix stdout:\n${stdout}`);
+  }
+  if (stderr) {
+    void extLogger.log(`Autofix stderr:\n${stderr}`);
+  }
+}
+
 /** Execute the 1Password CLI command `op read <secretReference>`, if the `op` command exists on the PATH. */
 async function opRead(secretReference: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const opProcess = spawn("op", ["read", secretReference], {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+  try {
+    const { code, stdout, stderr } = await execCommand(
+      "op",
+      ["read", secretReference],
+      {},
+      false,
+    );
 
-    let stdoutBuffer = "";
-    let stderrBuffer = "";
-
-    opProcess.stdout?.on("data", (data) => {
-      stdoutBuffer += data.toString();
-    });
-
-    opProcess.stderr?.on("data", (data) => {
-      stderrBuffer += data.toString();
-    });
-
-    opProcess.on("error", (error) => {
-      reject(error);
-    });
-
-    opProcess.on("exit", (code) => {
-      if (code === 0) {
-        resolve(stdoutBuffer.trim());
-      } else {
-        reject(
-          new Error(
-            `1Password CLI exited with code ${code}. Stderr: ${stderrBuffer.trim()}`,
-          ),
-        );
-      }
-    });
-  });
+    if (code === 0) {
+      return stdout;
+    } else {
+      throw new Error(
+        `1Password CLI exited with code ${code}. Stderr: ${stderr}`,
+      );
+    }
+  } catch (e) {
+    const error = asError(e);
+    if ("code" in error && error.code === "ENOENT") {
+      throw new Error("1Password CLI (op) not found in PATH");
+    }
+    throw e;
+  }
 }
 
 /**
