@@ -56,6 +56,7 @@
     - If there is an authentication failure when publishing, be sure to check that the authentication keys haven't expired. See below.
 1. Go to the draft GitHub release in [the releases page](https://github.com/github/vscode-codeql/releases), click 'Edit', add some summary description, and publish it.
 1. Confirm the new release is marked as the latest release.
+1. Confirm that the new release is available on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-codeql) and on the [Open VSX Registry](https://open-vsx.org/extension/GitHub/vscode-codeql).
 1. If documentation changes need to be published, notify documentation team that release has been made.
 1. Review and merge the version bump PR that is automatically created by the Release workflow.
 
