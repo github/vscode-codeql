@@ -1015,9 +1015,11 @@ async function formatWithMarkdown(
     const backFormatting: string =
       "```\n\n</details>\n\n ### Notes\n - notes placeholder\n\n";
 
-    // Format the content with Markdown
-    // Replace ``` in the content with \``` to avoid breaking the Markdown code block
-    const formattedContent = `## ${header}\n\n${frontFormatting}${content.replaceAll("```", "\\```")}${backFormatting}`;
+    // Format the content with Markdown:
+    // - Replace ``` in the content with \``` to avoid breaking the Markdown code block
+    // - Remove raw terminal escape sequences if any (workaround until `--diff-style plain` is handled by autofix)
+    // eslint-disable-next-line no-control-regex
+    const formattedContent = `## ${header}\n\n${frontFormatting}${content.replaceAll("```", "\\```").replaceAll(/\x1b\[[0-9;]*m/g, "")}${backFormatting}`;
 
     // Write the formatted content back to the file
     await writeFile(inputFile, formattedContent);
