@@ -38,9 +38,11 @@ import type { VariantAnalysisResultsManager } from "./variant-analysis-results-m
 import {
   getAutofixPath,
   getAutofixModel,
+  getAutofixCapiDevKey,
   downloadTimeout,
   AUTOFIX_PATH,
   AUTOFIX_MODEL,
+  AUTOFIX_CAPI_DEV_KEY,
 } from "../config";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import { createTimeoutSignal } from "../common/fetch-stream";
@@ -156,6 +158,39 @@ async function findLocalAutofix(): Promise<string> {
 }
 
 /**
+ * Finds and resolves the Copilot API dev key from the `codeQL.autofix.capiDevKey` setting.
+ * The key can be specified as an environment variable reference (e.g., `env:MY_ENV_VAR`)
+ * or a 1Password secret reference (e.g., `op://vault/item/field`). By default, it uses
+ * the environment variable `CAPI_DEV_KEY`.
+ *
+ * @returns The resolved Copilot API dev key.
+ * @throws Error if the Copilot API dev key is not found or invalid.
+ */
+async function findCapiDevKey(): Promise<string> {
+  let capiDevKey = getAutofixCapiDevKey() || "env:CAPI_DEV_KEY";
+
+  if (!capiDevKey.startsWith("env:") && !capiDevKey.startsWith("op://")) {
+    // Don't allow literal keys in config.json for security reasons
+    throw new Error(
+      `Invalid CAPI dev key format. Use 'env:<ENV_VAR_NAME>' or 'op://<1PASSWORD_SECRET_REFERENCE>'.`,
+    );
+  }
+  if (capiDevKey.startsWith("env:")) {
+    const envVarName = capiDevKey.substring("env:".length);
+    capiDevKey = process.env[envVarName] || "";
+  }
+  if (capiDevKey.startsWith("op://")) {
+    capiDevKey = await opRead(capiDevKey);
+  }
+  if (!capiDevKey) {
+    throw new Error(
+      `Copilot API dev key not found. Make sure ${AUTOFIX_CAPI_DEV_KEY.qualifiedName} is set correctly.`,
+    );
+  }
+  return capiDevKey;
+}
+
+/**
  * Overrides the query help from a given variant analysis
  * at a location within the `localAutofixPath` directory .
  */
@@ -210,19 +245,37 @@ async function overrideQueryHelp(
   // Use `replaceAll` since some query IDs have multiple slashes.
   const queryIdWithDash = queryId.replaceAll("/", "-");
 
-  // Get the path to the output directory for overriding the query help.
-  // Note: the path to this directory may change in the future.
-  const queryHelpOverrideDirectory = join(
+  // Get the path to the output file for overriding the query help.
+  // Note: the path to this file may change in the future.
+  const queryHelpOverrideFile = join(
     localAutofixPath,
-    "prompt-templates",
+    "pkg",
+    "autofix",
+    "prompt",
     "qhelps",
     `${queryIdWithDash}.md`,
   );
 
-  await cliServer.generateQueryHelp(
-    queryHelpFilePath,
-    queryHelpOverrideDirectory,
-  );
+  // If the file already exists, slurp it so that we can check if it has changed.
+  let existingContents: string | null = null;
+  if (await pathExists(queryHelpOverrideFile)) {
+    existingContents = await readFile(queryHelpOverrideFile, "utf8");
+  }
+
+  // Generate the query help and output it to the override directory.
+  await cliServer.generateQueryHelp(queryHelpFilePath, queryHelpOverrideFile);
+
+  // If the contents of `queryHelpOverrideFile` have changed, recompile autofix
+  // to include the new query help.
+  if (existingContents !== null) {
+    const newContents = await readFile(queryHelpOverrideFile, "utf8");
+    if (existingContents !== newContents) {
+      void extLogger.log(
+        `Query help for query ID ${queryId} has changed. Recompiling autofix...`,
+      );
+      await recompileAutofix(localAutofixPath);
+    }
+  }
 }
 
 /**
@@ -607,9 +660,9 @@ async function runAutofixForRepository(
   } = await getRepoStoragePaths(autofixOutputStoragePath, nwo);
 
   // Get autofix binary.
-  // Switch to Go binary in the future and have user pass full path
+  // In the future, have user pass full path
   // in an environment variable instead of hardcoding part here.
-  const cocofixBin = join(process.cwd(), localAutofixPath, "bin", "cocofix.js");
+  const autofixBin = join(process.cwd(), localAutofixPath, "bin", "autofix");
 
   // Limit number of fixes generated.
   const limitFixesBoolean: boolean = resultCount > MAX_NUM_FIXES;
@@ -642,7 +695,7 @@ async function runAutofixForRepository(
       transcriptFiles.push(tempTranscriptFilePath);
 
       await runAutofixOnResults(
-        cocofixBin,
+        autofixBin,
         sarifFile,
         srcRootPath,
         tempOutputTextFilePath,
@@ -661,7 +714,7 @@ async function runAutofixForRepository(
   } else {
     // Run autofix once for all alerts.
     await runAutofixOnResults(
-      cocofixBin,
+      autofixBin,
       sarifFile,
       srcRootPath,
       outputTextFilePath,
@@ -707,7 +760,7 @@ async function getRepoStoragePaths(
  * Runs autofix on the results in the given SARIF file.
  */
 async function runAutofixOnResults(
-  cocofixBin: string,
+  autofixBin: string,
   sarifFile: string,
   srcRootPath: string,
   outputTextFilePath: string,
@@ -736,7 +789,7 @@ async function runAutofixOnResults(
     "--format",
     "text",
     "--diff-style",
-    "diff", // could do "text" instead if want line of "=" between fixes
+    "git", // auto|color|plain|git|unified
     "--output",
     outputTextFilePath,
     "--fix-description",
@@ -751,12 +804,12 @@ async function runAutofixOnResults(
   }
 
   await execAutofix(
-    cocofixBin,
+    autofixBin,
     autofixArgs,
     {
       cwd: workDir,
       env: {
-        CAPI_DEV_KEY: process.env.CAPI_DEV_KEY,
+        CAPI_DEV_KEY: await findCapiDevKey(),
         PATH: process.env.PATH,
       },
     },
@@ -765,14 +818,14 @@ async function runAutofixOnResults(
 }
 
 /**
- * Executes the autofix command.
+ * Spawns an external process and collects its output.
  */
-function execAutofix(
+function execCommand(
   bin: string,
   args: string[],
   options: Parameters<typeof execFileSync>[2],
   showCommand?: boolean,
-): Promise<void> {
+): Promise<{ code: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     try {
       const cwd = options?.cwd || process.cwd();
@@ -805,25 +858,85 @@ function execAutofix(
 
       // Listen for process exit
       p.on("exit", (code) => {
-        // Log collected output
-        if (stdoutBuffer.trim()) {
-          void extLogger.log(`Autofix stdout:\n${stdoutBuffer.trim()}`);
-        }
-
-        if (stderrBuffer.trim()) {
-          void extLogger.log(`Autofix stderr:\n${stderrBuffer.trim()}`);
-        }
-
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`Autofix process exited with code ${code}.`));
-        }
+        resolve({
+          code,
+          stdout: stdoutBuffer.trim(),
+          stderr: stderrBuffer.trim(),
+        });
       });
     } catch (e) {
       reject(asError(e));
     }
   });
+}
+
+/**
+ * Executes the autofix command.
+ */
+async function execAutofix(
+  bin: string,
+  args: string[],
+  options: Parameters<typeof execFileSync>[2],
+  showCommand?: boolean,
+): Promise<void> {
+  const { code, stdout, stderr } = await execCommand(
+    bin,
+    args,
+    options,
+    showCommand,
+  );
+
+  if (code !== 0) throw new Error(`Autofix process exited with code ${code}.`);
+
+  // Log collected output
+  if (stdout) {
+    void extLogger.log(`Autofix stdout:\n${stdout}`);
+  }
+  if (stderr) {
+    void extLogger.log(`Autofix stderr:\n${stderr}`);
+  }
+}
+
+/** Execute the 1Password CLI command `op read <secretReference>`, if the `op` command exists on the PATH. */
+async function opRead(secretReference: string): Promise<string> {
+  try {
+    const { code, stdout, stderr } = await execCommand(
+      "op",
+      ["read", secretReference],
+      {},
+      false,
+    );
+
+    if (code === 0) {
+      return stdout;
+    } else {
+      throw new Error(
+        `1Password CLI exited with code ${code}. Stderr: ${stderr}`,
+      );
+    }
+  } catch (e) {
+    const error = asError(e);
+    if ("code" in error && error.code === "ENOENT") {
+      throw new Error("1Password CLI (op) not found in PATH");
+    }
+    throw e;
+  }
+}
+
+/** Recompile the Autofix binary. */
+async function recompileAutofix(localAutofixPath: string): Promise<void> {
+  const { code, stderr } = await execCommand(
+    "make",
+    ["build"],
+    { cwd: localAutofixPath },
+    false,
+  );
+
+  if (code !== 0) {
+    throw new Error(
+      `Failed to recompile autofix after query help change. Exit code: ${code}. Stderr: ${stderr}`,
+    );
+  }
 }
 
 /**
@@ -902,9 +1015,11 @@ async function formatWithMarkdown(
     const backFormatting: string =
       "```\n\n</details>\n\n ### Notes\n - notes placeholder\n\n";
 
-    // Format the content with Markdown
-    // Replace ``` in the content with \``` to avoid breaking the Markdown code block
-    const formattedContent = `## ${header}\n\n${frontFormatting}${content.replaceAll("```", "\\```")}${backFormatting}`;
+    // Format the content with Markdown:
+    // - Replace ``` in the content with \``` to avoid breaking the Markdown code block
+    // - Remove raw terminal escape sequences if any (workaround until `--diff-style plain` is handled by autofix)
+    // eslint-disable-next-line no-control-regex
+    const formattedContent = `## ${header}\n\n${frontFormatting}${content.replaceAll("```", "\\```").replaceAll(/\x1b\[[0-9;]*m/g, "")}${backFormatting}`;
 
     // Write the formatted content back to the file
     await writeFile(inputFile, formattedContent);
