@@ -79,7 +79,7 @@ export const ModelAlertsResults = ({
     [modelAlerts.model],
   );
 
-  const ref = useRef<HTMLElement>();
+  const ref = useRef<HTMLElement | undefined>(undefined);
 
   useEffect(() => {
     if (

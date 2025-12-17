@@ -1,9 +1,9 @@
 import type { RefObject } from "react";
 import { useEffect } from "react";
 
-export function useScrollIntoView<T>(
+export function useScrollIntoView<T, E extends HTMLElement = HTMLElement>(
   selectedElement: T | undefined,
-  selectedElementRef: RefObject<HTMLElement>,
+  selectedElementRef: RefObject<E | null>,
 ) {
   useEffect(() => {
     const element = selectedElementRef.current;

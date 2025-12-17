@@ -85,7 +85,7 @@ export type MethodRowProps = {
 export const MethodRow = (props: MethodRowProps) => {
   const { method, methodCanBeModeled, revealedMethodSignature } = props;
 
-  const ref = useRef<HTMLElement>();
+  const ref = useRef<HTMLElement | undefined>(undefined);
 
   useEffect(() => {
     if (method.signature === revealedMethodSignature) {
