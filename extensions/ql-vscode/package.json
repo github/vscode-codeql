@@ -164,6 +164,7 @@
       {
         "type": "object",
         "title": "CLI",
+        "id": "codeQL.cli",
         "order": 0,
         "properties": {
           "codeQL.cli.executablePath": {
@@ -182,6 +183,7 @@
       {
         "type": "object",
         "title": "Running queries",
+        "id": "codeQL.runningQueries",
         "order": 1,
         "properties": {
           "codeQL.runningQueries.numberOfThreads": {
@@ -195,6 +197,7 @@
             "type": "boolean",
             "default": false,
             "scope": "window",
+            "deprecationMessage": "This setting no longer has any effect.",
             "description": "Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time."
           },
           "codeQL.runningQueries.cacheSize": {
@@ -279,6 +282,7 @@
       {
         "type": "object",
         "title": "Results",
+        "id": "codeQL.resultsDisplay",
         "order": 2,
         "properties": {
           "codeQL.resultsDisplay.pageSize": {
@@ -291,6 +295,7 @@
       {
         "type": "object",
         "title": "Query history",
+        "id": "codeQL.queryHistory",
         "order": 3,
         "properties": {
           "codeQL.queryHistory.format": {
@@ -309,6 +314,7 @@
       {
         "type": "object",
         "title": "Running tests",
+        "id": "codeQL.runningTests",
         "order": 4,
         "properties": {
           "codeQL.runningTests.additionalTestArguments": {
@@ -330,6 +336,7 @@
       {
         "type": "object",
         "title": "Variant analysis",
+        "id": "codeQL.variantAnalysis",
         "order": 5,
         "properties": {
           "codeQL.variantAnalysis.controllerRepo": {
@@ -372,6 +379,7 @@
       {
         "type": "object",
         "title": "Adding databases",
+        "id": "codeQL.addingDatabases",
         "order": 6,
         "properties": {
           "codeQL.addingDatabases.downloadTimeout": {
@@ -399,6 +407,7 @@
       {
         "type": "object",
         "title": "Creating queries",
+        "id": "codeQL.createQuery",
         "order": 7,
         "properties": {
           "codeQL.createQuery.qlPackLocation": {
@@ -424,6 +433,7 @@
       {
         "type": "object",
         "title": "GitHub Databases",
+        "id": "codeQL.githubDatabase",
         "order": 8,
         "properties": {
           "codeQL.githubDatabase.download": {
@@ -457,6 +467,7 @@
       {
         "type": "object",
         "title": "Model Editor",
+        "id": "codeQL.model",
         "order": 9,
         "properties": {
           "codeQL.model.packLocation": {
@@ -474,6 +485,7 @@
       {
         "type": "object",
         "title": "Log insights",
+        "id": "codeQL.logInsights",
         "order": 10,
         "properties": {
           "codeQL.logInsights.joinOrderWarningThreshold": {
@@ -488,6 +500,7 @@
       {
         "type": "object",
         "title": "Telemetry",
+        "id": "codeQL.telemetry",
         "order": 11,
         "properties": {
           "codeQL.telemetry.logTelemetry": {
@@ -514,6 +527,14 @@
       {
         "command": "codeQL.runQueryContextEditor",
         "title": "CodeQL: Run Query on Selected Database"
+      },
+      {
+        "command": "codeQL.runWarmOverlayBaseCacheForQuery",
+        "title": "CodeQL: Warm Overlay-Base Cache for Query"
+      },
+      {
+        "command": "codeQL.runWarmOverlayBaseCacheForQueryContextEditor",
+        "title": "CodeQL: Warm Overlay-Base Cache for Query"
       },
       {
         "command": "codeQL.debugQuery",
@@ -572,8 +593,16 @@
         "title": "CodeQL: Run Queries in Selected Files"
       },
       {
+        "command": "codeQL.runWarmOverlayBaseCacheForQueries",
+        "title": "CodeQL: Warm Overlay-Base Cache for Queries in Selected Files"
+      },
+      {
         "command": "codeQL.runQuerySuite",
         "title": "CodeQL: Run Selected Query Suite"
+      },
+      {
+        "command": "codeQL.runWarmOverlayBaseCacheForQuerySuite",
+        "title": "CodeQL: Warm Overlay-Base Cache for Query Suite"
       },
       {
         "command": "codeQL.quickEval",
@@ -792,7 +821,7 @@
       },
       {
         "command": "codeQL.trimOverlayBaseCache",
-        "title": "CodeQL: Trim Overlay Base Cache"
+        "title": "CodeQL: Trim Cache to Overlay-Base"
       },
       {
         "command": "codeQL.installPackDependencies",
@@ -1379,7 +1408,17 @@
           "when": "resourceScheme != codeql-zip-archive"
         },
         {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueries",
+          "group": "9_qlCommands",
+          "when": "resourceScheme != codeql-zip-archive && config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQuerySuite",
+          "group": "9_qlCommands",
+          "when": "resourceScheme != codeql-zip-archive && resourceExtname == .qls && !explorerResourceIsFolder && !listMultiSelection && config.codeQL.canary"
+        },
+        {
+          "command": "codeQL.runWarmOverlayBaseCacheForQuerySuite",
           "group": "9_qlCommands",
           "when": "resourceScheme != codeql-zip-archive && resourceExtname == .qls && !explorerResourceIsFolder && !listMultiSelection && config.codeQL.canary"
         },
@@ -1409,6 +1448,10 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.runWarmOverlayBaseCacheForQuery",
+          "when": "resourceLangId == ql && resourceExtname == .ql && config.codeQL.canary"
+        },
+        {
           "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
           "when": "false"
         },
@@ -1426,6 +1469,10 @@
         },
         {
           "command": "codeQL.runQueryContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueryContextEditor",
           "when": "false"
         },
         {
@@ -1481,7 +1528,15 @@
           "when": "false"
         },
         {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueries",
+          "when": "false"
+        },
+        {
           "command": "codeQL.runQuerySuite",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runWarmOverlayBaseCacheForQuerySuite",
           "when": "false"
         },
         {
@@ -1833,6 +1888,10 @@
           "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode"
         },
         {
+          "command": "codeQL.runWarmOverlayBaseCacheForQueryContextEditor",
+          "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode && config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
@@ -1976,13 +2035,13 @@
     "build": "gulp",
     "watch": "gulp watch",
     "test": "npm-run-all test:*",
-    "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test/unit-tests",
-    "test:view": "jest --projects src/view",
+    "test:unit": "cross-env TZ=UTC LANG=en-US NODE_OPTIONS=--no-experimental-strip-types jest --projects test/unit-tests",
+    "test:view": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects src/view",
     "test:vscode-integration": "npm-run-all test:vscode-integration:*",
-    "test:vscode-integration:activated-extension": "jest --projects test/vscode-tests/activated-extension",
-    "test:vscode-integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
-    "test:vscode-integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
-    "test:cli-integration": "jest --projects test/vscode-tests/cli-integration --verbose",
+    "test:vscode-integration:activated-extension": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects test/vscode-tests/activated-extension",
+    "test:vscode-integration:no-workspace": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects test/vscode-tests/no-workspace",
+    "test:vscode-integration:minimal-workspace": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects test/vscode-tests/minimal-workspace",
+    "test:cli-integration": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects test/vscode-tests/cli-integration --verbose",
     "clean-test-dir": "find . -type d -name .vscode-test -exec rm -r {} +",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --fix",
@@ -2005,9 +2064,9 @@
     "@floating-ui/react": "^0.27.0",
     "@octokit/plugin-retry": "^7.2.0",
     "@octokit/plugin-throttling": "^9.6.0",
-    "@octokit/rest": "^22.0.0",
+    "@octokit/rest": "^22.0.1",
     "@vscode-elements/react-elements": "^0.9.0",
-    "@vscode/codicons": "^0.0.36",
+    "@vscode/codicons": "^0.0.43",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.68.0",
     "ajv": "^8.11.0",
@@ -2015,9 +2074,9 @@
     "d3": "^7.9.0",
     "d3-graphviz": "^5.0.2",
     "fs-extra": "^11.1.1",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "koffi": "^2.12.0",
-    "msw": "^2.7.4",
+    "msw": "^2.11.6",
     "nanoid": "^5.0.7",
     "p-queue": "^8.0.1",
     "proper-lockfile": "^4.1.2",
@@ -2042,12 +2101,12 @@
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@babel/preset-env": "^7.24.4",
     "@babel/preset-react": "^7.27.1",
-    "@babel/preset-typescript": "^7.26.0",
-    "@eslint/js": "^9.28.0",
+    "@babel/preset-typescript": "^7.28.5",
+    "@eslint/js": "^9.37.0",
     "@faker-js/faker": "^9.0.3",
     "@github/markdownlint-github": "^0.8.0",
-    "@jest/environment": "^30.0.0-alpha.7",
-    "@jest/environment-jsdom-abstract": "^30.0.0-alpha.7",
+    "@jest/environment": "^30.2.0",
+    "@jest/environment-jsdom-abstract": "^30.2.0",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
     "@playwright/test": "^1.50.1",
     "@storybook/addon-a11y": "^8.6.14",
@@ -2064,7 +2123,7 @@
     "@storybook/react-vite": "^8.6.14",
     "@storybook/theming": "^8.6.14",
     "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/cross-spawn": "^6.0.6",
@@ -2076,8 +2135,8 @@
     "@types/js-yaml": "^4.0.6",
     "@types/node": "22.19.*",
     "@types/proper-lockfile": "^4.1.4",
-    "@types/react": "^19.1.13",
-    "@types/react-dom": "^19.1.13",
+    "@types/react": "19.2.3",
+    "@types/react-dom": "19.2.3",
     "@types/sarif": "^2.1.2",
     "@types/semver": "^7.5.8",
     "@types/stream-json": "^1.7.1",
@@ -2094,7 +2153,7 @@
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.9.5",
     "cosmiconfig": "^9.0.0",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "cross-spawn": "^7.0.6",
     "del": "^6.0.0",
     "eslint": "^9.28.0",
@@ -2105,22 +2164,22 @@
     "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-storybook": "^9.0.12",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-storybook": "^10.0.7",
     "glob": "^11.1.0",
     "gulp": "^5.0.0",
-    "gulp-esbuild": "^0.14.0",
+    "gulp-esbuild": "^0.14.1",
     "gulp-replace": "^1.1.3",
     "gulp-typescript": "^5.0.1",
     "husky": "^9.1.7",
-    "jest": "^30.0.0-alpha.7",
+    "jest": "^30.2.0",
     "jest-runner-vscode": "^3.0.1",
-    "jsdom": "^26.1.0",
+    "jsdom": "^27.0.1",
     "lint-staged": "^15.3.0",
     "markdownlint-cli2": "^0.17.0",
-    "markdownlint-cli2-formatter-pretty": "^0.0.7",
+    "markdownlint-cli2-formatter-pretty": "^0.0.9",
     "npm-run-all": "^4.1.5",
-    "patch-package": "^8.0.0",
+    "patch-package": "^8.0.1",
     "prettier": "^3.6.1",
     "storybook": "^8.6.14",
     "tar-stream": "^3.1.7",
@@ -2128,11 +2187,11 @@
     "ts-jest": "^29.3.2",
     "ts-json-schema-generator": "^2.3.0",
     "ts-node": "^10.9.2",
-    "ts-unused-exports": "^10.1.0",
-    "typescript": "^5.6.2",
-    "typescript-plugin-css-modules": "^5.1.0",
+    "ts-unused-exports": "^11.0.1",
+    "typescript": "^5.9.3",
+    "typescript-plugin-css-modules": "^5.2.0",
     "vite": "^7.1.5",
-    "vite-node": "^3.0.7"
+    "vite-node": "^3.2.4"
   },
   "lint-staged": {
     "./**/*.{json,css,scss}": [
