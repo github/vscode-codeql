@@ -109,7 +109,7 @@ export default tseslint.config(
     extends: [
       react.configs.flat.recommended,
       react.configs.flat['jsx-runtime'],
-      reactHooks.configs['recommended-latest'],
+      reactHooks.configs.flat['recommended-latest'],
       storybook.configs['flat/recommended'],
       github.getFlatConfigs().react,
     ],
@@ -128,7 +128,7 @@ export default tseslint.config(
     extends: [
       react.configs.flat.recommended,
       react.configs.flat['jsx-runtime'],
-      reactHooks.configs['recommended-latest'],
+      reactHooks.configs.flat['recommended-latest'],
       github.getFlatConfigs().react,
     ],
     settings: {
