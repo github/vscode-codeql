@@ -2107,7 +2107,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-storybook": "^9.0.12",
-    "glob": "^11.0.1",
+    "glob": "^11.1.0",
     "gulp": "^5.0.0",
     "gulp-esbuild": "^0.14.0",
     "gulp-replace": "^1.1.3",
