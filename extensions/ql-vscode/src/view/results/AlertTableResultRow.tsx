@@ -20,7 +20,7 @@ export interface Props {
   resultIndex: number;
   expanded: Set<string>;
   selectedItem: undefined | ResultKey;
-  selectedItemRef: React.RefObject<HTMLTableRowElement>;
+  selectedItemRef: React.RefObject<HTMLTableRowElement | null>;
   databaseUri: string;
   sourceLocationPrefix: string;
   run?: Run;
