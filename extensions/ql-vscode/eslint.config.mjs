@@ -20,6 +20,7 @@ export default tseslint.config(
     "out/",
     "build/",
     "scripts/",
+    "storybook-static/",
     "**/jest.config.ts",
     "**/jest.config.js",
     "**/jest-runner-vscode.config.js",
