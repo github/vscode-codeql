@@ -103,7 +103,7 @@ export const MethodRow = (props: MethodRowProps) => {
   }
 };
 
-const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
+const ModelableMethodRow = forwardRef<HTMLDivElement, MethodRowProps>(
   (props: MethodRowProps, ref) => {
     const {
       method,
@@ -360,7 +360,7 @@ const ModelableMethodRow = forwardRef<HTMLElement | undefined, MethodRowProps>(
 ModelableMethodRow.displayName = "ModelableMethodRow";
 
 const UnmodelableMethodRow = forwardRef<
-  HTMLElement | undefined,
+  HTMLDivElement,
   MethodRowProps
 >((props: MethodRowProps, ref) => {
   const { method, viewState, revealedMethodSignature } = props;
