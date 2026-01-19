@@ -1,5 +1,5 @@
 import type { Meta, StoryFn } from "@storybook/react";
-import { action } from "@storybook/addon-actions";
+import { action } from "storybook/actions";
 
 import { AlertTable as AlertTableComponent } from "../../view/results/AlertTable";
 
