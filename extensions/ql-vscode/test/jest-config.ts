@@ -6,6 +6,7 @@ const transformScopes = [
   "@vscode-elements",
   "@lit",
   "@lit-labs",
+  "@hpcc-js",
 ];
 const transformPackages = [
   "before-after-hook",
