@@ -1,4 +1,3 @@
-import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
 import { VscodeCheckbox } from "@vscode-elements/react-elements";
@@ -229,9 +228,10 @@ export const RepoRow = ({
     e.stopPropagation();
   }, []);
   const onChangeCheckbox = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
+    (e: Event) => {
+      const target = e.target as HTMLInputElement;
       // This is called on first render, but we don't really care about this value
-      if (e.target.checked === undefined) {
+      if (target.checked === undefined) {
         return;
       }
 
@@ -239,7 +239,7 @@ export const RepoRow = ({
         return;
       }
 
-      onSelectedChange?.(repository.id, e.target.checked);
+      onSelectedChange?.(repository.id, target.checked);
     },
     [onSelectedChange, repository],
   );

@@ -20,7 +20,7 @@ type Props = {
 
 export const ModelAlertsSort = ({ value, onChange, className }: Props) => {
   const handleInput = useCallback(
-    (e: InputEvent) => {
+    (e: Event) => {
       const target = e.target as HTMLSelectElement;
 
       onChange(target.value as SortKey);
