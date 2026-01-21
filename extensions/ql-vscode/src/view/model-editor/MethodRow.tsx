@@ -359,39 +359,38 @@ const ModelableMethodRow = forwardRef<HTMLDivElement, MethodRowProps>(
 );
 ModelableMethodRow.displayName = "ModelableMethodRow";
 
-const UnmodelableMethodRow = forwardRef<
-  HTMLDivElement,
-  MethodRowProps
->((props: MethodRowProps, ref) => {
-  const { method, viewState, revealedMethodSignature } = props;
+const UnmodelableMethodRow = forwardRef<HTMLDivElement, MethodRowProps>(
+  (props: MethodRowProps, ref) => {
+    const { method, viewState, revealedMethodSignature } = props;
 
-  const jumpToMethod = useCallback(
-    () => sendJumpToMethodMessage(method),
-    [method],
-  );
+    const jumpToMethod = useCallback(
+      () => sendJumpToMethodMessage(method),
+      [method],
+    );
 
-  return (
-    <DataGridRow
-      data-testid="unmodelable-method-row"
-      focused={revealedMethodSignature === method.signature}
-    >
-      <DataGridCell ref={ref}>
-        <ApiOrMethodRow>
-          <ModelingStatusIndicator status="saved" />
-          <MethodClassifications method={method} />
-          <MethodName {...props.method} />
-          {viewState.mode === Mode.Application && (
-            <UsagesButton onClick={jumpToMethod}>
-              {method.usages.length}
-            </UsagesButton>
-          )}
-          <ViewLink onClick={jumpToMethod}>View</ViewLink>
-        </ApiOrMethodRow>
-      </DataGridCell>
-      <DataGridCell gridColumn="span 5">Method already modeled</DataGridCell>
-    </DataGridRow>
-  );
-});
+    return (
+      <DataGridRow
+        data-testid="unmodelable-method-row"
+        focused={revealedMethodSignature === method.signature}
+      >
+        <DataGridCell ref={ref}>
+          <ApiOrMethodRow>
+            <ModelingStatusIndicator status="saved" />
+            <MethodClassifications method={method} />
+            <MethodName {...props.method} />
+            {viewState.mode === Mode.Application && (
+              <UsagesButton onClick={jumpToMethod}>
+                {method.usages.length}
+              </UsagesButton>
+            )}
+            <ViewLink onClick={jumpToMethod}>View</ViewLink>
+          </ApiOrMethodRow>
+        </DataGridCell>
+        <DataGridCell gridColumn="span 5">Method already modeled</DataGridCell>
+      </DataGridRow>
+    );
+  },
+);
 UnmodelableMethodRow.displayName = "UnmodelableMethodRow";
 
 function sendJumpToMethodMessage(method: Method) {
