@@ -24,7 +24,7 @@ export const RepositoriesResultFormat = ({
   className,
 }: Props) => {
   const handleInput = useCallback(
-    (e: InputEvent) => {
+    (e: Event) => {
       const target = e.target as HTMLSelectElement;
 
       onChange(target.value as ResultFormat);
