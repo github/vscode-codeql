@@ -2131,7 +2131,7 @@
     "@types/d3-graphviz": "^2.6.6",
     "@types/fs-extra": "^11.0.1",
     "@types/gulp": "^4.0.9",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.6",
     "@types/node": "22.19.*",
     "@types/proper-lockfile": "^4.1.4",
