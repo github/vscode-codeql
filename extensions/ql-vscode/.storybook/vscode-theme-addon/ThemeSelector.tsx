@@ -2,12 +2,12 @@ import * as React from "react";
 import type { FunctionComponent } from "react";
 import { useCallback } from "react";
 
-import { useGlobals } from "@storybook/manager-api";
+import { useGlobals } from "storybook/manager-api";
 import {
   IconButton,
   TooltipLinkList,
   WithTooltip,
-} from "@storybook/components";
+} from "storybook/internal/components";
 import { DashboardIcon } from "@storybook/icons";
 
 import { themeNames, VSCodeTheme } from "./theme";

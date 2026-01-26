@@ -1,4 +1,4 @@
-import type { ChangeEvent, SetStateAction } from "react";
+import type { SetStateAction } from "react";
 import { useCallback } from "react";
 import {
   VscodeOption,
@@ -25,8 +25,8 @@ export const CodeFlowsDropdown = ({
   setSelectedCodeFlow,
 }: CodeFlowsDropdownProps) => {
   const handleChange = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      const selectedOption = e.target;
+    (e: Event) => {
+      const selectedOption = e.target as HTMLSelectElement;
       const selectedIndex = parseInt(selectedOption.value);
       setSelectedCodeFlow(codeFlows[selectedIndex]);
     },

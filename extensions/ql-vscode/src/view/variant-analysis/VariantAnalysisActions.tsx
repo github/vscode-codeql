@@ -102,7 +102,6 @@ export const VariantAnalysisActions = ({
             })}
           </Button>
           <Button
-            appearance="primary"
             onClick={onExportResultsClick}
             disabled={exportResultsDisabled}
           >

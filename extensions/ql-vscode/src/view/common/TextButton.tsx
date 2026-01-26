@@ -2,7 +2,7 @@ import { styled } from "styled-components";
 
 type Size = "x-small" | "small" | "medium" | "large" | "x-large";
 
-const StyledButton = styled.button<{ $size: Size }>`
+const StyledButton = styled.button<{ $size?: Size }>`
   background: none;
   color: var(--vscode-textLink-foreground);
   border: none;

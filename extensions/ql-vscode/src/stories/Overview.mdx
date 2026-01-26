@@ -1,19 +1,17 @@
-import { Canvas, Meta, Story } from '@storybook/blocks';
-
 import iframeImage from './images/update-css-variables-iframe.png';
 import stylesImage from './images/update-css-variables-styles.png';
 import bodyImage from './images/update-css-variables-body.png';
 
-<Meta title="Overview" />
+# Overview
 
 Welcome to the Storybook for **CodeQL for Visual Studio Code**! This Storybook contains stories for components and pages in the extension.
 
-### Switching themes
+## Switching themes
 
 To switch between VSCode Dark+ and Light+ themes, use the button in the toolbar. This will not work on this document, so you'll only see
 the changes applied to a different story.
 
-### Writing stories
+## Writing stories
 
 To create new stories, copy an existing story in the `src/stories` directory and modify it to use your component or page. Please note that
 you are not able to access any VSCode specific APIs or receive messages from VSCode so an ideal component would use generic props. The
@@ -25,12 +23,12 @@ is currently not possible to preview your component in another theme.
 For more information about how to write stories and how to add controls, please see the
 [Storybook documentation](https://storybook.js.org/docs/react/writing-stories/introduction).
 
-### WebView UI Toolkit
+## WebView UI Toolkit
 
 As much as possible, we try to make use of the [WebView UI Toolkit](https://github.com/microsoft/vscode-webview-ui-toolkit): See the
 [WebView UI Toolkit Storybook here](https://microsoft.github.io/vscode-webview-ui-toolkit/).
 
-### Updating VSCode CSS variables
+## Updating VSCode CSS variables
 
 The VSCode CSS variables that are injected into the Storybook preview are defined in the `src/stories/vscode-theme-dark.css` file. They need to be
 updated manually if new variables are added to VSCode. It can also be updated if you would like to manually preview a different theme. To update

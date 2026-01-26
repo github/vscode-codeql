@@ -1,6 +1,6 @@
 import type { Preview } from "@storybook/react";
-import { themes } from "@storybook/theming";
-import { action } from "@storybook/addon-actions";
+import { themes } from "storybook/theming";
+import { action } from "storybook/actions";
 
 // Allow all stories/components to use Codicons
 import "@vscode/codicons/dist/codicon.css";
@@ -20,6 +20,7 @@ window.acquireVsCodeApi = () => ({
 
 // https://storybook.js.org/docs/react/configure/overview#configure-story-rendering
 const preview: Preview = {
+  tags: ["autodocs"],
   parameters: {
     // All props starting with `on` will automatically receive an action as a prop
     actions: { argTypesRegex: "^on[A-Z].*" },
