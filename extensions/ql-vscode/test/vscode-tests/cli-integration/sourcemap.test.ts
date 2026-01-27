@@ -4,12 +4,20 @@ import { tmpDir } from "../../../src/tmp-dir";
 import { readFile, writeFile, ensureDir, copy } from "fs-extra";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import type { AllCommands } from "../../../src/common/commands";
+import { getActivatedExtension } from "../global.helper";
 
 /**
  * Integration tests for queries
  */
 describe("SourceMap", () => {
   const commandManager = createVSCodeCommandManager<AllCommands>();
+
+  beforeEach(async () => {
+    // Ensure that the extension is fully activated before running tests. This is important
+    // because the extension activate() function ensures that the language server is up and
+    // running before returning, so that we don't get "Client is not running" test flakes.
+    await getActivatedExtension();
+  });
 
   it("should jump to QL code", async () => {
     const root = workspace.workspaceFolders![0].uri.fsPath;
