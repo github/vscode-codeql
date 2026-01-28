@@ -1,5 +1,5 @@
 import * as React from "react";
-import { addons } from "@storybook/manager-api";
+import { addons } from "storybook/manager-api";
 import { Addon_TypesEnum } from "storybook/internal/types";
 import { ThemeSelector } from "./ThemeSelector";
 

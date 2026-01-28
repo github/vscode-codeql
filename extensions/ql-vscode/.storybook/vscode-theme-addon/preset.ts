@@ -1,7 +1,10 @@
-export function previewAnnotations(entry = []) {
-  return [...entry, require.resolve("./preview.ts")];
+const previewPath = new URL("./preview.ts", import.meta.url).pathname;
+const managerPath = new URL("./manager.tsx", import.meta.url).pathname;
+
+export function previewAnnotations(entry: string[] = []) {
+  return [...entry, previewPath];
 }
 
-export function managerEntries(entry = []) {
-  return [...entry, require.resolve("./manager.tsx")];
+export function managerEntries(entry: string[] = []) {
+  return [...entry, managerPath];
 }

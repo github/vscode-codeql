@@ -1,6 +1,6 @@
 import type { Preview } from "@storybook/react";
-import { themes } from "@storybook/theming";
-import { action } from "@storybook/addon-actions";
+import { themes } from "storybook/theming";
+import { action } from "storybook/actions";
 
 // Allow all stories/components to use Codicons
 import "@vscode/codicons/dist/codicon.css";
