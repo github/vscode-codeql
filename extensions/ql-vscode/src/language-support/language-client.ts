@@ -45,6 +45,10 @@ export class CodeQLLanguageClient extends LanguageClient {
   }
 
   notifyVisibilityChange(editors: readonly TextEditor[]) {
+    // Only send notification if the language client is running to avoid race conditions
+    if (!this.isRunning()) {
+      return;
+    }
     const files = editors
       .filter((e) => e.document.uri.scheme === "file")
       .map((e) => e.document.uri.toString());
