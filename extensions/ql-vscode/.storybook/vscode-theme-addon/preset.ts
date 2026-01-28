@@ -1,6 +1,7 @@
-const previewPath = new URL("./preview.ts", import.meta.url).pathname;
-const managerPath = new URL("./manager.tsx", import.meta.url).pathname;
+import { fileURLToPath } from "node:url";
 
+const previewPath = fileURLToPath(new URL("./preview.ts", import.meta.url));
+const managerPath = fileURLToPath(new URL("./manager.tsx", import.meta.url));
 export function previewAnnotations(entry: string[] = []) {
   return [...entry, previewPath];
 }
