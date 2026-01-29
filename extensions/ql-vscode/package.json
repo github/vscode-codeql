@@ -2061,7 +2061,7 @@
     "prepare": "cd ../.. && husky"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.27.0",
+    "@floating-ui/react": "^0.27.17",
     "@octokit/plugin-retry": "^7.2.0",
     "@octokit/plugin-throttling": "^9.6.0",
     "@octokit/rest": "^22.0.1",
