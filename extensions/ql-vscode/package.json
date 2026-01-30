@@ -2066,7 +2066,7 @@
     "@octokit/plugin-throttling": "^9.6.0",
     "@octokit/rest": "^22.0.1",
     "@vscode-elements/react-elements": "^0.9.0",
-    "@vscode/codicons": "^0.0.43",
+    "@vscode/codicons": "^0.0.44",
     "@vscode/debugadapter": "^1.59.0",
     "@vscode/debugprotocol": "^1.68.0",
     "ajv": "^8.11.0",
