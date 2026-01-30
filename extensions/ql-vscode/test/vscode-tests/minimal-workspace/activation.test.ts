@@ -16,21 +16,29 @@ describe("launching with a minimal workspace", () => {
   });
 
   it("should activate the extension when a .ql file is opened", async () => {
-    await delay();
-
     const folders = workspace.workspaceFolders;
     expect(folders?.length).toEqual(1);
     const folderPath = folders![0].uri.fsPath;
     const documentPath = resolve(folderPath, "query.ql");
     const document = await workspace.openTextDocument(documentPath);
     expect(document.languageId).toEqual("ql");
-    // Delay slightly so that the extension has time to activate.
-    await delay();
+    // Wait for the extension to activate, polling with a timeout.
+    await waitForActivation(ext, 30_000);
     expect(ext!.isActive).toBeTruthy();
   }, 60_000);
 
-  async function delay() {
-    await new Promise((resolve) => setTimeout(resolve, 4000));
+  async function waitForActivation(
+    extension: typeof ext,
+    timeoutMs: number,
+  ): Promise<void> {
+    const pollIntervalMs = 100;
+    const maxAttempts = timeoutMs / pollIntervalMs;
+    for (let i = 0; i < maxAttempts; i++) {
+      if (extension!.isActive) {
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+    }
   }
 });
 
