@@ -196,14 +196,14 @@ function getCommands(
           queryRunner.restartQueryServer(progress),
           queryRunnerForWarmingOverlayBaseCache
             ? queryRunnerForWarmingOverlayBaseCache.restartQueryServer(progress)
-            : {},
-          async () => {
+            : Promise.resolve(),
+          (async () => {
             if (languageClient.isRunning()) {
               await languageClient.restart();
             } else {
               await languageClient.start();
             }
-          },
+          })(),
         ]);
         void showAndLogInformationMessage(
           queryServerLogger,
