@@ -33,9 +33,9 @@ export class AstBuilder {
   private async parseRoots(): Promise<AstItem[]> {
     const options = { entities: ["id", "url", "string"] };
     const [nodeTuples, edgeTuples, graphProperties] = await Promise.all([
-      await this.cli.bqrsDecode(this.bqrsPath, "nodes", options),
-      await this.cli.bqrsDecode(this.bqrsPath, "edges", options),
-      await this.cli.bqrsDecode(this.bqrsPath, "graphProperties", options),
+      this.cli.bqrsDecode(this.bqrsPath, "nodes", options),
+      this.cli.bqrsDecode(this.bqrsPath, "edges", options),
+      this.cli.bqrsDecode(this.bqrsPath, "graphProperties", options),
     ]);
 
     if (!this.isValidGraph(graphProperties)) {
