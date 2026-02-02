@@ -2062,6 +2062,7 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.17",
+    "@hpcc-js/wasm-graphviz": "^1.18.0",
     "@octokit/plugin-retry": "^7.2.0",
     "@octokit/plugin-throttling": "^9.6.0",
     "@octokit/rest": "^22.0.1",
@@ -2073,7 +2074,6 @@
     "chokidar": "^3.6.0",
     "d3": "^7.9.0",
     "d3-graphviz": "^5.6.0",
-    "@hpcc-js/wasm-graphviz": "^1.18.0",
     "fs-extra": "^11.1.1",
     "js-yaml": "^4.1.1",
     "koffi": "^2.12.0",
