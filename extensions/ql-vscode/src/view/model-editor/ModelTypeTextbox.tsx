@@ -1,4 +1,3 @@
-import type { ChangeEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import type {
   ModeledMethod,
@@ -33,8 +32,8 @@ export const ModelTypeTextbox = ({
     setValue(modeledMethod[typeInfo]);
   }, [modeledMethod, typeInfo]);
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {
-    const target = e.target as HTMLSelectElement;
+  const handleChange = useCallback((e: InputEvent) => {
+    const target = e.target as HTMLInputElement;
 
     setValue(target.value);
   }, []);
