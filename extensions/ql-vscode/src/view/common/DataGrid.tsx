@@ -83,7 +83,7 @@ export const DataGridRow = forwardRef(
       "data-testid": testId,
       onClick,
     }: DataGridRowProps,
-    ref?: React.Ref<HTMLElement | undefined>,
+    ref?: React.Ref<HTMLDivElement>,
   ) => (
     <StyledDataGridRow
       $focused={focused}
@@ -135,7 +135,7 @@ export const DataGridCell = forwardRef(
       className,
       children,
     }: DataGridCellProps,
-    ref?: React.Ref<HTMLElement | undefined>,
+    ref?: React.Ref<HTMLDivElement>,
   ) => {
     return (
       <StyledDataGridCell

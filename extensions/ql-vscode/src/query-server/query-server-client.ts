@@ -52,14 +52,14 @@ export class QueryServerClient extends DisposableObject {
   withProgressReporting: WithProgressReporting;
 
   private readonly queryServerStartListeners = [] as Array<
-    (progress: ProgressCallback) => void
+    (progress: ProgressCallback) => void | Promise<void>
   >;
 
   // Can't use standard vscode EventEmitter here since they do not cause the calling
   // function to fail if one of the event handlers fail. This is something that
   // we need here.
   readonly onDidStartQueryServer = (
-    e: (progress: ProgressCallback) => void,
+    e: (progress: ProgressCallback) => void | Promise<void>,
   ) => {
     this.queryServerStartListeners.push(e);
   };
@@ -160,7 +160,9 @@ export class QueryServerClient extends DisposableObject {
     // Ensure we await all responses from event handlers so that
     // errors can be properly reported to the user.
     await Promise.all(
-      this.queryServerStartListeners.map((handler) => handler(progress)),
+      this.queryServerStartListeners.map((handler) =>
+        Promise.resolve(handler(progress)),
+      ),
     );
   }
 

@@ -169,46 +169,48 @@ export async function downloadDatabaseUpdateFromGitHub(
   }
 
   await Promise.all(
-    selectedDatabases.map((database) => {
-      const update = updates.find((update) => update.database === database);
-      if (!update) {
-        return;
-      }
+    selectedDatabases
+      .map((database) => {
+        const update = updates.find((update) => update.database === database);
+        if (!update) {
+          return undefined;
+        }
 
-      return withProgress(
-        async (progress) => {
-          const newDatabase =
-            await databaseFetcher.downloadGitHubDatabaseFromUrl(
-              database.url,
-              database.id,
-              database.created_at,
-              database.commit_oid ?? null,
-              owner,
-              repo,
-              octokit,
-              progress,
-              databaseManager.currentDatabaseItem === update.databaseItem,
-              update.databaseItem.hasSourceArchiveInExplorer(),
+        return withProgress(
+          async (progress) => {
+            const newDatabase =
+              await databaseFetcher.downloadGitHubDatabaseFromUrl(
+                database.url,
+                database.id,
+                database.created_at,
+                database.commit_oid ?? null,
+                owner,
+                repo,
+                octokit,
+                progress,
+                databaseManager.currentDatabaseItem === update.databaseItem,
+                update.databaseItem.hasSourceArchiveInExplorer(),
+              );
+            if (newDatabase === undefined) {
+              return;
+            }
+
+            await databaseManager.removeDatabaseItem(update.databaseItem);
+
+            await commandManager.execute("codeQLDatabases.focus");
+            void window.showInformationMessage(
+              `Updated ${getLanguageDisplayName(
+                database.language,
+              )} database from GitHub.`,
             );
-          if (newDatabase === undefined) {
-            return;
-          }
-
-          await databaseManager.removeDatabaseItem(update.databaseItem);
-
-          await commandManager.execute("codeQLDatabases.focus");
-          void window.showInformationMessage(
-            `Updated ${getLanguageDisplayName(
+          },
+          {
+            title: `Updating ${getLanguageDisplayName(
               database.language,
-            )} database from GitHub.`,
-          );
-        },
-        {
-          title: `Updating ${getLanguageDisplayName(
-            database.language,
-          )} database from GitHub`,
-        },
-      );
-    }),
+            )} database from GitHub`,
+          },
+        );
+      })
+      .filter((p): p is Promise<void> => p !== undefined),
   );
 }
