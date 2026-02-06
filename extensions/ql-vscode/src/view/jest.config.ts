@@ -86,6 +86,8 @@ const config: Config = {
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$":
       "<rootDir>/../../test/__mocks__/fileMock.ts",
     "\\.(css|less)$": "<rootDir>/../../test/__mocks__/styleMock.ts",
+    "^react-dom/test-utils$":
+      "<rootDir>/../../__mocks__/react-dom/test-utils.js",
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

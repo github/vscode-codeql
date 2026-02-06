@@ -27,6 +27,7 @@ export default tseslint.config(
     ".markdownlint-cli2.cjs",
     "eslint.config.mjs",
     "!.storybook",
+    "__mocks__/",
   ]),
   github.getFlatConfigs().recommended,
   ...github.getFlatConfigs().typescript,
