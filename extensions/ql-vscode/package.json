@@ -2036,7 +2036,7 @@
     "watch": "gulp watch",
     "test": "npm-run-all test:*",
     "test:unit": "cross-env TZ=UTC LANG=en-US NODE_OPTIONS=--no-experimental-strip-types jest --projects test/unit-tests",
-    "test:view": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects src/view",
+    "test:view": "cross-env NODE_ENV=test NODE_OPTIONS=--no-experimental-strip-types jest --projects src/view",
     "test:vscode-integration": "npm-run-all test:vscode-integration:*",
     "test:vscode-integration:activated-extension": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects test/vscode-tests/activated-extension",
     "test:vscode-integration:no-workspace": "cross-env NODE_OPTIONS=--no-experimental-strip-types jest --projects test/vscode-tests/no-workspace",
