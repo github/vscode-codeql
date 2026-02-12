@@ -2125,7 +2125,7 @@
     "@types/d3": "^7.4.0",
     "@types/d3-graphviz": "^2.6.6",
     "@types/fs-extra": "^11.0.1",
-    "@types/gulp": "^4.0.9",
+    "@types/gulp": "^4.0.18",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.6",
     "@types/node": "22.19.*",
