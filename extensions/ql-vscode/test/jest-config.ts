@@ -1,5 +1,5 @@
 // These are all the packages that DO need to be transformed. All other packages will be ignored.
-// These pacakges all use ES modules, so need to be transformed
+// These packages all use ES modules, so need to be transformed
 const transformScopes = [
   "@faker-js",
   "@microsoft",
