@@ -7,6 +7,7 @@ const transformScopes = [
   "@lit",
   "@lit-labs",
   "@hpcc-js",
+  "@faker-js",
 ];
 const transformPackages = [
   "before-after-hook",
