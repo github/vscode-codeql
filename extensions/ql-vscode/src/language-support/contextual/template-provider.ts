@@ -282,10 +282,10 @@ export class TemplatePrintAstProvider {
 }
 
 /**
- * Run templated CodeQL queries to produce CFG information for
- * source-language files.
+ * Run templated CodeQL queries to produce graph information (e.g. CFG or DFG)
+ * for source-language files.
  */
-export class TemplatePrintCfgProvider {
+export class TemplatePrintGraphProvider {
   private cache: CachedOperation<
     [number, number],
     [Uri, Record<string, string>]
@@ -294,11 +294,13 @@ export class TemplatePrintCfgProvider {
   constructor(
     private cli: CodeQLCliServer,
     private dbm: DatabaseManager,
+    private keyType: KeyType,
+    private displayName: string,
   ) {
-    this.cache = new CachedOperation(this.getCfgUri.bind(this));
+    this.cache = new CachedOperation(this.getGraphUri.bind(this));
   }
 
-  async provideCfgUri(
+  async provideGraphUri(
     document: TextDocument,
     line: number,
     character: number,
@@ -309,14 +311,14 @@ export class TemplatePrintCfgProvider {
           line,
           character,
         )
-      : await this.getCfgUri(document.uri.toString(), line, character);
+      : await this.getGraphUri(document.uri.toString(), line, character);
   }
 
   private shouldUseCache() {
     return !(isCanary() && NO_CACHE_AST_VIEWER.getValue<boolean>());
   }
 
-  private async getCfgUri(
+  private async getGraphUri(
     uriString: string,
     line: number,
     character: number,
@@ -324,7 +326,7 @@ export class TemplatePrintCfgProvider {
     const uri = Uri.parse(uriString, true);
     if (uri.scheme !== zipArchiveScheme) {
       throw new Error(
-        "CFG Viewing is only available for databases with zipped source archives.",
+        `${this.displayName} Viewing is only available for databases with zipped source archives.`,
       );
     }
 
@@ -345,16 +347,16 @@ export class TemplatePrintCfgProvider {
     const queries = await resolveContextualQueries(
       this.cli,
       qlpack,
-      KeyType.PrintCfgQuery,
+      this.keyType,
     );
     if (queries.length > 1) {
       throw new Error(
-        `Found multiple Print CFG queries. Can't continue. Make sure there is exacly one query with the tag ${KeyType.PrintCfgQuery}`,
+        `Found multiple Print ${this.displayName} queries. Can't continue. Make sure there is exacly one query with the tag ${this.keyType}`,
       );
     }
     if (queries.length === 0) {
       throw new Error(
-        `Did not find any Print CFG queries. Can't continue. Make sure there is exacly one query with the tag ${KeyType.PrintCfgQuery}`,
+        `Did not find any Print ${this.displayName} queries. Can't continue. Make sure there is exacly one query with the tag ${this.keyType}`,
       );
     }
 

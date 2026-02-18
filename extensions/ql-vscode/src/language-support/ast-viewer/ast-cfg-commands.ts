@@ -7,14 +7,15 @@ import type { LocalQueries } from "../../local-queries";
 import { QuickEvalType } from "../../local-queries";
 import type {
   TemplatePrintAstProvider,
-  TemplatePrintCfgProvider,
+  TemplatePrintGraphProvider,
 } from "../contextual/template-provider";
 
 type AstCfgOptions = {
   localQueries: LocalQueries;
   astViewer: AstViewer;
   astTemplateProvider: TemplatePrintAstProvider;
-  cfgTemplateProvider: TemplatePrintCfgProvider;
+  cfgTemplateProvider: TemplatePrintGraphProvider;
+  dfgTemplateProvider: TemplatePrintGraphProvider;
 };
 
 export function getAstCfgCommands({
@@ -22,6 +23,7 @@ export function getAstCfgCommands({
   astViewer,
   astTemplateProvider,
   cfgTemplateProvider,
+  dfgTemplateProvider,
 }: AstCfgOptions): AstCfgCommands {
   const viewAst = async (selectedFile: Uri) =>
     withProgress(
@@ -41,35 +43,49 @@ export function getAstCfgCommands({
       },
     );
 
-  const viewCfg = async () =>
-    withProgress(
-      async (progress, token) => {
-        const editor = window.activeTextEditor;
-        const res = !editor
-          ? undefined
-          : await cfgTemplateProvider.provideCfgUri(
-              editor.document,
-              editor.selection.active.line + 1,
-              editor.selection.active.character + 1,
+  const viewGraph = (
+    provider: TemplatePrintGraphProvider,
+    title: string,
+  ) => {
+    return async () =>
+      withProgress(
+        async (progress, token) => {
+          const editor = window.activeTextEditor;
+          const res = !editor
+            ? undefined
+            : await provider.provideGraphUri(
+                editor.document,
+                editor.selection.active.line + 1,
+                editor.selection.active.character + 1,
+              );
+          if (res) {
+            await localQueries.compileAndRunQuery(
+              QuickEvalType.None,
+              res[0],
+              progress,
+              token,
+              undefined,
+              false,
+              undefined,
+              res[1],
             );
-        if (res) {
-          await localQueries.compileAndRunQuery(
-            QuickEvalType.None,
-            res[0],
-            progress,
-            token,
-            undefined,
-            false,
-            undefined,
-            res[1],
-          );
-        }
-      },
-      {
-        title: "Calculating Control Flow Graph",
-        cancellable: true,
-      },
-    );
+          }
+        },
+        {
+          title,
+          cancellable: true,
+        },
+      );
+  };
+
+  const viewCfg = viewGraph(
+    cfgTemplateProvider,
+    "Calculating Control Flow Graph",
+  );
+  const viewDfg = viewGraph(
+    dfgTemplateProvider,
+    "Calculating Data Flow Graph",
+  );
 
   return {
     "codeQL.viewAst": viewAst,
@@ -78,5 +94,8 @@ export function getAstCfgCommands({
     "codeQL.viewCfg": viewCfg,
     "codeQL.viewCfgContextExplorer": viewCfg,
     "codeQL.viewCfgContextEditor": viewCfg,
+    "codeQL.viewDfg": viewDfg,
+    "codeQL.viewDfgContextExplorer": viewDfg,
+    "codeQL.viewDfgContextEditor": viewDfg,
   };
 }
