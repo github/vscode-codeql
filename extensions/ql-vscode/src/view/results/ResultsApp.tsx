@@ -197,7 +197,9 @@ export function ResultsApp() {
   ) {
     const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
     const key =
-      (parsedResultSets.selectedTable || "") + parsedResultSets.pageNumber;
+      displayedResults.resultsInfo.resultsPath +
+      (parsedResultSets.selectedTable || "") +
+      parsedResultSets.pageNumber;
     const data = displayedResults.resultsInfo.interpretation?.data;
 
     return (
