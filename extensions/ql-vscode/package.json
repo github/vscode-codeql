@@ -2152,7 +2152,7 @@
     "cross-spawn": "^7.0.6",
     "del": "^6.0.0",
     "eslint": "^9.28.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-etc": "^2.0.2",
     "eslint-plugin-github": "^6.0.0",
