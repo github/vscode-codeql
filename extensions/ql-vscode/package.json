@@ -2146,7 +2146,7 @@
     "@vscode/test-electron": "^2.3.9",
     "@vscode/vsce": "^3.2.1",
     "ansi-colors": "^4.1.1",
-    "applicationinsights": "^2.9.5",
+    "applicationinsights": "^3.13.0",
     "cosmiconfig": "^9.0.0",
     "cross-env": "^10.1.0",
     "cross-spawn": "^7.0.6",
