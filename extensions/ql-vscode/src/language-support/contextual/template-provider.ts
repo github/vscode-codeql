@@ -20,7 +20,7 @@ import type { DatabaseManager } from "../../databases/local-databases";
 import { CachedOperation } from "./cached-operation";
 import type { ProgressCallback } from "../../common/vscode/progress";
 import { withProgress } from "../../common/vscode/progress";
-import { KeyType } from "./key-type";
+import { KeyType, tagOfKeyType } from "./key-type";
 import type { FullLocationLink } from "./location-finder";
 import {
   getLocationsForUriString,
@@ -351,12 +351,12 @@ export class TemplatePrintGraphProvider {
     );
     if (queries.length > 1) {
       throw new Error(
-        `Found multiple Print ${this.displayName} queries. Can't continue. Make sure there is exacly one query with the tag ${this.keyType}`,
+        `Found multiple Print ${this.displayName} queries. Can't continue. Make sure there is exactly one query with the tag ${tagOfKeyType(this.keyType)}`,
       );
     }
     if (queries.length === 0) {
       throw new Error(
-        `Did not find any Print ${this.displayName} queries. Can't continue. Make sure there is exacly one query with the tag ${this.keyType}`,
+        `Did not find any Print ${this.displayName} queries. Can't continue. Make sure there is exactly one query with the tag ${tagOfKeyType(this.keyType)}`,
       );
     }
 

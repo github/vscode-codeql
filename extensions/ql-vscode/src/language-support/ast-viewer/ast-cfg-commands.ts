@@ -43,10 +43,7 @@ export function getAstCfgCommands({
       },
     );
 
-  const viewGraph = (
-    provider: TemplatePrintGraphProvider,
-    title: string,
-  ) => {
+  const viewGraph = (provider: TemplatePrintGraphProvider, title: string) => {
     return async () =>
       withProgress(
         async (progress, token) => {
@@ -82,10 +79,7 @@ export function getAstCfgCommands({
     cfgTemplateProvider,
     "Calculating Control Flow Graph",
   );
-  const viewDfg = viewGraph(
-    dfgTemplateProvider,
-    "Calculating Data Flow Graph",
-  );
+  const viewDfg = viewGraph(dfgTemplateProvider, "Calculating Data Flow Graph");
 
   return {
     "codeQL.viewAst": viewAst,
