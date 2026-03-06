@@ -318,6 +318,9 @@ export type AstCfgCommands = {
   "codeQL.viewCfg": () => Promise<void>;
   "codeQL.viewCfgContextExplorer": () => Promise<void>;
   "codeQL.viewCfgContextEditor": () => Promise<void>;
+  "codeQL.viewDfg": () => Promise<void>;
+  "codeQL.viewDfgContextExplorer": () => Promise<void>;
+  "codeQL.viewDfgContextEditor": () => Promise<void>;
 };
 
 export type AstViewerCommands = {
