@@ -2153,7 +2153,7 @@
     "del": "^6.0.0",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-etc": "^2.0.2",
     "eslint-plugin-github": "^6.0.0",
     "eslint-plugin-jest-dom": "^5.5.0",
