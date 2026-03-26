@@ -2160,7 +2160,7 @@
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-storybook": "^10.0.7",
+    "eslint-plugin-storybook": "^10.3.3",
     "glob": "^11.1.0",
     "gulp": "^5.0.1",
     "gulp-esbuild": "^0.14.1",
