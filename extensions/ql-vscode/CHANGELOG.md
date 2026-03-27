@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Remove support for CodeQL CLI versions older than 2.21.4. [#4285](https://github.com/github/vscode-codeql/pull/4285)
+- Remove support for CodeQL CLI versions older than 2.21.4. [#4344](https://github.com/github/vscode-codeql/pull/4344)
 
 ## 1.17.7 - 5 December 2025
 
@@ -136,6 +136,7 @@
   2. A language selector, which allows you to quickly filter databases and queries by language.
 
   For more information, see the [documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/analyzing-your-projects/#filtering-databases-and-queries-by-language).
+
 - When adding a CodeQL database, we no longer add the database source folder to the workspace by default (since this caused bugs in single-folder workspaces). [#3047](https://github.com/github/vscode-codeql/pull/3047)
   - You can manually add individual database source folders to the workspace with the "Add Database Source to Workspace" right-click command in the databases view.
   - To restore the old behavior of adding all database source folders by default, set the `codeQL.addingDatabases.addDatabaseSourceToWorkspace` setting to `true`.
@@ -196,7 +197,7 @@ No user facing changes.
 
 - Remove "last updated" information and sorting from variant analysis results view. [#2637](https://github.com/github/vscode-codeql/pull/2637)
 - Links to code on GitHub now include column numbers as well as line numbers. [#2406](https://github.com/github/vscode-codeql/pull/2406)
-- No longer highlight trailing commas for jump to definition.  [#2615](https://github.com/github/vscode-codeql/pull/2615)
+- No longer highlight trailing commas for jump to definition. [#2615](https://github.com/github/vscode-codeql/pull/2615)
 - Fix a bug where the QHelp preview page was not being refreshed after changes to the underlying `.qhelp` file. [#2660](https://github.com/github/vscode-codeql/pull/2660)
 
 ## 1.8.8 - 17 July 2023
