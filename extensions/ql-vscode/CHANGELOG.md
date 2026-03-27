@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Remove support for CodeQL CLI versions older than 2.21.4. [#4344](https://github.com/github/vscode-codeql/pull/4344)
+- Remove support for CodeQL CLI versions older than 2.22.4. [#4344](https://github.com/github/vscode-codeql/pull/4344)
 
 ## 1.17.7 - 5 December 2025
 
