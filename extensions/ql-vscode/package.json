@@ -2094,7 +2094,7 @@
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-jsonrpc": "^8.2.1",
     "vscode-languageclient": "^8.0.2",
-    "yauzl": "^3.2.1",
+    "yauzl": "^3.3.0",
     "zip-a-folder": "^4.0.4"
   },
   "devDependencies": {
