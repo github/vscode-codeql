@@ -46,18 +46,20 @@ describe("fileRangeFromURI", () => {
   });
 
   it("should return undefined when value is an empty uri", () => {
-    expect(
-      fileRangeFromURI(
-        {
-          uri: "file:/",
-          startLine: 1,
-          startColumn: 2,
-          endLine: 3,
-          endColumn: 4,
-        } as BqrsLineColumnLocation,
-        createMockDatabaseItem(),
-      ),
-    ).toBeUndefined();
+    for (const fileUri of ["file:/", "file:///"]) {
+      expect(
+        fileRangeFromURI(
+          {
+            uri: fileUri,
+            startLine: 1,
+            startColumn: 2,
+            endLine: 3,
+            endColumn: 4,
+          } as BqrsLineColumnLocation,
+          createMockDatabaseItem(),
+        ),
+      ).toBeUndefined();
+    }
   });
 
   it("should return a range for a WholeFileLocation", () => {

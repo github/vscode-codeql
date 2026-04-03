@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Remove support for CodeQL CLI versions older than 2.22.4. [#4344](https://github.com/github/vscode-codeql/pull/4344)
+- Fix location links being displayed for query results with empty `file:///` URI [#4357](https://github.com/github/vscode-codeql/pull/4357)
 
 ## 1.17.7 - 5 December 2025
 
