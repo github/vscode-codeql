@@ -170,7 +170,7 @@ async function expandShortPathNative(shortPath: string, logger: BaseLogger) {
     throw new Error("Failed to get long path name");
   }
 
-  const longPath = buffer.toString("utf16le", 0, (result - 1) * 2);
+  const longPath = buffer.toString("utf16le", 0, result * 2);
 
   void logger.log(`Expanded short path ${shortPath} to ${longPath}`);
 
