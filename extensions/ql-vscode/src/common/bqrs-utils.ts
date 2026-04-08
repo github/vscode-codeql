@@ -7,7 +7,7 @@ import { isUrlValueResolvable } from "./raw-result-types";
  * as a link.
  */
 export function isEmptyPath(uriStr: string) {
-  return !uriStr || uriStr === "file:/";
+  return !uriStr || uriStr === "file:/" || uriStr === "file:///";
 }
 
 export function tryGetRemoteLocation(

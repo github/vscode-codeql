@@ -4,6 +4,7 @@ import {
 } from "../../../src/common/bqrs-raw-results-mapper";
 import type {
   BqrsResultSetSchema,
+  BqrsWholeFileLocation,
   DecodedBqrsChunk,
 } from "../../../src/common/bqrs-cli-types";
 import { ColumnKind } from "../../../src/common/raw-result-types";
@@ -317,6 +318,20 @@ describe("mapUrlValue", () => {
         type: "string",
         value: loc,
       });
+    }
+  });
+
+  it("should return undefined for empty file uri", () => {
+    for (const fileUri of ["file:/", "file:///"]) {
+      const loc = {
+        uri: fileUri,
+        startLine: 0,
+        startColumn: 0,
+        endLine: 0,
+        endColumn: 0,
+      } as BqrsWholeFileLocation;
+      const urlValue = mapUrlValue(loc);
+      expect(urlValue).toBeUndefined();
     }
   });
 });
