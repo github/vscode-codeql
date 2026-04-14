@@ -240,8 +240,11 @@ export function ResultTables(props: ResultTablesProps) {
 
   return (
     <div>
-      <ResultTablesHeader {...props} selectedTable={selectedTable} />
-      <div className={tableHeaderClassName}></div>
+      <ResultTablesHeader
+        {...props}
+        selectedTable={selectedTable}
+        disablePagination={selectionFilter != null}
+      />
       <div
         className={tableHeaderClassName}
         style={{ justifyContent: "flex-end" }}

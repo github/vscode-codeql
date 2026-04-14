@@ -13,6 +13,7 @@ interface Props {
   queryPath: string;
   parsedResultSets: ParsedResultSets;
   selectedTable: string;
+  disablePagination?: boolean;
 }
 
 const Container = styled.span`
@@ -57,7 +58,13 @@ const OpenQueryLink = styled(TextButton)`
 `;
 
 export function ResultTablesHeader(props: Props) {
-  const { queryPath, queryName, parsedResultSets, selectedTable } = props;
+  const {
+    queryPath,
+    queryName,
+    parsedResultSets,
+    selectedTable,
+    disablePagination,
+  } = props;
 
   const [selectedPage, setSelectedPage] = useState(
     `${parsedResultSets.pageNumber + 1}`,
@@ -145,19 +152,26 @@ export function ResultTablesHeader(props: Props) {
 
   return (
     <Container>
-      <PaginationButton onClick={prevPageHandler}>&#xab;</PaginationButton>
+      <PaginationButton disabled={disablePagination} onClick={prevPageHandler}>
+        &#xab;
+      </PaginationButton>
       <PageNumberInput
         type="number"
         size={3}
-        value={selectedPage}
+        value={disablePagination ? 1 : selectedPage}
         min="1"
-        max={numPages}
+        max={disablePagination ? 1 : numPages}
+        disabled={disablePagination}
         onChange={onChangeHandler}
         onBlur={onBlurHandler}
         onKeyDown={onKeyDownHandler}
       />
-      <span>/&nbsp;{numPages}</span>
-      <PaginationButton value=">" onClick={nextPageHandler}>
+      <span>/&nbsp;{disablePagination ? 1 : numPages}</span>
+      <PaginationButton
+        disabled={disablePagination}
+        value=">"
+        onClick={nextPageHandler}
+      >
         &#xbb;
       </PaginationButton>
       <div className={tableHeaderItemClassName}>{queryName}</div>
