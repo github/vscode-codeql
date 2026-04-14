@@ -220,6 +220,15 @@ interface UntoggleShowProblemsMsg {
   t: "untoggleShowProblems";
 }
 
+export const enum SourceArchiveRelationship {
+  /** The file is in the source archive of the database the query was run on. */
+  CorrectArchive = "correct-archive",
+  /** The file is in a source archive, but for a different database. */
+  WrongArchive = "wrong-archive",
+  /** The file is not in any source archive. */
+  NotInArchive = "not-in-archive",
+}
+
 /**
  * Information about the current editor selection, sent to the results view
  * so it can filter results to only those overlapping the selection.
@@ -233,6 +242,8 @@ export interface EditorSelection {
   endColumn: number;
   /** True if the selection is empty (just a cursor), in which case we match the whole file. */
   isEmpty: boolean;
+  /** Describes the relationship between the current file and the query's database source archive. */
+  sourceArchiveRelationship: SourceArchiveRelationship;
 }
 
 interface SetEditorSelectionMsg {

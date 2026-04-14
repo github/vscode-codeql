@@ -52,6 +52,7 @@ import {
   NavigationDirection,
   getDefaultResultSetName,
   RAW_RESULTS_LIMIT,
+  SourceArchiveRelationship,
 } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 import type { Logger } from "../common/logging";
@@ -1103,6 +1104,7 @@ export class ResultsView extends AbstractWebview<
       startColumn: range.start.character + 1,
       endColumn: range.end.character + 1,
       isEmpty: range.isEmpty,
+      sourceArchiveRelationship: this.getSourceArchiveRelationship(uri),
     };
   }
 
@@ -1127,6 +1129,29 @@ export class ResultsView extends AbstractWebview<
       }
     }
     return undefined;
+  }
+
+  /**
+   * Determines the relationship between the editor file and the query's database source archive.
+   */
+  private getSourceArchiveRelationship(
+    editorUri: Uri,
+  ): SourceArchiveRelationship {
+    if (editorUri.scheme !== zipArchiveScheme) {
+      return SourceArchiveRelationship.NotInArchive;
+    }
+    const dbItem = this._displayedQuery
+      ? this.databaseManager.findDatabaseItem(
+          Uri.parse(this._displayedQuery.initialInfo.databaseInfo.databaseUri),
+        )
+      : undefined;
+    if (
+      dbItem?.sourceArchive &&
+      dbItem.belongsToSourceArchiveExplorerUri(editorUri)
+    ) {
+      return SourceArchiveRelationship.CorrectArchive;
+    }
+    return SourceArchiveRelationship.WrongArchive;
   }
 
   /**
