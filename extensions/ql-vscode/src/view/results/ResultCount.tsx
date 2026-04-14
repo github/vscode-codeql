@@ -3,6 +3,7 @@ import { tableHeaderItemClassName } from "./result-table-utils";
 
 interface Props {
   resultSet?: ResultSet;
+  filteredCount?: number;
 }
 
 function getResultCount(resultSet: ResultSet): number {
@@ -19,10 +20,18 @@ export function ResultCount(props: Props): React.JSX.Element | null {
     return null;
   }
 
-  const resultCount = getResultCount(props.resultSet);
+  const totalCount = getResultCount(props.resultSet);
+  if (props.filteredCount !== undefined) {
+    return (
+      <span className={tableHeaderItemClassName}>
+        {props.filteredCount} / {totalCount}{" "}
+        {totalCount === 1 ? "result" : "results"}
+      </span>
+    );
+  }
   return (
     <span className={tableHeaderItemClassName}>
-      {resultCount} {resultCount === 1 ? "result" : "results"}
+      {totalCount} {totalCount === 1 ? "result" : "results"}
     </span>
   );
 }

@@ -255,7 +255,7 @@ export function ResultTables(props: ResultTablesProps) {
         <select value={selectedTable} onChange={onTableSelectionChange}>
           {resultSetOptions}
         </select>
-        <ResultCount resultSet={resultSet} />
+        <ResultCount resultSet={resultSet} filteredCount={filteredCount} />
         <ProblemsViewCheckbox
           selectedTable={selectedTable}
           problemsViewSelected={problemsViewSelected}
