@@ -15,6 +15,7 @@ import {
   ALERTS_TABLE_NAME,
   DEFAULT_USER_SETTINGS,
   GRAPH_TABLE_NAME,
+  getDefaultResultSetName,
 } from "../../common/interface-types";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
 import { ResultTables } from "./ResultTables";
@@ -64,6 +65,7 @@ interface ResultsViewState {
   displayedResults: ResultsState;
   nextResultsInfo: ResultsInfo | null;
   isExpectingResultsUpdate: boolean;
+  selectedTable: string | undefined;
 }
 
 /**
@@ -78,6 +80,7 @@ export function ResultsApp() {
     },
     nextResultsInfo: null,
     isExpectingResultsUpdate: true,
+    selectedTable: undefined,
   });
 
   const [userSettings, setUserSettings] = useState<UserSettings>(
@@ -85,6 +88,39 @@ export function ResultsApp() {
   );
 
   const [problemsViewSelected, setProblemsViewSelected] = useState(false);
+
+  const onSelectedTableChange = useCallback((tableName: string) => {
+    setState((prev) => {
+      if (tableName === prev.selectedTable) return prev;
+      return {
+        ...prev,
+        selectedTable: tableName,
+      };
+    });
+  }, []);
+
+  // Ensure selectedTable is valid for the current result sets.
+  // This runs in ResultsApp (not ResultTables) so it survives remounts.
+  const displayedResultsInfo = state.displayedResults.resultsInfo;
+  useEffect(() => {
+    if (!displayedResultsInfo) return;
+    const { parsedResultSets, interpretation } = displayedResultsInfo;
+    const allNames = interpretation
+      ? parsedResultSets.resultSetNames.concat([
+          interpretation.data.t === "GraphInterpretationData"
+            ? GRAPH_TABLE_NAME
+            : ALERTS_TABLE_NAME,
+        ])
+      : parsedResultSets.resultSetNames;
+    if (
+      state.selectedTable === undefined ||
+      !allNames.includes(state.selectedTable)
+    ) {
+      const tableName =
+        parsedResultSets.selectedTable ?? getDefaultResultSetName(allNames);
+      onSelectedTableChange(tableName);
+    }
+  }, [displayedResultsInfo, state.selectedTable, onSelectedTableChange]);
 
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
@@ -103,7 +139,8 @@ export function ResultsApp() {
         statusText = `Error loading results: ${errorMessage}`;
       }
 
-      setState({
+      setState((prev) => ({
+        ...prev,
         displayedResults: {
           resultsInfo,
           results,
@@ -111,7 +148,7 @@ export function ResultsApp() {
         },
         nextResultsInfo: null,
         isExpectingResultsUpdate: false,
-      });
+      }));
     },
     [],
   );
@@ -232,6 +269,8 @@ export function ResultsApp() {
         }
         queryName={displayedResults.resultsInfo.queryName}
         queryPath={displayedResults.resultsInfo.queryPath}
+        selectedTable={state.selectedTable ?? ""}
+        onSelectedTableChange={onSelectedTableChange}
         problemsViewSelected={problemsViewSelected}
         onProblemsViewSelectedChange={setProblemsViewSelected}
       />

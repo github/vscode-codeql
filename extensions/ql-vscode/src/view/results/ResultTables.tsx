@@ -13,7 +13,6 @@ import {
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
   SELECT_TABLE_NAME,
-  getDefaultResultSetName,
 } from "../../common/interface-types";
 import { tableHeaderClassName } from "./result-table-utils";
 import { vscode } from "../vscode-api";
@@ -42,6 +41,8 @@ interface ResultTablesProps {
   isLoadingNewResults: boolean;
   queryName: string;
   queryPath: string;
+  selectedTable: string;
+  onSelectedTableChange: (tableName: string) => void;
   problemsViewSelected: boolean;
   onProblemsViewSelectedChange: (selected: boolean) => void;
 }
@@ -102,29 +103,11 @@ export function ResultTables(props: ResultTablesProps) {
     origResultsPaths,
     isLoadingNewResults,
     sortStates,
+    selectedTable,
+    onSelectedTableChange,
     problemsViewSelected,
     onProblemsViewSelectedChange,
   } = props;
-
-  const [selectedTable, setSelectedTable] = useState(
-    parsedResultSets.selectedTable ||
-      getDefaultResultSet(getResultSets(rawResultSets, interpretation)),
-  );
-  useEffect(() => {
-    const resultSetExists =
-      parsedResultSets.resultSetNames.some((v) => selectedTable === v) ||
-      getResultSets(rawResultSets, interpretation).some(
-        (v) => selectedTable === getResultSetName(v),
-      );
-
-    // If the selected result set does not exist, select the default result set.
-    if (!resultSetExists) {
-      setSelectedTable(
-        parsedResultSets.selectedTable ||
-          getDefaultResultSet(getResultSets(rawResultSets, interpretation)),
-      );
-    }
-  }, [parsedResultSets, interpretation, rawResultSets, selectedTable]);
 
   const onTableSelectionChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -134,9 +117,10 @@ export function ResultTables(props: ResultTablesProps) {
         pageNumber: 0,
         selectedTable,
       });
+      onSelectedTableChange(selectedTable);
       sendTelemetry("local-results-table-selection");
     },
-    [],
+    [onSelectedTableChange],
   );
 
   const handleCheckboxChanged = useCallback(
@@ -227,19 +211,13 @@ export function ResultTables(props: ResultTablesProps) {
           sortState={sortStates.get(resultSetName)}
           nonemptyRawResults={nonemptyRawResults}
           showRawResults={() => {
-            setSelectedTable(SELECT_TABLE_NAME);
+            onSelectedTableChange(SELECT_TABLE_NAME);
             sendTelemetry("local-results-show-raw-results");
           }}
           offset={offset}
         />
       )}
     </div>
-  );
-}
-
-function getDefaultResultSet(resultSets: readonly ResultSet[]): string {
-  return getDefaultResultSetName(
-    resultSets.map((resultSet) => getResultSetName(resultSet)),
   );
 }
 
