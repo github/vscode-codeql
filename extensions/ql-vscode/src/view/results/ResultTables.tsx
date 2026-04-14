@@ -22,6 +22,7 @@ import { ResultTablesHeader } from "./ResultTablesHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ResultCount } from "./ResultCount";
 import { ProblemsViewCheckbox } from "./ProblemsViewCheckbox";
+import { SelectionFilterCheckbox } from "./SelectionFilterCheckbox";
 import { assertNever } from "../../common/helpers-pure";
 
 /**
@@ -43,6 +44,8 @@ interface ResultTablesProps {
   queryPath: string;
   selectedTable: string;
   onSelectedTableChange: (tableName: string) => void;
+  selectionFilterEnabled: boolean;
+  onSelectionFilterEnabledChange: (value: boolean) => void;
   problemsViewSelected: boolean;
   onProblemsViewSelectedChange: (selected: boolean) => void;
 }
@@ -105,6 +108,8 @@ export function ResultTables(props: ResultTablesProps) {
     sortStates,
     selectedTable,
     onSelectedTableChange,
+    selectionFilterEnabled,
+    onSelectionFilterEnabledChange,
     problemsViewSelected,
     onProblemsViewSelectedChange,
   } = props;
@@ -185,6 +190,15 @@ export function ResultTables(props: ResultTablesProps) {
     <div>
       <ResultTablesHeader {...props} selectedTable={selectedTable} />
       <div className={tableHeaderClassName}></div>
+      <div
+        className={tableHeaderClassName}
+        style={{ justifyContent: "flex-end" }}
+      >
+        <SelectionFilterCheckbox
+          checked={selectionFilterEnabled}
+          onChange={(e) => onSelectionFilterEnabledChange(e.target.checked)}
+        />
+      </div>
       <div className={tableHeaderClassName}>
         <select value={selectedTable} onChange={onTableSelectionChange}>
           {resultSetOptions}

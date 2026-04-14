@@ -65,6 +65,7 @@ interface ResultsViewState {
   displayedResults: ResultsState;
   nextResultsInfo: ResultsInfo | null;
   isExpectingResultsUpdate: boolean;
+  selectionFilterEnabled: boolean;
   selectedTable: string | undefined;
 }
 
@@ -80,6 +81,7 @@ export function ResultsApp() {
     },
     nextResultsInfo: null,
     isExpectingResultsUpdate: true,
+    selectionFilterEnabled: false,
     selectedTable: undefined,
   });
 
@@ -271,6 +273,10 @@ export function ResultsApp() {
         queryPath={displayedResults.resultsInfo.queryPath}
         selectedTable={state.selectedTable ?? ""}
         onSelectedTableChange={onSelectedTableChange}
+        selectionFilterEnabled={state.selectionFilterEnabled}
+        onSelectionFilterEnabledChange={(selectionFilterEnabled) => {
+          setState((prev) => ({ ...prev, selectionFilterEnabled }));
+        }}
         problemsViewSelected={problemsViewSelected}
         onProblemsViewSelectedChange={setProblemsViewSelected}
       />
