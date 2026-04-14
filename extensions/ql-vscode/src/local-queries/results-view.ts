@@ -296,12 +296,23 @@ export class ResultsView extends AbstractWebview<
           this.onWebViewLoaded();
           break;
         case "viewSourceFile": {
-          await jumpToLocation(
+          const jumpTarget = await jumpToLocation(
             msg.databaseUri,
             msg.loc,
             this.databaseManager,
             this.logger,
           );
+          if (jumpTarget != null) {
+            // For selection-filtering purposes, we want to notify the webview that a new file is being looked at.
+            await this.postMessage({
+              t: "setEditorSelection",
+              selection: this.rangeToEditorSelection(
+                jumpTarget.uri,
+                jumpTarget.range,
+              ),
+              wasFromUserInteraction: false,
+            });
+          }
           break;
         }
         case "toggleDiagnostics": {

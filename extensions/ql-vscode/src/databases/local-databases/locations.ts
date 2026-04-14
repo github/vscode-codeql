@@ -105,9 +105,9 @@ export async function showResolvableLocation(
   loc: UrlValueResolvable,
   databaseItem: DatabaseItem | undefined,
   logger: Logger,
-): Promise<void> {
+): Promise<Location | null> {
   try {
-    await showLocation(tryResolveLocation(loc, databaseItem));
+    return showLocation(tryResolveLocation(loc, databaseItem));
   } catch (e) {
     if (e instanceof Error && e.message.match(/File not found/)) {
       void Window.showErrorMessage(
@@ -116,12 +116,15 @@ export async function showResolvableLocation(
     } else {
       void logger.log(`Unable to jump to location: ${getErrorMessage(e)}`);
     }
+    return null;
   }
 }
 
-export async function showLocation(location?: Location) {
+export async function showLocation(
+  location?: Location,
+): Promise<Location | null> {
   if (!location) {
-    return;
+    return null;
   }
 
   const doc = await workspace.openTextDocument(location.uri);
@@ -156,6 +159,8 @@ export async function showLocation(location?: Location) {
   editor.revealRange(range, TextEditorRevealType.InCenter);
   editor.setDecorations(shownLocationDecoration, [range]);
   editor.setDecorations(shownLocationLineDecoration, [range]);
+
+  return location;
 }
 
 export async function jumpToLocation(
@@ -163,10 +168,10 @@ export async function jumpToLocation(
   loc: UrlValueResolvable,
   databaseManager: DatabaseManager,
   logger: Logger,
-) {
+): Promise<Location | null> {
   const databaseItem =
     databaseUri !== undefined
       ? databaseManager.findDatabaseItem(Uri.parse(databaseUri))
       : undefined;
-  await showResolvableLocation(loc, databaseItem, logger);
+  return showResolvableLocation(loc, databaseItem, logger);
 }
