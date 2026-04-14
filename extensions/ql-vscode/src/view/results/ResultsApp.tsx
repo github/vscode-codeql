@@ -84,6 +84,8 @@ export function ResultsApp() {
     DEFAULT_USER_SETTINGS,
   );
 
+  const [problemsViewSelected, setProblemsViewSelected] = useState(false);
+
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
       let results: Results | null = null;
@@ -180,7 +182,7 @@ export function ResultsApp() {
           break;
 
         case "untoggleShowProblems":
-          // noop
+          setProblemsViewSelected(false);
           break;
 
         default:
@@ -230,6 +232,8 @@ export function ResultsApp() {
         }
         queryName={displayedResults.resultsInfo.queryName}
         queryPath={displayedResults.resultsInfo.queryPath}
+        problemsViewSelected={problemsViewSelected}
+        onProblemsViewSelectedChange={setProblemsViewSelected}
       />
     );
   } else {

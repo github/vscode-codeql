@@ -7,7 +7,6 @@ import type {
   InterpretedResultsSortState,
   ResultSet,
   ParsedResultSets,
-  IntoResultsViewMsg,
   UserSettings,
 } from "../../common/interface-types";
 import {
@@ -43,6 +42,8 @@ interface ResultTablesProps {
   isLoadingNewResults: boolean;
   queryName: string;
   queryPath: string;
+  problemsViewSelected: boolean;
+  onProblemsViewSelectedChange: (selected: boolean) => void;
 }
 
 const UPDATING_RESULTS_TEXT_CLASS_NAME =
@@ -101,48 +102,14 @@ export function ResultTables(props: ResultTablesProps) {
     origResultsPaths,
     isLoadingNewResults,
     sortStates,
+    problemsViewSelected,
+    onProblemsViewSelectedChange,
   } = props;
 
   const [selectedTable, setSelectedTable] = useState(
     parsedResultSets.selectedTable ||
       getDefaultResultSet(getResultSets(rawResultSets, interpretation)),
   );
-  const [problemsViewSelected, setProblemsViewSelected] = useState(false);
-
-  const handleMessage = useCallback((msg: IntoResultsViewMsg): void => {
-    switch (msg.t) {
-      case "untoggleShowProblems":
-        setProblemsViewSelected(false);
-        break;
-
-      default:
-      // noop
-    }
-  }, []);
-
-  const vscodeMessageHandler = useCallback(
-    (evt: MessageEvent): void => {
-      // sanitize origin
-      const origin = evt.origin.replace(/\n|\r/g, "");
-      if (evt.origin === window.origin) {
-        handleMessage(evt.data as IntoResultsViewMsg);
-      } else {
-        console.error(`Invalid event origin ${origin}`);
-      }
-    },
-    [handleMessage],
-  );
-
-  // TODO: Duplicated from ResultsApp.tsx consider a way to
-  // avoid this duplication
-  useEffect(() => {
-    window.addEventListener("message", vscodeMessageHandler);
-
-    return () => {
-      window.removeEventListener("message", vscodeMessageHandler);
-    };
-  }, [vscodeMessageHandler]);
-
   useEffect(() => {
     const resultSetExists =
       parsedResultSets.resultSetNames.some((v) => selectedTable === v) ||
@@ -178,7 +145,7 @@ export function ResultTables(props: ResultTablesProps) {
         // no change
         return;
       }
-      setProblemsViewSelected(e.target.checked);
+      onProblemsViewSelectedChange(e.target.checked);
       if (e.target.checked) {
         sendTelemetry("local-results-show-results-in-problems-view");
       }
@@ -192,7 +159,14 @@ export function ResultTables(props: ResultTablesProps) {
         });
       }
     },
-    [database, metadata, origResultsPaths, problemsViewSelected, resultsPath],
+    [
+      database,
+      metadata,
+      onProblemsViewSelectedChange,
+      origResultsPaths,
+      problemsViewSelected,
+      resultsPath,
+    ],
   );
 
   const offset = parsedResultSets.pageNumber * parsedResultSets.pageSize;
