@@ -348,6 +348,8 @@ export class ResultsView extends AbstractWebview<
         case "openFile":
           await this.openFile(msg.filePath);
           break;
+        case "requestFileFilteredResults":
+          break;
         case "telemetry":
           telemetryListener?.sendUIInteraction(msg.action);
           break;

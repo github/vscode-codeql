@@ -2,6 +2,7 @@ import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import type {
   DatabaseInfo,
   EditorSelection,
+  FileFilteredResults,
   Interpretation,
   IntoResultsViewMsg,
   SortedResultSetInfo,
@@ -69,6 +70,7 @@ interface ResultsViewState {
   selectionFilterEnabled: boolean;
   editorSelection: EditorSelection | undefined;
   selectedTable: string | undefined;
+  fileFilteredResults: FileFilteredResults | undefined;
 }
 
 /**
@@ -86,11 +88,32 @@ export function ResultsApp() {
     selectionFilterEnabled: false,
     editorSelection: undefined,
     selectedTable: undefined,
+    fileFilteredResults: undefined,
   });
 
   const [userSettings, setUserSettings] = useState<UserSettings>(
     DEFAULT_USER_SETTINGS,
   );
+
+  useEffect(() => {
+    if (
+      state.selectionFilterEnabled &&
+      state.editorSelection?.fileUri != null &&
+      state.selectedTable != null &&
+      state.fileFilteredResults == null
+    ) {
+      vscode.postMessage({
+        t: "requestFileFilteredResults",
+        fileUri: state.editorSelection.fileUri,
+        selectedTable: state.selectedTable,
+      });
+    }
+  }, [
+    state.selectionFilterEnabled,
+    state.editorSelection?.fileUri,
+    state.selectedTable,
+    state.fileFilteredResults,
+  ]);
 
   const [problemsViewSelected, setProblemsViewSelected] = useState(false);
 
@@ -100,6 +123,7 @@ export function ResultsApp() {
       return {
         ...prev,
         selectedTable: tableName,
+        fileFilteredResults: undefined, // Discard stale results (they are from another table)
       };
     });
   }, []);
@@ -238,10 +262,29 @@ export function ResultsApp() {
               return {
                 ...prev,
                 editorSelection: selection,
+                fileFilteredResults:
+                  selection.fileUri === prev.editorSelection?.fileUri
+                    ? prev.fileFilteredResults
+                    : undefined, // Discard stale results (they are from another file)
               };
             });
           }
           break;
+
+        case "setFileFilteredResults": {
+          const results = msg.results;
+          setState((prev) => {
+            if (
+              results.fileUri === prev.editorSelection?.fileUri &&
+              results.selectedTable === prev.selectedTable &&
+              prev.fileFilteredResults === undefined
+            ) {
+              return { ...prev, fileFilteredResults: results };
+            }
+            return prev;
+          });
+          break;
+        }
 
         default:
           assertNever(msg);

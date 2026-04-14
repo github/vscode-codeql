@@ -242,6 +242,28 @@ interface SetEditorSelectionMsg {
 }
 
 /**
+ * Results pre-filtered by file URI, sent from the extension when the
+ * selection filter is active and the editor's file changes.
+ * This bypasses pagination so the webview can apply line-range filtering
+ * on the complete set of results for the file.
+ */
+export interface FileFilteredResults {
+  /** The file URI these results were filtered for. */
+  fileUri: string;
+  /** The result set table these results were filtered for. */
+  selectedTable: string;
+  /** Raw result rows from the current result set that reference this file. */
+  rawRows?: Row[];
+  /** SARIF results that reference this file. */
+  sarifResults?: Result[];
+}
+
+interface SetFileFilteredResultsMsg {
+  t: "setFileFilteredResults";
+  results: FileFilteredResults;
+}
+
+/**
  * A message sent into the results view.
  */
 export type IntoResultsViewMsg =
@@ -251,6 +273,7 @@ export type IntoResultsViewMsg =
   | ShowInterpretedPageMsg
   | NavigateMsg
   | UntoggleShowProblemsMsg
+  | SetFileFilteredResultsMsg
   | SetEditorSelectionMsg;
 
 /**
@@ -263,7 +286,20 @@ export type FromResultsViewMsg =
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
   | ChangePage
-  | OpenFileMsg;
+  | OpenFileMsg
+  | RequestFileFilteredResultsMsg;
+
+/**
+ * Message from the results view to request pre-filtered results for
+ * a specific (file, table) pair. The extension loads all results from
+ * the given table that reference the given file and sends them back
+ * via setFileFilteredResults.
+ */
+interface RequestFileFilteredResultsMsg {
+  t: "requestFileFilteredResults";
+  fileUri: string;
+  selectedTable: string;
+}
 
 /**
  * Message from the results view to open a source
