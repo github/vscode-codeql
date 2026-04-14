@@ -1,5 +1,7 @@
 import type {
   DatabaseInfo,
+  EditorSelection,
+  FileFilteredResults,
   Interpretation,
   RawResultsSortState,
   QueryMetadata,
@@ -44,6 +46,8 @@ interface ResultTablesProps {
   queryPath: string;
   selectedTable: string;
   onSelectedTableChange: (tableName: string) => void;
+  selectionFilter: EditorSelection | undefined;
+  fileFilteredResults: FileFilteredResults | undefined;
   selectionFilterEnabled: boolean;
   onSelectionFilterEnabledChange: (value: boolean) => void;
   problemsViewSelected: boolean;
@@ -108,6 +112,8 @@ export function ResultTables(props: ResultTablesProps) {
     sortStates,
     selectedTable,
     onSelectedTableChange,
+    selectionFilter,
+    fileFilteredResults,
     selectionFilterEnabled,
     onSelectionFilterEnabledChange,
     problemsViewSelected,
@@ -186,6 +192,10 @@ export function ResultTables(props: ResultTablesProps) {
 
   const resultSetName = resultSet ? getResultSetName(resultSet) : undefined;
 
+  // True if file-filtered results are still loading from the extension
+  const isLoadingFilteredResults =
+    selectionFilter != null && fileFilteredResults == null;
+
   return (
     <div>
       <ResultTablesHeader {...props} selectedTable={selectedTable} />
@@ -215,7 +225,8 @@ export function ResultTables(props: ResultTablesProps) {
           </span>
         ) : null}
       </div>
-      {resultSet && resultSetName && (
+      {isLoadingFilteredResults && <span>Loading filtered results…</span>}
+      {!isLoadingFilteredResults && resultSet && resultSetName && (
         <ResultTable
           key={resultSetName}
           resultSet={resultSet}
@@ -229,6 +240,7 @@ export function ResultTables(props: ResultTablesProps) {
             sendTelemetry("local-results-show-raw-results");
           }}
           offset={offset}
+          selectionFilter={selectionFilter}
         />
       )}
     </div>

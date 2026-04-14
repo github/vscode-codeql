@@ -152,6 +152,10 @@ export function ResultsApp() {
     }
   }, [displayedResultsInfo, state.selectedTable, onSelectedTableChange]);
 
+  const selectionFilter = state.selectionFilterEnabled
+    ? state.editorSelection
+    : undefined;
+
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
       let results: Results | null = null;
@@ -336,6 +340,8 @@ export function ResultsApp() {
         queryPath={displayedResults.resultsInfo.queryPath}
         selectedTable={state.selectedTable ?? ""}
         onSelectedTableChange={onSelectedTableChange}
+        selectionFilter={selectionFilter}
+        fileFilteredResults={state.fileFilteredResults}
         selectionFilterEnabled={state.selectionFilterEnabled}
         onSelectionFilterEnabledChange={(selectionFilterEnabled) => {
           setState((prev) => ({ ...prev, selectionFilterEnabled }));

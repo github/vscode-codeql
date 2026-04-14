@@ -29,6 +29,8 @@ export interface ResultTableProps {
    * Callback to show raw results.
    */
   showRawResults: () => void;
+
+  selectionFilter?: EditorSelection;
 }
 
 export const className = "vscode-codeql__result-table";
