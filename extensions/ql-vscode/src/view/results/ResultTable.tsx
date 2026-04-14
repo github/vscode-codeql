@@ -6,17 +6,24 @@ import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableHeader } from "./AlertTableHeader";
 
 export function ResultTable(props: ResultTableProps) {
-  const { resultSet, userSettings } = props;
+  const { resultSet, userSettings, filteredRawRows, filteredSarifResults } =
+    props;
   switch (resultSet.t) {
-    case "RawResultSet":
-      return <RawTable {...props} resultSet={resultSet.resultSet} />;
+    case "RawResultSet": {
+      const filteredResultSet = {
+        ...resultSet.resultSet,
+        rows: filteredRawRows ?? resultSet.resultSet.rows,
+      };
+      return <RawTable {...props} resultSet={filteredResultSet} />;
+    }
     case "InterpretedResultSet": {
       const data = resultSet.interpretation.data;
       switch (data.t) {
         case "SarifInterpretationData": {
+          const results = filteredSarifResults ?? data.runs[0].results ?? [];
           return (
             <AlertTable
-              results={data.runs[0].results ?? []}
+              results={results}
               databaseUri={props.databaseUri}
               sourceLocationPrefix={
                 resultSet.interpretation.sourceLocationPrefix

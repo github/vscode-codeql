@@ -1,4 +1,5 @@
 import type {
+  EditorSelection,
   QueryMetadata,
   RawResultsSortState,
   ResultSet,
@@ -7,7 +8,16 @@ import type {
 import { SortDirection } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
-import type { UrlValueResolvable } from "../../common/raw-result-types";
+import type {
+  CellValue,
+  Row,
+  UrlValueResolvable,
+} from "../../common/raw-result-types";
+import type { Result } from "sarif";
+import {
+  getLocationsFromSarifResult,
+  normalizeFileUri,
+} from "../../common/sarif-utils";
 
 export interface ResultTableProps {
   resultSet: ResultSet;
@@ -30,6 +40,8 @@ export interface ResultTableProps {
    */
   showRawResults: () => void;
 
+  filteredRawRows?: Row[];
+  filteredSarifResults?: Result[];
   selectionFilter?: EditorSelection;
 }
 
@@ -108,4 +120,111 @@ export function nextSortDirection(
     default:
       return assertNever(direction);
   }
+}
+
+/**
+ * Extracts all resolvable locations from a raw result row.
+ */
+function getLocationsFromRawRow(
+  row: Row,
+): Array<{ uri: string; startLine?: number; endLine?: number }> {
+  const locations: Array<{
+    uri: string;
+    startLine?: number;
+    endLine?: number;
+  }> = [];
+
+  for (const cell of row) {
+    const loc = getLocationFromCell(cell);
+    if (loc) {
+      locations.push(loc);
+    }
+  }
+
+  return locations;
+}
+
+function getLocationFromCell(
+  cell: CellValue,
+): { uri: string; startLine?: number; endLine?: number } | undefined {
+  if (cell.type !== "entity") {
+    return undefined;
+  }
+  const url = cell.value.url;
+  if (!url) {
+    return undefined;
+  }
+  if (url.type === "wholeFileLocation") {
+    return { uri: url.uri };
+  }
+  if (url.type === "lineColumnLocation") {
+    return {
+      uri: url.uri,
+      startLine: url.startLine,
+      endLine: url.endLine,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * Checks if a result location overlaps with the editor selection.
+ * If the selection is empty (just a cursor), matches any result in the same file.
+ */
+function doesLocationOverlapSelection(
+  loc: { uri: string; startLine?: number; endLine?: number },
+  selection: EditorSelection,
+): boolean {
+  const normalizedLocUri = normalizeFileUri(loc.uri);
+  const normalizedSelUri = normalizeFileUri(selection.fileUri);
+
+  if (normalizedLocUri !== normalizedSelUri) {
+    return false;
+  }
+
+  // If selection is empty (just a cursor), match the whole file
+  if (selection.isEmpty) {
+    return true;
+  }
+
+  // If the result location has no line info, it's a whole-file location — include it
+  if (loc.startLine === undefined) {
+    return true;
+  }
+
+  // Only include results whose starting line falls within the selection range
+  return (
+    loc.startLine >= selection.startLine && loc.startLine <= selection.endLine
+  );
+}
+
+/**
+ * Filters raw result rows to those with at least one location overlapping the selection.
+ */
+export function filterRawRows(
+  rows: readonly Row[],
+  selection: EditorSelection,
+): Row[] {
+  return rows.filter((row) => {
+    const locations = getLocationsFromRawRow(row);
+    return locations.some((loc) =>
+      doesLocationOverlapSelection(loc, selection),
+    );
+  });
+}
+
+/**
+ * Filters SARIF results to those with at least one location overlapping the selection.
+ */
+export function filterSarifResults(
+  results: Result[],
+  sourceLocationPrefix: string,
+  selection: EditorSelection,
+): Result[] {
+  return results.filter((result) => {
+    const locations = getLocationsFromSarifResult(result, sourceLocationPrefix);
+    return locations.some((loc) =>
+      doesLocationOverlapSelection(loc, selection),
+    );
+  });
 }

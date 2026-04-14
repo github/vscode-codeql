@@ -16,12 +16,16 @@ import {
   GRAPH_TABLE_NAME,
   SELECT_TABLE_NAME,
 } from "../../common/interface-types";
-import { tableHeaderClassName } from "./result-table-utils";
+import {
+  filterRawRows,
+  filterSarifResults,
+  tableHeaderClassName,
+} from "./result-table-utils";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import { ResultTable } from "./ResultTable";
 import { ResultTablesHeader } from "./ResultTablesHeader";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { ResultCount } from "./ResultCount";
 import { ProblemsViewCheckbox } from "./ProblemsViewCheckbox";
 import { SelectionFilterCheckbox } from "./SelectionFilterCheckbox";
@@ -196,6 +200,44 @@ export function ResultTables(props: ResultTablesProps) {
   const isLoadingFilteredResults =
     selectionFilter != null && fileFilteredResults == null;
 
+  // Filter rows at line granularity (if filtering is enabled)
+  const filteredRawRows = useMemo(() => {
+    if (!selectionFilter || !resultSet || resultSet.t !== "RawResultSet") {
+      return undefined;
+    }
+    const sourceRows = fileFilteredResults?.rawRows;
+    if (sourceRows == null) {
+      return undefined;
+    }
+    return filterRawRows(sourceRows, selectionFilter);
+  }, [selectionFilter, fileFilteredResults, resultSet]);
+
+  // Filter SARIF results at line granularity (if filtering is enabled)
+  const filteredSarifResults = useMemo(() => {
+    if (
+      !selectionFilter ||
+      !resultSet ||
+      resultSet.t !== "InterpretedResultSet"
+    ) {
+      return undefined;
+    }
+    const data = resultSet.interpretation.data;
+    if (data.t !== "SarifInterpretationData") {
+      return undefined;
+    }
+    const sourceResults =
+      fileFilteredResults?.sarifResults !== undefined
+        ? fileFilteredResults.sarifResults
+        : (data.runs[0].results ?? []);
+    return filterSarifResults(
+      sourceResults,
+      resultSet.interpretation.sourceLocationPrefix,
+      selectionFilter,
+    );
+  }, [selectionFilter, fileFilteredResults, resultSet]);
+
+  const filteredCount = filteredRawRows?.length ?? filteredSarifResults?.length;
+
   return (
     <div>
       <ResultTablesHeader {...props} selectedTable={selectedTable} />
@@ -224,8 +266,12 @@ export function ResultTables(props: ResultTablesProps) {
             Updating results…
           </span>
         ) : null}
+        {isLoadingFilteredResults && (
+          <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>
+            Updating filtered results…
+          </span>
+        )}
       </div>
-      {isLoadingFilteredResults && <span>Loading filtered results…</span>}
       {!isLoadingFilteredResults && resultSet && resultSetName && (
         <ResultTable
           key={resultSetName}
@@ -241,6 +287,8 @@ export function ResultTables(props: ResultTablesProps) {
           }}
           offset={offset}
           selectionFilter={selectionFilter}
+          filteredRawRows={filteredRawRows}
+          filteredSarifResults={filteredSarifResults}
         />
       )}
     </div>
