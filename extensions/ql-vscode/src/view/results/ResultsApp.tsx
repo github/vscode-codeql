@@ -1,6 +1,7 @@
 import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import type {
   DatabaseInfo,
+  EditorSelection,
   Interpretation,
   IntoResultsViewMsg,
   SortedResultSetInfo,
@@ -66,6 +67,7 @@ interface ResultsViewState {
   nextResultsInfo: ResultsInfo | null;
   isExpectingResultsUpdate: boolean;
   selectionFilterEnabled: boolean;
+  editorSelection: EditorSelection | undefined;
   selectedTable: string | undefined;
 }
 
@@ -82,6 +84,7 @@ export function ResultsApp() {
     nextResultsInfo: null,
     isExpectingResultsUpdate: true,
     selectionFilterEnabled: false,
+    editorSelection: undefined,
     selectedTable: undefined,
   });
 
@@ -222,6 +225,18 @@ export function ResultsApp() {
 
         case "untoggleShowProblems":
           setProblemsViewSelected(false);
+          break;
+
+        case "setEditorSelection":
+          if (msg.selection) {
+            const selection = msg.selection;
+            setState((prev) => {
+              return {
+                ...prev,
+                editorSelection: selection,
+              };
+            });
+          }
           break;
 
         default:

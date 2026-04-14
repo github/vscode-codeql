@@ -221,6 +221,27 @@ interface UntoggleShowProblemsMsg {
 }
 
 /**
+ * Information about the current editor selection, sent to the results view
+ * so it can filter results to only those overlapping the selection.
+ */
+export interface EditorSelection {
+  /** The file URI in result-compatible format. */
+  fileUri: string;
+  startLine: number;
+  endLine: number;
+  startColumn: number;
+  endColumn: number;
+  /** True if the selection is empty (just a cursor), in which case we match the whole file. */
+  isEmpty: boolean;
+}
+
+interface SetEditorSelectionMsg {
+  t: "setEditorSelection";
+  selection: EditorSelection | undefined;
+  wasFromUserInteraction?: boolean;
+}
+
+/**
  * A message sent into the results view.
  */
 export type IntoResultsViewMsg =
@@ -229,7 +250,8 @@ export type IntoResultsViewMsg =
   | SetUserSettingsMsg
   | ShowInterpretedPageMsg
   | NavigateMsg
-  | UntoggleShowProblemsMsg;
+  | UntoggleShowProblemsMsg
+  | SetEditorSelectionMsg;
 
 /**
  * A message sent from the results view.

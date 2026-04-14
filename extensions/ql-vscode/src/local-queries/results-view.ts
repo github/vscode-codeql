@@ -1,5 +1,9 @@
 import type { Location, Result, Run } from "sarif";
-import type { WebviewPanel, TextEditorSelectionChangeEvent } from "vscode";
+import type {
+  WebviewPanel,
+  TextEditorSelectionChangeEvent,
+  Range,
+} from "vscode";
 import {
   Diagnostic,
   DiagnosticRelatedInformation,
@@ -19,6 +23,10 @@ import type {
 } from "../databases/local-databases";
 import { DatabaseEventKind } from "../databases/local-databases";
 import {
+  decodeSourceArchiveUri,
+  zipArchiveScheme,
+} from "../common/vscode/archive-filesystem-provider";
+import {
   asError,
   assertNever,
   getErrorMessage,
@@ -35,6 +43,7 @@ import type {
   InterpretedResultsSortState,
   RawResultsSortState,
   ParsedResultSets,
+  EditorSelection,
 } from "../common/interface-types";
 import {
   SortDirection,
@@ -195,6 +204,12 @@ export class ResultsView extends AbstractWebview<
       window.onDidChangeTextEditorSelection(
         this.handleSelectionChange.bind(this),
       ),
+    );
+
+    this.disposableEventListeners.push(
+      window.onDidChangeActiveTextEditor(() => {
+        this.sendEditorSelectionToWebview();
+      }),
     );
 
     this.disposableEventListeners.push(
@@ -573,6 +588,9 @@ export class ResultsView extends AbstractWebview<
       queryName: this.labelProvider.getLabel(fullQuery),
       queryPath: fullQuery.initialInfo.queryPath,
     });
+
+    // Send the current editor selection so the webview can apply filtering immediately
+    this.sendEditorSelectionToWebview();
   }
 
   /**
@@ -1021,7 +1039,10 @@ export class ResultsView extends AbstractWebview<
   }
 
   private handleSelectionChange(event: TextEditorSelectionChangeEvent): void {
-    if (event.kind === TextEditorSelectionChangeKind.Command) {
+    const wasFromUserInteraction =
+      event.kind !== TextEditorSelectionChangeKind.Command;
+    this.sendEditorSelectionToWebview(wasFromUserInteraction);
+    if (!wasFromUserInteraction) {
       return; // Ignore selection events we caused ourselves.
     }
     const editor = window.activeTextEditor;
@@ -1029,6 +1050,77 @@ export class ResultsView extends AbstractWebview<
       editor.setDecorations(shownLocationDecoration, []);
       editor.setDecorations(shownLocationLineDecoration, []);
     }
+  }
+
+  /**
+   * Sends the current editor selection to the webview so it can filter results.
+   * Does not send when there is no active text editor (e.g. when the webview
+   * gains focus), so the webview retains the last known selection.
+   */
+  private sendEditorSelectionToWebview(wasFromUserInteraction = false): void {
+    if (!this.isShowingPanel) {
+      return;
+    }
+    const selection = this.computeEditorSelection();
+    if (selection === undefined) {
+      return;
+    }
+    void this.postMessage({
+      t: "setEditorSelection",
+      selection,
+      wasFromUserInteraction,
+    });
+  }
+
+  /**
+   * Computes the current editor selection in a format compatible with result locations.
+   */
+  private computeEditorSelection(): EditorSelection | undefined {
+    const editor = window.activeTextEditor;
+    if (!editor) {
+      return undefined;
+    }
+
+    return this.rangeToEditorSelection(editor.document.uri, editor.selection);
+  }
+
+  private rangeToEditorSelection(uri: Uri, range: Range) {
+    const fileUri = this.getEditorFileUri(uri);
+    if (fileUri == null) {
+      return undefined;
+    }
+    return {
+      fileUri,
+      // VS Code selections are 0-based; result locations are 1-based
+      startLine: range.start.line + 1,
+      endLine: range.end.line + 1,
+      startColumn: range.start.character + 1,
+      endColumn: range.end.character + 1,
+      isEmpty: range.isEmpty,
+    };
+  }
+
+  /**
+   * Gets a file URI from the editor that can be compared with result location URIs.
+   *
+   * Result URIs (in BQRS and SARIF) use the original source file paths.
+   * For `file:` scheme editors, the URI already matches.
+   * For source archive editors, we extract the path within the archive,
+   * which corresponds to the original source file path.
+   */
+  private getEditorFileUri(editorUri: Uri): string | undefined {
+    if (editorUri.scheme === "file") {
+      return editorUri.toString();
+    }
+    if (editorUri.scheme === zipArchiveScheme) {
+      try {
+        const { pathWithinSourceArchive } = decodeSourceArchiveUri(editorUri);
+        return `file://${pathWithinSourceArchive}`;
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
   }
 
   dispose() {
