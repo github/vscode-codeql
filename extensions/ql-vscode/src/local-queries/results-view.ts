@@ -51,6 +51,7 @@ import {
   GRAPH_TABLE_NAME,
   NavigationDirection,
   getDefaultResultSetName,
+  RAW_RESULTS_LIMIT,
 } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 import type { Logger } from "../common/logging";
@@ -62,6 +63,8 @@ import type {
 import { interpretResultsSarif, interpretGraphResults } from "../query-results";
 import type { QueryEvaluationInfo } from "../run-queries-shared";
 import {
+  getLocationsFromSarifResult,
+  normalizeFileUri,
   parseSarifLocation,
   parseSarifPlainTextMessage,
 } from "../common/sarif-utils";
@@ -82,7 +85,7 @@ import { redactableError } from "../common/errors";
 import type { ResultsViewCommands } from "../common/commands";
 import type { App } from "../common/app";
 import type { Disposable } from "../common/disposable-object";
-import type { RawResultSet } from "../common/raw-result-types";
+import type { RawResultSet, Row } from "../common/raw-result-types";
 import type { BqrsResultSetSchema } from "../common/bqrs-cli-types";
 import { CachedOperation } from "../language-support/contextual/cached-operation";
 
@@ -349,6 +352,7 @@ export class ResultsView extends AbstractWebview<
           await this.openFile(msg.filePath);
           break;
         case "requestFileFilteredResults":
+          void this.loadFileFilteredResults(msg.fileUri, msg.selectedTable);
           break;
         case "telemetry":
           telemetryListener?.sendUIInteraction(msg.action);
@@ -1125,6 +1129,83 @@ export class ResultsView extends AbstractWebview<
     return undefined;
   }
 
+  /**
+   * Loads all results from the given table that reference the given file URI,
+   * and sends them to the webview. Called on demand when the webview requests
+   * pre-filtered results for a specific (file, table) pair.
+   */
+  private async loadFileFilteredResults(
+    fileUri: string,
+    selectedTable: string,
+  ): Promise<void> {
+    const query = this._displayedQuery;
+    if (!query) {
+      void this.postMessage({
+        t: "setFileFilteredResults",
+        results: { fileUri, selectedTable },
+      });
+      return;
+    }
+
+    const normalizedFilterUri = normalizeFileUri(fileUri);
+
+    let rawRows: Row[] | undefined;
+    let sarifResults: Result[] | undefined;
+
+    // Load and filter raw BQRS results
+    try {
+      const resultSetSchemas = await this.getResultSetSchemas(
+        query.completedQuery,
+      );
+      const schema = resultSetSchemas.find((s) => s.name === selectedTable);
+
+      if (schema && schema.rows > 0) {
+        const resultsPath = query.completedQuery.getResultsPath(selectedTable);
+        const chunk = await this.cliServer.bqrsDecode(
+          resultsPath,
+          schema.name,
+          {
+            offset: schema.pagination?.offsets[0],
+            pageSize: schema.rows,
+          },
+        );
+        const resultSet = bqrsToResultSet(schema, chunk);
+        rawRows = filterRowsByFileUri(resultSet.rows, normalizedFilterUri);
+        if (rawRows.length > RAW_RESULTS_LIMIT) {
+          rawRows = rawRows.slice(0, RAW_RESULTS_LIMIT);
+        }
+      }
+    } catch (e) {
+      void this.logger.log(
+        `Error loading file-filtered raw results: ${getErrorMessage(e)}`,
+      );
+    }
+
+    // Filter SARIF results (already in memory)
+    if (this._interpretation?.data.t === "SarifInterpretationData") {
+      const allResults = this._interpretation.data.runs[0]?.results ?? [];
+      sarifResults = allResults.filter((result) => {
+        const locations = getLocationsFromSarifResult(
+          result,
+          this._interpretation!.sourceLocationPrefix,
+        );
+        return locations.some(
+          (loc) => normalizeFileUri(loc.uri) === normalizedFilterUri,
+        );
+      });
+    }
+
+    void this.postMessage({
+      t: "setFileFilteredResults",
+      results: {
+        fileUri,
+        selectedTable,
+        rawRows,
+        sarifResults,
+      },
+    });
+  }
+
   dispose() {
     super.dispose();
 
@@ -1132,4 +1213,33 @@ export class ResultsView extends AbstractWebview<
     this.disposableEventListeners.forEach((d) => d.dispose());
     this.disposableEventListeners = [];
   }
+}
+
+/**
+ * Filters raw result rows to those that have at least one location
+ * referencing the given file (compared by normalized URI).
+ */
+function filterRowsByFileUri(rows: Row[], normalizedFileUri: string): Row[] {
+  return rows.filter((row) => {
+    for (const cell of row) {
+      if (cell.type !== "entity") {
+        continue;
+      }
+      const url = cell.value.url;
+      if (!url) {
+        continue;
+      }
+      let uri: string | undefined;
+      if (
+        url.type === "wholeFileLocation" ||
+        url.type === "lineColumnLocation"
+      ) {
+        uri = url.uri;
+      }
+      if (uri !== undefined && normalizeFileUri(uri) === normalizedFileUri) {
+        return true;
+      }
+    }
+    return false;
+  });
 }

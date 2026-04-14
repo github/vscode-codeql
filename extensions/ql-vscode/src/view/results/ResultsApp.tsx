@@ -24,7 +24,8 @@ import { ResultTables } from "./ResultTables";
 import { onNavigation } from "./navigation";
 
 import "./resultsView.css";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { vscode } from "../vscode-api";
 
 /**
  * ResultsApp.tsx
