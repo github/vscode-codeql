@@ -230,7 +230,11 @@ export function ResultsApp() {
         case "setEditorSelection":
           if (msg.selection) {
             const selection = msg.selection;
+            const wasFromUserInteraction = msg.wasFromUserInteraction ?? false;
             setState((prev) => {
+              if (prev.selectionFilterEnabled && !wasFromUserInteraction) {
+                return prev; // Ignore selection changes we caused ourselves while filter was active
+              }
               return {
                 ...prev,
                 editorSelection: selection,
