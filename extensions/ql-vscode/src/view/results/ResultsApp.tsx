@@ -1,6 +1,8 @@
 import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import type {
   DatabaseInfo,
+  EditorSelection,
+  FileFilteredResults,
   Interpretation,
   IntoResultsViewMsg,
   SortedResultSetInfo,
@@ -15,13 +17,15 @@ import {
   ALERTS_TABLE_NAME,
   DEFAULT_USER_SETTINGS,
   GRAPH_TABLE_NAME,
+  getDefaultResultSetName,
 } from "../../common/interface-types";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
 import { ResultTables } from "./ResultTables";
 import { onNavigation } from "./navigation";
 
 import "./resultsView.css";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { vscode } from "../vscode-api";
 
 /**
  * ResultsApp.tsx
@@ -64,6 +68,10 @@ interface ResultsViewState {
   displayedResults: ResultsState;
   nextResultsInfo: ResultsInfo | null;
   isExpectingResultsUpdate: boolean;
+  selectionFilterEnabled: boolean;
+  editorSelection: EditorSelection | undefined;
+  selectedTable: string | undefined;
+  fileFilteredResults: FileFilteredResults | undefined;
 }
 
 /**
@@ -78,11 +86,75 @@ export function ResultsApp() {
     },
     nextResultsInfo: null,
     isExpectingResultsUpdate: true,
+    selectionFilterEnabled: false,
+    editorSelection: undefined,
+    selectedTable: undefined,
+    fileFilteredResults: undefined,
   });
 
   const [userSettings, setUserSettings] = useState<UserSettings>(
     DEFAULT_USER_SETTINGS,
   );
+
+  useEffect(() => {
+    if (
+      state.selectionFilterEnabled &&
+      state.editorSelection?.fileUri != null &&
+      state.selectedTable != null &&
+      state.fileFilteredResults == null
+    ) {
+      vscode.postMessage({
+        t: "requestFileFilteredResults",
+        fileUri: state.editorSelection.fileUri,
+        selectedTable: state.selectedTable,
+      });
+    }
+  }, [
+    state.selectionFilterEnabled,
+    state.editorSelection?.fileUri,
+    state.selectedTable,
+    state.fileFilteredResults,
+  ]);
+
+  const [problemsViewSelected, setProblemsViewSelected] = useState(false);
+
+  const onSelectedTableChange = useCallback((tableName: string) => {
+    setState((prev) => {
+      if (tableName === prev.selectedTable) return prev;
+      return {
+        ...prev,
+        selectedTable: tableName,
+        fileFilteredResults: undefined, // Discard stale results (they are from another table)
+      };
+    });
+  }, []);
+
+  // Ensure selectedTable is valid for the current result sets.
+  // This runs in ResultsApp (not ResultTables) so it survives remounts.
+  const displayedResultsInfo = state.displayedResults.resultsInfo;
+  useEffect(() => {
+    if (!displayedResultsInfo) return;
+    const { parsedResultSets, interpretation } = displayedResultsInfo;
+    const allNames = interpretation
+      ? parsedResultSets.resultSetNames.concat([
+          interpretation.data.t === "GraphInterpretationData"
+            ? GRAPH_TABLE_NAME
+            : ALERTS_TABLE_NAME,
+        ])
+      : parsedResultSets.resultSetNames;
+    if (
+      state.selectedTable === undefined ||
+      !allNames.includes(state.selectedTable)
+    ) {
+      const tableName =
+        parsedResultSets.selectedTable ?? getDefaultResultSetName(allNames);
+      onSelectedTableChange(tableName);
+    }
+  }, [displayedResultsInfo, state.selectedTable, onSelectedTableChange]);
+
+  const selectionFilter = state.selectionFilterEnabled
+    ? state.editorSelection
+    : undefined;
 
   const updateStateWithNewResultsInfo = useCallback(
     (resultsInfo: ResultsInfo): void => {
@@ -101,7 +173,8 @@ export function ResultsApp() {
         statusText = `Error loading results: ${errorMessage}`;
       }
 
-      setState({
+      setState((prev) => ({
+        ...prev,
         displayedResults: {
           resultsInfo,
           results,
@@ -109,7 +182,7 @@ export function ResultsApp() {
         },
         nextResultsInfo: null,
         isExpectingResultsUpdate: false,
-      });
+      }));
     },
     [],
   );
@@ -180,8 +253,43 @@ export function ResultsApp() {
           break;
 
         case "untoggleShowProblems":
-          // noop
+          setProblemsViewSelected(false);
           break;
+
+        case "setEditorSelection":
+          if (msg.selection) {
+            const selection = msg.selection;
+            const wasFromUserInteraction = msg.wasFromUserInteraction ?? false;
+            setState((prev) => {
+              if (prev.selectionFilterEnabled && !wasFromUserInteraction) {
+                return prev; // Ignore selection changes we caused ourselves while filter was active
+              }
+              return {
+                ...prev,
+                editorSelection: selection,
+                fileFilteredResults:
+                  selection.fileUri === prev.editorSelection?.fileUri
+                    ? prev.fileFilteredResults
+                    : undefined, // Discard stale results (they are from another file)
+              };
+            });
+          }
+          break;
+
+        case "setFileFilteredResults": {
+          const results = msg.results;
+          setState((prev) => {
+            if (
+              results.fileUri === prev.editorSelection?.fileUri &&
+              results.selectedTable === prev.selectedTable &&
+              prev.fileFilteredResults === undefined
+            ) {
+              return { ...prev, fileFilteredResults: results };
+            }
+            return prev;
+          });
+          break;
+        }
 
         default:
           assertNever(msg);
@@ -230,6 +338,16 @@ export function ResultsApp() {
         }
         queryName={displayedResults.resultsInfo.queryName}
         queryPath={displayedResults.resultsInfo.queryPath}
+        selectedTable={state.selectedTable ?? ""}
+        onSelectedTableChange={onSelectedTableChange}
+        selectionFilter={selectionFilter}
+        fileFilteredResults={state.fileFilteredResults}
+        selectionFilterEnabled={state.selectionFilterEnabled}
+        onSelectionFilterEnabledChange={(selectionFilterEnabled) => {
+          setState((prev) => ({ ...prev, selectionFilterEnabled }));
+        }}
+        problemsViewSelected={problemsViewSelected}
+        onProblemsViewSelectedChange={setProblemsViewSelected}
       />
     );
   } else {

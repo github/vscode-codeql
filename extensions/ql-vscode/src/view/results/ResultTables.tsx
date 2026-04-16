@@ -1,5 +1,7 @@
 import type {
   DatabaseInfo,
+  EditorSelection,
+  FileFilteredResults,
   Interpretation,
   RawResultsSortState,
   QueryMetadata,
@@ -7,23 +9,26 @@ import type {
   InterpretedResultsSortState,
   ResultSet,
   ParsedResultSets,
-  IntoResultsViewMsg,
   UserSettings,
 } from "../../common/interface-types";
 import {
   ALERTS_TABLE_NAME,
   GRAPH_TABLE_NAME,
   SELECT_TABLE_NAME,
-  getDefaultResultSetName,
 } from "../../common/interface-types";
-import { tableHeaderClassName } from "./result-table-utils";
+import {
+  filterRawRows,
+  filterSarifResults,
+  tableHeaderClassName,
+} from "./result-table-utils";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import { ResultTable } from "./ResultTable";
 import { ResultTablesHeader } from "./ResultTablesHeader";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { ResultCount } from "./ResultCount";
 import { ProblemsViewCheckbox } from "./ProblemsViewCheckbox";
+import { SelectionFilterCheckbox } from "./SelectionFilterCheckbox";
 import { assertNever } from "../../common/helpers-pure";
 
 /**
@@ -43,6 +48,14 @@ interface ResultTablesProps {
   isLoadingNewResults: boolean;
   queryName: string;
   queryPath: string;
+  selectedTable: string;
+  onSelectedTableChange: (tableName: string) => void;
+  selectionFilter: EditorSelection | undefined;
+  fileFilteredResults: FileFilteredResults | undefined;
+  selectionFilterEnabled: boolean;
+  onSelectionFilterEnabledChange: (value: boolean) => void;
+  problemsViewSelected: boolean;
+  onProblemsViewSelectedChange: (selected: boolean) => void;
 }
 
 const UPDATING_RESULTS_TEXT_CLASS_NAME =
@@ -101,63 +114,15 @@ export function ResultTables(props: ResultTablesProps) {
     origResultsPaths,
     isLoadingNewResults,
     sortStates,
+    selectedTable,
+    onSelectedTableChange,
+    selectionFilter,
+    fileFilteredResults,
+    selectionFilterEnabled,
+    onSelectionFilterEnabledChange,
+    problemsViewSelected,
+    onProblemsViewSelectedChange,
   } = props;
-
-  const [selectedTable, setSelectedTable] = useState(
-    parsedResultSets.selectedTable ||
-      getDefaultResultSet(getResultSets(rawResultSets, interpretation)),
-  );
-  const [problemsViewSelected, setProblemsViewSelected] = useState(false);
-
-  const handleMessage = useCallback((msg: IntoResultsViewMsg): void => {
-    switch (msg.t) {
-      case "untoggleShowProblems":
-        setProblemsViewSelected(false);
-        break;
-
-      default:
-      // noop
-    }
-  }, []);
-
-  const vscodeMessageHandler = useCallback(
-    (evt: MessageEvent): void => {
-      // sanitize origin
-      const origin = evt.origin.replace(/\n|\r/g, "");
-      if (evt.origin === window.origin) {
-        handleMessage(evt.data as IntoResultsViewMsg);
-      } else {
-        console.error(`Invalid event origin ${origin}`);
-      }
-    },
-    [handleMessage],
-  );
-
-  // TODO: Duplicated from ResultsApp.tsx consider a way to
-  // avoid this duplication
-  useEffect(() => {
-    window.addEventListener("message", vscodeMessageHandler);
-
-    return () => {
-      window.removeEventListener("message", vscodeMessageHandler);
-    };
-  }, [vscodeMessageHandler]);
-
-  useEffect(() => {
-    const resultSetExists =
-      parsedResultSets.resultSetNames.some((v) => selectedTable === v) ||
-      getResultSets(rawResultSets, interpretation).some(
-        (v) => selectedTable === getResultSetName(v),
-      );
-
-    // If the selected result set does not exist, select the default result set.
-    if (!resultSetExists) {
-      setSelectedTable(
-        parsedResultSets.selectedTable ||
-          getDefaultResultSet(getResultSets(rawResultSets, interpretation)),
-      );
-    }
-  }, [parsedResultSets, interpretation, rawResultSets, selectedTable]);
 
   const onTableSelectionChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -167,9 +132,10 @@ export function ResultTables(props: ResultTablesProps) {
         pageNumber: 0,
         selectedTable,
       });
+      onSelectedTableChange(selectedTable);
       sendTelemetry("local-results-table-selection");
     },
-    [],
+    [onSelectedTableChange],
   );
 
   const handleCheckboxChanged = useCallback(
@@ -178,7 +144,7 @@ export function ResultTables(props: ResultTablesProps) {
         // no change
         return;
       }
-      setProblemsViewSelected(e.target.checked);
+      onProblemsViewSelectedChange(e.target.checked);
       if (e.target.checked) {
         sendTelemetry("local-results-show-results-in-problems-view");
       }
@@ -192,7 +158,14 @@ export function ResultTables(props: ResultTablesProps) {
         });
       }
     },
-    [database, metadata, origResultsPaths, problemsViewSelected, resultsPath],
+    [
+      database,
+      metadata,
+      onProblemsViewSelectedChange,
+      origResultsPaths,
+      problemsViewSelected,
+      resultsPath,
+    ],
   );
 
   const offset = parsedResultSets.pageNumber * parsedResultSets.pageSize;
@@ -223,15 +196,69 @@ export function ResultTables(props: ResultTablesProps) {
 
   const resultSetName = resultSet ? getResultSetName(resultSet) : undefined;
 
+  // True if file-filtered results are still loading from the extension
+  const isLoadingFilteredResults =
+    selectionFilter != null && fileFilteredResults == null;
+
+  // Filter rows at line granularity (if filtering is enabled)
+  const filteredRawRows = useMemo(() => {
+    if (!selectionFilter || !resultSet || resultSet.t !== "RawResultSet") {
+      return undefined;
+    }
+    const sourceRows = fileFilteredResults?.rawRows;
+    if (sourceRows == null) {
+      return undefined;
+    }
+    return filterRawRows(sourceRows, selectionFilter);
+  }, [selectionFilter, fileFilteredResults, resultSet]);
+
+  // Filter SARIF results at line granularity (if filtering is enabled)
+  const filteredSarifResults = useMemo(() => {
+    if (
+      !selectionFilter ||
+      !resultSet ||
+      resultSet.t !== "InterpretedResultSet"
+    ) {
+      return undefined;
+    }
+    const data = resultSet.interpretation.data;
+    if (data.t !== "SarifInterpretationData") {
+      return undefined;
+    }
+    const sourceResults =
+      fileFilteredResults?.sarifResults !== undefined
+        ? fileFilteredResults.sarifResults
+        : (data.runs[0].results ?? []);
+    return filterSarifResults(
+      sourceResults,
+      resultSet.interpretation.sourceLocationPrefix,
+      selectionFilter,
+    );
+  }, [selectionFilter, fileFilteredResults, resultSet]);
+
+  const filteredCount = filteredRawRows?.length ?? filteredSarifResults?.length;
+
   return (
     <div>
-      <ResultTablesHeader {...props} selectedTable={selectedTable} />
-      <div className={tableHeaderClassName}></div>
+      <ResultTablesHeader
+        {...props}
+        selectedTable={selectedTable}
+        disablePagination={selectionFilter != null}
+      />
+      <div
+        className={tableHeaderClassName}
+        style={{ justifyContent: "flex-end" }}
+      >
+        <SelectionFilterCheckbox
+          checked={selectionFilterEnabled}
+          onChange={(e) => onSelectionFilterEnabledChange(e.target.checked)}
+        />
+      </div>
       <div className={tableHeaderClassName}>
         <select value={selectedTable} onChange={onTableSelectionChange}>
           {resultSetOptions}
         </select>
-        <ResultCount resultSet={resultSet} />
+        <ResultCount resultSet={resultSet} filteredCount={filteredCount} />
         <ProblemsViewCheckbox
           selectedTable={selectedTable}
           problemsViewSelected={problemsViewSelected}
@@ -242,8 +269,13 @@ export function ResultTables(props: ResultTablesProps) {
             Updating results…
           </span>
         ) : null}
+        {isLoadingFilteredResults && (
+          <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>
+            Updating filtered results…
+          </span>
+        )}
       </div>
-      {resultSet && resultSetName && (
+      {!isLoadingFilteredResults && resultSet && resultSetName && (
         <ResultTable
           key={resultSetName}
           resultSet={resultSet}
@@ -253,19 +285,16 @@ export function ResultTables(props: ResultTablesProps) {
           sortState={sortStates.get(resultSetName)}
           nonemptyRawResults={nonemptyRawResults}
           showRawResults={() => {
-            setSelectedTable(SELECT_TABLE_NAME);
+            onSelectedTableChange(SELECT_TABLE_NAME);
             sendTelemetry("local-results-show-raw-results");
           }}
           offset={offset}
+          selectionFilter={selectionFilter}
+          filteredRawRows={filteredRawRows}
+          filteredSarifResults={filteredSarifResults}
         />
       )}
     </div>
-  );
-}
-
-function getDefaultResultSet(resultSets: readonly ResultSet[]): string {
-  return getDefaultResultSetName(
-    resultSets.map((resultSet) => getResultSetName(resultSet)),
   );
 }
 

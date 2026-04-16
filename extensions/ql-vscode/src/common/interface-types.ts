@@ -220,6 +220,60 @@ interface UntoggleShowProblemsMsg {
   t: "untoggleShowProblems";
 }
 
+export const enum SourceArchiveRelationship {
+  /** The file is in the source archive of the database the query was run on. */
+  CorrectArchive = "correct-archive",
+  /** The file is in a source archive, but for a different database. */
+  WrongArchive = "wrong-archive",
+  /** The file is not in any source archive. */
+  NotInArchive = "not-in-archive",
+}
+
+/**
+ * Information about the current editor selection, sent to the results view
+ * so it can filter results to only those overlapping the selection.
+ */
+export interface EditorSelection {
+  /** The file URI in result-compatible format. */
+  fileUri: string;
+  startLine: number;
+  endLine: number;
+  startColumn: number;
+  endColumn: number;
+  /** True if the selection is empty (just a cursor), in which case we match the whole file. */
+  isEmpty: boolean;
+  /** Describes the relationship between the current file and the query's database source archive. */
+  sourceArchiveRelationship: SourceArchiveRelationship;
+}
+
+interface SetEditorSelectionMsg {
+  t: "setEditorSelection";
+  selection: EditorSelection | undefined;
+  wasFromUserInteraction?: boolean;
+}
+
+/**
+ * Results pre-filtered by file URI, sent from the extension when the
+ * selection filter is active and the editor's file changes.
+ * This bypasses pagination so the webview can apply line-range filtering
+ * on the complete set of results for the file.
+ */
+export interface FileFilteredResults {
+  /** The file URI these results were filtered for. */
+  fileUri: string;
+  /** The result set table these results were filtered for. */
+  selectedTable: string;
+  /** Raw result rows from the current result set that reference this file. */
+  rawRows?: Row[];
+  /** SARIF results that reference this file. */
+  sarifResults?: Result[];
+}
+
+interface SetFileFilteredResultsMsg {
+  t: "setFileFilteredResults";
+  results: FileFilteredResults;
+}
+
 /**
  * A message sent into the results view.
  */
@@ -229,7 +283,9 @@ export type IntoResultsViewMsg =
   | SetUserSettingsMsg
   | ShowInterpretedPageMsg
   | NavigateMsg
-  | UntoggleShowProblemsMsg;
+  | UntoggleShowProblemsMsg
+  | SetFileFilteredResultsMsg
+  | SetEditorSelectionMsg;
 
 /**
  * A message sent from the results view.
@@ -241,7 +297,20 @@ export type FromResultsViewMsg =
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
   | ChangePage
-  | OpenFileMsg;
+  | OpenFileMsg
+  | RequestFileFilteredResultsMsg;
+
+/**
+ * Message from the results view to request pre-filtered results for
+ * a specific (file, table) pair. The extension loads all results from
+ * the given table that reference the given file and sends them back
+ * via setFileFilteredResults.
+ */
+interface RequestFileFilteredResultsMsg {
+  t: "requestFileFilteredResults";
+  fileUri: string;
+  selectedTable: string;
+}
 
 /**
  * Message from the results view to open a source

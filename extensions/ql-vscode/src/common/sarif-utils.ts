@@ -1,4 +1,4 @@
-import type { Location, Region } from "sarif";
+import type { Location, Region, Result } from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
 import type { UrlValueResolvable } from "./raw-result-types";
 import { isEmptyPath } from "./bqrs-utils";
@@ -251,4 +251,53 @@ export function parseHighlightedLine(
   const plainSection2 = line.substring(highlightEndColumn - 1, line.length);
 
   return { plainSection1, highlightedSection, plainSection2 };
+}
+
+/**
+ * Normalizes a file URI to a plain path for comparison purposes.
+ * Strips the `file:` scheme prefix and decodes URI components.
+ */
+export function normalizeFileUri(uri: string): string {
+  try {
+    const path = uri.replace(/^file:\/*/, "/");
+    return decodeURIComponent(path);
+  } catch {
+    return uri.replace(/^file:\/*/, "/");
+  }
+}
+
+interface ParsedResultLocation {
+  uri: string;
+  startLine?: number;
+  endLine?: number;
+}
+
+/**
+ * Extracts all locations from a SARIF result, including relatedLocations.
+ */
+export function getLocationsFromSarifResult(
+  result: Result,
+  sourceLocationPrefix: string,
+): ParsedResultLocation[] {
+  const sarifLocations: Location[] = [
+    ...(result.locations ?? []),
+    ...(result.relatedLocations ?? []),
+  ];
+  const parsed: ParsedResultLocation[] = [];
+  for (const loc of sarifLocations) {
+    const p = parseSarifLocation(loc, sourceLocationPrefix);
+    if ("hint" in p) {
+      continue;
+    }
+    if (p.type === "wholeFileLocation") {
+      parsed.push({ uri: p.uri });
+    } else if (p.type === "lineColumnLocation") {
+      parsed.push({
+        uri: p.uri,
+        startLine: p.startLine,
+        endLine: p.endLine,
+      });
+    }
+  }
+  return parsed;
 }

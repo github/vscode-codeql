@@ -1,5 +1,9 @@
 import type { Location, Result, Run } from "sarif";
-import type { WebviewPanel, TextEditorSelectionChangeEvent } from "vscode";
+import type {
+  WebviewPanel,
+  TextEditorSelectionChangeEvent,
+  Range,
+} from "vscode";
 import {
   Diagnostic,
   DiagnosticRelatedInformation,
@@ -19,6 +23,10 @@ import type {
 } from "../databases/local-databases";
 import { DatabaseEventKind } from "../databases/local-databases";
 import {
+  decodeSourceArchiveUri,
+  zipArchiveScheme,
+} from "../common/vscode/archive-filesystem-provider";
+import {
   asError,
   assertNever,
   getErrorMessage,
@@ -35,6 +43,7 @@ import type {
   InterpretedResultsSortState,
   RawResultsSortState,
   ParsedResultSets,
+  EditorSelection,
 } from "../common/interface-types";
 import {
   SortDirection,
@@ -42,6 +51,8 @@ import {
   GRAPH_TABLE_NAME,
   NavigationDirection,
   getDefaultResultSetName,
+  RAW_RESULTS_LIMIT,
+  SourceArchiveRelationship,
 } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 import type { Logger } from "../common/logging";
@@ -53,6 +64,8 @@ import type {
 import { interpretResultsSarif, interpretGraphResults } from "../query-results";
 import type { QueryEvaluationInfo } from "../run-queries-shared";
 import {
+  getLocationsFromSarifResult,
+  normalizeFileUri,
   parseSarifLocation,
   parseSarifPlainTextMessage,
 } from "../common/sarif-utils";
@@ -73,7 +86,7 @@ import { redactableError } from "../common/errors";
 import type { ResultsViewCommands } from "../common/commands";
 import type { App } from "../common/app";
 import type { Disposable } from "../common/disposable-object";
-import type { RawResultSet } from "../common/raw-result-types";
+import type { RawResultSet, Row } from "../common/raw-result-types";
 import type { BqrsResultSetSchema } from "../common/bqrs-cli-types";
 import { CachedOperation } from "../language-support/contextual/cached-operation";
 
@@ -198,6 +211,12 @@ export class ResultsView extends AbstractWebview<
     );
 
     this.disposableEventListeners.push(
+      window.onDidChangeActiveTextEditor(() => {
+        this.sendEditorSelectionToWebview();
+      }),
+    );
+
+    this.disposableEventListeners.push(
       this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {
         if (kind === DatabaseEventKind.Remove) {
           this._diagnosticCollection.clear();
@@ -277,12 +296,23 @@ export class ResultsView extends AbstractWebview<
           this.onWebViewLoaded();
           break;
         case "viewSourceFile": {
-          await jumpToLocation(
+          const jumpTarget = await jumpToLocation(
             msg.databaseUri,
             msg.loc,
             this.databaseManager,
             this.logger,
           );
+          if (jumpTarget != null) {
+            // For selection-filtering purposes, we want to notify the webview that a new file is being looked at.
+            await this.postMessage({
+              t: "setEditorSelection",
+              selection: this.rangeToEditorSelection(
+                jumpTarget.uri,
+                jumpTarget.range,
+              ),
+              wasFromUserInteraction: false,
+            });
+          }
           break;
         }
         case "toggleDiagnostics": {
@@ -332,6 +362,9 @@ export class ResultsView extends AbstractWebview<
           break;
         case "openFile":
           await this.openFile(msg.filePath);
+          break;
+        case "requestFileFilteredResults":
+          void this.loadFileFilteredResults(msg.fileUri, msg.selectedTable);
           break;
         case "telemetry":
           telemetryListener?.sendUIInteraction(msg.action);
@@ -573,6 +606,9 @@ export class ResultsView extends AbstractWebview<
       queryName: this.labelProvider.getLabel(fullQuery),
       queryPath: fullQuery.initialInfo.queryPath,
     });
+
+    // Send the current editor selection so the webview can apply filtering immediately
+    this.sendEditorSelectionToWebview();
   }
 
   /**
@@ -1021,7 +1057,10 @@ export class ResultsView extends AbstractWebview<
   }
 
   private handleSelectionChange(event: TextEditorSelectionChangeEvent): void {
-    if (event.kind === TextEditorSelectionChangeKind.Command) {
+    const wasFromUserInteraction =
+      event.kind !== TextEditorSelectionChangeKind.Command;
+    this.sendEditorSelectionToWebview(wasFromUserInteraction);
+    if (!wasFromUserInteraction) {
       return; // Ignore selection events we caused ourselves.
     }
     const editor = window.activeTextEditor;
@@ -1031,6 +1070,178 @@ export class ResultsView extends AbstractWebview<
     }
   }
 
+  /**
+   * Sends the current editor selection to the webview so it can filter results.
+   * Does not send when there is no active text editor (e.g. when the webview
+   * gains focus), so the webview retains the last known selection.
+   */
+  private sendEditorSelectionToWebview(wasFromUserInteraction = false): void {
+    if (!this.isShowingPanel) {
+      return;
+    }
+    const selection = this.computeEditorSelection();
+    if (selection === undefined) {
+      return;
+    }
+    void this.postMessage({
+      t: "setEditorSelection",
+      selection,
+      wasFromUserInteraction,
+    });
+  }
+
+  /**
+   * Computes the current editor selection in a format compatible with result locations.
+   */
+  private computeEditorSelection(): EditorSelection | undefined {
+    const editor = window.activeTextEditor;
+    if (!editor) {
+      return undefined;
+    }
+
+    return this.rangeToEditorSelection(editor.document.uri, editor.selection);
+  }
+
+  private rangeToEditorSelection(uri: Uri, range: Range) {
+    const fileUri = this.getEditorFileUri(uri);
+    if (fileUri == null) {
+      return undefined;
+    }
+    return {
+      fileUri,
+      // VS Code selections are 0-based; result locations are 1-based
+      startLine: range.start.line + 1,
+      endLine: range.end.line + 1,
+      startColumn: range.start.character + 1,
+      endColumn: range.end.character + 1,
+      isEmpty: range.isEmpty,
+      sourceArchiveRelationship: this.getSourceArchiveRelationship(uri),
+    };
+  }
+
+  /**
+   * Gets a file URI from the editor that can be compared with result location URIs.
+   *
+   * Result URIs (in BQRS and SARIF) use the original source file paths.
+   * For `file:` scheme editors, the URI already matches.
+   * For source archive editors, we extract the path within the archive,
+   * which corresponds to the original source file path.
+   */
+  private getEditorFileUri(editorUri: Uri): string | undefined {
+    if (editorUri.scheme === "file") {
+      return editorUri.toString();
+    }
+    if (editorUri.scheme === zipArchiveScheme) {
+      try {
+        const { pathWithinSourceArchive } = decodeSourceArchiveUri(editorUri);
+        return `file://${pathWithinSourceArchive}`;
+      } catch {
+        return undefined;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Determines the relationship between the editor file and the query's database source archive.
+   */
+  private getSourceArchiveRelationship(
+    editorUri: Uri,
+  ): SourceArchiveRelationship {
+    if (editorUri.scheme !== zipArchiveScheme) {
+      return SourceArchiveRelationship.NotInArchive;
+    }
+    const dbItem = this._displayedQuery
+      ? this.databaseManager.findDatabaseItem(
+          Uri.parse(this._displayedQuery.initialInfo.databaseInfo.databaseUri),
+        )
+      : undefined;
+    if (
+      dbItem?.sourceArchive &&
+      dbItem.belongsToSourceArchiveExplorerUri(editorUri)
+    ) {
+      return SourceArchiveRelationship.CorrectArchive;
+    }
+    return SourceArchiveRelationship.WrongArchive;
+  }
+
+  /**
+   * Loads all results from the given table that reference the given file URI,
+   * and sends them to the webview. Called on demand when the webview requests
+   * pre-filtered results for a specific (file, table) pair.
+   */
+  private async loadFileFilteredResults(
+    fileUri: string,
+    selectedTable: string,
+  ): Promise<void> {
+    const query = this._displayedQuery;
+    if (!query) {
+      void this.postMessage({
+        t: "setFileFilteredResults",
+        results: { fileUri, selectedTable },
+      });
+      return;
+    }
+
+    const normalizedFilterUri = normalizeFileUri(fileUri);
+
+    let rawRows: Row[] | undefined;
+    let sarifResults: Result[] | undefined;
+
+    // Load and filter raw BQRS results
+    try {
+      const resultSetSchemas = await this.getResultSetSchemas(
+        query.completedQuery,
+      );
+      const schema = resultSetSchemas.find((s) => s.name === selectedTable);
+
+      if (schema && schema.rows > 0) {
+        const resultsPath = query.completedQuery.getResultsPath(selectedTable);
+        const chunk = await this.cliServer.bqrsDecode(
+          resultsPath,
+          schema.name,
+          {
+            offset: schema.pagination?.offsets[0],
+            pageSize: schema.rows,
+          },
+        );
+        const resultSet = bqrsToResultSet(schema, chunk);
+        rawRows = filterRowsByFileUri(resultSet.rows, normalizedFilterUri);
+        if (rawRows.length > RAW_RESULTS_LIMIT) {
+          rawRows = rawRows.slice(0, RAW_RESULTS_LIMIT);
+        }
+      }
+    } catch (e) {
+      void this.logger.log(
+        `Error loading file-filtered raw results: ${getErrorMessage(e)}`,
+      );
+    }
+
+    // Filter SARIF results (already in memory)
+    if (this._interpretation?.data.t === "SarifInterpretationData") {
+      const allResults = this._interpretation.data.runs[0]?.results ?? [];
+      sarifResults = allResults.filter((result) => {
+        const locations = getLocationsFromSarifResult(
+          result,
+          this._interpretation!.sourceLocationPrefix,
+        );
+        return locations.some(
+          (loc) => normalizeFileUri(loc.uri) === normalizedFilterUri,
+        );
+      });
+    }
+
+    void this.postMessage({
+      t: "setFileFilteredResults",
+      results: {
+        fileUri,
+        selectedTable,
+        rawRows,
+        sarifResults,
+      },
+    });
+  }
+
   dispose() {
     super.dispose();
 
@@ -1038,4 +1249,33 @@ export class ResultsView extends AbstractWebview<
     this.disposableEventListeners.forEach((d) => d.dispose());
     this.disposableEventListeners = [];
   }
+}
+
+/**
+ * Filters raw result rows to those that have at least one location
+ * referencing the given file (compared by normalized URI).
+ */
+function filterRowsByFileUri(rows: Row[], normalizedFileUri: string): Row[] {
+  return rows.filter((row) => {
+    for (const cell of row) {
+      if (cell.type !== "entity") {
+        continue;
+      }
+      const url = cell.value.url;
+      if (!url) {
+        continue;
+      }
+      let uri: string | undefined;
+      if (
+        url.type === "wholeFileLocation" ||
+        url.type === "lineColumnLocation"
+      ) {
+        uri = url.uri;
+      }
+      if (uri !== undefined && normalizeFileUri(uri) === normalizedFileUri) {
+        return true;
+      }
+    }
+    return false;
+  });
 }
