@@ -2151,7 +2151,7 @@
     "cross-env": "^10.1.0",
     "cross-spawn": "^7.0.6",
     "del": "^6.0.0",
-    "eslint": "^9.28.0",
+    "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-etc": "^2.0.2",
