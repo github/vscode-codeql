@@ -2047,7 +2047,7 @@
     "format": "prettier --write **/*.{ts,tsx} && eslint . --fix",
     "lint": "eslint . --max-warnings=0",
     "lint-ci": "SARIF_ESLINT_IGNORE_SUPPRESSED=true eslint . --max-warnings=0 --format @microsoft/eslint-formatter-sarif --output-file=build/eslint.sarif",
-    "lint:markdown": "markdownlint-cli2 \"../../**/*.{md,mdx}\" \"!**/node_modules/**\" \"!**/.vscode-test/**\" \"!**/build/cli/v*/**\"",
+    "lint:markdown": "markdownlint-cli2 \"../../**/*.{md,mdx}\" \"!../../**/node_modules/**\" \"!../../**/.vscode-test/**\" \"!../../**/build/cli/v*/**\"",
     "find-deadcode": "vite-node scripts/find-deadcode.ts",
     "format-staged": "lint-staged",
     "storybook": "storybook dev -p 6006",
