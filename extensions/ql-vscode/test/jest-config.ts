@@ -11,6 +11,7 @@ const transformScopes = [
 ];
 const transformPackages = [
   "before-after-hook",
+  "chokidar",
   "d3",
   "data-uri-to-buffer",
   "delaunator",
@@ -22,6 +23,7 @@ const transformPackages = [
   "nanoid",
   "p-queue",
   "p-timeout",
+  "readdirp",
   "robust-predicates",
   "universal-user-agent",
   "until-async",
