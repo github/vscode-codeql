@@ -260,6 +260,9 @@ export type LocalDatabasesCommands = {
   // Internal commands
   "codeQLDatabases.removeOrphanedDatabases": () => Promise<void>;
   "codeQL.getCurrentDatabase": () => Promise<string | undefined>;
+
+  // Source archive file search
+  "codeQL.goToFile": () => Promise<void>;
 };
 
 // Commands tied to variant analysis
