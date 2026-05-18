@@ -17,9 +17,9 @@ async function collectFiles(
   dirUri: Uri,
   sourceArchiveZipPath: string,
   prefix: string,
+  items: SourceArchiveFileQuickPickItem[] = [],
 ): Promise<SourceArchiveFileQuickPickItem[]> {
   const entries = await workspace.fs.readDirectory(dirUri);
-  const items: SourceArchiveFileQuickPickItem[] = [];
 
   for (const [name, type] of entries) {
     const childPath = prefix ? `${prefix}/${name}` : name;
@@ -35,12 +35,7 @@ async function collectFiles(
         uri: childUri,
       });
     } else if (type === FileType.Directory) {
-      const subItems = await collectFiles(
-        childUri,
-        sourceArchiveZipPath,
-        childPath,
-      );
-      items.push(...subItems);
+      await collectFiles(childUri, sourceArchiveZipPath, childPath, items);
     }
   }
 
@@ -64,6 +59,8 @@ export async function searchSourceArchiveFiles(
   const sourceArchiveZipPath =
     decodeSourceArchiveUri(explorerUri).sourceArchiveZipPath;
 
+  const filesPromise = collectFiles(explorerUri, sourceArchiveZipPath, "");
+
   const quickPick = window.createQuickPick<SourceArchiveFileQuickPickItem>();
   quickPick.placeholder = "Go to File in Selected Database...";
   quickPick.matchOnDescription = true;
@@ -71,7 +68,7 @@ export async function searchSourceArchiveFiles(
   quickPick.show();
 
   try {
-    const items = await collectFiles(explorerUri, sourceArchiveZipPath, "");
+    const items = await filesPromise;
     // Sort items by file name, then by path
     items.sort((a, b) => {
       const nameCmp = a.label.localeCompare(b.label);
@@ -94,11 +91,18 @@ export async function searchSourceArchiveFiles(
     quickPick.onDidAccept(async () => {
       const selected = quickPick.selectedItems[0];
       quickPick.dispose();
-      if (selected) {
-        const doc = await workspace.openTextDocument(selected.uri);
-        await window.showTextDocument(doc);
+      try {
+        if (selected) {
+          const doc = await workspace.openTextDocument(selected.uri);
+          await window.showTextDocument(doc);
+        }
+      } catch (e) {
+        void window.showErrorMessage(
+          `Failed to open source archive file: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      } finally {
+        resolve();
       }
-      resolve();
     });
 
     quickPick.onDidHide(() => {
