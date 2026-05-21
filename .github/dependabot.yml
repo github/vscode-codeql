@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "extensions/ql-vscode"
+    cooldown:
+      default-days: 3
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
@@ -32,6 +34,8 @@ updates:
           - "@typescript-eslint/*"
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      default-days: 3
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
@@ -39,6 +43,8 @@ updates:
       - "Update dependencies"
   - package-ecosystem: docker
     directory: "extensions/ql-vscode/test/e2e/docker"
+    cooldown:
+      default-days: 3
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
