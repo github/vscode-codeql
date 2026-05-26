@@ -1,6 +1,6 @@
 // Exported for testing
 import type { CodeQLCliServer, DbInfo } from "../../codeql-cli/cli";
-import { Uri, workspace } from "vscode";
+import { FileType, Uri, workspace } from "vscode";
 import type { FullDatabaseOptions } from "./database-options";
 import { basename, dirname, extname, join } from "path";
 import {
@@ -9,7 +9,11 @@ import {
   encodeSourceArchiveUri,
   zipArchiveScheme,
 } from "../../common/vscode/archive-filesystem-provider";
-import type { DatabaseItem, PersistedDatabaseItem } from "./database-item";
+import type {
+  DatabaseItem,
+  PersistedDatabaseItem,
+  SourceArchiveFile,
+} from "./database-item";
 import { isLikelyDatabaseRoot } from "./db-contents-heuristics";
 import { stat } from "fs-extra";
 import { containsPath, pathsEqual } from "../../common/files";
@@ -22,6 +26,8 @@ export class DatabaseItemImpl implements DatabaseItem {
   public contents: DatabaseContents | undefined;
   /** A cache of database info */
   private _dbinfo: DbInfo | undefined;
+  /** A cache of source archive files */
+  private _sourceArchiveFiles: SourceArchiveFile[] | undefined;
 
   public constructor(
     public readonly databaseUri: Uri,
@@ -232,6 +238,68 @@ export class DatabaseItemImpl implements DatabaseItem {
     } catch {
       // No information available for test path - assume database is unaffected.
       return false;
+    }
+  }
+
+  public async getSourceArchiveFiles(): Promise<SourceArchiveFile[]> {
+    if (this._sourceArchiveFiles === undefined) {
+      this._sourceArchiveFiles = await this.collectSourceArchiveFiles();
+    }
+    return this._sourceArchiveFiles;
+  }
+
+  private async collectSourceArchiveFiles(): Promise<SourceArchiveFile[]> {
+    const explorerUri = this.getSourceArchiveExplorerUri();
+    const sourceArchiveZipPath =
+      decodeSourceArchiveUri(explorerUri).sourceArchiveZipPath;
+
+    const items: SourceArchiveFile[] = [];
+    await this.collectFilesRecursive(
+      explorerUri,
+      sourceArchiveZipPath,
+      "",
+      items,
+    );
+    // Sort by file name, then by path
+    items.sort((a, b) => {
+      const nameCmp = a.name.localeCompare(b.name);
+      if (nameCmp !== 0) {
+        return nameCmp;
+      }
+      return a.path.localeCompare(b.path);
+    });
+    return items;
+  }
+
+  private async collectFilesRecursive(
+    dirUri: Uri,
+    sourceArchiveZipPath: string,
+    prefix: string,
+    items: SourceArchiveFile[],
+  ): Promise<void> {
+    const entries = await workspace.fs.readDirectory(dirUri);
+
+    for (const [name, type] of entries) {
+      const childPath = prefix ? `${prefix}/${name}` : name;
+      const childUri = encodeSourceArchiveUri({
+        sourceArchiveZipPath,
+        pathWithinSourceArchive: `${decodeSourceArchiveUri(dirUri).pathWithinSourceArchive}/${name}`,
+      });
+
+      if (type === FileType.File) {
+        items.push({
+          name,
+          path: prefix,
+          uri: childUri,
+        });
+      } else if (type === FileType.Directory) {
+        await this.collectFilesRecursive(
+          childUri,
+          sourceArchiveZipPath,
+          childPath,
+          items,
+        );
+      }
     }
   }
 }

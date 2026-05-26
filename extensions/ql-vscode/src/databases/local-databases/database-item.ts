@@ -4,6 +4,16 @@ import type { DatabaseContents } from "./database-contents";
 import type { DatabaseOptions } from "./database-options";
 import type { DatabaseOrigin } from "./database-origin";
 
+/** A file entry from the database's source archive. */
+export interface SourceArchiveFile {
+  /** The file name (basename). */
+  name: string;
+  /** The path prefix (directory path relative to the source archive root). */
+  path: string;
+  /** The URI that can be used to open the file. */
+  uri: Uri;
+}
+
 /** An item in the list of available databases */
 export interface DatabaseItem {
   /** The URI of the database */
@@ -92,6 +102,12 @@ export interface DatabaseItem {
    * Verifies that this database item has a zipped source folder. Returns an error message if it does not.
    */
   verifyZippedSources(): string | undefined;
+
+  /**
+   * Returns all files in the database's source archive.
+   * The result is lazily computed and cached.
+   */
+  getSourceArchiveFiles(): Promise<SourceArchiveFile[]>;
 }
 
 export interface PersistedDatabaseItem {

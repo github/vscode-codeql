@@ -1,45 +1,9 @@
 import type { QuickPickItem, Uri } from "vscode";
-import { FileType, window, workspace } from "vscode";
+import { window, workspace } from "vscode";
 import type { DatabaseItem } from "./local-databases";
-import {
-  encodeSourceArchiveUri,
-  decodeSourceArchiveUri,
-} from "../common/vscode/archive-filesystem-provider";
 
 interface SourceArchiveFileQuickPickItem extends QuickPickItem {
   uri: Uri;
-}
-
-/**
- * Recursively collects all file URIs from a source archive directory.
- */
-async function collectFiles(
-  dirUri: Uri,
-  sourceArchiveZipPath: string,
-  prefix: string,
-  items: SourceArchiveFileQuickPickItem[] = [],
-): Promise<SourceArchiveFileQuickPickItem[]> {
-  const entries = await workspace.fs.readDirectory(dirUri);
-
-  for (const [name, type] of entries) {
-    const childPath = prefix ? `${prefix}/${name}` : name;
-    const childUri = encodeSourceArchiveUri({
-      sourceArchiveZipPath,
-      pathWithinSourceArchive: `${decodeSourceArchiveUri(dirUri).pathWithinSourceArchive}/${name}`,
-    });
-
-    if (type === FileType.File) {
-      items.push({
-        label: name,
-        description: prefix,
-        uri: childUri,
-      });
-    } else if (type === FileType.Directory) {
-      await collectFiles(childUri, sourceArchiveZipPath, childPath, items);
-    }
-  }
-
-  return items;
 }
 
 /**
@@ -49,17 +13,7 @@ async function collectFiles(
 export async function searchSourceArchiveFiles(
   databaseItem: DatabaseItem,
 ): Promise<void> {
-  let explorerUri: Uri;
-  try {
-    explorerUri = databaseItem.getSourceArchiveExplorerUri();
-  } catch (e) {
-    void window.showErrorMessage(e instanceof Error ? e.message : String(e));
-    return;
-  }
-  const sourceArchiveZipPath =
-    decodeSourceArchiveUri(explorerUri).sourceArchiveZipPath;
-
-  const filesPromise = collectFiles(explorerUri, sourceArchiveZipPath, "");
+  const filesPromise = databaseItem.getSourceArchiveFiles();
 
   const quickPick = window.createQuickPick<SourceArchiveFileQuickPickItem>();
   quickPick.placeholder = "Go to File in Selected Database...";
@@ -68,16 +22,12 @@ export async function searchSourceArchiveFiles(
   quickPick.show();
 
   try {
-    const items = await filesPromise;
-    // Sort items by file name, then by path
-    items.sort((a, b) => {
-      const nameCmp = a.label.localeCompare(b.label);
-      if (nameCmp !== 0) {
-        return nameCmp;
-      }
-      return (a.description ?? "").localeCompare(b.description ?? "");
-    });
-    quickPick.items = items;
+    const files = await filesPromise;
+    quickPick.items = files.map((f) => ({
+      label: f.name,
+      description: f.path,
+      uri: f.uri,
+    }));
     quickPick.busy = false;
   } catch (e) {
     quickPick.dispose();
