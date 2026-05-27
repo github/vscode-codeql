@@ -2105,7 +2105,7 @@
     "zip-a-folder": "^4.0.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.3",
+    "@babel/core": "^7.29.0",
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-react": "^7.27.1",
