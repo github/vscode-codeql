@@ -529,6 +529,10 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
+        "command": "codeQL.goToFile",
+        "title": "CodeQL: Go to File in Selected Database"
+      },
+      {
         "command": "codeQL.runWarmOverlayBaseCacheForQuery",
         "title": "CodeQL: Warm Overlay-Base Cache for Query"
       },
@@ -1873,6 +1877,9 @@
         {
           "command": "codeQL.gotoQLContextEditor",
           "when": "false"
+        },
+        {
+          "command": "codeQL.goToFile"
         },
         {
           "command": "codeQL.trimCache"
