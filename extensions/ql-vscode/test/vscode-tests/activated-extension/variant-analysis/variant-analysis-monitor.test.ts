@@ -325,7 +325,6 @@ describe("Variant Analysis Monitor", () => {
               headers: {},
               url: "",
               data: {},
-              retryCount: 0,
             },
           }),
         );
