@@ -45,6 +45,7 @@ import type { QueryRunner } from "../query-server";
 import type { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import type { LocalDatabasesCommands } from "../common/commands";
+import { searchSourceArchiveFiles } from "./source-archive-file-search";
 import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
@@ -317,7 +318,20 @@ export class DatabaseUI extends DisposableObject {
       ),
       "codeQLDatabases.removeOrphanedDatabases":
         this.handleRemoveOrphanedDatabases.bind(this),
+      "codeQL.goToFile": this.handleGoToFile.bind(this),
     };
+  }
+
+  private async handleGoToFile(): Promise<void> {
+    const currentDb = this.databaseManager.currentDatabaseItem;
+    if (!currentDb) {
+      void showAndLogErrorMessage(
+        this.app.logger,
+        "No CodeQL database selected. Please select a database first.",
+      );
+      return;
+    }
+    await searchSourceArchiveFiles(currentDb);
   }
 
   private async handleMakeCurrentDatabase(

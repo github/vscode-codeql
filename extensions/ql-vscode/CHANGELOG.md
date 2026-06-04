@@ -4,6 +4,7 @@
 
 - Remove support for CodeQL CLI versions older than 2.22.4. [#4344](https://github.com/github/vscode-codeql/pull/4344)
 - Added support for selection-based result filtering via a checkbox in the result viewer. When enabled, only results from the currently-viewed file are shown. Additionally, if the editor selection is non-empty, only results within the selection range are shown. [#4362](https://github.com/github/vscode-codeql/pull/4362)
+- Added a new "CodeQL: Go to File in Selected Database" command that allows you to open a file from the source archive of the currently selected database. [#4390](https://github.com/github/vscode-codeql/pull/4390)
 
 ## 1.17.7 - 5 December 2025
 
