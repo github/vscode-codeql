@@ -4,6 +4,7 @@ import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { basename, dirname, join } from "path";
 import { dirSync } from "tmp";
+import { rm } from "fs/promises";
 import {
   FileTreeDirectory,
   FileTreeLeaf,
@@ -15,7 +16,6 @@ import { LanguageContextStore } from "../../../../src/language-context-store";
 
 describe("Query pack discovery", () => {
   let tmpDir: string;
-  let tmpDirRemoveCallback: (() => void) | undefined;
 
   let workspacePath: string;
 
@@ -29,11 +29,7 @@ describe("Query pack discovery", () => {
   let discovery: QueryDiscovery;
 
   beforeEach(() => {
-    const t = dirSync({
-      unsafeCleanup: true,
-    });
-    tmpDir = t.name;
-    tmpDirRemoveCallback = t.removeCallback;
+    tmpDir = dirSync().name;
 
     const workspaceFolder = {
       uri: Uri.file(join(tmpDir, "workspace")),
@@ -52,9 +48,14 @@ describe("Query pack discovery", () => {
     discovery = new QueryDiscovery(app, queryPackDiscoverer, languageContext);
   });
 
-  afterEach(() => {
-    tmpDirRemoveCallback?.();
+  afterEach(async () => {
     discovery.dispose();
+    await rm(tmpDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 200,
+    });
   });
 
   describe("buildQueryTree", () => {

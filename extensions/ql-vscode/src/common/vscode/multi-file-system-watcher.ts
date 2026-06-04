@@ -20,6 +20,7 @@ class WatcherCollection extends DisposableObject {
    */
   public addWatcher(pattern: GlobPattern, listener: (e: Uri) => void): void {
     const watcher = workspace.createFileSystemWatcher(pattern);
+    this.push(watcher);
     this.push(watcher.onDidCreate(listener));
     this.push(watcher.onDidChange(listener));
     this.push(watcher.onDidDelete(listener));

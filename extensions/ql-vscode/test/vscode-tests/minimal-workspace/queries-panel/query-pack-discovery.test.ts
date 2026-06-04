@@ -1,24 +1,20 @@
 import { Uri, workspace } from "vscode";
 import { QueryPackDiscovery } from "../../../../src/queries-panel/query-pack-discovery";
 import { dirSync } from "tmp";
+import { rm } from "fs/promises";
 import { dirname, join } from "path";
 import { ensureDir, writeJSON } from "fs-extra";
 import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("Query pack discovery", () => {
   let tmpDir: string;
-  let tmpDirRemoveCallback: (() => void) | undefined;
 
   let workspacePath: string;
 
   let discovery: QueryPackDiscovery;
 
   beforeEach(() => {
-    const t = dirSync({
-      unsafeCleanup: true,
-    });
-    tmpDir = t.name;
-    tmpDirRemoveCallback = t.removeCallback;
+    tmpDir = dirSync().name;
 
     const workspaceFolder = {
       uri: Uri.file(join(tmpDir, "workspace")),
@@ -33,9 +29,14 @@ describe("Query pack discovery", () => {
     discovery = new QueryPackDiscovery();
   });
 
-  afterEach(() => {
-    tmpDirRemoveCallback?.();
+  afterEach(async () => {
     discovery.dispose();
+    await rm(tmpDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 200,
+    });
   });
 
   describe("findQueryPack", () => {
