@@ -51,9 +51,7 @@ function makeArray<T extends NotArray>(value: T | T[]): T[] {
 /**
  * Implementation of `DebugConfigurationProvider` for CodeQL.
  */
-export class QLDebugConfigurationProvider
-  implements DebugConfigurationProvider
-{
+export class QLDebugConfigurationProvider implements DebugConfigurationProvider {
   public constructor(private readonly localQueries: LocalQueries) {}
 
   public resolveDebugConfiguration(

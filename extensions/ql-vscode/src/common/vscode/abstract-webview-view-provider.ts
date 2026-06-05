@@ -9,8 +9,7 @@ import type { DeepReadonly } from "../readonly";
 export abstract class AbstractWebviewViewProvider<
   ToMessage extends WebviewMessage,
   FromMessage extends WebviewMessage,
-> implements WebviewViewProvider
-{
+> implements WebviewViewProvider {
   protected webviewView: WebviewView | undefined = undefined;
   private disposables: Disposable[] = [];
 

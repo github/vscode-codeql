@@ -22,8 +22,7 @@ export type CommandFunction = (...args: any[]) => Promise<unknown>;
 export class CommandManager<
   Commands extends Record<string, CommandFunction>,
   CommandName extends keyof Commands & string = keyof Commands & string,
-> implements Disposable
-{
+> implements Disposable {
   private commands: Disposable[] = [];
 
   constructor(
