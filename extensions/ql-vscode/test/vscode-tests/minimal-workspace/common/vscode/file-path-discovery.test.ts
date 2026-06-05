@@ -7,6 +7,7 @@ import { EventEmitter, Uri, workspace } from "vscode";
 import { FilePathDiscovery } from "../../../../../src/common/vscode/file-path-discovery";
 import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
+import { rm } from "fs/promises";
 import { dirSync } from "tmp";
 import { normalizePath } from "../../../../../src/common/files";
 import { extLogger } from "../../../../../src/common/logging/vscode/loggers";
@@ -60,7 +61,6 @@ class TestFilePathDiscovery extends FilePathDiscovery<TestData> {
 
 describe("FilePathDiscovery", () => {
   let tmpDir: string;
-  let tmpDirRemoveCallback: (() => void) | undefined;
 
   let workspaceFolder: WorkspaceFolder;
   let workspacePath: string;
@@ -81,11 +81,7 @@ describe("FilePathDiscovery", () => {
   let discovery: TestFilePathDiscovery;
 
   beforeEach(() => {
-    const t = dirSync({
-      unsafeCleanup: true,
-    });
-    tmpDir = normalizePath(t.name);
-    tmpDirRemoveCallback = t.removeCallback;
+    tmpDir = normalizePath(dirSync().name);
 
     workspaceFolder = {
       uri: Uri.file(join(tmpDir, "workspace")),
@@ -117,9 +113,14 @@ describe("FilePathDiscovery", () => {
     discovery = new TestFilePathDiscovery();
   });
 
-  afterEach(() => {
-    tmpDirRemoveCallback?.();
+  afterEach(async () => {
     discovery.dispose();
+    await rm(tmpDir, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 200,
+    });
   });
 
   describe("initialRefresh", () => {
