@@ -2184,7 +2184,7 @@
     "patch-package": "^8.0.1",
     "prettier": "^3.8.3",
     "storybook": "^10.4.2",
-    "tar-stream": "^3.1.8",
+    "tar-stream": "^3.2.0",
     "through2": "^4.0.2",
     "ts-jest": "^29.4.6",
     "ts-json-schema-generator": "^2.3.0",
