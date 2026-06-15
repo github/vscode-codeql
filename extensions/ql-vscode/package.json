@@ -2089,7 +2089,7 @@
     "p-queue": "^8.0.1",
     "proper-lockfile": "^4.1.2",
     "react": "^19.2.7",
-    "react-dom": "^19.2.6",
+    "react-dom": "^19.2.7",
     "semver": "^7.7.4",
     "source-map": "^0.7.6",
     "source-map-support": "^0.5.21",
