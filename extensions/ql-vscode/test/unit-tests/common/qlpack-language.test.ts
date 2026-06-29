@@ -111,6 +111,13 @@ describe("getQlPackLanguage", () => {
     await expect(getQlPackLanguage(tmpDir.name)).rejects.toBeDefined();
   });
 
+  it("should find nothing when the qlpack file is empty", async () => {
+    await outputFile(qlpackPath, "");
+
+    const result = await getQlPackLanguage(qlpackPath);
+    expect(result).toEqual(undefined);
+  });
+
   it("should throw when the file is invalid YAML", async () => {
     await outputFile(qlpackPath, `name: test\n  foo: bar`);
 
