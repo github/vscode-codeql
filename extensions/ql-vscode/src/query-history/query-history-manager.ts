@@ -565,6 +565,13 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleRemoveHistoryItem(items: QueryHistoryInfo[]) {
+    // Capture the current item before any async operations. VS Code may fire
+    // onDidChangeSelection asynchronously during awaits below (e.g. after the
+    // tree is refreshed by remove()), changing treeDataProvider.getCurrent() to
+    // an unexpected item. By saving it up front we can restore the correct
+    // selection afterwards.
+    const previousCurrent = this.treeDataProvider.getCurrent();
+
     await Promise.all(
       items.map(async (item) => {
         if (item.t === "local") {
@@ -602,8 +609,22 @@ export class QueryHistoryManager extends DisposableObject {
     );
 
     await this.writeQueryHistory();
-    const current = this.treeDataProvider.getCurrent();
+
+    // If the previously-current item is still in history (i.e. it was not one
+    // of the items being removed), keep it as the current item. Otherwise fall
+    // back to whatever getCurrent() returns, which was set by remove() when the
+    // current item itself was deleted.
+    const current =
+      previousCurrent !== undefined &&
+      this.treeDataProvider.allHistory.includes(previousCurrent)
+        ? previousCurrent
+        : this.treeDataProvider.getCurrent();
+
     if (current !== undefined) {
+      // Explicitly sync the internal current-item state before revealing, in
+      // case a deferred onDidChangeSelection event changed it during the awaits
+      // above.
+      this.treeDataProvider.setCurrentItem(current);
       await this.treeView.reveal(current, { select: true });
       await this.openQueryResults(current);
     }
