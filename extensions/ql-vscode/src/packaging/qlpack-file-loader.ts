@@ -11,7 +11,10 @@ const qlpackFileValidate = ajv.compile(qlpackFileSchemaJson);
 export async function loadQlpackFile(path: string): Promise<QlPackFile> {
   const qlpackFileText = await readFile(path, "utf8");
 
-  let qlPack = load(qlpackFileText) as QlPackFile | undefined;
+  let qlPack: QlPackFile | undefined;
+  if (qlpackFileText.trim()) {
+    qlPack = load(qlpackFileText) as QlPackFile | undefined;
+  }
 
   if (qlPack === undefined || qlPack === null) {
     // An empty file is not valid according to the schema since it's not an object,

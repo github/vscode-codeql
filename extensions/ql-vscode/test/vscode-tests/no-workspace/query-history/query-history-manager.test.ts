@@ -331,10 +331,9 @@ describe("QueryHistoryManager", () => {
           .spyOn(dialog, "showBinaryChoiceDialog")
           .mockResolvedValue(true);
 
-        showInformationMessageWithActionSpy = jest.spyOn(
-          dialog,
-          "showInformationMessageWithAction",
-        );
+        showInformationMessageWithActionSpy = jest
+          .spyOn(dialog, "showInformationMessageWithAction")
+          .mockResolvedValue(false);
       });
 
       describe("when in progress", () => {
