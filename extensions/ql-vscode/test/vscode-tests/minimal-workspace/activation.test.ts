@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import type { Extension } from "vscode";
-import { extensions, workspace } from "vscode";
+import { extensions, window, workspace } from "vscode";
 import { run } from "./local-queries/determining-selected-query-test";
 
 describe("launching with a minimal workspace", () => {
@@ -23,6 +23,7 @@ describe("launching with a minimal workspace", () => {
     const documentPath = resolve(folderPath, "query.ql");
     const document = await workspace.openTextDocument(documentPath);
     expect(document.languageId).toEqual("ql");
+    await window.showTextDocument(document);
     // Wait for the extension to activate, polling with a timeout.
     await waitForActivation(ext!, 30_000);
     expect(ext!.isActive).toBeTruthy();
