@@ -9,5 +9,4 @@ export const AppOctokit = Octokit.defaults({
     fetch: (input: string | URL | Request, init?: RequestInit) =>
       fetch(input, init),
   },
-  retry,
-});
+}).plugin(retry);
