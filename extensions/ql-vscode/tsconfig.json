@@ -3,11 +3,11 @@
   "compilerOptions": {
     "declaration": true,
     "strict": true,
-    "module": "commonjs",
+    "module": "nodenext",
     "target": "es2021",
     "outDir": "out",
     "lib": ["ES2021"],
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "sourceMap": true,
     "rootDir": "src",
     "skipLibCheck": true,

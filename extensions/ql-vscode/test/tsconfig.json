@@ -5,6 +5,7 @@
   "compilerOptions": {
     "noEmit": true,
     "resolveJsonModule": true,
-    "rootDir": ".."
+    "rootDir": "..",
+    "types": ["jest"]
   }
 }
