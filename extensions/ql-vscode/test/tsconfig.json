@@ -6,6 +6,7 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "rootDir": "..",
-    "types": ["jest"]
+    "types": ["jest"],
+    "isolatedModules": true
   }
 }
