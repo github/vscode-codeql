@@ -1,11 +1,12 @@
-export {
+export type {
   DatabaseContents,
   DatabaseContentsWithDbScheme,
-  DatabaseKind,
 } from "./database-contents";
-export { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
-export { DatabaseItem, SourceArchiveFile } from "./database-item";
+export { DatabaseKind } from "./database-contents";
+export type { DatabaseChangedEvent } from "./database-events";
+export { DatabaseEventKind } from "./database-events";
+export type { DatabaseItem, SourceArchiveFile } from "./database-item";
 export { DatabaseItemImpl } from "./database-item-impl";
 export { DatabaseManager } from "./database-manager";
 export { DatabaseResolver } from "./database-resolver";
-export { DatabaseOptions, FullDatabaseOptions } from "./database-options";
+export type { DatabaseOptions, FullDatabaseOptions } from "./database-options";
