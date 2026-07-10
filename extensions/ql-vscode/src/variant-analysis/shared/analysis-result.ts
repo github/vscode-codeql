@@ -51,8 +51,7 @@ export interface AnalysisMessage {
 }
 
 export type AnalysisMessageToken =
-  | AnalysisMessageTextToken
-  | AnalysisMessageLocationToken;
+  AnalysisMessageTextToken | AnalysisMessageLocationToken;
 
 interface AnalysisMessageTextToken {
   t: "text";

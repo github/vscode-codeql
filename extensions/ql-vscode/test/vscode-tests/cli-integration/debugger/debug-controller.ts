@@ -33,8 +33,7 @@ class Tracker implements DebugAdapterTracker {
   private started: CodeQLProtocol.EvaluationStartedEvent["body"] | undefined =
     undefined;
   private completed:
-    | CodeQLProtocol.EvaluationCompletedEvent["body"]
-    | undefined = undefined;
+    CodeQLProtocol.EvaluationCompletedEvent["body"] | undefined = undefined;
 
   public constructor(
     private readonly session: DebugSession,

@@ -26,23 +26,13 @@ export interface VariantAnalysis {
 }
 
 export type VariantAnalysisStatus =
-  | "in_progress"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
+  "in_progress" | "succeeded" | "failed" | "cancelled";
 
 export type VariantAnalysisFailureReason =
-  | "no_repos_queried"
-  | "actions_workflow_run_failed"
-  | "internal_error";
+  "no_repos_queried" | "actions_workflow_run_failed" | "internal_error";
 
 export type VariantAnalysisRepoStatus =
-  | "pending"
-  | "in_progress"
-  | "succeeded"
-  | "failed"
-  | "canceled"
-  | "timed_out";
+  "pending" | "in_progress" | "succeeded" | "failed" | "canceled" | "timed_out";
 
 export interface VariantAnalysisScannedRepository {
   repository: RepositoryWithMetadata;

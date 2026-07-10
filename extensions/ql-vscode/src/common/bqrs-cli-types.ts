@@ -69,20 +69,12 @@ export interface BqrsWholeFileLocation {
 }
 
 export type BqrsUrlValue =
-  | BqrsWholeFileLocation
-  | BqrsLineColumnLocation
-  | string;
+  BqrsWholeFileLocation | BqrsLineColumnLocation | string;
 
 export type BqrsCellValue = BqrsEntityValue | number | string | boolean;
 
 export type BqrsKind =
-  | "String"
-  | "Float"
-  | "Integer"
-  | "Boolean"
-  | "Date"
-  | "Entity"
-  | "BigInt";
+  "String" | "Float" | "Integer" | "Boolean" | "Date" | "Entity" | "BigInt";
 
 interface BqrsColumn {
   name?: string;
