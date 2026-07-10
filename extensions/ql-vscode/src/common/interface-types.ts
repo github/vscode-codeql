@@ -50,8 +50,7 @@ type InterpretedResultSet<T> = {
 };
 
 export type ResultSet =
-  | RawTableResultSet
-  | InterpretedResultSet<InterpretationData>;
+  RawTableResultSet | InterpretedResultSet<InterpretationData>;
 
 /**
  * Only ever show this many rows in a raw result table.
@@ -365,9 +364,7 @@ interface UnhandledErrorMessage {
 }
 
 type CommonFromViewMessages =
-  | ViewLoadedMsg
-  | TelemetryMessage
-  | UnhandledErrorMessage;
+  ViewLoadedMsg | TelemetryMessage | UnhandledErrorMessage;
 
 /**
  * Message from the results view to signal a request to change the
@@ -497,8 +494,7 @@ export interface SetPerformanceComparisonQueries {
 export type FromComparePerformanceViewMessage = CommonFromViewMessages;
 
 export type QueryCompareResult =
-  | RawQueryCompareResult
-  | InterpretedQueryCompareResult;
+  RawQueryCompareResult | InterpretedQueryCompareResult;
 
 /**
  * from is the set of rows that have changes in the "from" query.

@@ -440,9 +440,7 @@ async function getSelectedPosition(
 }
 
 type SaveBeforeStartMode =
-  | "nonUntitledEditorsInActiveGroup"
-  | "allEditorsInActiveGroup"
-  | "none";
+  "nonUntitledEditorsInActiveGroup" | "allEditorsInActiveGroup" | "none";
 
 /**
  * Saves dirty files before running queries, based on the user's settings.
