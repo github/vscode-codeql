@@ -1,10 +1,13 @@
 import { createHash } from "crypto";
 import { open } from "fs/promises";
 import { join, relative, resolve, sep } from "path";
+import { Readable } from "stream";
+import { createWriteStream } from "fs";
 import { chmod, pathExists, readdir } from "fs-extra";
 import type { DirectoryResult } from "tmp-promise";
 import { dir } from "tmp-promise";
 import {
+  copyStream,
   excludeDirectories,
   openZip,
   openZipBuffer,
@@ -276,3 +279,71 @@ async function computeHash(contents: Buffer) {
 
   return hash.digest("hex");
 }
+
+describe("copyStream error handling", () => {
+  let tmpDir: DirectoryResult;
+
+  beforeEach(async () => {
+    tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+  });
+
+  afterEach(async () => {
+    await tmpDir?.cleanup();
+  });
+
+  it("rejects when the write stream errors mid-extraction", async () => {
+    // Use a real zip to trigger unzip, but make the destination read-only
+    // so the write stream fails. This verifies the promise rejects rather
+    // than hanging indefinitely.
+    const destPath = join(tmpDir.path, "output");
+
+    // Extract once to create the directory structure
+    await unzipToDirectorySequentially(zipPath, destPath);
+
+    // Make a file read-only so re-extraction will fail on write
+    const targetFile = join(destPath, "directory", "file.txt");
+    await chmod(targetFile, 0o000);
+
+    // On Windows, chmod doesn't prevent writes, so skip assertion there
+    if (process.platform === "win32") {
+      await chmod(targetFile, 0o644);
+      return;
+    }
+
+    // Re-extract — should reject with a write error, not hang
+    await expect(
+      unzipToDirectorySequentially(zipPath, destPath),
+    ).rejects.toThrow();
+
+    // Restore permissions for cleanup
+    await chmod(targetFile, 0o644);
+  });
+
+  it("rejects when the write stream is destroyed mid-copy", async () => {
+    // A destroyed write stream should cause `copyStream` to reject, not hang.
+    const destFile = join(tmpDir.path, "output.bin");
+    const writeStream = createWriteStream(destFile);
+
+    // A readable that emits a chunk and then destroys the write stream, to
+    // simulate a mid-copy write failure.
+    let pushed = false;
+    const readable = new Readable({
+      read() {
+        if (pushed) {
+          return;
+        }
+        pushed = true;
+        this.push(Buffer.alloc(1024, "x"));
+        setImmediate(() => {
+          writeStream.destroy(new Error("simulated write failure"));
+        });
+      },
+    });
+
+    await expect(copyStream(readable, writeStream)).rejects.toThrow(
+      "simulated write failure",
+    );
+  });
+});

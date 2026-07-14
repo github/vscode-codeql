@@ -2,6 +2,7 @@ import type { Entry as ZipEntry, Options as ZipOptions, ZipFile } from "yauzl";
 import { open } from "yauzl";
 import type { Readable } from "stream";
 import { Transform } from "stream";
+import { pipeline } from "stream/promises";
 import { dirname, join } from "path";
 import type { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
@@ -88,31 +89,21 @@ export async function openZipBuffer(
   });
 }
 
-async function copyStream(
+export async function copyStream(
   readable: Readable,
   writeStream: WriteStream,
   bytesExtractedCallback?: (bytesExtracted: number) => void,
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    readable.on("error", (err) => {
-      reject(err);
-    });
-    readable.on("end", () => {
-      resolve();
-    });
-
-    readable
-      .pipe(
-        new Transform({
-          transform(chunk, _encoding, callback) {
-            bytesExtractedCallback?.(chunk.length);
-            this.push(chunk);
-            callback();
-          },
-        }),
-      )
-      .pipe(writeStream);
-  });
+  await pipeline(
+    readable,
+    new Transform({
+      transform(chunk, _encoding, callback) {
+        bytesExtractedCallback?.(chunk.length);
+        callback(null, chunk);
+      },
+    }),
+    writeStream,
+  );
 }
 
 type UnzipProgress = {

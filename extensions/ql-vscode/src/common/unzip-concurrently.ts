@@ -9,7 +9,7 @@ export async function unzipToDirectoryConcurrently(
   progress?: UnzipProgressCallback,
 ): Promise<void> {
   const queue = new PQueue({
-    concurrency: availableParallelism(),
+    concurrency: Math.min(availableParallelism(), 4),
   });
 
   return unzipToDirectory(
