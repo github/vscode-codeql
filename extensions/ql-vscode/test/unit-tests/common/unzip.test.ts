@@ -16,6 +16,7 @@ import {
 } from "../../../src/common/unzip";
 import { walkDirectory } from "../../../src/common/files";
 import { unzipToDirectoryConcurrently } from "../../../src/common/unzip-concurrently";
+import { createTimeoutSignal } from "../../../src/common/fetch-stream";
 
 const zipPath = resolve(__dirname, "../data/unzip/test-zip.zip");
 
@@ -345,5 +346,38 @@ describe("copyStream error handling", () => {
     await expect(copyStream(readable, writeStream)).rejects.toThrow(
       "simulated write failure",
     );
+  });
+
+  it("rejects (rather than hanging) when the idle timeout aborts a stalled copy", async () => {
+    // A readable that emits one chunk and then stalls forever: it never pushes
+    // more data, never ends, and never errors. Without the abort signal this
+    // would hang indefinitely (the original bug). `copyStream` must honour the
+    // signal and reject once the idle timeout fires.
+    let pushed = false;
+    const stalled = new Readable({
+      read() {
+        if (!pushed) {
+          pushed = true;
+          this.push(Buffer.alloc(1024, "x"));
+        }
+        // Then never push again and never call push(null) -> stalled.
+      },
+    });
+
+    const destFile = join(tmpDir.path, "stalled-output.bin");
+    const writeStream = createWriteStream(destFile);
+
+    // Short idle timeout so the test is fast; well within Jest's default limit.
+    const { signal, dispose } = createTimeoutSignal(0.05);
+
+    try {
+      await expect(
+        copyStream(stalled, writeStream, undefined, signal),
+      ).rejects.toThrow();
+      expect(signal.aborted).toBe(true);
+    } finally {
+      dispose();
+      stalled.destroy();
+    }
   });
 });

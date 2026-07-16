@@ -7,6 +7,18 @@ import { dirname, join } from "path";
 import type { WriteStream } from "fs";
 import { createWriteStream, ensureDir } from "fs-extra";
 import { asError } from "./helpers-pure";
+import { createTimeoutSignal } from "./fetch-stream";
+
+/**
+ * Default idle timeout (in seconds) used when a caller does not specify one. If
+ * no bytes are extracted and no files complete within this window, the
+ * extraction is aborted. This is a safety net that guards against a single
+ * stalled write hanging the whole operation forever. 30 seconds of zero
+ * extraction progress is well beyond any healthy pause, so this won't trigger
+ * false positives. (The CLI downloader passes the configurable
+ * `codeQL.cli.downloadTimeout` instead of relying on this default.)
+ */
+const DEFAULT_UNZIP_IDLE_TIMEOUT_SECONDS = 30;
 
 // We can't use promisify because it picks up the wrong overload.
 export function openZip(
@@ -93,6 +105,7 @@ export async function copyStream(
   readable: Readable,
   writeStream: WriteStream,
   bytesExtractedCallback?: (bytesExtracted: number) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
   await pipeline(
     readable,
@@ -103,6 +116,7 @@ export async function copyStream(
       },
     }),
     writeStream,
+    { signal },
   );
 }
 
@@ -130,6 +144,7 @@ async function unzipFile(
   entry: ZipEntry,
   rootDestinationPath: string,
   bytesExtractedCallback?: (bytesExtracted: number) => void,
+  signal?: AbortSignal,
 ): Promise<number> {
   const path = join(rootDestinationPath, entry.fileName);
 
@@ -155,7 +170,7 @@ async function unzipFile(
       mode,
     });
 
-    await copyStream(readable, writeStream, bytesExtractedCallback);
+    await copyStream(readable, writeStream, bytesExtractedCallback, signal);
 
     return entry.uncompressedSize;
   }
@@ -176,6 +191,7 @@ export async function unzipToDirectory(
   destinationPath: string,
   progress: UnzipProgressCallback | undefined,
   taskRunner: (tasks: Array<() => Promise<void>>) => Promise<void>,
+  timeoutSeconds: number = DEFAULT_UNZIP_IDLE_TIMEOUT_SECONDS,
 ): Promise<void> {
   const zipFile = await openZip(archivePath, {
     autoClose: false,
@@ -202,28 +218,53 @@ export async function unzipToDirectory(
 
     reportProgress();
 
-    await taskRunner(
-      entries.map((entry) => async () => {
-        let entryBytesExtracted = 0;
+    // Abort extraction if no progress is made for `timeoutSeconds`. `pipeline`
+    // only rejects on a stream error, so without this a single write that
+    // blocks without erroring (e.g. slow/networked storage or security
+    // software holding a file) would hang the extraction indefinitely.
+    const { signal, onData, dispose } = createTimeoutSignal(timeoutSeconds);
 
-        const totalEntryBytesExtracted = await unzipFile(
-          zipFile,
-          entry,
-          destinationPath,
-          (thisBytesExtracted) => {
-            entryBytesExtracted += thisBytesExtracted;
-            bytesExtracted += thisBytesExtracted;
-            reportProgress();
-          },
+    try {
+      await taskRunner(
+        entries.map((entry) => async () => {
+          let entryBytesExtracted = 0;
+
+          const totalEntryBytesExtracted = await unzipFile(
+            zipFile,
+            entry,
+            destinationPath,
+            (thisBytesExtracted) => {
+              // Reset the idle timeout: we are making progress.
+              onData();
+              entryBytesExtracted += thisBytesExtracted;
+              bytesExtracted += thisBytesExtracted;
+              reportProgress();
+            },
+            signal,
+          );
+
+          // Should be 0, but just in case.
+          bytesExtracted += -entryBytesExtracted + totalEntryBytesExtracted;
+
+          // Reset the idle timeout on completion too, so extracting many empty
+          // files or directories doesn't trip the timeout.
+          onData();
+          filesExtracted++;
+          reportProgress();
+        }),
+      );
+    } catch (e) {
+      if (signal.aborted) {
+        throw new Error(
+          `Timed out while extracting archive: no progress was made for ${timeoutSeconds} seconds. ` +
+            "This can happen if a file cannot be written, for example because of slow or networked storage, " +
+            "or security software holding a file open.",
         );
-
-        // Should be 0, but just in case.
-        bytesExtracted += -entryBytesExtracted + totalEntryBytesExtracted;
-
-        filesExtracted++;
-        reportProgress();
-      }),
-    );
+      }
+      throw e;
+    } finally {
+      dispose();
+    }
   } finally {
     zipFile.close();
   }
@@ -242,6 +283,7 @@ export async function unzipToDirectorySequentially(
   archivePath: string,
   destinationPath: string,
   progress?: UnzipProgressCallback,
+  timeoutSeconds?: number,
 ): Promise<void> {
   return unzipToDirectory(
     archivePath,
@@ -252,5 +294,6 @@ export async function unzipToDirectorySequentially(
         await task();
       }
     },
+    timeoutSeconds,
   );
 }
