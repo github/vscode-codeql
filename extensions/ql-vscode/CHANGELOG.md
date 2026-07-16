@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Fix a bug where installing or updating the CodeQL CLI could hang indefinitely while extracting the downloaded archive. Extraction now reports an error if a file cannot be written, and aborts with a clear message if no progress is made within the download timeout (for example due to slow or networked storage, or security software). [#4455](https://github.com/github/vscode-codeql/pull/4455)
 - Remove support for CodeQL CLI versions older than 2.23.9. [#4448](https://github.com/github/vscode-codeql/pull/4448)
 - Added support for selection-based result filtering via a checkbox in the result viewer. When enabled, only results from the currently-viewed file are shown. Additionally, if the editor selection is non-empty, only results within the selection range are shown. [#4362](https://github.com/github/vscode-codeql/pull/4362)
 - Added a new "CodeQL: Go to File in Selected Database" command that allows you to open a file from the source archive of the currently selected database. [#4390](https://github.com/github/vscode-codeql/pull/4390)
