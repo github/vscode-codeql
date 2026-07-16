@@ -67,7 +67,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
