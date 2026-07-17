@@ -40,8 +40,9 @@ import {
   createLanguageClient,
   getQueryEditorCommands,
   install,
+  KeyType,
   TemplatePrintAstProvider,
-  TemplatePrintCfgProvider,
+  TemplatePrintGraphProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
 } from "./language-support";
@@ -1075,7 +1076,18 @@ async function activateWithInstalledDistribution(
     dbm,
     contextualQueryStorageDir,
   );
-  const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
+  const cfgTemplateProvider = new TemplatePrintGraphProvider(
+    cliServer,
+    dbm,
+    KeyType.PrintCfgQuery,
+    "CFG",
+  );
+  const dfgTemplateProvider = new TemplatePrintGraphProvider(
+    cliServer,
+    dbm,
+    KeyType.PrintDfgQuery,
+    "DFG",
+  );
 
   ctx.subscriptions.push(astViewer);
 
@@ -1111,6 +1123,7 @@ async function activateWithInstalledDistribution(
       astViewer,
       astTemplateProvider,
       cfgTemplateProvider,
+      dfgTemplateProvider,
     }),
     ...astViewer.getCommands(),
     ...getPackagingCommands({
