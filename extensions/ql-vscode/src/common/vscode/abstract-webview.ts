@@ -138,8 +138,7 @@ export abstract class AbstractWebview<
   }
 
   protected abstract getPanelConfig():
-    | WebviewPanelConfig
-    | Promise<WebviewPanelConfig>;
+    WebviewPanelConfig | Promise<WebviewPanelConfig>;
 
   protected abstract onPanelDispose(): void;
 

@@ -2,8 +2,7 @@ import type { DbItem } from "./db-item";
 import { DbItemKind, flattenDbItems } from "./db-item";
 
 export type ExpandedDbItem =
-  | RootRemoteExpandedDbItem
-  | RemoteUserDefinedListExpandedDbItem;
+  RootRemoteExpandedDbItem | RemoteUserDefinedListExpandedDbItem;
 
 export enum ExpandedDbItemKind {
   RootRemote = "rootRemote",

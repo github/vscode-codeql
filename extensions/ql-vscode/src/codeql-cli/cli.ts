@@ -45,7 +45,7 @@ import type { LanguageClient } from "vscode-languageclient/node";
  * The oldest version of the CLI that we support. This is used to determine
  * whether to show a warning about the CLI being too old on startup.
  */
-export const OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.22.4");
+export const OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.23.9");
 
 /**
  * The version of the SARIF format that we are using.
@@ -313,11 +313,26 @@ export class CodeQLCliServer implements Disposable {
 
   killProcessIfRunning(): void {
     if (this.process) {
+      const proc = this.process;
+
+      // The shutdown write below is buffered and, on Windows, can flush
+      // asynchronously *after* we end()/kill() the process, closing the read
+      // end and producing an EPIPE 'error' on stdin. Without a handler that
+      // async error is unhandled and gets attributed to an unrelated
+      // in-progress operation. Attach a handler scoped to this teardown so it
+      // is swallowed here; the process is killed and dereferenced immediately
+      // afterwards, so the listener is short-lived and does not accumulate.
+      proc.stdin.on("error", (e) => {
+        void this.logger.log(
+          `CodeQL CLI Server shutdown stdin error (ignored): ${getErrorMessage(e)}`,
+        );
+      });
+
       // Tell the Java CLI server process to shut down.
       void this.logger.log("Sending shutdown request");
       try {
-        this.process.stdin.write(JSON.stringify(["shutdown"]), "utf8");
-        this.process.stdin.write(this.nullBuffer);
+        proc.stdin.write(JSON.stringify(["shutdown"]), "utf8");
+        proc.stdin.write(this.nullBuffer);
         void this.logger.log("Sent shutdown request");
       } catch (e) {
         // We are probably fine here, the process has already closed stdin.
@@ -328,10 +343,10 @@ export class CodeQLCliServer implements Disposable {
       }
       // Close the stdin and stdout streams.
       // This is important on Windows where the child process may not die cleanly.
-      this.process.stdin.end();
-      this.process.kill();
-      this.process.stdout.destroy();
-      this.process.stderr.destroy();
+      proc.stdin.end();
+      proc.kill();
+      proc.stdout.destroy();
+      proc.stderr.destroy();
       this.process = undefined;
     }
   }

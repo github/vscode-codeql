@@ -560,6 +560,7 @@ class ExtensionSpecificDistributionManager {
               progressCallback,
             )
           : undefined,
+        this.config.downloadTimeout,
       );
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {

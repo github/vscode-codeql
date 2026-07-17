@@ -20,8 +20,7 @@ export function AlertTableHeader({
   }, [sortState]);
 
   const getNextSortState = useCallback(():
-    | InterpretedResultsSortState
-    | undefined => {
+    InterpretedResultsSortState | undefined => {
     const prevDirection =
       sortState?.sortBy === "alert-message"
         ? sortState.sortDirection

@@ -31,8 +31,8 @@ export function bqrsToResultSet(
     name: schema.name,
     totalRowCount: schema.rows,
     columns: schema.columns.map(mapColumn),
-    rows: chunk.tuples.map(
-      (tuple): Row => tuple.map((cell): CellValue => mapCellValue(cell)),
+    rows: chunk.tuples.map((tuple): Row =>
+      tuple.map((cell): CellValue => mapCellValue(cell)),
     ),
   };
 

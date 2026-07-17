@@ -33,8 +33,7 @@ export type UrlValueLineColumnLocation = {
 };
 
 export type UrlValueResolvable =
-  | UrlValueWholeFileLocation
-  | UrlValueLineColumnLocation;
+  UrlValueWholeFileLocation | UrlValueLineColumnLocation;
 
 export function isUrlValueResolvable(
   value: UrlValue,

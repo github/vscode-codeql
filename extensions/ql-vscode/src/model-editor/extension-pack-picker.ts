@@ -256,12 +256,9 @@ async function readExtensionPack(
   }
 
   const dataExtensionValue = qlpack.dataExtensions;
-  if (
-    !(
-      Array.isArray(dataExtensionValue) ||
-      typeof dataExtensionValue === "string"
-    )
-  ) {
+  if (!(
+    Array.isArray(dataExtensionValue) || typeof dataExtensionValue === "string"
+  )) {
     throw new Error(
       `Expected 'dataExtensions' to be a string or an array in ${qlpackPath}`,
     );

@@ -10,8 +10,7 @@ export interface QueryHistoryDto {
 }
 
 export type QueryHistoryItemDto =
-  | QueryHistoryLocalQueryDto
-  | QueryHistoryVariantAnalysisDto;
+  QueryHistoryLocalQueryDto | QueryHistoryVariantAnalysisDto;
 
 export enum QueryLanguageDto {
   Actions = "actions",
