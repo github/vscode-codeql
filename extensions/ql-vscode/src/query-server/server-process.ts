@@ -27,10 +27,57 @@ export class ServerProcess implements Disposable {
     this.child.stdin!.end();
     this.child.stderr!.destroy();
     this.child.removeAllListeners();
-    // TODO kill the process if it doesn't terminate after a certain time limit.
+
+    // `dispose()` is synchronous, so we only signal the process to stop (by
+    // closing its streams) and don't wait for it to actually exit. Callers that
+    // need the process to have terminated — e.g. before starting a replacement
+    // server — should await `waitForExit()` afterwards.
 
     // On Windows, we usually have to terminate the process before closing its stdout.
     this.child.stdout!.destroy();
     void this.logger.log(`Stopped ${this.name}.`);
+  }
+
+  /**
+   * Waits for the underlying child process to fully exit, forcibly killing it
+   * after `timeoutMs` if it has not exited on its own.
+   *
+   * Call this after `dispose()` when you need the OS to have actually released
+   * the process before continuing. This matters on Windows, where the OS can
+   * keep file locks (for example on the database or disk cache) until the
+   * process has terminated — so starting a replacement server before the old
+   * one has exited can intermittently fail.
+   */
+  async waitForExit(timeoutMs = 5000): Promise<void> {
+    const hasExited = () =>
+      this.child.exitCode !== null || this.child.signalCode !== null;
+
+    if (hasExited()) {
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        void this.logger.log(
+          `${this.name} did not exit within ${timeoutMs}ms; killing it.`,
+        );
+        this.child.kill("SIGKILL");
+        resolve();
+      }, timeoutMs);
+
+      const done = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+
+      this.child.once("exit", done);
+
+      // Guard against the process having exited between the check above and
+      // attaching the listener.
+      if (hasExited()) {
+        this.child.removeListener("exit", done);
+        done();
+      }
+    });
   }
 }

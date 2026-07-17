@@ -114,6 +114,19 @@ export class QueryServerClient extends DisposableObject {
   }
 
   /**
+   * Stops the query server and waits for its process to fully exit before
+   * returning. Use this (rather than `stopQueryServer`) when a new server is
+   * about to be started, so that the old process has released any file locks
+   * first. This avoids intermittent failures on Windows where the OS keeps
+   * locks until the process has actually terminated.
+   */
+  private async stopQueryServerAndWait(): Promise<void> {
+    const serverProcess = this.serverProcess;
+    this.stopQueryServer();
+    await serverProcess?.waitForExit();
+  }
+
+  /**
    * Restarts the query server by disposing of the current server process and then starting a new one.
    * This resets the unexpected termination count. As hopefully it is an indication that the user has fixed the
    * issue.
@@ -154,7 +167,9 @@ export class QueryServerClient extends DisposableObject {
   private async restartQueryServerInternal(
     progress: ProgressCallback,
   ): Promise<void> {
-    this.stopQueryServer();
+    // Wait for the old process to fully exit before starting a new one, so
+    // that it has released any file locks (important on Windows).
+    await this.stopQueryServerAndWait();
     await this.startQueryServer();
 
     // Ensure we await all responses from event handlers so that
