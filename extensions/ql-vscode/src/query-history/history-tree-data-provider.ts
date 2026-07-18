@@ -3,7 +3,7 @@ import { env, EventEmitter, ThemeColor, ThemeIcon, TreeItem } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { assertNever } from "../common/helpers-pure";
 import type { QueryHistoryInfo } from "./query-history-info";
-import { getLanguage } from "./query-history-info";
+import { getLanguage, getQueryId } from "./query-history-info";
 import { QueryStatus } from "./query-status";
 import type { HistoryItemLabelProvider } from "./history-item-label-provider";
 import type { LanguageContextStore } from "../language-context-store";
@@ -15,6 +15,25 @@ export enum SortOrder {
   DateDesc = "DateDesc",
   CountAsc = "CountAsc",
   CountDesc = "CountDesc",
+}
+
+/**
+ * Computes a stable, unique id for a query history item, suitable for use as a
+ * `TreeItem.id`. `getQueryId` alone is not unique because a multi-query run
+ * produces several local-query items that share the same `initialInfo.id`; for
+ * those we also include the (per-result) output base name.
+ */
+function getTreeItemId(element: QueryHistoryInfo): string {
+  switch (element.t) {
+    case "local":
+      return `local:${element.initialInfo.id}:${
+        element.completedQuery?.query.outputBaseName ?? ""
+      }`;
+    case "variant-analysis":
+      return `variant-analysis:${getQueryId(element)}`;
+    default:
+      assertNever(element);
+  }
 }
 
 /**
@@ -53,6 +72,22 @@ export class HistoryTreeDataProvider
 
   async getTreeItem(element: QueryHistoryInfo): Promise<TreeItem> {
     const treeItem = new TreeItem(this.labelProvider.getLabel(element));
+
+    // Give the tree item a stable, unique id. Without this, VS Code identifies
+    // tree nodes by their label plus their position in the list. When multiple
+    // history items share the same label, that positional identity is ambiguous
+    // and makes `treeView.reveal` resolve to the wrong item (or fail outright)
+    // when the list is re-sorted or refreshed. The default label format includes
+    // the start time, so labels are effectively unique in practice and users are
+    // unlikely to hit this; it mainly affects tests (and any user who customises
+    // the label format to something non-unique).
+    //
+    // `getQueryId` is not guaranteed to be unique: a multi-query run produces
+    // several local-query items that share the same `initialInfo.id`. Those
+    // items differ by their output base name, so we include it to keep the id
+    // unique (VS Code de-duplicates nodes that share an id, which would break
+    // reveal/selection for all but one of them).
+    treeItem.id = getTreeItemId(element);
 
     treeItem.command = {
       title: "Query History Item",
