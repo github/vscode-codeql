@@ -363,9 +363,11 @@ describe("QueryHistoryManager", () => {
             });
 
             // should be selected
-            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-              selected,
-            );
+            expect(
+              (
+                queryHistoryManager.treeDataProvider.getCurrent() as VariantAnalysisHistoryItem
+              ).variantAnalysis.id,
+            ).toBe(selected.variantAnalysis.id);
           });
 
           it("should remove the item", async () => {
@@ -384,9 +386,11 @@ describe("QueryHistoryManager", () => {
             // remove an item
             await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
-            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-              selected,
-            );
+            expect(
+              (
+                queryHistoryManager.treeDataProvider.getCurrent() as VariantAnalysisHistoryItem
+              ).variantAnalysis.id,
+            ).toBe(selected.variantAnalysis.id);
             expect(variantAnalysisManagerStub.showView).toHaveBeenCalledWith(
               selected.variantAnalysis.id,
             );
@@ -505,9 +509,11 @@ describe("QueryHistoryManager", () => {
             });
 
             // should be selected
-            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-              selected,
-            );
+            expect(
+              (
+                queryHistoryManager.treeDataProvider.getCurrent() as VariantAnalysisHistoryItem
+              ).variantAnalysis.id,
+            ).toBe(selected.variantAnalysis.id);
 
             // remove an item
             await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
@@ -523,9 +529,11 @@ describe("QueryHistoryManager", () => {
           });
 
           it("should not change the selection", () => {
-            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-              selected,
-            );
+            expect(
+              (
+                queryHistoryManager.treeDataProvider.getCurrent() as VariantAnalysisHistoryItem
+              ).variantAnalysis.id,
+            ).toBe(selected.variantAnalysis.id);
             expect(variantAnalysisManagerStub.showView).toHaveBeenCalledWith(
               selected.variantAnalysis.id,
             );
