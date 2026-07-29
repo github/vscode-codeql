@@ -89,11 +89,18 @@ jobs:
         id: choose-ref
         shell: bash
         run: |
-          if [[ "${{ matrix.version }}" == "nightly" ]]
+          if [[ "$CLI_VERSION" == "nightly" ]]
           then
             REF="codeql-cli/latest"
           else
-            REF="codeql-cli/${{ matrix.version }}"
+            # Validate the version read from supported_cli_versions.json before
+            # using it, to guard against script injection from untrusted input.
+            if [[ ! "$CLI_VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]
+            then
+              echo "Unexpected CLI version: '$CLI_VERSION'" >&2
+              exit 1
+            fi
+            REF="codeql-cli/$CLI_VERSION"
           fi
           echo "ref=$REF" >> "$GITHUB_OUTPUT"
 
