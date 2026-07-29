@@ -1,4 +1,9 @@
-import { act, render as reactRender, screen } from "@testing-library/react";
+import {
+  act,
+  render as reactRender,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
@@ -22,6 +27,21 @@ describe(RepoRow.name, () => {
         {...props}
       />,
     );
+  };
+
+  // The `vscode-checkbox` web component no longer exposes a `checkbox` ARIA role
+  // on its host element (the role now lives on an <input> inside its shadow DOM,
+  // which testing-library cannot reach), so find it by tag name instead. The
+  // `disabled` property is reflected to a `disabled` attribute asynchronously by
+  // Lit, so wait for the expected state.
+  const findCheckbox = async (container: HTMLElement): Promise<HTMLElement> => {
+    return waitFor(() => {
+      const checkbox = container.querySelector("vscode-checkbox");
+      if (!checkbox) {
+        throw new Error("Unable to find a vscode-checkbox element");
+      }
+      return checkbox as HTMLElement;
+    });
   };
 
   it("renders the pending state", () => {
@@ -394,25 +414,25 @@ describe(RepoRow.name, () => {
   });
 
   it("does not allow selecting the item if the item has not succeeded", async () => {
-    render({
+    const { container } = render({
       status: VariantAnalysisRepoStatus.InProgress,
     });
 
-    const checkbox = await screen.findByRole("checkbox");
+    const checkbox = await findCheckbox(container);
     expect(checkbox).toBeDisabled();
   });
 
   it("does not allow selecting the item if the item has not been downloaded", async () => {
-    render({
+    const { container } = render({
       status: VariantAnalysisRepoStatus.Succeeded,
     });
 
-    const checkbox = await screen.findByRole("checkbox");
+    const checkbox = await findCheckbox(container);
     expect(checkbox).toBeDisabled();
   });
 
   it("does not allow selecting the item if the item has not been downloaded successfully", async () => {
-    render({
+    const { container } = render({
       status: VariantAnalysisRepoStatus.Succeeded,
       downloadState: {
         repositoryId: 1,
@@ -420,12 +440,12 @@ describe(RepoRow.name, () => {
       },
     });
 
-    const checkbox = await screen.findByRole("checkbox");
+    const checkbox = await findCheckbox(container);
     expect(checkbox).toBeDisabled();
   });
 
   it("allows selecting the item if the item has been downloaded", async () => {
-    render({
+    const { container } = render({
       status: VariantAnalysisRepoStatus.Succeeded,
       downloadState: {
         repositoryId: 1,
@@ -434,7 +454,7 @@ describe(RepoRow.name, () => {
       },
     });
 
-    const checkbox = await screen.findByRole("checkbox");
+    const checkbox = await findCheckbox(container);
     expect(checkbox).toBeEnabled();
   });
 });
