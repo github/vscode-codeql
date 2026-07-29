@@ -119,6 +119,7 @@ describe("listDatabases", () => {
               headers: {},
               url: "",
               data: {},
+              retryCount: 0,
             },
           }),
         );
@@ -145,6 +146,7 @@ describe("listDatabases", () => {
               headers: {},
               url: "",
               data: {},
+              retryCount: 0,
             },
           }),
         );
@@ -193,6 +195,7 @@ describe("listDatabases", () => {
                 headers: {},
                 url: "",
                 data: {},
+                retryCount: 0,
               },
             }),
           );
@@ -226,6 +229,7 @@ describe("listDatabases", () => {
               headers: {},
               url: "",
               data: {},
+              retryCount: 0,
             },
           }),
         );
@@ -262,6 +266,7 @@ describe("listDatabases", () => {
                   headers: {},
                   url: "",
                   data: {},
+                  retryCount: 0,
                 },
               }),
             );
@@ -288,6 +293,7 @@ describe("listDatabases", () => {
                   headers: {},
                   url: "",
                   data: {},
+                  retryCount: 0,
                 },
               }),
             );

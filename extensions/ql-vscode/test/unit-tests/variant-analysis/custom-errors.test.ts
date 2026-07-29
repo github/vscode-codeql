@@ -156,6 +156,7 @@ function mockRequestError(status: number, body: any): RequestError {
           "Content-Type": "application/json",
         },
         data: body,
+        retryCount: 0,
       },
     },
   );
