@@ -34,11 +34,19 @@ describe(RepoRow.name, () => {
   // which testing-library cannot reach), so find it by tag name instead. The
   // `disabled` property is reflected to a `disabled` attribute asynchronously by
   // Lit, so wait for the expected state.
-  const findCheckbox = async (container: HTMLElement): Promise<HTMLElement> => {
+  const findCheckbox = async (
+    container: HTMLElement,
+    expected: "enabled" | "disabled",
+  ): Promise<HTMLElement> => {
     return waitFor(() => {
       const checkbox = container.querySelector("vscode-checkbox");
       if (!checkbox) {
         throw new Error("Unable to find a vscode-checkbox element");
+      }
+      if (expected === "disabled") {
+        expect(checkbox).toBeDisabled();
+      } else {
+        expect(checkbox).toBeEnabled();
       }
       return checkbox as HTMLElement;
     });
@@ -418,8 +426,7 @@ describe(RepoRow.name, () => {
       status: VariantAnalysisRepoStatus.InProgress,
     });
 
-    const checkbox = await findCheckbox(container);
-    expect(checkbox).toBeDisabled();
+    await findCheckbox(container, "disabled");
   });
 
   it("does not allow selecting the item if the item has not been downloaded", async () => {
@@ -427,8 +434,7 @@ describe(RepoRow.name, () => {
       status: VariantAnalysisRepoStatus.Succeeded,
     });
 
-    const checkbox = await findCheckbox(container);
-    expect(checkbox).toBeDisabled();
+    await findCheckbox(container, "disabled");
   });
 
   it("does not allow selecting the item if the item has not been downloaded successfully", async () => {
@@ -440,8 +446,7 @@ describe(RepoRow.name, () => {
       },
     });
 
-    const checkbox = await findCheckbox(container);
-    expect(checkbox).toBeDisabled();
+    await findCheckbox(container, "disabled");
   });
 
   it("allows selecting the item if the item has been downloaded", async () => {
@@ -454,7 +459,6 @@ describe(RepoRow.name, () => {
       },
     });
 
-    const checkbox = await findCheckbox(container);
-    expect(checkbox).toBeEnabled();
+    await findCheckbox(container, "enabled");
   });
 });
