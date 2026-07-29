@@ -18,6 +18,14 @@ Object.defineProperty(window, "matchMedia", {
 // Used by Primer React
 window.CSS.supports = jest.fn().mockResolvedValue(false);
 
+// ResizeObserver is not implemented in jsdom but is used by some
+// @vscode-elements/elements components (e.g. vscode-table, vscode-form-container).
+window.ResizeObserver = class ResizeObserver {
+  observe = jest.fn();
+  unobserve = jest.fn();
+  disconnect = jest.fn();
+};
+
 // Functions that are not implemented in jsdom
 window.CSSStyleSheet.prototype.replaceSync = jest
   .fn()
