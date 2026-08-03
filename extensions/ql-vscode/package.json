@@ -2149,7 +2149,7 @@
     "@types/yauzl": "^3.4.0",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
-    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.9.2",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.9.8",
@@ -2198,7 +2198,10 @@
     "d3-graphviz": {
       "@hpcc-js/wasm": "2.30.0"
     },
-    "@azure/identity": "^4.13.1"
+    "@azure/identity": "^4.13.1",
+    "jest-runner-vscode": {
+      "@vscode/test-electron": "^3.1.0"
+    }
   },
   "lint-staged": {
     "./**/*.{json,css,scss}": [
