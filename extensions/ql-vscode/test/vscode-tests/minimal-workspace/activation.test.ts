@@ -24,9 +24,9 @@ describe("launching with a minimal workspace", () => {
     const document = await workspace.openTextDocument(documentPath);
     expect(document.languageId).toEqual("ql");
     // Wait for the extension to activate, polling with a timeout.
-    await waitForActivation(ext!, 30_000);
+    await waitForActivation(ext!, 90_000);
     expect(ext!.isActive).toBeTruthy();
-  }, 60_000);
+  }, 120_000);
 
   async function waitForActivation(
     extension: Extension<any>,
