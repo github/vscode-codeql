@@ -1,6 +1,6 @@
 import { dest, src } from "gulp";
 import { load } from "js-yaml";
-import { obj } from "through2";
+import { objectTransform } from "through2";
 import PluginError from "plugin-error";
 import type Vinyl from "vinyl";
 import type {
@@ -247,11 +247,11 @@ function transformFile(yaml: ExtendedTextmateGrammar<ExtendedMatchType>) {
 }
 
 export function transpileTextMateGrammar() {
-  return obj(
+  return objectTransform(
     (
       file: Vinyl,
       _encoding: string,
-      callback: (err: string | null, file: Vinyl | PluginError) => void,
+      callback: (err?: Error | null, file?: Vinyl) => void,
     ): void => {
       if (file.isNull()) {
         callback(null, file);
@@ -266,7 +266,6 @@ export function transpileTextMateGrammar() {
         callback(null, file);
       } else {
         callback(
-          "error",
           new PluginError("transpileTextMateGrammar", "Format not supported."),
         );
       }
