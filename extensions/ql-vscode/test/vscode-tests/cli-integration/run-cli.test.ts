@@ -130,6 +130,8 @@ describe("Use cli", () => {
     },
   );
 
+  // Pin this pack because these tests exercise authentication, not registry compatibility.
+  // Remove the pin once every supported CLI can download the latest tutorial pack.
   describe("github authentication", () => {
     itWithCodeQL()(
       "should not use authentication if there are no credentials",
@@ -138,7 +140,7 @@ describe("Use cli", () => {
           .spyOn(authentication, "getSession")
           .mockResolvedValue(undefined);
 
-        await cli.packDownload(["codeql/tutorial"]);
+        await cli.packDownload(["codeql/tutorial@0.0.11"]);
         expect(getSession).toHaveBeenCalledTimes(1);
         expect(getSession).toHaveBeenCalledWith(
           "github",
@@ -165,7 +167,7 @@ describe("Use cli", () => {
             scopes: ["read:packages"],
           });
 
-        await cli.packDownload(["codeql/tutorial"]);
+        await cli.packDownload(["codeql/tutorial@0.0.11"]);
         expect(getSession).toHaveBeenCalledTimes(2);
         expect(getSession).toHaveBeenCalledWith(
           "github",
