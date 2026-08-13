@@ -138,7 +138,7 @@ describe("Use cli", () => {
           .spyOn(authentication, "getSession")
           .mockResolvedValue(undefined);
 
-        await cli.packDownload(["codeql/tutorial"]);
+        await cli.packDownload(["codeql/tutorial@0.0.11"]);
         expect(getSession).toHaveBeenCalledTimes(1);
         expect(getSession).toHaveBeenCalledWith(
           "github",
@@ -165,7 +165,7 @@ describe("Use cli", () => {
             scopes: ["read:packages"],
           });
 
-        await cli.packDownload(["codeql/tutorial"]);
+        await cli.packDownload(["codeql/tutorial@0.0.11"]);
         expect(getSession).toHaveBeenCalledTimes(2);
         expect(getSession).toHaveBeenCalledWith(
           "github",
