@@ -130,6 +130,8 @@ describe("Use cli", () => {
     },
   );
 
+  // Pin this pack because these tests exercise authentication, not registry compatibility.
+  // Remove the pin once every supported CLI can download the latest tutorial pack.
   describe("github authentication", () => {
     itWithCodeQL()(
       "should not use authentication if there are no credentials",
