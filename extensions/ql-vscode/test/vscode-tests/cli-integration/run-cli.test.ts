@@ -17,6 +17,7 @@ import { getActivatedExtension } from "../global.helper";
 import type { BaseLogger } from "../../../src/common/logging";
 import { getQlPackForDbscheme } from "../../../src/databases/qlpack";
 import { languageToDbScheme } from "../../../src/common/query-language";
+import { AUTHENTICATION_TEST_PACK } from "./pack-fixtures";
 
 /**
  * Perform proper integration tests by running the CLI
@@ -140,7 +141,7 @@ describe("Use cli", () => {
           .spyOn(authentication, "getSession")
           .mockResolvedValue(undefined);
 
-        await cli.packDownload(["codeql/tutorial@0.0.11"]);
+        await cli.packDownload([AUTHENTICATION_TEST_PACK]);
         expect(getSession).toHaveBeenCalledTimes(1);
         expect(getSession).toHaveBeenCalledWith(
           "github",
@@ -167,7 +168,7 @@ describe("Use cli", () => {
             scopes: ["read:packages"],
           });
 
-        await cli.packDownload(["codeql/tutorial@0.0.11"]);
+        await cli.packDownload([AUTHENTICATION_TEST_PACK]);
         expect(getSession).toHaveBeenCalledTimes(2);
         expect(getSession).toHaveBeenCalledWith(
           "github",
