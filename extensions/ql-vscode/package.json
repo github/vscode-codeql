@@ -2094,7 +2094,7 @@
     "source-map": "^0.7.6",
     "source-map-support": "^0.5.21",
     "stream-json": "^1.9.1",
-    "styled-components": "^6.4.1",
+    "styled-components": "^6.5.3",
     "tmp": "^0.2.7",
     "tmp-promise": "^3.0.2",
     "tree-kill": "^1.2.2",
