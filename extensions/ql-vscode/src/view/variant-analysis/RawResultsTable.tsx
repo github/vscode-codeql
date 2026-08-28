@@ -17,7 +17,7 @@ const TableContainer = styled.div<TableContainerProps>`
   // minimum width of 1fr is auto, not 0.
   // https://css-tricks.com/equal-width-columns-in-css-grid-are-kinda-weird/
   grid-template-columns: repeat(
-    ${(props) => props.$columnCount},
+    ${(props) => Number(props.$columnCount)},
     minmax(0, 1fr)
   );
   max-width: 45rem;
