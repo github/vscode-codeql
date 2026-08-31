@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- After an extension-managed CodeQL CLI update, the notification now offers to open the CLI release notes instead of the extension log. [#1095](https://github.com/github/vscode-codeql/issues/1095)
+
 ## 1.17.8 - 17 July 2026
 
 - Fix a bug where installing or updating the CodeQL CLI could hang indefinitely while extracting the downloaded archive. Extraction now reports an error if a file cannot be written, and aborts with a clear message if no progress is made within the download timeout (for example due to slow or networked storage, or security software). [#4455](https://github.com/github/vscode-codeql/pull/4455)

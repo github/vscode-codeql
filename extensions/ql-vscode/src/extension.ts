@@ -65,6 +65,7 @@ import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,
 } from "./common/vscode/dialog";
+import { offerCodeQlCliReleaseNotes } from "./codeql-cli/distribution/release-notes";
 import {
   asError,
   assertNever,
@@ -555,10 +556,9 @@ async function installOrUpdateDistributionWithProgressTitle(
         );
 
         await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
-        void showAndLogInformationMessage(
-          extLogger,
-          `CodeQL CLI updated to version "${result.updatedRelease.name}".`,
-        );
+        const updateMessage = `CodeQL CLI updated to version "${result.updatedRelease.name}".`;
+        void extLogger.log(updateMessage);
+        void offerCodeQlCliReleaseNotes(updateMessage);
       }
       break;
     default:
