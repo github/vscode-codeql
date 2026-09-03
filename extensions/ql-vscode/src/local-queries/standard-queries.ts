@@ -2,7 +2,7 @@ import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { QLPACK_FILENAMES, QLPACK_LOCK_FILENAMES } from "../common/ql";
 import { basename, dirname, resolve } from "path";
 import { extLogger } from "../common/logging/vscode";
-import { promises } from "fs-extra";
+import { pathExists, promises } from "fs-extra";
 import type { BaseLogger } from "../common/logging";
 
 type LockFileForStandardQueryResult = {
@@ -36,9 +36,14 @@ export async function createLockFileForStandardQuery(
     );
   }
   const packPath = dirname(packFilePath);
-  const lockFilePath = packContents.find((p) =>
-    QLPACK_LOCK_FILENAMES.includes(basename(p)),
-  );
+  let lockFilePath: string | undefined;
+  for (const lockFileName of QLPACK_LOCK_FILENAMES) {
+    const candidateLockFilePath = resolve(packPath, lockFileName);
+    if (await pathExists(candidateLockFilePath)) {
+      lockFilePath = candidateLockFilePath;
+      break;
+    }
+  }
 
   let cleanup: (() => Promise<void>) | undefined = undefined;
 

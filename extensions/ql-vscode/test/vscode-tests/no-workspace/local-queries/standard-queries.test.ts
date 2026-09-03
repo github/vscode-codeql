@@ -4,7 +4,7 @@ import type { DirectoryResult } from "tmp-promise";
 import { dir } from "tmp-promise";
 import { join } from "path";
 import { createLockFileForStandardQuery } from "../../../../src/local-queries/standard-queries";
-import { outputFile, pathExists } from "fs-extra";
+import { outputFile, pathExists, readFile } from "fs-extra";
 
 describe("createLockFileForStandardQuery", () => {
   let tmpDir: DirectoryResult;
@@ -41,37 +41,34 @@ describe("createLockFileForStandardQuery", () => {
   });
 
   describe("when the lock file exists", () => {
-    let lockfilePath: string;
+    it.each(["qlpack.lock.yml", "codeql-pack.lock.yml"])(
+      "does not resolve or install dependencies with %s",
+      async (lockFileName) => {
+        const lockFilePath = join(packPath, lockFileName);
+        const lockFileContents = `${lockFileName} contents`;
+        await outputFile(lockFilePath, lockFileContents);
 
-    beforeEach(async () => {
-      lockfilePath = join(packPath, "qlpack.lock.yml");
+        const { cleanup } = await createLockFileForStandardQuery(
+          mockCli,
+          queryPath,
+        );
 
-      packPacklist.mockResolvedValue([qlpackPath, lockfilePath, queryPath]);
-    });
-
-    it("does not resolve or install dependencies", async () => {
-      expect(await createLockFileForStandardQuery(mockCli, queryPath)).toEqual({
-        cleanup: undefined,
-      });
-
-      expect(packResolveDependencies).not.toHaveBeenCalled();
-      expect(clearCache).not.toHaveBeenCalled();
-      expect(packInstall).not.toHaveBeenCalled();
-    });
-
-    it("does not resolve or install dependencies with a codeql-pack.lock.yml", async () => {
-      lockfilePath = join(packPath, "codeql-pack.lock.yml");
-
-      packPacklist.mockResolvedValue([qlpackPath, lockfilePath, queryPath]);
-
-      expect(await createLockFileForStandardQuery(mockCli, queryPath)).toEqual({
-        cleanup: undefined,
-      });
-
-      expect(packResolveDependencies).not.toHaveBeenCalled();
-      expect(clearCache).not.toHaveBeenCalled();
-      expect(packInstall).not.toHaveBeenCalled();
-    });
+        expect({
+          cleanup,
+          packResolveDependenciesCallCount:
+            packResolveDependencies.mock.calls.length,
+          clearCacheCallCount: clearCache.mock.calls.length,
+          packInstallCallCount: packInstall.mock.calls.length,
+          lockFileContents: await readFile(lockFilePath, "utf8"),
+        }).toEqual({
+          cleanup: undefined,
+          packResolveDependenciesCallCount: 0,
+          clearCacheCallCount: 0,
+          packInstallCallCount: 0,
+          lockFileContents,
+        });
+      },
+    );
   });
 
   describe("when the lock file does not exist", () => {
