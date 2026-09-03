@@ -1,4 +1,4 @@
-import { ensureDir, writeFile, pathExists, readFile } from "fs-extra";
+import { writeFile, pathExists, readFile } from "fs-extra";
 import { dump, load } from "js-yaml";
 import { basename, join } from "path";
 import { window as Window, workspace, Uri } from "vscode";
@@ -11,27 +11,16 @@ import type { ProgressCallback } from "../common/vscode/progress";
 import { UserCancellationException } from "../common/vscode/progress";
 import { getErrorMessage } from "../common/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackFilePath } from "../common/ql";
-import type { App } from "../common/app";
 import type { ExtensionApp } from "../common/vscode/extension-app";
 import type { QlPackFile } from "../packaging/qlpack-file";
+import { getQuickQueriesDir } from "./quick-query-dir";
 
-const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";
 const QUICK_QUERY_WORKSPACE_FOLDER_NAME = "Quick Queries";
 const QLPACK_FILE_HEADER = "# This is an automatically generated file.\n\n";
 
 export function isQuickQueryPath(queryPath: string): boolean {
   return basename(queryPath) === QUICK_QUERY_QUERY_NAME;
-}
-
-async function getQuickQueriesDir(app: App): Promise<string> {
-  const storagePath = app.workspaceStoragePath;
-  if (storagePath === undefined) {
-    throw new Error("Workspace storage path is undefined");
-  }
-  const queriesPath = join(storagePath, QUICK_QUERIES_DIR_NAME);
-  await ensureDir(queriesPath, { mode: 0o700 });
-  return queriesPath;
 }
 
 function updateQuickQueryDir(queriesDir: string, index: number, len: number) {
