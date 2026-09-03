@@ -2068,7 +2068,7 @@
     "prepare": "cd ../.. && husky"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.27.19",
+    "@floating-ui/react": "^0.27.20",
     "@hpcc-js/wasm-graphviz": "^1.28.0",
     "@octokit/plugin-retry": "^8.1.1",
     "@octokit/plugin-throttling": "^11.0.5",
