@@ -1,4 +1,5 @@
 import { env, Uri, window } from "vscode";
+import type { MessageItem } from "vscode";
 import {
   codeQlCliReleaseNotesUrl,
   offerCodeQlCliReleaseNotes,
@@ -20,7 +21,7 @@ describe("offerCodeQlCliReleaseNotes", () => {
 
   it("opens the CLI changelog when the release-notes action is selected", async () => {
     showInformationMessageSpy.mockImplementationOnce((...args) =>
-      Promise.resolve(args[1]),
+      Promise.resolve(args[1] as MessageItem),
     );
 
     await offerCodeQlCliReleaseNotes(updateMessage);
