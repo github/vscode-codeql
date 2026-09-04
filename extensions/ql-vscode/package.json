@@ -2126,7 +2126,7 @@
     "@storybook/react-vite": "^10.5.10",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.6",
     "@types/cross-spawn": "^6.0.6",
     "@types/d3": "^7.4.0",
