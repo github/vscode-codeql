@@ -14,6 +14,10 @@ export async function sarifParser(
       ignore.withParserAsStream({
         // We don't need to run's `artifacts` property, nor the driver's `notifications` property.
         filter: /^runs\.\d+\.(artifacts|tool\.driver\.notifications)/,
+        // Allow the parser to keep reading past the first top-level JSON value instead of
+        // throwing on any trailing data. We only care about the first value (resolved via
+        // `onDone` below), so any trailing content is simply ignored.
+        jsonStreaming: true,
       }),
     );
 
