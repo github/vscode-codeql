@@ -27,6 +27,8 @@ const transformPackages = [
   "readdirp",
   "rettime",
   "robust-predicates",
+  "stream-chain",
+  "stream-json",
   "universal-user-agent",
   "until-async",
 ];
