@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 0 * * *'
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/cli-test.yml
       - extensions/ql-vscode/src/codeql-cli/**

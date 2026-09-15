@@ -38,6 +38,12 @@ import type {
 import type { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 import { getDataFolderFilePath } from "./utils";
+import {
+  getCompatiblePackLock,
+  getCompatiblePackSpec,
+  getCompatiblePackVersion,
+  QUICK_QUERY_PACK_DEPENDENCIES,
+} from "./pack-fixtures";
 
 const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
@@ -241,6 +247,16 @@ describeWithCodeQL()("Queries", () => {
 
   describe("quick query", () => {
     it("should create a quick query", async () => {
+      jest.spyOn(cli, "packInstall").mockImplementation(async () => {
+        await cli.packDownload(
+          QUICK_QUERY_PACK_DEPENDENCIES.map(getCompatiblePackSpec),
+        );
+        writeFileSync(
+          qlpackLockFile,
+          dump(getCompatiblePackLock(QUICK_QUERY_PACK_DEPENDENCIES)),
+        );
+      });
+
       await queryServerCommandManager.execute("codeQL.quickQuery");
 
       // should have created the quick query file and query pack file
@@ -256,8 +272,8 @@ describeWithCodeQL()("Queries", () => {
         ? qlpackLockFile
         : oldQlpackLockFile;
       const qlpackLock: any = await load(readFileSync(packFileToUse, "utf8"));
-      expect(!!qlpackLock.dependencies["codeql/javascript-all"].version).toBe(
-        true,
+      expect(qlpackLock.dependencies["codeql/javascript-all"].version).toBe(
+        getCompatiblePackVersion("codeql/javascript-all"),
       );
     });
 

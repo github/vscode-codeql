@@ -7,7 +7,7 @@ const StyledButton = styled.button<{ $size?: Size }>`
   color: var(--vscode-textLink-foreground);
   border: none;
   cursor: pointer;
-  font-size: ${(props) => props.$size ?? "1em"};
+  font-size: ${(props) => (props.$size ? `${props.$size}` : "1em")};
   padding: 0;
 `;
 

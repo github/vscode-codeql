@@ -18,6 +18,8 @@ import type {
 import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
 import { getOnDiskWorkspaceFolders } from "../../../../src/common/vscode/workspace-folders";
 import { pathsEqual } from "../../../../src/common/files";
+import { PACKS_BY_QUERY_LANGUAGE } from "../../../../src/common/query-language";
+import { useCompatiblePackDownloads } from "../pack-fixtures";
 
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
@@ -50,11 +52,15 @@ describe("Packaging commands", () => {
   });
 
   it("should download all core query packs", async () => {
+    const packDownloadSpy = useCompatiblePackDownloads(cli);
     quickPickSpy.mockResolvedValue(
       mockedQuickPickItem("Download all core query packs"),
     );
 
     await handleDownloadPacks(cli, progress);
+    expect(packDownloadSpy).toHaveBeenCalledWith(
+      Object.values(PACKS_BY_QUERY_LANGUAGE).flat(),
+    );
     expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
       expect.anything(),
@@ -63,12 +69,16 @@ describe("Packaging commands", () => {
   });
 
   it("should download valid user-specified pack", async () => {
+    const packDownloadSpy = useCompatiblePackDownloads(cli);
     quickPickSpy.mockResolvedValue(
       mockedQuickPickItem("Download custom specified pack"),
     );
     inputBoxSpy.mockResolvedValue("codeql/csharp-solorigate-queries");
 
     await handleDownloadPacks(cli, progress);
+    expect(packDownloadSpy).toHaveBeenCalledWith([
+      "codeql/csharp-solorigate-queries",
+    ]);
     expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
       expect.anything(),

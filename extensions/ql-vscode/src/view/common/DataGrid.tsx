@@ -13,7 +13,7 @@ import { styled } from "styled-components";
 
 const StyledDataGrid = styled.div<{ $gridTemplateColumns: string | number }>`
   display: grid;
-  grid-template-columns: ${(props) => props.$gridTemplateColumns};
+  grid-template-columns: ${(props) => `${props.$gridTemplateColumns}`};
   box-sizing: border-box;
   width: 100%;
   background: transparent;
