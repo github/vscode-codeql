@@ -1,9 +1,9 @@
-import { minVersion } from "semver";
-import { fetchJson } from "./fetch";
+import { minVersion, valid } from "semver";
+import { fetchJson, fetchText } from "./fetch";
 
 type VsCodePackageJson = {
-  devDependencies: {
-    electron: string;
+  devDependencies?: {
+    electron?: string;
   };
 };
 
@@ -13,6 +13,40 @@ async function getVsCodePackageJson(
   return await fetchJson(
     `https://raw.githubusercontent.com/microsoft/vscode/${version}/package.json`,
   );
+}
+
+async function getVsCodeNpmrc(version: string): Promise<string> {
+  return await fetchText(
+    `https://raw.githubusercontent.com/microsoft/vscode/${version}/.npmrc`,
+  );
+}
+
+export function parseElectronVersion(npmrc: string): string {
+  const electronVersion = /^target="([^"]+)"$/m.exec(npmrc)?.[1];
+  if (!electronVersion || !valid(electronVersion)) {
+    throw new Error(
+      "Could not find a valid Electron version in VS Code .npmrc",
+    );
+  }
+
+  return electronVersion;
+}
+
+async function getVsCodeElectronVersion(version: string): Promise<string> {
+  const packageJson = await getVsCodePackageJson(version);
+  const packageElectronVersion = packageJson.devDependencies?.electron;
+  if (packageElectronVersion) {
+    const electronVersion = minVersion(packageElectronVersion)?.version;
+    if (!electronVersion) {
+      throw new Error(
+        "Could not find a valid Electron version in VS Code package.json",
+      );
+    }
+
+    return electronVersion;
+  }
+
+  return parseElectronVersion(await getVsCodeNpmrc(version));
 }
 
 interface ElectronVersion {
@@ -44,13 +78,7 @@ type VersionInformation = {
 export async function getVersionInformation(
   vscodeVersion: string,
 ): Promise<VersionInformation> {
-  const vsCodePackageJson = await getVsCodePackageJson(vscodeVersion);
-  const electronVersion = minVersion(
-    vsCodePackageJson.devDependencies.electron,
-  )?.version;
-  if (!electronVersion) {
-    throw new Error("Could not find Electron version");
-  }
+  const electronVersion = await getVsCodeElectronVersion(vscodeVersion);
 
   const electronReleases = await getElectronReleases();
 
