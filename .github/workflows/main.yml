@@ -19,11 +19,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -50,7 +50,7 @@ jobs:
           cp dist/*.vsix artifacts
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: matrix.os == 'ubuntu-latest'
         with:
           name: vscode-codeql-extension
@@ -64,11 +64,11 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload ESLint results to Code Scanning
         if: "${{ !cancelled() && !startsWith(github.head_ref, 'dependabot/')}}"
-        uses: github/codeql-action/upload-sarif@main
+        uses: github/codeql-action/upload-sarif@14c568a92663d5bba4fc64d9a8d97c0e00e015a2 # main
         with:
           sarif_file: extensions/ql-vscode/build/eslint.sarif
           category: eslint
@@ -120,11 +120,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -172,11 +172,11 @@ jobs:
           }
 
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -206,11 +206,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -252,7 +252,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set the variable
         id: set-variable
         run: |
@@ -276,9 +276,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -297,7 +297,7 @@ jobs:
         shell: bash
 
       - name: Checkout QL
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: github/codeql
           ref: 'codeql-cli/${{ needs.get-latest-cli-version.outputs.cli-version }}'
