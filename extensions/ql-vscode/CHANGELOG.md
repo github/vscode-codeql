@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Fix Quick Query failing to start when no workspace is open.
 - After an extension-managed CodeQL CLI update, the notification now offers to open the CLI release notes instead of the extension log. [#1095](https://github.com/github/vscode-codeql/issues/1095)
 
 ## 1.17.8 - 17 July 2026
