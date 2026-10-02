@@ -1,6 +1,7 @@
 import Ajv from "ajv";
 
 import { load as loadYaml } from "js-yaml";
+import JSON5 from "json5";
 import { readFile } from "fs-extra";
 import type { Method } from "./method";
 import type {
@@ -461,7 +462,7 @@ function modelExtensionFileToJson(
 }`;
 }
 
-function deserializeToObject(contents: string, filename: string) {
+function deserializeToObject(contents: string, filename: string): unknown {
   const format = getFormatFromFileName(filename);
   switch (format) {
     case ExtensionFormat.Yaml:
@@ -469,7 +470,8 @@ function deserializeToObject(contents: string, filename: string) {
         filename,
       });
     case ExtensionFormat.Json:
-      throw new Error(`JSON format not supported yet`);
+      // Use a parser that can handle comments
+      return JSON5.parse(contents);
     default:
       assertNever(format);
   }
