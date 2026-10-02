@@ -1,19 +1,27 @@
-import { outputFile, readFile } from "fs-extra";
+import { outputFile } from "fs-extra";
 import type { Method } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { Mode } from "./shared/mode";
-import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
+import {
+  createDataExtensionFiles,
+  ExtensionFormat,
+  loadDataExtension,
+} from "./extension-serialization";
 import { join, relative } from "path";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { NotificationLogger } from "../common/logging";
 import { showAndLogErrorMessage } from "../common/logging";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { load as loadYaml } from "js-yaml";
 import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
 import type { QueryLanguage } from "../common/query-language";
 
-export const GENERATED_MODELS_SUFFIX = ".model.generated.yml";
+export const DEFAULT_EXTENSION_FORMAT_FOR_NEW_FILES = ExtensionFormat.Yaml;
+export const GENERATED_MODELS_EXTENSIONLESS_SUFFIX = ".model.generated";
+const GENERATED_MODELS_SUFFIXES = [
+  `${GENERATED_MODELS_EXTENSIONLESS_SUFFIX}.yml`,
+  `${GENERATED_MODELS_EXTENSIONLESS_SUFFIX}.json`,
+];
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
@@ -31,19 +39,20 @@ export async function saveModeledMethods(
     logger,
   );
 
-  const yamls = createDataExtensionYamls(
+  const extensionFiles = createDataExtensionFiles(
     language,
     methods,
     modeledMethods,
     existingModeledMethods,
     mode,
+    DEFAULT_EXTENSION_FORMAT_FOR_NEW_FILES,
   );
 
-  for (const [filename, yaml] of Object.entries(yamls)) {
-    await outputFile(join(extensionPack.path, filename), yaml);
+  for (const [filename, contents] of Object.entries(extensionFiles)) {
+    await outputFile(join(extensionPack.path, filename), contents);
   }
 
-  void logger.log(`Saved data extension YAML`);
+  void logger.log(`Saved data extension files`);
 }
 
 async function loadModeledMethodFiles(
@@ -51,7 +60,7 @@ async function loadModeledMethodFiles(
   language: QueryLanguage,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
-): Promise<Record<string, Record<string, ModeledMethod[]>>> {
+): Promise<Record<string, Record<string, readonly ModeledMethod[]>>> {
   const modelFiles = await listModelFiles(extensionPack.path, cliServer);
 
   const modeledMethodsByFile: Record<
@@ -60,17 +69,15 @@ async function loadModeledMethodFiles(
   > = {};
 
   for (const modelFile of modelFiles) {
-    const yaml = await readFile(join(extensionPack.path, modelFile), "utf8");
-
-    const data = loadYaml(yaml, {
-      filename: modelFile,
-    });
-
-    const modeledMethods = loadDataExtensionYaml(data, language);
+    const modeledMethods = await loadDataExtension(
+      extensionPack.path,
+      modelFile,
+      language,
+    );
     if (!modeledMethods) {
       void showAndLogErrorMessage(
         logger,
-        `Failed to parse data extension YAML ${modelFile}.`,
+        `Failed to parse data extension file ${modelFile}.`,
       );
       continue;
     }
@@ -107,6 +114,10 @@ export async function loadModeledMethods(
   return existingModeledMethods;
 }
 
+function isGeneratedExtension(filename: string): boolean {
+  return GENERATED_MODELS_SUFFIXES.some((suffix) => filename.endsWith(suffix));
+}
+
 export async function listModelFiles(
   extensionPackPath: string,
   cliServer: CodeQLCliServer,
@@ -121,7 +132,7 @@ export async function listModelFiles(
     if (pathsEqual(path, extensionPackPath)) {
       for (const extension of extensions) {
         // We never load generated models
-        if (extension.file.endsWith(GENERATED_MODELS_SUFFIX)) {
+        if (isGeneratedExtension(extension.file)) {
           continue;
         }
 
