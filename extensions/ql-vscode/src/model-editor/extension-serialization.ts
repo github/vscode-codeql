@@ -400,8 +400,7 @@ export function modelExtensionFileToString(
     case ExtensionFormat.Yaml:
       return modelExtensionFileToYaml(data, headerComment);
     case ExtensionFormat.Json:
-      // TODO: implement JSON serialization
-      return "<JSON placeholder>";
+      return modelExtensionFileToJson(data, headerComment);
     default:
       assertNever(format);
   }
@@ -430,6 +429,36 @@ function modelExtensionFileToYaml(
 
   return `${headerComment ? `# ${headerComment}\n\n` : ""}extensions:
 ${extensions.join("\n")}`;
+}
+
+function modelExtensionFileToJson(
+  data: ModelExtensionFile,
+  headerComment?: string,
+): string {
+  const extensions = data.extensions
+    .map((extension) => {
+      const data =
+        extension.data.length === 0
+          ? "[]"
+          : `[\n${extension.data
+              .map((row) => `        ${JSON.stringify(row)}`)
+              .join(",\n")}\n      ]`;
+
+      return `{
+      "addsTo": {
+        "pack": "${extension.addsTo.pack}",
+        "extensible": "${extension.addsTo.extensible}"
+      },
+      "data": ${data}
+    }`;
+    })
+    .filter((extensions) => extensions !== "");
+
+  return `${headerComment ? `// ${headerComment}\n\n` : ""}{
+  "extensions": [
+    ${extensions.join(",\n    ")}
+  ]
+}`;
 }
 
 function deserializeToObject(contents: string, filename: string) {

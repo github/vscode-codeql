@@ -935,7 +935,40 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
     data:
       - ["org.sql2o","Query","executeScalar","(Class)","summary","manual"]
 `,
-      "models/spring-boot.model.json": "<JSON placeholder>",
+      "models/spring-boot.model.json": `{
+  "extensions": [
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "sourceModel"
+      },
+      "data": []
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "sinkModel"
+      },
+      "data": []
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "summaryModel"
+      },
+      "data": []
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "neutralModel"
+      },
+      "data": [
+        ["org.springframework.boot","SpringApplication","run","(Class,String[])","summary","manual"]
+      ]
+    }
+  ]
+}`,
     });
   });
 });
@@ -1722,9 +1755,21 @@ extensions:
 `);
   });
   it("should return JSON", () => {
-    expect(
-      modelExtensionFileToString(modelExtensionFile, ExtensionFormat.Json),
-    ).toBe("<JSON placeholder>");
+    expect(modelExtensionFileToString(modelExtensionFile, ExtensionFormat.Json))
+      .toBe(`{
+  "extensions": [
+    {
+      "addsTo": {
+        "pack": "acme/super-pack",
+        "extensible": "fooModel"
+      },
+      "data": [
+        ["abc",123,true],
+        ["def",124,false]
+      ]
+    }
+  ]
+}`);
   });
   it("should return JSON with a header comment", () => {
     expect(
@@ -1733,6 +1778,21 @@ extensions:
         ExtensionFormat.Json,
         "Test header comment",
       ),
-    ).toBe("<JSON placeholder>");
+    ).toBe(`// Test header comment
+
+{
+  "extensions": [
+    {
+      "addsTo": {
+        "pack": "acme/super-pack",
+        "extensible": "fooModel"
+      },
+      "data": [
+        ["abc",123,true],
+        ["def",124,false]
+      ]
+    }
+  ]
+}`);
   });
 });
