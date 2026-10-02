@@ -68,7 +68,7 @@ import { ModelEvaluator } from "./model-evaluator";
 import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import type { ModelExtensionFile } from "./model-extension-file";
-import { modelExtensionFileToYaml } from "./yaml";
+import { modelExtensionFileToYaml } from "./extension-serialization";
 import { outputFile } from "fs-extra";
 import { join } from "path";
 

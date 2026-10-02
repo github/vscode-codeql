@@ -2,7 +2,10 @@ import { outputFile, readFile } from "fs-extra";
 import type { Method } from "./method";
 import type { ModeledMethod } from "./modeled-method";
 import type { Mode } from "./shared/mode";
-import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
+import {
+  createDataExtensionYamls,
+  loadDataExtensionYaml,
+} from "./extension-serialization";
 import { join, relative } from "path";
 import type { ExtensionPack } from "./shared/extension-pack";
 import type { NotificationLogger } from "../common/logging";

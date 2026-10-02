@@ -5,7 +5,7 @@ import {
   createFilenameForLibrary,
   createFilenameForPackage,
   loadDataExtensionYaml,
-} from "../../../src/model-editor/yaml";
+} from "../../../src/model-editor/extension-serialization";
 import type { Method } from "../../../src/model-editor/method";
 import {
   CallClassification,
