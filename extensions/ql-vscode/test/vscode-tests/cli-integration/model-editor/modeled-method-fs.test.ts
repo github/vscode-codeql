@@ -170,6 +170,7 @@ describe("modeled-method-fs", () => {
         "library1.model.yml",
         "library2.model.yml",
         "library.model.generated.yml",
+        "library2.model.generated.json",
       ]);
 
       const modelFiles = await listModelFiles(extensionPackPath, cli);

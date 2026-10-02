@@ -1,5 +1,7 @@
 import Ajv from "ajv";
 
+import { load as loadYaml } from "js-yaml";
+import { readFile } from "fs-extra";
 import type { Method } from "./method";
 import type {
   ModeledMethod,
@@ -24,9 +26,44 @@ import { createFilenameFromString } from "../common/filenames";
 import type { QueryLanguage } from "../common/query-language";
 
 import modelExtensionFileSchema from "./model-extension-file.schema.json";
+import { join } from "path";
 
 const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
 const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
+
+export enum ExtensionFormat {
+  Yaml,
+  Json,
+}
+
+export function getFileExtensionFromFormat(format: ExtensionFormat): string {
+  switch (format) {
+    case ExtensionFormat.Yaml:
+      return ".yml";
+    case ExtensionFormat.Json:
+      return ".json";
+    default:
+      assertNever(format);
+  }
+}
+
+function getFormatFromFileName(filename: string): ExtensionFormat {
+  // Since YAML was originally the only format, any file that doesn't end with ".json" is considered YAML.
+  return filename.endsWith(".json")
+    ? ExtensionFormat.Json
+    : ExtensionFormat.Yaml;
+}
+
+function stripExtension(filename: string): string {
+  if (filename.endsWith(".json")) {
+    return filename.slice(0, -5);
+  }
+  if (filename.endsWith(".yml")) {
+    return filename.slice(0, -4);
+  }
+  // It mustn't be a file created by this editor.
+  return filename;
+}
 
 function createExtensions<T>(
   language: QueryLanguage,
@@ -46,10 +83,11 @@ function createExtensions<T>(
   };
 }
 
-export function createDataExtensionYaml(
+export function createDataExtension(
   language: QueryLanguage,
   modeledMethods: readonly ModeledMethod[],
-) {
+  format: ExtensionFormat,
+): string {
   const modelsAsDataLanguage = getModelsAsDataLanguage(language);
 
   const methodsByType = {
@@ -129,10 +167,10 @@ export function createDataExtensionYaml(
       (extension): extension is ModelExtension => extension !== undefined,
     );
 
-  return modelExtensionFileToYaml({ extensions });
+  return modelExtensionFileToString({ extensions }, format);
 }
 
-export function createDataExtensionYamls(
+export function createDataExtensionFiles(
   language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
@@ -140,70 +178,93 @@ export function createDataExtensionYamls(
     Record<string, Record<string, readonly ModeledMethod[]>>
   >,
   mode: Mode,
-) {
+  formatForNewFiles: ExtensionFormat,
+): Record<string, string> {
   switch (mode) {
     case Mode.Application:
-      return createDataExtensionYamlsForApplicationMode(
+      return createDataExtensionFilesForApplicationMode(
         language,
         methods,
         newModeledMethods,
         existingModeledMethods,
+        formatForNewFiles,
       );
     case Mode.Framework:
-      return createDataExtensionYamlsForFrameworkMode(
+      return createDataExtensionFilesForFrameworkMode(
         language,
         methods,
         newModeledMethods,
         existingModeledMethods,
+        formatForNewFiles,
       );
     default:
       assertNever(mode);
   }
 }
 
-function createDataExtensionYamlsByGrouping(
+function createDataExtensionFilesByGrouping(
   language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   existingModeledMethods: Readonly<
     Record<string, Record<string, readonly ModeledMethod[]>>
   >,
-  createFilename: (method: Method) => string,
+  createExtensionlessFilename: (method: Method) => string,
+  formatForNewFiles: ExtensionFormat,
 ): Record<string, string> {
-  const actualFilenameByCanonicalFilename: Record<string, string> = {};
+  // Keyed by canonical filenames without their file extensions, mapping to the actual filenames
+  // with extensions. This allows us to preserve both the original capitalization of the filename
+  // and its format, if it's an existing file.
+  const actualFilenameByCanonicalExtensionlessFilename: Record<string, string> =
+    {};
 
-  const methodsByCanonicalFilename: Record<
+  const methodsByCanonicalExtensionlessFilename: Record<
     string,
     Record<string, ModeledMethod[]>
   > = {};
 
-  // We only want to generate a yaml file when it's a known external API usage
+  // We only want to generate a file when it's a known external API usage
   // and there are new modeled methods for it. This avoids us overwriting other
   // files that may contain data we don't know about.
   for (const method of methods) {
     if (method.signature in newModeledMethods) {
-      const filename = createFilename(method);
-      const canonicalFilename = canonicalizeFilename(filename);
+      const extensionlessFilename = createExtensionlessFilename(method);
+      const canonicalExtensionlessFilename = canonicalizeExtensionlessFilename(
+        extensionlessFilename,
+      );
+      const actualFilename =
+        extensionlessFilename + getFileExtensionFromFormat(formatForNewFiles);
 
-      methodsByCanonicalFilename[canonicalFilename] = {};
-      actualFilenameByCanonicalFilename[canonicalFilename] = filename;
+      methodsByCanonicalExtensionlessFilename[canonicalExtensionlessFilename] =
+        {};
+      actualFilenameByCanonicalExtensionlessFilename[
+        canonicalExtensionlessFilename
+      ] = actualFilename;
     }
   }
 
-  // First populate methodsByFilename with any existing modeled methods.
+  // First populate methodsByCanonicalExtensionlessFilename with any existing modeled methods.
   for (const [filename, methodsBySignature] of Object.entries(
     existingModeledMethods,
   )) {
-    const canonicalFilename = canonicalizeFilename(filename);
+    const canonicalExtensionlessFilename = canonicalizeExtensionlessFilename(
+      stripExtension(filename),
+    );
 
-    if (canonicalFilename in methodsByCanonicalFilename) {
+    if (
+      canonicalExtensionlessFilename in methodsByCanonicalExtensionlessFilename
+    ) {
       for (const [signature, methods] of Object.entries(methodsBySignature)) {
-        methodsByCanonicalFilename[canonicalFilename][signature] = [...methods];
+        methodsByCanonicalExtensionlessFilename[canonicalExtensionlessFilename][
+          signature
+        ] = [...methods];
       }
 
       // Ensure that if a file exists on disk, we use the same capitalization
       // as the original file.
-      actualFilenameByCanonicalFilename[canonicalFilename] = filename;
+      actualFilenameByCanonicalExtensionlessFilename[
+        canonicalExtensionlessFilename
+      ] = filename;
     }
   }
 
@@ -212,74 +273,84 @@ function createDataExtensionYamlsByGrouping(
   for (const method of methods) {
     const newMethods = newModeledMethods[method.signature];
     if (newMethods) {
-      const filename = createFilename(method);
-      const canonicalFilename = canonicalizeFilename(filename);
+      const extensionlessFilename = createExtensionlessFilename(method);
+      const canonicalExtensionlessFilename = canonicalizeExtensionlessFilename(
+        extensionlessFilename,
+      );
 
       // Override any existing modeled methods with the new ones.
-      methodsByCanonicalFilename[canonicalFilename][method.signature] = [
-        ...newMethods,
-      ];
+      methodsByCanonicalExtensionlessFilename[canonicalExtensionlessFilename][
+        method.signature
+      ] = [...newMethods];
     }
   }
 
   const result: Record<string, string> = {};
 
-  for (const [canonicalFilename, methods] of Object.entries(
-    methodsByCanonicalFilename,
+  for (const [canonicalExtensionlessFilename, methods] of Object.entries(
+    methodsByCanonicalExtensionlessFilename,
   )) {
-    result[actualFilenameByCanonicalFilename[canonicalFilename]] =
-      createDataExtensionYaml(
-        language,
-        Object.values(methods).flatMap((methods) => methods),
-      );
+    const actualFilename =
+      actualFilenameByCanonicalExtensionlessFilename[
+        canonicalExtensionlessFilename
+      ];
+    result[actualFilename] = createDataExtension(
+      language,
+      Object.values(methods).flatMap((methods) => methods),
+      getFormatFromFileName(actualFilename),
+    );
   }
 
   return result;
 }
 
-export function createDataExtensionYamlsForApplicationMode(
+export function createDataExtensionFilesForApplicationMode(
   language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   existingModeledMethods: Readonly<
     Record<string, Record<string, readonly ModeledMethod[]>>
   >,
+  formatForNewFiles: ExtensionFormat,
 ): Record<string, string> {
-  return createDataExtensionYamlsByGrouping(
+  return createDataExtensionFilesByGrouping(
     language,
     methods,
     newModeledMethods,
     existingModeledMethods,
-    (method) => createFilenameForLibrary(method.library),
+    (method) => createExtensionlessFilenameForLibrary(method.library),
+    formatForNewFiles,
   );
 }
 
-export function createDataExtensionYamlsForFrameworkMode(
+export function createDataExtensionFilesForFrameworkMode(
   language: QueryLanguage,
   methods: readonly Method[],
   newModeledMethods: Readonly<Record<string, readonly ModeledMethod[]>>,
   existingModeledMethods: Readonly<
     Record<string, Record<string, readonly ModeledMethod[]>>
   >,
+  formatForNewFiles: ExtensionFormat,
 ): Record<string, string> {
-  return createDataExtensionYamlsByGrouping(
+  return createDataExtensionFilesByGrouping(
     language,
     methods,
     newModeledMethods,
     existingModeledMethods,
-    (method) => createFilenameForPackage(method.packageName),
+    (method) => createExtensionlessFilenameForPackage(method.packageName),
+    formatForNewFiles,
   );
 }
 
-export function createFilenameForLibrary(
+export function createExtensionlessFilenameForLibrary(
   library: string,
   prefix = "models/",
   suffix = ".model",
 ) {
-  return `${prefix}${createFilenameFromString(library)}${suffix}.yml`;
+  return `${prefix}${createFilenameFromString(library)}${suffix}`;
 }
 
-export function createFilenameForPackage(
+export function createExtensionlessFilenameForPackage(
   packageName: string,
   prefix = "models/",
   suffix = ".model",
@@ -287,13 +358,13 @@ export function createFilenameForPackage(
   // A package name is e.g. `com.google.common.io` or `System.Net.Http.Headers`
   // We want to place these into `models/com.google.common.io.model.yml` and
   // `models/System.Net.Http.Headers.model.yml` respectively.
-  return `${prefix}${packageName}${suffix}.yml`;
+  return `${prefix}${packageName}${suffix}`;
 }
 
-function canonicalizeFilename(filename: string) {
+function canonicalizeExtensionlessFilename(filename: string) {
   // We want to canonicalize filenames so that they are always in the same format
   // for comparison purposes. This is important because we want to avoid overwriting
-  // data extension YAML files on case-insensitive file systems.
+  // data extension files on case-insensitive file systems.
   return filename.toLowerCase();
 }
 
@@ -302,7 +373,7 @@ function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
 
   if (modelExtensionFileSchemaValidate.errors) {
     throw new Error(
-      `Invalid data extension YAML: ${modelExtensionFileSchemaValidate.errors
+      `Invalid data extension file: ${modelExtensionFileSchemaValidate.errors
         .map((error) => `${error.instancePath} ${error.message}`)
         .join(", ")}`,
     );
@@ -312,14 +383,34 @@ function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
 }
 
 /**
- * Creates a string for the data extension YAML file from the
- * structure of the data extension file. This should be used
- * instead of creating a JSON string directly or dumping the
+ * Creates a string for the data extension file in the given format from the structure of the data
+ * extension file. This should be used instead of creating a JSON string directly or dumping the
  * YAML directly to ensure that the file is formatted correctly.
  *
  * @param data The data extension file
+ * @param format The format to serialize the data extension file to
+ * @param headerComment An optional header comment to include at the top of the file
  */
-export function modelExtensionFileToYaml(data: ModelExtensionFile) {
+export function modelExtensionFileToString(
+  data: ModelExtensionFile,
+  format: ExtensionFormat,
+  headerComment?: string,
+): string {
+  switch (format) {
+    case ExtensionFormat.Yaml:
+      return modelExtensionFileToYaml(data, headerComment);
+    case ExtensionFormat.Json:
+      // TODO: implement JSON serialization
+      return "<JSON placeholder>";
+    default:
+      assertNever(format);
+  }
+}
+
+function modelExtensionFileToYaml(
+  data: ModelExtensionFile,
+  headerComment?: string,
+): string {
   const extensions = data.extensions
     .map((extension) => {
       const data =
@@ -337,11 +428,46 @@ export function modelExtensionFileToYaml(data: ModelExtensionFile) {
     })
     .filter((extensions) => extensions !== "");
 
-  return `extensions:
+  return `${headerComment ? `# ${headerComment}\n\n` : ""}extensions:
 ${extensions.join("\n")}`;
 }
 
-export function loadDataExtensionYaml(
+function deserializeToObject(contents: string, filename: string) {
+  const format = getFormatFromFileName(filename);
+  switch (format) {
+    case ExtensionFormat.Yaml:
+      return loadYaml(contents, {
+        filename,
+      });
+    case ExtensionFormat.Json:
+      throw new Error(`JSON format not supported yet`);
+    default:
+      assertNever(format);
+  }
+}
+
+export async function loadDataExtension(
+  extensionPackPath: string,
+  filename: string,
+  language: QueryLanguage,
+): Promise<Record<string, ModeledMethod[]> | undefined> {
+  const fileContents = await readFile(
+    join(extensionPackPath, filename),
+    "utf8",
+  );
+  return loadDataExtensionFromString(fileContents, filename, language);
+}
+
+export function loadDataExtensionFromString(
+  fileContents: string,
+  filename: string,
+  language: QueryLanguage,
+): Record<string, ModeledMethod[]> | undefined {
+  const data = deserializeToObject(fileContents, filename);
+  return loadDataExtensionFromObject(data, language);
+}
+
+export function loadDataExtensionFromObject(
   data: unknown,
   language: QueryLanguage,
 ): Record<string, ModeledMethod[]> | undefined {
