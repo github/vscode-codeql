@@ -1616,6 +1616,84 @@ describe("loadDataExtensionFromString", () => {
       ],
     } satisfies Record<string, ModeledMethod[]>);
   });
+  it("loads from a JSON string", () => {
+    const data = loadDataExtensionFromString(
+      `// Header comment
+{
+  "extensions": [
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "sourceModel"
+      },
+      "data": []
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "sinkModel"
+      },
+      /* Multi-
+       * line
+       * comment
+       */
+      "data": [
+        ["org.sql2o", "Connection", true, "createQuery", "(String)", "", "Argument[0]", "sql", "manual"],
+        ["com.github", "CodeQL", true, "doThing", "(int,int)", "", "Argument[1]", "foo", "df-generated"]
+      ]
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "summaryModel"
+      },
+      "data": []
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "neutralModel"
+      },
+      "data": []
+    }
+  ]
+}
+`,
+      "test.model.json",
+      QueryLanguage.Java,
+    );
+
+    expect(data).toEqual({
+      "org.sql2o.Connection#createQuery(String)": [
+        {
+          input: "Argument[0]",
+          kind: "sql",
+          type: "sink",
+          provenance: "manual",
+          signature: "org.sql2o.Connection#createQuery(String)",
+          endpointType: EndpointType.Method,
+          packageName: "org.sql2o",
+          typeName: "Connection",
+          methodName: "createQuery",
+          methodParameters: "(String)",
+        },
+      ],
+      "com.github.CodeQL#doThing(int,int)": [
+        {
+          input: "Argument[1]",
+          kind: "foo",
+          type: "sink",
+          provenance: "df-generated",
+          signature: "com.github.CodeQL#doThing(int,int)",
+          endpointType: EndpointType.Method,
+          packageName: "com.github",
+          typeName: "CodeQL",
+          methodName: "doThing",
+          methodParameters: "(int,int)",
+        },
+      ],
+    } satisfies Record<string, ModeledMethod[]>);
+  });
 
   it("returns undefined if given a string", () => {
     expect(() =>
