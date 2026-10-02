@@ -42,7 +42,8 @@ import type { ExtensionPack } from "./shared/extension-pack";
 import type { ModelConfigListener } from "../config";
 import { Mode } from "./shared/mode";
 import {
-  GENERATED_MODELS_SUFFIX,
+  DEFAULT_EXTENSION_FORMAT_FOR_NEW_FILES,
+  GENERATED_MODELS_EXTENSIONLESS_SUFFIX,
   loadModeledMethods,
   saveModeledMethods,
 } from "./modeled-method-fs";
@@ -68,7 +69,10 @@ import { ModelEvaluator } from "./model-evaluator";
 import type { ModelEvaluationRunState } from "./shared/model-evaluation-run-state";
 import type { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import type { ModelExtensionFile } from "./model-extension-file";
-import { modelExtensionFileToYaml } from "./extension-serialization";
+import {
+  getFileExtensionFromFormat,
+  modelExtensionFileToString,
+} from "./extension-serialization";
 import { outputFile } from "fs-extra";
 import { join } from "path";
 
@@ -751,11 +755,17 @@ export class ModelEditorView extends AbstractWebview<
             message: "Saving generated models",
           });
 
-          const fileContents = `# This file was automatically generated from ${this.databaseItem.name}. Manual changes will not persist.\n\n${modelExtensionFileToYaml(extensionFile)}`;
+          const headerComment = `This file was automatically generated from ${this.databaseItem.name}. Manual changes will not persist.`;
+          const format = DEFAULT_EXTENSION_FORMAT_FOR_NEW_FILES;
+          const fileContents = modelExtensionFileToString(
+            extensionFile,
+            format,
+            headerComment,
+          );
           const filePath = join(
             this.extensionPack.path,
             "models",
-            `${this.language}${GENERATED_MODELS_SUFFIX}`,
+            `${this.language}${GENERATED_MODELS_EXTENSIONLESS_SUFFIX}${getFileExtensionFromFormat(format)}`,
           );
 
           await outputFile(filePath, fileContents);
