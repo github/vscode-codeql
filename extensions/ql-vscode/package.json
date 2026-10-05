@@ -2105,7 +2105,7 @@
     "zip-a-folder": "^4.0.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.6",
+    "@babel/core": "^8.0.6",
     "@babel/plugin-transform-modules-commonjs": "^8.0.1",
     "@babel/preset-env": "^8.0.5",
     "@babel/preset-react": "^7.27.1",
@@ -2153,6 +2153,7 @@
     "@vscode/vsce": "^4.0.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.9.8",
+    "babel-jest": "30.2.0",
     "cosmiconfig": "^9.0.0",
     "cross-env": "^10.1.0",
     "cross-spawn": "^7.0.6",
