@@ -6,7 +6,7 @@
     "module": "nodenext",
     "target": "es2021",
     "outDir": "out",
-    "lib": ["ES2021"],
+    "lib": ["ES2021", "ES2022.Error"],
     "moduleResolution": "nodenext",
     "sourceMap": true,
     "rootDir": "src",

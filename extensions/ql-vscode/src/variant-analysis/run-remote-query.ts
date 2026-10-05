@@ -390,12 +390,15 @@ async function getControllerRepoFromApi(
     };
   } catch (e) {
     if ((e as RequestError).status === 404) {
-      throw new Error(`Controller repository "${owner}/${repo}" not found`);
+      throw new Error(`Controller repository "${owner}/${repo}" not found`, {
+        cause: e,
+      });
     } else {
       throw new Error(
         `Error getting controller repository "${owner}/${repo}": ${getErrorMessage(
           e,
         )}`,
+        { cause: e },
       );
     }
   }

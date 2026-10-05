@@ -39,7 +39,7 @@ describe("errorMessage", () => {
       fail("Expected an error to be thrown");
     } catch (e) {
       if (!(e instanceof Error)) {
-        throw new Error("Expected an Error to be thrown");
+        throw new Error("Expected an Error to be thrown", { cause: e });
       }
 
       error = e;

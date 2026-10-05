@@ -65,6 +65,7 @@ export async function sarifParser(
   } catch (e) {
     throw new Error(
       `Parsing output of interpretation failed: ${getErrorMessage(e)}`,
+      { cause: e },
     );
   }
 }

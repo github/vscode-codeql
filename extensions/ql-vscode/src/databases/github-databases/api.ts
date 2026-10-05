@@ -168,7 +168,7 @@ export async function convertGithubNwoToDatabaseUrl(
     };
   } catch (e) {
     void extLogger.log(`Error: ${getErrorMessage(e)}`);
-    throw new Error(`Unable to get database for '${nwo}'`);
+    throw new Error(`Unable to get database for '${nwo}'`, { cause: e });
   }
 }
 

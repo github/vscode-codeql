@@ -359,17 +359,13 @@ class JoinOrderScanner {
       dependentPredicateSizes = dependentPredicates
         .map((pred): [string, number] => {
           // A base case cannot contain a `prev_delta`, but it can contain a `cur_delta`.
-          let size = 0;
-          if (pred.endsWith("#cur_delta")) {
-            size = this.curDeltaSizes(
-              event,
-              pred.slice(0, -"#cur_delta".length),
-              iteration,
-            );
-          } else {
-            const hash = event.dependencies[pred];
-            size = this.predicateSizes.get(hash)!;
-          }
+          const size = pred.endsWith("#cur_delta")
+            ? this.curDeltaSizes(
+                event,
+                pred.slice(0, -"#cur_delta".length),
+                iteration,
+              )
+            : this.predicateSizes.get(event.dependencies[pred])!;
           return [pred, size];
         })
         .reduce((acc, [pred, size]) => acc.set(pred, size), new Map());

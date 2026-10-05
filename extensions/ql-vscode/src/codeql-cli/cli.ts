@@ -810,6 +810,7 @@ export class CodeQLCliServer implements Disposable {
       } catch (err) {
         throw new Error(
           `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
+          { cause: err },
         );
       }
     }
@@ -909,6 +910,7 @@ export class CodeQLCliServer implements Disposable {
     } catch (err) {
       throw new Error(
         `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
+        { cause: err },
       );
     }
   }
@@ -1416,6 +1418,7 @@ export class CodeQLCliServer implements Disposable {
     } catch (err) {
       throw new Error(
         `Reading output of interpretation failed: ${getErrorMessage(err)}`,
+        { cause: err },
       );
     }
   }

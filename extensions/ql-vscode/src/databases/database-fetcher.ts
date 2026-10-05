@@ -299,6 +299,7 @@ export class DatabaseFetcher {
       if (getErrorMessage(e).includes("unexpected end of file")) {
         throw new Error(
           "Database is corrupt or too large. Try unzipping outside of VS Code and importing the unzipped folder instead.",
+          { cause: e },
         );
       } else {
         // delegate
