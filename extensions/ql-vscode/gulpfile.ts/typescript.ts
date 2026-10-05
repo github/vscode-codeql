@@ -5,6 +5,7 @@ import type { reporter } from "gulp-typescript";
 import { createProject } from "gulp-typescript";
 import del from "del";
 import { pipeline } from "stream/promises";
+import { mkdir } from "fs/promises";
 
 export function goodReporter(): reporter.Reporter {
   return {
@@ -89,8 +90,12 @@ function copyNativeAddonFiles() {
   // the size of the extension. Windows x64 is the most common platform that requires short path
   // expansion, so we only include this platform.
   // See src/common/short-paths.ts
+  if (process.platform !== "win32") {
+    return mkdir("out/koffi/win32_x64", { recursive: true });
+  }
+
   return pipeline(
-    src("node_modules/koffi/build/koffi/win32_x64/*.node", {
+    src("node_modules/@koromix/koffi-win32-x64/win32_x64/*.node", {
       encoding: false,
     }),
     dest("out/koffi/win32_x64"),

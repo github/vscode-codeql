@@ -44,14 +44,15 @@ jobs:
         shell: bash
 
       - name: Prepare artifacts
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
           mkdir artifacts
           cp dist/*.vsix artifacts
 
       - name: Upload artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
         with:
           name: vscode-codeql-extension
           path: artifacts
