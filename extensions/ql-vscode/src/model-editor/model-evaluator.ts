@@ -209,7 +209,7 @@ export class ModelEvaluator extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<number | void> {
-    let result: number | void = undefined;
+    let result: number | void;
     try {
       // Use Promise.race to make sure to stop the variant analysis processing when the
       // user has stopped the evaluation run. We can't simply rely on the cancellation token

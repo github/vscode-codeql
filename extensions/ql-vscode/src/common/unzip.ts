@@ -259,6 +259,7 @@ export async function unzipToDirectory(
           `Timed out while extracting archive: no progress was made for ${timeoutSeconds} seconds. ` +
             "This can happen if a file cannot be written, for example because of slow or networked storage, " +
             "or security software holding a file open.",
+          { cause: e },
         );
       }
       throw e;
