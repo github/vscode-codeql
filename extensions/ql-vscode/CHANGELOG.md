@@ -5,6 +5,7 @@
 - After an extension-managed CodeQL CLI update, the notification now offers to open the CLI release notes instead of the extension log. [#1095](https://github.com/github/vscode-codeql/issues/1095)
 - Remove support for CodeQL CLI versions older than 2.24.3. [#4573](https://github.com/github/vscode-codeql/pull/4573)
 - Add support to the model editor for saving and loading JSON data extensions. [#4576](https://github.com/github/vscode-codeql/pull/4576)
+- Update the model editor to save new data extension files in JSON format. [#4583](https://github.com/github/vscode-codeql/pull/4583)
 
 ## 1.17.8 - 17 July 2026
 
