@@ -31,12 +31,12 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "env": {
         "LANG": "en-US",
-        "TZ": "UTC",
-        "NODE_OPTIONS": "--no-experimental-strip-types"
+        "TZ": "UTC"
       },
       "args": [
         "--projects",
@@ -52,12 +52,12 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "env": {
         "LANG": "en-US",
-        "TZ": "UTC",
-        "NODE_OPTIONS": "--no-experimental-strip-types"
+        "TZ": "UTC"
       },
       "args": [
         "--projects",
@@ -77,11 +77,9 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
-      "env": {
-        "NODE_OPTIONS": "--no-experimental-strip-types"
-      },
       "args": [
         "--projects",
         "src/view"
@@ -96,11 +94,9 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
-      "env": {
-        "NODE_OPTIONS": "--no-experimental-strip-types"
-      },
       "args": [
         "--projects",
         "test/vscode-tests/no-workspace"
@@ -115,11 +111,9 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
-      "env": {
-        "NODE_OPTIONS": "--no-experimental-strip-types"
-      },
       "args": [
         "--projects",
         "test/vscode-tests/minimal-workspace"
@@ -134,6 +128,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
@@ -141,7 +136,6 @@
         "test/vscode-tests/cli-integration"
       ],
       "env": {
-        "NODE_OPTIONS": "--no-experimental-strip-types",
         // Optionally, set the version to use for the integration tests.
         // Use "nightly" to use the latest nightly build.
         // "CLI_VERSION": "2.7.0",
