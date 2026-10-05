@@ -2,7 +2,7 @@ import { arch, platform } from "os";
 import { basename, dirname, join, normalize, resolve } from "path";
 import { lstat, readdir } from "fs/promises";
 import type { BaseLogger } from "./logging";
-import type { KoffiFunction } from "koffi";
+import type { LibraryHandle } from "koffi";
 import { getErrorMessage } from "./helpers-pure";
 
 /**
@@ -134,7 +134,7 @@ async function expandShortPathRecursive(
   return join(dir, longBase);
 }
 
-let GetLongPathNameW: KoffiFunction | undefined;
+let GetLongPathNameW: ReturnType<LibraryHandle["func"]> | undefined;
 
 async function expandShortPathNative(shortPath: string, logger: BaseLogger) {
   if (platform() !== "win32") {
