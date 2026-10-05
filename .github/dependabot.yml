@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "extensions/ql-vscode"
     cooldown:
-      default-days: 3
+      default-days: 7
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
@@ -35,7 +35,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     cooldown:
-      default-days: 3
+      default-days: 7
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
@@ -48,7 +48,7 @@ updates:
   - package-ecosystem: docker
     directory: "extensions/ql-vscode/test/e2e/docker"
     cooldown:
-      default-days: 3
+      default-days: 7
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
