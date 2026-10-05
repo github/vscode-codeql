@@ -200,7 +200,7 @@ async function writeExtensionPack(
     extensionTargets: {
       [`codeql/${language}-all`]: "*",
     },
-    dataExtensions: ["models/**/*.yml"],
+    dataExtensions: ["models/**/*.json", "models/**/*.yml"],
   };
 
   await outputFile(

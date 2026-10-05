@@ -179,7 +179,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
@@ -204,7 +204,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
   });
 
@@ -234,7 +234,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
@@ -253,7 +253,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
   });
 
@@ -283,7 +283,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
@@ -302,7 +302,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
   });
 
@@ -341,7 +341,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
@@ -360,7 +360,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
   });
 
@@ -397,7 +397,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
@@ -416,7 +416,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
   });
 
@@ -478,7 +478,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(modelConfig.getPackLocation).toHaveBeenCalledWith("java", {
@@ -497,7 +497,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     });
   });
 
@@ -600,7 +600,7 @@ describe("pickExtensionPack", () => {
         extensionTargets: {
           "codeql/java-all": "*",
         },
-        dataExtensions: ["models/**/*.yml"],
+        dataExtensions: ["models/**/*.json", "models/**/*.yml"],
       }),
     );
 
@@ -722,7 +722,7 @@ describe("pickExtensionPack", () => {
         extensionTargets: {
           "codeql/java-all": "*",
         },
-        dataExtensions: "models/**/*.yml",
+        dataExtensions: ["models/**/*.json", "models/**/*.yml"],
       }),
     );
     await outputFile(
@@ -741,7 +741,7 @@ describe("pickExtensionPack", () => {
       extensionTargets: {
         "codeql/java-all": "*",
       },
-      dataExtensions: ["models/**/*.yml"],
+      dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     };
 
     expect(
@@ -778,7 +778,7 @@ async function createMockExtensionPack(
     extensionTargets: {
       "codeql/java-all": "*",
     },
-    dataExtensions: ["models/**/*.yml"],
+    dataExtensions: ["models/**/*.json", "models/**/*.yml"],
     ...data,
   };
 
