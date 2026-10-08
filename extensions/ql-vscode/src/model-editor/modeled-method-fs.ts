@@ -16,7 +16,7 @@ import type { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathsEqual } from "../common/files";
 import type { QueryLanguage } from "../common/query-language";
 
-export const DEFAULT_EXTENSION_FORMAT_FOR_NEW_FILES = ExtensionFormat.Yaml;
+export const DEFAULT_EXTENSION_FORMAT_FOR_NEW_FILES = ExtensionFormat.Json;
 export const GENERATED_MODELS_EXTENSIONLESS_SUFFIX = ".model.generated";
 const GENERATED_MODELS_SUFFIXES = [
   `${GENERATED_MODELS_EXTENSIONLESS_SUFFIX}.yml`,

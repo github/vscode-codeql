@@ -21,10 +21,11 @@ library: true
 extensionTargets:
   codeql/java-all: '*'
 dataExtensions:
+  - models/**/*.json
   - models/**/*.yml
 `;
 
-const dummyModelContents = `
+const dummyModelYamlContents = `
 extensions:
   - addsTo:
       pack: codeql/java-all
@@ -46,6 +47,43 @@ extensions:
       pack: codeql/java-all
       extensible: neutralModel
     data: []
+`;
+
+const dummyModelJsonContents = `
+{
+  "extensions": [
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "sourceModel"
+      },
+      "data": []
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "sinkModel"
+      },
+      "data": [
+        ["com.example.foo", "Client", true, "getSomething", "()", "", "Argument[this]", "sql", "manual"]
+      ]
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "summaryModel"
+      },
+      "data": []
+    },
+    {
+      "addsTo": {
+        "pack": "codeql/java-all",
+        "extensible": "neutralModel"
+      },
+      "data": []
+    }
+  ]
+}
 `;
 
 describe("modeled-method-fs", () => {
@@ -121,6 +159,9 @@ describe("modeled-method-fs", () => {
 
     mkdirSync(join(extensionPackPath, "models"));
     for (const filename of modelFileNames) {
+      const dummyModelContents = filename.endsWith(".json")
+        ? dummyModelJsonContents
+        : dummyModelYamlContents;
       writeFileSync(
         join(extensionPackPath, "models", filename),
         dummyModelContents,
@@ -154,6 +195,7 @@ describe("modeled-method-fs", () => {
       const extensionPackPath = writeExtensionPackFiles("extension-pack", [
         "library1.model.yml",
         "library2.model.yml",
+        "library3.model.json",
       ]);
 
       const modelFiles = await listModelFiles(extensionPackPath, cli);
@@ -161,6 +203,7 @@ describe("modeled-method-fs", () => {
         new Set([
           join("models", "library1.model.yml"),
           join("models", "library2.model.yml"),
+          join("models", "library3.model.json"),
         ]),
       );
     });
@@ -199,6 +242,7 @@ describe("modeled-method-fs", () => {
     it("should load modeled methods", async () => {
       const extensionPackPath = writeExtensionPackFiles("extension-pack", [
         "library.model.yml",
+        "library2.model.json",
       ]);
 
       const modeledMethods = await loadModeledMethods(
@@ -208,9 +252,12 @@ describe("modeled-method-fs", () => {
         extLogger,
       );
 
-      expect(Object.keys(modeledMethods).length).toEqual(1);
+      expect(Object.keys(modeledMethods).length).toEqual(2);
       expect(Object.keys(modeledMethods)[0]).toEqual(
         "org.eclipse.jetty.server.Server#getConnectors()",
+      );
+      expect(Object.keys(modeledMethods)[1]).toEqual(
+        "com.example.foo.Client#getSomething()",
       );
     });
   });
