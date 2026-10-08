@@ -111,7 +111,8 @@ export enum AutoModelGenerationType {
    */
   Disabled = "disabled",
   /**
-   * The models are generated to a separate file (suffixed with .model.generated.yml).
+   * The models are generated to a separate file (suffixed with .model.generated.yml or
+   * .model.generated.json).
    */
   SeparateFile = "separateFile",
   /**
