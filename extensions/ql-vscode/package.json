@@ -812,6 +812,18 @@
         "title": "CodeQL: View CFG"
       },
       {
+        "command": "codeQL.viewDfg",
+        "title": "CodeQL: View DFG"
+      },
+      {
+        "command": "codeQL.viewDfgContextExplorer",
+        "title": "CodeQL: View DFG"
+      },
+      {
+        "command": "codeQL.viewDfgContextEditor",
+        "title": "CodeQL: View DFG"
+      },
+      {
         "command": "codeQL.upgradeCurrentDatabase",
         "title": "CodeQL: Upgrade Current Database"
       },
@@ -1407,6 +1419,11 @@
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
+          "command": "codeQL.viewDfgContextExplorer",
+          "group": "9_qlCommands",
+          "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
+        },
+        {
           "command": "codeQL.runQueries",
           "group": "9_qlCommands",
           "when": "resourceScheme != codeql-zip-archive"
@@ -1617,6 +1634,18 @@
         },
         {
           "command": "codeQL.viewCfgContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.viewDfg",
+          "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
+        },
+        {
+          "command": "codeQL.viewDfgContextExplorer",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.viewDfgContextEditor",
           "when": "false"
         },
         {
@@ -1912,6 +1941,10 @@
         },
         {
           "command": "codeQL.viewCfgContextEditor",
+          "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
+        },
+        {
+          "command": "codeQL.viewDfgContextEditor",
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {

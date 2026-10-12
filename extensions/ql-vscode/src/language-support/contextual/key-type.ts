@@ -3,6 +3,7 @@ export enum KeyType {
   ReferenceQuery = "ReferenceQuery",
   PrintAstQuery = "PrintAstQuery",
   PrintCfgQuery = "PrintCfgQuery",
+  PrintDfgQuery = "PrintDfgQuery",
 }
 
 export function tagOfKeyType(keyType: KeyType): string {
@@ -15,6 +16,8 @@ export function tagOfKeyType(keyType: KeyType): string {
       return "ide-contextual-queries/print-ast";
     case KeyType.PrintCfgQuery:
       return "ide-contextual-queries/print-cfg";
+    case KeyType.PrintDfgQuery:
+      return "ide-contextual-queries/print-dfg";
   }
 }
 
@@ -28,6 +31,8 @@ export function nameOfKeyType(keyType: KeyType): string {
       return "print AST";
     case KeyType.PrintCfgQuery:
       return "print CFG";
+    case KeyType.PrintDfgQuery:
+      return "print DFG";
   }
 }
 
@@ -38,6 +43,7 @@ export function kindOfKeyType(keyType: KeyType): string {
       return "definitions";
     case KeyType.PrintAstQuery:
     case KeyType.PrintCfgQuery:
+    case KeyType.PrintDfgQuery:
       return "graph";
   }
 }
