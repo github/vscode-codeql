@@ -1,4 +1,3 @@
-import type { ChangeEvent } from "react";
 import { styled } from "styled-components";
 import { VscodeButton, VscodeTextfield } from "@vscode-elements/react-elements";
 import { Codicon } from "../common";
@@ -60,10 +59,11 @@ export function RenamingInput(props: RenamingInputProps) {
           <Input
             value={renaming.pattern}
             placeholder="Pattern"
-            onInput={(e: ChangeEvent<HTMLInputElement>) => {
+            onInput={(e: InputEvent) => {
+              const target = e.target as HTMLInputElement;
               const newRenamings = [...renamings];
               newRenamings[index] = new Renaming(
-                e.target.value,
+                target.value,
                 renaming.replacement,
               );
               setRenamings(newRenamings);
@@ -74,11 +74,12 @@ export function RenamingInput(props: RenamingInputProps) {
           <Input
             value={renaming.replacement}
             placeholder="Replacement"
-            onInput={(e: ChangeEvent<HTMLInputElement>) => {
+            onInput={(e: InputEvent) => {
+              const target = e.target as HTMLInputElement;
               const newRenamings = [...renamings];
               newRenamings[index] = new Renaming(
                 renaming.pattern,
-                e.target.value,
+                target.value,
               );
               setRenamings(newRenamings);
             }}

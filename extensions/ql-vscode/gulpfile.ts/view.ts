@@ -1,12 +1,9 @@
 import { dest, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
-import { createProject } from "gulp-typescript";
-import { goodReporter } from "./typescript";
+import { runTypeScriptCheck } from "./typescript";
 
 import { pipeline } from "stream/promises";
 import chromiumVersion from "./chromium-version.json";
-
-const tsProject = createProject("src/view/tsconfig.json");
 
 export function compileViewEsbuild() {
   return pipeline(
@@ -33,9 +30,7 @@ export function watchViewEsbuild() {
 }
 
 export function checkViewTypeScript() {
-  // This doesn't actually output the TypeScript files, it just
-  // runs the TypeScript compiler and reports any errors.
-  return tsProject.src().pipe(tsProject(goodReporter()));
+  return runTypeScriptCheck("src/view/tsconfig.json");
 }
 
 export function watchViewCheckTypeScript() {
