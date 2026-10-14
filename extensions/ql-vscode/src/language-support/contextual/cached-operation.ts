@@ -77,6 +77,10 @@ export class CachedOperation<S extends unknown[], U> {
     }
   }
 
+  has(t: string): boolean {
+    return this.cached.has(t);
+  }
+
   reset() {
     this.cached.clear();
     this.lru.length = 0;
