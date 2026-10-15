@@ -5,7 +5,7 @@ import {
 } from "../../../../src/local-queries/skeleton-query-wizard";
 import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
 import type { DirResult } from "tmp";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import type { MessageItem, TextDocument, WorkspaceFolder } from "vscode";
 import { Uri, window, workspace } from "vscode";
 import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";

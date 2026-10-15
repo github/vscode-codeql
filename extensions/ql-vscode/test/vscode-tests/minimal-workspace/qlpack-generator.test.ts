@@ -6,7 +6,7 @@ import type { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { Uri, workspace } from "vscode";
 import { getErrorMessage } from "../../../src/common/helpers-pure";
 import type { DirResult } from "tmp";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import { mockedObject } from "../utils/mocking.helpers";
 import { ensureDir, readFile } from "fs-extra";
 import { load } from "js-yaml";

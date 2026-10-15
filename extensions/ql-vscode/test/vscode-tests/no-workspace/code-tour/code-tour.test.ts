@@ -1,7 +1,7 @@
 import type { WorkspaceFolder } from "vscode";
 import { Uri, window, workspace } from "vscode";
 import type { DirResult } from "tmp";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import { join } from "path";
 import { mkdir, writeFile } from "fs-extra";
 
