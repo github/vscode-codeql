@@ -11,7 +11,7 @@ import { join } from "path";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { homedir, tmpdir } from "os";
 import { mkdir, rm } from "fs-extra";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 import { QueryLanguage } from "../../../../src/common/query-language";
 
 const dummyExtensionPackContents = `
@@ -68,7 +68,10 @@ describe("modeled-method-fs", () => {
       process.platform === "win32"
         ? join(homedir(), "AppData", "Local", "Temp")
         : tmpdir();
-    tmpDir = join(systemTmpDir, `codeql-vscode-test-${nanoid(8)}`);
+    tmpDir = join(
+      systemTmpDir,
+      `codeql-vscode-test-${randomUUID().slice(0, 8)}`,
+    );
     await mkdir(tmpDir, { recursive: true });
     tmpDirRemoveCallback = async () => {
       await rm(tmpDir, { recursive: true });
