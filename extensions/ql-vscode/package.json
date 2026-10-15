@@ -2167,7 +2167,6 @@
     "glob": "^13.0.6",
     "gulp": "^5.0.1",
     "gulp-esbuild": "^0.14.1",
-    "gulp-replace": "^1.1.3",
     "gulp-typescript": "^5.0.1",
     "husky": "^9.1.7",
     "jest": "^30.2.0",
