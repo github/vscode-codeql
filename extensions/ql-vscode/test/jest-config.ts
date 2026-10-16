@@ -13,7 +13,6 @@ const transformScopes = [
 const transformPackages = [
   "before-after-hook",
   "chokidar",
-  "d3",
   "data-uri-to-buffer",
   "delaunator",
   "exenv-es6",
