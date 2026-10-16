@@ -1,4 +1,4 @@
-import { dirSync, fileSync } from "tmp";
+import { dirSync, fileSync } from "tmp-promise";
 import { dirname, join } from "path";
 import {
   mkdirs,

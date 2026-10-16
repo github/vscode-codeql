@@ -3,7 +3,7 @@ import { window } from "vscode";
 import { join, basename, relative } from "path";
 import { dump } from "js-yaml";
 import { copy, writeFile, readFile, mkdirp, remove } from "fs-extra";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 import { tmpDir } from "../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import type { Credentials } from "../common/authentication";
@@ -167,7 +167,7 @@ async function createRemoteQueriesTempDirectory(): Promise<RemoteQueryTempDir> {
   // archive if the pack path contains any 8.3 components.
   const tmpDirPath = await expandShortPaths(tmpDir.name, extLogger);
 
-  const remoteQueryDir = join(tmpDirPath, `remote-query-${nanoid()}`);
+  const remoteQueryDir = join(tmpDirPath, `remote-query-${randomUUID()}`);
   await mkdirp(remoteQueryDir);
 
   const queryPackDir = join(remoteQueryDir, "query-pack");
@@ -175,7 +175,10 @@ async function createRemoteQueriesTempDirectory(): Promise<RemoteQueryTempDir> {
 
   const compiledPackDir = join(remoteQueryDir, "compiled-pack");
 
-  const bundleFile = join(remoteQueryDir, `qlpack-${nanoid()}-generated.tgz`);
+  const bundleFile = join(
+    remoteQueryDir,
+    `qlpack-${randomUUID()}-generated.tgz`,
+  );
 
   return { remoteQueryDir, queryPackDir, compiledPackDir, bundleFile };
 }

@@ -5,7 +5,7 @@ import { containsPath, tmpdir } from "../common/files";
 import type { NotificationLogger } from "../common/logging";
 import { showAndLogErrorMessage } from "../common/logging";
 import { isAbsolute, normalize, resolve } from "path";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 import type { ModelConfig } from "../config";
 
 /**
@@ -245,11 +245,11 @@ export async function ensurePackLocationIsInWorkspaceFolder(
   const otherPackLocations = await Promise.all(
     Array.from({ length: 3 }).map(() =>
       packLocationToAbsolute(
-        modelConfig.getPackLocation(nanoid(), {
-          database: nanoid(),
-          language: nanoid(),
-          name: nanoid(),
-          owner: nanoid(),
+        modelConfig.getPackLocation(randomUUID(), {
+          database: randomUUID(),
+          language: randomUUID(),
+          name: randomUUID(),
+          owner: randomUUID(),
         }),
         logger,
       ),
