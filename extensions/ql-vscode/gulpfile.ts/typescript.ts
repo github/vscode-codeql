@@ -1,41 +1,46 @@
-import { gray, red } from "ansi-colors";
 import { dest, parallel, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
-import type { reporter } from "gulp-typescript";
-import { createProject } from "gulp-typescript";
 import del from "del";
 import { pipeline } from "stream/promises";
 import { mkdir } from "fs/promises";
+import { resolve } from "path";
+import { spawn } from "cross-spawn";
 
-export function goodReporter(): reporter.Reporter {
-  return {
-    error: (error, typescript) => {
-      if (error.tsFile) {
-        console.log(
-          `[${gray("gulp-typescript")}] ${red(
-            `${error.fullFilename}(${error.startPosition!.line + 1},${
-              error.startPosition!.character
-            }): `,
-          )}error TS${
-            error.diagnostic.code
-          }: ${typescript.flattenDiagnosticMessageText(
-            error.diagnostic.messageText,
-            "\n",
-          )}`,
-        );
-      } else {
-        console.log(error.message);
-      }
+/**
+ * Type-checks the given TypeScript project using the `tsc` executable from
+ * TypeScript 7 (installed as `@typescript/native`).
+ */
+export async function runTypeScriptCheck(project: string): Promise<void> {
+  const proc = spawn(
+    resolve(__dirname, "../node_modules/.bin/tsc"),
+    ["--noEmit", "--pretty", "false", "--project", project],
+    {
+      cwd: resolve(__dirname, ".."),
+      stdio: ["ignore", "inherit", "inherit"],
     },
-  };
+  );
+
+  await new Promise((resolve, reject) => {
+    proc.on("error", reject);
+
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resolve(undefined);
+      } else {
+        // gulp-cli only prints the message (without a stack trace) for errors with `showStack: false`.
+        reject(
+          Object.assign(
+            new Error(`TypeScript type-checking of ${project} failed`),
+            { showStack: false },
+          ),
+        );
+      }
+    });
+  });
 }
 
-const tsProject = createProject("tsconfig.json");
-
 export function cleanOutput() {
-  return tsProject.projectDirectory
-    ? del(`${tsProject.projectDirectory}/out/*`)
-    : Promise.resolve();
+  return del("out/*");
 }
 
 export function compileEsbuild() {
@@ -63,9 +68,7 @@ export function watchEsbuild() {
 }
 
 export function checkTypeScript() {
-  // This doesn't actually output the TypeScript files, it just
-  // runs the TypeScript compiler and reports any errors.
-  return tsProject.src().pipe(tsProject(goodReporter()));
+  return runTypeScriptCheck("tsconfig.json");
 }
 
 export function watchCheckTypeScript() {

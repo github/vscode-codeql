@@ -195,7 +195,7 @@ function ExpandableNamePart(props: ExpandableNamePartProps) {
   const [isExpanded, setExpanded] = useState(false);
   return (
     <ExpandableTextButton
-      onClick={(event: Event) => {
+      onClick={(event) => {
         setExpanded(!isExpanded);
         event.stopPropagation();
       }}

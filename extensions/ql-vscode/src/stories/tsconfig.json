@@ -18,5 +18,6 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
+  "include": ["**/*", "../view/types.d.ts"],
   "exclude": ["node_modules"]
 }
