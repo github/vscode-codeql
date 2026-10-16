@@ -1,4 +1,4 @@
-import { gray, red } from "ansi-colors";
+import { styleText } from "util";
 import { dest, parallel, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
 import type { reporter } from "gulp-typescript";
@@ -12,7 +12,8 @@ export function goodReporter(): reporter.Reporter {
     error: (error, typescript) => {
       if (error.tsFile) {
         console.log(
-          `[${gray("gulp-typescript")}] ${red(
+          `[${styleText("gray", "gulp-typescript")}] ${styleText(
+            "red",
             `${error.fullFilename}(${error.startPosition!.line + 1},${
               error.startPosition!.character
             }): `,
