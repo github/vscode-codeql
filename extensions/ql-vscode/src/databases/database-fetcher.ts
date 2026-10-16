@@ -11,7 +11,7 @@ import {
 } from "fs-extra";
 import { basename, join } from "path";
 import type { Octokit } from "@octokit/rest";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 
 import type { DatabaseManager, DatabaseItem } from "./local-databases";
 import { tmpDir } from "../tmp-dir";
@@ -39,7 +39,7 @@ import { convertGithubNwoToDatabaseUrl } from "./github-databases/api";
 import { ensureZippedSourceLocation } from "./local-databases/database-contents";
 
 // The number of tries to use when generating a unique filename before
-// giving up and using a nanoid.
+// giving up and using a random UUID.
 const DUPLICATE_FILENAMES_TRIES = 10_000;
 
 export class DatabaseFetcher {
@@ -429,7 +429,7 @@ export class DatabaseFetcher {
       } else if (counter <= DUPLICATE_FILENAMES_TRIES + 5) {
         // If there are more than 10,000 similarly named databases,
         // give up on using a counter and use a random string instead.
-        folderName = `${lastName}-${nanoid()}`;
+        folderName = `${lastName}-${randomUUID()}`;
       } else {
         // This should almost never happen, but just in case, we don't want to
         // get stuck in an infinite loop.

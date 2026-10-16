@@ -14,7 +14,7 @@ import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
 import type { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 import type {
   QueryHistoryDto,
   QueryHistoryItemDto,
@@ -144,7 +144,7 @@ describe("write and read", () => {
           t: "remote",
           status: "InProgress",
           completed: false,
-          queryId: nanoid(),
+          queryId: randomUUID(),
           remoteQuery: {
             queryName: "query-name",
             queryFilePath: "query-file.ql",
@@ -163,7 +163,7 @@ describe("write and read", () => {
           t: "remote",
           status: "Completed",
           completed: true,
-          queryId: nanoid(),
+          queryId: randomUUID(),
           remoteQuery: {
             queryName: "query-name",
             queryFilePath: "query-file.ql",

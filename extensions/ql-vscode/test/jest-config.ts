@@ -20,7 +20,6 @@ const transformPackages = [
   "formdata-polyfill",
   "internmap",
   "lit",
-  "nanoid",
   "p-queue",
   "p-timeout",
   "readdirp",
