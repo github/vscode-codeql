@@ -1,4 +1,3 @@
-import { select } from "d3";
 import { jumpToLocation } from "./result-table-utils";
 import type { GraphvizOptions } from "d3-graphviz";
 import { graphviz } from "d3-graphviz";
@@ -48,10 +47,12 @@ export function Graph({ graphData, databaseUri }: GraphProps) {
             d.attributes["xlink:href"] = "#";
             d.attributes["href"] = "#";
             loc.uri = `file://${loc.uri}`;
-            select(this).on("click", (event: Event) => {
-              jumpToLocation(loc, databaseUri);
-              event.preventDefault(); // Avoid resetting scroll position
-            });
+            if (this && "addEventListener" in this) {
+              this.addEventListener("click", (event: Event) => {
+                jumpToLocation(loc, databaseUri);
+                event.preventDefault(); // Avoid resetting scroll position
+              });
+            }
           }
         }
         if ("fill" in d.attributes) {

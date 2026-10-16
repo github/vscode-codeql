@@ -16,7 +16,6 @@ import {
 import type { InitialQueryInfo } from "./query-results";
 import { ensureMetadataIsComplete } from "./query-results";
 import { isQuickQueryPath } from "./local-queries/quick-query";
-import { nanoid } from "nanoid";
 import type { CodeQLCliServer } from "./codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "./language-support";
 import type { DatabaseManager } from "./databases/local-databases";
@@ -28,7 +27,7 @@ import type { BaseLogger } from "./common/logging";
 import { showAndLogWarningMessage } from "./common/logging";
 import { extLogger } from "./common/logging/vscode";
 import { getErrorMessage } from "./common/helpers-pure";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { QueryOutputDir } from "./local-queries/query-output-dir";
 import { progressUpdate } from "./common/vscode/progress";
 import type { ProgressCallback } from "./common/vscode/progress";
@@ -526,7 +525,7 @@ export async function createInitialQueryInfo(
     isQuickEvalCount,
     isQuickQuery: isQuickQueryPath(selectedQuery.queryPath),
     databaseInfo,
-    id: `${basename(selectedQuery.queryPath)}-${nanoid()}`,
+    id: `${basename(selectedQuery.queryPath)}-${randomUUID()}`,
     start: new Date(),
     ...(selectedQuery.quickEval !== undefined
       ? {

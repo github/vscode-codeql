@@ -1,5 +1,5 @@
 import type { DirResult } from "tmp";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import { ensureDir, ensureFile, pathExists, writeFile } from "fs-extra";
 import { join } from "path";
 import type { ExtensionContext } from "vscode";
