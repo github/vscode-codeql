@@ -3,9 +3,9 @@ import { dest, parallel, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
 import type { reporter } from "gulp-typescript";
 import { createProject } from "gulp-typescript";
-import del from "del";
 import { pipeline } from "stream/promises";
-import { mkdir } from "fs/promises";
+import { mkdir, rm } from "fs/promises";
+import { join } from "path";
 
 export function goodReporter(): reporter.Reporter {
   return {
@@ -32,10 +32,13 @@ export function goodReporter(): reporter.Reporter {
 
 const tsProject = createProject("tsconfig.json");
 
-export function cleanOutput() {
-  return tsProject.projectDirectory
-    ? del(`${tsProject.projectDirectory}/out/*`)
-    : Promise.resolve();
+export async function cleanOutput() {
+  if (tsProject.projectDirectory) {
+    await rm(join(tsProject.projectDirectory, "out"), {
+      recursive: true,
+      force: true,
+    });
+  }
 }
 
 export function compileEsbuild() {
