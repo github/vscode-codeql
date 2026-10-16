@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload ESLint results to Code Scanning
         if: "${{ !cancelled() && !startsWith(github.head_ref, 'dependabot/')}}"
-        uses: github/codeql-action/upload-sarif@e0b52dbdc5c3376dd8cb78e956fd23fa07ca2c5b # main
+        uses: github/codeql-action/upload-sarif@7a6e2f798f401f9e1febf447764fca5bedb6cf66 # main
         with:
           sarif_file: extensions/ql-vscode/build/eslint.sarif
           category: eslint
