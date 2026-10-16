@@ -8,7 +8,7 @@ import { FilePathDiscovery } from "../../../../../src/common/vscode/file-path-di
 import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { rm } from "fs/promises";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import { normalizePath } from "../../../../../src/common/files";
 import { extLogger } from "../../../../../src/common/logging/vscode/loggers";
 import { getErrorMessage } from "../../../../../src/common/helpers-pure";

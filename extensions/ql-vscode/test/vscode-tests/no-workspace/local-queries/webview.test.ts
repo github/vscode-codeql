@@ -2,7 +2,7 @@ import type { WebviewPanel } from "vscode";
 import { Uri, ViewColumn, window } from "vscode";
 import { basename } from "path";
 import type { FileResult } from "tmp";
-import { fileSync } from "tmp";
+import { fileSync } from "tmp-promise";
 import { fileUriToWebviewUri } from "../../../../src/local-queries/webview";
 import { getDefaultResultSetName } from "../../../../src/common/interface-types";
 
