@@ -17,6 +17,7 @@ import {
 } from "../../common/vscode/archive-filesystem-provider";
 import type { CodeQLCliServer } from "../../codeql-cli/cli";
 import type { DatabaseManager } from "../../databases/local-databases";
+import { DatabaseEventKind } from "../../databases/local-databases";
 import { CachedOperation } from "./cached-operation";
 import type { ProgressCallback } from "../../common/vscode/progress";
 import { withProgress } from "../../common/vscode/progress";
@@ -59,6 +60,11 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
     private queryStorageDir: string,
   ) {
     this.cache = new CachedOperation(this.getDefinitions.bind(this));
+    this.dbm.onDidChangeDatabaseItem(({ kind }) => {
+      if (kind === DatabaseEventKind.Remove) {
+        this.cache.reset();
+      }
+    });
   }
 
   async provideDefinition(
@@ -66,9 +72,13 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
     position: Position,
     token: CancellationToken,
   ): Promise<LocationLink[]> {
+    const uriString = document.uri.toString();
+    if (this.shouldUseCache() && this.cache.has(uriString)) {
+      await maybeReimportTestDatabase(this.dbm, document.uri);
+    }
     const fileLinks = this.shouldUseCache()
-      ? await this.cache.get(document.uri.toString(), token)
-      : await this.getDefinitions(document.uri.toString(), token);
+      ? await this.cache.get(uriString, token)
+      : await this.getDefinitions(uriString, token);
 
     const locLinks: LocationLink[] = [];
     for (const link of fileLinks) {
@@ -119,6 +129,11 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     private queryStorageDir: string,
   ) {
     this.cache = new CachedOperation(this.getReferences.bind(this));
+    this.dbm.onDidChangeDatabaseItem(({ kind }) => {
+      if (kind === DatabaseEventKind.Remove) {
+        this.cache.reset();
+      }
+    });
   }
 
   async provideReferences(
@@ -127,9 +142,13 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     _context: ReferenceContext,
     token: CancellationToken,
   ): Promise<Location[]> {
+    const uriString = document.uri.toString();
+    if (this.shouldUseCache() && this.cache.has(uriString)) {
+      await maybeReimportTestDatabase(this.dbm, document.uri);
+    }
     const fileLinks = this.shouldUseCache()
-      ? await this.cache.get(document.uri.toString(), token)
-      : await this.getReferences(document.uri.toString(), token);
+      ? await this.cache.get(uriString, token)
+      : await this.getReferences(uriString, token);
 
     const locLinks: Location[] = [];
     for (const link of fileLinks) {
@@ -193,6 +212,11 @@ export class TemplatePrintAstProvider {
     private queryStorageDir: string,
   ) {
     this.cache = new CachedOperation(this.getAst.bind(this));
+    this.dbm.onDidChangeDatabaseItem(({ kind }) => {
+      if (kind === DatabaseEventKind.Remove) {
+        this.cache.reset();
+      }
+    });
   }
 
   async provideAst(
@@ -205,9 +229,13 @@ export class TemplatePrintAstProvider {
         "Cannot view the AST. Please select a valid source file inside a CodeQL database.",
       );
     }
+    const uriString = fileUri.toString();
+    if (this.shouldUseCache() && this.cache.has(uriString)) {
+      await maybeReimportTestDatabase(this.dbm, fileUri);
+    }
     const completedQuery = this.shouldUseCache()
-      ? await this.cache.get(fileUri.toString(), progress, token)
-      : await this.getAst(fileUri.toString(), progress, token);
+      ? await this.cache.get(uriString, progress, token)
+      : await this.getAst(uriString, progress, token);
 
     const queryResults = Array.from(completedQuery.results.values());
     if (queryResults.length !== 1) {
@@ -296,6 +324,11 @@ export class TemplatePrintCfgProvider {
     private dbm: DatabaseManager,
   ) {
     this.cache = new CachedOperation(this.getCfgUri.bind(this));
+    this.dbm.onDidChangeDatabaseItem(({ kind }) => {
+      if (kind === DatabaseEventKind.Remove) {
+        this.cache.reset();
+      }
+    });
   }
 
   async provideCfgUri(
@@ -367,5 +400,22 @@ export class TemplatePrintCfgProvider {
     };
 
     return [queryUri, templates];
+  }
+}
+
+async function maybeReimportTestDatabase(
+  dbm: DatabaseManager,
+  uri: Uri,
+): Promise<void> {
+  if (uri.scheme !== zipArchiveScheme) {
+    return;
+  }
+  const zippedArchive = decodeSourceArchiveUri(uri);
+  const sourceArchiveUri = encodeArchiveBasePath(
+    zippedArchive.sourceArchiveZipPath,
+  );
+  const db = dbm.findDatabaseItemBySourceArchive(sourceArchiveUri);
+  if (db) {
+    await dbm.maybeReimportTestDatabase(db.databaseUri);
   }
 }
