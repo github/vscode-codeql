@@ -13,7 +13,7 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.90.0",
+    "vscode": "^1.101.0",
     "node": "^22.21.1",
     "npm": ">=8.3.0"
   },
@@ -2137,7 +2137,7 @@
     "@types/semver": "^7.7.1",
     "@types/tar-stream": "^3.1.4",
     "@types/tmp": "^0.2.6",
-    "@types/vscode": "1.90.0",
+    "@types/vscode": "1.101.0",
     "@types/yauzl": "^3.4.0",
     "@typescript-eslint/parser": "^8.71.0",
     "@vscode/test-electron": "^3.1.0",
