@@ -16,6 +16,7 @@ const conditionalWorkflows = [
 ];
 
 // Each workflow step creates a fresh instance; durable PR state lives on GitHub.
+// See README.md for the lifecycle, job mapping, and trust boundaries.
 function createController({
   github,
   context,
