@@ -46,11 +46,27 @@ function createController({
       base: "main",
       per_page: 100,
     });
-    const candidates = pulls.filter((pr) => isCandidate(pr, repository));
-    if (candidates.length > 256)
-      throw new Error("Too many PRs for the job matrix");
-    core.setOutput("prs", JSON.stringify(candidates.map((pr) => pr.number)));
-    core.setOutput("has-prs", candidates.length > 0);
+    const candidates = pulls.filter(
+      (pr) =>
+        isCandidate(pr, repository) &&
+        (!hasAutomationHold(pr) || Boolean(pr.auto_merge)),
+    );
+    const batchSize = 32;
+    const count = Math.min(batchSize, candidates.length);
+    for (let index = 0; index < count; index++) {
+      const other =
+        index + Math.floor(Math.random() * (candidates.length - index));
+      [candidates[index], candidates[other]] = [
+        candidates[other],
+        candidates[index],
+      ];
+    }
+    const selected = candidates.slice(0, count);
+    core.info(
+      `Selected ${selected.length} of ${candidates.length} eligible PRs; deferred ${candidates.length - selected.length}.`,
+    );
+    core.setOutput("prs", JSON.stringify(selected.map((pr) => pr.number)));
+    core.setOutput("has-prs", selected.length > 0);
   }
 
   async function evaluate() {

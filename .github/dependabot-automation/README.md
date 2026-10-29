@@ -18,6 +18,12 @@ the whole pipeline. Merge jobs also share a repository-wide concurrency group,
 across automation runs while leaving other jobs parallel. The group allows up to
 100 pending merge jobs; additional jobs are canceled if the queue is full.
 
+Discovery excludes held PRs unless native auto-merge needs disarming. It randomly
+selects at most 32 candidates per run without replacement, using a partial
+Fisher-Yates shuffle. Every candidate has an equal chance of selection, but
+selection within a fixed number of runs is not guaranteed. Discovery logs
+selected and deferred counts.
+
 The controller is not a long-running process or an in-memory state machine. Each
 workflow step creates a fresh controller. Its inputs default to `PR_NUMBER`,
 `EXPECTED_SHA`, and the current working directory; tests can supply them explicitly.

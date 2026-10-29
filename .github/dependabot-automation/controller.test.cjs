@@ -192,6 +192,73 @@ function harness({ workspace } = {}) {
   return { state, github, controller, result };
 }
 
+test("discovery excludes held PRs unless native auto-merge needs disarming", async () => {
+  const { controller, state, github } = harness();
+  github.rest.pulls.list = () =>
+    [
+      { ...candidate(), number: 10 },
+      { ...candidate(), number: 20, labels: [{ name: "dependencies" }] },
+      {
+        ...candidate(),
+        number: 30,
+        labels: [{ name: reviewLabel }],
+      },
+      {
+        ...candidate(),
+        number: 40,
+        labels: [{ name: reviewLabel }],
+        auto_merge: {},
+      },
+      { ...candidate(), number: 50, draft: true, auto_merge: {} },
+    ].reverse();
+  await controller.discover();
+  assert.deepEqual(
+    JSON.parse(state.outputs.prs).sort((a, b) => a - b),
+    [10, 20, 40],
+  );
+  assert.equal(state.outputs["has-prs"], true);
+  assert.deepEqual(state.calls, []);
+});
+
+test("discovery produces an empty matrix when no candidates remain", async (t) => {
+  for (const [name, pulls] of [
+    ["no PRs", []],
+    ["all held", [{ ...candidate(), labels: [{ name: reviewLabel }] }]],
+  ]) {
+    await t.test(name, async () => {
+      const { controller, state, github } = harness();
+      github.rest.pulls.list = () => pulls;
+      await controller.discover();
+      assert.deepEqual(JSON.parse(state.outputs.prs), []);
+      assert.equal(state.outputs["has-prs"], false);
+    });
+  }
+});
+
+test("discovery randomly selects bounded batches without replacement", async (t) => {
+  const numbers = Array.from({ length: 300 }, (_, index) => index + 1);
+  const pulls = numbers.map((number) => ({ ...candidate(), number }));
+  for (const [random, expected] of [
+    [0, numbers.slice(0, 32)],
+    [1 - Number.EPSILON, [300, ...numbers.slice(0, 31)]],
+  ]) {
+    await t.test(`random value ${random}`, async (t) => {
+      t.mock.method(Math, "random", () => random);
+      const { controller, state, github } = harness();
+      github.rest.pulls.list = () => pulls;
+      await controller.discover();
+      const batch = JSON.parse(state.outputs.prs);
+      assert.deepEqual(batch, expected);
+      assert.equal(new Set(batch).size, 32);
+      assert.equal(state.outputs["has-prs"], true);
+      assert.deepEqual(
+        pulls.map((pr) => pr.number),
+        numbers,
+      );
+    });
+  }
+});
+
 test("only open, non-draft, same-repository Dependabot PRs qualify", () => {
   const pr = candidate();
   assert(isCandidate(pr, "github/vscode-codeql"));
