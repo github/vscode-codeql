@@ -2,9 +2,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 const { test } = require("node:test");
 const { writeInvestigation } = require("./evidence.cjs");
 const { allowedFile, validateResult } = require("./repair-protocol.cjs");
+const { collectFiles, run } = require("./worker.cjs");
 
 const head = "a".repeat(40);
 const repo = { owner: "github", repo: "vscode-codeql" };
@@ -45,6 +47,22 @@ function temporaryWorkspace(t) {
     fs.rmSync(directory, { recursive: true });
   });
   return directory;
+}
+
+function workerWorkspace(t) {
+  const workspace = temporaryWorkspace(t);
+  const work = path.join(workspace, "work");
+  const task = path.join(workspace, "task");
+  const output = path.join(workspace, "output");
+  for (const directory of [
+    path.join(work, "extensions/ql-vscode/src"),
+    task,
+    output,
+  ]) {
+    fs.mkdirSync(directory, { recursive: true });
+  }
+  fs.writeFileSync(path.join(task, "prompt.txt"), "Trusted instructions");
+  return { work, task, output };
 }
 
 function harness() {
@@ -195,4 +213,161 @@ test("only cancelled-job log 404s become explicitly unavailable evidence", async
       }
     });
   }
+});
+
+test("worker collects tracked edits, new tests, and deletions", (t) => {
+  const work = temporaryWorkspace(t);
+  const git = (...args) =>
+    execFileSync("git", args, { cwd: work, stdio: "pipe" });
+  git("init");
+  git("config", "user.name", "Test");
+  git("config", "user.email", "test@example.com");
+  const source = path.join(work, "extensions/ql-vscode/src");
+  fs.mkdirSync(source, { recursive: true });
+  fs.writeFileSync(path.join(source, "a.ts"), "before");
+  fs.writeFileSync(path.join(source, "deleted.ts"), "remove");
+  git("add", ".");
+  git("commit", "-m", "Initial");
+  fs.writeFileSync(path.join(source, "a.ts"), "after");
+  fs.unlinkSync(path.join(source, "deleted.ts"));
+  fs.writeFileSync(path.join(source, "new.ts"), "new");
+  const files = collectFiles(work);
+  assert.deepEqual(files, [
+    { path: "extensions/ql-vscode/src/a.ts", content: "after" },
+    { path: "extensions/ql-vscode/src/deleted.ts", content: null },
+    { path: "extensions/ql-vscode/src/new.ts", content: "new" },
+  ]);
+  fs.symlinkSync("a.ts", path.join(source, "link.ts"));
+  assert.throws(() => collectFiles(work), /Non-regular/);
+});
+
+test("worker requests transcript export, unattended execution, and scoped permissions", (t) => {
+  const { work, task, output } = workerWorkspace(t);
+  run({
+    work,
+    task,
+    output,
+    invoke: (_command, args) => {
+      assert(args.includes("--share=/diagnostics/transcript.md"));
+      assert(args.includes("-s"));
+      assert(args.includes("--no-ask-user"));
+      const tools = args.flatMap((arg, index) =>
+        arg === "--allow-tool" ? [args[index + 1]] : [],
+      );
+      assert.deepEqual(
+        tools.filter((tool) => tool.startsWith("github-mcp-server")),
+        ["github-mcp-server(web_search)"],
+      );
+      assert.equal(args[args.indexOf("--secret-env-vars") + 1], "GITHUB_TOKEN");
+      assert(!args.includes("--allow-all"));
+      assert(!args.includes("--allow-all-tools"));
+      assert(!args.includes("--allow-all-urls"));
+      const urls = args.flatMap((arg, index) =>
+        arg === "--allow-url" ? [args[index + 1]] : [],
+      );
+      for (const url of urls) {
+        assert.match(url, /^https:\/\/[a-z0-9.-]+$/);
+      }
+      return {
+        status: 0,
+        stdout: JSON.stringify({
+          outcome: "needs-maintainer",
+          summary: "Explanation",
+        }),
+      };
+    },
+  });
+});
+
+test("worker returns a diagnosis without publishing exploratory edits", (t) => {
+  const { work, task, output } = workerWorkspace(t);
+  const filename = path.join(work, "extensions/ql-vscode/src/a.ts");
+  fs.writeFileSync(filename, "before");
+  run({
+    work,
+    task,
+    output,
+    invoke: () => {
+      fs.writeFileSync(filename, "exploratory edit");
+      return {
+        status: 0,
+        stdout: JSON.stringify({
+          outcome: "needs-maintainer",
+          summary: "Requires a broader change.",
+          files: [
+            {
+              path: "extensions/ql-vscode/src/a.ts",
+              content: "exploratory edit",
+            },
+          ],
+        }),
+      };
+    },
+  });
+  const result = JSON.parse(
+    fs.readFileSync(path.join(output, "result.json"), "utf8"),
+  );
+  assert.equal(result.outcome, "needs-maintainer");
+  assert.equal(result.summary, "Requires a broader change.");
+  assert.deepEqual(result.files, []);
+  assert.equal(fs.readFileSync(filename, "utf8"), "exploratory edit");
+});
+
+test("worker rejects malformed output, nonzero exits, and timeouts", (t) => {
+  const { work, task, output } = workerWorkspace(t);
+  const invoke = (result) => () => result;
+  for (const result of [
+    { status: 0, stdout: "not JSON" },
+    { status: 0, stdout: JSON.stringify({ outcome: "merge", summary: "Bad" }) },
+    {
+      status: 0,
+      stdout: JSON.stringify({ outcome: "retry", summary: "Flaky" }),
+    },
+    { status: 1 },
+    { error: new Error("Timed out") },
+  ]) {
+    assert.throws(() =>
+      run({
+        work,
+        task,
+        output,
+        invoke: invoke(result),
+      }),
+    );
+    assert(!fs.existsSync(path.join(output, "result.json")));
+  }
+});
+
+test("worker publishes only the actual checkout diff for a patch result", (t) => {
+  const { work, task, output } = workerWorkspace(t);
+  const git = (...args) =>
+    execFileSync("git", args, { cwd: work, stdio: "pipe" });
+  git("init");
+  git("config", "user.name", "Test");
+  git("config", "user.email", "test@example.com");
+  fs.writeFileSync(`${work}/extensions/ql-vscode/src/a.ts`, "before");
+  git("add", ".");
+  git("commit", "-m", "Initial");
+  run({
+    work,
+    task,
+    output,
+    invoke: () => {
+      fs.writeFileSync(`${work}/extensions/ql-vscode/src/a.ts`, "after");
+      return {
+        status: 0,
+        stdout: JSON.stringify({
+          outcome: "patch",
+          summary: "Migrated the dependency API.",
+          files: [{ path: ".github/workflows/main.yml", content: "untrusted" }],
+        }),
+      };
+    },
+  });
+  const result = JSON.parse(
+    fs.readFileSync(path.join(output, "result.json"), "utf8"),
+  );
+  assert.deepEqual(result.files, [
+    { path: "extensions/ql-vscode/src/a.ts", content: "after" },
+  ]);
 });
