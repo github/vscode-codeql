@@ -787,7 +787,7 @@ test("only cancelled-job log 404s become explicitly unavailable evidence", async
   }
 });
 
-test("patch publication retains the existing review hold after the App push", async (t) => {
+test("patch publication retains the review hold and asks for review before CI approval", async (t) => {
   const { controller, state, result } = harness({
     workspace: temporaryWorkspace(t),
   });
@@ -816,6 +816,11 @@ test("patch publication retains the existing review hold after the App push", as
     { path: "extensions/ql-vscode/src/deleted.ts" },
   ]);
   assert(state.pr.labels.some((label) => label.name === reviewLabel));
+  assert.match(
+    state.comments[0],
+    /Review the repair before selecting \*\*Approve workflows to run\*\*/,
+  );
+  assert.match(state.comments[0], /merge manually after CI passes/);
   assert.match(state.comments[0], /not.*automatically merged/);
   await assert.rejects(controller.merge(), /no longer eligible/);
 });

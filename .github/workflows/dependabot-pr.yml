@@ -219,7 +219,8 @@ jobs:
     if: needs.investigate.result == 'success'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
     env:
       EXPECTED_SHA: ${{ needs.evaluate.outputs.head }}
     steps:
@@ -231,22 +232,11 @@ jobs:
         with:
           name: repair-${{ inputs.pr }}
           path: result
-      - name: Mint publishing token
-        id: app
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ vars.CODEQL_CI_APP_CLIENT_ID }}
-          private-key: ${{ secrets.CODEQL_CI_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-contents: write
-          permission-pull-requests: write
-          permission-issues: write
       - name: Publish explanation or held repair
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
-          # App-authenticated pushes trigger ordinary CI on the repair commit.
-          github-token: ${{ steps.app.outputs.token }}
+          # Suppress push workflows; PR workflows require approval before running.
+          github-token: ${{ github.token }}
           script: |
             const { createController } = require('./.github/dependabot-automation/controller.cjs');
             await createController({ github, context, core }).publish();

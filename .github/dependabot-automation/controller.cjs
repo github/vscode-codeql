@@ -190,7 +190,7 @@ function createController({
       case "patch":
         await commitRepair(pr, result.files);
         await postComment(
-          `${result.summary}\n\nPublished a Copilot repair. This PR will **not** be automatically merged; a human must review and merge it after CI.`,
+          `${result.summary}\n\nPublished a Copilot repair using GITHUB_TOKEN. Push workflows do not run automatically; pull request workflows require approval. Review the repair before selecting **Approve workflows to run**, then merge manually after CI passes. This PR will **not** be automatically merged.`,
         );
         break;
       default:

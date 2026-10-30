@@ -129,8 +129,8 @@ does not select the PR number or checkout SHA. The controller independently
 discovers same-repository Dependabot PRs and verifies their commit provenance
 before starting an investigation.
 
-`GITHUB_TOKEN` handles discovery, evaluation, approval, and failure reporting.
-Separately scoped `codeql-ci-app` tokens perform retries, merges, and publication.
+`GITHUB_TOKEN` handles discovery, evaluation, approval, publication, and failure
+reporting. Separately scoped `codeql-ci-app` tokens perform retries and merges.
 The worker receives only a read/inference token, never App credentials, and the CLI
 is configured to strip that token from tool subprocesses.
 
@@ -139,7 +139,10 @@ job runs that code inside its restricted container with read/inference permissio
 Finalization runs on the runner only after the container stops and trusted Git
 metadata is restored. The raw response and working-tree contents remain untrusted.
 The publisher runs separately and validates the untrusted repair artifact before
-using App credentials to write changes.
+using `GITHUB_TOKEN` to write changes. This suppresses `push` workflows, while
+resulting `pull_request` workflows require approval before running. Maintainers
+must review the repair before selecting **Approve workflows to run**, then merge
+manually after CI passes. This gate does not control external CI integrations.
 
 The controller applies `dependency-needs-review` **before** collecting evidence or
 starting Copilot. It never removes the hold, even after green CI, a repair, a
