@@ -112,10 +112,21 @@ protocol.
 
 Trusted controller and worker instructions are checked out from `main`, never from
 the PR. Dispatching a feature branch does not make these checkouts load that branch.
+
+An untrusted PR's workflow completion can trigger discovery, but its event payload
+does not select the PR number or checkout SHA. The controller independently
+discovers same-repository Dependabot PRs and verifies their commit provenance
+before starting an investigation.
+
 `GITHUB_TOKEN` handles discovery, evaluation, approval, and failure reporting.
 Separately scoped `codeql-ci-app` tokens perform retries, merges, and publication.
 The worker receives only a read/inference token, never App credentials, and the CLI
 is configured to strip that token from tool subprocesses.
+
+Dependabot provenance does not make dependency code trustworthy. The investigation
+job runs that code inside its restricted container with read/inference permissions.
+The publisher runs separately and validates the untrusted repair artifact before
+using App credentials to write changes.
 
 The controller applies `dependency-needs-review` **before** collecting evidence or
 starting Copilot. It never removes the hold, even after green CI, a repair, a

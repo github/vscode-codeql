@@ -268,10 +268,31 @@ test("only open, non-draft, same-repository Dependabot PRs qualify", () => {
     { user: { login: "someone" } },
     { base: { ref: "release" } },
     { head: { ...pr.head, repo: null } },
+    { head: { ...pr.head, repo: { full_name: "someone/vscode-codeql" } } },
     { head: { ...pr.head, ref: "someone/dependabot" } },
   ]) {
     assert(!isCandidate({ ...pr, ...change }, "github/vscode-codeql"));
   }
+});
+
+test("foreign-repository PRs cannot enter discovery or investigation", async (t) => {
+  const workspace = temporaryWorkspace(t);
+  const { controller, state } = harness({ workspace });
+  state.pr.head.repo.full_name = "someone/vscode-codeql";
+  state.runs[0].conclusion = "failure";
+  state.runs[0].run_attempt = 2;
+
+  await controller.discover();
+  assert.deepEqual(JSON.parse(state.outputs.prs), []);
+  assert.equal(state.outputs["has-prs"], false);
+
+  await controller.evaluate();
+  assert.equal(state.outputs.action, undefined);
+  assert.equal(state.outputs.head, undefined);
+  assert.deepEqual(state.calls, []);
+  assert.deepEqual(state.pr.labels, []);
+  assert.deepEqual(state.comments, []);
+  assert(!fs.existsSync(path.join(workspace, "investigation")));
 });
 
 test("verified Dependabot provenance is required for every PR commit", () => {

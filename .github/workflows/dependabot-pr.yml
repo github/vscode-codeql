@@ -146,6 +146,10 @@ jobs:
           ref: main
           path: trusted
           persist-credentials: false
+      # evaluate selects a same-repository, verified Dependabot head,
+      # independently of the workflow_run payload. Treat its code as untrusted:
+      # execute it only in the restricted container, without App credentials.
+      # The separate publisher validates results before writing changes.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.evaluate.outputs.head }}
