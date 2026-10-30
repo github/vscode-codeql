@@ -2097,7 +2097,7 @@
     "tree-kill": "^1.2.2",
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-jsonrpc": "^8.2.1",
-    "vscode-languageclient": "^8.0.2",
+    "vscode-languageclient": "^11.0.0",
     "yauzl": "^3.4.0",
     "zip-a-folder": "^4.0.4"
   },
