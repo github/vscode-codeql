@@ -15,7 +15,7 @@ const {
 } = require("./controller.cjs");
 const { writeInvestigation } = require("./evidence.cjs");
 const { allowedFile, validateResult } = require("./repair-protocol.cjs");
-const { collectFiles, run } = require("./worker.cjs");
+const { collectFiles, run, finalize } = require("./worker.cjs");
 
 const head = "a".repeat(40);
 const repo = { owner: "github", repo: "vscode-codeql" };
@@ -65,18 +65,55 @@ function temporaryWorkspace(t) {
 
 function workerWorkspace(t) {
   const workspace = temporaryWorkspace(t);
-  const work = path.join(workspace, "work");
+  const work = path.join(workspace, "dependency");
   const task = path.join(workspace, "task");
-  const output = path.join(workspace, "output");
+  const backup = path.join(workspace, "dependency-git");
+  const handoff = path.join(workspace, "handoff");
+  const output = path.join(workspace, "result");
+  const trusted = path.join(workspace, "trusted/.github/dependabot-automation");
   for (const directory of [
     path.join(work, "extensions/ql-vscode/src"),
     task,
+    handoff,
     output,
+    trusted,
   ]) {
     fs.mkdirSync(directory, { recursive: true });
   }
+  for (const filename of ["worker.cjs", "repair-protocol.cjs"]) {
+    fs.copyFileSync(
+      path.join(__dirname, filename),
+      path.join(trusted, filename),
+    );
+  }
   fs.writeFileSync(path.join(task, "prompt.txt"), "Trusted instructions");
-  return { work, task, output };
+  for (const args of [
+    ["init"],
+    ["config", "user.name", "Test"],
+    ["config", "user.email", "test@example.com"],
+  ]) {
+    execFileSync("git", args, { cwd: work, stdio: "pipe" });
+  }
+  return { workspace, work, task, backup, handoff, output };
+}
+
+function runWorkflowStep(name, { workspace }, options = {}) {
+  const workflow = fs.readFileSync(
+    path.join(__dirname, "../workflows/dependabot-pr.yml"),
+    "utf8",
+  );
+  const script = workflow
+    .split(`      - name: ${name}\n        run: `)[1]
+    ?.split("\n      - ")[0];
+  assert(script, `Missing workflow step: ${name}`);
+  const command = script.startsWith("|\n")
+    ? script.slice(2).replace(/^ {10}/gm, "")
+    : script.trim();
+  return execFileSync("bash", ["-e", "-c", command], {
+    cwd: workspace,
+    stdio: "pipe",
+    ...options,
+  });
 }
 
 function harness({ workspace } = {}) {
@@ -1069,11 +1106,9 @@ test("worker collects tracked edits, new tests, and deletions", (t) => {
 });
 
 test("worker requests transcript export, unattended execution, and scoped permissions", (t) => {
-  const { work, task, output } = workerWorkspace(t);
+  const workspace = workerWorkspace(t);
   run({
-    work,
-    task,
-    output,
+    ...workspace,
     invoke: (_command, args) => {
       assert(args.includes("--share=/diagnostics/transcript.md"));
       assert(args.includes("-s"));
@@ -1098,22 +1133,28 @@ test("worker requests transcript export, unattended execution, and scoped permis
       return {
         status: 0,
         stdout: JSON.stringify({
-          outcome: "needs-maintainer",
+          outcome: "patch",
           summary: "Explanation",
         }),
       };
     },
   });
+  assert.equal(
+    JSON.parse(
+      fs.readFileSync(path.join(workspace.handoff, "response.json"), "utf8"),
+    ).outcome,
+    "patch",
+  );
+  assert(!fs.existsSync(path.join(workspace.output, "result.json")));
 });
 
 test("worker returns a diagnosis without publishing exploratory edits", (t) => {
-  const { work, task, output } = workerWorkspace(t);
+  const workspace = workerWorkspace(t);
+  const { work, output } = workspace;
   const filename = path.join(work, "extensions/ql-vscode/src/a.ts");
   fs.writeFileSync(filename, "before");
   run({
-    work,
-    task,
-    output,
+    ...workspace,
     invoke: () => {
       fs.writeFileSync(filename, "exploratory edit");
       return {
@@ -1131,6 +1172,7 @@ test("worker returns a diagnosis without publishing exploratory edits", (t) => {
       };
     },
   });
+  finalize(workspace);
   const result = JSON.parse(
     fs.readFileSync(path.join(output, "result.json"), "utf8"),
   );
@@ -1140,45 +1182,42 @@ test("worker returns a diagnosis without publishing exploratory edits", (t) => {
   assert.equal(fs.readFileSync(filename, "utf8"), "exploratory edit");
 });
 
-test("worker rejects malformed output, nonzero exits, and timeouts", (t) => {
-  const { work, task, output } = workerWorkspace(t);
-  const invoke = (result) => () => result;
+test("finalizer rejects malformed responses and unsupported outcomes", (t) => {
   for (const result of [
-    { status: 0, stdout: "not JSON" },
-    { status: 0, stdout: JSON.stringify({ outcome: "merge", summary: "Bad" }) },
-    {
-      status: 0,
-      stdout: JSON.stringify({ outcome: "retry", summary: "Flaky" }),
-    },
-    { status: 1 },
-    { error: new Error("Timed out") },
+    "not JSON",
+    JSON.stringify({ outcome: "merge", summary: "Bad" }),
+    JSON.stringify({ outcome: "retry", summary: "Flaky" }),
   ]) {
+    const workspace = workerWorkspace(t);
+    fs.writeFileSync(path.join(workspace.handoff, "response.json"), result);
+    assert.throws(() => finalize(workspace));
+    assert(!fs.existsSync(path.join(workspace.output, "result.json")));
+  }
+});
+
+test("worker rejects nonzero exits and timeouts without a response handoff", (t) => {
+  for (const result of [{ status: 1 }, { error: new Error("Timed out") }]) {
+    const workspace = workerWorkspace(t);
     assert.throws(() =>
       run({
-        work,
-        task,
-        output,
-        invoke: invoke(result),
+        ...workspace,
+        invoke: () => result,
       }),
     );
-    assert(!fs.existsSync(path.join(output, "result.json")));
+    assert(!fs.existsSync(path.join(workspace.handoff, "response.json")));
   }
 });
 
 test("worker publishes only the actual checkout diff for a patch result", (t) => {
-  const { work, task, output } = workerWorkspace(t);
+  const workspace = workerWorkspace(t);
+  const { work, output } = workspace;
   const git = (...args) =>
     execFileSync("git", args, { cwd: work, stdio: "pipe" });
-  git("init");
-  git("config", "user.name", "Test");
-  git("config", "user.email", "test@example.com");
   fs.writeFileSync(`${work}/extensions/ql-vscode/src/a.ts`, "before");
   git("add", ".");
   git("commit", "-m", "Initial");
   run({
-    work,
-    task,
-    output,
+    ...workspace,
     invoke: () => {
       fs.writeFileSync(`${work}/extensions/ql-vscode/src/a.ts`, "after");
       return {
@@ -1191,10 +1230,146 @@ test("worker publishes only the actual checkout diff for a patch result", (t) =>
       };
     },
   });
+  finalize(workspace);
   const result = JSON.parse(
     fs.readFileSync(path.join(output, "result.json"), "utf8"),
   );
   assert.deepEqual(result.files, [
     { path: "extensions/ql-vscode/src/a.ts", content: "after" },
   ]);
+});
+
+test("finalizer rejects symlinks and other nonregular response files", (t) => {
+  for (const kind of ["symlink", "dangling symlink", "directory"]) {
+    const workspace = workerWorkspace(t);
+    const filename = path.join(workspace.handoff, "response.json");
+    const target = path.join(workspace.workspace, "response-target.json");
+    if (kind === "directory") {
+      fs.mkdirSync(filename);
+    } else {
+      if (kind === "symlink") {
+        fs.writeFileSync(
+          target,
+          JSON.stringify({
+            outcome: "needs-maintainer",
+            summary: "Explanation",
+          }),
+        );
+      }
+      fs.symlinkSync(target, filename);
+    }
+    assert.throws(() => finalize(workspace), /Non-regular Copilot response/);
+    assert(!fs.existsSync(path.join(workspace.output, "result.json")));
+  }
+});
+
+test("workflow restores Git metadata before trusted finalization collects inference edits", (t) => {
+  const workspace = workerWorkspace(t);
+  const { work, backup, output } = workspace;
+  const git = (...args) =>
+    execFileSync("git", args, { cwd: work, stdio: "pipe" });
+  const source = path.join(work, "extensions/ql-vscode/src");
+  fs.writeFileSync(path.join(source, "a.ts"), "before");
+  fs.writeFileSync(path.join(source, "deleted.ts"), "remove");
+  fs.writeFileSync(path.join(work, ".gitignore"), "*.generated.ts\n");
+  git("config", "core.fsmonitor", "false");
+  git("add", ".");
+  git("commit", "-m", "Initial");
+  const originalIndex = fs.readFileSync(path.join(work, ".git/index"));
+  const originalHead = fs.readFileSync(path.join(work, ".git/HEAD"));
+  const originalConfig = fs.readFileSync(path.join(work, ".git/config"));
+  runWorkflowStep("Save original Git metadata", workspace);
+  const marker = path.join(workspace.workspace, "fsmonitor-marker");
+  run({
+    ...workspace,
+    invoke: () => {
+      fs.writeFileSync(path.join(source, "a.ts"), "after");
+      fs.unlinkSync(path.join(source, "deleted.ts"));
+      fs.writeFileSync(path.join(source, "new.ts"), "new");
+      fs.writeFileSync(path.join(source, "ignored.generated.ts"), "ignored");
+      git("add", "extensions/ql-vscode/src/new.ts");
+      git("add", "-f", "extensions/ql-vscode/src/ignored.generated.ts");
+      const hook = path.join(work, ".git/hooks/inference-monitor");
+      fs.writeFileSync(
+        hook,
+        `#!/bin/sh\nprintf '%s' "$SYNTHETIC_GIT_SECRET" > "${marker}"\n`,
+        { mode: 0o755 },
+      );
+      git("config", "core.fsmonitor", hook);
+      fs.writeFileSync(
+        path.join(work, ".git/HEAD"),
+        "ref: refs/heads/inference\n",
+      );
+      return {
+        status: 0,
+        stdout: JSON.stringify({ outcome: "patch", summary: "Repair" }),
+      };
+    },
+  });
+  runWorkflowStep("Restore Git metadata and finalize the repair", workspace, {
+    env: { ...process.env, SYNTHETIC_GIT_SECRET: "dummy-not-a-credential" },
+  });
+  assert(!fs.existsSync(marker));
+  assert(!fs.existsSync(path.join(work, ".git/hooks/inference-monitor")));
+  assert(fs.existsSync(`${backup}-discarded/hooks/inference-monitor`));
+  assert.deepEqual(
+    fs.readFileSync(path.join(work, ".git/index")),
+    originalIndex,
+  );
+  assert.deepEqual(fs.readFileSync(path.join(work, ".git/HEAD")), originalHead);
+  assert.deepEqual(
+    fs.readFileSync(path.join(work, ".git/config")),
+    originalConfig,
+  );
+  const result = JSON.parse(
+    fs.readFileSync(path.join(output, "result.json"), "utf8"),
+  );
+  assert.deepEqual(result.files, [
+    { path: "extensions/ql-vscode/src/a.ts", content: "after" },
+    { path: "extensions/ql-vscode/src/deleted.ts", content: null },
+    { path: "extensions/ql-vscode/src/new.ts", content: "new" },
+  ]);
+  assert(fs.existsSync(path.join(source, "ignored.generated.ts")));
+});
+
+test("workflow restores replaced or missing Git entries without following symlinks", (t) => {
+  for (const kind of ["symlink", "dangling symlink", "file", "missing"]) {
+    const workspace = workerWorkspace(t);
+    runWorkflowStep("Save original Git metadata", workspace);
+    const gitDirectory = path.join(workspace.work, ".git");
+    const target = path.join(workspace.workspace, "original-git");
+    fs.renameSync(gitDirectory, target);
+    const originalConfig = fs.readFileSync(path.join(target, "config"));
+    if (kind === "symlink") fs.symlinkSync(target, gitDirectory);
+    else if (kind === "dangling symlink")
+      fs.symlinkSync(`${target}-missing`, gitDirectory);
+    else if (kind === "file")
+      fs.writeFileSync(gitDirectory, "gitdir: elsewhere");
+    fs.writeFileSync(
+      path.join(workspace.handoff, "response.json"),
+      JSON.stringify({ outcome: "needs-maintainer", summary: "Explanation" }),
+    );
+    runWorkflowStep("Restore Git metadata and finalize the repair", workspace);
+    assert(fs.lstatSync(gitDirectory).isDirectory());
+    assert.deepEqual(
+      fs.readFileSync(path.join(target, "config")),
+      originalConfig,
+    );
+    assert.deepEqual(
+      fs.readFileSync(path.join(gitDirectory, "config")),
+      originalConfig,
+    );
+  }
+});
+
+test("workflow does not finalize when Git metadata restoration fails", (t) => {
+  const workspace = workerWorkspace(t);
+  fs.writeFileSync(
+    path.join(workspace.handoff, "response.json"),
+    JSON.stringify({ outcome: "needs-maintainer", summary: "Explanation" }),
+  );
+  assert.throws(() =>
+    runWorkflowStep("Restore Git metadata and finalize the repair", workspace),
+  );
+  assert(!fs.existsSync(path.join(workspace.output, "result.json")));
 });

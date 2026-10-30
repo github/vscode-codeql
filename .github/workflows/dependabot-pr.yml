@@ -163,12 +163,15 @@ jobs:
       - name: Prepare isolated worker
         run: |
           cp trusted/.github/dependabot-automation/{prompt.txt,worker.cjs,repair-protocol.cjs} task/
-          mkdir result diagnostics
+          mkdir handoff result diagnostics
           # Install the pinned CLI outside the dependency checkout, without secrets.
           docker run --rm \
             -v "$PWD/task:/task" \
             node:22.21.1-bookworm \
             npm install --prefix /task/cli @github/copilot@1.0.104
+      # Keep the original Git metadata outside every inference-container mount.
+      - name: Save original Git metadata
+        run: cp -a dependency/.git dependency-git
       - name: Diagnose and optionally prepare a migration
         env:
           # Read/inference only. No App secret/token enters this container.
@@ -183,10 +186,17 @@ jobs:
             -e PATH=/task/cli/node_modules/.bin:/usr/local/bin:/usr/bin:/bin \
             -v "$PWD/dependency:/work" \
             -v "$PWD/task:/task:ro" \
-            -v "$PWD/result:/result" \
+            -v "$PWD/handoff:/handoff" \
             -v "$PWD/diagnostics:/diagnostics" \
             -w /work node:22.21.1-bookworm \
-            node /task/worker.cjs
+            node /task/worker.cjs infer
+      - name: Restore Git metadata and finalize the repair
+        run: |
+          if [[ -e dependency/.git || -L dependency/.git ]]; then
+            mv dependency/.git dependency-git-discarded
+          fi
+          mv dependency-git dependency/.git
+          node trusted/.github/dependabot-automation/worker.cjs finalize
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: repair-${{ inputs.pr }}

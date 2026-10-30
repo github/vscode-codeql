@@ -85,7 +85,7 @@ function collectFiles(cwd) {
 function run({
   work = "/work",
   task = "/task",
-  output = "/result",
+  handoff = "/handoff",
   invoke = spawnSync,
 } = {}) {
   const prompt = fs.readFileSync(`${task}/prompt.txt`, "utf8");
@@ -150,7 +150,19 @@ function run({
   if (result.stderr) process.stderr.write(result.stderr);
   if (result.status !== 0)
     throw new Error(`Copilot exited with ${result.status}`);
-  const response = JSON.parse(result.stdout);
+  fs.writeFileSync(`${handoff}/response.json`, result.stdout);
+}
+
+function finalize({
+  work = "dependency",
+  handoff = "handoff",
+  output = "result",
+} = {}) {
+  const filename = `${handoff}/response.json`;
+  if (!fs.lstatSync(filename).isFile()) {
+    throw new Error("Non-regular Copilot response file rejected");
+  }
+  const response = JSON.parse(fs.readFileSync(filename, "utf8"));
   const outputResult = validateResult({
     outcome: response.outcome,
     summary: response.summary,
@@ -160,5 +172,10 @@ function run({
   fs.writeFileSync(`${output}/result.json`, JSON.stringify(outputResult));
 }
 
-if (require.main === module) run();
-module.exports = { collectFiles, run };
+if (require.main === module) {
+  const phase = process.argv[2];
+  if (phase === "infer") run();
+  else if (phase === "finalize") finalize();
+  else throw new Error("Expected infer or finalize");
+}
+module.exports = { collectFiles, run, finalize };

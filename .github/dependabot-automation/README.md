@@ -94,10 +94,21 @@ The index links the separate files and records unavailable or truncated evidence
 Each log retains at most its final 200 KiB, with an explicit truncation notice.
 The workflow transfers this bundle to the worker's read-only `/task` mount.
 
-The worker edits the exact investigated checkout at `/work` and writes
-`/result/result.json`. That artifact becomes `result/result.json` for publication.
-Its outcome is `patch` or `needs-maintainer`; only a patch includes file changes.
-Exploratory edits are excluded from a diagnosis result.
+Before inference, the workflow saves the checkout's complete `.git` directory
+outside every container mount. The worker edits the exact investigated checkout
+at `/work` and writes its raw response to `/handoff/response.json`. It cannot
+access the final-result directory.
+
+After the inference container has stopped, the workflow moves the modified `.git`
+entry aside without following symlinks and restores the saved metadata, leaving
+working-tree edits untouched. It then executes finalization from the trusted
+checkout on the runner. The finalizer requires the response file to be a regular
+file, collects actual checkout changes, and validates and writes
+`result/result.json` for publication. Its outcome is `patch` or `needs-maintainer`;
+only a patch includes file changes.
+Exploratory edits are excluded from a diagnosis result. Restoring the original
+index leaves ignored new files unsupported, even if Copilot force-staged them;
+their omission may leave an incomplete repair, and an empty patch is rejected.
 
 The CLI also exports `/diagnostics/transcript.md` and stores session events under
 `/diagnostics/copilot/session-state/`, outside the disposable container. The
@@ -125,6 +136,8 @@ is configured to strip that token from tool subprocesses.
 
 Dependabot provenance does not make dependency code trustworthy. The investigation
 job runs that code inside its restricted container with read/inference permissions.
+Finalization runs on the runner only after the container stops and trusted Git
+metadata is restored. The raw response and working-tree contents remain untrusted.
 The publisher runs separately and validates the untrusted repair artifact before
 using App credentials to write changes.
 
