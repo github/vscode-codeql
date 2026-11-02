@@ -1,0 +1,63 @@
+name: Dependabot automation
+
+on:
+  workflow_run:
+    workflows:
+      [
+        Build Extension,
+        Dependency Review,
+        Code Scanning - CodeQL,
+        Build Storybook,
+        Run CLI tests,
+        Bump CLI version,
+      ]
+    types: [completed]
+  schedule:
+    # Reconcile missed events and re-evaluate eligible PRs.
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+# Reusable jobs narrow these permissions further. Writes never run PR scripts.
+permissions:
+  # The controller can disarm native auto-merge; the worker overrides this to read.
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+  copilot-requests: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      prs: ${{ steps.discover.outputs.prs }}
+      has-prs: ${{ steps.discover.outputs.has-prs }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # workflow_run is privileged: always load controller code from main.
+          ref: main
+          persist-credentials: false
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        id: discover
+        with:
+          script: |
+            const { createController } = require('./.github/dependabot-automation/controller.cjs');
+            await createController({ github, context, core }).discover();
+
+  process:
+    needs: discover
+    if: needs.discover.outputs.has-prs == 'true'
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        pr: ${{ fromJSON(needs.discover.outputs.prs) }}
+    uses: ./.github/workflows/dependabot-pr.yml
+    with:
+      pr: ${{ matrix.pr }}
+    secrets:
+      CODEQL_CI_APP_PRIVATE_KEY: ${{ secrets.CODEQL_CI_APP_PRIVATE_KEY }}

@@ -1,0 +1,265 @@
+name: Process Dependabot PR
+
+on:
+  workflow_call:
+    inputs:
+      pr:
+        required: true
+        type: number
+    secrets:
+      CODEQL_CI_APP_PRIVATE_KEY:
+        required: true
+
+# Keep each PR's entire evaluate/retry/worker/publish sequence exclusive.
+concurrency:
+  group: dependabot-pr-${{ inputs.pr }}
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  PR_NUMBER: ${{ inputs.pr }}
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    permissions:
+      # Required to disarm native auto-merge. This job only runs main's controller.
+      contents: write
+      actions: read
+      pull-requests: write
+      issues: write
+    outputs:
+      action: ${{ steps.evaluate.outputs.action }}
+      head: ${{ steps.evaluate.outputs.head }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        id: evaluate
+        with:
+          # GITHUB_TOKEN handles PR state and log reads, never App credentials.
+          script: |
+            const { createController } = require('./.github/dependabot-automation/controller.cjs');
+            await createController({ github, context, core }).evaluate();
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.evaluate.outputs.action == 'investigate'
+        with:
+          name: investigation-${{ inputs.pr }}
+          # Include the index and its separate patch and job-log evidence.
+          path: investigation/
+          retention-days: 7
+
+  retry:
+    needs: evaluate
+    if: needs.evaluate.outputs.action == 'retry'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      EXPECTED_SHA: ${{ needs.evaluate.outputs.head }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Mint retry token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          # App-authenticated reruns generate ordinary workflow completion events.
+          # This token can rerun/report CI, but cannot push source changes.
+          client-id: ${{ vars.CODEQL_CI_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CODEQL_CI_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-actions: write
+          permission-pull-requests: write
+          permission-issues: write
+      - name: Retry failed jobs once before Copilot
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          github-token: ${{ steps.app.outputs.token }}
+          script: |
+            const { createController } = require('./.github/dependabot-automation/controller.cjs');
+            await createController({ github, context, core }).retry();
+
+  merge:
+    needs: evaluate
+    if: needs.evaluate.outputs.action == 'merge'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: dependabot-merge-main
+      cancel-in-progress: false
+      queue: max
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    env:
+      EXPECTED_SHA: ${{ needs.evaluate.outputs.head }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Approve pristine passing update
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          # The built-in token supplies the ordinary required review.
+          script: |
+            const { createController } = require('./.github/dependabot-automation/controller.cjs');
+            await createController({ github, context, core }).approve();
+      - name: Mint merge token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          # Federated secret + Actions variable; restrict the shared App's token.
+          client-id: ${{ vars.CODEQL_CI_APP_CLIENT_ID }}
+          private-key: ${{ secrets.CODEQL_CI_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: read
+          permission-actions: read
+      - name: Merge exact verified head
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          # codeql-ci-app is allowed to push to main, with no review/CI bypass.
+          github-token: ${{ steps.app.outputs.token }}
+          script: |
+            const { createController } = require('./.github/dependabot-automation/controller.cjs');
+            await createController({ github, context, core }).merge();
+  investigate:
+    needs: evaluate
+    if: needs.evaluate.outputs.action == 'investigate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      copilot-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          path: trusted
+          persist-credentials: false
+      # evaluate selects a same-repository, verified Dependabot head,
+      # independently of the workflow_run payload. Treat its code as untrusted:
+      # execute it only in the restricted container, without App credentials.
+      # The separate publisher validates results before writing changes.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.evaluate.outputs.head }}
+          path: dependency
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: investigation-${{ inputs.pr }}
+          path: task
+      - name: Prepare isolated worker
+        run: |
+          cp trusted/.github/dependabot-automation/{prompt.txt,worker.cjs,repair-protocol.cjs} task/
+          mkdir handoff result diagnostics
+          # Install the pinned CLI outside the dependency checkout, without secrets.
+          docker run --rm \
+            -v "$PWD/task:/task" \
+            node:22.21.1-bookworm \
+            npm install --prefix /task/cli @github/copilot@1.0.104
+      # Keep the original Git metadata outside every inference-container mount.
+      - name: Save original Git metadata
+        run: cp -a dependency/.git dependency-git
+      - name: Diagnose and optionally prepare a migration
+        env:
+          # Read/inference only. No App secret/token enters this container.
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          docker run --rm --init --cpus=2 --memory=6g \
+            --user "$(id -u):$(id -g)" \
+            --cap-drop=ALL --security-opt=no-new-privileges \
+            -e GITHUB_TOKEN -e HOME=/tmp -e COPILOT_HOME=/diagnostics/copilot \
+            -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory \
+            -e GIT_CONFIG_VALUE_0=/work \
+            -e PATH=/task/cli/node_modules/.bin:/usr/local/bin:/usr/bin:/bin \
+            -v "$PWD/dependency:/work" \
+            -v "$PWD/task:/task:ro" \
+            -v "$PWD/handoff:/handoff" \
+            -v "$PWD/diagnostics:/diagnostics" \
+            -w /work node:22.21.1-bookworm \
+            node /task/worker.cjs infer
+      - name: Restore Git metadata and finalize the repair
+        run: |
+          if [[ -e dependency/.git || -L dependency/.git ]]; then
+            mv dependency/.git dependency-git-discarded
+          fi
+          mv dependency-git dependency/.git
+          node trusted/.github/dependabot-automation/worker.cjs finalize
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: repair-${{ inputs.pr }}
+          path: result/result.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Preserve Copilot session
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: copilot-session-${{ inputs.pr }}-${{ github.run_attempt }}
+          path: |
+            diagnostics/transcript.md
+            diagnostics/copilot/session-state/**/events.jsonl
+          if-no-files-found: warn
+          retention-days: 7
+
+  publish:
+    needs: [evaluate, investigate]
+    if: needs.investigate.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      EXPECTED_SHA: ${{ needs.evaluate.outputs.head }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: repair-${{ inputs.pr }}
+          path: result
+      - name: Publish explanation or held repair
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          # Suppress push workflows; PR workflows require approval before running.
+          github-token: ${{ github.token }}
+          script: |
+            const { createController } = require('./.github/dependabot-automation/controller.cjs');
+            await createController({ github, context, core }).publish();
+
+  report-failure:
+    needs: [evaluate, retry, investigate, publish]
+    if: >-
+      always() &&
+      (needs.evaluate.result == 'failure' || needs.retry.result == 'failure' ||
+       (needs.evaluate.outputs.action == 'investigate' &&
+        (needs.investigate.result != 'success' || needs.publish.result != 'success')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { createController } = require('./.github/dependabot-automation/controller.cjs');
+            await createController({ github, context, core }).fail();
