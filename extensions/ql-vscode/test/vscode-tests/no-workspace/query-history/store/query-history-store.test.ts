@@ -95,6 +95,7 @@ describe("write and read", () => {
         }
       }
     });
+
     expectedHistory.forEach((info) => {
       if (info.t === "local" && info.completedQuery) {
         (info.completedQuery as any).dispose = undefined;
@@ -106,6 +107,20 @@ describe("write and read", () => {
       expect(allHistoryActual[i]).toEqual(expectedHistory[i]);
     }
     expect(allHistoryActual.length).toEqual(expectedHistory.length);
+  });
+
+  it("preserves server origins and repository URLs without changing legacy history", async () => {
+    const serverRun = createMockVariantAnalysisHistoryItem({});
+    serverRun.variantAnalysis.serverUrl = "https://mrva.example.com";
+    serverRun.variantAnalysis.controllerRepo.htmlUrl =
+      "https://source.example.com/org/controller";
+    serverRun.variantAnalysis.scannedRepos![0].repository.htmlUrl =
+      "https://source.example.com/org/repo";
+    const legacyRun = createMockVariantAnalysisHistoryItem({});
+    const historyPath = join(tmpDir.name, "server-and-legacy-history.json");
+    await writeQueryHistoryToFile([serverRun, legacyRun], historyPath);
+    const actual = await readQueryHistoryFromFile(historyPath);
+    expect(actual).toEqual([serverRun, legacyRun]);
   });
 
   it("should read query output dir from completed query if not present", async () => {

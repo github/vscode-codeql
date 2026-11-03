@@ -36,9 +36,7 @@ export const VariantAnalysisStatusStats = ({
       ) : (
         <span>{completedAt !== undefined ? formatDate(completedAt) : "-"}</span>
       )}
-      {onViewLogsClick && (
-        <Link onClick={onViewLogsClick}>View actions logs</Link>
-      )}
+      {onViewLogsClick && <Link onClick={onViewLogsClick}>View logs</Link>}
     </Container>
   );
 };

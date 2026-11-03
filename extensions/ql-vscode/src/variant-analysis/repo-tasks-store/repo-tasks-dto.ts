@@ -12,6 +12,7 @@ export interface VariantAnalysisRepositoryTaskDto {
 interface RepositoryDto {
   id: number;
   fullName: string;
+  htmlUrl?: string;
   private: boolean;
 }
 

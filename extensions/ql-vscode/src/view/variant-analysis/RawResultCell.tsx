@@ -7,7 +7,7 @@ import { Link } from "../common/Link";
 
 type CellProps = {
   value: CellValue;
-  fileLinkPrefix: string;
+  fileLinkPrefix: string | undefined;
   sourceLocationPrefix: string;
 };
 

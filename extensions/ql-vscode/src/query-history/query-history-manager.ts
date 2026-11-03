@@ -612,8 +612,6 @@ export class QueryHistoryManager extends DisposableObject {
   private async removeVariantAnalysis(
     item: VariantAnalysisHistoryItem,
   ): Promise<void> {
-    // We can remove a Variant Analysis locally, but not remotely.
-    // The user must cancel the query on GitHub Actions explicitly.
     if (item.status === QueryStatus.InProgress) {
       const response = await showBinaryChoiceDialog(
         `You are about to delete this query: ${this.labelProvider.getLabel(
@@ -623,12 +621,26 @@ export class QueryHistoryManager extends DisposableObject {
       if (!response) {
         return;
       }
+      if (item.variantAnalysis.serverUrl) {
+        const shouldCancel = await showInformationMessageWithAction(
+          "Removing this query from history will not stop the variant analysis running on the server.",
+          "Cancel variant analysis",
+        );
+        if (shouldCancel) {
+          await this.variantAnalysisManager.cancelVariantAnalysis(
+            item.variantAnalysis.id,
+          );
+        }
+      }
     }
 
     this.treeDataProvider.remove(item);
     void this.app.logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
 
-    if (item.status === QueryStatus.InProgress) {
+    if (
+      item.status === QueryStatus.InProgress &&
+      !item.variantAnalysis.serverUrl
+    ) {
       await this.showToastWithWorkflowRunLink(item);
     }
 
@@ -1043,12 +1055,8 @@ export class QueryHistoryManager extends DisposableObject {
     if (item.t !== "variant-analysis") {
       return;
     }
-
-    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(item);
-
-    await this.app.commands.execute(
-      "vscode.open",
-      Uri.parse(actionsWorkflowRunUrl),
+    await this.variantAnalysisManager.openVariantAnalysisLogs(
+      item.variantAnalysis.id,
     );
   }
 

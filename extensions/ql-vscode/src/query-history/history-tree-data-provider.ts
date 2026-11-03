@@ -7,6 +7,10 @@ import { getLanguage, getQueryId } from "./query-history-info";
 import { QueryStatus } from "./query-status";
 import type { HistoryItemLabelProvider } from "./history-item-label-provider";
 import type { LanguageContextStore } from "../language-context-store";
+import {
+  canViewVariantAnalysisLogs,
+  onDidChangeVariantAnalysisLogCapabilities,
+} from "../variant-analysis/variant-analysis-api";
 
 export enum SortOrder {
   NameAsc = "NameAsc",
@@ -68,6 +72,11 @@ export class HistoryTreeDataProvider
     private readonly languageContext: LanguageContextStore,
   ) {
     super();
+    this.push(
+      onDidChangeVariantAnalysisLogCapabilities(() =>
+        this._onDidChangeTreeData.fire(undefined),
+      ),
+    );
   }
 
   async getTreeItem(element: QueryHistoryInfo): Promise<TreeItem> {
@@ -122,12 +131,18 @@ export class HistoryTreeDataProvider
   }
 
   private async getContextValue(element: QueryHistoryInfo): Promise<string> {
+    const hasServerLogs =
+      element.t === "variant-analysis" && element.variantAnalysis.serverUrl
+        ? canViewVariantAnalysisLogs(element.variantAnalysis)
+        : false;
     switch (element.status) {
       case QueryStatus.InProgress:
         if (element.t === "local") {
           return "inProgressResultsItem";
+        } else if (element.variantAnalysis.serverUrl && !hasServerLogs) {
+          return "inProgressRemoteResultsItemWithoutLogs";
         } else if (
-          element.t === "variant-analysis" &&
+          !element.variantAnalysis.serverUrl &&
           element.variantAnalysis.actionsWorkflowRunId === undefined
         ) {
           return "pendingRemoteResultsItem";
@@ -140,12 +155,18 @@ export class HistoryTreeDataProvider
             await element.completedQuery?.query.hasInterpretedResults();
           return hasResults ? "interpretedResultsItem" : "rawResultsItem";
         } else {
-          return "remoteResultsItem";
+          return element.variantAnalysis.serverUrl && !hasServerLogs
+            ? "remoteResultsItemWithoutLogs"
+            : "remoteResultsItem";
         }
       case QueryStatus.Failed:
         if (element.t === "local") {
           return "cancelledResultsItem";
-        } else if (element.variantAnalysis.actionsWorkflowRunId === undefined) {
+        } else if (
+          element.variantAnalysis.serverUrl
+            ? !hasServerLogs
+            : element.variantAnalysis.actionsWorkflowRunId === undefined
+        ) {
           return "cancelledRemoteResultsItemWithoutLogs";
         } else {
           return "cancelledRemoteResultsItem";

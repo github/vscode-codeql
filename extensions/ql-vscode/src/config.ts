@@ -54,6 +54,15 @@ export class Setting {
       .get<T>(this.name)!;
   }
 
+  getGlobalValue<T>(): T | undefined {
+    if (this.parent === undefined) {
+      throw new Error("Cannot get the value of a root setting.");
+    }
+    return workspace
+      .getConfiguration(this.parent.qualifiedName)
+      .inspect<T>(this.name)?.globalValue;
+  }
+
   updateValue<T>(value: T, target: ConfigurationTarget): Thenable<void> {
     if (this.parent === undefined) {
       throw new Error("Cannot update the value of a root setting.");
@@ -605,6 +614,84 @@ export async function setRemoteControllerRepo(repo: string | undefined) {
   await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
 }
 
+/**
+ * INTERNAL AND UNSUPPORTED: these settings are intentionally not declared in
+ * package.json and are not documented publicly. See
+ * docs/variant-analysis-custom-server.md.
+ *
+ * `serverUrl` points variant analysis at a self-hosted server that implements
+ * the GitHub variant analysis REST endpoints, instead of GitHub.
+ * `serverTokenProvider` is the ID of an installed extension that supplies the
+ * bearer token for that server.
+ *
+ * Both are only read from user or machine (global) settings, so a workspace
+ * cannot redirect queries or tokens.
+ */
+const VARIANT_ANALYSIS_SERVER_URL = new Setting(
+  "serverUrl",
+  VARIANT_ANALYSIS_SETTING,
+);
+const VARIANT_ANALYSIS_SERVER_TOKEN_PROVIDER = new Setting(
+  "serverTokenProvider",
+  VARIANT_ANALYSIS_SETTING,
+);
+
+export interface VariantAnalysisServerConfig {
+  /** The server's base URL, always `https:` and without a trailing slash. */
+  url: string;
+  /** ID of the extension that provides the bearer token. */
+  tokenProviderExtensionId: string | undefined;
+}
+
+function getGlobalStringSetting(setting: Setting): string | undefined {
+  const value = setting.getGlobalValue<string>();
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+/**
+ * Returns the custom variant analysis server configuration, or `undefined`
+ * if variant analysis should use GitHub. Throws if the server URL is invalid,
+ * rather than silently falling back to GitHub.
+ */
+export function getVariantAnalysisServerConfig():
+  VariantAnalysisServerConfig | undefined {
+  const rawUrl = getGlobalStringSetting(VARIANT_ANALYSIS_SERVER_URL);
+  if (!rawUrl) {
+    return undefined;
+  }
+
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    throw new Error(
+      `Invalid ${VARIANT_ANALYSIS_SERVER_URL.qualifiedName} setting: ${rawUrl}`,
+    );
+  }
+  if (
+    url.protocol !== "https:" ||
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash
+  ) {
+    throw new Error(
+      `${VARIANT_ANALYSIS_SERVER_URL.qualifiedName} must be an https URL without credentials, a query string, or a fragment.`,
+    );
+  }
+
+  return {
+    url: url.toString().replace(/\/+$/, ""),
+    tokenProviderExtensionId: getGlobalStringSetting(
+      VARIANT_ANALYSIS_SERVER_TOKEN_PROVIDER,
+    ),
+  };
+}
+
+export function isVariantAnalysisServerConfigured(): boolean {
+  return getGlobalStringSetting(VARIANT_ANALYSIS_SERVER_URL) !== undefined;
+}
+
 export interface VariantAnalysisConfig {
   controllerRepo: string | undefined;
   showSystemDefinedRepositoryLists: boolean;
@@ -632,7 +719,7 @@ export class VariantAnalysisConfigListener
   }
 
   public get showSystemDefinedRepositoryLists(): boolean {
-    return !hasEnterpriseUri();
+    return !hasEnterpriseUri() && !isVariantAnalysisServerConfigured();
   }
 
   public get githubUrl(): URL {

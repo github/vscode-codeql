@@ -19,6 +19,7 @@ import {
 import type { ModelAlertsFilterSortState } from "../../model-editor/shared/model-alerts-filter-sort";
 import type { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMessageFromExtension } from "../common/useMessageFromExtension";
+import { hasVariantAnalysisLogs } from "../../variant-analysis/shared/variant-analysis";
 
 type Props = {
   initialViewState?: ModelAlertsViewState;
@@ -118,8 +119,9 @@ export function ModelAlerts({
     });
   };
 
-  const onViewLogsClick =
-    variantAnalysis.actionsWorkflowRunId === undefined ? undefined : openLogs;
+  const onViewLogsClick = hasVariantAnalysisLogs(variantAnalysis)
+    ? openLogs
+    : undefined;
 
   return (
     <>

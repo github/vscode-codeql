@@ -2,7 +2,7 @@ import type { RawResultSet } from "../../common/raw-result-types";
 
 export interface AnalysisRawResults {
   resultSet: RawResultSet;
-  fileLinkPrefix: string;
+  fileLinkPrefix: string | undefined;
   sourceLocationPrefix: string;
   capped: boolean;
 }
@@ -18,7 +18,7 @@ export interface AnalysisAlert {
 }
 
 export interface FileLink {
-  fileLinkPrefix: string;
+  fileLinkPrefix: string | undefined;
   filePath: string;
 }
 

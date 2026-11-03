@@ -110,6 +110,7 @@ import { LogScannerService } from "./log-insights/log-scanner-service";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
+import { watchVariantAnalysisLogCapabilities } from "./variant-analysis/variant-analysis-api";
 import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./common/mock-gh-api/vscode/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
@@ -920,6 +921,7 @@ async function activateWithInstalledDistribution(
   );
   await ensureDir(variantAnalysisStorageDir);
   const variantAnalysisConfig = new VariantAnalysisConfigListener();
+  ctx.subscriptions.push(watchVariantAnalysisLogCapabilities());
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
     cliServer,
     variantAnalysisConfig,

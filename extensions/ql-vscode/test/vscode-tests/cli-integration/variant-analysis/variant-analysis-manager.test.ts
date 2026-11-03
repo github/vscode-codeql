@@ -11,6 +11,7 @@ import {
   setRemoteControllerRepo,
 } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
+import * as variantAnalysisApi from "../../../../src/variant-analysis/variant-analysis-api";
 import { isAbsolute, join } from "path";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
@@ -77,7 +78,7 @@ describe("Variant Analysis Manager", () => {
       typeof ghApiClient.getRepositoryFromNwo
     >;
     let mockSubmitVariantAnalysis: jest.SpiedFunction<
-      typeof ghApiClient.submitVariantAnalysis
+      typeof variantAnalysisApi.submitVariantAnalysis
     >;
     let mockApiResponse: VariantAnalysisApiResponse;
     let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
@@ -106,7 +107,7 @@ describe("Variant Analysis Manager", () => {
 
       mockApiResponse = createMockApiResponse("in_progress");
       mockSubmitVariantAnalysis = jest
-        .spyOn(ghApiClient, "submitVariantAnalysis")
+        .spyOn(variantAnalysisApi, "submitVariantAnalysis")
         .mockResolvedValue(mockApiResponse);
 
       executeCommandSpy = jest.spyOn(commands, "executeCommand");
@@ -255,7 +256,7 @@ describe("Variant Analysis Manager", () => {
     describe("check variant analysis generated packs", () => {
       beforeEach(() => {
         mockSubmitVariantAnalysis = jest
-          .spyOn(ghApiClient, "submitVariantAnalysis")
+          .spyOn(variantAnalysisApi, "submitVariantAnalysis")
           .mockResolvedValue({
             id: 1,
             query_language: QueryLanguage.Javascript,

@@ -6,6 +6,8 @@ import { Link } from "../common/Link";
 
 type Props = {
   failureReason: VariantAnalysisFailureReason;
+  serverUrl?: string;
+  canViewLogs?: boolean;
 };
 
 const openLogs = () => {
@@ -14,27 +16,45 @@ const openLogs = () => {
   });
 };
 
-const getTitle = (failureReason: VariantAnalysisFailureReason): string => {
+const getTitle = (
+  failureReason: VariantAnalysisFailureReason,
+  serverUrl?: string,
+): string => {
   switch (failureReason) {
     case VariantAnalysisFailureReason.NoReposQueried:
       return "No repositories to analyze";
     case VariantAnalysisFailureReason.ActionsWorkflowRunFailed:
-      return "GitHub Actions workflow run failed";
+      return serverUrl
+        ? "Variant analysis failed"
+        : "GitHub Actions workflow run failed";
     case VariantAnalysisFailureReason.InternalError:
       return "Something unexpected happened";
   }
 };
 
-const getMessage = (failureReason: VariantAnalysisFailureReason): ReactNode => {
+const getMessage = (
+  failureReason: VariantAnalysisFailureReason,
+  serverUrl?: string,
+  canViewLogs?: boolean,
+): ReactNode => {
   switch (failureReason) {
     case VariantAnalysisFailureReason.NoReposQueried:
       return "No repositories available after processing. No repositories were analyzed.";
     case VariantAnalysisFailureReason.ActionsWorkflowRunFailed:
       return (
         <>
-          The GitHub Actions workflow run has failed.{" "}
-          <Link onClick={openLogs}>View actions logs</Link> and try running this
-          query again.
+          {serverUrl
+            ? "The variant analysis run has failed."
+            : "The GitHub Actions workflow run has failed."}{" "}
+          {(canViewLogs ?? !serverUrl) && (
+            <>
+              <Link onClick={openLogs}>
+                {serverUrl ? "View logs" : "View actions logs"}
+              </Link>{" "}
+              and{" "}
+            </>
+          )}
+          try running this query again.
         </>
       );
     case VariantAnalysisFailureReason.InternalError:
@@ -42,12 +62,16 @@ const getMessage = (failureReason: VariantAnalysisFailureReason): ReactNode => {
   }
 };
 
-export const FailureReasonAlert = ({ failureReason }: Props) => {
+export const FailureReasonAlert = ({
+  failureReason,
+  serverUrl,
+  canViewLogs,
+}: Props) => {
   return (
     <Alert
       type="error"
-      title={getTitle(failureReason)}
-      message={getMessage(failureReason)}
+      title={getTitle(failureReason, serverUrl)}
+      message={getMessage(failureReason, serverUrl, canViewLogs)}
     />
   );
 };

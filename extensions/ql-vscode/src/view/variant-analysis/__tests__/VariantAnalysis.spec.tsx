@@ -34,6 +34,24 @@ describe(VariantAnalysis.name, () => {
     ).toBeInTheDocument();
   });
 
+  it.each([true, false])(
+    "shows a server run without a workflow ID (logs supported: %s)",
+    (canViewLogs) => {
+      render({
+        variantAnalysis: {
+          ...createMockVariantAnalysis({}),
+          serverUrl: "https://mrva.example.com",
+          actionsWorkflowRunId: undefined,
+          canViewLogs,
+        },
+      });
+      expect(
+        screen.queryByText("We are getting everything ready"),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText("View logs") !== null).toBe(canViewLogs);
+    },
+  );
+
   it("renders an analysis where there were no repos to analyse", () => {
     const variantAnalysis = createMockVariantAnalysis({
       status: VariantAnalysisStatus.Failed,

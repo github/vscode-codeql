@@ -15,6 +15,7 @@ import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockVariantAnalysisConfig } from "../../../factories/config";
 import { setupServer } from "msw/node";
 import { http } from "msw";
+import { writeRepoTask } from "../../../../src/variant-analysis/repo-tasks-store";
 
 jest.setTimeout(10_000);
 
@@ -275,10 +276,7 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     describe("when the repo task has been written to disk", () => {
       beforeEach(async () => {
-        await outputJson(
-          join(repoTaskStorageDirectory, "repo_task.json"),
-          dummyRepoTask,
-        );
+        await writeRepoTask(repoTaskStorageDirectory, dummyRepoTask);
       });
 
       describe("when the results are not downloaded", () => {
@@ -303,14 +301,48 @@ describe(VariantAnalysisResultsManager.name, () => {
           );
         });
 
-        it("should return the results when not cached", async () => {
-          await expect(
-            variantAnalysisResultsManager.loadResults(
+        it.each([
+          [
+            "https://source.example.com/scm/org/repo",
+            "https://source.example.com/scm/org/repo/blob/abc123",
+          ],
+          [undefined, undefined],
+          ["javascript:alert(1)", undefined],
+          ["not a URL", undefined],
+        ])(
+          "uses the supplied repository URL or omits links: %s",
+          async (htmlUrl, expectedPrefix) => {
+            dummyRepoTask.repository.htmlUrl = htmlUrl;
+            dummyRepoTask.databaseCommitSha = "abc123";
+            await outputJson(
+              join(repoTaskStorageDirectory, "repo_task.json"),
+              dummyRepoTask,
+            );
+            const result = await variantAnalysisResultsManager.loadResults(
               variantAnalysisId,
               variantAnalysisStoragePath,
               dummyRepoTask.repository.fullName,
-            ),
-          ).resolves.toHaveProperty("interpretedResults");
+              { serverUrl: "https://mrva.example.com" },
+            );
+            expect(result.interpretedResults?.length).toBeGreaterThan(0);
+            for (const alert of result.interpretedResults ?? []) {
+              expect(alert.fileLink.fileLinkPrefix).toBe(expectedPrefix);
+            }
+          },
+        );
+
+        it("should return the results when not cached", async () => {
+          const result = await variantAnalysisResultsManager.loadResults(
+            variantAnalysisId,
+            variantAnalysisStoragePath,
+            dummyRepoTask.repository.fullName,
+          );
+          expect(result.interpretedResults?.length).toBeGreaterThan(0);
+          for (const alert of result.interpretedResults ?? []) {
+            expect(alert.fileLink.fileLinkPrefix).toBe(
+              `https://github.com/${dummyRepoTask.repository.fullName}/blob/${dummyRepoTask.databaseCommitSha}`,
+            );
+          }
 
           expect(onResultLoadedSpy).toHaveBeenCalledTimes(1);
           expect(onResultLoadedSpy).toHaveBeenCalledWith(
