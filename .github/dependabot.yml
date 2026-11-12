@@ -22,6 +22,11 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      # react and react-dom must be kept at the same version
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
       storybook:
         patterns:
           - "@storybook/*"
