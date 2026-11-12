@@ -2111,7 +2111,7 @@
     "@jest/environment": "^30.5.2",
     "@jest/environment-jsdom-abstract": "^30.5.2",
     "@microsoft/eslint-formatter-sarif": "^3.1.0",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.64.1",
     "@storybook/addon-a11y": "^10.6.5",
     "@storybook/addon-docs": "^10.6.5",
     "@storybook/addon-links": "^10.6.5",
