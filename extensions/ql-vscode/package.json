@@ -2099,7 +2099,7 @@
     "vscode-jsonrpc": "^8.2.1",
     "vscode-languageclient": "^8.0.2",
     "yauzl": "^3.4.0",
-    "zip-a-folder": "^4.0.4"
+    "zip-a-folder": "^7.0.1"
   },
   "devDependencies": {
     "@babel/core": "^8.0.6",
