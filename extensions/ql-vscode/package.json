@@ -2077,7 +2077,7 @@
     "@vscode/codicons": "^0.0.44",
     "@vscode/debugadapter": "^1.68.0",
     "@vscode/debugprotocol": "^1.68.0",
-    "ajv": "^8.18.0",
+    "ajv": "^8.20.0",
     "chokidar": "^5.0.0",
     "d3-graphviz": "^5.6.0",
     "fs-extra": "^11.1.1",
