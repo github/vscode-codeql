@@ -323,7 +323,7 @@ function generateMarkdownForRawResults(
 
 function generateMarkdownForRawTableCell(
   value: CellValue,
-  fileLinkPrefix: string,
+  fileLinkPrefix: string | undefined,
   sourceLocationPrefix: string,
 ) {
   let cellValue: string;
@@ -363,16 +363,15 @@ function createMarkdownRemoteFileRef(
   region?: HighlightedRegion,
   linkText?: string,
 ): string {
-  const markdownLink = `[${
-    linkText || fileLink.filePath
-  }](${createRemoteFileRef(
+  const url = createRemoteFileRef(
     fileLink,
     region?.startLine,
     region?.endLine,
     region?.startColumn,
     region?.endColumn,
-  )})`;
-  return markdownLink;
+  );
+  const text = linkText || fileLink.filePath;
+  return url ? `[${text}](${url})` : text;
 }
 
 /**

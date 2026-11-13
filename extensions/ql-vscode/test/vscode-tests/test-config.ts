@@ -227,8 +227,18 @@ export const beforeEachAction = async () => {
           has(key: string) {
             return configuration.has(section, key);
           },
-          inspect(_key: string) {
-            throw new Error("inspect is not supported in tests");
+          inspect<T>(key: string) {
+            const valueFor = (target: ConfigurationTarget) =>
+              configuration.getConfiguration(target).get<T>(section, key);
+            return {
+              key: section ? `${section}.${key}` : key,
+              defaultValue: defaultConfiguration.get<T>(section, key),
+              globalValue: valueFor(ConfigurationTarget.Global),
+              workspaceValue: valueFor(ConfigurationTarget.Workspace),
+              workspaceFolderValue: valueFor(
+                ConfigurationTarget.WorkspaceFolder,
+              ),
+            };
           },
           async update(
             key: string,

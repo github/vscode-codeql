@@ -6,7 +6,10 @@ export function createRemoteFileRef(
   endLine?: number,
   startColumn?: number,
   endColumn?: number,
-): string {
+): string | undefined {
+  if (!fileLink.fileLinkPrefix) {
+    return undefined;
+  }
   if (
     startColumn &&
     endColumn &&

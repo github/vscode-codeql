@@ -1,4 +1,4 @@
-import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
+import * as variantAnalysisApi from "../../../../src/variant-analysis/variant-analysis-api";
 import { RequestError } from "@octokit/request-error";
 import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
 import type {
@@ -28,7 +28,7 @@ jest.setTimeout(60_000);
 
 describe("Variant Analysis Monitor", () => {
   let mockGetVariantAnalysisFromApi: jest.SpiedFunction<
-    typeof ghApiClient.getVariantAnalysis
+    typeof variantAnalysisApi.getVariantAnalysis
   >;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let shouldCancelMonitor: jest.Mock<Promise<boolean>, [number]>;
@@ -61,7 +61,7 @@ describe("Variant Analysis Monitor", () => {
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
 
     mockGetVariantAnalysisFromApi = jest
-      .spyOn(ghApiClient, "getVariantAnalysis")
+      .spyOn(variantAnalysisApi, "getVariantAnalysis")
       .mockRejectedValue(new Error("Not mocked"));
 
     mockGetVariantAnalysis.mockReturnValue(variantAnalysis);
@@ -344,7 +344,7 @@ describe("Variant Analysis Monitor", () => {
 
     describe("cancelation", () => {
       it("should maintain canceling status", async () => {
-        mockGetVariantAnalysis.mockReturnValueOnce({
+        mockGetVariantAnalysis.mockReturnValue({
           ...variantAnalysis,
           status: VariantAnalysisStatus.Canceling,
         });

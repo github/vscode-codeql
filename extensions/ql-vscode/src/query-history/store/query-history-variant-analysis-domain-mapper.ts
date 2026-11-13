@@ -48,9 +48,11 @@ function mapVariantAnalysisDtoToDto(
 ): VariantAnalysisDto {
   return {
     id: variantAnalysis.id,
+    serverUrl: variantAnalysis.serverUrl,
     controllerRepo: {
       id: variantAnalysis.controllerRepo.id,
       fullName: variantAnalysis.controllerRepo.fullName,
+      htmlUrl: variantAnalysis.controllerRepo.htmlUrl,
       private: variantAnalysis.controllerRepo.private,
     },
     query: {
@@ -96,6 +98,7 @@ function mapVariantAnalysisScannedRepositoryToDto(
     repository: {
       id: repo.repository.id,
       fullName: repo.repository.fullName,
+      htmlUrl: repo.repository.htmlUrl,
       private: repo.repository.private,
       stargazersCount: repo.repository.stargazersCount,
       updatedAt: repo.repository.updatedAt,

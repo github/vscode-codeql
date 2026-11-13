@@ -12,6 +12,7 @@ import { extLogger } from "../common/logging/vscode";
 import {
   getActionBranch,
   getRemoteControllerRepo,
+  isVariantAnalysisServerConfigured,
   setRemoteControllerRepo,
 } from "../config";
 import type { ProgressCallback } from "../common/vscode/progress";
@@ -20,6 +21,7 @@ import type { RequestError } from "@octokit/types/dist-types";
 import type { QueryMetadata } from "../common/interface-types";
 import { getErrorMessage, REPO_REGEX } from "../common/helpers-pure";
 import { getRepositoryFromNwo } from "./gh-api/gh-api-client";
+import { SERVER_CONTROLLER_REPO_ID } from "./gh-api/variant-analysis-server-client";
 import type { RepositorySelection } from "./repository-selection";
 import {
   getRepositorySelection,
@@ -329,6 +331,11 @@ export function getQueryName(
 export async function getControllerRepo(
   credentials: Credentials,
 ): Promise<Repository> {
+  // A custom variant analysis server does not use controller repositories.
+  if (isVariantAnalysisServerConfigured()) {
+    return { id: SERVER_CONTROLLER_REPO_ID, fullName: "", private: true };
+  }
+
   // Get the controller repo from the config, if it exists.
   // If it doesn't exist, prompt the user to enter it, check
   // whether the repo exists, and save the nwo to the config.

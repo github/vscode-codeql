@@ -1,6 +1,7 @@
 export interface Repository {
   id: number;
   fullName: string;
+  htmlUrl?: string;
   private: boolean;
 }
 

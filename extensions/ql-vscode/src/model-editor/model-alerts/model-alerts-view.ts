@@ -22,6 +22,10 @@ import type {
 import type { AppEvent, AppEventEmitter } from "../../common/events";
 import type { ModeledMethod } from "../modeled-method";
 import type { MethodSignature } from "../method";
+import {
+  onDidChangeVariantAnalysisLogCapabilities,
+  withVariantAnalysisLogCapability,
+} from "../../variant-analysis/variant-analysis-api";
 
 export class ModelAlertsView extends AbstractWebview<
   ToModelAlertsMessage,
@@ -31,6 +35,7 @@ export class ModelAlertsView extends AbstractWebview<
 
   public readonly onEvaluationRunStopClicked: AppEvent<void>;
   private readonly onEvaluationRunStopClickedEventEmitter: AppEventEmitter<void>;
+  private variantAnalysis?: VariantAnalysis;
 
   public constructor(
     app: App,
@@ -42,6 +47,13 @@ export class ModelAlertsView extends AbstractWebview<
     super(app);
 
     this.registerToModelingEvents();
+    this.push(
+      onDidChangeVariantAnalysisLogCapabilities(() => {
+        if (this.variantAnalysis) {
+          void this.setVariantAnalysis(this.variantAnalysis);
+        }
+      }),
+    );
 
     this.onEvaluationRunStopClickedEventEmitter = this.push(
       app.createEventEmitter<void>(),
@@ -124,13 +136,14 @@ export class ModelAlertsView extends AbstractWebview<
   public async setVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
+    this.variantAnalysis = variantAnalysis;
     if (!this.isShowingPanel) {
       return;
     }
 
     await this.postMessage({
       t: "setVariantAnalysis",
-      variantAnalysis,
+      variantAnalysis: withVariantAnalysisLogCapability(variantAnalysis),
     });
   }
 

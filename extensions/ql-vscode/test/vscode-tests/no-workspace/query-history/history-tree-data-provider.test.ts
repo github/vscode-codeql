@@ -32,6 +32,7 @@ import { createMockApp } from "../../../__mocks__/appMock";
 import { LanguageContextStore } from "../../../../src/language-context-store";
 import type { App } from "../../../../src/common/app";
 import { QueryLanguage } from "../../../../src/common/query-language";
+import * as variantAnalysisApi from "../../../../src/variant-analysis/variant-analysis-api";
 
 describe("HistoryTreeDataProvider", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -144,6 +145,49 @@ describe("HistoryTreeDataProvider", () => {
   });
 
   describe("getTreeItem", () => {
+    describe.each([
+      [
+        QueryStatus.InProgress,
+        VariantAnalysisStatus.InProgress,
+        "inProgressRemoteResultsItem",
+      ],
+      [
+        QueryStatus.Completed,
+        VariantAnalysisStatus.Succeeded,
+        "remoteResultsItem",
+      ],
+      [
+        QueryStatus.Failed,
+        VariantAnalysisStatus.Failed,
+        "cancelledRemoteResultsItem",
+      ],
+    ])(
+      "server run with status %s",
+      (historyItemStatus, variantAnalysisStatus, context) => {
+        it.each([
+          [true, undefined],
+          [false, undefined],
+          [false, 123],
+        ] as const)(
+          "uses log capability %s rather than workflow ID %s",
+          async (canViewLogs, workflowId) => {
+            jest
+              .spyOn(variantAnalysisApi, "canViewVariantAnalysisLogs")
+              .mockReturnValue(canViewLogs);
+            const item = createMockVariantAnalysisHistoryItem({
+              historyItemStatus,
+              variantAnalysisStatus,
+            });
+            item.variantAnalysis.serverUrl = "https://mrva.example.com";
+            item.variantAnalysis.actionsWorkflowRunId = workflowId;
+            expect(
+              (await historyTreeDataProvider.getTreeItem(item)).contextValue,
+            ).toBe(`${context}${canViewLogs ? "" : "WithoutLogs"}`);
+          },
+        );
+      },
+    );
+
     it("should get a tree item with raw results", async () => {
       const mockQueryWithRawResults = createMockLocalQueryInfo({
         dbName: "a",

@@ -1,9 +1,11 @@
 import { join } from "path";
 
 import {
+  cancelVariantAnalysis,
   submitVariantAnalysis,
   getVariantAnalysisRepo,
-} from "./gh-api/gh-api-client";
+  openServerVariantAnalysisLogs,
+} from "./variant-analysis-api";
 import type { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
 import type {
   AuthenticationSessionsChangeEvent,
@@ -52,7 +54,6 @@ import PQueue from "p-queue";
 import { createTimestampFile, saveBeforeStart } from "../run-queries-shared";
 import { readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
-import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
 import type { ProgressCallback } from "../common/vscode/progress";
 import {
   UserCancellationException,
@@ -98,7 +99,7 @@ import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
 import { isSarifResultsQueryKind } from "../common/query-metadata";
 import { isVariantAnalysisEnabledForGitHubHost } from "./ghec-dr";
 import type { VariantAnalysisConfig } from "../config";
-import { getEnterpriseUri } from "../config";
+import { getEnterpriseUri, getVariantAnalysisServerConfig } from "../config";
 
 const maxRetryCount = 3;
 
@@ -337,6 +338,7 @@ export class VariantAnalysisManager
     }
 
     await saveBeforeStart();
+    const serverUrl = getVariantAnalysisServerConfig()?.url;
 
     progress({
       maxStep: 5,
@@ -400,6 +402,7 @@ export class VariantAnalysisManager
           };
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
+      serverUrl,
       startTime: queryStartTime,
       actionRepoRef: actionBranch,
       controllerRepoId: controllerRepo.id,
@@ -428,6 +431,7 @@ export class VariantAnalysisManager
     } catch (e) {
       // If the error is handled by the handleRequestError function, we don't need to throw
       if (
+        !serverUrl &&
         e instanceof RequestError &&
         handleRequestError(e, this.config.githubUrl, this.app.logger)
       ) {
@@ -643,7 +647,7 @@ export class VariantAnalysisManager
       variantAnalysisId,
       this.getVariantAnalysisStorageLocation(variantAnalysisId),
       repositoryFullName,
-      options,
+      { ...options, serverUrl: variantAnalysis.serverUrl },
     );
   }
 
@@ -810,9 +814,11 @@ export class VariantAnalysisManager
         variantAnalysis.controllerRepo.id,
         variantAnalysis.id,
         scannedRepo.repository.id,
+        variantAnalysis.serverUrl,
       );
 
       repoTask = mapVariantAnalysisRepositoryTask(repoTaskResponse);
+      repoTask.repository.htmlUrl ??= scannedRepo.repository.htmlUrl;
     } catch (e) {
       repoState.downloadStatus =
         VariantAnalysisScannedRepositoryDownloadStatus.Failed;
@@ -927,7 +933,7 @@ export class VariantAnalysisManager
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    if (!variantAnalysis.actionsWorkflowRunId) {
+    if (!variantAnalysis.serverUrl && !variantAnalysis.actionsWorkflowRunId) {
       throw new Error(
         `No workflow run id for variant analysis with id: ${variantAnalysis.id}`,
       );
@@ -957,6 +963,11 @@ export class VariantAnalysisManager
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    if (variantAnalysis.serverUrl) {
+      await openServerVariantAnalysisLogs(variantAnalysis);
+      return;
     }
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(

@@ -25,7 +25,10 @@ import type { App } from "../../common/app";
 import { QueryLanguage } from "../../common/query-language";
 import { getCodeSearchRepositories } from "../code-search-api";
 import { showAndLogErrorMessage } from "../../common/logging";
-import { getGitHubInstanceUrl } from "../../config";
+import {
+  getGitHubInstanceUrl,
+  isVariantAnalysisServerConfigured,
+} from "../../config";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -415,6 +418,11 @@ export class DbPanel extends DisposableObject {
   }
 
   private async openOnGitHub(treeViewItem: DbTreeViewItem): Promise<void> {
+    if (isVariantAnalysisServerConfigured()) {
+      throw new Error(
+        "Opening repositories on GitHub is not supported with a custom variant analysis server.",
+      );
+    }
     if (treeViewItem.dbItem === undefined) {
       throw new Error("Unable to open on GitHub. Please select a valid item.");
     }

@@ -15,9 +15,11 @@ export interface QueryHistoryVariantAnalysisDto {
 
 export interface VariantAnalysisDto {
   id: number;
+  serverUrl?: string;
   controllerRepo: {
     id: number;
     fullName: string;
+    htmlUrl?: string;
     private: boolean;
   };
   query: {
@@ -47,6 +49,7 @@ export interface VariantAnalysisScannedRepositoryDto {
   repository: {
     id: number;
     fullName: string;
+    htmlUrl?: string;
     private: boolean;
     stargazersCount: number;
     updatedAt: string | null;

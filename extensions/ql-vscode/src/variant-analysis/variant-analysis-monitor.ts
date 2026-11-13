@@ -1,5 +1,5 @@
 import { env, EventEmitter } from "vscode";
-import { getVariantAnalysis } from "./gh-api/gh-api-client";
+import { getVariantAnalysis } from "./variant-analysis-api";
 import { RequestError } from "@octokit/request-error";
 
 import type {
@@ -101,6 +101,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
           this.app.credentials,
           controllerRepoId,
           variantAnalysisId,
+          this.getVariantAnalysis(variantAnalysisId).serverUrl,
         );
       } catch (e) {
         const errorMessage = getErrorMessage(e);

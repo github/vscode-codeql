@@ -79,6 +79,7 @@ describe("QueryHistoryManager", () => {
       onVariantAnalysisRemoved: jest.fn(),
       removeVariantAnalysis: jest.fn(),
       cancelVariantAnalysis: jest.fn(),
+      openVariantAnalysisLogs: jest.fn(),
       exportResults: jest.fn(),
       showView: jest.fn(),
     } as any as VariantAnalysisManager;
@@ -146,6 +147,25 @@ describe("QueryHistoryManager", () => {
     if (queryHistoryManager) {
       queryHistoryManager.dispose();
     }
+  });
+
+  describe("handleOpenOnGithub", () => {
+    it.each([undefined, "https://mrva.example.com"])(
+      "delegates log viewing without opening a workflow URL directly: %s",
+      async (serverUrl) => {
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        const item = variantAnalysisHistory[0];
+        item.variantAnalysis.serverUrl = serverUrl;
+        await queryHistoryManager.handleOpenOnGithub(item);
+        expect(
+          variantAnalysisManagerStub.openVariantAnalysisLogs,
+        ).toHaveBeenCalledWith(item.variantAnalysis.id);
+        expect(executeCommand).not.toHaveBeenCalledWith(
+          "vscode.open",
+          expect.anything(),
+        );
+      },
+    );
   });
 
   describe("handleItemClicked", () => {
@@ -406,6 +426,59 @@ describe("QueryHistoryManager", () => {
             await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(showInformationMessageWithActionSpy).toHaveBeenCalled();
+          });
+
+          it.each([true, false])(
+            "offers server cancellation before removing history (cancel: %s)",
+            async (shouldCancel) => {
+              toDelete.variantAnalysis.serverUrl = "https://mrva.example.com";
+              toDelete.variantAnalysis.actionsWorkflowRunId = undefined;
+              showInformationMessageWithActionSpy.mockResolvedValue(
+                shouldCancel,
+              );
+
+              await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
+
+              expect(showInformationMessageWithActionSpy).toHaveBeenCalledWith(
+                "Removing this query from history will not stop the variant analysis running on the server.",
+                "Cancel variant analysis",
+              );
+              if (shouldCancel) {
+                expect(cancelVariantAnalysisSpy).toHaveBeenCalledWith(
+                  toDelete.variantAnalysis.id,
+                );
+                expect(
+                  cancelVariantAnalysisSpy.mock.invocationCallOrder[0],
+                ).toBeLessThan(
+                  jest.mocked(variantAnalysisManagerStub.removeVariantAnalysis)
+                    .mock.invocationCallOrder[0],
+                );
+              } else {
+                expect(cancelVariantAnalysisSpy).not.toHaveBeenCalled();
+              }
+              expect(
+                queryHistoryManager.treeDataProvider.allHistory,
+              ).not.toContain(toDelete);
+            },
+          );
+
+          it("keeps a server run in history if cancellation fails", async () => {
+            toDelete.variantAnalysis.serverUrl = "https://mrva.example.com";
+            showInformationMessageWithActionSpy.mockResolvedValue(true);
+            cancelVariantAnalysisSpy.mockRejectedValue(
+              new Error("Server unavailable"),
+            );
+
+            await expect(
+              queryHistoryManager.handleRemoveHistoryItem([toDelete]),
+            ).rejects.toThrow("Server unavailable");
+
+            expect(queryHistoryManager.treeDataProvider.allHistory).toContain(
+              toDelete,
+            );
+            expect(
+              variantAnalysisManagerStub.removeVariantAnalysis,
+            ).not.toHaveBeenCalled();
           });
 
           describe("when you choose 'No' in the 'Are you sure?' modal", () => {

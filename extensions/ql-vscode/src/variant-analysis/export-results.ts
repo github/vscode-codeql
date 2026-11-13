@@ -10,7 +10,7 @@ import {
 } from "../common/vscode/progress";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
 import { extLogger } from "../common/logging/vscode";
-import { createGist } from "./gh-api/gh-api-client";
+import { createGist } from "./variant-analysis-api";
 import type { MarkdownFile, RepositorySummary } from "./markdown-generation";
 import { generateVariantAnalysisMarkdown } from "./markdown-generation";
 import { pluralize } from "../common/word";
@@ -69,7 +69,7 @@ export async function exportVariantAnalysisResults(
         message: "Determining export format",
       });
 
-      const exportFormat = await determineExportFormat();
+      const exportFormat = await determineExportFormat(variantAnalysis);
       if (!exportFormat) {
         return;
       }
@@ -185,22 +185,33 @@ async function exportVariantAnalysisAnalysisResults(
     summaries,
   );
 
-  await exportResults(
-    exportedResultsPath,
-    description,
-    markdownFiles,
-    exportFormat,
-    commandManager,
-    credentials,
-    progress,
-    token,
-  );
+  if (exportFormat === "gist") {
+    await exportToGist(
+      description,
+      markdownFiles,
+      commandManager,
+      credentials,
+      progress,
+      token,
+      variantAnalysis.serverUrl,
+    );
+  } else {
+    await exportToLocalMarkdown(
+      exportedResultsPath,
+      markdownFiles,
+      commandManager,
+      progress,
+      token,
+    );
+  }
 }
 
 /**
  * Determines the format in which to export the results, from the given export options.
  */
-async function determineExportFormat(): Promise<"gist" | "local" | undefined> {
+async function determineExportFormat(
+  variantAnalysis: VariantAnalysis,
+): Promise<"gist" | "local" | undefined> {
   const gistOption = {
     label: "$(ports-open-browser-icon) Create Gist (GitHub)",
   };
@@ -208,14 +219,16 @@ async function determineExportFormat(): Promise<"gist" | "local" | undefined> {
     label: "$(markdown) Save as markdown",
   };
 
-  const exportFormat = await window.showQuickPick(
-    [gistOption, localMarkdownOption],
-    {
-      placeHolder: "Select export format",
-      canPickMany: false,
-      ignoreFocusOut: true,
-    },
-  );
+  // Results must not be sent to GitHub when using a custom server.
+  const options = variantAnalysis.serverUrl
+    ? [localMarkdownOption]
+    : [gistOption, localMarkdownOption];
+
+  const exportFormat = await window.showQuickPick(options, {
+    placeHolder: "Select export format",
+    canPickMany: false,
+    ignoreFocusOut: true,
+  });
   if (!exportFormat || !exportFormat.label) {
     throw new UserCancellationException("No export format selected", true);
   }
@@ -230,40 +243,6 @@ async function determineExportFormat(): Promise<"gist" | "local" | undefined> {
   return undefined;
 }
 
-async function exportResults(
-  exportedResultsPath: string,
-  description: string,
-  markdownFiles: MarkdownFile[],
-  exportFormat: "gist" | "local",
-  commandManager: AppCommandManager,
-  credentials: Credentials,
-  progress?: ProgressCallback,
-  token?: CancellationToken,
-) {
-  if (token?.isCancellationRequested) {
-    throw new UserCancellationException("Cancelled");
-  }
-
-  if (exportFormat === "gist") {
-    await exportToGist(
-      description,
-      markdownFiles,
-      commandManager,
-      credentials,
-      progress,
-      token,
-    );
-  } else if (exportFormat === "local") {
-    await exportToLocalMarkdown(
-      exportedResultsPath,
-      markdownFiles,
-      commandManager,
-      progress,
-      token,
-    );
-  }
-}
-
 async function exportToGist(
   description: string,
   markdownFiles: MarkdownFile[],
@@ -271,6 +250,7 @@ async function exportToGist(
   credentials: Credentials,
   progress?: ProgressCallback,
   token?: CancellationToken,
+  serverUrl?: string,
 ) {
   progress?.({
     maxStep: MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS,
@@ -291,7 +271,12 @@ async function exportToGist(
     {} as { [key: string]: { content: string } },
   );
 
-  const gistUrl = await createGist(credentials, description, gistFiles);
+  const gistUrl = await createGist(
+    credentials,
+    description,
+    gistFiles,
+    serverUrl,
+  );
   if (gistUrl) {
     // This needs to use .then to ensure we aren't keeping the progress notification open. We shouldn't await the
     // "Open gist" button click.

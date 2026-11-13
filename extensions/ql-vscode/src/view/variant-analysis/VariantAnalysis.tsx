@@ -5,7 +5,10 @@ import type {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
-import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
+import {
+  VariantAnalysisStatus,
+  hasVariantAnalysisLogs,
+} from "../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
 import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
@@ -151,13 +154,15 @@ export function VariantAnalysis({
   if (
     variantAnalysis === undefined ||
     (variantAnalysis.status === VariantAnalysisStatus.InProgress &&
+      !variantAnalysis.serverUrl &&
       variantAnalysis.actionsWorkflowRunId === undefined)
   ) {
     return <VariantAnalysisLoading />;
   }
 
-  const onViewLogsClick =
-    variantAnalysis.actionsWorkflowRunId === undefined ? undefined : openLogs;
+  const onViewLogsClick = hasVariantAnalysisLogs(variantAnalysis)
+    ? openLogs
+    : undefined;
 
   return (
     <>

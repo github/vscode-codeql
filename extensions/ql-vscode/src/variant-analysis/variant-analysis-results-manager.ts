@@ -37,6 +37,7 @@ type ResultDownloadedEvent = {
 };
 
 export type LoadResultsOptions = {
+  serverUrl?: string;
   // If true, when results are loaded from storage, they will not be stored in the cache. This reduces memory usage if
   // results are only needed temporarily (e.g. for exporting results to a different format).
   skipCacheStore?: boolean;
@@ -150,6 +151,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
         variantAnalysisId,
         variantAnalysisStoragePath,
         repositoryFullName,
+        options.serverUrl,
       );
     }
 
@@ -157,6 +159,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       variantAnalysisId,
       variantAnalysisStoragePath,
       repositoryFullName,
+      options?.serverUrl,
     );
   }
 
@@ -164,11 +167,13 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
+    serverUrl?: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
     const result = await this.loadResultsFromStorage(
       variantAnalysisId,
       variantAnalysisStoragePath,
       repositoryFullName,
+      serverUrl,
     );
     this.cachedResults.set(
       createCacheKey(variantAnalysisId, repositoryFullName),
@@ -182,6 +187,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
+    serverUrl?: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
     if (
       !(await this.isVariantAnalysisRepoDownloaded(
@@ -200,14 +206,20 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     const repoTask: VariantAnalysisRepositoryTask =
       await readRepoTask(storageDirectory);
 
-    if (!repoTask.databaseCommitSha || !repoTask.sourceLocationPrefix) {
-      throw new Error("Missing database commit SHA");
-    }
-
-    const fileLinkPrefix = this.createGitHubFileLinkPrefix(
-      repoTask.repository.fullName,
-      repoTask.databaseCommitSha,
-    );
+    const repositoryUrl =
+      repoTask.repository.htmlUrl ??
+      (serverUrl
+        ? undefined
+        : new URL(
+            `/${repoTask.repository.fullName}`,
+            this.config.githubUrl,
+          ).toString());
+    const fileLinkPrefix = repositoryUrl
+      ? this.createFileLinkPrefix(
+          repositoryUrl,
+          repoTask.databaseCommitSha || "HEAD",
+        )
+      : undefined;
 
     const resultsDirectory = join(
       storageDirectory,
@@ -233,7 +245,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       rawResults = await this.readBqrsResults(
         bqrsPath,
         fileLinkPrefix,
-        repoTask.sourceLocationPrefix,
+        repoTask.sourceLocationPrefix ?? "",
       );
     }
 
@@ -263,7 +275,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private async readBqrsResults(
     filePath: string,
-    fileLinkPrefix: string,
+    fileLinkPrefix: string | undefined,
     sourceLocationPrefix: string,
   ): Promise<AnalysisRawResults> {
     return await extractRawResults(
@@ -277,7 +289,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private async readSarifResults(
     filePath: string,
-    fileLinkPrefix: string,
+    fileLinkPrefix: string | undefined,
   ): Promise<AnalysisAlert[]> {
     const sarifLog = await sarifParser(filePath);
 
@@ -309,11 +321,27 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
   }
 
-  private createGitHubFileLinkPrefix(fullName: string, sha: string): string {
-    return new URL(
-      `/${fullName}/blob/${sha}`,
-      this.config.githubUrl,
-    ).toString();
+  private createFileLinkPrefix(
+    repositoryUrl: string,
+    sha: string,
+  ): string | undefined {
+    let url: URL;
+    try {
+      url = new URL(repositoryUrl);
+    } catch {
+      return undefined;
+    }
+    if (
+      !["http:", "https:"].includes(url.protocol) ||
+      url.username ||
+      url.password
+    ) {
+      return undefined;
+    }
+    url.search = "";
+    url.hash = "";
+    url.pathname = `${url.pathname.replace(/\/+$/, "")}/blob/${encodeURIComponent(sha)}`;
+    return url.toString();
   }
 
   public removeAnalysisResults(variantAnalysis: VariantAnalysis) {

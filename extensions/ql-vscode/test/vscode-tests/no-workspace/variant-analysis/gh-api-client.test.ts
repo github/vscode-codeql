@@ -1,9 +1,9 @@
 import {
-  getRepositoryFromNwo,
   getVariantAnalysis,
   getVariantAnalysisRepo,
   submitVariantAnalysis,
-} from "../../../../src/variant-analysis/gh-api/gh-api-client";
+} from "../../../../src/variant-analysis/variant-analysis-api";
+import { getRepositoryFromNwo } from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { createMockSubmission } from "../../../factories/variant-analysis/shared/variant-analysis-submission";
 import { MockGitHubApiServer } from "../../../../src/common/mock-gh-api/mock-gh-api-server";
 

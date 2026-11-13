@@ -1,8 +1,15 @@
-import type { TextDocument, TextEditor, Uri } from "vscode";
-import { commands, env, window, workspace } from "vscode";
+import type { Extension, TextDocument, TextEditor, Uri } from "vscode";
+import {
+  commands,
+  ConfigurationTarget,
+  env,
+  extensions,
+  window,
+  workspace,
+} from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
-import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
+import * as variantAnalysisApi from "../../../../src/variant-analysis/variant-analysis-api";
 import {
   ensureDir,
   outputJson,
@@ -51,6 +58,15 @@ import { setupServer } from "msw/node";
 import type { RequestHandler } from "msw";
 import { http } from "msw";
 import { getErrorMessage } from "../../../../src/common/helpers-pure";
+import { createMockSubmission } from "../../../factories/variant-analysis/shared/variant-analysis-submission";
+import { createMockApiResponse } from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
+import { mapVariantAnalysisFromSubmission } from "../../../../src/variant-analysis/variant-analysis-mapper";
+import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
+import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
+import {
+  readQueryHistoryFromFile,
+  writeQueryHistoryToFile,
+} from "../../../../src/query-history/store/query-history-store";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -115,6 +131,169 @@ describe("Variant Analysis Manager", () => {
       dbManager,
       variantAnalysisConfig,
     );
+  });
+
+  it("runs the custom-server lifecycle through persisted history and downloaded results", async () => {
+    const serverUrl = "https://mrva.example.com";
+    const artifactUrl = "https://artifacts.example.com/results.zip";
+    const sourceUrl = "https://source.example.com/example/repo";
+    const config = workspace.getConfiguration("codeQL.variantAnalysis");
+    await config.update("serverUrl", serverUrl, ConfigurationTarget.Global);
+    await config.update(
+      "serverTokenProvider",
+      "example.provider",
+      ConfigurationTarget.Global,
+    );
+    const token = jest.fn().mockResolvedValue("server-token");
+    const activate = jest.fn().mockResolvedValue({
+      getVariantAnalysisServerToken: token,
+    });
+    const extensionLookup = extensions.getExtension.bind(extensions);
+    jest
+      .spyOn(extensions, "getExtension")
+      .mockImplementation((id) =>
+        id === "example.provider"
+          ? mockedObject<Extension<unknown>>({ isActive: false, activate })
+          : extensionLookup(id),
+      );
+    const github = jest
+      .spyOn(app.credentials, "getOctokit")
+      .mockRejectedValue(
+        new Error("Custom-server requests must not use GitHub authentication"),
+      );
+    const response = createMockApiResponse("in_progress", []);
+    response.controller_repo.id = 0;
+    delete response.actions_workflow_run_id;
+    const task = createMockVariantAnalysisRepoTask();
+    task.artifact_url = artifactUrl;
+    task.repository.html_url = sourceUrl;
+    const apiPath = `${serverUrl}/repositories/0/code-scanning/codeql/variant-analyses`;
+    const runPath = `${apiPath}/${response.id}`;
+    let polls = 0;
+    server.resetHandlers(
+      http.post(apiPath, () => Response.json(response)),
+      http.get(runPath, () =>
+        Response.json(
+          ++polls === 1
+            ? response
+            : {
+                ...response,
+                status: "succeeded",
+                scanned_repositories: [
+                  {
+                    repository: task.repository,
+                    analysis_status: "succeeded",
+                    result_count: 1,
+                  },
+                ],
+              },
+        ),
+      ),
+      http.get(`${runPath}/repositories/${task.repository.id}`, () =>
+        Response.json(task),
+      ),
+      http.get(
+        artifactUrl,
+        async () =>
+          new Response(
+            await readFile(
+              join(__dirname, "data/variant-analysis-results.zip"),
+            ),
+          ),
+      ),
+    );
+    const submission = {
+      ...createMockSubmission(),
+      serverUrl,
+      controllerRepoId: 0,
+    };
+    const storage = variantAnalysisManager.getVariantAnalysisStorageLocation(
+      response.id,
+    );
+    const historyPath = join(storage, "history.json");
+    const sleepTime = VariantAnalysisMonitor.sleepTime;
+    VariantAnalysisMonitor.sleepTime = 1;
+    const downloads: Array<Promise<void>> = [];
+    jest
+      .spyOn(app.commands, "execute")
+      .mockImplementation(async (command, ...args) => {
+        if (command === "codeQL.autoDownloadVariantAnalysisResult") {
+          const [repo, run] = args as [
+            VariantAnalysisScannedRepository,
+            VariantAnalysis,
+          ];
+          const download =
+            variantAnalysisManager.autoDownloadVariantAnalysisResult(repo, run);
+          downloads.push(download);
+          await download;
+        }
+      });
+    try {
+      const submitted = await variantAnalysisApi.submitVariantAnalysis(
+        app.credentials,
+        submission,
+      );
+      const run = mapVariantAnalysisFromSubmission(submission, submitted, []);
+      await createTimestampFile(storage);
+      await writeQueryHistoryToFile(
+        [createMockVariantAnalysisHistoryItem({ variantAnalysis: run })],
+        historyPath,
+      );
+      const [saved] = await readQueryHistoryFromFile(historyPath);
+      if (saved.t !== "variant-analysis") {
+        throw new Error("Expected persisted server run");
+      }
+      await variantAnalysisManager.rehydrateVariantAnalysis(
+        saved.variantAnalysis,
+      );
+      expect(
+        variantAnalysisManager.tryGetVariantAnalysis(run.id)?.serverUrl,
+      ).toBe(serverUrl);
+      await variantAnalysisManager.monitorVariantAnalysis(
+        saved.variantAnalysis,
+      );
+      await Promise.all(downloads);
+      expect(downloads).toHaveLength(1);
+      expect(variantAnalysisManager.tryGetVariantAnalysis(run.id)?.status).toBe(
+        VariantAnalysisStatus.Succeeded,
+      );
+      expect(variantAnalysisManager.getRepoStates(run.id)).toEqual([
+        expect.objectContaining({
+          downloadStatus:
+            VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+        }),
+      ]);
+      const results = await variantAnalysisManager.loadResults(
+        run.id,
+        task.repository.full_name,
+      );
+      expect(results.interpretedResults?.length).toBeGreaterThan(0);
+      expect(results.interpretedResults?.[0].fileLink.fileLinkPrefix).toBe(
+        `${sourceUrl}/blob/HEAD`,
+      );
+      expect(
+        requests.map((request) => `${request.method} ${request.url}`),
+      ).toEqual([
+        `POST ${apiPath}`,
+        `GET ${runPath}`,
+        `GET ${runPath}`,
+        `GET ${runPath}/repositories/${task.repository.id}`,
+        `GET ${artifactUrl}`,
+      ]);
+      for (const request of requests) {
+        expect(request.headers.get("authorization")).toBe(
+          request.url === artifactUrl ? null : "Bearer server-token",
+        );
+      }
+      expect(activate).toHaveBeenCalled();
+      expect(github).not.toHaveBeenCalled();
+    } finally {
+      VariantAnalysisMonitor.sleepTime = sleepTime;
+      await Promise.allSettled(downloads);
+      await remove(storage);
+      variantAnalysisManager.dispose();
+      variantAnalysisResultsManager.dispose();
+    }
   });
 
   describe("rehydrateVariantAnalysis", () => {
@@ -197,14 +376,14 @@ describe("Variant Analysis Manager", () => {
 
   describe("autoDownloadVariantAnalysisResult", () => {
     let getVariantAnalysisRepoStub: jest.SpiedFunction<
-      typeof ghApiClient.getVariantAnalysisRepo
+      typeof variantAnalysisApi.getVariantAnalysisRepo
     >;
 
     let repoStatesPath: string;
 
     beforeEach(async () => {
       getVariantAnalysisRepoStub = jest.spyOn(
-        ghApiClient,
+        variantAnalysisApi,
         "getVariantAnalysisRepo",
       );
 
@@ -652,6 +831,48 @@ describe("Variant Analysis Manager", () => {
         app.credentials,
         variantAnalysis,
       );
+    });
+
+    it("delegates custom-server logs without requiring a workflow ID", async () => {
+      const openLogs = jest
+        .spyOn(variantAnalysisApi, "openServerVariantAnalysisLogs")
+        .mockResolvedValue(undefined);
+      const serverRun = {
+        ...variantAnalysis,
+        serverUrl: "https://mrva.example.com",
+        actionsWorkflowRunId: undefined,
+      };
+      await variantAnalysisManager.onVariantAnalysisUpdated(serverRun);
+      await variantAnalysisManager.openVariantAnalysisLogs(serverRun.id);
+      expect(openLogs).toHaveBeenCalledWith(serverRun);
+    });
+
+    it("opens the GitHub workflow URL for GitHub logs", async () => {
+      const open = jest
+        .spyOn(commands, "executeCommand")
+        .mockResolvedValue(undefined);
+      await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysis.id);
+      expect(open).toHaveBeenCalledWith(
+        "vscode.open",
+        expect.objectContaining({
+          path: `/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`,
+        }),
+      );
+    });
+
+    it("allows custom-server cancellation without an Actions workflow run ID", async () => {
+      const cancel = jest
+        .spyOn(variantAnalysisApi, "cancelVariantAnalysis")
+        .mockResolvedValue(undefined);
+      const serverRun = {
+        ...variantAnalysis,
+        serverUrl: "https://mrva.example.com",
+        actionsWorkflowRunId: undefined,
+      };
+      await variantAnalysisManager.onVariantAnalysisUpdated(serverRun);
+      await variantAnalysisManager.cancelVariantAnalysis(serverRun.id);
+      expect(cancel).toHaveBeenCalledWith(app.credentials, serverRun);
+      expect(mockCancelVariantAnalysis).not.toHaveBeenCalled();
     });
 
     it("should set the status to canceling", async () => {

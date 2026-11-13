@@ -144,7 +144,7 @@ describe(VariantAnalysisStats.name, () => {
       completedAt: new Date(),
     });
 
-    await userEvent.click(screen.getByText("View actions logs"));
+    await userEvent.click(screen.getByText("View logs"));
     expect(onViewLogsClick).toHaveBeenCalledTimes(1);
   });
 

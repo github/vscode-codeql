@@ -26,7 +26,7 @@ const TableContainer = styled.div<TableContainerProps>`
 
 type RawResultsTableProps = {
   resultSet: RawResultSet;
-  fileLinkPrefix: string;
+  fileLinkPrefix: string | undefined;
   sourceLocationPrefix: string;
 };
 

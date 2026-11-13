@@ -22,6 +22,10 @@ import type {
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
+import {
+  onDidChangeVariantAnalysisLogCapabilities,
+  withVariantAnalysisLogCapability,
+} from "./variant-analysis-api";
 import type { DataFlowPaths } from "./shared/data-flow-paths";
 import type { App } from "../common/app";
 import {
@@ -47,6 +51,14 @@ export class VariantAnalysisView
     manager.registerView(this);
 
     this.dataFlowPathsView = new DataFlowPathsView(app);
+    this.push(
+      onDidChangeVariantAnalysisLogCapabilities(() => {
+        const run = this.manager.tryGetVariantAnalysis(this.variantAnalysisId);
+        if (run) {
+          void this.updateView(run);
+        }
+      }),
+    );
   }
 
   public async openView() {
@@ -70,7 +82,7 @@ export class VariantAnalysisView
 
     await this.postMessage({
       t: "setVariantAnalysis",
-      variantAnalysis,
+      variantAnalysis: withVariantAnalysisLogCapability(variantAnalysis),
     });
 
     const panel = await this.getPanel();
@@ -212,7 +224,7 @@ export class VariantAnalysisView
 
     await this.postMessage({
       t: "setVariantAnalysis",
-      variantAnalysis,
+      variantAnalysis: withVariantAnalysisLogCapability(variantAnalysis),
     });
 
     await this.postMessage({
