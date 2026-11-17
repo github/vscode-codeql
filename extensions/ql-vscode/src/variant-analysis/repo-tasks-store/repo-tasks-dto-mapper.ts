@@ -11,6 +11,7 @@ export function mapRepoTaskToDto(
     repository: {
       id: repoTask.repository.id,
       fullName: repoTask.repository.fullName,
+      htmlUrl: repoTask.repository.htmlUrl,
       private: repoTask.repository.private,
     },
     analysisStatus: mapRepoTaskAnalysisStatusToDto(repoTask.analysisStatus),

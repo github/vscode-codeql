@@ -48,6 +48,7 @@ export interface VariantAnalysisScannedRepositoryDto {
   repository: {
     id: number;
     fullName: string;
+    htmlUrl?: string;
     private: boolean;
     stargazersCount: number;
     updatedAt: string | null;

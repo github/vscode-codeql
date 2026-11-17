@@ -643,7 +643,7 @@ export class VariantAnalysisManager
       variantAnalysisId,
       this.getVariantAnalysisStorageLocation(variantAnalysisId),
       repositoryFullName,
-      options,
+      { ...options, serverUrl: variantAnalysis.serverUrl },
     );
   }
 
@@ -813,6 +813,7 @@ export class VariantAnalysisManager
       );
 
       repoTask = mapVariantAnalysisRepositoryTask(repoTaskResponse);
+      repoTask.repository.htmlUrl ??= scannedRepo.repository.htmlUrl;
     } catch (e) {
       repoState.downloadStatus =
         VariantAnalysisScannedRepositoryDownloadStatus.Failed;

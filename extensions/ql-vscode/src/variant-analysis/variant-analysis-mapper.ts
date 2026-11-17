@@ -143,6 +143,7 @@ export function mapVariantAnalysisRepositoryTask(
     repository: {
       id: response.repository.id,
       fullName: response.repository.full_name,
+      htmlUrl: response.repository.html_url,
       private: response.repository.private,
     },
     analysisStatus: mapApiRepoStatus(response.analysis_status),
@@ -162,6 +163,7 @@ export function mapScannedRepository(
     repository: {
       id: scannedRepo.repository.id,
       fullName: scannedRepo.repository.full_name,
+      htmlUrl: scannedRepo.repository.html_url,
       private: scannedRepo.repository.private,
       stargazersCount: scannedRepo.repository.stargazers_count,
       updatedAt: scannedRepo.repository.updated_at,

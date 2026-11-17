@@ -103,6 +103,7 @@ function mapVariantAnalysisScannedRepositoryToDomainModel(
     repository: {
       id: repo.repository.id,
       fullName: repo.repository.fullName,
+      htmlUrl: repo.repository.htmlUrl,
       private: repo.repository.private,
       stargazersCount: repo.repository.stargazersCount,
       updatedAt: repo.repository.updatedAt,

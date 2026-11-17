@@ -111,6 +111,8 @@ describe("write and read", () => {
   it("round-trips custom-server run data without changing legacy history", async () => {
     const serverRun = createMockVariantAnalysisHistoryItem({});
     serverRun.variantAnalysis.serverUrl = "https://mrva.example.com";
+    serverRun.variantAnalysis.scannedRepos![0].repository.htmlUrl =
+      "https://source.example.com/org/repo";
     const legacyRun = createMockVariantAnalysisHistoryItem({});
     const historyPath = join(tmpDir.name, "server-and-legacy-history.json");
     await writeQueryHistoryToFile([serverRun, legacyRun], historyPath);

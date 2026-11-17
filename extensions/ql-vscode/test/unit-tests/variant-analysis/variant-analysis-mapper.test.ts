@@ -48,6 +48,21 @@ describe(mapVariantAnalysisFromSubmission.name, () => {
     ).toBeUndefined();
   });
 
+  it("preserves repository source URLs", () => {
+    const response = createMockApiResponse("succeeded");
+    response.scanned_repositories![0].repository.html_url =
+      "https://source.example.com/org/repo";
+    const run = mapVariantAnalysisFromSubmission(mockSubmission, response, []);
+    expect(run.scannedRepos?.[0].repository.htmlUrl).toBe(
+      response.scanned_repositories![0].repository.html_url,
+    );
+    const task = createMockVariantAnalysisRepoTask();
+    task.repository.html_url = "https://source.example.com/org/repo";
+    expect(mapVariantAnalysisRepositoryTask(task).repository.htmlUrl).toBe(
+      task.repository.html_url,
+    );
+  });
+
   it("should map an API response and return a variant analysis", () => {
     const result = mapVariantAnalysisFromSubmission(
       mockSubmission,
