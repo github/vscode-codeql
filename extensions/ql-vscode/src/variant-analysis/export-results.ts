@@ -69,7 +69,7 @@ export async function exportVariantAnalysisResults(
         message: "Determining export format",
       });
 
-      const exportFormat = await determineExportFormat();
+      const exportFormat = await determineExportFormat(variantAnalysis);
       if (!exportFormat) {
         return;
       }
@@ -200,7 +200,9 @@ async function exportVariantAnalysisAnalysisResults(
 /**
  * Determines the format in which to export the results, from the given export options.
  */
-async function determineExportFormat(): Promise<"gist" | "local" | undefined> {
+async function determineExportFormat(
+  variantAnalysis: VariantAnalysis,
+): Promise<"gist" | "local" | undefined> {
   const gistOption = {
     label: "$(ports-open-browser-icon) Create Gist (GitHub)",
   };
@@ -209,7 +211,10 @@ async function determineExportFormat(): Promise<"gist" | "local" | undefined> {
   };
 
   const exportFormat = await window.showQuickPick(
-    [gistOption, localMarkdownOption],
+    // Results from a custom server must not be uploaded to GitHub.
+    variantAnalysis.serverUrl
+      ? [localMarkdownOption]
+      : [gistOption, localMarkdownOption],
     {
       placeHolder: "Select export format",
       canPickMany: false,
