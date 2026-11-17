@@ -5,6 +5,8 @@ import type { ModelPackDetails } from "../../common/model-pack-details";
 
 export interface VariantAnalysis {
   id: number;
+  /** Custom server that created this run; absent for GitHub and legacy runs. */
+  serverUrl?: string;
   controllerRepo: Repository;
   language: QueryLanguage;
   query: {
@@ -136,6 +138,7 @@ export interface VariantAnalysisScannedRepositoryResult {
  */
 export interface VariantAnalysisSubmission {
   startTime: number;
+  serverUrl?: string;
   controllerRepoId: number;
   actionRepoRef: string;
   language: QueryLanguage;

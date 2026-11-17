@@ -15,6 +15,7 @@ export interface QueryHistoryVariantAnalysisDto {
 
 export interface VariantAnalysisDto {
   id: number;
+  serverUrl?: string;
   controllerRepo: {
     id: number;
     fullName: string;

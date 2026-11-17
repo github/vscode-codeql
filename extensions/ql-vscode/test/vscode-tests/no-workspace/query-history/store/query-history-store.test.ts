@@ -108,6 +108,16 @@ describe("write and read", () => {
     expect(allHistoryActual.length).toEqual(expectedHistory.length);
   });
 
+  it("round-trips custom-server run data without changing legacy history", async () => {
+    const serverRun = createMockVariantAnalysisHistoryItem({});
+    serverRun.variantAnalysis.serverUrl = "https://mrva.example.com";
+    const legacyRun = createMockVariantAnalysisHistoryItem({});
+    const historyPath = join(tmpDir.name, "server-and-legacy-history.json");
+    await writeQueryHistoryToFile([serverRun, legacyRun], historyPath);
+    const actual = await readQueryHistoryFromFile(historyPath);
+    expect(actual).toEqual([serverRun, legacyRun]);
+  });
+
   it("should read query output dir from completed query if not present", async () => {
     const historyPath = join(tmpDir.name, "workspace-query-history.json");
 

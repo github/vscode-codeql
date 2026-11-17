@@ -45,6 +45,7 @@ export function mapVariantAnalysisFromSubmission(
 ): VariantAnalysis {
   return mapVariantAnalysis(
     {
+      serverUrl: submission.serverUrl,
       language: submission.language,
       query: {
         name: submission.query.name,
@@ -77,6 +78,7 @@ function mapVariantAnalysis(
   currentVariantAnalysis: Pick<
     VariantAnalysis,
     | "language"
+    | "serverUrl"
     | "query"
     | "queries"
     | "databases"
@@ -106,6 +108,7 @@ function mapVariantAnalysis(
 
   const variantAnalysis: VariantAnalysis = {
     id: response.id,
+    serverUrl: currentVariantAnalysis.serverUrl,
     controllerRepo: {
       id: response.controller_repo.id,
       fullName: response.controller_repo.full_name,
