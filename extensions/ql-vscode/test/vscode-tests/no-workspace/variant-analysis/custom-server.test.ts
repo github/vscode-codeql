@@ -1,13 +1,17 @@
-import { ConfigurationTarget, window, workspace } from "vscode";
+import { ConfigurationTarget, extensions, window, workspace } from "vscode";
+import type { Extension } from "vscode";
 import type { AppCommandManager } from "../../../../src/common/commands";
 import {
   getVariantAnalysisServerConfig,
   isVariantAnalysisServerConfigured,
 } from "../../../../src/config";
 import { exportVariantAnalysisResults } from "../../../../src/variant-analysis/export-results";
+import type { VariantAnalysisServerTokenProvider } from "../../../../src/variant-analysis/gh-api/variant-analysis-server-client";
+import { requestVariantAnalysisServer } from "../../../../src/variant-analysis/gh-api/variant-analysis-server-client";
 import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { testCredentialsWithStub } from "../../../factories/authentication";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
+import type { DeepPartial } from "../../utils/mocking.helpers";
 import { mockedObject } from "../../utils/mocking.helpers";
 
 const SERVER_URL = "https://mrva.example.com";
@@ -22,6 +26,30 @@ async function setSetting(
     .getConfiguration("codeQL.variantAnalysis")
     .update(name, value, target);
 }
+
+function mockProvider(
+  extension: DeepPartial<Extension<VariantAnalysisServerTokenProvider>>,
+) {
+  return jest
+    .spyOn(extensions, "getExtension")
+    .mockReturnValue(
+      mockedObject<Extension<VariantAnalysisServerTokenProvider>>(extension),
+    );
+}
+
+let fetchSpy: jest.SpiedFunction<typeof fetch>;
+let getVariantAnalysisServerToken: jest.Mock<
+  Promise<string | undefined>,
+  [string]
+>;
+
+beforeEach(() => {
+  fetchSpy = jest
+    .spyOn(global, "fetch")
+    .mockImplementation(async () => new Response(JSON.stringify({ id: 123 })));
+  getVariantAnalysisServerToken = jest.fn().mockResolvedValue("the-token");
+  mockProvider({ isActive: true, exports: { getVariantAnalysisServerToken } });
+});
 
 describe("exporting custom-server results", () => {
   it.each([undefined, SERVER_URL])(
@@ -103,4 +131,103 @@ describe("variant analysis server settings", () => {
     expect(() => getVariantAnalysisServerConfig()).toThrow();
     expect(isVariantAnalysisServerConfigured()).toBe(true);
   });
+});
+
+describe("variant analysis server client", () => {
+  const server = { url: SERVER_URL, tokenProviderExtensionId: PROVIDER_ID };
+
+  it("sends JSON with the provider's token and refuses redirects", async () => {
+    await expect(
+      requestVariantAnalysisServer(server, "POST", "/analyses", {
+        language: "java",
+      }),
+    ).resolves.toEqual({ id: 123 });
+
+    expect(getVariantAnalysisServerToken).toHaveBeenCalledWith(SERVER_URL);
+    expect(fetchSpy).toHaveBeenCalledWith(`${SERVER_URL}/analyses`, {
+      redirect: "error",
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: "Bearer the-token",
+        "Content-Type": "application/json",
+      },
+      body: '{"language":"java"}',
+    });
+  });
+
+  it("fails without a usable token, without sending a request", async () => {
+    const request = (tokenProviderExtensionId = PROVIDER_ID) =>
+      requestVariantAnalysisServer(
+        { ...server, tokenProviderExtensionId },
+        "GET",
+        "/",
+      );
+
+    await expect(request("")).rejects.toThrow(/No token provider/);
+    getVariantAnalysisServerToken.mockResolvedValue(undefined);
+    await expect(request()).rejects.toThrow(/did not return .* token/);
+    mockProvider({ isActive: true, exports: {} });
+    await expect(request()).rejects.toThrow(/does not provide .* token/);
+    jest.spyOn(extensions, "getExtension").mockReturnValue(undefined);
+    await expect(request()).rejects.toThrow(/not installed/);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it.each(["activation", "token"])(
+    "gives up on a stalled provider %s after 30 seconds",
+    async (stage) => {
+      jest.useFakeTimers();
+      try {
+        if (stage === "activation") {
+          mockProvider({
+            isActive: false,
+            activate: () => new Promise(() => {}),
+          });
+        } else {
+          getVariantAnalysisServerToken.mockReturnValue(new Promise(() => {}));
+        }
+        const rejected = expect(
+          requestVariantAnalysisServer(server, "GET", "/"),
+        ).rejects.toThrow(/did not respond within 30 seconds/);
+        await jest.advanceTimersByTimeAsync(30_000);
+        await rejected;
+        expect(fetchSpy).not.toHaveBeenCalled();
+        expect(jest.getTimerCount()).toBe(0);
+      } finally {
+        jest.useRealTimers();
+      }
+    },
+  );
+
+  it.each([401, 403])(
+    "asks to re-authenticate on HTTP %s without retrying",
+    async (status) => {
+      fetchSpy.mockResolvedValue(
+        new Response(JSON.stringify({ message: "Token expired" }), {
+          status,
+          statusText: "Denied",
+        }),
+      );
+      await expect(
+        requestVariantAnalysisServer(server, "GET", "/"),
+      ).rejects.toMatchObject({
+        status,
+        message: expect.stringContaining(
+          `${status} Denied: Token expired Re-authenticate using the token provider '${PROVIDER_ID}'`,
+        ),
+      });
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it.each(["<html>not JSON</html>", ""])(
+    "rejects a malformed successful response: %p",
+    async (body) => {
+      fetchSpy.mockResolvedValue(new Response(body));
+      await expect(
+        requestVariantAnalysisServer(server, "GET", "/"),
+      ).rejects.toThrow(/invalid JSON|empty response/);
+    },
+  );
 });
