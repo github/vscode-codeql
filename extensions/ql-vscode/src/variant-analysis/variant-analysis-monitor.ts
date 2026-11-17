@@ -1,5 +1,5 @@
 import { env, EventEmitter } from "vscode";
-import { getVariantAnalysis } from "./gh-api/gh-api-client";
+import { getVariantAnalysis } from "./variant-analysis-api";
 import { RequestError } from "@octokit/request-error";
 
 import type {

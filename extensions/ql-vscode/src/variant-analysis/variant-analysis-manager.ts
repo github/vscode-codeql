@@ -1,9 +1,10 @@
 import { join } from "path";
 
 import {
+  cancelVariantAnalysis,
   submitVariantAnalysis,
   getVariantAnalysisRepo,
-} from "./gh-api/gh-api-client";
+} from "./variant-analysis-api";
 import type { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
 import type {
   AuthenticationSessionsChangeEvent,
@@ -52,7 +53,6 @@ import PQueue from "p-queue";
 import { createTimestampFile, saveBeforeStart } from "../run-queries-shared";
 import { readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
-import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
 import type { ProgressCallback } from "../common/vscode/progress";
 import {
   UserCancellationException,
