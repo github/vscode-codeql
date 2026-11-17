@@ -99,7 +99,7 @@ import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
 import { isSarifResultsQueryKind } from "../common/query-metadata";
 import { isVariantAnalysisEnabledForGitHubHost } from "./ghec-dr";
 import type { VariantAnalysisConfig } from "../config";
-import { getEnterpriseUri } from "../config";
+import { getEnterpriseUri, getVariantAnalysisServerConfig } from "../config";
 
 const maxRetryCount = 3;
 
@@ -338,6 +338,7 @@ export class VariantAnalysisManager
     }
 
     await saveBeforeStart();
+    const serverUrl = getVariantAnalysisServerConfig()?.url;
 
     progress({
       maxStep: 5,
@@ -401,6 +402,7 @@ export class VariantAnalysisManager
           };
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
+      serverUrl,
       startTime: queryStartTime,
       actionRepoRef: actionBranch,
       controllerRepoId: controllerRepo.id,
@@ -429,6 +431,7 @@ export class VariantAnalysisManager
     } catch (e) {
       // If the error is handled by the handleRequestError function, we don't need to throw
       if (
+        !serverUrl &&
         e instanceof RequestError &&
         handleRequestError(e, this.config.githubUrl, this.app.logger)
       ) {
@@ -811,6 +814,7 @@ export class VariantAnalysisManager
         variantAnalysis.controllerRepo.id,
         variantAnalysis.id,
         scannedRepo.repository.id,
+        variantAnalysis.serverUrl,
       );
 
       repoTask = mapVariantAnalysisRepositoryTask(repoTaskResponse);

@@ -14,16 +14,29 @@ import type {
   VariantAnalysis as ApiVariantAnalysis,
   VariantAnalysisRepoTask as ApiVariantAnalysisRepoTask,
 } from "./gh-api/variant-analysis";
-import { withVariantAnalysisServerProvider } from "./gh-api/variant-analysis-server-client";
+import {
+  requestVariantAnalysisServer,
+  withVariantAnalysisServerProvider,
+} from "./gh-api/variant-analysis-server-client";
 import type {
   VariantAnalysis,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
+import { mapVariantAnalysisSubmission } from "./variant-analysis-mapper";
 
 export async function submitVariantAnalysis(
   credentials: Credentials,
   submission: VariantAnalysisSubmission,
 ): Promise<ApiVariantAnalysis> {
+  const server = getServerForVariantAnalysis(submission.serverUrl);
+  if (server) {
+    return requestVariantAnalysisServer(
+      server,
+      "POST",
+      variantAnalysesPath(submission.controllerRepoId),
+      mapVariantAnalysisSubmission(submission),
+    );
+  }
   return submitGitHubVariantAnalysis(credentials, submission);
 }
 
@@ -31,7 +44,16 @@ export async function getVariantAnalysis(
   credentials: Credentials,
   controllerRepoId: number,
   variantAnalysisId: number,
+  serverUrl?: string,
 ): Promise<ApiVariantAnalysis> {
+  const server = getServerForVariantAnalysis(serverUrl);
+  if (server) {
+    return requestVariantAnalysisServer(
+      server,
+      "GET",
+      `${variantAnalysesPath(controllerRepoId)}/${variantAnalysisId}`,
+    );
+  }
   return getGitHubVariantAnalysis(
     credentials,
     controllerRepoId,
@@ -44,7 +66,16 @@ export async function getVariantAnalysisRepo(
   controllerRepoId: number,
   variantAnalysisId: number,
   repoId: number,
+  serverUrl?: string,
 ): Promise<ApiVariantAnalysisRepoTask> {
+  const server = getServerForVariantAnalysis(serverUrl);
+  if (server) {
+    return requestVariantAnalysisServer(
+      server,
+      "GET",
+      `${variantAnalysesPath(controllerRepoId)}/${variantAnalysisId}/repositories/${repoId}`,
+    );
+  }
   return getGitHubVariantAnalysisRepo(
     credentials,
     controllerRepoId,
@@ -57,7 +88,22 @@ export async function cancelVariantAnalysis(
   credentials: Credentials,
   variantAnalysis: VariantAnalysis,
 ): Promise<void> {
+  const server = getServerForVariantAnalysis(variantAnalysis.serverUrl);
+  if (server) {
+    await requestVariantAnalysisServer(
+      server,
+      "POST",
+      `${variantAnalysesPath(variantAnalysis.controllerRepo.id)}/${variantAnalysis.id}/cancel`,
+      undefined,
+      true,
+    );
+    return;
+  }
   return cancelGitHubVariantAnalysis(credentials, variantAnalysis);
+}
+
+function variantAnalysesPath(controllerRepoId: number): string {
+  return `/repositories/${controllerRepoId}/code-scanning/codeql/variant-analyses`;
 }
 
 /**

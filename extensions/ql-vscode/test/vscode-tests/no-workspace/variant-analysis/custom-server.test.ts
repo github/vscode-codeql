@@ -17,15 +17,20 @@ import { exportVariantAnalysisResults } from "../../../../src/variant-analysis/e
 import type { VariantAnalysisServerTokenProvider } from "../../../../src/variant-analysis/gh-api/variant-analysis-server-client";
 import { requestVariantAnalysisServer } from "../../../../src/variant-analysis/gh-api/variant-analysis-server-client";
 import {
+  cancelVariantAnalysis,
   canViewServerVariantAnalysisLogs,
+  getVariantAnalysis,
+  getVariantAnalysisRepo,
   onDidChangeVariantAnalysisLogCapabilities,
   openServerVariantAnalysisLogs,
+  submitVariantAnalysis,
   watchVariantAnalysisLogCapabilities,
   withVariantAnalysisLogCapability,
 } from "../../../../src/variant-analysis/variant-analysis-api";
 import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { testCredentialsWithStub } from "../../../factories/authentication";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
+import { createMockSubmission } from "../../../factories/variant-analysis/shared/variant-analysis-submission";
 import type { DeepPartial } from "../../utils/mocking.helpers";
 import { mockedObject } from "../../utils/mocking.helpers";
 
@@ -438,4 +443,81 @@ describe("server log capabilities", () => {
       }
     },
   );
+});
+
+describe("variant analysis routing", () => {
+  let credentials: ReturnType<typeof testCredentialsWithStub>;
+
+  beforeEach(() => {
+    credentials = testCredentialsWithStub();
+  });
+
+  it("uses GitHub when no server is configured", async () => {
+    await expect(
+      submitVariantAnalysis(credentials, createMockSubmission()),
+    ).rejects.toThrow("no stub was provided");
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("submits, polls, and cancels on the configured server", async () => {
+    await configureServer();
+    const submission = {
+      ...createMockSubmission(),
+      controllerRepoId: 0,
+      serverUrl: SERVER_URL,
+    };
+    const run = {
+      ...createMockVariantAnalysis({}),
+      id: 5,
+      controllerRepo: { id: 0, fullName: "", private: true },
+      serverUrl: SERVER_URL,
+    };
+
+    await expect(
+      submitVariantAnalysis(credentials, submission),
+    ).resolves.toEqual({ id: 123 });
+    await getVariantAnalysis(credentials, 0, 5, SERVER_URL);
+    await getVariantAnalysisRepo(credentials, 0, 5, 7, SERVER_URL);
+    fetchSpy.mockResolvedValue(new Response(null, { status: 202 }));
+    await cancelVariantAnalysis(credentials, run);
+
+    const analyses = `${SERVER_URL}/repositories/0/code-scanning/codeql/variant-analyses`;
+    expect(
+      fetchSpy.mock.calls.map(([url, init]) => [init?.method, url]),
+    ).toEqual([
+      ["POST", analyses],
+      ["GET", `${analyses}/5`],
+      ["GET", `${analyses}/5/repositories/7`],
+      ["POST", `${analyses}/5/cancel`],
+    ]);
+    expect(JSON.parse(fetchSpy.mock.calls[0][1]?.body as string)).toMatchObject(
+      {
+        action_repo_ref: submission.actionRepoRef,
+        language: submission.language,
+        query_pack: submission.pack,
+      },
+    );
+  });
+
+  it("only sends a run to the server that ran it", async () => {
+    const githubRun = createMockVariantAnalysis({});
+    const serverRun = { ...githubRun, serverUrl: SERVER_URL };
+
+    await configureServer();
+    await expect(getVariantAnalysis(credentials, 0, 5)).rejects.toThrow(
+      /different server/,
+    );
+    await expect(cancelVariantAnalysis(credentials, githubRun)).rejects.toThrow(
+      /different server/,
+    );
+
+    await setSetting("serverUrl", "https://other.example.com");
+    await expect(
+      getVariantAnalysis(credentials, 0, 5, SERVER_URL),
+    ).rejects.toThrow(/different server/);
+    await expect(cancelVariantAnalysis(credentials, serverRun)).rejects.toThrow(
+      /different server/,
+    );
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });

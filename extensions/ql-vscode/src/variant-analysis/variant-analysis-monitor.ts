@@ -66,6 +66,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
         variantAnalysis.executionStartTime,
         variantAnalysis.query.name,
         variantAnalysis.language,
+        variantAnalysis.serverUrl,
       );
     } finally {
       this.monitoringVariantAnalyses.delete(variantAnalysis.id);
@@ -78,6 +79,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     executionStartTime: number,
     queryName: string,
     language: QueryLanguage,
+    serverUrl: string | undefined,
   ): Promise<void> {
     const variantAnalysisLabel = `${queryName} (${language}) [${new Date(
       executionStartTime,
@@ -101,6 +103,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
           this.app.credentials,
           controllerRepoId,
           variantAnalysisId,
+          serverUrl,
         );
       } catch (e) {
         const errorMessage = getErrorMessage(e);
