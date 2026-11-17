@@ -12,10 +12,10 @@ export function isEmptyPath(uriStr: string) {
 
 export function tryGetRemoteLocation(
   loc: UrlValue | undefined,
-  fileLinkPrefix: string,
+  fileLinkPrefix: string | undefined,
   sourceLocationPrefix: string | undefined,
 ): string | undefined {
-  if (!loc || !isUrlValueResolvable(loc)) {
+  if (!fileLinkPrefix || !loc || !isUrlValueResolvable(loc)) {
     return undefined;
   }
 

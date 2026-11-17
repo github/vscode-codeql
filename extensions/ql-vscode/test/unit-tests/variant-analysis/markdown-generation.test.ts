@@ -17,10 +17,46 @@ import type {
 import pathProblemAnalysesResults from "../data/markdown-generation/interpreted-results/path-problem/analyses-results.json";
 import problemAnalysesResults from "../data/markdown-generation/interpreted-results/problem/analyses-results.json";
 import rawResultsAnalysesResults from "../data/markdown-generation/raw-results/analyses-results.json";
+import { createMockVariantAnalysis } from "../../factories/variant-analysis/shared/variant-analysis";
+import { createMockScannedRepo } from "../../factories/variant-analysis/shared/scanned-repositories";
 
 const dataPath = resolve(__dirname, "../data/markdown-generation");
 
 describe(generateVariantAnalysisMarkdown.name, () => {
+  it("exports locations as text when repository links are unavailable", async () => {
+    const run = createMockVariantAnalysis({});
+    const repo = createMockScannedRepo();
+    repo.resultCount = 1;
+    const results: VariantAnalysisScannedRepositoryResult = {
+      variantAnalysisId: run.id,
+      repositoryId: repo.repository.id,
+      interpretedResults: [
+        {
+          message: { tokens: [{ t: "text", text: "A finding" }] },
+          shortDescription: "A finding",
+          severity: "Warning",
+          fileLink: { fileLinkPrefix: undefined, filePath: "src/query.ts" },
+          codeFlows: [],
+        },
+      ],
+    };
+    async function* getUnlinkedResults(): AsyncIterable<
+      [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
+    > {
+      yield [repo, results];
+    }
+    const actual = await generateVariantAnalysisMarkdown(
+      run,
+      getUnlinkedResults(),
+      1,
+      "local",
+    );
+    const content = actual.markdownFiles[1].content.join("\n");
+    expect(content).toContain("src/query.ts");
+    expect(content).not.toContain("[src/query.ts](");
+    expect(content).not.toContain("undefined");
+  });
+
   describe("for path-problem query", () => {
     it("should generate markdown file for each repo with results", async () => {
       const actualFiles = await generateVariantAnalysisMarkdown(
