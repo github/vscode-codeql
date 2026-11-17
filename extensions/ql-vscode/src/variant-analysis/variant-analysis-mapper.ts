@@ -9,6 +9,7 @@ import type {
   VariantAnalysisSkippedRepositoryGroup as ApiVariantAnalysisSkippedRepositoryGroup,
   VariantAnalysisNotFoundRepositoryGroup as ApiVariantAnalysisNotFoundRepositoryGroup,
   VariantAnalysisRepoTask as ApiVariantAnalysisRepoTask,
+  VariantAnalysisSubmissionRequest,
 } from "./gh-api/variant-analysis";
 import type {
   VariantAnalysis,
@@ -23,6 +24,19 @@ import {
   VariantAnalysisStatus,
   VariantAnalysisRepoStatus,
 } from "./shared/variant-analysis";
+
+export function mapVariantAnalysisSubmission(
+  submission: VariantAnalysisSubmission,
+): VariantAnalysisSubmissionRequest {
+  return {
+    action_repo_ref: submission.actionRepoRef,
+    language: submission.language,
+    query_pack: submission.pack,
+    repositories: submission.databases.repositories,
+    repository_lists: submission.databases.repositoryLists,
+    repository_owners: submission.databases.repositoryOwners,
+  };
+}
 
 export function mapVariantAnalysisFromSubmission(
   submission: VariantAnalysisSubmission,
