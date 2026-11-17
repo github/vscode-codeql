@@ -3,6 +3,7 @@ import { commands, env, window, workspace } from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
+import * as variantAnalysisApi from "../../../../src/variant-analysis/variant-analysis-api";
 import {
   ensureDir,
   outputJson,
@@ -652,6 +653,21 @@ describe("Variant Analysis Manager", () => {
         app.credentials,
         variantAnalysis,
       );
+    });
+
+    it("allows custom-server cancellation without an Actions workflow run ID", async () => {
+      const cancel = jest
+        .spyOn(variantAnalysisApi, "cancelVariantAnalysis")
+        .mockResolvedValue(undefined);
+      const serverRun = {
+        ...variantAnalysis,
+        serverUrl: "https://mrva.example.com",
+        actionsWorkflowRunId: undefined,
+      };
+      await variantAnalysisManager.onVariantAnalysisUpdated(serverRun);
+      await variantAnalysisManager.cancelVariantAnalysis(serverRun.id);
+      expect(cancel).toHaveBeenCalledWith(app.credentials, serverRun);
+      expect(mockCancelVariantAnalysis).not.toHaveBeenCalled();
     });
 
     it("should set the status to canceling", async () => {

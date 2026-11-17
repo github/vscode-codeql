@@ -151,6 +151,7 @@ export function VariantAnalysis({
   if (
     variantAnalysis === undefined ||
     (variantAnalysis.status === VariantAnalysisStatus.InProgress &&
+      !variantAnalysis.serverUrl &&
       variantAnalysis.actionsWorkflowRunId === undefined)
   ) {
     return <VariantAnalysisLoading />;

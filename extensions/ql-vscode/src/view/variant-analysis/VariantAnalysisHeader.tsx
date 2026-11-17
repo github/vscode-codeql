@@ -159,7 +159,9 @@ export const VariantAnalysisHeader = ({
           onViewAutofixesClick={onViewAutofixesClick}
           onCopyRepositoryListClick={onCopyRepositoryListClick}
           onExportResultsClick={onExportResultsClick}
-          stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
+          stopQueryDisabled={
+            !variantAnalysis.serverUrl && !variantAnalysis.actionsWorkflowRunId
+          }
           exportResultsDisabled={!hasDownloadedRepos}
           copyRepositoryListDisabled={!hasReposWithResults}
           viewAutofixesDisabled={!hasReposWithResults}

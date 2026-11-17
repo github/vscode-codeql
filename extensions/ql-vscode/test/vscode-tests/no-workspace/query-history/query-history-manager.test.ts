@@ -408,6 +408,48 @@ describe("QueryHistoryManager", () => {
             expect(showInformationMessageWithActionSpy).toHaveBeenCalled();
           });
 
+          it.each([true, false])(
+            "asks whether to stop a server run before removing it (stop: %s)",
+            async (shouldStop) => {
+              toDelete.variantAnalysis.serverUrl = "https://mrva.example.com";
+              showBinaryChoiceDialogSpy
+                .mockResolvedValueOnce(true)
+                .mockResolvedValueOnce(shouldStop);
+
+              await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
+
+              expect(showBinaryChoiceDialogSpy).toHaveBeenLastCalledWith(
+                "This variant analysis is still running on the server. Do you also want to stop it?",
+                true,
+                "Stop",
+                "Keep running",
+              );
+              expect(cancelVariantAnalysisSpy).toHaveBeenCalledTimes(
+                shouldStop ? 1 : 0,
+              );
+              expect(
+                showInformationMessageWithActionSpy,
+              ).not.toHaveBeenCalled();
+              expect(
+                queryHistoryManager.treeDataProvider.allHistory,
+              ).not.toContain(toDelete);
+            },
+          );
+
+          it("keeps a server run in history if stopping it fails", async () => {
+            toDelete.variantAnalysis.serverUrl = "https://mrva.example.com";
+            cancelVariantAnalysisSpy.mockRejectedValue(
+              new Error("Server unavailable"),
+            );
+
+            await expect(
+              queryHistoryManager.handleRemoveHistoryItem([toDelete]),
+            ).rejects.toThrow("Server unavailable");
+            expect(queryHistoryManager.treeDataProvider.allHistory).toContain(
+              toDelete,
+            );
+          });
+
           describe("when you choose 'No' in the 'Are you sure?' modal", () => {
             beforeEach(async () => {
               showBinaryChoiceDialogSpy.mockResolvedValue(false);

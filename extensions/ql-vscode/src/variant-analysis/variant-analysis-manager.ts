@@ -928,7 +928,7 @@ export class VariantAnalysisManager
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
     }
 
-    if (!variantAnalysis.actionsWorkflowRunId) {
+    if (!variantAnalysis.serverUrl && !variantAnalysis.actionsWorkflowRunId) {
       throw new Error(
         `No workflow run id for variant analysis with id: ${variantAnalysis.id}`,
       );

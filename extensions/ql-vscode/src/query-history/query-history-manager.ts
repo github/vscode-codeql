@@ -623,12 +623,29 @@ export class QueryHistoryManager extends DisposableObject {
       if (!response) {
         return;
       }
+      // Runs on a custom server can be stopped from here, so offer to do that.
+      if (
+        item.variantAnalysis.serverUrl &&
+        (await showBinaryChoiceDialog(
+          "This variant analysis is still running on the server. Do you also want to stop it?",
+          true,
+          "Stop",
+          "Keep running",
+        ))
+      ) {
+        await this.variantAnalysisManager.cancelVariantAnalysis(
+          item.variantAnalysis.id,
+        );
+      }
     }
 
     this.treeDataProvider.remove(item);
     void this.app.logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
 
-    if (item.status === QueryStatus.InProgress) {
+    if (
+      item.status === QueryStatus.InProgress &&
+      !item.variantAnalysis.serverUrl
+    ) {
       await this.showToastWithWorkflowRunLink(item);
     }
 

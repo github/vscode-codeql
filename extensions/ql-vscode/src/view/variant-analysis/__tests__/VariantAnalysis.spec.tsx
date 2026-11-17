@@ -34,6 +34,23 @@ describe(VariantAnalysis.name, () => {
     ).toBeInTheDocument();
   });
 
+  it("renders a server run without a workflow ID, with Stop enabled", () => {
+    render({
+      variantAnalysis: {
+        ...createMockVariantAnalysis({
+          status: VariantAnalysisStatus.InProgress,
+        }),
+        serverUrl: "https://mrva.example.com",
+        actionsWorkflowRunId: undefined,
+      },
+    });
+
+    expect(
+      screen.queryByText("We are getting everything ready"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Stop query")).toBeEnabled();
+  });
+
   it("renders an analysis where there were no repos to analyse", () => {
     const variantAnalysis = createMockVariantAnalysis({
       status: VariantAnalysisStatus.Failed,
