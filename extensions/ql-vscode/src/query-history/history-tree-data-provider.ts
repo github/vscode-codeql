@@ -7,6 +7,11 @@ import { getLanguage, getQueryId } from "./query-history-info";
 import { QueryStatus } from "./query-status";
 import type { HistoryItemLabelProvider } from "./history-item-label-provider";
 import type { LanguageContextStore } from "../language-context-store";
+import type { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
+import {
+  canViewServerVariantAnalysisLogs,
+  onDidChangeVariantAnalysisLogCapabilities,
+} from "../variant-analysis/variant-analysis-api";
 
 export enum SortOrder {
   NameAsc = "NameAsc",
@@ -68,6 +73,11 @@ export class HistoryTreeDataProvider
     private readonly languageContext: LanguageContextStore,
   ) {
     super();
+    this.push(
+      onDidChangeVariantAnalysisLogCapabilities(() =>
+        this._onDidChangeTreeData.fire(undefined),
+      ),
+    );
   }
 
   async getTreeItem(element: QueryHistoryInfo): Promise<TreeItem> {
@@ -122,6 +132,9 @@ export class HistoryTreeDataProvider
   }
 
   private async getContextValue(element: QueryHistoryInfo): Promise<string> {
+    if (element.t === "variant-analysis" && element.variantAnalysis.serverUrl) {
+      return getServerVariantAnalysisContextValue(element);
+    }
     switch (element.status) {
       case QueryStatus.InProgress:
         if (element.t === "local") {
@@ -282,5 +295,29 @@ export class HistoryTreeDataProvider
       default:
         assertNever(item);
     }
+  }
+}
+
+/**
+ * Context values for runs on a custom server. Their logs come from the
+ * companion extension, so the "View logs" action depends on its support.
+ */
+function getServerVariantAnalysisContextValue(
+  element: VariantAnalysisHistoryItem,
+): string {
+  const hasLogs = canViewServerVariantAnalysisLogs(element.variantAnalysis);
+  switch (element.status) {
+    case QueryStatus.InProgress:
+      return hasLogs
+        ? "inProgressRemoteResultsItem"
+        : "inProgressRemoteResultsItemWithoutLogs";
+    case QueryStatus.Completed:
+      return hasLogs ? "remoteResultsItem" : "remoteResultsItemWithoutLogs";
+    case QueryStatus.Failed:
+      return hasLogs
+        ? "cancelledRemoteResultsItem"
+        : "cancelledRemoteResultsItemWithoutLogs";
+    default:
+      assertNever(element.status);
   }
 }

@@ -1,4 +1,7 @@
+import { Disposable, EventEmitter, workspace } from "vscode";
 import type { Credentials } from "../common/authentication";
+import { getErrorMessage } from "../common/helpers-pure";
+import { extLogger } from "../common/logging/vscode";
 import type { VariantAnalysisServerConfig } from "../config";
 import { getVariantAnalysisServerConfig } from "../config";
 import { cancelVariantAnalysis as cancelGitHubVariantAnalysis } from "./gh-api/gh-actions-api-client";
@@ -97,4 +100,79 @@ async function getServerLogOpener(
       ? () => openLogs.call(provider, server.url, analysisId)
       : undefined;
   });
+}
+
+const logCapabilities = new Map<string, { available: boolean }>();
+const logCapabilitiesChanged = new EventEmitter<void>();
+export const onDidChangeVariantAnalysisLogCapabilities =
+  logCapabilitiesChanged.event;
+
+export function watchVariantAnalysisLogCapabilities(): Disposable {
+  logCapabilities.clear();
+  return Disposable.from(
+    workspace.onDidChangeConfiguration((event) => {
+      if (
+        event.affectsConfiguration("codeQL.variantAnalysis.serverUrl") ||
+        event.affectsConfiguration("codeQL.variantAnalysis.serverTokenProvider")
+      ) {
+        logCapabilities.clear();
+        logCapabilitiesChanged.fire();
+      }
+    }),
+    new Disposable(() => logCapabilities.clear()),
+  );
+}
+
+/**
+ * Whether the companion extension can open logs for a server run. Discovery
+ * runs in the background: this returns `false` until it finishes, then
+ * `onDidChangeVariantAnalysisLogCapabilities` fires.
+ */
+export function canViewServerVariantAnalysisLogs(
+  run: VariantAnalysis,
+): boolean {
+  let server: VariantAnalysisServerConfig | undefined;
+  try {
+    server = getVariantAnalysisServerConfig();
+  } catch {
+    return false;
+  }
+  if (
+    !run.serverUrl ||
+    server?.url !== run.serverUrl ||
+    !server.tokenProviderExtensionId
+  ) {
+    return false;
+  }
+  const key = JSON.stringify([server.url, server.tokenProviderExtensionId]);
+  const cached = logCapabilities.get(key);
+  if (cached) {
+    return cached.available;
+  }
+  const capability = { available: false };
+  logCapabilities.set(key, capability);
+  void getServerLogOpener(server, run.id)
+    .then((openLogs) => {
+      capability.available = openLogs !== undefined;
+    })
+    .catch((error: unknown) => {
+      void extLogger.log(
+        `Unable to discover variant analysis logs: ${getErrorMessage(error)}`,
+      );
+    })
+    .then(() => {
+      if (logCapabilities.get(key) === capability) {
+        logCapabilitiesChanged.fire();
+      }
+    });
+  return false;
+}
+
+/** Adds the log capability to a server run before it is sent to a webview. */
+export function withVariantAnalysisLogCapability(
+  run: VariantAnalysis,
+): VariantAnalysis {
+  return run.serverUrl
+    ? { ...run, canViewLogs: canViewServerVariantAnalysisLogs(run) }
+    : run;
 }

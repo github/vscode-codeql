@@ -51,6 +51,24 @@ describe(VariantAnalysis.name, () => {
     expect(screen.getByText("Stop query")).toBeEnabled();
   });
 
+  it.each([true, false])(
+    "offers logs for a server run only if the companion supports them: %s",
+    (canViewLogs) => {
+      render({
+        variantAnalysis: {
+          ...createMockVariantAnalysis({}),
+          serverUrl: "https://mrva.example.com",
+          actionsWorkflowRunId: undefined,
+          canViewLogs,
+        },
+      });
+
+      expect(screen.queryByText("View actions logs") !== null).toBe(
+        canViewLogs,
+      );
+    },
+  );
+
   it("renders an analysis where there were no repos to analyse", () => {
     const variantAnalysis = createMockVariantAnalysis({
       status: VariantAnalysisStatus.Failed,

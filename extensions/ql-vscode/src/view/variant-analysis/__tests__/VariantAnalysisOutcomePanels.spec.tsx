@@ -95,6 +95,22 @@ describe(VariantAnalysisOutcomePanels.name, () => {
     expect(screen.getByText("Analyzed")).toBeInTheDocument();
   });
 
+  it.each([true, false])(
+    "shows a server failure without GitHub Actions (logs: %s)",
+    (canViewLogs) => {
+      render({
+        serverUrl: "https://mrva.example.com",
+        canViewLogs,
+        status: VariantAnalysisStatus.Failed,
+        failureReason: VariantAnalysisFailureReason.ActionsWorkflowRunFailed,
+      });
+
+      expect(screen.getByText(/Variant analysis failed/)).toBeInTheDocument();
+      expect(screen.queryByText("View actions logs")).not.toBeInTheDocument();
+      expect(screen.queryByText("View logs") !== null).toBe(canViewLogs);
+    },
+  );
+
   it("does not render panels without skipped repos", () => {
     render({
       skippedRepos: undefined,
