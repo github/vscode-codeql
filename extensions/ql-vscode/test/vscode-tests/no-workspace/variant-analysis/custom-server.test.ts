@@ -8,6 +8,7 @@ import {
 import { exportVariantAnalysisResults } from "../../../../src/variant-analysis/export-results";
 import type { VariantAnalysisServerTokenProvider } from "../../../../src/variant-analysis/gh-api/variant-analysis-server-client";
 import { requestVariantAnalysisServer } from "../../../../src/variant-analysis/gh-api/variant-analysis-server-client";
+import { openServerVariantAnalysisLogs } from "../../../../src/variant-analysis/variant-analysis-api";
 import type { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { testCredentialsWithStub } from "../../../factories/authentication";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
@@ -25,6 +26,11 @@ async function setSetting(
   await workspace
     .getConfiguration("codeQL.variantAnalysis")
     .update(name, value, target);
+}
+
+async function configureServer() {
+  await setSetting("serverUrl", SERVER_URL);
+  await setSetting("serverTokenProvider", PROVIDER_ID);
 }
 
 function mockProvider(
@@ -230,4 +236,52 @@ describe("variant analysis server client", () => {
       ).rejects.toThrow(/invalid JSON|empty response/);
     },
   );
+});
+
+describe("opening server logs", () => {
+  let run: ReturnType<typeof createMockVariantAnalysis>;
+  let openVariantAnalysisLogs: jest.Mock;
+
+  beforeEach(async () => {
+    await configureServer();
+    run = { ...createMockVariantAnalysis({}), serverUrl: SERVER_URL };
+    openVariantAnalysisLogs = jest.fn().mockResolvedValue(undefined);
+    mockProvider({
+      isActive: false,
+      activate: jest.fn().mockResolvedValue({
+        getVariantAnalysisServerToken,
+        openVariantAnalysisLogs,
+      }),
+    });
+  });
+
+  it("activates the companion and delegates without requesting a token", async () => {
+    await openServerVariantAnalysisLogs(run);
+    expect(openVariantAnalysisLogs).toHaveBeenCalledWith(SERVER_URL, run.id);
+    expect(getVariantAnalysisServerToken).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    openVariantAnalysisLogs.mockRejectedValue(new Error("Cannot open logs"));
+    await expect(openServerVariantAnalysisLogs(run)).rejects.toThrow(
+      "Cannot open logs",
+    );
+  });
+
+  it("refuses runs from another server", async () => {
+    await setSetting("serverUrl", "https://other.example.com");
+    await expect(openServerVariantAnalysisLogs(run)).rejects.toThrow(
+      "different server",
+    );
+    expect(openVariantAnalysisLogs).not.toHaveBeenCalled();
+  });
+
+  it("fails if the companion cannot open logs", async () => {
+    mockProvider({
+      isActive: true,
+      exports: { getVariantAnalysisServerToken },
+    });
+    await expect(openServerVariantAnalysisLogs(run)).rejects.toThrow(
+      "does not support viewing logs",
+    );
+  });
 });

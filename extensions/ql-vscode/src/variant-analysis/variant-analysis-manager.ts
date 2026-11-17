@@ -4,6 +4,7 @@ import {
   cancelVariantAnalysis,
   submitVariantAnalysis,
   getVariantAnalysisRepo,
+  openServerVariantAnalysisLogs,
 } from "./variant-analysis-api";
 import type { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
 import type {
@@ -958,6 +959,11 @@ export class VariantAnalysisManager
     const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
     if (!variantAnalysis) {
       throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    if (variantAnalysis.serverUrl) {
+      await openServerVariantAnalysisLogs(variantAnalysis);
+      return;
     }
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(

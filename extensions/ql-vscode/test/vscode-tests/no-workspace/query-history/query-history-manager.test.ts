@@ -79,6 +79,7 @@ describe("QueryHistoryManager", () => {
       onVariantAnalysisRemoved: jest.fn(),
       removeVariantAnalysis: jest.fn(),
       cancelVariantAnalysis: jest.fn(),
+      openVariantAnalysisLogs: jest.fn(),
       exportResults: jest.fn(),
       showView: jest.fn(),
     } as any as VariantAnalysisManager;
@@ -146,6 +147,22 @@ describe("QueryHistoryManager", () => {
     if (queryHistoryManager) {
       queryHistoryManager.dispose();
     }
+  });
+
+  describe("handleOpenOnGithub", () => {
+    it("delegates server runs to the variant analysis manager", async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      const item = variantAnalysisHistory[0];
+      item.variantAnalysis.serverUrl = "https://mrva.example.com";
+      await queryHistoryManager.handleOpenOnGithub(item);
+      expect(
+        variantAnalysisManagerStub.openVariantAnalysisLogs,
+      ).toHaveBeenCalledWith(item.variantAnalysis.id);
+      expect(executeCommand).not.toHaveBeenCalledWith(
+        "vscode.open",
+        expect.anything(),
+      );
+    });
   });
 
   describe("handleItemClicked", () => {

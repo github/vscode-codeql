@@ -11,6 +11,10 @@ import type { VariantAnalysisServerConfig } from "../../config";
  */
 export interface VariantAnalysisServerTokenProvider {
   getVariantAnalysisServerToken(serverUrl: string): Promise<string | undefined>;
+  openVariantAnalysisLogs?(
+    serverUrl: string,
+    analysisId: number,
+  ): Promise<void>;
 }
 
 const MAX_ERROR_BODY_LENGTH = 500;
@@ -20,7 +24,7 @@ const TOKEN_PROVIDER_TIMEOUT_MS = 30_000;
  * Activates the configured token provider extension and runs `action` with its
  * exports, failing if the provider does not respond within 30 seconds.
  */
-async function withVariantAnalysisServerProvider<T>(
+export async function withVariantAnalysisServerProvider<T>(
   server: VariantAnalysisServerConfig,
   action: (provider: Partial<VariantAnalysisServerTokenProvider>) => Promise<T>,
 ): Promise<T> {

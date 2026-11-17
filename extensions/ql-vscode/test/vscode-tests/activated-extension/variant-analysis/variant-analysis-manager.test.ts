@@ -655,6 +655,33 @@ describe("Variant Analysis Manager", () => {
       );
     });
 
+    it("delegates custom-server logs without requiring a workflow ID", async () => {
+      const openLogs = jest
+        .spyOn(variantAnalysisApi, "openServerVariantAnalysisLogs")
+        .mockResolvedValue(undefined);
+      const serverRun = {
+        ...variantAnalysis,
+        serverUrl: "https://mrva.example.com",
+        actionsWorkflowRunId: undefined,
+      };
+      await variantAnalysisManager.onVariantAnalysisUpdated(serverRun);
+      await variantAnalysisManager.openVariantAnalysisLogs(serverRun.id);
+      expect(openLogs).toHaveBeenCalledWith(serverRun);
+    });
+
+    it("opens the GitHub workflow URL for GitHub logs", async () => {
+      const open = jest
+        .spyOn(commands, "executeCommand")
+        .mockResolvedValue(undefined);
+      await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysis.id);
+      expect(open).toHaveBeenCalledWith(
+        "vscode.open",
+        expect.objectContaining({
+          path: `/${variantAnalysis.controllerRepo.fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`,
+        }),
+      );
+    });
+
     it("allows custom-server cancellation without an Actions workflow run ID", async () => {
       const cancel = jest
         .spyOn(variantAnalysisApi, "cancelVariantAnalysis")

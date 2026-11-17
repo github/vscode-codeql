@@ -1061,6 +1061,13 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
+    if (item.variantAnalysis.serverUrl) {
+      await this.variantAnalysisManager.openVariantAnalysisLogs(
+        item.variantAnalysis.id,
+      );
+      return;
+    }
+
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(item);
 
     await this.app.commands.execute(
