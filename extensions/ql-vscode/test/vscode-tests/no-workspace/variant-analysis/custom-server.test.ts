@@ -12,6 +12,7 @@ import { extLogger } from "../../../../src/common/logging/vscode";
 import {
   getVariantAnalysisServerConfig,
   isVariantAnalysisServerConfigured,
+  VariantAnalysisConfigListener,
 } from "../../../../src/config";
 import { exportVariantAnalysisResults } from "../../../../src/variant-analysis/export-results";
 import type { VariantAnalysisServerTokenProvider } from "../../../../src/variant-analysis/gh-api/variant-analysis-server-client";
@@ -519,5 +520,18 @@ describe("variant analysis routing", () => {
       /different server/,
     );
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("repository lists with a custom server", () => {
+  it("hides system-defined repository lists", async () => {
+    const config = new VariantAnalysisConfigListener();
+    try {
+      expect(config.showSystemDefinedRepositoryLists).toBe(true);
+      await setSetting("serverUrl", SERVER_URL);
+      expect(config.showSystemDefinedRepositoryLists).toBe(false);
+    } finally {
+      config.dispose();
+    }
   });
 });

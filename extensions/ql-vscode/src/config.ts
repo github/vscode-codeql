@@ -734,7 +734,7 @@ export class VariantAnalysisConfigListener
   }
 
   public get showSystemDefinedRepositoryLists(): boolean {
-    return !hasEnterpriseUri();
+    return !hasEnterpriseUri() && !isVariantAnalysisServerConfigured();
   }
 
   public get githubUrl(): URL {
