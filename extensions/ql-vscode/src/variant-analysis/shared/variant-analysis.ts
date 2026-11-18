@@ -5,6 +5,8 @@ import type { ModelPackDetails } from "../../common/model-pack-details";
 
 export interface VariantAnalysis {
   id: number;
+  /** Remote ID for custom runs, whose `id` is allocated locally. */
+  serverRunId?: number;
   /** Custom server that created this run; absent for GitHub and legacy runs. */
   serverUrl?: string;
   /** Runtime capability supplied to views, not persisted in query history. */

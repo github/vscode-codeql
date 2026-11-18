@@ -1,4 +1,5 @@
 import { join } from "path";
+import { randomInt } from "crypto";
 
 import {
   cancelVariantAnalysis,
@@ -52,7 +53,7 @@ import {
 } from "./variant-analysis-mapper";
 import PQueue from "p-queue";
 import { createTimestampFile, saveBeforeStart } from "../run-queries-shared";
-import { readFile, remove, pathExists } from "fs-extra";
+import { mkdir, readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 import type { ProgressCallback } from "../common/vscode/progress";
 import {
@@ -707,9 +708,12 @@ export class VariantAnalysisManager
   private async onVariantAnalysisSubmitted(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
-    await this.setVariantAnalysis(variantAnalysis);
-
+    if (variantAnalysis.serverUrl) {
+      variantAnalysis.serverRunId = variantAnalysis.id;
+      variantAnalysis.id = await this.reserveServerRunId();
+    }
     await this.prepareStorageDirectory(variantAnalysis.id);
+    await this.setVariantAnalysis(variantAnalysis);
 
     this.repoStates.set(variantAnalysis.id, {});
 
@@ -812,7 +816,7 @@ export class VariantAnalysisManager
       const repoTaskResponse = await getVariantAnalysisRepo(
         this.app.credentials,
         variantAnalysis.controllerRepo.id,
-        variantAnalysis.id,
+        variantAnalysis.serverRunId ?? variantAnalysis.id,
         scannedRepo.repository.id,
         variantAnalysis.serverUrl,
       );
@@ -1062,5 +1066,29 @@ export class VariantAnalysisManager
     await createTimestampFile(
       this.getVariantAnalysisStorageLocation(variantAnalysisId),
     );
+  }
+
+  private async reserveServerRunId(): Promise<number> {
+    // Negative IDs keep GitHub's numeric storage unchanged. mkdir reserves the
+    // ID across workspaces before publishing the run to history.
+    for (;;) {
+      const id = -randomInt(1, 2 ** 48);
+      if (this.variantAnalyses.has(id)) {
+        continue;
+      }
+      try {
+        await mkdir(this.getVariantAnalysisStorageLocation(id));
+        return id;
+      } catch (error) {
+        if (!(
+          error &&
+          typeof error === "object" &&
+          "code" in error &&
+          error.code === "EEXIST"
+        )) {
+          throw error;
+        }
+      }
+    }
   }
 }

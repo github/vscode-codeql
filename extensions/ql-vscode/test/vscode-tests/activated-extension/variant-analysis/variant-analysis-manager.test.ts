@@ -203,9 +203,7 @@ describe("Variant Analysis Manager", () => {
       serverUrl,
       controllerRepoId: 0,
     };
-    const storage = variantAnalysisManager.getVariantAnalysisStorageLocation(
-      response.id,
-    );
+    const storedRuns: VariantAnalysis[] = [];
     const sleepTime = VariantAnalysisMonitor.sleepTime;
     VariantAnalysisMonitor.sleepTime = 1;
     const downloads: Array<Promise<void>> = [];
@@ -229,13 +227,28 @@ describe("Variant Analysis Manager", () => {
         submission,
       );
       const run = mapVariantAnalysisFromSubmission(submission, submitted, []);
-      await createTimestampFile(storage);
-      await variantAnalysisManager.rehydrateVariantAnalysis(run);
+      await variantAnalysisManager["onVariantAnalysisSubmitted"](run);
+      storedRuns.push(run);
+      const other = mapVariantAnalysisFromSubmission(
+        { ...submission, serverUrl: "https://other.example.com" },
+        submitted,
+        [],
+      );
+      await variantAnalysisManager["onVariantAnalysisSubmitted"](other);
+      storedRuns.push(other);
+      expect(other.id).not.toBe(run.id);
+      expect(run.id).toBeLessThan(0);
+      expect(other.id).toBeLessThan(0);
+      expect(run.serverRunId).toBe(response.id);
+      expect(other.serverRunId).toBe(response.id);
       await variantAnalysisManager.monitorVariantAnalysis(run);
       await Promise.all(downloads);
       expect(downloads).toHaveLength(1);
       expect(variantAnalysisManager.tryGetVariantAnalysis(run.id)?.status).toBe(
         VariantAnalysisStatus.Succeeded,
+      );
+      expect(variantAnalysisManager.tryGetVariantAnalysis(other.id)).toEqual(
+        other,
       );
       const results = await variantAnalysisManager.loadResults(
         run.id,
@@ -264,7 +277,11 @@ describe("Variant Analysis Manager", () => {
     } finally {
       VariantAnalysisMonitor.sleepTime = sleepTime;
       await Promise.allSettled(downloads);
-      await remove(storage);
+      await Promise.all(
+        storedRuns.map((run) =>
+          variantAnalysisManager.removeVariantAnalysis(run),
+        ),
+      );
       variantAnalysisManager.dispose();
       variantAnalysisResultsManager.dispose();
     }

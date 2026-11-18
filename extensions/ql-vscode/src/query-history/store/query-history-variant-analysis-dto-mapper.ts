@@ -48,6 +48,7 @@ function mapVariantAnalysisToDomainModel(
 ): VariantAnalysis {
   return {
     id: variantAnalysis.id,
+    serverRunId: variantAnalysis.serverRunId,
     serverUrl: variantAnalysis.serverUrl,
     controllerRepo: {
       id: variantAnalysis.controllerRepo.id,

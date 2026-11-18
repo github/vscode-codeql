@@ -97,7 +97,7 @@ export async function cancelVariantAnalysis(
     await requestVariantAnalysisServer(
       server,
       "POST",
-      `${variantAnalysesPath(variantAnalysis.controllerRepo.id)}/${variantAnalysis.id}/cancel`,
+      `${variantAnalysesPath(variantAnalysis.controllerRepo.id)}/${variantAnalysis.serverRunId ?? variantAnalysis.id}/cancel`,
       undefined,
       true,
     );
@@ -156,7 +156,9 @@ function getServerForVariantAnalysis(
   const server = getVariantAnalysisServerConfig();
   if (server?.url !== serverUrl) {
     throw new Error(
-      "This variant analysis belongs to a different server. Restore the server setting used to submit it before retrying.",
+      serverUrl
+        ? `This variant analysis belongs to a different server. Set codeQL.variantAnalysis.serverUrl to ${serverUrl} before retrying.`
+        : "This variant analysis belongs to a different server (GitHub). Clear codeQL.variantAnalysis.serverUrl before retrying.",
     );
   }
   return server;
@@ -166,7 +168,8 @@ export async function openServerVariantAnalysisLogs(
   run: VariantAnalysis,
 ): Promise<void> {
   const server = getServerForVariantAnalysis(run.serverUrl);
-  const openLogs = server && (await getServerLogOpener(server, run.id));
+  const openLogs =
+    server && (await getServerLogOpener(server, run.serverRunId ?? run.id));
   if (!openLogs) {
     throw new Error(
       "The configured variant analysis provider does not support viewing logs.",
@@ -236,7 +239,7 @@ export function canViewServerVariantAnalysisLogs(
   }
   const capability = { available: false };
   logCapabilities.set(key, capability);
-  void getServerLogOpener(server, run.id)
+  void getServerLogOpener(server, run.serverRunId ?? run.id)
     .then((openLogs) => {
       capability.available = openLogs !== undefined;
     })

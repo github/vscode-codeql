@@ -495,7 +495,19 @@ export class QueryHistoryManager extends DisposableObject {
     const history = await readQueryHistoryFromFile(
       this.queryMetadataStorageLocation,
     );
-    this.treeDataProvider.allHistory = history;
+    this.treeDataProvider.allHistory = history.filter((item) => {
+      if (
+        item.t === "variant-analysis" &&
+        item.variantAnalysis.serverUrl &&
+        item.variantAnalysis.serverRunId === undefined
+      ) {
+        void this.app.logger.log(
+          "Skipping an older custom-server variant analysis with unqualified storage. Rerun the analysis to see its results.",
+        );
+        return false;
+      }
+      return true;
+    });
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
         if (item.t === "variant-analysis") {

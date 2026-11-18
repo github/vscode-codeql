@@ -67,11 +67,16 @@ export function mapUpdatedVariantAnalysis(
   currentVariantAnalysis: VariantAnalysis,
   apiVariantAnalysis: ApiVariantAnalysis,
 ): VariantAnalysis {
-  return mapVariantAnalysis(
+  const updated = mapVariantAnalysis(
     currentVariantAnalysis,
     currentVariantAnalysis.status,
     apiVariantAnalysis,
   );
+  if (currentVariantAnalysis.serverRunId !== undefined) {
+    updated.id = currentVariantAnalysis.id;
+    updated.serverRunId = currentVariantAnalysis.serverRunId;
+  }
+  return updated;
 }
 
 function mapVariantAnalysis(

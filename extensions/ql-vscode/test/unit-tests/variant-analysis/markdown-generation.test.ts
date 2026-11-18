@@ -23,6 +23,40 @@ import { createMockScannedRepo } from "../../factories/variant-analysis/shared/s
 const dataPath = resolve(__dirname, "../data/markdown-generation");
 
 describe(generateVariantAnalysisMarkdown.name, () => {
+  it("writes distinct files and summary links for nested custom-server repositories", async () => {
+    const run = {
+      ...createMockVariantAnalysis({}),
+      serverUrl: "https://mrva.example.com",
+    };
+    async function* results(): AsyncIterable<
+      [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
+    > {
+      for (const name of ["repo-a", "repo-b"]) {
+        const repo = createMockScannedRepo();
+        repo.repository.fullName = `group/sub/${name}`;
+        repo.resultCount = 1;
+        yield [
+          repo,
+          { variantAnalysisId: run.id, repositoryId: repo.repository.id },
+        ];
+      }
+    }
+    const { markdownFiles } = await generateVariantAnalysisMarkdown(
+      run,
+      results(),
+      2,
+      "local",
+    );
+    const [summary, first, second] = markdownFiles;
+    expect(first.fileName).not.toBe(second.fileName);
+    expect(summary.content.join("\n")).toContain(
+      `| group/sub/repo-a | [1 result(s)](./${first.fileName}.md) |`,
+    );
+    expect(summary.content.join("\n")).toContain(
+      `| group/sub/repo-b | [1 result(s)](./${second.fileName}.md) |`,
+    );
+  });
+
   it("exports locations as text when repository links are unavailable", async () => {
     const run = createMockVariantAnalysis({});
     const repo = createMockScannedRepo();

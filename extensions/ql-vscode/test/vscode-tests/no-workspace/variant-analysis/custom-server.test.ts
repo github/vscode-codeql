@@ -286,8 +286,10 @@ describe("opening server logs", () => {
   });
 
   it("activates the companion and delegates without requesting a token", async () => {
+    run.serverRunId = 5;
+    run.id = -1;
     await openServerVariantAnalysisLogs(run);
-    expect(openVariantAnalysisLogs).toHaveBeenCalledWith(SERVER_URL, run.id);
+    expect(openVariantAnalysisLogs).toHaveBeenCalledWith(SERVER_URL, 5);
     expect(getVariantAnalysisServerToken).not.toHaveBeenCalled();
     expect(fetchSpy).not.toHaveBeenCalled();
 
@@ -489,7 +491,8 @@ describe("variant analysis routing", () => {
     };
     const run = {
       ...createMockVariantAnalysis({}),
-      id: 5,
+      id: -1,
+      serverRunId: 5,
       controllerRepo: { id: 0, fullName: "", private: true },
       serverUrl: SERVER_URL,
     };
@@ -549,7 +552,7 @@ describe("variant analysis routing", () => {
 
     await configureServer();
     await expect(getVariantAnalysis(credentials, 0, 5)).rejects.toThrow(
-      /different server/,
+      "Clear codeQL.variantAnalysis.serverUrl",
     );
     await expect(cancelVariantAnalysis(credentials, githubRun)).rejects.toThrow(
       /different server/,
@@ -558,7 +561,7 @@ describe("variant analysis routing", () => {
     await setSetting("serverUrl", "https://other.example.com");
     await expect(
       getVariantAnalysis(credentials, 0, 5, SERVER_URL),
-    ).rejects.toThrow(/different server/);
+    ).rejects.toThrow(`Set codeQL.variantAnalysis.serverUrl to ${SERVER_URL}`);
     await expect(cancelVariantAnalysis(credentials, serverRun)).rejects.toThrow(
       /different server/,
     );

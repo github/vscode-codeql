@@ -111,6 +111,8 @@ describe("write and read", () => {
   it("round-trips custom-server run data without changing legacy history", async () => {
     const serverRun = createMockVariantAnalysisHistoryItem({});
     serverRun.variantAnalysis.serverUrl = "https://mrva.example.com";
+    serverRun.variantAnalysis.serverRunId = serverRun.variantAnalysis.id;
+    serverRun.variantAnalysis.id = -1;
     serverRun.variantAnalysis.scannedRepos![0].repository.htmlUrl =
       "https://source.example.com/org/repo";
     const legacyRun = createMockVariantAnalysisHistoryItem({});

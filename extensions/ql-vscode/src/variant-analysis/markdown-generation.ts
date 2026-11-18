@@ -42,7 +42,7 @@ interface VariantAnalysisMarkdown {
  * Generates markdown files with variant analysis results.
  */
 export async function generateVariantAnalysisMarkdown(
-  variantAnalysis: Pick<VariantAnalysis, "language" | "query">,
+  variantAnalysis: Pick<VariantAnalysis, "language" | "query" | "serverUrl">,
   results: AsyncIterable<
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
@@ -63,7 +63,7 @@ export async function generateVariantAnalysisMarkdown(
       fullName,
       resultsFiles.length,
       expectedResultsCount,
-      linkType,
+      linkType === "gist" || !!variantAnalysis.serverUrl,
     );
     summaries.push({
       fileName,
@@ -431,10 +431,10 @@ function createVariantAnalysisFileName(
   fullName: string,
   index: number,
   expectedResultsCount: number,
-  linkType: MarkdownLinkType,
+  numbered: boolean,
 ) {
   const baseName = createFileName(fullName);
-  if (linkType === "gist") {
+  if (numbered) {
     const requiredNumberOfDecimals = Math.ceil(
       Math.log10(expectedResultsCount),
     );
