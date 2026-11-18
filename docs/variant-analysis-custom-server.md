@@ -114,6 +114,9 @@ Request and response shapes match `src/variant-analysis/gh-api/variant-analysis.
 
 Variant analysis responses must include `controller_repo`; subsequent requests use its `id` as the
 repository path parameter (normally `0`). The analysis `id` is the server's run/session identifier.
+IDs must be integers. Repository `full_name` values become folder names, so they must not contain empty
+or dots-only `/`-separated parts, backslashes or colons; CodeQL rejects responses that do. Names with
+more than two parts are accepted, but Markdown export names files after the first two parts only.
 Custom-server cancellation does not require `actions_workflow_run_id`; GitHub cancellation still uses
 the GitHub Actions route and requires that field. Errors should be returned as non-2xx responses with a JSON body
 `{ "message": "..." }`. CodeQL shows the status and that message to the user.

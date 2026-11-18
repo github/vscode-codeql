@@ -447,10 +447,20 @@ describe("server log capabilities", () => {
 });
 
 describe("variant analysis routing", () => {
+  // Valid as a variant analysis and as a repository task.
+  const response = {
+    id: 5,
+    controller_repo: { id: 0 },
+    scanned_repositories: [{ repository: { id: 7, full_name: "a.b/.github" } }],
+    repository: { id: 7, full_name: "group/sub/c.js" },
+  };
   let credentials: ReturnType<typeof testCredentialsWithStub>;
 
   beforeEach(() => {
     credentials = testCredentialsWithStub();
+    fetchSpy.mockImplementation(
+      async () => new Response(JSON.stringify(response)),
+    );
   });
 
   it("uses GitHub when no server is configured", async () => {
@@ -476,7 +486,7 @@ describe("variant analysis routing", () => {
 
     await expect(
       submitVariantAnalysis(credentials, submission),
-    ).resolves.toEqual({ id: 123 });
+    ).resolves.toEqual(response);
     await getVariantAnalysis(credentials, 0, 5, SERVER_URL);
     await getVariantAnalysisRepo(credentials, 0, 5, 7, SERVER_URL);
     fetchSpy.mockResolvedValue(new Response(null, { status: 202 }));
@@ -498,6 +508,29 @@ describe("variant analysis routing", () => {
         query_pack: submission.pack,
       },
     );
+  });
+
+  it.each([
+    { id: "../5" },
+    { controller_repo: { id: 0.5 } },
+    { scanned_repositories: [{ repository: { id: 7, full_name: "../x" } }] },
+    { repository: { id: "7", full_name: "x/y" } },
+    { repository: { id: 7, full_name: "x/.." } },
+    { repository: { id: 7, full_name: "x//y" } },
+    { repository: { id: 7, full_name: "x/..\\y" } },
+    { repository: { id: 7, full_name: "C:/x" } },
+    { repository: { id: 7, full_name: 7 } },
+  ])("rejects unsafe IDs and repository names: %j", async (change) => {
+    await configureServer();
+    fetchSpy.mockImplementation(
+      async () => new Response(JSON.stringify({ ...response, ...change })),
+    );
+    await expect(
+      Promise.all([
+        getVariantAnalysis(credentials, 0, 5, SERVER_URL),
+        getVariantAnalysisRepo(credentials, 0, 5, 7, SERVER_URL),
+      ]),
+    ).rejects.toThrow("IDs must be integers");
   });
 
   it("only sends a run to the server that ran it", async () => {

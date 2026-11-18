@@ -30,12 +30,13 @@ export async function submitVariantAnalysis(
 ): Promise<ApiVariantAnalysis> {
   const server = getServerForVariantAnalysis(submission.serverUrl);
   if (server) {
-    return requestVariantAnalysisServer(
+    const analysis = await requestVariantAnalysisServer<ApiVariantAnalysis>(
       server,
       "POST",
       variantAnalysesPath(submission.controllerRepoId),
       mapVariantAnalysisSubmission(submission),
     );
+    return checkVariantAnalysis(analysis);
   }
   return submitGitHubVariantAnalysis(credentials, submission);
 }
@@ -48,11 +49,12 @@ export async function getVariantAnalysis(
 ): Promise<ApiVariantAnalysis> {
   const server = getServerForVariantAnalysis(serverUrl);
   if (server) {
-    return requestVariantAnalysisServer(
+    const analysis = await requestVariantAnalysisServer<ApiVariantAnalysis>(
       server,
       "GET",
       `${variantAnalysesPath(controllerRepoId)}/${variantAnalysisId}`,
     );
+    return checkVariantAnalysis(analysis);
   }
   return getGitHubVariantAnalysis(
     credentials,
@@ -70,11 +72,13 @@ export async function getVariantAnalysisRepo(
 ): Promise<ApiVariantAnalysisRepoTask> {
   const server = getServerForVariantAnalysis(serverUrl);
   if (server) {
-    return requestVariantAnalysisServer(
+    const task = await requestVariantAnalysisServer<ApiVariantAnalysisRepoTask>(
       server,
       "GET",
       `${variantAnalysesPath(controllerRepoId)}/${variantAnalysisId}/repositories/${repoId}`,
     );
+    checkServerData([task.repository]);
+    return task;
   }
   return getGitHubVariantAnalysisRepo(
     credentials,
@@ -104,6 +108,41 @@ export async function cancelVariantAnalysis(
 
 function variantAnalysesPath(controllerRepoId: number): string {
   return `/repositories/${controllerRepoId}/code-scanning/codeql/variant-analyses`;
+}
+
+function checkVariantAnalysis(
+  analysis: ApiVariantAnalysis,
+): ApiVariantAnalysis {
+  checkServerData(
+    analysis.scanned_repositories?.map((repo) => repo.repository) ?? [],
+    [analysis.id, analysis.controller_repo.id],
+  );
+  return analysis;
+}
+
+/**
+ * IDs and repository names from a server become request URLs and file paths,
+ * so reject IDs that are not integers and names that could leave CodeQL's
+ * storage directory: empty or dots-only parts, backslashes and colons.
+ */
+function checkServerData(
+  repositories: Array<{ id: number; full_name: string }>,
+  ids: number[] = [],
+): void {
+  const valid =
+    ids.every(Number.isSafeInteger) &&
+    repositories.every(
+      (repo) =>
+        Number.isSafeInteger(repo.id) &&
+        typeof repo.full_name === "string" &&
+        /^[^\\:]+$/.test(repo.full_name) &&
+        repo.full_name.split("/").every((part) => !/^\.*$/.test(part)),
+    );
+  if (!valid) {
+    throw new Error(
+      "The variant analysis server returned an invalid response: IDs must be integers, and repository names must not contain empty or dots-only parts, backslashes or colons.",
+    );
+  }
 }
 
 /**
