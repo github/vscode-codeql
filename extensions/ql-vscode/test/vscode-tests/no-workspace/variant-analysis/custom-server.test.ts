@@ -108,7 +108,7 @@ describe("exporting custom-server results", () => {
 });
 
 describe("variant analysis server settings", () => {
-  it.each([undefined, null, " "])(
+  it.each([undefined, " "])(
     "is not configured when the URL is %p",
     async (url) => {
       await setSetting("serverUrl", url);
@@ -151,12 +151,22 @@ describe("variant analysis server settings", () => {
     `${SERVER_URL}/?`,
     `${SERVER_URL}/#`,
     "not a URL",
-    42,
   ])("rejects %p but still counts it as configured", async (url) => {
     await setSetting("serverUrl", url);
     expect(() => getVariantAnalysisServerConfig()).toThrow();
     expect(isVariantAnalysisServerConfigured()).toBe(true);
   });
+
+  it.each([false, 0, {}, null])(
+    "rejects a non-string URL (%p)",
+    async (url) => {
+      await setSetting("serverUrl", url);
+      expect(() => getVariantAnalysisServerConfig()).toThrow(
+        "codeQL.variantAnalysis.serverUrl must be a string.",
+      );
+      expect(isVariantAnalysisServerConfigured()).toBe(true);
+    },
+  );
 });
 
 describe("variant analysis server client", () => {

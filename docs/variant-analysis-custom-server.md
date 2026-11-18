@@ -26,8 +26,8 @@ VS Code's choice depends on the setting's scope and whether a remote value alrea
 | `codeQL.variantAnalysis.serverTokenProvider` | ID (`publisher.name`) of the installed extension that provides the token. |
 
 If `serverUrl` is set but invalid, variant analysis fails instead of falling back to GitHub.
-Non-string values, query strings and fragments (including a bare `?` or `#`) are rejected;
-a blank value counts as unset. Base path prefixes are supported.
+Non-string values (including `null`), query strings and fragments (including a bare `?` or `#`)
+are rejected; an absent setting or a blank string counts as unset. Base path prefixes are supported.
 The hidden server setting is the opt-in switch; there is no additional canary gate.
 
 ## Token provider extension

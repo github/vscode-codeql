@@ -649,7 +649,7 @@ export interface VariantAnalysisServerConfig {
  */
 function getGlobalStringSetting(setting: Setting): string | undefined {
   const value = setting.getGlobalValue<unknown>();
-  if (value === undefined || value === null) {
+  if (value === undefined) {
     return undefined;
   }
   if (typeof value !== "string") {
