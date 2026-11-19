@@ -67,7 +67,7 @@ jobs:
           persist-credentials: false
       - name: Mint retry token
         id: app
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           # App-authenticated reruns generate ordinary workflow completion events.
           # This token can rerun/report CI, but cannot push source changes.
@@ -114,7 +114,7 @@ jobs:
             await createController({ github, context, core }).approve();
       - name: Mint merge token
         id: app
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           # Federated secret + Actions variable; restrict the shared App's token.
           client-id: ${{ vars.CODEQL_CI_APP_CLIENT_ID }}
