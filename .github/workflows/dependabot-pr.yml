@@ -37,7 +37,7 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         id: evaluate
         with:
           # GITHUB_TOKEN handles PR state and log reads, never App credentials.
@@ -79,7 +79,7 @@ jobs:
           permission-pull-requests: write
           permission-issues: write
       - name: Retry failed jobs once before Copilot
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ steps.app.outputs.token }}
           script: |
@@ -106,7 +106,7 @@ jobs:
           ref: main
           persist-credentials: false
       - name: Approve pristine passing update
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           # The built-in token supplies the ordinary required review.
           script: |
@@ -125,7 +125,7 @@ jobs:
           permission-pull-requests: read
           permission-actions: read
       - name: Merge exact verified head
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           # codeql-ci-app is allowed to push to main, with no review/CI bypass.
           github-token: ${{ steps.app.outputs.token }}
@@ -233,7 +233,7 @@ jobs:
           name: repair-${{ inputs.pr }}
           path: result
       - name: Publish explanation or held repair
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           # Suppress push workflows; PR workflows require approval before running.
           github-token: ${{ github.token }}
@@ -258,7 +258,7 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const { createController } = require('./.github/dependabot-automation/controller.cjs');
