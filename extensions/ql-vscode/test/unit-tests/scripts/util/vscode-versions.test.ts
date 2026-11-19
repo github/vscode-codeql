@@ -14,6 +14,11 @@ const electronReleases = [
     node: "24.18.1",
     chrome: "148.0.7778.280",
   },
+  {
+    version: "43.8.9",
+    node: "24.22.1",
+    chrome: "150.0.7871.250",
+  },
 ];
 
 function mockFetch(
@@ -61,6 +66,48 @@ describe("parseElectronVersion", () => {
 });
 
 describe("getVersionInformation", () => {
+  it("reads Electron from nativeBuild.target without fetching .npmrc", async () => {
+    const fetchMock = mockFetch({
+      "https://raw.githubusercontent.com/microsoft/vscode/1.147.0/package.json":
+        {
+          nativeBuild: {
+            runtime: "electron",
+            target: "43.8.9",
+          },
+        },
+      "https://releases.electronjs.org/releases.json": electronReleases,
+    });
+
+    await expect(getVersionInformation("1.147.0")).resolves.toEqual({
+      vscodeVersion: "1.147.0",
+      electronVersion: "43.8.9",
+      nodeVersion: "24.22.1",
+      chromiumVersion: "150.0.7871.250",
+    });
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      "https://raw.githubusercontent.com/microsoft/vscode/1.147.0/.npmrc",
+    );
+  });
+
+  it.each([undefined, "not-a-version", "^43.8.9"])(
+    "rejects an invalid nativeBuild.target: %s",
+    async (target) => {
+      mockFetch({
+        "https://raw.githubusercontent.com/microsoft/vscode/1.147.0/package.json":
+          {
+            nativeBuild: {
+              runtime: "electron",
+              target,
+            },
+          },
+      });
+
+      await expect(getVersionInformation("1.147.0")).rejects.toThrow(
+        "Could not find a valid Electron version in VS Code package.json nativeBuild.target",
+      );
+    },
+  );
+
   it("reads Electron from package.json for older VS Code releases", async () => {
     const fetchMock = mockFetch({
       "https://raw.githubusercontent.com/microsoft/vscode/1.90.0/package.json":
@@ -83,22 +130,26 @@ describe("getVersionInformation", () => {
     );
   });
 
-  it("falls back to .npmrc for newer VS Code releases", async () => {
-    mockFetch({
-      "https://raw.githubusercontent.com/microsoft/vscode/1.137.0/package.json":
-        {
-          devDependencies: {},
-        },
-      "https://raw.githubusercontent.com/microsoft/vscode/1.137.0/.npmrc":
-        'target="42.10.0"\nruntime="electron"\n',
-      "https://releases.electronjs.org/releases.json": electronReleases,
-    });
+  it.each([
+    { devDependencies: {} },
+    { nativeBuild: { runtime: "node", target: "24.18.1" } },
+  ])(
+    "falls back to .npmrc when package.json contains %j",
+    async (packageJson) => {
+      mockFetch({
+        "https://raw.githubusercontent.com/microsoft/vscode/1.137.0/package.json":
+          packageJson,
+        "https://raw.githubusercontent.com/microsoft/vscode/1.137.0/.npmrc":
+          'target="42.10.0"\nruntime="electron"\n',
+        "https://releases.electronjs.org/releases.json": electronReleases,
+      });
 
-    await expect(getVersionInformation("1.137.0")).resolves.toEqual({
-      vscodeVersion: "1.137.0",
-      electronVersion: "42.10.0",
-      nodeVersion: "24.18.1",
-      chromiumVersion: "148.0.7778.280",
-    });
-  });
+      await expect(getVersionInformation("1.137.0")).resolves.toEqual({
+        vscodeVersion: "1.137.0",
+        electronVersion: "42.10.0",
+        nodeVersion: "24.18.1",
+        chromiumVersion: "148.0.7778.280",
+      });
+    },
+  );
 });

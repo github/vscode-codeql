@@ -2,6 +2,10 @@ import { minVersion, valid } from "semver";
 import { fetchJson, fetchText } from "./fetch";
 
 type VsCodePackageJson = {
+  nativeBuild?: {
+    runtime?: string;
+    target?: string;
+  };
   devDependencies?: {
     electron?: string;
   };
@@ -34,6 +38,18 @@ export function parseElectronVersion(npmrc: string): string {
 
 async function getVsCodeElectronVersion(version: string): Promise<string> {
   const packageJson = await getVsCodePackageJson(version);
+  if (packageJson.nativeBuild?.runtime === "electron") {
+    const target = packageJson.nativeBuild.target;
+    const electronVersion = target && valid(target);
+    if (!electronVersion) {
+      throw new Error(
+        "Could not find a valid Electron version in VS Code package.json nativeBuild.target",
+      );
+    }
+
+    return electronVersion;
+  }
+
   const packageElectronVersion = packageJson.devDependencies?.electron;
   if (packageElectronVersion) {
     const electronVersion = minVersion(packageElectronVersion)?.version;
