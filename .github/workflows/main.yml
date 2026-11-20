@@ -75,6 +75,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: extensions/ql-vscode/package-lock.json
 
+      - name: Check lockfile URLs
+        working-directory: extensions/ql-vscode
+        run: npm run check:lockfile-urls
+
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
