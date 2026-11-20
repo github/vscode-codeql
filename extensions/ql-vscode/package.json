@@ -2063,6 +2063,7 @@
     "generate": "npm-run-all -p generate:*",
     "generate:schemas": "vite-node scripts/generate-schemas.ts",
     "generate:chromium-version": "vite-node scripts/generate-chromium-version.ts",
+    "check:lockfile-urls": "node scripts/check-lockfile-urls.cjs",
     "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" -not -path \"*/.vscode-test/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
     "postinstall": "patch-package",
     "prepare": "cd ../.. && husky"
@@ -2097,7 +2098,7 @@
     "tree-kill": "^1.2.2",
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-jsonrpc": "^8.2.1",
-    "vscode-languageclient": "^8.0.2",
+    "vscode-languageclient": "^11.0.0",
     "yauzl": "^3.4.0",
     "zip-a-folder": "^4.0.4"
   },
@@ -2186,11 +2187,18 @@
     "@azure/identity": "^4.13.1",
     "jest-runner-vscode": {
       "@vscode/test-electron": "^3.1.0"
+    },
+    "vscode-languageclient": {
+      "minimatch": "11.0.1"
     }
   },
   "lint-staged": {
-    "./**/*.{json,css,scss}": [
+    "./**/!(package-lock).{json,css,scss}": [
       "prettier --write"
+    ],
+    "./**/package-lock.json": [
+      "prettier --write",
+      "node scripts/check-lockfile-urls.cjs"
     ],
     "./**/*.{ts,tsx}": [
       "prettier --write",
