@@ -6,6 +6,7 @@ import {
   watchCheckTypeScript,
   cleanOutput,
   copyModules,
+  buildMswRuntime,
 } from "./typescript";
 import { compileTextMateGrammar } from "./textmate";
 import { packageExtension } from "./package";
@@ -22,6 +23,7 @@ export const buildWithoutPackage = series(
   parallel(
     compileEsbuild,
     copyModules,
+    buildMswRuntime,
     checkTypeScript,
     compileTextMateGrammar,
     compileViewEsbuild,
@@ -32,6 +34,7 @@ export const buildWithoutPackage = series(
 export const watch = parallel(
   // Always build first, so that we don't have to run build manually
   compileEsbuild,
+  buildMswRuntime,
   compileViewEsbuild,
   watchEsbuild,
   watchCheckTypeScript,

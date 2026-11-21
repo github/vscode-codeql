@@ -182,7 +182,7 @@ describe("Distribution updates", () => {
   const server = setupServer();
   beforeAll(() =>
     server.listen({
-      onUnhandledRequest: "error",
+      onUnhandledFrame: "error",
     }),
   );
   afterEach(() => server.resetHandlers());

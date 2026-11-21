@@ -22,7 +22,7 @@ const server = setupServer();
 
 beforeAll(() =>
   server.listen({
-    onUnhandledRequest: "error",
+    onUnhandledFrame: "error",
   }),
 );
 afterEach(() => server.resetHandlers());
@@ -165,28 +165,21 @@ describe(VariantAnalysisResultsManager.name, () => {
       });
 
       it("should report download progress", async () => {
-        server.resetHandlers(
-          http.get(dummyRepoTask.artifactUrl, () => {
-            // This generates a "fake" stream which "downloads" the file in 5 chunks,
-            // rather than in 1 chunk. This is used for testing that we actually get
-            // multiple progress reports.
-            const stream = new ReadableStream({
-              start(controller) {
-                const partLength = fileContents.length / 5;
-                for (let i = 0; i < 5; i++) {
-                  controller.enqueue(
-                    fileContents.subarray(i * partLength, (i + 1) * partLength),
-                  );
-                }
-                controller.close();
-              },
-            });
-
-            return new Response(stream, {
-              headers: {
-                "Content-Length": fileContents.length.toString(),
-              },
-            });
+        // Stub fetch directly because MSW's transport can coalesce chunks.
+        const stream = new ReadableStream({
+          start(controller) {
+            const partLength = fileContents.length / 5;
+            for (let i = 0; i < 5; i++) {
+              controller.enqueue(
+                fileContents.subarray(i * partLength, (i + 1) * partLength),
+              );
+            }
+            controller.close();
+          },
+        });
+        const fetchSpy = jest.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+          new Response(stream, {
+            headers: { "Content-Length": fileContents.length.toString() },
           }),
         );
 
@@ -194,12 +187,16 @@ describe(VariantAnalysisResultsManager.name, () => {
           .fn()
           .mockResolvedValue(undefined);
 
-        await variantAnalysisResultsManager.download(
-          variantAnalysisId,
-          dummyRepoTask,
-          variantAnalysisStoragePath,
-          downloadPercentageChanged,
-        );
+        try {
+          await variantAnalysisResultsManager.download(
+            variantAnalysisId,
+            dummyRepoTask,
+            variantAnalysisStoragePath,
+            downloadPercentageChanged,
+          );
+        } finally {
+          fetchSpy.mockRestore();
+        }
 
         expect(downloadPercentageChanged).toHaveBeenCalledTimes(5);
         expect(downloadPercentageChanged).toHaveBeenCalledWith(20);

@@ -98,7 +98,10 @@ export default tseslint.config(
         ecmaVersion: 2018,
         sourceType: "module",
         projectService: {
-          allowDefaultProject: ['jest.config.js'],
+          allowDefaultProject: [
+            "jest.config.js",
+            "test/babel-import-meta-url.cjs",
+          ],
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -154,6 +157,11 @@ export default tseslint.config(
       "react-hooks/rules-of-hooks": "off",
       "react-hooks/exhaustive-deps": "off",
     },
+  },
+  {
+    files: ["test/babel-import-meta-url.cjs"],
+    languageOptions: { sourceType: "commonjs" },
+    rules: { "import/no-commonjs": "off" },
   },
   {
     files: ["test/vscode-tests/**/*"],
