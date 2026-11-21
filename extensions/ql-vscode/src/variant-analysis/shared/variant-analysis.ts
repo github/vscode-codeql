@@ -5,6 +5,12 @@ import type { ModelPackDetails } from "../../common/model-pack-details";
 
 export interface VariantAnalysis {
   id: number;
+  /** Remote ID for custom runs, whose `id` is allocated locally. */
+  serverRunId?: number;
+  /** Custom server that created this run; absent for GitHub and legacy runs. */
+  serverUrl?: string;
+  /** Runtime capability supplied to views, not persisted in query history. */
+  canViewLogs?: boolean;
   controllerRepo: Repository;
   language: QueryLanguage;
   query: {
@@ -29,6 +35,16 @@ export interface VariantAnalysis {
   failureReason?: VariantAnalysisFailureReason;
   scannedRepos?: VariantAnalysisScannedRepository[];
   skippedRepos?: VariantAnalysisSkippedRepositories;
+}
+
+/** Whether the "View logs" action is available for a run. */
+export function hasVariantAnalysisLogs(
+  variantAnalysis: VariantAnalysis,
+): boolean {
+  if (variantAnalysis.serverUrl) {
+    return variantAnalysis.canViewLogs === true;
+  }
+  return variantAnalysis.actionsWorkflowRunId !== undefined;
 }
 
 export function parseVariantAnalysisQueryLanguage(
@@ -136,6 +152,7 @@ export interface VariantAnalysisScannedRepositoryResult {
  */
 export interface VariantAnalysisSubmission {
   startTime: number;
+  serverUrl?: string;
   controllerRepoId: number;
   actionRepoRef: string;
   language: QueryLanguage;

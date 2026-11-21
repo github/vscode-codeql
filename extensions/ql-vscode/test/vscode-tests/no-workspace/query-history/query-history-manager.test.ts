@@ -79,6 +79,7 @@ describe("QueryHistoryManager", () => {
       onVariantAnalysisRemoved: jest.fn(),
       removeVariantAnalysis: jest.fn(),
       cancelVariantAnalysis: jest.fn(),
+      openVariantAnalysisLogs: jest.fn(),
       exportResults: jest.fn(),
       showView: jest.fn(),
     } as any as VariantAnalysisManager;
@@ -146,6 +147,22 @@ describe("QueryHistoryManager", () => {
     if (queryHistoryManager) {
       queryHistoryManager.dispose();
     }
+  });
+
+  describe("handleOpenOnGithub", () => {
+    it("delegates server runs to the variant analysis manager", async () => {
+      queryHistoryManager = await createMockQueryHistory(allHistory);
+      const item = variantAnalysisHistory[0];
+      item.variantAnalysis.serverUrl = "https://mrva.example.com";
+      await queryHistoryManager.handleOpenOnGithub(item);
+      expect(
+        variantAnalysisManagerStub.openVariantAnalysisLogs,
+      ).toHaveBeenCalledWith(item.variantAnalysis.id);
+      expect(executeCommand).not.toHaveBeenCalledWith(
+        "vscode.open",
+        expect.anything(),
+      );
+    });
   });
 
   describe("handleItemClicked", () => {
@@ -406,6 +423,48 @@ describe("QueryHistoryManager", () => {
             await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(showInformationMessageWithActionSpy).toHaveBeenCalled();
+          });
+
+          it.each([true, false])(
+            "asks whether to stop a server run before removing it (stop: %s)",
+            async (shouldStop) => {
+              toDelete.variantAnalysis.serverUrl = "https://mrva.example.com";
+              showBinaryChoiceDialogSpy
+                .mockResolvedValueOnce(true)
+                .mockResolvedValueOnce(shouldStop);
+
+              await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
+
+              expect(showBinaryChoiceDialogSpy).toHaveBeenLastCalledWith(
+                "This variant analysis is still running on the server. Do you also want to stop it?",
+                true,
+                "Stop",
+                "Keep running",
+              );
+              expect(cancelVariantAnalysisSpy).toHaveBeenCalledTimes(
+                shouldStop ? 1 : 0,
+              );
+              expect(
+                showInformationMessageWithActionSpy,
+              ).not.toHaveBeenCalled();
+              expect(
+                queryHistoryManager.treeDataProvider.allHistory,
+              ).not.toContain(toDelete);
+            },
+          );
+
+          it("keeps a server run in history if stopping it fails", async () => {
+            toDelete.variantAnalysis.serverUrl = "https://mrva.example.com";
+            cancelVariantAnalysisSpy.mockRejectedValue(
+              new Error("Server unavailable"),
+            );
+
+            await expect(
+              queryHistoryManager.handleRemoveHistoryItem([toDelete]),
+            ).rejects.toThrow("Server unavailable");
+            expect(queryHistoryManager.treeDataProvider.allHistory).toContain(
+              toDelete,
+            );
           });
 
           describe("when you choose 'No' in the 'Are you sure?' modal", () => {

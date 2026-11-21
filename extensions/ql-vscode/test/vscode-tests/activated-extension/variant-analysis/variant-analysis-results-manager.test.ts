@@ -300,6 +300,54 @@ describe(VariantAnalysisResultsManager.name, () => {
           );
         });
 
+        it("links GitHub results to the analyzed commit", async () => {
+          const result = await variantAnalysisResultsManager.loadResults(
+            variantAnalysisId,
+            variantAnalysisStoragePath,
+            dummyRepoTask.repository.fullName,
+          );
+          expect(result.interpretedResults?.[0].fileLink.fileLinkPrefix).toBe(
+            `https://github.com/${dummyRepoTask.repository.fullName}/blob/${dummyRepoTask.databaseCommitSha}`,
+          );
+        });
+
+        it.each([
+          [
+            "https://source.example.com/scm/org/repo",
+            "abc123",
+            "https://source.example.com/scm/org/repo/blob/abc123",
+          ],
+          [
+            "https://source.example.com/scm/org/repo/",
+            undefined,
+            "https://source.example.com/scm/org/repo/blob/HEAD",
+          ],
+          [undefined, "abc123", undefined],
+          ["javascript:alert(1)", "abc123", undefined],
+          ["not a URL", "abc123", undefined],
+        ])(
+          "links server results through the repository URL %s at %s",
+          async (htmlUrl, databaseCommitSha, expectedPrefix) => {
+            dummyRepoTask.repository.htmlUrl = htmlUrl;
+            dummyRepoTask.databaseCommitSha = databaseCommitSha;
+            dummyRepoTask.sourceLocationPrefix = undefined;
+            await outputJson(
+              join(repoTaskStorageDirectory, "repo_task.json"),
+              dummyRepoTask,
+            );
+            const result = await variantAnalysisResultsManager.loadResults(
+              variantAnalysisId,
+              variantAnalysisStoragePath,
+              dummyRepoTask.repository.fullName,
+              { serverUrl: "https://mrva.example.com" },
+            );
+            expect(result.interpretedResults?.length).toBeGreaterThan(0);
+            for (const alert of result.interpretedResults ?? []) {
+              expect(alert.fileLink.fileLinkPrefix).toBe(expectedPrefix);
+            }
+          },
+        );
+
         it("should return the results when not cached", async () => {
           await expect(
             variantAnalysisResultsManager.loadResults(

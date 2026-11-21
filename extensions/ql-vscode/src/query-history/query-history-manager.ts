@@ -495,7 +495,19 @@ export class QueryHistoryManager extends DisposableObject {
     const history = await readQueryHistoryFromFile(
       this.queryMetadataStorageLocation,
     );
-    this.treeDataProvider.allHistory = history;
+    this.treeDataProvider.allHistory = history.filter((item) => {
+      if (
+        item.t === "variant-analysis" &&
+        item.variantAnalysis.serverUrl &&
+        item.variantAnalysis.serverRunId === undefined
+      ) {
+        void this.app.logger.log(
+          "Skipping an older custom-server variant analysis with unqualified storage. Rerun the analysis to see its results.",
+        );
+        return false;
+      }
+      return true;
+    });
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
         if (item.t === "variant-analysis") {
@@ -623,12 +635,29 @@ export class QueryHistoryManager extends DisposableObject {
       if (!response) {
         return;
       }
+      // Runs on a custom server can be stopped from here, so offer to do that.
+      if (
+        item.variantAnalysis.serverUrl &&
+        (await showBinaryChoiceDialog(
+          "This variant analysis is still running on the server. Do you also want to stop it?",
+          true,
+          "Stop",
+          "Keep running",
+        ))
+      ) {
+        await this.variantAnalysisManager.cancelVariantAnalysis(
+          item.variantAnalysis.id,
+        );
+      }
     }
 
     this.treeDataProvider.remove(item);
     void this.app.logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
 
-    if (item.status === QueryStatus.InProgress) {
+    if (
+      item.status === QueryStatus.InProgress &&
+      !item.variantAnalysis.serverUrl
+    ) {
       await this.showToastWithWorkflowRunLink(item);
     }
 
@@ -1041,6 +1070,13 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleOpenOnGithub(item: QueryHistoryInfo) {
     if (item.t !== "variant-analysis") {
+      return;
+    }
+
+    if (item.variantAnalysis.serverUrl) {
+      await this.variantAnalysisManager.openVariantAnalysisLogs(
+        item.variantAnalysis.id,
+      );
       return;
     }
 

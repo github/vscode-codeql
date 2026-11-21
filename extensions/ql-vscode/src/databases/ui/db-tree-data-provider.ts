@@ -7,7 +7,10 @@ import { mapDbItemToTreeViewItem } from "./db-item-mapper";
 import { DisposableObject } from "../../common/disposable-object";
 import type { DbConfigValidationError } from "../db-validation-errors";
 import { DbConfigValidationErrorKind } from "../db-validation-errors";
-import { VariantAnalysisConfigListener } from "../../config";
+import {
+  isVariantAnalysisServerConfigured,
+  VariantAnalysisConfigListener,
+} from "../../config";
 
 export class DbTreeDataProvider
   extends DisposableObject
@@ -84,7 +87,10 @@ export class DbTreeDataProvider
 
   private createTree(): DbTreeViewItem[] {
     // Returning an empty tree here will show the welcome view
-    if (!this.variantAnalysisConfig.controllerRepo) {
+    if (
+      !this.variantAnalysisConfig.controllerRepo &&
+      !isVariantAnalysisServerConfigured()
+    ) {
       return [];
     }
 

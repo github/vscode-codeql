@@ -12,6 +12,7 @@ import { extLogger } from "../common/logging/vscode";
 import {
   getActionBranch,
   getRemoteControllerRepo,
+  isVariantAnalysisServerConfigured,
   setRemoteControllerRepo,
 } from "../config";
 import type { ProgressCallback } from "../common/vscode/progress";
@@ -329,6 +330,12 @@ export function getQueryName(
 export async function getControllerRepo(
   credentials: Credentials,
 ): Promise<Repository> {
+  // A custom variant analysis server does not use controller repositories, so
+  // its requests use repository ID 0.
+  if (isVariantAnalysisServerConfigured()) {
+    return { id: 0, fullName: "", private: true };
+  }
+
   // Get the controller repo from the config, if it exists.
   // If it doesn't exist, prompt the user to enter it, check
   // whether the repo exists, and save the nwo to the config.

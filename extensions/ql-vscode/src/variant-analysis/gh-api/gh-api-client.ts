@@ -3,9 +3,9 @@ import type { VariantAnalysisSubmission } from "../shared/variant-analysis";
 import type {
   VariantAnalysis,
   VariantAnalysisRepoTask,
-  VariantAnalysisSubmissionRequest,
 } from "./variant-analysis";
 import type { Repository } from "./repository";
+import { mapVariantAnalysisSubmission } from "../variant-analysis-mapper";
 
 export async function submitVariantAnalysis(
   credentials: Credentials,
@@ -13,17 +13,9 @@ export async function submitVariantAnalysis(
 ): Promise<VariantAnalysis> {
   const octokit = await credentials.getOctokit();
 
-  const { actionRepoRef, language, pack, databases, controllerRepoId } =
-    submissionDetails;
+  const { controllerRepoId } = submissionDetails;
 
-  const data: VariantAnalysisSubmissionRequest = {
-    action_repo_ref: actionRepoRef,
-    language,
-    query_pack: pack,
-    repositories: databases.repositories,
-    repository_lists: databases.repositoryLists,
-    repository_owners: databases.repositoryOwners,
-  };
+  const data = mapVariantAnalysisSubmission(submissionDetails);
 
   const response = await octokit.request<VariantAnalysis>({
     method: "POST",

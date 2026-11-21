@@ -67,15 +67,18 @@ export const FileCodeSnippet = ({
     highlightedRegion?.startColumn,
     highlightedRegion?.endColumn,
   );
+  const title = titleFileUri ? (
+    <Link onClick={sendCodeSnippetTitleLinkTelemetry} href={titleFileUri}>
+      {fileLink.filePath}
+    </Link>
+  ) : (
+    fileLink.filePath
+  );
 
   if (!codeSnippet) {
     return (
       <Container>
-        <TitleContainer>
-          <Link onClick={sendCodeSnippetTitleLinkTelemetry} href={titleFileUri}>
-            {fileLink.filePath}
-          </Link>
-        </TitleContainer>
+        <TitleContainer>{title}</TitleContainer>
         {message && severity && (
           <CodeSnippetMessage message={message} severity={severity}>
             {messageChildren}
@@ -89,11 +92,7 @@ export const FileCodeSnippet = ({
 
   return (
     <Container>
-      <TitleContainer>
-        <Link onClick={sendCodeSnippetTitleLinkTelemetry} href={titleFileUri}>
-          {fileLink.filePath}
-        </Link>
-      </TitleContainer>
+      <TitleContainer>{title}</TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (
           <CodeSnippetLine

@@ -14,7 +14,7 @@ const StyledRow = styled.div`
 
 type RowProps = {
   row: Row;
-  fileLinkPrefix: string;
+  fileLinkPrefix: string | undefined;
   sourceLocationPrefix: string;
 };
 

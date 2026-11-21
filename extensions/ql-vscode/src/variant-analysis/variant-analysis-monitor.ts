@@ -1,5 +1,5 @@
 import { env, EventEmitter } from "vscode";
-import { getVariantAnalysis } from "./gh-api/gh-api-client";
+import { getVariantAnalysis } from "./variant-analysis-api";
 import { RequestError } from "@octokit/request-error";
 
 import type {
@@ -66,6 +66,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
         variantAnalysis.executionStartTime,
         variantAnalysis.query.name,
         variantAnalysis.language,
+        variantAnalysis.serverUrl,
+        variantAnalysis.serverRunId ?? variantAnalysis.id,
       );
     } finally {
       this.monitoringVariantAnalyses.delete(variantAnalysis.id);
@@ -78,6 +80,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
     executionStartTime: number,
     queryName: string,
     language: QueryLanguage,
+    serverUrl: string | undefined,
+    remoteId: number,
   ): Promise<void> {
     const variantAnalysisLabel = `${queryName} (${language}) [${new Date(
       executionStartTime,
@@ -100,7 +104,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
         variantAnalysisSummary = await getVariantAnalysis(
           this.app.credentials,
           controllerRepoId,
-          variantAnalysisId,
+          remoteId,
+          serverUrl,
         );
       } catch (e) {
         const errorMessage = getErrorMessage(e);
