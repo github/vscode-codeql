@@ -1,6 +1,10 @@
 import type { Config } from "jest";
 import { resolve } from "path";
-import { transformIgnorePatterns } from "../jest-config";
+import {
+  dependencyTransform,
+  mswSourceBabelConfig,
+  transformIgnorePatterns,
+} from "../jest-config";
 
 /*
  * For a detailed explanation regarding each configuration property and type check, visit:
@@ -170,15 +174,10 @@ const config: Config = {
       "ts-jest",
       {
         tsconfig: resolve(__dirname, "../tsconfig.json"),
+        babelConfig: mswSourceBabelConfig,
       },
     ],
-    node_modules: [
-      "babel-jest",
-      {
-        presets: ["@babel/preset-env"],
-        plugins: ["@babel/plugin-transform-modules-commonjs"],
-      },
-    ],
+    node_modules: dependencyTransform,
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation

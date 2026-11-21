@@ -1,8 +1,7 @@
 import { join, resolve } from "path";
 import { pathExists } from "fs-extra";
 import type { SetupServer } from "msw/node";
-import { setupServer } from "msw/node";
-import type { UnhandledRequestStrategy } from "msw";
+import type { http, UnhandledFrameStrategy } from "msw";
 
 import { DisposableObject } from "../disposable-object";
 
@@ -14,32 +13,44 @@ import { getDirectoryNamesInsidePath } from "../files";
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
  */
 export class MockGitHubApiServer extends DisposableObject {
-  private _isListening: boolean;
+  private _isListening = false;
 
-  private readonly server: SetupServer;
-  private readonly recorder: Recorder;
+  private state?: {
+    server: SetupServer;
+    recorder: Recorder;
+    http: typeof http;
+  };
 
-  constructor() {
-    super();
-    this._isListening = false;
+  private async getState() {
+    if (this.state) {
+      return this.state;
+    }
 
-    this.server = setupServer();
-    this.recorder = this.push(new Recorder(this.server));
+    const [{ setupServer }, { http }] = await Promise.all([
+      import("msw/node"),
+      import("msw"),
+    ]);
+    if (!this.state) {
+      const server = setupServer();
+      this.state = { server, recorder: this.push(new Recorder(server)), http };
+    }
+    return this.state;
   }
 
-  public startServer(
-    onUnhandledRequest: UnhandledRequestStrategy = "bypass",
-  ): void {
+  public async startServer(
+    onUnhandledFrame: UnhandledFrameStrategy = "bypass",
+  ): Promise<void> {
+    const { server } = await this.getState();
     if (this._isListening) {
       return;
     }
 
-    this.server.listen({ onUnhandledRequest });
+    server.listen({ onUnhandledFrame });
     this._isListening = true;
   }
 
   public stopServer(): void {
-    this.server.close();
+    this.state?.server.close();
     this._isListening = false;
   }
 
@@ -56,8 +67,9 @@ export class MockGitHubApiServer extends DisposableObject {
 
     const scenarioPath = join(scenariosPath, scenarioName);
 
-    const handlers = await createRequestHandlers(scenarioPath);
-    this.server.resetHandlers(...handlers);
+    const { server, http } = await this.getState();
+    const handlers = await createRequestHandlers(http, scenarioPath);
+    server.resetHandlers(...handlers);
   }
 
   public async saveScenario(
@@ -71,7 +83,8 @@ export class MockGitHubApiServer extends DisposableObject {
       }
     }
 
-    const filePath = await this.recorder.save(scenariosPath, scenarioName);
+    const { recorder } = await this.getState();
+    const filePath = await recorder.save(scenariosPath, scenarioName);
 
     await this.stopRecording();
 
@@ -87,7 +100,8 @@ export class MockGitHubApiServer extends DisposableObject {
   }
 
   public async startRecording(): Promise<void> {
-    if (this.recorder.isRecording) {
+    const { recorder } = await this.getState();
+    if (recorder.isRecording) {
       return;
     }
 
@@ -95,12 +109,12 @@ export class MockGitHubApiServer extends DisposableObject {
       await this.unloadAllScenarios();
     }
 
-    this.recorder.start();
+    recorder.start();
   }
 
   public async stopRecording(): Promise<void> {
-    this.recorder.stop();
-    this.recorder.clear();
+    this.state?.recorder.stop();
+    this.state?.recorder.clear();
   }
 
   public async getScenarioNames(scenariosPath?: string): Promise<string[]> {
@@ -119,15 +133,15 @@ export class MockGitHubApiServer extends DisposableObject {
   }
 
   public get isRecording(): boolean {
-    return this.recorder.isRecording;
+    return this.state?.recorder.isRecording ?? false;
   }
 
   public get anyRequestsRecorded(): boolean {
-    return this.recorder.anyRequestsRecorded;
+    return this.state?.recorder.anyRequestsRecorded ?? false;
   }
 
   public get isScenarioLoaded(): boolean {
-    return this.server.listHandlers().length > 0;
+    return (this.state?.server.listHandlers().length ?? 0) > 0;
   }
 
   public async getDefaultScenariosPath(): Promise<string | undefined> {
@@ -146,6 +160,6 @@ export class MockGitHubApiServer extends DisposableObject {
   }
 
   private async unloadAllScenarios(): Promise<void> {
-    this.server.resetHandlers();
+    this.state?.server.resetHandlers();
   }
 }

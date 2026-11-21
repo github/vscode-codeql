@@ -57,6 +57,17 @@ export function compileEsbuild() {
       loader: {
         ".node": "copy",
       },
+      plugins: [
+        {
+          name: "msw-runtime",
+          setup(build) {
+            build.onResolve({ filter: /^msw(\/node)?$/ }, () => ({
+              path: "./msw-runtime.mjs",
+              external: true,
+            }));
+          },
+        },
+      ],
     }),
     dest("out"),
   );
@@ -64,6 +75,23 @@ export function compileEsbuild() {
 
 export function watchEsbuild() {
   watch(["src/**/*.ts", "!src/view/**/*.ts"], compileEsbuild);
+}
+
+function compileMswRuntime() {
+  return pipeline(
+    src("./gulpfile.ts/msw-runtime.ts"),
+    esbuild({
+      outfile: "msw-runtime.mjs",
+      bundle: true,
+      format: "esm",
+      platform: "node",
+      target: "node22",
+      banner: {
+        js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+      },
+    }),
+    dest("out"),
+  );
 }
 
 export function checkTypeScript() {
@@ -89,6 +117,13 @@ function copyWasmFiles() {
   }).pipe(dest("out"));
 }
 
+function copyMswWasm() {
+  // The interceptor resolves this file relative to the ESM bundle's import.meta.url.
+  return src("node_modules/@mswjs/interceptors/lib/node/llhttp/llhttp.wasm", {
+    encoding: false,
+  }).pipe(dest("out/llhttp"));
+}
+
 function copyNativeAddonFiles() {
   // We need to copy these files manually because we only want to include Windows x64 to limit
   // the size of the extension. Windows x64 is the most common platform that requires short path
@@ -107,3 +142,4 @@ function copyNativeAddonFiles() {
 }
 
 export const copyModules = parallel(copyWasmFiles, copyNativeAddonFiles);
+export const buildMswRuntime = parallel(compileMswRuntime, copyMswWasm);
