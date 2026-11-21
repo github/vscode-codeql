@@ -1,3 +1,5 @@
+import { readFile } from "fs/promises";
+import { join } from "path";
 import {
   getRepositoryFromNwo,
   getVariantAnalysis,
@@ -78,5 +80,25 @@ describe("getRepositoryFromNwo", () => {
 
     expect(result).toBeDefined();
     expect(result.id).toBe(response.body.id);
+  });
+
+  it("replays a binary variant analysis result without changing its bytes", async () => {
+    const scenario = "mrva-problem-query-success";
+    await mockServer.loadScenario(scenario);
+
+    const result = await fetch(
+      "https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/1/23418517/result.zip",
+    );
+    expect(result.status).toBe(200);
+    expect(result.headers.get("content-type")).toBe("application/zip");
+
+    const scenariosPath = await mockServer.getDefaultScenariosPath();
+    if (!scenariosPath) {
+      throw new Error("Could not locate mock GitHub API scenarios");
+    }
+    const expected = await readFile(
+      join(scenariosPath, scenario, "13-getVariantAnalysisRepoResult.body.zip"),
+    );
+    expect(Buffer.from(await result.arrayBuffer()).equals(expected)).toBe(true);
   });
 });
