@@ -1,8 +1,12 @@
+import type { Config } from "jest";
+
 // These are all the packages that DO need to be transformed. All other packages will be ignored.
 // These packages all use ES modules, so need to be transformed
 const transformScopes = [
   "@faker-js",
   "@microsoft",
+  "@msw",
+  "@mswjs",
   "@octokit",
   "@vscode-elements",
   "@lit",
@@ -13,15 +17,17 @@ const transformScopes = [
 const transformPackages = [
   "before-after-hook",
   "chokidar",
-  "d3",
+  "cookie",
   "data-uri-to-buffer",
   "delaunator",
   "exenv-es6",
   "fetch-blob",
   "formdata-polyfill",
+  "headers-polyfill",
   "internmap",
   "lit",
-  "nanoid",
+  "msw",
+  "outvariant",
   "p-queue",
   "p-timeout",
   "readdirp",
@@ -42,3 +48,31 @@ const transformPatterns = [
 export const transformIgnorePatterns = [
   `node_modules/(?!(?:${transformPatterns.join("|")})/.*)`,
 ];
+
+export const dependencyTransform = [
+  "babel-jest",
+  {
+    presets: ["@babel/preset-env"],
+    plugins: ["@babel/plugin-transform-modules-commonjs"],
+    overrides: [
+      {
+        // Keep the Wasm lookup relative to the installed interceptor module.
+        test: "**/node_modules/@mswjs/interceptors/**",
+        plugins: [require.resolve("./babel-import-meta-url.cjs")],
+      },
+    ],
+  },
+] satisfies NonNullable<Config["transform"]>[string];
+
+export const mswSourceBabelConfig = {
+  // Jest runs these TypeScript files as CommonJS, without a native ESM loader.
+  overrides: [
+    {
+      test: "**/mock-gh-api/mock-gh-api-server.ts",
+      plugins: [
+        "@babel/plugin-transform-dynamic-import",
+        "@babel/plugin-transform-modules-commonjs",
+      ],
+    },
+  ],
+};

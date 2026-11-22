@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "fs-extra";
 import { join } from "path";
 import type { DirResult } from "tmp";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import type { BaseLogger, Logger } from "../../../src/common/logging";
 import { TeeLogger } from "../../../src/common/logging";
 import { OutputChannelLogger } from "../../../src/common/logging/vscode";

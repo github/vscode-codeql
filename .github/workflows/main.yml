@@ -19,11 +19,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -44,14 +44,15 @@ jobs:
         shell: bash
 
       - name: Prepare artifacts
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
+        shell: bash
         run: |
           mkdir artifacts
           cp dist/*.vsix artifacts
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v7
-        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: matrix.os == 'windows-latest'
         with:
           name: vscode-codeql-extension
           path: artifacts
@@ -64,15 +65,19 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
           cache-dependency-path: extensions/ql-vscode/package-lock.json
+
+      - name: Check lockfile URLs
+        working-directory: extensions/ql-vscode
+        run: npm run check:lockfile-urls
 
       - name: Install dependencies
         working-directory: extensions/ql-vscode
@@ -110,7 +115,7 @@ jobs:
 
       - name: Upload ESLint results to Code Scanning
         if: "${{ !cancelled() && !startsWith(github.head_ref, 'dependabot/')}}"
-        uses: github/codeql-action/upload-sarif@main
+        uses: github/codeql-action/upload-sarif@f8c39e2839495fb2ea99158088d4204068dec8a2 # main
         with:
           sarif_file: extensions/ql-vscode/build/eslint.sarif
           category: eslint
@@ -120,11 +125,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -172,11 +177,11 @@ jobs:
           }
 
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -206,11 +211,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -252,7 +257,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set the variable
         id: set-variable
         run: |
@@ -276,9 +281,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: extensions/ql-vscode/.nvmrc
           cache: 'npm'
@@ -297,7 +302,7 @@ jobs:
         shell: bash
 
       - name: Checkout QL
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: github/codeql
           ref: 'codeql-cli/${{ needs.get-latest-cli-version.outputs.cli-version }}'
@@ -315,3 +320,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           npm run test:cli-integration
+
+  dependabot-automation-test:
+    name: Dependabot automation tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: extensions/ql-vscode/.nvmrc
+      - run: node --test .github/dependabot-automation/*.test.cjs

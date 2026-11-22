@@ -11,7 +11,7 @@ import {
   walkDirectory,
 } from "../../../src/common/files";
 import type { DirResult } from "tmp";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import {
   createFileSync,
   ensureDirSync,

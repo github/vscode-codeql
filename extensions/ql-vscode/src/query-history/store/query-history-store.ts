@@ -122,6 +122,7 @@ export async function writeQueryHistoryToFile(
   } catch (e) {
     throw new Error(
       `Error saving query history to ${fsPath}: ${getErrorMessage(e)}`,
+      { cause: e },
     );
   }
 }

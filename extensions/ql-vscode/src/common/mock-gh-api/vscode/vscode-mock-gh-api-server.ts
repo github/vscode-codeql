@@ -7,6 +7,7 @@ import {
   MockGitHubApiConfigListener,
 } from "../../../config";
 import { DisposableObject } from "../../disposable-object";
+import { getErrorMessage } from "../../helpers-pure";
 import { MockGitHubApiServer } from "../mock-gh-api-server";
 import type { MockGitHubApiServerCommands } from "../../commands";
 import type { App } from "../../app";
@@ -45,7 +46,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   }
 
   public async startServer(): Promise<void> {
-    this.server.startServer();
+    await this.server.startServer();
   }
 
   public async stopServer(): Promise<void> {
@@ -265,16 +266,24 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   }
 
   private setupConfigListener(): void {
+    const updateServer = () => {
+      void this.onConfigChange().catch((error: unknown) =>
+        window.showErrorMessage(
+          `Could not update the mock GitHub API server: ${getErrorMessage(error)}`,
+        ),
+      );
+    };
     // The config "changes" from the default at startup, so we need to call onConfigChange() to ensure the server is
     // started if required.
-    void this.onConfigChange();
-    this.config.onDidChangeConfiguration(() => void this.onConfigChange());
+    updateServer();
+    this.config.onDidChangeConfiguration(updateServer);
   }
 
   private async onConfigChange(): Promise<void> {
     if (this.config.mockServerEnabled && !this.server.isListening) {
       await this.startServer();
-    } else if (!this.config.mockServerEnabled && this.server.isListening) {
+    }
+    if (!this.config.mockServerEnabled && this.server.isListening) {
       await this.stopServer();
     }
   }

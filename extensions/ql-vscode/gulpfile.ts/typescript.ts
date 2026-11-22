@@ -1,17 +1,19 @@
-import { gray, red } from "ansi-colors";
+import { styleText } from "util";
 import { dest, parallel, src, watch } from "gulp";
 import esbuild from "gulp-esbuild";
 import type { reporter } from "gulp-typescript";
 import { createProject } from "gulp-typescript";
-import del from "del";
 import { pipeline } from "stream/promises";
+import { mkdir, rm } from "fs/promises";
+import { join } from "path";
 
 export function goodReporter(): reporter.Reporter {
   return {
     error: (error, typescript) => {
       if (error.tsFile) {
         console.log(
-          `[${gray("gulp-typescript")}] ${red(
+          `[${styleText("gray", "gulp-typescript")}] ${styleText(
+            "red",
             `${error.fullFilename}(${error.startPosition!.line + 1},${
               error.startPosition!.character
             }): `,
@@ -31,10 +33,13 @@ export function goodReporter(): reporter.Reporter {
 
 const tsProject = createProject("tsconfig.json");
 
-export function cleanOutput() {
-  return tsProject.projectDirectory
-    ? del(`${tsProject.projectDirectory}/out/*`)
-    : Promise.resolve();
+export async function cleanOutput() {
+  if (tsProject.projectDirectory) {
+    await rm(join(tsProject.projectDirectory, "out"), {
+      recursive: true,
+      force: true,
+    });
+  }
 }
 
 export function compileEsbuild() {
@@ -52,6 +57,17 @@ export function compileEsbuild() {
       loader: {
         ".node": "copy",
       },
+      plugins: [
+        {
+          name: "msw-runtime",
+          setup(build) {
+            build.onResolve({ filter: /^msw(\/node)?$/ }, () => ({
+              path: "./msw-runtime.mjs",
+              external: true,
+            }));
+          },
+        },
+      ],
     }),
     dest("out"),
   );
@@ -59,6 +75,23 @@ export function compileEsbuild() {
 
 export function watchEsbuild() {
   watch(["src/**/*.ts", "!src/view/**/*.ts"], compileEsbuild);
+}
+
+function compileMswRuntime() {
+  return pipeline(
+    src("./gulpfile.ts/msw-runtime.ts"),
+    esbuild({
+      outfile: "msw-runtime.mjs",
+      bundle: true,
+      format: "esm",
+      platform: "node",
+      target: "node22",
+      banner: {
+        js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+      },
+    }),
+    dest("out"),
+  );
 }
 
 export function checkTypeScript() {
@@ -84,13 +117,24 @@ function copyWasmFiles() {
   }).pipe(dest("out"));
 }
 
+function copyMswWasm() {
+  // The interceptor resolves this file relative to the ESM bundle's import.meta.url.
+  return src("node_modules/@mswjs/interceptors/lib/node/llhttp/llhttp.wasm", {
+    encoding: false,
+  }).pipe(dest("out/llhttp"));
+}
+
 function copyNativeAddonFiles() {
   // We need to copy these files manually because we only want to include Windows x64 to limit
   // the size of the extension. Windows x64 is the most common platform that requires short path
   // expansion, so we only include this platform.
   // See src/common/short-paths.ts
+  if (process.platform !== "win32") {
+    return mkdir("out/koffi/win32_x64", { recursive: true });
+  }
+
   return pipeline(
-    src("node_modules/koffi/build/koffi/win32_x64/*.node", {
+    src("node_modules/@koromix/koffi-win32-x64/win32_x64/*.node", {
       encoding: false,
     }),
     dest("out/koffi/win32_x64"),
@@ -98,3 +142,4 @@ function copyNativeAddonFiles() {
 }
 
 export const copyModules = parallel(copyWasmFiles, copyNativeAddonFiles);
+export const buildMswRuntime = parallel(compileMswRuntime, copyMswWasm);

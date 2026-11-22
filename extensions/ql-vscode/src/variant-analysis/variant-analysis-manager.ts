@@ -821,6 +821,7 @@ export class VariantAnalysisManager
         `Could not download the results for variant analysis with id: ${
           variantAnalysis.id
         }. Error: ${getErrorMessage(e)}`,
+        { cause: e },
       );
     }
 
@@ -885,6 +886,7 @@ export class VariantAnalysisManager
           `Could not download the results for variant analysis with id: ${
             variantAnalysis.id
           }. Error: ${getErrorMessage(e)}`,
+          { cause: e },
         );
       }
     }

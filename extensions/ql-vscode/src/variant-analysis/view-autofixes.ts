@@ -234,6 +234,7 @@ async function overrideQueryHelp(
   } catch (e) {
     throw new Error(
       `Could not resolve query metadata for ${queryFilePath}. Reason: ${getErrorMessage(e)}`,
+      { cause: e },
     );
   }
   // Get the query ID (used for the overridden query help's filename).
@@ -348,7 +349,7 @@ async function getStoragePaths(
     while (await pathExists(autofixOutputStoragePath + i.toString())) {
       i++;
     }
-    autofixOutputStoragePath = autofixOutputStoragePath += i.toString();
+    autofixOutputStoragePath += i.toString();
   }
   await ensureDir(autofixOutputStoragePath);
 
@@ -547,6 +548,7 @@ async function downloadPublicCommitSource(
       }
       throw new Error(
         `Error fetching source root. Reason: ${getErrorMessage(e)}`,
+        { cause: e },
       );
     }
 
@@ -606,6 +608,7 @@ async function downloadPublicCommitSource(
 
       throw new Error(
         `Error downloading source root. Reason: ${getErrorMessage(e)}`,
+        { cause: e },
       );
     } finally {
       disposeTimeout();
@@ -635,6 +638,7 @@ async function downloadPublicCommitSource(
     await remove(checkoutDir);
     throw new Error(
       `Failed to download ${nwo} at ${sha}:. Reason: ${getErrorMessage(error)}`,
+      { cause: error },
     );
   }
 }
@@ -917,7 +921,7 @@ async function opRead(secretReference: string): Promise<string> {
   } catch (e) {
     const error = asError(e);
     if ("code" in error && error.code === "ENOENT") {
-      throw new Error("1Password CLI (op) not found in PATH");
+      throw new Error("1Password CLI (op) not found in PATH", { cause: e });
     }
     throw e;
   }
@@ -986,7 +990,9 @@ async function mergeFiles(
       await Promise.all(inputFiles.map((file) => unlink(file)));
     }
   } catch (error) {
-    throw new Error(`Error merging files. Reason: ${getErrorMessage(error)}`);
+    throw new Error(`Error merging files. Reason: ${getErrorMessage(error)}`, {
+      cause: error,
+    });
   }
 }
 
@@ -1024,6 +1030,11 @@ async function formatWithMarkdown(
     // Write the formatted content back to the file
     await writeFile(inputFile, formattedContent);
   } catch (error) {
-    throw new Error(`Error formatting file. Reason: ${getErrorMessage(error)}`);
+    throw new Error(
+      `Error formatting file. Reason: ${getErrorMessage(error)}`,
+      {
+        cause: error,
+      },
+    );
   }
 }

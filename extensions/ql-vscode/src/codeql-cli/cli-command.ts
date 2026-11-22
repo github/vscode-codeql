@@ -49,6 +49,7 @@ export async function runJsonCodeQlCliCommand<OutputType>(
   } catch (err) {
     throw new Error(
       `${description} failed: ${getChildProcessErrorMessage(err)}`,
+      { cause: err },
     );
   }
 
@@ -57,6 +58,7 @@ export async function runJsonCodeQlCliCommand<OutputType>(
   } catch (err) {
     throw new Error(
       `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
+      { cause: err },
     );
   }
 }

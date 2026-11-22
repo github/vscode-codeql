@@ -1,6 +1,7 @@
 import { dest, src } from "gulp";
 import { load } from "js-yaml";
-import { objectTransform } from "through2";
+import type { TransformCallback } from "stream";
+import { Transform } from "stream";
 import PluginError from "plugin-error";
 import type Vinyl from "vinyl";
 import type {
@@ -247,12 +248,13 @@ function transformFile(yaml: ExtendedTextmateGrammar<ExtendedMatchType>) {
 }
 
 export function transpileTextMateGrammar() {
-  return objectTransform(
-    (
+  return new Transform({
+    objectMode: true,
+    transform(
       file: Vinyl,
-      _encoding: string,
-      callback: (err?: Error | null, file?: Vinyl) => void,
-    ): void => {
+      _encoding: BufferEncoding,
+      callback: TransformCallback,
+    ): void {
       if (file.isNull()) {
         callback(null, file);
       } else if (file.isBuffer()) {
@@ -270,7 +272,7 @@ export function transpileTextMateGrammar() {
         );
       }
     },
-  );
+  });
 }
 
 export function compileTextMateGrammar() {

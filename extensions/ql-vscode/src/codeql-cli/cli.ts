@@ -45,7 +45,7 @@ import type { LanguageClient } from "vscode-languageclient/node";
  * The oldest version of the CLI that we support. This is used to determine
  * whether to show a warning about the CLI being too old on startup.
  */
-export const OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.23.9");
+export const OLDEST_SUPPORTED_CLI_VERSION = new SemVer("2.24.3");
 
 /**
  * The version of the SARIF format that we are using.
@@ -810,6 +810,7 @@ export class CodeQLCliServer implements Disposable {
       } catch (err) {
         throw new Error(
           `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
+          { cause: err },
         );
       }
     }
@@ -909,6 +910,7 @@ export class CodeQLCliServer implements Disposable {
     } catch (err) {
       throw new Error(
         `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
+        { cause: err },
       );
     }
   }
@@ -1416,6 +1418,7 @@ export class CodeQLCliServer implements Disposable {
     } catch (err) {
       throw new Error(
         `Reading output of interpretation failed: ${getErrorMessage(err)}`,
+        { cause: err },
       );
     }
   }

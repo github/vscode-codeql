@@ -1,6 +1,6 @@
 import { Uri, workspace } from "vscode";
 import { QueryPackDiscovery } from "../../../../src/queries-panel/query-pack-discovery";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import { rm } from "fs/promises";
 import { dirname, join } from "path";
 import { ensureDir, writeJSON } from "fs-extra";

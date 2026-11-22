@@ -1,7 +1,6 @@
 import { join } from "path";
 import { readdir, readJson, readFile } from "fs-extra";
-import type { RequestHandler } from "msw";
-import { http } from "msw";
+import type { http as mswHttp, RequestHandler } from "msw";
 import type { GitHubApiRequest } from "./gh-api-request";
 import {
   isCodeSearchRequest,
@@ -29,17 +28,18 @@ const jsonResponse = <T>(
 };
 
 export async function createRequestHandlers(
+  http: typeof mswHttp,
   scenarioDirPath: string,
 ): Promise<RequestHandler[]> {
   const requests = await readRequestFiles(scenarioDirPath);
 
   const handlers = [
-    createGetRepoRequestHandler(requests),
-    createSubmitVariantAnalysisRequestHandler(requests),
-    createGetVariantAnalysisRequestHandler(requests),
-    createGetVariantAnalysisRepoRequestHandler(requests),
-    createGetVariantAnalysisRepoResultRequestHandler(requests),
-    createCodeSearchRequestHandler(requests),
+    createGetRepoRequestHandler(http, requests),
+    createSubmitVariantAnalysisRequestHandler(http, requests),
+    createGetVariantAnalysisRequestHandler(http, requests),
+    createGetVariantAnalysisRepoRequestHandler(http, requests),
+    createGetVariantAnalysisRepoResultRequestHandler(http, requests),
+    createCodeSearchRequestHandler(http, requests),
   ];
 
   return handlers;
@@ -84,6 +84,7 @@ async function readRequestFiles(
 }
 
 function createGetRepoRequestHandler(
+  http: typeof mswHttp,
   requests: GitHubApiRequest[],
 ): RequestHandler {
   const getRepoRequests = requests.filter(isGetRepoRequest);
@@ -102,6 +103,7 @@ function createGetRepoRequestHandler(
 }
 
 function createSubmitVariantAnalysisRequestHandler(
+  http: typeof mswHttp,
   requests: GitHubApiRequest[],
 ): RequestHandler {
   const submitVariantAnalysisRequests = requests.filter(
@@ -125,6 +127,7 @@ function createSubmitVariantAnalysisRequestHandler(
 }
 
 function createGetVariantAnalysisRequestHandler(
+  http: typeof mswHttp,
   requests: GitHubApiRequest[],
 ): RequestHandler {
   const getVariantAnalysisRequests = requests.filter(
@@ -153,6 +156,7 @@ function createGetVariantAnalysisRequestHandler(
 }
 
 function createGetVariantAnalysisRepoRequestHandler(
+  http: typeof mswHttp,
   requests: GitHubApiRequest[],
 ): RequestHandler {
   const getVariantAnalysisRepoRequests = requests.filter(
@@ -177,6 +181,7 @@ function createGetVariantAnalysisRepoRequestHandler(
 }
 
 function createGetVariantAnalysisRepoResultRequestHandler(
+  http: typeof mswHttp,
   requests: GitHubApiRequest[],
 ): RequestHandler {
   const getVariantAnalysisRepoResultRequests = requests.filter(
@@ -208,6 +213,7 @@ function createGetVariantAnalysisRepoResultRequestHandler(
 }
 
 function createCodeSearchRequestHandler(
+  http: typeof mswHttp,
   requests: GitHubApiRequest[],
 ): RequestHandler {
   const codeSearchRequests = requests.filter(isCodeSearchRequest);

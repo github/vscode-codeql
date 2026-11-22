@@ -1,5 +1,5 @@
 import { join, basename } from "path";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import type { RunQueryParams } from "../../../../src/query-server/messages";
 import {

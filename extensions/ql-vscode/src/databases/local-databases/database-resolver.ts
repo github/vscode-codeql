@@ -6,7 +6,7 @@ import type {
   DatabaseContentsWithDbScheme,
 } from "./database-contents";
 import { DatabaseKind } from "./database-contents";
-import { glob } from "glob";
+import { glob } from "fs/promises";
 import { encodeArchiveBasePath } from "../../common/vscode/archive-filesystem-provider";
 import {
   showAndLogInformationMessage,
@@ -87,17 +87,22 @@ async function findDataset(parentDirectory: string): Promise<Uri> {
   /*
    * Look directly in the root
    */
-  let dbRelativePaths = await glob("db-*/", {
+  const dbRelativePaths: string[] = [];
+  for await (const path of glob("db-*/", {
     cwd: parentDirectory,
-  });
+  })) {
+    dbRelativePaths.push(path);
+  }
 
   if (dbRelativePaths.length === 0) {
     /*
      * Check If they are in the old location
      */
-    dbRelativePaths = await glob("working/db-*/", {
+    for await (const path of glob("working/db-*/", {
       cwd: parentDirectory,
-    });
+    })) {
+      dbRelativePaths.push(path);
+    }
   }
   if (dbRelativePaths.length === 0) {
     throw new InvalidDatabaseError(
@@ -118,7 +123,11 @@ async function findDataset(parentDirectory: string): Promise<Uri> {
 
 /** Gets the relative paths of all `.dbscheme` files in the given directory. */
 async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
-  return await glob("*.dbscheme", { cwd: dbDirectory });
+  const dbSchemeFiles: string[] = [];
+  for await (const file of glob("*.dbscheme", { cwd: dbDirectory })) {
+    dbSchemeFiles.push(file);
+  }
+  return dbSchemeFiles;
 }
 
 // exported for testing

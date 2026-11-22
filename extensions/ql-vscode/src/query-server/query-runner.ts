@@ -24,7 +24,7 @@ import {
 } from "./messages";
 import type { BaseLogger, Logger } from "../common/logging";
 import { join } from "path";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 import type { QueryServerClient } from "./query-server-client";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
@@ -259,7 +259,7 @@ export class QueryRunner {
     queryBasename: string,
     templates: Record<string, string> | undefined,
   ): CoreQueryRun {
-    const id = `${queryBasename}-${nanoid()}`;
+    const id = `${queryBasename}-${randomUUID()}`;
     const outputDir = new QueryOutputDir(join(queryStorageDir, id));
 
     return {

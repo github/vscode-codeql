@@ -37,8 +37,8 @@ export class CodeQLLanguageClient extends LanguageClient {
         synchronize: {
           configurationSection: "codeQL",
         },
-        // Ensure that language server exceptions are logged to the same channel as its output.
-        outputChannel: languageServerLogger.outputChannel,
+        // Keep client logs separate from raw language-server output.
+        outputChannelName: "CodeQL Language Client",
       },
       true,
     );

@@ -1,6 +1,6 @@
 import { pathExists } from "fs-extra";
 import { basename, join } from "path";
-import { glob } from "glob";
+import { glob } from "fs/promises";
 
 /**
  * The following functions al heuristically determine metadata about databases.
@@ -19,10 +19,10 @@ export async function isLikelyDatabaseRoot(maybeRoot: string) {
     pathExists(join(maybeRoot, "codeql-database.yml")),
 
     // they *must* have a db-{language} folder
-    glob("db-*/", { cwd: maybeRoot }),
+    glob("db-*/", { cwd: maybeRoot }).next(),
   ]);
 
-  return (a || b) && c.length > 0;
+  return (a || b) && !c.done;
 }
 
 /**

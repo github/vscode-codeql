@@ -3,7 +3,12 @@
 ## [UNRELEASED]
 
 - Fix Quick Query failing to start when no workspace is open.
+- Language-client messages and protocol traces now appear in a separate "CodeQL Language Client" output channel. Set that channel's log level to Trace to enable protocol tracing. Raw language-server output remains in "CodeQL Language Server".
 - After an extension-managed CodeQL CLI update, the notification now offers to open the CLI release notes instead of the extension log. [#1095](https://github.com/github/vscode-codeql/issues/1095)
+- Remove support for CodeQL CLI versions older than 2.24.3. [#4573](https://github.com/github/vscode-codeql/pull/4573)
+- Add support to the model editor for saving and loading JSON data extensions. [#4576](https://github.com/github/vscode-codeql/pull/4576)
+- Increase the required version of VS Code to 1.101.0. [#4619](https://github.com/github/vscode-codeql/pull/4619)
+- Update the model editor to save new data extension files in JSON format. [#4583](https://github.com/github/vscode-codeql/pull/4583)
 
 ## 1.17.8 - 17 July 2026
 

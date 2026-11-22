@@ -31,6 +31,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "env": {
@@ -51,6 +52,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "env": {
@@ -75,6 +77,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
@@ -91,6 +94,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
@@ -107,6 +111,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
@@ -123,6 +128,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "runtimeArgs": ["--no-experimental-strip-types"],
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [

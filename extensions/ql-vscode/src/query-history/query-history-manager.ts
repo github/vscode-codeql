@@ -843,6 +843,7 @@ export class QueryHistoryManager extends DisposableObject {
       } catch (e) {
         throw new Error(
           `Failed to open ${externalFilePath}: ${getErrorMessage(e)}`,
+          { cause: e },
         );
       }
     } else {

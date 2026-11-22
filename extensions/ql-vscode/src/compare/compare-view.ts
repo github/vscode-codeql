@@ -38,7 +38,7 @@ import {
   getResultSetNames,
 } from "./result-set-names";
 import { isCanary } from "../config";
-import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -243,7 +243,7 @@ export class CompareView extends AbstractWebview<
       return;
     }
 
-    const id = nanoid();
+    const id = randomUUID();
 
     // Streaming itself is implemented like this:
     // - 1 setup message which contains the first 1,000 results

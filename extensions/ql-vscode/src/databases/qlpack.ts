@@ -1,5 +1,5 @@
 import { window } from "vscode";
-import { glob } from "glob";
+import { glob } from "fs/promises";
 import { basename } from "path";
 import { load } from "js-yaml";
 import { readFile } from "fs-extra";
@@ -108,9 +108,12 @@ export async function getQlPackForDbscheme(
 export async function getPrimaryDbscheme(
   datasetFolder: string,
 ): Promise<string> {
-  const dbschemes = await glob("*.dbscheme", {
+  const dbschemes: string[] = [];
+  for await (const file of glob("*.dbscheme", {
     cwd: datasetFolder,
-  });
+  })) {
+    dbschemes.push(file);
+  }
 
   if (dbschemes.length < 1) {
     throw new Error(

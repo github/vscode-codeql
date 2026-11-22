@@ -3,7 +3,7 @@ import type { QueryPackDiscoverer } from "../../../../src/queries-panel/query-di
 import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { basename, dirname, join } from "path";
-import { dirSync } from "tmp";
+import { dirSync } from "tmp-promise";
 import { rm } from "fs/promises";
 import {
   FileTreeDirectory,

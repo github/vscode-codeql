@@ -422,6 +422,7 @@ export class DatabaseUI extends DisposableObject {
             `Could not set the database for the Code Tour. Please make sure you are using the default workspace in your codespace: ${getErrorMessage(
               e,
             )}`,
+            { cause: e },
           );
         }
       },
@@ -449,7 +450,7 @@ export class DatabaseUI extends DisposableObject {
     void this.app.logger.log(
       "Removing orphaned databases from workspace storage.",
     );
-    let dbDirs = undefined;
+    let dbDirs: string[];
 
     if (
       !(await pathExists(this.storagePath)) ||
@@ -748,6 +749,7 @@ export class DatabaseUI extends DisposableObject {
             `Could not set database to ${basename(
               uri.fsPath,
             )}. Reason: ${getErrorMessage(e)}`,
+            { cause: e },
           );
         }
       },
@@ -798,6 +800,7 @@ export class DatabaseUI extends DisposableObject {
             `Could not set database to ${basename(
               uri.fsPath,
             )}. Reason: ${getErrorMessage(e)}`,
+            { cause: e },
           );
         }
       },
