@@ -77,8 +77,9 @@ operation that needs them.
   downloads and other extensions that read `github-enterprise.uri` are not affected.
 - No controller repository is needed. Requests use controller repository ID `0`.
 - Runs retain their originating server URL. Polling, task retrieval and cancellation fail if
-  the current server setting differs. Restore the original setting to resume them. Legacy runs
-  without a server URL are treated as GitHub runs.
+  the current server setting differs, and local monitoring stops without cancelling the run.
+  Restore the matching setting and reload VS Code to resume monitoring. Legacy runs without a
+  server URL are treated as GitHub runs.
 - The GitHub token is never sent to the server, and results are never uploaded to GitHub:
   "Export to gist" is unavailable; "View logs" uses the companion's optional hook, not GitHub Actions.
 - Removing a running server analysis from history asks, in a modal dialog, whether to stop it.

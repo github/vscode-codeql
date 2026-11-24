@@ -210,6 +210,19 @@ describe("variant analysis server client", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it.each([" ", "\n"])(
+    "rejects a whitespace-only token (%p) before fetching",
+    async (token) => {
+      getVariantAnalysisServerToken.mockResolvedValue(token);
+      fetchSpy.mockRejectedValueOnce(new Error("Unexpected fetch"));
+
+      await expect(
+        requestVariantAnalysisServer(server, "GET", "/"),
+      ).rejects.toThrow("did not return a variant analysis server token");
+      expect(fetchSpy).not.toHaveBeenCalled();
+    },
+  );
+
   it.each(["activation", "token"])(
     "gives up on a stalled provider %s after 30 seconds",
     async (stage) => {
@@ -522,6 +535,59 @@ describe("variant analysis routing", () => {
       },
     );
   });
+
+  it("reports an invalid response when submission returns JSON null", async () => {
+    await configureServer();
+    fetchSpy.mockResolvedValueOnce(new Response("null"));
+
+    await expect(
+      submitVariantAnalysis(credentials, {
+        ...createMockSubmission(),
+        serverUrl: SERVER_URL,
+      }),
+    ).rejects.toThrow(
+      "The variant analysis server returned an invalid response",
+    );
+  });
+
+  it("accepts a null scanned repository list", async () => {
+    await configureServer();
+    const body = { ...response, scanned_repositories: null };
+    fetchSpy.mockResolvedValueOnce(new Response(JSON.stringify(body)));
+
+    await expect(
+      getVariantAnalysis(credentials, 0, 5, SERVER_URL),
+    ).resolves.toEqual(body);
+  });
+
+  it.each([
+    {},
+    { ...response, scanned_repositories: {} },
+    { ...response, scanned_repositories: [{}] },
+  ])("reports an invalid response when polling returns %j", async (body) => {
+    await configureServer();
+    fetchSpy.mockResolvedValueOnce(new Response(JSON.stringify(body)));
+
+    await expect(
+      getVariantAnalysis(credentials, 0, 5, SERVER_URL),
+    ).rejects.toThrow(
+      "The variant analysis server returned an invalid response",
+    );
+  });
+
+  it.each([null, {}])(
+    "reports an invalid response when a repository task returns %j",
+    async (body) => {
+      await configureServer();
+      fetchSpy.mockResolvedValueOnce(new Response(JSON.stringify(body)));
+
+      await expect(
+        getVariantAnalysisRepo(credentials, 0, 5, 7, SERVER_URL),
+      ).rejects.toThrow(
+        "The variant analysis server returned an invalid response",
+      );
+    },
+  );
 
   it.each([
     { id: "../5" },

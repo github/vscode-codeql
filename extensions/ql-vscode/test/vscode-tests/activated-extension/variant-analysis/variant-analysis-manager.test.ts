@@ -1,5 +1,12 @@
-import type { Extension, TextDocument, TextEditor, Uri } from "vscode";
+import type {
+  AuthenticationSessionsChangeEvent,
+  Extension,
+  TextDocument,
+  TextEditor,
+  Uri,
+} from "vscode";
 import {
+  authentication,
   commands,
   ConfigurationTarget,
   env,
@@ -95,6 +102,9 @@ describe("Variant Analysis Manager", () => {
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
   let variantAnalysis: VariantAnalysis;
   let scannedRepos: VariantAnalysisScannedRepository[];
+  let onAuthSessionsChanged: (
+    event: AuthenticationSessionsChangeEvent,
+  ) => void | Promise<void>;
 
   beforeEach(async () => {
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
@@ -119,6 +129,10 @@ describe("Variant Analysis Manager", () => {
       variantAnalysisConfig,
       extLogger,
     );
+    const subscribeToAuthChanges = jest.spyOn(
+      authentication,
+      "onDidChangeSessions",
+    );
     variantAnalysisManager = new VariantAnalysisManager(
       app,
       cli,
@@ -127,7 +141,74 @@ describe("Variant Analysis Manager", () => {
       dbManager,
       variantAnalysisConfig,
     );
+    [[onAuthSessionsChanged]] = subscribeToAuthChanges.mock.calls;
+    subscribeToAuthChanges.mockRestore();
   });
+
+  it.each([
+    ["does not restart a custom run in custom mode", true, true, false],
+    ["does not restart a saved custom run in GitHub mode", true, false, false],
+    ["does not restart a saved GitHub run in custom mode", false, true, false],
+    ["restarts an incomplete GitHub run in GitHub mode", false, false, true],
+  ])(
+    "%s on a GitHub auth event",
+    async (_, customRun, customMode, shouldRestart) => {
+      const serverUrl = "https://mrva.example.com";
+      const config = workspace.getConfiguration("codeQL.variantAnalysis");
+      const originalServerUrl =
+        config.inspect<string>("serverUrl")?.globalValue;
+      const run = {
+        ...variantAnalysis,
+        serverUrl: customRun ? serverUrl : undefined,
+        serverRunId: customRun ? 123 : undefined,
+      };
+      const execute = jest
+        .spyOn(app.commands, "execute")
+        .mockResolvedValue(undefined);
+      try {
+        await config.update(
+          "serverUrl",
+          run.serverUrl,
+          ConfigurationTarget.Global,
+        );
+        await createTimestampFile(
+          variantAnalysisManager.getVariantAnalysisStorageLocation(run.id),
+        );
+        await variantAnalysisManager.rehydrateVariantAnalysis(run);
+        expect(execute).toHaveBeenCalledWith(
+          "codeQL.monitorRehydratedVariantAnalysis",
+          run,
+        );
+        execute.mockClear();
+
+        await config.update(
+          "serverUrl",
+          customMode ? serverUrl : undefined,
+          ConfigurationTarget.Global,
+        );
+        await onAuthSessionsChanged({
+          provider: { id: "github", label: "GitHub" },
+        });
+
+        expect(execute).toHaveBeenCalledTimes(shouldRestart ? 1 : 0);
+        if (shouldRestart) {
+          expect(execute).toHaveBeenCalledWith(
+            "codeQL.monitorReauthenticatedVariantAnalysis",
+            run,
+          );
+        }
+      } finally {
+        await config.update(
+          "serverUrl",
+          originalServerUrl,
+          ConfigurationTarget.Global,
+        );
+        await variantAnalysisManager.removeVariantAnalysis(run);
+        variantAnalysisManager.dispose();
+        variantAnalysisResultsManager.dispose();
+      }
+    },
+  );
 
   it("runs a custom-server analysis from submission to downloaded results", async () => {
     const serverUrl = "https://mrva.example.com";

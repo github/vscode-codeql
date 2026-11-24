@@ -1,5 +1,6 @@
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { RequestError } from "@octokit/request-error";
+import { ConfigurationTarget, workspace } from "vscode";
 import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
 import type {
   VariantAnalysis as VariantAnalysisApiResponse,
@@ -75,6 +76,50 @@ describe("Variant Analysis Monitor", () => {
     await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
     expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
+  });
+
+  it("stops polling when the configured endpoint changes during monitoring", async () => {
+    const config = workspace.getConfiguration("codeQL.variantAnalysis");
+    const originalServerUrl = config.inspect<string>("serverUrl")?.globalValue;
+    await config.update("serverUrl", undefined, ConfigurationTarget.Global);
+    shouldCancelMonitor.mockResolvedValue(false);
+    mockGetVariantAnalysisFromApi.mockResolvedValue(
+      createMockApiResponse("in_progress"),
+    );
+
+    jest.useFakeTimers();
+    const monitoring =
+      variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
+    try {
+      await jest.advanceTimersByTimeAsync(VariantAnalysisMonitor.sleepTime);
+      expect(mockGetVariantAnalysisFromApi).toHaveBeenCalledTimes(1);
+      expect(
+        variantAnalysisMonitor.isMonitoringVariantAnalysis(variantAnalysis.id),
+      ).toBe(true);
+
+      await config.update(
+        "serverUrl",
+        "https://mrva.example.com",
+        ConfigurationTarget.Global,
+      );
+      await jest.advanceTimersByTimeAsync(VariantAnalysisMonitor.sleepTime);
+      expect(logger.log).toHaveBeenCalledWith(
+        expect.stringContaining("belongs to a different server (GitHub)"),
+      );
+      expect(
+        variantAnalysisMonitor.isMonitoringVariantAnalysis(variantAnalysis.id),
+      ).toBe(false);
+    } finally {
+      shouldCancelMonitor.mockResolvedValue(true);
+      await jest.advanceTimersByTimeAsync(VariantAnalysisMonitor.sleepTime);
+      await monitoring;
+      jest.useRealTimers();
+      await config.update(
+        "serverUrl",
+        originalServerUrl,
+        ConfigurationTarget.Global,
+      );
+    }
   });
 
   describe("when the variant analysis fails", () => {
