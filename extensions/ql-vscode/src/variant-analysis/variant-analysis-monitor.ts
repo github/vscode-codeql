@@ -1,5 +1,8 @@
 import { env, EventEmitter } from "vscode";
-import { getVariantAnalysis } from "./variant-analysis-api";
+import {
+  getVariantAnalysis,
+  VariantAnalysisEndpointMismatchError,
+} from "./variant-analysis-api";
 import { RequestError } from "@octokit/request-error";
 
 import type {
@@ -118,6 +121,10 @@ export class VariantAnalysisMonitor extends DisposableObject {
         } else {
           void showAndLogWarningMessage(this.app.logger, message);
           lastErrorShown = errorMessage;
+        }
+
+        if (e instanceof VariantAnalysisEndpointMismatchError) {
+          return;
         }
 
         if (e instanceof RequestError && e.status === 404) {

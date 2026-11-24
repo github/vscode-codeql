@@ -100,7 +100,11 @@ import { resolveCodeScanningQueryPack } from "./code-scanning-pack";
 import { isSarifResultsQueryKind } from "../common/query-metadata";
 import { isVariantAnalysisEnabledForGitHubHost } from "./ghec-dr";
 import type { VariantAnalysisConfig } from "../config";
-import { getEnterpriseUri, getVariantAnalysisServerConfig } from "../config";
+import {
+  getEnterpriseUri,
+  getVariantAnalysisServerConfig,
+  isVariantAnalysisServerConfigured,
+} from "../config";
 
 const maxRetryCount = 3;
 
@@ -761,8 +765,13 @@ export class VariantAnalysisManager
       return;
     }
 
+    if (isVariantAnalysisServerConfigured()) {
+      return;
+    }
+
     for (const variantAnalysis of this.variantAnalyses.values()) {
       if (
+        variantAnalysis.serverUrl ||
         this.variantAnalysisMonitor.isMonitoringVariantAnalysis(
           variantAnalysis.id,
         )

@@ -151,6 +151,8 @@ function checkServerData(
   }
 }
 
+export class VariantAnalysisEndpointMismatchError extends Error {}
+
 /**
  * Returns the configured server for a run submitted to `serverUrl`, or
  * `undefined` for a GitHub run while no server is configured. Throws if the
@@ -161,7 +163,7 @@ function getServerForVariantAnalysis(
 ): VariantAnalysisServerConfig | undefined {
   const server = getVariantAnalysisServerConfig();
   if (server?.url !== serverUrl) {
-    throw new Error(
+    throw new VariantAnalysisEndpointMismatchError(
       serverUrl
         ? `This variant analysis belongs to a different server. Set codeQL.variantAnalysis.serverUrl to ${serverUrl} before retrying.`
         : "This variant analysis belongs to a different server (GitHub). Clear codeQL.variantAnalysis.serverUrl before retrying.",
