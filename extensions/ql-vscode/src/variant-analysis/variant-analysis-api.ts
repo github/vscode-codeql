@@ -77,7 +77,7 @@ export async function getVariantAnalysisRepo(
       "GET",
       `${variantAnalysesPath(controllerRepoId)}/${variantAnalysisId}/repositories/${repoId}`,
     );
-    checkServerData([task.repository]);
+    checkServerData([task?.repository]);
     return task;
   }
   return getGitHubVariantAnalysisRepo(
@@ -113,9 +113,15 @@ function variantAnalysesPath(controllerRepoId: number): string {
 function checkVariantAnalysis(
   analysis: ApiVariantAnalysis,
 ): ApiVariantAnalysis {
+  const scannedRepos = analysis?.scanned_repositories ?? [];
+  if (!Array.isArray(scannedRepos)) {
+    throw new Error(
+      "The variant analysis server returned an invalid response: scanned_repositories must be an array when present.",
+    );
+  }
   checkServerData(
-    analysis.scanned_repositories?.map((repo) => repo.repository) ?? [],
-    [analysis.id, analysis.controller_repo.id],
+    scannedRepos.map((repo) => repo?.repository),
+    [analysis?.id, analysis?.controller_repo?.id],
   );
   return analysis;
 }
@@ -126,21 +132,21 @@ function checkVariantAnalysis(
  * storage directory: empty or dots-only parts, backslashes and colons.
  */
 function checkServerData(
-  repositories: Array<{ id: number; full_name: string }>,
-  ids: number[] = [],
+  repositories: Array<{ id: number; full_name: string } | undefined>,
+  ids: Array<number | undefined> = [],
 ): void {
   const valid =
     ids.every(Number.isSafeInteger) &&
     repositories.every(
       (repo) =>
-        Number.isSafeInteger(repo.id) &&
-        typeof repo.full_name === "string" &&
+        Number.isSafeInteger(repo?.id) &&
+        typeof repo?.full_name === "string" &&
         /^[^\\:]+$/.test(repo.full_name) &&
         repo.full_name.split("/").every((part) => !/^\.*$/.test(part)),
     );
   if (!valid) {
     throw new Error(
-      "The variant analysis server returned an invalid response: IDs must be integers, and repository names must not contain empty or dots-only parts, backslashes or colons.",
+      "The variant analysis server returned an invalid response: IDs must be integers, and repository names must be strings without empty or dots-only parts, backslashes or colons.",
     );
   }
 }

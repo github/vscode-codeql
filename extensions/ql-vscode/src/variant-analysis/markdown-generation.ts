@@ -419,8 +419,7 @@ function createRelativeLink(
  * This name doesn't include the file extension.
  */
 function createFileName(nwo: string) {
-  const [owner, repo] = nwo.split("/");
-  return `${owner}-${repo}`;
+  return nwo.split("/", 2).join("-");
 }
 
 /**

@@ -79,7 +79,7 @@ async function getToken(server: VariantAnalysisServerConfig): Promise<string> {
     }
 
     const token = await provider.getVariantAnalysisServerToken(server.url);
-    if (typeof token !== "string" || !token) {
+    if (typeof token !== "string" || !token.trim()) {
       throw new Error(
         `The extension '${server.tokenProviderExtensionId}' did not return a variant analysis server token. Check that you are signed in.`,
       );
