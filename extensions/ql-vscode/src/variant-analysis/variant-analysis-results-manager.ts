@@ -37,6 +37,8 @@ type ResultDownloadedEvent = {
 };
 
 export type LoadResultsOptions = {
+  // The custom variant analysis server that produced the results, if any.
+  serverUrl?: string;
   // If true, when results are loaded from storage, they will not be stored in the cache. This reduces memory usage if
   // results are only needed temporarily (e.g. for exporting results to a different format).
   skipCacheStore?: boolean;
@@ -150,6 +152,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
         variantAnalysisId,
         variantAnalysisStoragePath,
         repositoryFullName,
+        options.serverUrl,
       );
     }
 
@@ -157,6 +160,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       variantAnalysisId,
       variantAnalysisStoragePath,
       repositoryFullName,
+      options?.serverUrl,
     );
   }
 
@@ -164,11 +168,13 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
+    serverUrl?: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
     const result = await this.loadResultsFromStorage(
       variantAnalysisId,
       variantAnalysisStoragePath,
       repositoryFullName,
+      serverUrl,
     );
     this.cachedResults.set(
       createCacheKey(variantAnalysisId, repositoryFullName),
@@ -182,6 +188,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     variantAnalysisId: number,
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
+    serverUrl?: string,
   ): Promise<VariantAnalysisScannedRepositoryResult> {
     if (
       !(await this.isVariantAnalysisRepoDownloaded(
@@ -200,14 +207,24 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     const repoTask: VariantAnalysisRepositoryTask =
       await readRepoTask(storageDirectory);
 
-    if (!repoTask.databaseCommitSha || !repoTask.sourceLocationPrefix) {
-      throw new Error("Missing database commit SHA");
-    }
+    let fileLinkPrefix: string | undefined;
+    if (serverUrl) {
+      // Servers may omit the commit and source location prefix, so link to
+      // HEAD and fall back to the legacy source location handling.
+      fileLinkPrefix = createServerFileLinkPrefix(
+        repoTask.repository.htmlUrl,
+        repoTask.databaseCommitSha || "HEAD",
+      );
+    } else {
+      if (!repoTask.databaseCommitSha || !repoTask.sourceLocationPrefix) {
+        throw new Error("Missing database commit SHA");
+      }
 
-    const fileLinkPrefix = this.createGitHubFileLinkPrefix(
-      repoTask.repository.fullName,
-      repoTask.databaseCommitSha,
-    );
+      fileLinkPrefix = this.createGitHubFileLinkPrefix(
+        repoTask.repository.fullName,
+        repoTask.databaseCommitSha,
+      );
+    }
 
     const resultsDirectory = join(
       storageDirectory,
@@ -233,7 +250,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       rawResults = await this.readBqrsResults(
         bqrsPath,
         fileLinkPrefix,
-        repoTask.sourceLocationPrefix,
+        repoTask.sourceLocationPrefix ?? "",
       );
     }
 
@@ -263,7 +280,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private async readBqrsResults(
     filePath: string,
-    fileLinkPrefix: string,
+    fileLinkPrefix: string | undefined,
     sourceLocationPrefix: string,
   ): Promise<AnalysisRawResults> {
     return await extractRawResults(
@@ -277,7 +294,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
   private async readSarifResults(
     filePath: string,
-    fileLinkPrefix: string,
+    fileLinkPrefix: string | undefined,
   ): Promise<AnalysisAlert[]> {
     const sarifLog = await sarifParser(filePath);
 
@@ -359,4 +376,32 @@ export class VariantAnalysisResultsManager extends DisposableObject {
 
     this.cachedResults.clear();
   }
+}
+
+/**
+ * Builds a file link prefix from a repository URL supplied by a custom server.
+ * Returns `undefined`, so that locations are shown as plain text, if the URL
+ * is missing or is not an HTTP(S) URL without credentials.
+ */
+function createServerFileLinkPrefix(
+  repositoryUrl: string | undefined,
+  sha: string,
+): string | undefined {
+  let url: URL;
+  try {
+    url = new URL(repositoryUrl ?? "");
+  } catch {
+    return undefined;
+  }
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password
+  ) {
+    return undefined;
+  }
+  url.search = "";
+  url.hash = "";
+  url.pathname = `${url.pathname.replace(/\/+$/, "")}/blob/${encodeURIComponent(sha)}`;
+  return url.toString();
 }

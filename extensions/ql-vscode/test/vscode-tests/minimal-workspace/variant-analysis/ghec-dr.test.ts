@@ -1,4 +1,4 @@
-import { ConfigurationTarget } from "vscode";
+import { ConfigurationTarget, workspace } from "vscode";
 import { VSCODE_GITHUB_ENTERPRISE_URI_SETTING } from "../../../../src/config";
 import { isVariantAnalysisEnabledForGitHubHost } from "../../../../src/variant-analysis/ghec-dr";
 
@@ -20,6 +20,21 @@ describe("checkVariantAnalysisEnabled", () => {
       "https://example.ghe.com",
       ConfigurationTarget.Global,
     );
+    expect(isVariantAnalysisEnabledForGitHubHost()).toBe(true);
+  });
+
+  it("returns true when a custom server is configured", async () => {
+    await VSCODE_GITHUB_ENTERPRISE_URI_SETTING.updateValue(
+      "https://github.example.com",
+      ConfigurationTarget.Global,
+    );
+    await workspace
+      .getConfiguration("codeQL.variantAnalysis")
+      .update(
+        "serverUrl",
+        "https://mrva.example.com",
+        ConfigurationTarget.Global,
+      );
     expect(isVariantAnalysisEnabledForGitHubHost()).toBe(true);
   });
 });

@@ -64,6 +64,9 @@ export const CodeSnippetMessage = ({
             case "text":
               return <span key={index}>{token.text}</span>;
             case "location":
+              if (!token.location.fileLink.fileLinkPrefix) {
+                return <span key={index}>{token.text}</span>;
+              }
               return (
                 <LocationLink
                   key={index}

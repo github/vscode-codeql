@@ -48,6 +48,8 @@ function mapVariantAnalysisToDomainModel(
 ): VariantAnalysis {
   return {
     id: variantAnalysis.id,
+    serverRunId: variantAnalysis.serverRunId,
+    serverUrl: variantAnalysis.serverUrl,
     controllerRepo: {
       id: variantAnalysis.controllerRepo.id,
       fullName: variantAnalysis.controllerRepo.fullName,
@@ -102,6 +104,7 @@ function mapVariantAnalysisScannedRepositoryToDomainModel(
     repository: {
       id: repo.repository.id,
       fullName: repo.repository.fullName,
+      htmlUrl: repo.repository.htmlUrl,
       private: repo.repository.private,
       stargazersCount: repo.repository.stargazersCount,
       updatedAt: repo.repository.updatedAt,

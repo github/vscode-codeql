@@ -4,6 +4,7 @@ import type { VariantAnalysisScannedRepository } from "../../../src/variant-anal
 import { VariantAnalysisRepoStatus } from "../../../src/variant-analysis/shared/variant-analysis";
 import {
   mapScannedRepository,
+  mapUpdatedVariantAnalysis,
   mapVariantAnalysisFromSubmission,
   mapVariantAnalysisRepositoryTask,
 } from "../../../src/variant-analysis/variant-analysis-mapper";
@@ -26,6 +27,41 @@ describe(mapVariantAnalysisFromSubmission.name, () => {
     skippedRepos,
   );
   const mockSubmission = createMockSubmission();
+
+  it("preserves the server origin through submission and polling updates", () => {
+    const submission = {
+      ...mockSubmission,
+      serverUrl: "https://mrva.example.com",
+    };
+    const run = mapVariantAnalysisFromSubmission(
+      submission,
+      mockApiResponse,
+      [],
+    );
+    expect(run.serverUrl).toBe(submission.serverUrl);
+    expect(mapUpdatedVariantAnalysis(run, mockApiResponse).serverUrl).toBe(
+      submission.serverUrl,
+    );
+    expect(
+      mapVariantAnalysisFromSubmission(mockSubmission, mockApiResponse, [])
+        .serverUrl,
+    ).toBeUndefined();
+  });
+
+  it("preserves repository source URLs", () => {
+    const response = createMockApiResponse("succeeded");
+    response.scanned_repositories![0].repository.html_url =
+      "https://source.example.com/org/repo";
+    const run = mapVariantAnalysisFromSubmission(mockSubmission, response, []);
+    expect(run.scannedRepos?.[0].repository.htmlUrl).toBe(
+      response.scanned_repositories![0].repository.html_url,
+    );
+    const task = createMockVariantAnalysisRepoTask();
+    task.repository.html_url = "https://source.example.com/org/repo";
+    expect(mapVariantAnalysisRepositoryTask(task).repository.htmlUrl).toBe(
+      task.repository.html_url,
+    );
+  });
 
   it("should map an API response and return a variant analysis", () => {
     const result = mapVariantAnalysisFromSubmission(

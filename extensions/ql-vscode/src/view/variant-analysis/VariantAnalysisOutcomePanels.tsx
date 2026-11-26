@@ -102,7 +102,11 @@ export const VariantAnalysisOutcomePanels = ({
       )}
       {variantAnalysis.status === VariantAnalysisStatus.Failed &&
         variantAnalysis.failureReason && (
-          <FailureReasonAlert failureReason={variantAnalysis.failureReason} />
+          <FailureReasonAlert
+            failureReason={variantAnalysis.failureReason}
+            serverUrl={variantAnalysis.serverUrl}
+            canViewLogs={variantAnalysis.canViewLogs}
+          />
         )}
       {overLimitRepositoryCount > 0 && (
         <Alert

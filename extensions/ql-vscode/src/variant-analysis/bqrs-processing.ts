@@ -9,7 +9,7 @@ export async function extractRawResults(
   cliServer: CodeQLCliServer,
   logger: Logger,
   filePath: string,
-  fileLinkPrefix: string,
+  fileLinkPrefix: string | undefined,
   sourceLocationPrefix: string,
 ): Promise<AnalysisRawResults> {
   const bqrsInfo = await cliServer.bqrsInfo(filePath);

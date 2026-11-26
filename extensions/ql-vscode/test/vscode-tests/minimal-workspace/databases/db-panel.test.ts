@@ -1,4 +1,10 @@
-import { TreeItemCollapsibleState, ThemeIcon, ThemeColor } from "vscode";
+import {
+  ConfigurationTarget,
+  TreeItemCollapsibleState,
+  ThemeIcon,
+  ThemeColor,
+  workspace,
+} from "vscode";
 import { join } from "path";
 import { ensureDir, remove, writeJson } from "fs-extra";
 import type { DbConfig } from "../../../../src/databases/config/db-config";
@@ -109,6 +115,21 @@ describe("db panel", () => {
         "Please remove duplicates",
       );
     });
+  });
+
+  it("shows repositories without a controller repository when a server is configured", async () => {
+    await setRemoteControllerRepo(undefined);
+    await workspace
+      .getConfiguration("codeQL.variantAnalysis")
+      .update(
+        "serverUrl",
+        "https://mrva.example.com",
+        ConfigurationTarget.Global,
+      );
+
+    await saveDbConfig(createDbConfig({ remoteRepos: ["owner1/repo1"] }));
+
+    expect(await dbTreeDataProvider.getChildren()).not.toHaveLength(0);
   });
 
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {

@@ -35,7 +35,7 @@ const defaultSeverity = "Warning";
 
 export function extractAnalysisAlerts(
   sarifLog: Log,
-  fileLinkPrefix: string,
+  fileLinkPrefix: string | undefined,
 ): {
   alerts: AnalysisAlert[];
   errors: string[];
@@ -62,7 +62,7 @@ export function extractAnalysisAlerts(
 function extractResultAlerts(
   run: Run,
   result: Result,
-  fileLinkPrefix: string,
+  fileLinkPrefix: string | undefined,
 ): AnalysisAlert[] {
   const alerts: AnalysisAlert[] = [];
 
@@ -259,7 +259,10 @@ function getHighlightedRegion(region: Region): HighlightedRegion {
   };
 }
 
-function getCodeFlows(result: Result, fileLinkPrefix: string): CodeFlow[] {
+function getCodeFlows(
+  result: Result,
+  fileLinkPrefix: string | undefined,
+): CodeFlow[] {
   const codeFlows = [];
 
   if (result.codeFlows) {
@@ -299,7 +302,10 @@ function getCodeFlows(result: Result, fileLinkPrefix: string): CodeFlow[] {
   return codeFlows;
 }
 
-function getMessage(result: Result, fileLinkPrefix: string): AnalysisMessage {
+function getMessage(
+  result: Result,
+  fileLinkPrefix: string | undefined,
+): AnalysisMessage {
   const tokens: AnalysisMessageToken[] = [];
 
   const messageText = result.message.text!;
@@ -328,7 +334,7 @@ function getMessage(result: Result, fileLinkPrefix: string): AnalysisMessage {
 function getRelatedLocation(
   messagePart: SarifLink,
   result: Result,
-  fileLinkPrefix: string,
+  fileLinkPrefix: string | undefined,
 ): AnalysisMessageLocationTokenLocation | undefined {
   const relatedLocation = result.relatedLocations!.find(
     (rl) => rl.id === messagePart.dest,

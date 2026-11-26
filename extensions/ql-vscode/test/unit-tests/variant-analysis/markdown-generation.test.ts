@@ -17,10 +17,87 @@ import type {
 import pathProblemAnalysesResults from "../data/markdown-generation/interpreted-results/path-problem/analyses-results.json";
 import problemAnalysesResults from "../data/markdown-generation/interpreted-results/problem/analyses-results.json";
 import rawResultsAnalysesResults from "../data/markdown-generation/raw-results/analyses-results.json";
+import { createMockVariantAnalysis } from "../../factories/variant-analysis/shared/variant-analysis";
+import { createMockScannedRepo } from "../../factories/variant-analysis/shared/scanned-repositories";
 
 const dataPath = resolve(__dirname, "../data/markdown-generation");
 
 describe(generateVariantAnalysisMarkdown.name, () => {
+  it("writes distinct files and summary links for custom-server repository names", async () => {
+    const run = {
+      ...createMockVariantAnalysis({}),
+      serverUrl: "https://mrva.example.com",
+    };
+    async function* results(): AsyncIterable<
+      [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
+    > {
+      for (const name of ["group/sub/repo-a", "group/sub/repo-b", "my-repo"]) {
+        const repo = createMockScannedRepo();
+        repo.repository.fullName = name;
+        repo.resultCount = 1;
+        yield [
+          repo,
+          { variantAnalysisId: run.id, repositoryId: repo.repository.id },
+        ];
+      }
+    }
+    const { markdownFiles } = await generateVariantAnalysisMarkdown(
+      run,
+      results(),
+      3,
+      "local",
+    );
+    const [summary, first, second, single] = markdownFiles;
+    expect(first.fileName).not.toBe(second.fileName);
+    expect(summary.content.join("\n")).toContain(
+      `| group/sub/repo-a | [1 result(s)](./${first.fileName}.md) |`,
+    );
+    expect(summary.content.join("\n")).toContain(
+      `| group/sub/repo-b | [1 result(s)](./${second.fileName}.md) |`,
+    );
+    expect({
+      fileName: single.fileName,
+      link: summary.content.find((line) => line.startsWith("| my-repo |")),
+    }).toEqual({
+      fileName: "result-3-my-repo",
+      link: "| my-repo | [1 result(s)](./result-3-my-repo.md) |",
+    });
+  });
+
+  it("exports locations as text when repository links are unavailable", async () => {
+    const run = createMockVariantAnalysis({});
+    const repo = createMockScannedRepo();
+    repo.resultCount = 1;
+    const results: VariantAnalysisScannedRepositoryResult = {
+      variantAnalysisId: run.id,
+      repositoryId: repo.repository.id,
+      interpretedResults: [
+        {
+          message: { tokens: [{ t: "text", text: "A finding" }] },
+          shortDescription: "A finding",
+          severity: "Warning",
+          fileLink: { fileLinkPrefix: undefined, filePath: "src/query.ts" },
+          codeFlows: [],
+        },
+      ],
+    };
+    async function* getUnlinkedResults(): AsyncIterable<
+      [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
+    > {
+      yield [repo, results];
+    }
+    const actual = await generateVariantAnalysisMarkdown(
+      run,
+      getUnlinkedResults(),
+      1,
+      "local",
+    );
+    const content = actual.markdownFiles[1].content.join("\n");
+    expect(content).toContain("src/query.ts");
+    expect(content).not.toContain("[src/query.ts](");
+    expect(content).not.toContain("undefined");
+  });
+
   describe("for path-problem query", () => {
     it("should generate markdown file for each repo with results", async () => {
       const actualFiles = await generateVariantAnalysisMarkdown(

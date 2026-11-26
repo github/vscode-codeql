@@ -19,6 +19,42 @@ describe(AnalyzedRepoItemContent.name, () => {
     );
   };
 
+  it.each([undefined, { startLine: 1, endLine: 1, text: "select 1" }])(
+    "renders file paths and message locations as text when repository links are unavailable",
+    (codeSnippet) => {
+      render({
+        interpretedResults: [
+          {
+            message: {
+              tokens: [
+                {
+                  t: "location",
+                  text: "related location",
+                  location: {
+                    fileLink: {
+                      fileLinkPrefix: undefined,
+                      filePath: "src/related.ts",
+                    },
+                  },
+                },
+              ],
+            },
+            shortDescription: "A finding",
+            fileLink: { fileLinkPrefix: undefined, filePath: "src/query.ts" },
+            severity: "Warning",
+            codeSnippet,
+            codeFlows: [],
+          },
+        ],
+      });
+      expect(screen.getByText("src/query.ts")).toBeInTheDocument();
+      if (!codeSnippet) {
+        expect(screen.getByText("related location")).toBeInTheDocument();
+      }
+      expect(screen.queryAllByRole("link")).toHaveLength(0);
+    },
+  );
+
   it("renders the succeeded state with interpreted results", () => {
     render({
       status: VariantAnalysisRepoStatus.Succeeded,

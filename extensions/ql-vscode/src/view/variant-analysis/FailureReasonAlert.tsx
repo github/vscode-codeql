@@ -6,6 +6,9 @@ import { Link } from "../common/Link";
 
 type Props = {
   failureReason: VariantAnalysisFailureReason;
+  // Set for runs on a custom server, which do not use GitHub Actions.
+  serverUrl?: string;
+  canViewLogs?: boolean;
 };
 
 const openLogs = () => {
@@ -42,7 +45,34 @@ const getMessage = (failureReason: VariantAnalysisFailureReason): ReactNode => {
   }
 };
 
-export const FailureReasonAlert = ({ failureReason }: Props) => {
+export const FailureReasonAlert = ({
+  failureReason,
+  serverUrl,
+  canViewLogs,
+}: Props) => {
+  if (
+    serverUrl &&
+    failureReason === VariantAnalysisFailureReason.ActionsWorkflowRunFailed
+  ) {
+    return (
+      <Alert
+        type="error"
+        title="Variant analysis failed"
+        message={
+          <>
+            The variant analysis run has failed.{" "}
+            {canViewLogs && (
+              <>
+                <Link onClick={openLogs}>View logs</Link> and{" "}
+              </>
+            )}
+            try running this query again.
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <Alert
       type="error"

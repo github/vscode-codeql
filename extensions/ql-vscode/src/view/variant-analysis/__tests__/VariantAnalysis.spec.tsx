@@ -34,6 +34,41 @@ describe(VariantAnalysis.name, () => {
     ).toBeInTheDocument();
   });
 
+  it("renders a server run without a workflow ID, with Stop enabled", () => {
+    render({
+      variantAnalysis: {
+        ...createMockVariantAnalysis({
+          status: VariantAnalysisStatus.InProgress,
+        }),
+        serverUrl: "https://mrva.example.com",
+        actionsWorkflowRunId: undefined,
+      },
+    });
+
+    expect(
+      screen.queryByText("We are getting everything ready"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Stop query")).toBeEnabled();
+  });
+
+  it.each([true, false])(
+    "offers logs for a server run only if the companion supports them: %s",
+    (canViewLogs) => {
+      render({
+        variantAnalysis: {
+          ...createMockVariantAnalysis({}),
+          serverUrl: "https://mrva.example.com",
+          actionsWorkflowRunId: undefined,
+          canViewLogs,
+        },
+      });
+
+      expect(screen.queryByText("View actions logs") !== null).toBe(
+        canViewLogs,
+      );
+    },
+  );
+
   it("renders an analysis where there were no repos to analyse", () => {
     const variantAnalysis = createMockVariantAnalysis({
       status: VariantAnalysisStatus.Failed,
